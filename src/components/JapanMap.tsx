@@ -3,14 +3,24 @@
 import React, { useCallback } from 'react';
 import { GeoJSON } from 'react-leaflet';
 
-const JapanMap = ({ prefectures, onPrefectureClick, getColor, outlineOnly = false, interactive = true, className, zoom }) => {
-    const handleClick = useCallback((feature) => {
+interface JapanMapProps {
+    prefectures: any;
+    onPrefectureClick?: (prefName: string) => void;
+    getColor: (name: string) => string;
+    outlineOnly?: boolean;
+    interactive?: boolean;
+    className?: string; // Kept in interface but might not be used in GeoJSON
+    zoom: number;
+}
+
+const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, getColor, outlineOnly = false, interactive = true, className, zoom }) => {
+    const handleClick = useCallback((feature: any) => {
         if (onPrefectureClick) {
             onPrefectureClick(feature.properties.shapeName);
         }
     }, [onPrefectureClick]);
 
-    const style = useCallback((feature) => {
+    const style = useCallback((feature: any) => {
         if (outlineOnly) {
             let weight = 3;
             if (zoom <= 7) weight = 1;
@@ -39,7 +49,7 @@ const JapanMap = ({ prefectures, onPrefectureClick, getColor, outlineOnly = fals
         return null;
     }
 
-    const onEachFeature = (feature, layer) => {
+    const onEachFeature = (feature: any, layer: any) => {
         if (interactive && onPrefectureClick) {
             layer.on({
                 click: () => handleClick(feature),
@@ -49,11 +59,8 @@ const JapanMap = ({ prefectures, onPrefectureClick, getColor, outlineOnly = fals
 
     return (
         <GeoJSON
-            className={className}
             data={prefectures}
             style={style}
-            onEachFeature={onEachFeature}
-            smoothFactor={1.5}
         />
     );
 };

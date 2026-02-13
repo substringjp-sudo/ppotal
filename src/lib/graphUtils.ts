@@ -166,7 +166,7 @@ export const buildGraph = (stationsGeoJson: any, sectionGeoJson: any): RailroadG
             let minDistStart = 0.1; // 100m
             let minDistEnd = 0.1;
 
-            lineStations.forEach(s => {
+            for (const s of lineStations) {
                 const dStart = haversineDistance(start, s.coords);
                 const dEnd = haversineDistance(end, s.coords);
 
@@ -178,21 +178,21 @@ export const buildGraph = (stationsGeoJson: any, sectionGeoJson: any): RailroadG
                     minDistEnd = dEnd;
                     endStation = s;
                 }
-            });
+            }
 
             if (startStation && endStation && startStation.id !== endStation.id) {
                 let dist = 0;
                 for (let i = 0; i < coords.length - 1; i++) {
-                    dist += haversineDistance(coords[i], coords[i + 1]);
+                    dist += haversineDistance(coords[i] as [number, number], coords[i + 1] as [number, number]);
                 }
                 graph.addEdge(startStation.id, endStation.id, dist, coords);
             }
         };
 
         if (geom.type === 'LineString') {
-            connectStations(geom.coordinates);
+            connectStations(geom.coordinates as [number, number][]);
         } else {
-            geom.coordinates.forEach((polyline: any) => connectStations(polyline));
+            geom.coordinates.forEach((polyline: any) => connectStations(polyline as [number, number][]));
         }
     });
 

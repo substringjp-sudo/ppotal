@@ -1,26 +1,42 @@
+"use client";
+
 import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
+import L, { LatLngBounds } from 'leaflet';
 import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
 import Railroads from './Railroads';
 import Stations from './Stations';
 import { buildGraph, RailroadGraph, haversineDistance } from '../lib/graphUtils';
 
-const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalculated }) => {
-    const [prefectures, setPrefectures] = useState(null);
-    const [municipalities, setMunicipalities] = useState(null);
-    const [railroads, setRailroads] = useState(null);
-    const [stations, setStations] = useState(null);
+interface MapPaneProps {
+    selectedLines: string[];
+    onRailroadClick?: (line: string) => void;
+    onStationClick?: (name: string) => void;
+    onLengthsCalculated?: (lengths: Record<string, number>) => void;
+}
+
+const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalculated }) => {
+    const [prefectures, setPrefectures] = useState<any>(null);
+    const [municipalities, setMunicipalities] = useState<any>(null);
+    const [railroads, setRailroads] = useState<any>(null);
+    const [stations, setStations] = useState<any>(null);
     const [zoomLevel, setZoomLevel] = useState(5);
-    const [mapBounds, setMapBounds] = useState(null);
-    const [lineLengths, setLineLengths] = useState({});
-    const [highlightedStations, setHighlightedStations] = useState([]);
+    const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
+    const [lineLengths, setLineLengths] = useState<Record<string, number>>({});
+    const [highlightedStations, setHighlightedStations] = useState<string[]>([]);
 
     // Graph and Recording State
     const [graph, setGraph] = useState<RailroadGraph | null>(null);
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
-    const [clickStartStation, setClickStartStation] = useState<string | null>(null);
+    const dragStartStationRef = React.useRef(dragStartStation);
+
+    useEffect(() => {
+        dragStartStationRef.current = dragStartStation;
+    }, [dragStartStation]);
+
     const [dragPath, setDragPath] = useState<[number, number][]>([]);
+    const [previewPath, setPreviewPath] = useState<any>(null); // To show the "expected" line
     const [recordedTrips, setRecordedTrips] = useState<any[]>([]);
 
     const map = useMap();
@@ -43,6 +59,7 @@ const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalc
         if (map) {
             setZoomLevel(map.getZoom());
             setMapBounds(map.getBounds());
+            // setMapBounds(map.getBounds()); // Removed duplicate
         }
 
         fetch('/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()).then(data => {
@@ -121,109 +138,6 @@ const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalc
         }
     }, [map, dragStartStation]);
 
-    useMapEvents({
-        zoomend: (e) => setZoomLevel(e.target.getZoom()),
-        moveend: (e) => setMapBounds(e.target.getBounds()),
-        mousemove: (e) => {
-            if (dragStartStation) {
-                setDragPath(prev => [...prev, [e.latlng.lng, e.latlng.lat]]);
-            }
-        },
-    });
-
-    const handlePrefectureClick = useCallback((prefName: string) => {
-        const prefFeature = prefectures?.features.find((f: any) => f.properties.shapeName === prefName);
-        if (prefFeature?.properties.bounds) map.fitBounds(prefFeature.properties.bounds);
-    }, [prefectures, map]);
-
-    const handleRailroadClick = useCallback((line: string) => {
-        if (onRailroadClick) onRailroadClick(line);
-    }, [onRailroadClick]);
-
-    const handleStationClick = useCallback((name: string) => {
-        setHighlightedStations(prev =>
-            prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
-        );
-
-        // Click-to-record logic
-        if (!clickStartStation) {
-            setClickStartStation(name);
-        } else if (clickStartStation !== name) {
-            // Record trip from clickStartStation to name
-            if (graph) {
-                const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${clickStartStation}`));
-                const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${name}`));
-
-                if (startNodes.length > 0 && endNodes.length > 0) {
-                    let bestPathResult: any = null;
-                    startNodes.forEach(s => {
-                        endNodes.forEach(e => {
-                            const res = graph.getShortestPath(s, e); // No dragPath for click-to-record
-                            if (res && (!bestPathResult || res.distance < bestPathResult.distance)) {
-                                bestPathResult = res;
-                            }
-                        });
-                    });
-
-                    if (bestPathResult) {
-                        setRecordedTrips(prev => [...prev, {
-                            id: Date.now(),
-                            start: clickStartStation,
-                            end: name,
-                            ...bestPathResult
-                        }]);
-                    }
-                }
-            }
-            setClickStartStation(null); // Reset after recording
-        } else {
-            setClickStartStation(null); // Deselect if same station clicked
-        }
-
-        if (onStationClick) onStationClick(name);
-    }, [onStationClick, clickStartStation, graph]);
-
-    const handleStationMouseDown = (name: string) => {
-        setDragStartStation(name);
-        setClickStartStation(null); // Clear click selection on drag start
-        setDragPath([]);
-    };
-
-    const handleStationMouseUp = (name: string) => {
-        if (!dragStartStation || dragStartStation === name) {
-            setDragStartStation(null);
-            return;
-        }
-
-        if (graph) {
-            const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${dragStartStation}`));
-            const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${name}`));
-
-            if (startNodes.length > 0 && endNodes.length > 0) {
-                let bestPathResult: any = null;
-                startNodes.forEach(s => {
-                    endNodes.forEach(e => {
-                        const res = graph.getShortestPath(s, e, dragPath);
-                        if (res && (!bestPathResult || res.distance < bestPathResult.distance)) {
-                            bestPathResult = res;
-                        }
-                    });
-                });
-
-                if (bestPathResult) {
-                    setRecordedTrips(prev => [...prev, {
-                        id: Date.now(),
-                        start: dragStartStation,
-                        end: name,
-                        ...bestPathResult
-                    }]);
-                }
-            }
-        }
-        setDragStartStation(null);
-        setDragPath([]);
-    };
-
     const visibleStations = useMemo(() => {
         if (!stations || !mapBounds || zoomLevel <= 8) return null;
         const data: Record<string, any> = {};
@@ -249,11 +163,143 @@ const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalc
         return data;
     }, [stations, mapBounds, zoomLevel]);
 
-    const OffScreenIndicator = () => {
-        const activeStation = clickStartStation || dragStartStation;
-        if (!activeStation || !processedStations || !processedStations[activeStation]) return null;
+    // Helper to find nearest station to a point
+    const findNearestStation = useCallback((lat: number, lng: number) => {
+        if (!visibleStations) return null;
+        let nearest = null;
+        let minDist = Infinity;
+        // Search threshold in km (e.g. 20km for loose snapping)
+        const threshold = 30;
 
-        const { coords } = processedStations[activeStation];
+        Object.entries(visibleStations).forEach(([name, data]) => {
+            // Only snap to visible stations (those on selected lines)
+            // If selectedLines is empty, arguably nothing is visible, so don't snap?
+            // Or maybe everything? Current logic hides everything if empty.
+            if (selectedLines.length > 0) {
+                const isVisible = data.lines.some((line: string) => selectedLines.includes(line));
+                if (!isVisible) return;
+            } else {
+                return; // No lines selected -> no stations visible -> no snapping
+            }
+
+            const d = haversineDistance([lng, lat], [data.coords[1], data.coords[0]]);
+            if (d < minDist && d < threshold) {
+                minDist = d;
+                nearest = name;
+            }
+        });
+        return nearest;
+    }, [visibleStations, selectedLines]);
+
+    useMapEvents({
+        zoomend: (e) => setZoomLevel(e.target.getZoom()),
+        moveend: (e) => setMapBounds(e.target.getBounds()),
+        mousemove: (e) => {
+            const currentDragStation = dragStartStationRef.current;
+            if (currentDragStation) {
+                setDragPath(prev => [...prev, [e.latlng.lng, e.latlng.lat]]);
+
+                // Predictive Highlighting
+                const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
+                if (nearest && nearest !== currentDragStation && graph) {
+                    // Calculate shortest path to nearest
+                    const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${currentDragStation}`));
+                    const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${nearest}`));
+
+                    if (startNodes.length > 0 && endNodes.length > 0) {
+                        let bestPathResult: any = null;
+                        startNodes.forEach(s => {
+                            endNodes.forEach(e => {
+                                const res = graph.getShortestPath(s, e);
+                                if (res && (!bestPathResult || res.distance < bestPathResult.distance)) {
+                                    bestPathResult = res;
+                                }
+                            });
+                        });
+                        if (bestPathResult) {
+                            setPreviewPath(bestPathResult);
+                        }
+                    }
+                } else {
+                    setPreviewPath(null);
+                }
+            }
+        },
+        mouseup: (e) => {
+            const currentDragStation = dragStartStationRef.current;
+            if (currentDragStation) {
+                // Loose release snap
+                const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
+                if (nearest && nearest !== currentDragStation) {
+                    handleRecordTrip(currentDragStation, nearest);
+                }
+                setDragStartStation(null);
+                setDragPath([]);
+                setPreviewPath(null);
+            }
+        }
+    });
+
+    const handlePrefectureClick = useCallback((prefName: string) => {
+        const prefFeature = prefectures?.features.find((f: any) => f.properties.shapeName === prefName);
+        if (prefFeature?.properties.bounds) map.fitBounds(prefFeature.properties.bounds);
+    }, [prefectures, map]);
+
+    const handleRailroadClick = useCallback((line: string) => {
+        if (onRailroadClick) onRailroadClick(line);
+    }, [onRailroadClick]);
+
+    const handleStationClick = useCallback((name: string) => {
+        // setHighlightedStations(prev =>
+        //     prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+        // );
+        // User requested to remove the "enlarge on click" effect.
+        if (onStationClick) onStationClick(name);
+    }, [onStationClick]);
+
+    const handleStationMouseDown = (name: string) => {
+        setDragStartStation(name);
+        setDragPath([]);
+        setPreviewPath(null);
+    };
+
+    const handleRecordTrip = (start: string, end: string) => {
+        if (graph) {
+            const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${start}`));
+            const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${end}`));
+
+            if (startNodes.length > 0 && endNodes.length > 0) {
+                let bestPathResult: any = null;
+                startNodes.forEach(s => {
+                    endNodes.forEach(e => {
+                        const res = graph.getShortestPath(s, e);
+                        if (res && (!bestPathResult || res.distance < bestPathResult.distance)) {
+                            bestPathResult = res;
+                        }
+                    });
+                });
+
+                if (bestPathResult) {
+                    setRecordedTrips(prev => [...prev, {
+                        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // ensure unique key
+                        start: start,
+                        end: end,
+                        ...bestPathResult
+                    }]);
+                }
+            }
+        }
+    };
+
+    const handleStationMouseUp = (name: string) => {
+        // Redundant with global mouseup handler which handles snapping.
+    };
+
+    const OffScreenIndicator = () => {
+        const activeStation = dragStartStation;
+        if (!activeStation || !visibleStations || !visibleStations[activeStation]) return null;
+
+        const { coords } = visibleStations[activeStation];
         const latLng = L.latLng(coords[0], coords[1]);
 
         if (mapBounds?.contains(latLng)) return null;
@@ -285,6 +331,36 @@ const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalc
             </div>
         );
     };
+
+    // Function to get color from node ID (company::line::station)
+    const getLineColorFromNode = (nodeId: string) => {
+        if (!nodeId) return '#000';
+        const parts = nodeId.split('::');
+        if (parts.length >= 2) {
+            const key = `${parts[0]}::${parts[1]}`;
+            return getColor(key);
+        }
+        return '#000';
+    };
+
+    const visitedStations = useMemo(() => {
+        const set = new Set<string>();
+        recordedTrips.forEach(trip => {
+            if (trip.path) {
+                trip.path.forEach((nodeId: string) => {
+                    if (nodeId.includes('::')) {
+                        const parts = nodeId.split('::');
+                        if (parts.length >= 3) {
+                            set.add(parts[2]);
+                        }
+                    }
+                });
+            }
+            set.add(trip.start);
+            set.add(trip.end);
+        });
+        return set;
+    }, [recordedTrips]);
 
     return (
         <>
@@ -331,33 +407,53 @@ const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalc
                     <Polyline
                         positions={dragPath.map(p => [p[1], p[0]])}
                         pathOptions={{
-                            color: '#FFA500', // Orange for the live drag path
+                            color: '#000000',
                             weight: 3,
-                            opacity: 0.6,
-                            dashArray: '2, 5'
+                            opacity: 0.8,
+                            dashArray: '5, 10'
                         }}
                     />
                 )}
+
+                {previewPath && (
+                    <Polyline
+                        positions={previewPath.geometries.map((g: [number, number][]) => g.map(pt => [pt[1], pt[0]]))}
+                        pathOptions={{
+                            color: '#FF00FF',
+                            weight: 6,
+                            opacity: 0.5,
+                        }}
+                    />
+                )}
+
                 {recordedTrips.map(trip => (
                     <React.Fragment key={trip.id}>
-                        {/* Outer thick magenta line */}
-                        <Polyline
-                            positions={trip.geometries.map((g: [number, number][]) => g.map(pt => [pt[1], pt[0]]))}
-                            pathOptions={{
-                                color: '#FF00FF',
-                                weight: 10,
-                                opacity: 0.8,
-                            }}
-                        />
-                        {/* Inner thin black line */}
-                        <Polyline
-                            positions={trip.geometries.map((g: [number, number][]) => g.map(pt => [pt[1], pt[0]]))}
-                            pathOptions={{
-                                color: '#000000',
-                                weight: 2,
-                                opacity: 1,
-                            }}
-                        />
+                        {trip.geometries.map((g: [number, number][], i: number) => {
+                            const startNodeId = trip.path[i];
+                            const color = getLineColorFromNode(startNodeId);
+
+                            return (
+                                <React.Fragment key={i}>
+                                    <Polyline
+                                        positions={g.map(pt => [pt[1], pt[0]])}
+                                        pathOptions={{
+                                            color: color,
+                                            weight: 8,
+                                            opacity: 1,
+                                            lineCap: 'butt'
+                                        }}
+                                    />
+                                    <Polyline
+                                        positions={g.map(pt => [pt[1], pt[0]])}
+                                        pathOptions={{
+                                            color: '#000000',
+                                            weight: 2,
+                                            opacity: 1,
+                                        }}
+                                    />
+                                </React.Fragment>
+                            )
+                        })}
                     </React.Fragment>
                 ))}
             </Pane>
@@ -372,8 +468,8 @@ const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalc
                         selectedLines={selectedLines}
                         onStationMouseDown={handleStationMouseDown}
                         onStationMouseUp={handleStationMouseUp}
-                        clickStartStation={clickStartStation}
                         dragStartStation={dragStartStation}
+                        visitedStations={visitedStations}
                     />
                 }
             </Pane>

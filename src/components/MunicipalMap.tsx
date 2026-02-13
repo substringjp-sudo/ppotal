@@ -3,7 +3,14 @@
 import React, { useCallback } from 'react';
 import { GeoJSON } from 'react-leaflet';
 
-const MunicipalMap = ({ municipalities, className, zoom }) => {
+interface MunicipalMapProps {
+    municipalities: any;
+    className?: string; // Kept in interface
+    getColor?: (name: string) => string; // Optional if not used
+    zoom: number;
+}
+
+const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, zoom }) => {
     const style = useCallback(() => {
         let weight = 1;
         if (zoom <= 9) weight = 0.5;
@@ -23,10 +30,8 @@ const MunicipalMap = ({ municipalities, className, zoom }) => {
 
     return (
         <GeoJSON
-            className={className}
             data={municipalities}
             style={style}
-            smoothFactor={1.5}
         />
     );
 };

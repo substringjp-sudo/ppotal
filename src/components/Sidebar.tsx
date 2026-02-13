@@ -2,9 +2,18 @@
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
 
-const Sidebar = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {} }) => {
-    const [hierarchy, setHierarchy] = useState(null);
-    const [expandedCompanies, setExpandedCompanies] = useState({});
+interface SidebarProps {
+    selectedLines: string[];
+    onToggleLine: (line: string) => void;
+    onSetSelectedLines: (lines: string[]) => void;
+    lineLengths?: Record<string, number>;
+    activeLine?: string | null;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, activeLine }) => {
+    const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
+    const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
+    const lineRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
     useEffect(() => {
         fetch('/station_hierarchy.json')
@@ -13,14 +22,35 @@ const Sidebar = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths 
             .catch(console.error);
     }, []);
 
-    const toggleCompany = useCallback((company) => {
+    // Scroll active line into view and expand company if needed
+    useEffect(() => {
+        if (activeLine && hierarchy) {
+            // Find company for active line
+            const company = Object.keys(hierarchy).find(comp =>
+                Object.keys(hierarchy[comp]).some(line => `${comp}::${line}` === activeLine)
+            );
+
+            if (company) {
+                setExpandedCompanies(prev => ({ ...prev, [company]: true }));
+                // Delay scroll slightly to allow expansion rendering
+                setTimeout(() => {
+                    const el = lineRefs.current[activeLine];
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        }
+    }, [activeLine, hierarchy]);
+
+    const toggleCompany = useCallback((company: string) => {
         setExpandedCompanies(prev => ({
             ...prev,
             [company]: !prev[company]
         }));
     }, []);
 
-    const handleCompanyToggle = useCallback((company, lines) => {
+    const handleCompanyToggle = useCallback((company: string, lines: Record<string, any>) => {
         const lineNames = Object.keys(lines);
         const compositeKeys = lineNames.map(line => `${company}::${line}`);
         const allSelected = compositeKeys.every(key => selectedLines.includes(key));
@@ -35,11 +65,42 @@ const Sidebar = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths 
         onSetSelectedLines(newSelected);
     }, [selectedLines, onSetSelectedLines]);
 
+    const handleSelectAll = useCallback(() => {
+        if (!hierarchy) return;
+        const allKeys: string[] = [];
+        Object.entries(hierarchy).forEach(([comp, lines]) => {
+            Object.keys(lines).forEach(line => {
+                allKeys.push(`${comp}::${line}`);
+            });
+        });
+        onSetSelectedLines(allKeys);
+    }, [hierarchy, onSetSelectedLines]);
+
+    const handleDeselectAll = useCallback(() => {
+        onSetSelectedLines([]);
+    }, [onSetSelectedLines]);
+
     if (!hierarchy) return <div className="p-4">Loading hierarchy...</div>;
 
     return (
         <div className="sidebar-content" style={{ padding: '20px', fontFamily: 'Pretendard, sans-serif' }}>
             <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Railroad Filter</h2>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                <button
+                    onClick={handleSelectAll}
+                    style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}
+                >
+                    Select All
+                </button>
+                <button
+                    onClick={handleDeselectAll}
+                    style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}
+                >
+                    Deselect All
+                </button>
+            </div>
+
             <div className="hierarchy-tree">
                 {Object.entries(hierarchy).map(([company, lines]) => {
                     const lineNames = Object.keys(lines);
@@ -86,8 +147,20 @@ const Sidebar = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths 
                                 <div style={{ marginLeft: '24px', marginTop: '4px' }}>
                                     {lineNames.map(line => {
                                         const key = `${company}::${line}`;
+                                        const isLineActive = activeLine === key;
                                         return (
-                                            <div key={line} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                                            <div
+                                                key={line}
+                                                ref={el => { lineRefs.current[key] = el; }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    marginBottom: '2px',
+                                                    backgroundColor: isLineActive ? '#fffacd' : 'transparent',
+                                                    padding: isLineActive ? '2px' : '0'
+                                                }}
+                                            >
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedLines.includes(key)}

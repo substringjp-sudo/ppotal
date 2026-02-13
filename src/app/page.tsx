@@ -16,16 +16,21 @@ const SidebarWithNoSSR = dynamic(() => import('../components/Sidebar'), {
 });
 
 const Page = () => {
-    const [selectedLines, setSelectedLines] = React.useState([]);
-    const [lineLengths, setLineLengths] = React.useState({});
+    const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
+    const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
+    const [activeLine, setActiveLine] = React.useState<string | null>(null);
 
-    const toggleLine = React.useCallback((line) => {
+    const toggleLine = React.useCallback((line: string) => {
         setSelectedLines(prev =>
             prev.includes(line) ? prev.filter(l => l !== line) : [...prev, line]
         );
+        // Set active line when clicked (for scrolling) - only if selecting? 
+        // Or always if it exists in the list? 
+        // Requirement: "Click line -> Scroll to sidebar item"
+        setActiveLine(line);
     }, []);
 
-    const setSelectedLinesList = React.useCallback((lines) => {
+    const setSelectedLinesList = React.useCallback((lines: string[]) => {
         setSelectedLines(lines);
     }, []);
 
@@ -61,6 +66,7 @@ const Page = () => {
                         onToggleLine={toggleLine}
                         onSetSelectedLines={setSelectedLinesList}
                         lineLengths={lineLengths}
+                        activeLine={activeLine}
                     />
                 </div>
                 <div style={{ flex: 1, position: 'relative' }}>

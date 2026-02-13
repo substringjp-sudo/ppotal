@@ -4,15 +4,38 @@ import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker } from 'react-leaflet';
 
-const Stations = ({ processedStations, highlightedStations, handleStationClick, zoom, getColor, selectedLines, onStationMouseDown, onStationMouseUp, clickStartStation, dragStartStation }) => {
+interface StationsProps {
+    processedStations: Record<string, { coords: [number, number]; lines: string[] }> | null;
+    highlightedStations: string[];
+    handleStationClick: (name: string) => void;
+    zoom: number;
+    getColor: (name: string) => string;
+    selectedLines: string[];
+    onStationMouseDown: (name: string) => void;
+    onStationMouseUp: (name: string) => void;
+    dragStartStation: string | null;
+    visitedStations: Set<string>;
+}
+
+const Stations: React.FC<StationsProps> = ({
+    processedStations,
+    highlightedStations,
+    handleStationClick,
+    zoom,
+    getColor,
+    selectedLines,
+    onStationMouseDown,
+    onStationMouseUp,
+    dragStartStation,
+    visitedStations
+}) => {
     if (!processedStations) {
         return null;
     }
 
-    const startStation = clickStartStation || dragStartStation;
-
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
-        if (!selectedLines || selectedLines.length === 0) return true;
+        // If no lines are selected, hide all stations (to reduce clutter)
+        if (selectedLines.length === 0) return false;
         return data.lines.some(line => selectedLines.includes(line));
     });
 
@@ -20,107 +43,23 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
         <>
             {stationEntries.map(([name, station]) => {
                 const isHighlighted = highlightedStations.includes(name);
-                const isStart = name === startStation;
-                const isLowZoom = zoom <= 10;
+                const isSelected = selectedLines.some(line => station.lines.includes(line));
+                const lines = station.lines;
 
-                // Filter lines by selection and deduplicate by line name
-                const filteredLines = station.lines.filter(l => selectedLines.length === 0 || selectedLines.includes(l));
-                const uniqueLinesMap = new Map();
-                filteredLines.forEach(l => {
-                    const lineName = l.includes('::') ? l.split('::')[1] : l;
-                    if (!uniqueLinesMap.has(lineName)) {
-                        uniqueLinesMap.set(lineName, l);
-                    }
-                });
-                const lines = Array.from(uniqueLinesMap.values());
+                // Determine if this station is being dragged
+                const isDragging = dragStartStation === name;
 
-                if (lines.length === 0) return null;
-                const isInterchange = lines.length > 1 && !isLowZoom;
+                // Determine transparency/visibility based on zoom
+                // High zoom (> 11): show all stations
+                // Low zoom (<= 11): show only major stations? 
+                // Current logic seems to be: show all if data is passed (MapPane filters by bounds)
 
-                if (isInterchange) {
-                    const dotSize = isHighlighted ? 10 : 8;
-                    const itemsPerRow = Math.ceil(Math.sqrt(lines.length));
-                    const capsulePadding = 6;
-                    const dotMargin = 2;
-                    const containerWidth = itemsPerRow * (dotSize + dotMargin * 2) + capsulePadding * 2;
-                    const containerHeight = Math.ceil(lines.length / itemsPerRow) * (dotSize + dotMargin * 2) + capsulePadding * 2;
+                // But simplified view at low zoom?
+                const isLowZoom = zoom <= 11;
 
-                    const dotsHtml = lines.map(line => `
-                        <div style="
-                            width: ${dotSize}px;
-                            height: ${dotSize}px;
-                            background-color: ${getColor(line)};
-                            border: 1px solid white;
-                            border-radius: 50%;
-                            margin: ${dotMargin}px;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                        ">
-                            ${isStart ? '<div style="width: 4px; height: 4px; background: black; border-radius: 50%;"></div>' : ''}
-                        </div>
-                    `).join('');
+                const isVisited = visitedStations.has(name);
 
-                    const icon = L.divIcon({
-                        className: 'station-capsule-icon',
-                        html: `
-                            <div style="position: relative; display: flex; flex-direction: column; align-items: center; z-index: 500;">
-                                <div style="
-                                    display: flex;
-                                    flex-wrap: wrap;
-                                    width: ${containerWidth}px;
-                                    padding: ${capsulePadding}px;
-                                    background: rgba(255, 255, 255, 0.95);
-                                    border: 1.5px solid #999;
-                                    border-radius: 20px;
-                                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                                    justify-content: center;
-                                    align-items: center;
-                                    transform: translate(-50%, -50%);
-                                ">
-                                    ${dotsHtml}
-                                </div>
-                                ${zoom > 13 ? `<div style="
-                                    margin-top: ${containerHeight / 2 + 4}px;
-                                    font-size: 12px;
-                                    font-weight: 800;
-                                    color: #000;
-                                    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
-                                    white-space: nowrap;
-                                    transform: translateX(-50%);
-                                    position: absolute;
-                                    top: 0;
-                                    pointer-events: none;
-                                ">${name}</div>` : ''}
-                            </div>
-                        `,
-                        iconSize: [0, 0],
-                    });
-
-                    return (
-                        <Marker
-                            key={name}
-                            position={station.coords}
-                            icon={icon}
-                            zIndexOffset={100}
-                            eventHandlers={{
-                                click: () => handleStationClick(name),
-                                mousedown: () => onStationMouseDown(name),
-                                mouseup: () => onStationMouseUp(name),
-                            }}
-                        >
-                            <Tooltip sticky pane="tooltipPane" opacity={1}>
-                                <div style={{ zIndex: 1000, position: 'relative' }}>
-                                    <strong>{name} (Interchange)</strong>
-                                    <br />
-                                    Lines: {lines.map(l => l.includes('::') ? l.split('::')[1] : l).join(', ')}
-                                </div>
-                            </Tooltip>
-                        </Marker>
-                    );
-                }
-
-                if (zoom > 13) {
+                if (zoom > 13 && isSelected) {
                     const dotSize = isHighlighted ? 12 : 10;
                     const labelIcon = L.divIcon({
                         className: 'station-label-icon',
@@ -129,17 +68,12 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                                 <div style="
                                     width: ${dotSize}px;
                                     height: ${dotSize}px;
-                                    background-color: ${getColor(lines[0])};
-                                    border: 2px solid white;
+                                    background-color: ${isVisited ? '#000000' : (isDragging ? 'black' : 'white')};
+                                    border: 2px solid ${isVisited ? '#000000' : (isHighlighted ? '#FF0000' : '#666')};
                                     border-radius: 50%;
-                                    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-                                    transform: translate(-50%, -50%);
-                                    display: flex;
-                                    justify-content: center;
-                                    align-items: center;
-                                ">
-                                    ${isStart ? '<div style="width: 5px; height: 5px; background: black; border-radius: 50%;"></div>' : ''}
-                                </div>
+                                    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+                                    margin-bottom: 4px;
+                                "></div>
                                 <div style="
                                     margin-top: ${dotSize / 2 + 4}px;
                                     font-size: 12px;
@@ -169,7 +103,7 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                                 mouseup: () => onStationMouseUp(name),
                             }}
                         >
-                            <Tooltip sticky pane="tooltipPane" opacity={1}>
+                            <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : 1}>
                                 <div style={{ zIndex: 1000, position: 'relative' }}>
                                     <strong>{name}</strong>
                                     <br />
@@ -180,17 +114,18 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                     );
                 }
 
-                // Default CircleMarker for mid/low zoom
+                // Default CircleMarker
                 const radius = isLowZoom ? 2.5 : (isHighlighted ? 8 : 6);
-                const weight = isLowZoom ? 0 : (isHighlighted ? 3 : 2);
+                const weight = isLowZoom ? 0 : 3;
 
                 const stationStyle = {
-                    fill: true,
-                    fillColor: getColor(lines[0]),
-                    fillOpacity: 1,
-                    stroke: !isLowZoom,
-                    color: isStart ? 'black' : 'white', // Black border if start station for CircleMarker
-                    weight: isStart ? weight + 2 : weight,
+                    fill: !isLowZoom || isSelected, // visible fill if selected or zoomed in
+                    fillColor: isVisited ? '#000000' : (isDragging ? 'black' : 'white'),
+                    fillOpacity: (isSelected || isVisited) ? 1 : 0.3, // Ghosted if not selected
+                    stroke: !isLowZoom || isSelected || isVisited,
+                    color: getColor(lines[0]), // Always use line color for border
+                    weight: weight,
+                    opacity: (isSelected || isVisited) ? 1 : 0.4, // Ghosted border
                 };
 
                 return (
@@ -206,15 +141,7 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                             mouseup: () => onStationMouseUp(name),
                         }}
                     >
-                        {isStart && !isLowZoom && (
-                            <CircleMarker
-                                center={station.coords}
-                                radius={radius / 2}
-                                pathOptions={{ fillColor: 'black', fillOpacity: 1, stroke: false }}
-                                interactive={false}
-                            />
-                        )}
-                        <Tooltip sticky pane="tooltipPane" opacity={1}>
+                        <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
                             <div style={{ zIndex: 1000, position: 'relative' }}>
                                 <strong>{name}</strong>
                                 <br />
