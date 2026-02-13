@@ -11,29 +11,66 @@ const MapPaneWithNoSSR = dynamic(() => import('../components/MapPane'), {
     ssr: false
 });
 
+const SidebarWithNoSSR = dynamic(() => import('../components/Sidebar'), {
+    ssr: false
+});
+
 const Page = () => {
+    const [selectedLines, setSelectedLines] = React.useState([]);
+    const [lineLengths, setLineLengths] = React.useState({});
+
+    const toggleLine = React.useCallback((line) => {
+        setSelectedLines(prev =>
+            prev.includes(line) ? prev.filter(l => l !== line) : [...prev, line]
+        );
+    }, []);
+
+    const setSelectedLinesList = React.useCallback((lines) => {
+        setSelectedLines(lines);
+    }, []);
 
     return (
-        <main style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
+        <main style={{
+            display: 'flex',
+            flexDirection: 'column',
             height: '100vh',
             overflow: 'hidden'
         }}>
-            <h1 style={{ 
-                textAlign: 'center', 
-                padding: '10px 0', 
-                margin: 0, 
+            <h1 style={{
+                textAlign: 'center',
+                padding: '10px 0',
+                margin: 0,
                 borderBottom: '1px solid #ccc',
-                fontSize: '24px', 
+                fontSize: '24px',
                 fontWeight: 'bold'
             }}>
                 Japan Railroad Map
             </h1>
-            <div style={{ flex: 1, position: 'relative' }}>
-                <MapWithNoSSR>
-                    <MapPaneWithNoSSR />
-                </MapWithNoSSR>
+            <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
+                <div style={{
+                    width: '350px',
+                    height: '100%',
+                    borderRight: '1px solid #ddd',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    zIndex: 1000,
+                    overflowY: 'auto'
+                }}>
+                    <SidebarWithNoSSR
+                        selectedLines={selectedLines}
+                        onToggleLine={toggleLine}
+                        onSetSelectedLines={setSelectedLinesList}
+                        lineLengths={lineLengths}
+                    />
+                </div>
+                <div style={{ flex: 1, position: 'relative' }}>
+                    <MapWithNoSSR>
+                        <MapPaneWithNoSSR
+                            selectedLines={selectedLines}
+                            onLengthsCalculated={setLineLengths}
+                        />
+                    </MapWithNoSSR>
+                </div>
             </div>
         </main>
     );

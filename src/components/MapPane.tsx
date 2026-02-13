@@ -5,14 +5,28 @@ import MunicipalMap from './MunicipalMap';
 import Railroads from './Railroads';
 import Stations from './Stations';
 
-const MapPane = () => {
+const haversineDistance = (coords1, coords2) => {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(coords2[1] - coords1[1]);
+    const dLon = toRad(coords2[0] - coords1[0]);
+    const lat1 = toRad(coords1[1]);
+    const lat2 = toRad(coords2[1]);
+
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
+
+const MapPane = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalculated }) => {
     const [prefectures, setPrefectures] = useState(null);
     const [municipalities, setMunicipalities] = useState(null);
     const [railroads, setRailroads] = useState(null);
     const [stations, setStations] = useState(null);
-    const [selectedLines, setSelectedLines] = useState([]);
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState(null);
+    const [lineLengths, setLineLengths] = useState({});
     const [highlightedStations, setHighlightedStations] = useState([]);
     const map = useMap();
 
@@ -31,6 +45,11 @@ const MapPane = () => {
     }, [colorPalette]);
 
     useEffect(() => {
+        if (map) {
+            setZoomLevel(map.getZoom());
+            setMapBounds(map.getBounds());
+        }
+
         fetch('/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()).then(data => {
             const getBounds = (coords) => {
                 let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
@@ -46,7 +65,47 @@ const MapPane = () => {
         fetch('/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()).then(setMunicipalities);
         fetch('/N02-22_RailroadSection.geojson').then(res => res.json()).then(setRailroads);
         fetch('/N02-22_Station.geojson').then(res => res.json()).then(setStations).catch(console.error);
-    }, []);
+    }, [map]);
+
+    useEffect(() => {
+        if (!railroads) return;
+
+        const lengths = {};
+        railroads.features.forEach(feature => {
+            const company = feature.properties.N02_004;
+            const line = feature.properties.N02_003;
+            const key = `${company}::${line}`;
+
+            let featureLength = 0;
+            const geom = feature.geometry;
+            if (!geom) return;
+
+            if (geom.type === 'LineString') {
+                for (let i = 0; i < geom.coordinates.length - 1; i++) {
+                    featureLength += haversineDistance(geom.coordinates[i], geom.coordinates[i + 1]);
+                }
+            } else if (geom.type === 'MultiLineString') {
+                geom.coordinates.forEach(lineString => {
+                    for (let i = 0; i < lineString.length - 1; i++) {
+                        featureLength += haversineDistance(lineString[i], lineString[i + 1]);
+                    }
+                });
+            }
+
+            lengths[key] = (lengths[key] || 0) + featureLength;
+        });
+
+        // Round to 1 decimal place
+        const roundedLengths = {};
+        for (const key in lengths) {
+            roundedLengths[key] = Math.round(lengths[key] * 10) / 10;
+        }
+
+        setLineLengths(roundedLengths);
+        if (onLengthsCalculated) {
+            onLengthsCalculated(roundedLengths);
+        }
+    }, [railroads, onLengthsCalculated]);
 
     useMapEvents({
         load: (e) => {
@@ -65,65 +124,119 @@ const MapPane = () => {
     });
 
     const handlePrefectureClick = useCallback((prefName) => {
-        const feature = prefectures?.features.find(f => f.properties.shapeName === prefName);
-        if (feature?.properties.bounds) map.fitBounds(feature.properties.bounds);
+        const prefFeature = prefectures?.features.find(f => f.properties.shapeName === prefName);
+        if (prefFeature?.properties.bounds) map.fitBounds(prefFeature.properties.bounds);
     }, [prefectures, map]);
 
     const handleRailroadClick = useCallback(line => setSelectedLines(p => p.includes(line) ? p.filter(l => l !== line) : [...p, line]), []);
     const handleStationClick = useCallback(name => setHighlightedStations(p => p.includes(name) ? p.filter(s => s !== name) : [...p, name]), []);
 
     const visibleStations = useMemo(() => {
-        if (!stations || !mapBounds) return null;
+        if (!stations || !mapBounds || zoomLevel <= 8) return null;
         const data = {};
-        stations.features.forEach(s => {
-            if (mapBounds.contains(s.geometry.coordinates.slice().reverse())) {
-                const name = s.properties.N02_005;
-                if (!data[name]) data[name] = { coords: s.geometry.coordinates.slice().reverse(), lines: [] };
-                data[name].lines.push(s.properties.N02_003);
+        const features = stations.features;
+        const len = features.length;
+
+        for (let i = 0; i < len; i++) {
+            const s = features[i];
+            const geom = s.geometry;
+            if (!geom) continue;
+
+            let rawCoords = geom.coordinates;
+            if (geom.type === 'LineString' && Array.isArray(rawCoords[0])) {
+                rawCoords = rawCoords[0];
             }
-        });
+
+            if (Array.isArray(rawCoords) && rawCoords.length >= 2 && typeof rawCoords[0] === 'number') {
+                const lat = rawCoords[1];
+                const lng = rawCoords[0];
+
+                // Fast bounds check
+                if (lat >= mapBounds.getSouth() && lat <= mapBounds.getNorth() &&
+                    lng >= mapBounds.getWest() && lng <= mapBounds.getEast()) {
+
+                    const name = s.properties.N02_005;
+                    const key = `${s.properties.N02_004}::${s.properties.N02_003}`;
+
+                    if (!data[name]) data[name] = { coords: [lat, lng], lines: [] };
+                    data[name].lines.push(key);
+                }
+            }
+        }
         return data;
-    }, [stations, mapBounds]);
+    }, [stations, mapBounds, zoomLevel]);
+
+    const hierarchicalStations = useMemo(() => {
+        if (!stations) return null;
+        const hierarchy = {};
+        stations.features.forEach(s => {
+            const company = s.properties.N02_004;
+            const line = s.properties.N02_003;
+            const stationName = s.properties.N02_005;
+
+            if (!hierarchy[company]) hierarchy[company] = {};
+            if (!hierarchy[company][line]) hierarchy[company][line] = {};
+
+            // Just store station names for now, or more if needed
+            hierarchy[company][line][stationName] = true;
+        });
+        console.log('Hierarchical Stations Structure:', hierarchy);
+        return hierarchy;
+    }, [stations]);
 
     return (
         <>
             <Pane name="prefecture-fill" style={{ zIndex: 410 }}>
-                <JapanMap 
-                    prefectures={prefectures} 
-                    onPrefectureClick={handlePrefectureClick} 
-                    getColor={getColor} 
+                <JapanMap
+                    className="japan-map-fill"
+                    prefectures={prefectures}
+                    onPrefectureClick={handlePrefectureClick}
+                    getColor={getColor}
                     interactive={zoomLevel <= 8}
+                    zoom={zoomLevel}
                 />
             </Pane>
             <Pane name="municipal-lines" style={{ zIndex: 412 }}>
-                {zoomLevel > 8 && <MunicipalMap municipalities={municipalities} getColor={getColor} />}
+                {zoomLevel > 8 && (
+                    <MunicipalMap
+                        className="municipal-map"
+                        municipalities={municipalities}
+                        getColor={getColor}
+                        zoom={zoomLevel}
+                    />
+                )}
             </Pane>
             <Pane name="prefecture-outline" style={{ zIndex: 415 }}>
-                {zoomLevel > 8 && 
-                    <JapanMap 
-                        prefectures={prefectures} 
-                        getColor={getColor} 
-                        outlineOnly={true} 
+                {zoomLevel > 8 &&
+                    <JapanMap
+                        className="japan-map-outline"
+                        prefectures={prefectures}
+                        getColor={getColor}
+                        outlineOnly={true}
                         interactive={false}
+                        zoom={zoomLevel}
                     />
                 }
             </Pane>
             <Pane name="railroads" style={{ zIndex: 420 }}>
-                <Railroads 
-                    railroads={railroads} 
-                    selectedLines={selectedLines} 
-                    onRailroadClick={handleRailroadClick} 
-                    getColor={getColor} 
+                <Railroads
+                    className="railroads-component"
+                    railroads={railroads}
+                    selectedLines={selectedLines}
+                    onRailroadClick={handleRailroadClick}
+                    getColor={getColor}
+                    zoom={zoomLevel}
                 />
             </Pane>
-            <Pane name="stations" style={{ zIndex: 430 }}>
+            <Pane name="stations" style={{ zIndex: 500 }}>
                 {visibleStations &&
-                    <Stations 
-                        processedStations={visibleStations} 
-                        highlightedStations={highlightedStations} 
-                        handleStationClick={handleStationClick} 
-                        zoom={zoomLevel} 
+                    <Stations
+                        processedStations={visibleStations}
+                        highlightedStations={highlightedStations}
+                        handleStationClick={handleStationClick}
+                        zoom={zoomLevel}
                         getColor={getColor}
+                        selectedLines={selectedLines}
                     />
                 }
             </Pane>
