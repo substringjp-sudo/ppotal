@@ -26,6 +26,7 @@ const MunicipalMap = ({ municipalities, className, zoom }) => {
             className={className}
             data={municipalities}
             style={style}
+            smoothFactor={1.5}
         />
     );
 };

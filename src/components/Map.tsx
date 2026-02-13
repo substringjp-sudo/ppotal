@@ -12,10 +12,6 @@ const Map = ({ children }) => {
             style={{ height: '100%', width: '100%', background: '#f0f0f0' }}
             scrollWheelZoom={true}
             preferCanvas={true}
-            zoomSnap={0.1}
-            zoomDelta={0.1}
-            zoomAnimation={true}
-            wheelPxPerZoomLevel={120}
         >
             {children}
         </MapContainer>

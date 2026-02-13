@@ -13,7 +13,7 @@ const Railroads = ({ railroads, selectedLines, onRailroadClick, getColor, classN
         const isHovered = hoveredLineKey === key;
 
         return {
-            color: getColor(lineName),
+            color: getColor(key),
             weight: isHovered ? 6 : (isSelected ? 4 : 2),
             opacity: isSelected ? 1 : 0,
         };
@@ -48,6 +48,7 @@ const Railroads = ({ railroads, selectedLines, onRailroadClick, getColor, classN
             style={style}
             filter={filter}
             onEachFeature={onEachFeature}
+            smoothFactor={1.5}
         />
     );
 };

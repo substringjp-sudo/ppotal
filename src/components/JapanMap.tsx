@@ -53,6 +53,7 @@ const JapanMap = ({ prefectures, onPrefectureClick, getColor, outlineOnly = fals
             data={prefectures}
             style={style}
             onEachFeature={onEachFeature}
+            smoothFactor={1.5}
         />
     );
 };

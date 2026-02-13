@@ -68,6 +68,7 @@ const Page = () => {
                         <MapPaneWithNoSSR
                             selectedLines={selectedLines}
                             onLengthsCalculated={setLineLengths}
+                            onRailroadClick={toggleLine}
                         />
                     </MapWithNoSSR>
                 </div>

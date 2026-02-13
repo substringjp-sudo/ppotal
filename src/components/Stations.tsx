@@ -4,20 +4,12 @@ import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker } from 'react-leaflet';
 
-const darkenColor = (hex, percent = 30) => {
-    if (!hex || hex[0] !== '#') return hex;
-    const num = parseInt(hex.slice(1), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = (num >> 16) - amt;
-    const G = (num >> 8 & 0x00FF) - amt;
-    const B = (num & 0x0000FF) - amt;
-    return '#' + (0x1000000 + (R < 0 ? 0 : R) * 0x10000 + (G < 0 ? 0 : G) * 0x100 + (B < 0 ? 0 : B)).toString(16).slice(1);
-};
-
-const Stations = ({ processedStations, highlightedStations, handleStationClick, zoom, getColor, selectedLines }) => {
+const Stations = ({ processedStations, highlightedStations, handleStationClick, zoom, getColor, selectedLines, onStationMouseDown, onStationMouseUp, clickStartStation, dragStartStation }) => {
     if (!processedStations) {
         return null;
     }
+
+    const startStation = clickStartStation || dragStartStation;
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
         if (!selectedLines || selectedLines.length === 0) return true;
@@ -28,6 +20,7 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
         <>
             {stationEntries.map(([name, station]) => {
                 const isHighlighted = highlightedStations.includes(name);
+                const isStart = name === startStation;
                 const isLowZoom = zoom <= 10;
 
                 // Filter lines by selection and deduplicate by line name
@@ -56,12 +49,16 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                         <div style="
                             width: ${dotSize}px;
                             height: ${dotSize}px;
-                            background-color: ${darkenColor(getColor(line))};
+                            background-color: ${getColor(line)};
                             border: 1px solid white;
                             border-radius: 50%;
                             margin: ${dotMargin}px;
-                            display: inline-block;
-                        "></div>
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        ">
+                            ${isStart ? '<div style="width: 4px; height: 4px; background: black; border-radius: 50%;"></div>' : ''}
+                        </div>
                     `).join('');
 
                     const icon = L.divIcon({
@@ -108,6 +105,8 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                             zIndexOffset={100}
                             eventHandlers={{
                                 click: () => handleStationClick(name),
+                                mousedown: () => onStationMouseDown(name),
+                                mouseup: () => onStationMouseUp(name),
                             }}
                         >
                             <Tooltip sticky pane="tooltipPane" opacity={1}>
@@ -130,12 +129,17 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                                 <div style="
                                     width: ${dotSize}px;
                                     height: ${dotSize}px;
-                                    background-color: ${darkenColor(getColor(lines[0]))};
+                                    background-color: ${getColor(lines[0])};
                                     border: 2px solid white;
                                     border-radius: 50%;
                                     box-shadow: 0 2px 4px rgba(0,0,0,0.4);
                                     transform: translate(-50%, -50%);
-                                "></div>
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                ">
+                                    ${isStart ? '<div style="width: 5px; height: 5px; background: black; border-radius: 50%;"></div>' : ''}
+                                </div>
                                 <div style="
                                     margin-top: ${dotSize / 2 + 4}px;
                                     font-size: 12px;
@@ -161,6 +165,8 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                             zIndexOffset={100}
                             eventHandlers={{
                                 click: () => handleStationClick(name),
+                                mousedown: () => onStationMouseDown(name),
+                                mouseup: () => onStationMouseUp(name),
                             }}
                         >
                             <Tooltip sticky pane="tooltipPane" opacity={1}>
@@ -180,11 +186,11 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
 
                 const stationStyle = {
                     fill: true,
-                    fillColor: darkenColor(getColor(lines[0])),
+                    fillColor: getColor(lines[0]),
                     fillOpacity: 1,
                     stroke: !isLowZoom,
-                    color: 'white',
-                    weight: weight,
+                    color: isStart ? 'black' : 'white', // Black border if start station for CircleMarker
+                    weight: isStart ? weight + 2 : weight,
                 };
 
                 return (
@@ -196,8 +202,18 @@ const Stations = ({ processedStations, highlightedStations, handleStationClick, 
                         radius={radius}
                         eventHandlers={{
                             click: () => handleStationClick(name),
+                            mousedown: () => onStationMouseDown(name),
+                            mouseup: () => onStationMouseUp(name),
                         }}
                     >
+                        {isStart && !isLowZoom && (
+                            <CircleMarker
+                                center={station.coords}
+                                radius={radius / 2}
+                                pathOptions={{ fillColor: 'black', fillOpacity: 1, stroke: false }}
+                                interactive={false}
+                            />
+                        )}
                         <Tooltip sticky pane="tooltipPane" opacity={1}>
                             <div style={{ zIndex: 1000, position: 'relative' }}>
                                 <strong>{name}</strong>
