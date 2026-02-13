@@ -55,6 +55,8 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         return colorPalette[Math.abs(hash) % colorPalette.length];
     }, [colorPalette]);
 
+    const [hierarchy, setHierarchy] = useState<any>(null); // Add hierarchy state
+
     useEffect(() => {
         if (map) {
             setZoomLevel(map.getZoom());
@@ -77,16 +79,17 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         fetch('/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()).then(setMunicipalities);
         fetch('/N02-22_RailroadSection.geojson').then(res => res.json()).then(setRailroads);
         fetch('/N02-22_Station.geojson').then(res => res.json()).then(setStations).catch(console.error);
+        fetch('/station_hierarchy.json').then(res => res.json()).then(setHierarchy).catch(console.error); // Fetch hierarchy
     }, [map]);
 
     // Build graph when data is loaded
     useEffect(() => {
-        if (stations && railroads) {
-            const builtGraph = buildGraph(stations, railroads);
+        if (stations && railroads && hierarchy) { // Check for hierarchy
+            const builtGraph = buildGraph(stations, railroads, hierarchy); // Pass hierarchy
             setGraph(builtGraph);
             console.log('Graph built with', builtGraph.nodes.size, 'nodes');
         }
-    }, [stations, railroads]);
+    }, [stations, railroads, hierarchy]);
 
     // Calculate line lengths for sidebar
     useEffect(() => {
@@ -140,7 +143,7 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
 
     const visibleStations = useMemo(() => {
         if (!stations || !mapBounds || zoomLevel <= 8) return null;
-        const data: Record<string, any> = {};
+        const data: Record<string, { allCoords: [number, number][], lines: string[], centroid: [number, number] }> = {};
         stations.features.forEach((s: any) => {
             const geom = s.geometry;
             if (!geom) return;
@@ -156,14 +159,25 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
                 const line = s.properties.N02_003;
                 const key = `${company}::${line}`;
 
-                if (!data[name]) data[name] = { coords: [lat, lng], lines: [] };
-                if (!data[name].lines.includes(key)) data[name].lines.push(key);
+                const coord: [number, number] = [lat, lng];
+
+                if (!data[name]) {
+                    data[name] = { allCoords: [coord], lines: [key], centroid: coord };
+                } else {
+                    data[name].allCoords.push(coord);
+                    if (!data[name].lines.includes(key)) data[name].lines.push(key);
+
+                    // Recalculate centroid
+                    const n = data[name].allCoords.length;
+                    const latSum = data[name].allCoords.reduce((sum, c) => sum + c[0], 0);
+                    const lngSum = data[name].allCoords.reduce((sum, c) => sum + c[1], 0);
+                    data[name].centroid = [latSum / n, lngSum / n];
+                }
             }
         });
         return data;
     }, [stations, mapBounds, zoomLevel]);
 
-    // Helper to find nearest station to a point
     const findNearestStation = useCallback((lat: number, lng: number) => {
         if (!visibleStations) return null;
         let nearest = null;
@@ -173,20 +187,21 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
 
         Object.entries(visibleStations).forEach(([name, data]) => {
             // Only snap to visible stations (those on selected lines)
-            // If selectedLines is empty, arguably nothing is visible, so don't snap?
-            // Or maybe everything? Current logic hides everything if empty.
             if (selectedLines.length > 0) {
                 const isVisible = data.lines.some((line: string) => selectedLines.includes(line));
                 if (!isVisible) return;
             } else {
-                return; // No lines selected -> no stations visible -> no snapping
+                return;
             }
 
-            const d = haversineDistance([lng, lat], [data.coords[1], data.coords[0]]);
-            if (d < minDist && d < threshold) {
-                minDist = d;
-                nearest = name;
-            }
+            // Check distance to ALL coords
+            data.allCoords.forEach(coord => {
+                const d = haversineDistance([lng, lat], [coord[1], coord[0]]);
+                if (d < minDist && d < threshold) {
+                    minDist = d;
+                    nearest = name;
+                }
+            });
         });
         return nearest;
     }, [visibleStations, selectedLines]);
@@ -197,27 +212,25 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         mousemove: (e) => {
             const currentDragStation = dragStartStationRef.current;
             if (currentDragStation) {
-                setDragPath(prev => [...prev, [e.latlng.lng, e.latlng.lat]]);
+                // Don't draw the "drag path" (mouse trail) anymore. 
+                // setDragPath(prev => [...prev, [e.latlng.lng, e.latlng.lat]]); 
 
                 // Predictive Highlighting
                 const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
+
+                // If we have a nearest station that is NOT the start station...
                 if (nearest && nearest !== currentDragStation && graph) {
                     // Calculate shortest path to nearest
                     const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${currentDragStation}`));
                     const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${nearest}`));
 
                     if (startNodes.length > 0 && endNodes.length > 0) {
-                        let bestPathResult: any = null;
-                        startNodes.forEach(s => {
-                            endNodes.forEach(e => {
-                                const res = graph.getShortestPath(s, e);
-                                if (res && (!bestPathResult || res.distance < bestPathResult.distance)) {
-                                    bestPathResult = res;
-                                }
-                            });
-                        });
-                        if (bestPathResult) {
-                            setPreviewPath(bestPathResult);
+                        const pathData = graph.getShortestPathByName(currentDragStation, nearest, selectedLines);
+
+                        if (pathData) {
+                            setPreviewPath(pathData);
+                        } else {
+                            setPreviewPath(null); // No valid path found on selected lines
                         }
                     }
                 } else {
@@ -226,17 +239,16 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
             }
         },
         mouseup: (e) => {
-            const currentDragStation = dragStartStationRef.current;
-            if (currentDragStation) {
-                // Loose release snap
+            if (dragStartStation) {
                 const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
-                if (nearest && nearest !== currentDragStation) {
-                    handleRecordTrip(currentDragStation, nearest);
+                if (nearest && nearest !== dragStartStation) {
+                    handleRecordTrip(dragStartStation, nearest);
                 }
-                setDragStartStation(null);
-                setDragPath([]);
-                setPreviewPath(null);
             }
+            // Always reset drag state on mouseup
+            setDragStartStation(null);
+            setDragPath([]);
+            setPreviewPath(null);
         }
     });
 
@@ -264,33 +276,19 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
     };
 
     const handleRecordTrip = (start: string, end: string) => {
-        if (graph) {
-            const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${start}`));
-            const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${end}`));
+        if (!graph) return;
 
-            if (startNodes.length > 0 && endNodes.length > 0) {
-                let bestPathResult: any = null;
-                startNodes.forEach(s => {
-                    endNodes.forEach(e => {
-                        const res = graph.getShortestPath(s, e);
-                        if (res && (!bestPathResult || res.distance < bestPathResult.distance)) {
-                            bestPathResult = res;
-                        }
-                    });
-                });
+        const pathData = graph.getShortestPathByName(start, end, selectedLines);
 
-                if (bestPathResult) {
-                    setRecordedTrips(prev => [...prev, {
-                        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // ensure unique key
-                        start: start,
-                        end: end,
-                        ...bestPathResult
-                    }]);
-                }
-            }
+        if (pathData) {
+            setRecordedTrips(prev => [...prev, {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // ensure unique key
+                start: start,
+                end: end,
+                ...pathData
+            }]);
         }
     };
-
     const handleStationMouseUp = (name: string) => {
         // Redundant with global mouseup handler which handles snapping.
     };
@@ -299,8 +297,8 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         const activeStation = dragStartStation;
         if (!activeStation || !visibleStations || !visibleStations[activeStation]) return null;
 
-        const { coords } = visibleStations[activeStation];
-        const latLng = L.latLng(coords[0], coords[1]);
+        const { centroid } = visibleStations[activeStation];
+        const latLng = L.latLng(centroid[0], centroid[1]);
 
         if (mapBounds?.contains(latLng)) return null;
 
@@ -403,6 +401,8 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
                 />
             </Pane>
             <Pane name="recorded-trips" style={{ zIndex: 430 }}>
+                {/* dragPath removed - replaced by snaking previewPath */}
+                {/* 
                 {dragPath.length > 1 && (
                     <Polyline
                         positions={dragPath.map(p => [p[1], p[0]])}
@@ -414,6 +414,7 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
                         }}
                     />
                 )}
+                 */}
 
                 {previewPath && (
                     <Polyline

@@ -2,6 +2,18 @@
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
 
+// Group definitions
+const JR_COMPANIES = [
+    '北海道旅客鉄道', '東日本旅客鉄道', '東海旅客鉄道', '西日本旅客鉄道', '四国旅客鉄道', '九州旅客鉄道', '日本貨物鉄道'
+];
+
+const MAJOR_PRIVATE_COMPANIES = [
+    '東武鉄道', '西武鉄道', '京成電鉄', '京王電鉄', '小田急電鉄', '東急電鉄', '京浜急行電鉄', '相模鉄道',
+    '東京地下鉄', '名古屋鉄道', '近畿日本鉄道', '南海電気鉄道', '京阪電気鉄道', '阪急電鉄', '阪神電気鉄道', '西日本鉄道'
+];
+
+const STRICT_NON_RAIL_KEYWORDS = ['ケーブル', 'ロープウェイ', 'リフト', '鋼索', 'トロリー'];
+
 interface SidebarProps {
     selectedLines: string[];
     onToggleLine: (line: string) => void;
@@ -10,58 +22,118 @@ interface SidebarProps {
     activeLine?: string | null;
 }
 
+type GroupedHierarchy = {
+    shinkansen: Record<string, Record<string, any>>;
+    jr: Record<string, Record<string, any>>;
+    majorPrivate: Record<string, Record<string, any>>;
+    otherPrivate: Record<string, Record<string, any>>;
+    nonRail: Record<string, Record<string, any>>;
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, activeLine }) => {
     const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
+    const [groupedHierarchy, setGroupedHierarchy] = useState<GroupedHierarchy | null>(null);
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
+    const [expandedGroups, setExpandedGroups] = useState<Record<keyof GroupedHierarchy, boolean>>({
+        shinkansen: true,
+        jr: true,
+        majorPrivate: true,
+        otherPrivate: false,
+        nonRail: false,
+    });
     const lineRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
     useEffect(() => {
         fetch('/station_hierarchy.json')
             .then(res => res.json())
-            .then(setHierarchy)
+            .then((data: Record<string, Record<string, any>>) => {
+                setHierarchy(data);
+
+                // Process grouping
+                const groups: GroupedHierarchy = {
+                    shinkansen: {},
+                    jr: {},
+                    majorPrivate: {},
+                    otherPrivate: {},
+                    nonRail: {},
+                };
+
+                Object.entries(data).forEach(([company, lines]) => {
+                    const isJR = JR_COMPANIES.some(c => company.includes(c));
+                    const isMajor = MAJOR_PRIVATE_COMPANIES.includes(company);
+
+                    Object.entries(lines).forEach(([lineName, stations]) => {
+                        const isShinkansen = lineName.includes('新幹線');
+                        const isNonRail = STRICT_NON_RAIL_KEYWORDS.some(k => lineName.includes(k) || company.includes(k));
+
+                        let targetGroup: keyof GroupedHierarchy = 'otherPrivate';
+
+                        if (isShinkansen) {
+                            targetGroup = 'shinkansen';
+                        } else if (isNonRail) {
+                            targetGroup = 'nonRail';
+                        } else if (isJR) {
+                            targetGroup = 'jr';
+                        } else if (isMajor) {
+                            targetGroup = 'majorPrivate';
+                        }
+
+                        if (!groups[targetGroup][company]) {
+                            groups[targetGroup][company] = {};
+                        }
+                        groups[targetGroup][company][lineName] = stations;
+                    });
+                });
+
+                setGroupedHierarchy(groups);
+            })
             .catch(console.error);
     }, []);
 
     // Scroll active line into view and expand company if needed
     useEffect(() => {
-        if (activeLine && hierarchy) {
-            // Find company for active line
-            const company = Object.keys(hierarchy).find(comp =>
-                Object.keys(hierarchy[comp]).some(line => `${comp}::${line}` === activeLine)
-            );
+        if (activeLine && groupedHierarchy) {
+            let foundGroup: keyof GroupedHierarchy | null = null;
+            let foundCompany: string | null = null;
 
-            if (company) {
-                setExpandedCompanies(prev => ({ ...prev, [company]: true }));
-                // Delay scroll slightly to allow expansion rendering
+            // Search for the active line in groups
+            for (const group of Object.keys(groupedHierarchy) as (keyof GroupedHierarchy)[]) {
+                for (const company of Object.keys(groupedHierarchy[group])) {
+                    if (Object.keys(groupedHierarchy[group][company]).some(line => `${company}::${line}` === activeLine)) {
+                        foundGroup = group;
+                        foundCompany = company;
+                        break;
+                    }
+                }
+                if (foundGroup) break;
+            }
+
+            if (foundGroup && foundCompany) {
+                setExpandedGroups(prev => ({ ...prev, [foundGroup!]: true }));
+                setExpandedCompanies(prev => ({ ...prev, [foundCompany!]: true }));
                 setTimeout(() => {
                     const el = lineRefs.current[activeLine];
-                    if (el) {
-                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
             }
         }
-    }, [activeLine, hierarchy]);
+    }, [activeLine, groupedHierarchy]);
 
     const toggleCompany = useCallback((company: string) => {
-        setExpandedCompanies(prev => ({
-            ...prev,
-            [company]: !prev[company]
-        }));
+        setExpandedCompanies(prev => ({ ...prev, [company]: !prev[company] }));
+    }, []);
+
+    const toggleGroup = useCallback((group: keyof GroupedHierarchy) => {
+        setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
     }, []);
 
     const handleCompanyToggle = useCallback((company: string, lines: Record<string, any>) => {
         const lineNames = Object.keys(lines);
         const compositeKeys = lineNames.map(line => `${company}::${line}`);
         const allSelected = compositeKeys.every(key => selectedLines.includes(key));
-
-        let newSelected;
-        if (allSelected) {
-            newSelected = selectedLines.filter(l => !compositeKeys.includes(l));
-        } else {
-            const keysToAdd = compositeKeys.filter(key => !selectedLines.includes(key));
-            newSelected = [...selectedLines, ...keysToAdd];
-        }
+        const newSelected = allSelected
+            ? selectedLines.filter(l => !compositeKeys.includes(l))
+            : [...selectedLines, ...compositeKeys.filter(key => !selectedLines.includes(key))];
         onSetSelectedLines(newSelected);
     }, [selectedLines, onSetSelectedLines]);
 
@@ -69,121 +141,126 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         if (!hierarchy) return;
         const allKeys: string[] = [];
         Object.entries(hierarchy).forEach(([comp, lines]) => {
-            Object.keys(lines).forEach(line => {
-                allKeys.push(`${comp}::${line}`);
-            });
+            Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
         });
         onSetSelectedLines(allKeys);
     }, [hierarchy, onSetSelectedLines]);
 
-    const handleDeselectAll = useCallback(() => {
-        onSetSelectedLines([]);
-    }, [onSetSelectedLines]);
+    const handleDeselectAll = useCallback(() => onSetSelectedLines([]), [onSetSelectedLines]);
 
-    if (!hierarchy) return <div className="p-4">Loading hierarchy...</div>;
+    if (!groupedHierarchy) return <div className="p-4">Loading...</div>;
+
+    const renderGroup = (title: string, groupKey: keyof GroupedHierarchy) => {
+        const companies = groupedHierarchy[groupKey];
+        const isEmpty = Object.keys(companies).length === 0;
+        if (isEmpty) return null;
+
+        return (
+            <div style={{ marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }}>
+                <div
+                    onClick={() => toggleGroup(groupKey)}
+                    style={{
+                        padding: '10px',
+                        background: '#f0f0f0',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}
+                >
+                    <span>{title}</span>
+                    <span>{expandedGroups[groupKey] ? '▼' : '▶'}</span>
+                </div>
+                {expandedGroups[groupKey] && (
+                    <div style={{ padding: '0 10px 10px 10px' }}>
+                        {Object.entries(companies).sort((a, b) => a[0].localeCompare(b[0], 'ja')).map(([company, lines]) => {
+                            const isExpanded = expandedCompanies[company];
+                            const lineNames = Object.keys(lines);
+                            const allLinesSelected = lineNames.every(l => selectedLines.includes(`${company}::${l}`));
+                            const someLinesSelected = lineNames.some(l => selectedLines.includes(`${company}::${l}`));
+
+                            return (
+                                <div key={company} style={{ marginTop: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allLinesSelected}
+                                            ref={input => {
+                                                if (input) {
+                                                    input.indeterminate = someLinesSelected && !allLinesSelected;
+                                                }
+                                            }}
+                                            onChange={() => handleCompanyToggle(company, lines)}
+                                            style={{ marginRight: '8px' }}
+                                        />
+                                        <span
+                                            onClick={() => toggleCompany(company)}
+                                            style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '14px' }}
+                                        >
+                                            {company} ({lineNames.length}) {isExpanded ? '▼' : '▶'}
+                                        </span>
+                                    </div>
+                                    {isExpanded && (
+                                        <div style={{ marginLeft: '24px' }}>
+                                            {lineNames.sort((a, b) => a.localeCompare(b, 'ja')).map(line => {
+                                                const key = `${company}::${line}`;
+                                                const isSelected = selectedLines.includes(key);
+                                                const isActive = activeLine === key;
+                                                return (
+                                                    <div
+                                                        key={line}
+                                                        ref={el => { lineRefs.current[key] = el; }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            padding: '2px 0',
+                                                            backgroundColor: isActive ? '#e6f7ff' : 'transparent',
+                                                            borderRadius: '2px'
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => onToggleLine(key)}
+                                                            style={{ marginRight: '8px' }}
+                                                        />
+                                                        <span style={{ fontSize: '13px', color: '#333' }}>
+                                                            {line}
+                                                            {lineLengths[key] ? ` (${lineLengths[key].toFixed(1)}km)` : ''}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="sidebar-content" style={{ padding: '20px', fontFamily: 'Pretendard, sans-serif' }}>
             <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Railroad Filter</h2>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                <button
-                    onClick={handleSelectAll}
-                    style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}
-                >
+                <button onClick={handleSelectAll} style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}>
                     Select All
                 </button>
-                <button
-                    onClick={handleDeselectAll}
-                    style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}
-                >
+                <button onClick={handleDeselectAll} style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}>
                     Deselect All
                 </button>
             </div>
 
-            <div className="hierarchy-tree">
-                {Object.entries(hierarchy).map(([company, lines]) => {
-                    const lineNames = Object.keys(lines);
-                    const compositeKeys = lineNames.map(line => `${company}::${line}`);
-                    const isExpanded = expandedCompanies[company];
-                    const selectedInCompany = compositeKeys.filter(key => selectedLines.includes(key));
-                    const isAllSelected = selectedInCompany.length === lineNames.length;
-                    const isSomeSelected = selectedInCompany.length > 0 && !isAllSelected;
-
-                    return (
-                        <div key={company} style={{ marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <button
-                                    onClick={() => toggleCompany(company)}
-                                    style={{
-                                        border: 'none',
-                                        background: 'none',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                        width: '16px'
-                                    }}
-                                >
-                                    {isExpanded ? '▼' : '▶'}
-                                </button>
-                                <input
-                                    type="checkbox"
-                                    checked={isAllSelected}
-                                    ref={el => {
-                                        if (el) el.indeterminate = isSomeSelected;
-                                    }}
-                                    onChange={() => handleCompanyToggle(company, lines)}
-                                    style={{ cursor: 'pointer' }}
-                                />
-                                <span
-                                    onClick={() => toggleCompany(company)}
-                                    style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}
-                                >
-                                    {company}
-                                </span>
-                                <span style={{ fontSize: '10px', color: '#888' }}>({selectedInCompany.length}/{lineNames.length})</span>
-                            </div>
-
-                            {isExpanded && (
-                                <div style={{ marginLeft: '24px', marginTop: '4px' }}>
-                                    {lineNames.map(line => {
-                                        const key = `${company}::${line}`;
-                                        const isLineActive = activeLine === key;
-                                        return (
-                                            <div
-                                                key={line}
-                                                ref={el => { lineRefs.current[key] = el; }}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    marginBottom: '2px',
-                                                    backgroundColor: isLineActive ? '#fffacd' : 'transparent',
-                                                    padding: isLineActive ? '2px' : '0'
-                                                }}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedLines.includes(key)}
-                                                    onChange={() => onToggleLine(key)}
-                                                    style={{ cursor: 'pointer' }}
-                                                />
-                                                <span style={{ fontSize: '13px' }}>
-                                                    {line}
-                                                    {lineLengths[key] !== undefined && (
-                                                        <span style={{ color: '#888', marginLeft: '5px', fontSize: '11px' }}>
-                                                            ({lineLengths[key]} km)
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+            {renderGroup('Shinkansen (新幹線)', 'shinkansen')}
+            {renderGroup('JR Lines', 'jr')}
+            {renderGroup('Major Private (16社)', 'majorPrivate')}
+            {renderGroup('Other Private Railways', 'otherPrivate')}
+            {renderGroup('Non-Rail / Cable Cars', 'nonRail')}
         </div>
     );
 };

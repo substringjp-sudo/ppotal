@@ -2,6 +2,7 @@
 
 import React, { useCallback } from 'react';
 import { GeoJSON } from 'react-leaflet';
+import L from 'leaflet';
 
 interface RailroadsProps {
     railroads: any;
@@ -18,11 +19,11 @@ const Railroads: React.FC<RailroadsProps> = ({ railroads, selectedLines, onRailr
     const style = useCallback((feature: any) => {
         const lineName = feature.properties.N02_003;
         const key = `${feature.properties.N02_004}::${lineName}`;
-        const isSelected = selectedLines.length === 0 || selectedLines.includes(key); // Treat empty as "none selected" but we show ghosted? 
-        // Wait, user said "if not all lines are checked". 
-        // Usually, if nothing is checked, maybe show all as ghosted? 
-        // Or if nothing is checked, show all as FULL opacity (initial state)? 
-        // Let's assume: 
+
+        // If selectedLines is empty, we treat NOTHING as selected (all ghosted).
+        // This makes the map initially "faint".
+        // BUT the user interaction (click) will select one.
+        const isSelected = selectedLines.includes(key);
         // If selectedLines is empty => All visible (full opacity? or ghosted?)
         // The user said: "When not all lines are checked... make unchecked ... semi-transparent".
         // If selectedLines is empty, NONE are checked. So all semi-transparent? 
@@ -73,10 +74,10 @@ const Railroads: React.FC<RailroadsProps> = ({ railroads, selectedLines, onRailr
 
     // Interaction Layer Style (Invisible, thick)
     const interactionStyle = {
-        weight: 12, // 12px for easier clicking (radius ~6px)
-        opacity: 0,
-        color: '#000', // Color doesn't matter if opacity is 0, but needed for hit testing
-        fillOpacity: 0
+        weight: 15, // Increased weight for better hit testing
+        opacity: 0.0, // Set to 0.0 for invisibility, but ensure events are caught
+        color: '#000',
+        fillOpacity: 0.0
     };
 
     // Events are now handled by the interaction layer
@@ -84,16 +85,19 @@ const Railroads: React.FC<RailroadsProps> = ({ railroads, selectedLines, onRailr
         const lineName = feature.properties.N02_003;
         const key = `${feature.properties.N02_004}::${lineName}`;
 
-        layer.bindTooltip(lineName, { sticky: true });
+        layer.bindTooltip(lineName, { sticky: true, className: 'railroad-tooltip' });
 
         layer.on({
             mouseover: (e: any) => {
                 setHoveredLineKey(key);
+                e.target.setStyle({ weight: 15 }); // optional feedback
             },
             mouseout: (e: any) => {
                 setHoveredLineKey(null);
+                e.target.setStyle({ weight: 15 });
             },
-            click: () => {
+            click: (e: any) => {
+                L.DomEvent.stopPropagation(e); // Stop event from bubbling to map
                 if (onRailroadClick) onRailroadClick(key);
             }
         });
@@ -112,6 +116,7 @@ const Railroads: React.FC<RailroadsProps> = ({ railroads, selectedLines, onRailr
                 data={railroads}
                 style={interactionStyle}
                 onEachFeature={onEachInteractionFeature}
+                interactive={true}
             />
         </>
     );
