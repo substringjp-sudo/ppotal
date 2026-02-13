@@ -141,6 +141,7 @@ The AI's workflow is iterative, transparent, and responsive to user input.
   * Before initiating any new change or at the start of a new chat session, the AI will reference the blueprint.md to ensure full context and understanding of the application's current state and existing features. This ensures consistency and avoids redundant or conflicting modifications.
 * **Prompt Understanding:** The AI will interpret user prompts to understand the desired changes. It will ask clarifying questions if the prompt is ambiguous.
 * **Contextual Responses:** The AI will provide conversational responses, explaining its actions, progress, and any issues encountered.
+* **Language Preference:** The AI will always communicate and respond in Korean, as per the user's request.
 * **Error Checking Flow:**
   1. **Important:** The AI will **not** start the dev server (`next dev`), as it is already managed by Firebase Studio.
   2. **Code Change:** AI applies a code modification.

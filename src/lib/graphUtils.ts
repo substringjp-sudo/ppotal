@@ -128,10 +128,49 @@ export class RailroadGraph {
 
     getShortestPath(startId: string, endId: string, allowedLines: string[] | null = null): { path: string[], distance: number, geometries: [number, number][][] } | null {
         // ... legacy/direct ID internal logic if needed, or remove?
-        // Let's keep it for compatibility if something else uses it, or redirect.
-        // But for this task, I'll rely on getShortestPathByName mainly.
-        // Actually, just leaving it as "deprecated" or unused is fine.
-        return null; // Placeholder to avoid huge file replacement if not needed
+        return null;
+    }
+
+    loadFromSystematicJson(data: any) {
+        this.nodes.clear();
+        this.adj.clear();
+        this.stationsByName = {};
+
+        // 1. Load Stations
+        for (const [id, station] of Object.entries(data.stations as Record<string, any>)) {
+            const parts = id.split('::');
+            const company = parts[0];
+            const line = parts[1];
+            const node: StationNode = {
+                id,
+                name: station.name,
+                company,
+                line,
+                coords: station.coords
+            };
+            this.addNode(node);
+        }
+
+        // 2. Load Edges
+        for (const route of data.routes) {
+            for (const edge of route.edges) {
+                this.addEdge(edge.from, edge.to, edge.distance, edge.geometry);
+            }
+        }
+
+        // 3. Add Transfer Edges (Same as buildGraph)
+        for (const name in this.stationsByName) {
+            const ids = this.stationsByName[name];
+            for (let i = 0; i < ids.length; i++) {
+                for (let j = i + 1; j < ids.length; j++) {
+                    const nodeI = this.nodes.get(ids[i]);
+                    const nodeJ = this.nodes.get(ids[j]);
+                    if (nodeI && nodeJ) {
+                        this.addEdge(ids[i], ids[j], 0.05, [nodeI.coords, nodeJ.coords]);
+                    }
+                }
+            }
+        }
     }
 }
 

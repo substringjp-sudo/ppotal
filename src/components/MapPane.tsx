@@ -19,8 +19,8 @@ interface MapPaneProps {
 const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalculated }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
-    const [railroads, setRailroads] = useState<any>(null);
-    const [stations, setStations] = useState<any>(null);
+    const [railroadNetwork, setRailroadNetwork] = useState<any>(null); // New systematic data
+    const [stations, setStations] = useState<any>(null); // We might still use this for some metadata or keep it null
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
     const [lineLengths, setLineLengths] = useState<Record<string, number>>({});
@@ -77,59 +77,36 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
             setPrefectures(data);
         });
         fetch('/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()).then(setMunicipalities);
-        fetch('/N02-22_RailroadSection.geojson').then(res => res.json()).then(setRailroads);
-        fetch('/N02-22_Station.geojson').then(res => res.json()).then(setStations).catch(console.error);
+        fetch('/systematic_railroad_network.json').then(res => res.json()).then(setRailroadNetwork).catch(console.error);
         fetch('/station_hierarchy.json').then(res => res.json()).then(setHierarchy).catch(console.error); // Fetch hierarchy
     }, [map]);
 
     // Build graph when data is loaded
     useEffect(() => {
-        if (stations && railroads && hierarchy) { // Check for hierarchy
-            const builtGraph = buildGraph(stations, railroads, hierarchy); // Pass hierarchy
+        if (railroadNetwork) {
+            const builtGraph = new RailroadGraph();
+            builtGraph.loadFromSystematicJson(railroadNetwork);
             setGraph(builtGraph);
-            console.log('Graph built with', builtGraph.nodes.size, 'nodes');
+            console.log('Graph loaded from systematic network with', builtGraph.nodes.size, 'nodes');
         }
-    }, [stations, railroads, hierarchy]);
+    }, [railroadNetwork]);
 
     // Calculate line lengths for sidebar
     useEffect(() => {
-        if (!railroads) return;
-
-        const lengths: Record<string, number> = {};
-        railroads.features.forEach((feature: any) => {
-            const company = feature.properties.N02_004;
-            const line = feature.properties.N02_003;
-            const key = `${company}::${line}`;
-
-            let featureLength = 0;
-            const geom = feature.geometry;
-            if (!geom) return;
-
-            if (geom.type === 'LineString') {
-                for (let i = 0; i < geom.coordinates.length - 1; i++) {
-                    featureLength += haversineDistance(geom.coordinates[i], geom.coordinates[i + 1]);
-                }
-            } else if (geom.type === 'MultiLineString') {
-                geom.coordinates.forEach((lineString: any) => {
-                    for (let i = 0; i < lineString.length - 1; i++) {
-                        featureLength += haversineDistance(lineString[i], lineString[i + 1]);
-                    }
-                });
-            }
-
-            lengths[key] = (lengths[key] || 0) + featureLength;
-        });
-
+        if (!railroadNetwork) return;
         const roundedLengths: Record<string, number> = {};
-        for (const key in lengths) {
-            roundedLengths[key] = Math.round(lengths[key] * 10) / 10;
-        }
-
+        railroadNetwork.routes.forEach((route: any) => {
+            let totalLength = 0;
+            route.edges.forEach((edge: any) => {
+                totalLength += edge.distance;
+            });
+            roundedLengths[route.id] = Math.round(totalLength * 10) / 10;
+        });
         setLineLengths(roundedLengths);
         if (onLengthsCalculated) {
             onLengthsCalculated(roundedLengths);
         }
-    }, [railroads, onLengthsCalculated]);
+    }, [railroadNetwork, onLengthsCalculated]);
 
     // Disable map dragging during station drag
     useEffect(() => {
@@ -142,22 +119,19 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
     }, [map, dragStartStation]);
 
     const visibleStations = useMemo(() => {
-        if (!stations || !mapBounds || zoomLevel <= 8) return null;
+        if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
         const data: Record<string, { allCoords: [number, number][], lines: string[], centroid: [number, number] }> = {};
-        stations.features.forEach((s: any) => {
-            const geom = s.geometry;
-            if (!geom) return;
 
-            let rawCoords = geom.coordinates;
-            const lat = geom.type === 'LineString' ? (rawCoords[0][1] + rawCoords[rawCoords.length - 1][1]) / 2 : rawCoords[1];
-            const lng = geom.type === 'LineString' ? (rawCoords[0][0] + rawCoords[rawCoords.length - 1][0]) / 2 : rawCoords[0];
+        Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
+            const parts = id.split('::');
+            const company = parts[0];
+            const line = parts[1];
+            const name = s.name;
+            const key = `${company}::${line}`;
+            const [lng, lat] = s.coords;
 
             if (lat >= mapBounds.getSouth() && lat <= mapBounds.getNorth() &&
                 lng >= mapBounds.getWest() && lng <= mapBounds.getEast()) {
-                const name = s.properties.N02_005;
-                const company = s.properties.N02_004;
-                const line = s.properties.N02_003;
-                const key = `${company}::${line}`;
 
                 const coord: [number, number] = [lat, lng];
 
@@ -176,7 +150,7 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
             }
         });
         return data;
-    }, [stations, mapBounds, zoomLevel]);
+    }, [railroadNetwork, mapBounds, zoomLevel]);
 
     const findNearestStation = useCallback((lat: number, lng: number) => {
         if (!visibleStations) return null;
@@ -393,7 +367,7 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
             </Pane>
             <Pane name="railroads" style={{ zIndex: 420 }}>
                 <Railroads
-                    railroads={railroads}
+                    railroadNetwork={railroadNetwork}
                     selectedLines={selectedLines}
                     onRailroadClick={handleRailroadClick}
                     getColor={getColor}
