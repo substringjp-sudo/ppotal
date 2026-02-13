@@ -38,11 +38,44 @@ export class RailroadGraph {
         this.adj.get(v)?.push({ to: u, distance, geometry: [...geometry].reverse() });
     }
 
-    getShortestPathByName(startName: string, endName: string, allowedLines: string[] | null = null): { path: string[], distance: number, geometries: [number, number][][] } | null {
-        const startIds = this.stationsByName[startName];
-        const endIds = this.stationsByName[endName];
+    getShortestPathByName(startName: string, endName: string, allowedLines: string[] | null = null, startCoords?: [number, number], endCoords?: [number, number]): { path: string[], distance: number, geometries: [number, number][][] } | null {
+        let startIds = this.stationsByName[startName];
+        let endIds = this.stationsByName[endName];
 
         if (!startIds || !endIds) return null;
+
+        // Disambiguation using coordinates
+        if (startCoords) {
+            let minDist = Infinity;
+            let closestId = startIds[0];
+            for (const id of startIds) {
+                const node = this.nodes.get(id);
+                if (node) {
+                    const d = haversineDistance(startCoords, node.coords);
+                    if (d < minDist) {
+                        minDist = d;
+                        closestId = id;
+                    }
+                }
+            }
+            startIds = [closestId];
+        }
+
+        if (endCoords) {
+            let minDist = Infinity;
+            let closestId = endIds[0];
+            for (const id of endIds) {
+                const node = this.nodes.get(id);
+                if (node) {
+                    const d = haversineDistance(endCoords, node.coords);
+                    if (d < minDist) {
+                        minDist = d;
+                        closestId = id;
+                    }
+                }
+            }
+            endIds = [closestId];
+        }
 
         // Multi-source Dijkstra
         const distances: Record<string, number> = {};
@@ -166,7 +199,11 @@ export class RailroadGraph {
                     const nodeI = this.nodes.get(ids[i]);
                     const nodeJ = this.nodes.get(ids[j]);
                     if (nodeI && nodeJ) {
-                        this.addEdge(ids[i], ids[j], 0.05, [nodeI.coords, nodeJ.coords]);
+                        const dist = haversineDistance(nodeI.coords, nodeJ.coords);
+                        // Only add transfer if they are within 1km
+                        if (dist < 1.0) {
+                            this.addEdge(ids[i], ids[j], 0.05 + dist, [nodeI.coords, nodeJ.coords]);
+                        }
                     }
                 }
             }
@@ -404,11 +441,16 @@ export const buildGraph = (stationsGeoJson: any, sectionGeoJson: any, hierarchy:
         const ids = graph.stationsByName[name];
         for (let i = 0; i < ids.length; i++) {
             for (let j = i + 1; j < ids.length; j++) {
-                // Transfer edge with small penalty (0.05km)
-                graph.addEdge(ids[i], ids[j], 0.05, [
-                    graph.nodes.get(ids[i])!.coords,
-                    graph.nodes.get(ids[j])!.coords
-                ]);
+                const nodeI = graph.nodes.get(ids[i]);
+                const nodeJ = graph.nodes.get(ids[j]);
+                if (nodeI && nodeJ) {
+                    const dist = haversineDistance(nodeI.coords, nodeJ.coords);
+                    // Transfer edge with small penalty + actual distance
+                    // Only if they are within 1km (prevent bridges between distant same-name stations)
+                    if (dist < 1.0) {
+                        graph.addEdge(ids[i], ids[j], 0.05 + dist, [nodeI.coords, nodeJ.coords]);
+                    }
+                }
             }
         }
     }

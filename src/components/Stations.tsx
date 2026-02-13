@@ -4,14 +4,20 @@ import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polygon } from 'react-leaflet';
 
+interface StaticNode {
+    id: string;
+    coord: [number, number];
+    lineKey: string;
+}
+
 interface StationsProps {
-    processedStations: Record<string, { allCoords: [number, number][]; lines: string[]; centroid: [number, number] }> | null;
+    processedStations: Record<string, { nodes: StaticNode[]; centroid: [number, number]; lines: string[] }> | null;
     highlightedStations: string[];
     handleStationClick: (name: string) => void;
     zoom: number;
     getColor: (name: string) => string;
     selectedLines: string[];
-    onStationMouseDown: (name: string) => void;
+    onStationMouseDown: (name: string, coords: [number, number]) => void;
     onStationMouseUp: (name: string) => void;
     dragStartStation: string | null;
     visitedStations: Set<string>;
@@ -21,8 +27,6 @@ interface StationsProps {
 const convexHull = (points: [number, number][]): [number, number][] => {
     if (points.length < 3) return points;
 
-    // Sort logic needs to work on [lat, lng] tuples
-    // Sort by Lat (x), then Lng (y) - effectively
     const sorted = [...points].sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
 
     const cross = (o: [number, number], a: [number, number], b: [number, number]) => {
@@ -45,7 +49,6 @@ const convexHull = (points: [number, number][]): [number, number][] => {
         upper.push(p);
     }
 
-    // Concatenate and remove duplicate start/end points
     lower.pop();
     upper.pop();
     return [...lower, ...upper];
@@ -68,11 +71,7 @@ const Stations: React.FC<StationsProps> = ({
     }
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
-        // User request: "Only show stations on selected lines". 
-        // If no lines selected, show NO stations.
         if (selectedLines.length === 0) return false;
-
-        // Show station ONLY if it belongs to a selected line.
         return data.lines.some(line => selectedLines.includes(line));
     });
 
@@ -83,32 +82,39 @@ const Stations: React.FC<StationsProps> = ({
                 const isSelected = selectedLines.some(line => station.lines.includes(line));
                 const lines = station.lines;
 
-                // Determine if this station is being dragged
                 const isDragging = dragStartStation === name;
-                const isVisited = visitedStations.has(name);
                 const isLowZoom = zoom <= 11;
 
-                // Default CircleMarker
                 const radius = isLowZoom ? 2.5 : (isHighlighted ? 8 : 6);
                 const weight = isLowZoom ? 0 : 3;
 
-                // Calculate Convex Hull for grouping if there are multiple points
-                const hullPoints = station.allCoords.length > 2 ? convexHull(station.allCoords) : null;
-                const hasMultiplePoints = station.allCoords.length > 1;
+                const coords = station.nodes.map(n => n.coord);
+                const hullPoints = coords.length > 2 ? convexHull(coords) : null;
+                const hasMultiplePoints = coords.length > 1;
+
+                // Format line names for tooltip
+                const formattedLines = lines.map(l => {
+                    if (l.includes('::')) {
+                        const [company, line] = l.split('::');
+                        return { company, line, key: l };
+                    }
+                    return { company: 'Unknown', line: l, key: l };
+                });
 
                 return (
                     <React.Fragment key={name}>
-                        {/* Grouping Polygon for multi-point stations */}
-                        {zoom > 13 && hasMultiplePoints && (hullPoints || station.allCoords.length === 2) && (
+                        {/* Grouping Polygon - Improved Visual */}
+                        {zoom > 13 && hasMultiplePoints && (hullPoints || coords.length === 2) && (
                             <Polygon
-                                positions={hullPoints || station.allCoords}
+                                positions={hullPoints || coords}
                                 pathOptions={{
                                     color: isHighlighted ? '#FF0000' : getColor(lines[0]),
-                                    weight: 1,
+                                    weight: 2,
                                     fillColor: isHighlighted ? '#FF0000' : getColor(lines[0]),
-                                    fillOpacity: 0.1,
-                                    dashArray: '4, 4',
-                                    stroke: true
+                                    fillOpacity: 0.15,
+                                    stroke: true,
+                                    lineJoin: 'round',
+                                    lineCap: 'round'
                                 }}
                             />
                         )}
@@ -140,35 +146,54 @@ const Stations: React.FC<StationsProps> = ({
                             />
                         )}
 
-                        {station.allCoords.map((coord, idx) => {
+                        {station.nodes.map((node, idx) => {
+                            const isNodeVisited = visitedStations.has(node.id);
+                            const isNodeSelected = selectedLines.includes(node.lineKey);
+
                             const stationStyle = {
-                                fill: !isLowZoom || isSelected, // visible fill if selected or zoomed in
-                                fillColor: isVisited ? '#000000' : (isDragging ? 'black' : 'white'),
-                                fillOpacity: (isSelected || isVisited) ? 1 : 0.3, // Ghosted if not selected
-                                stroke: !isLowZoom || isSelected || isVisited,
-                                color: getColor(lines[0]), // Always use line color for border
+                                fill: !isLowZoom || isNodeSelected,
+                                fillColor: isNodeVisited ? '#000000' : (isDragging ? 'black' : 'white'),
+                                fillOpacity: (isNodeSelected || isNodeVisited) ? 1 : 0.3,
+                                stroke: !isLowZoom || isNodeSelected || isNodeVisited,
+                                color: getColor(node.lineKey),
                                 weight: weight,
-                                opacity: (isSelected || isVisited) ? 1 : 0.4, // Ghosted border
+                                opacity: (isNodeSelected || isNodeVisited) ? 1 : 0.4,
                             };
 
                             return (
                                 <CircleMarker
-                                    key={`${name}-${idx}`}
+                                    key={`${node.id}-${idx}`}
                                     className={`station-${name}`}
-                                    center={coord}
+                                    center={node.coord}
                                     pathOptions={stationStyle}
                                     radius={radius}
                                     eventHandlers={{
                                         click: () => handleStationClick(name),
-                                        mousedown: () => onStationMouseDown(name),
+                                        mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
                                         mouseup: () => onStationMouseUp(name),
                                     }}
                                 >
                                     <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
-                                        <div style={{ zIndex: 1000, position: 'relative' }}>
-                                            <strong>{name}</strong>
-                                            <br />
-                                            Line: {lines[0].includes('::') ? lines[0].split('::')[1] : lines[0]}
+                                        <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
+                                            <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
+                                                {name}
+                                            </div>
+                                            <div style={{ fontSize: '11px', color: '#666' }}>
+                                                {formattedLines.map((fl, fidx) => (
+                                                    <div key={fidx} style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        gap: '8px',
+                                                        padding: '1px 0',
+                                                        color: selectedLines.includes(fl.key) ? '#000' : '#888',
+                                                        fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
+                                                    }}>
+                                                        <span>{fl.company}</span>
+                                                        <span>{fl.line}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
                                         </div>
                                     </Tooltip>
                                 </CircleMarker>

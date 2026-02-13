@@ -16,11 +16,11 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, 
         if (zoom <= 9) weight = 0.5;
 
         return {
-            fillColor: '#FFFFFF', // This color won't be visible
-            fillOpacity: 0,      // Make the fill transparent
-            weight: weight,           // Border weight
+            fillColor: '#F5F5F5',
+            fillOpacity: 0.4,
+            weight: weight,
             opacity: 1,
-            color: '#444444',    // Dark gray border
+            color: '#CCCCCC',
         };
     }, [zoom]);
 

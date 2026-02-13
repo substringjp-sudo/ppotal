@@ -12,28 +12,21 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Consistent Line Weight:** All line weights are defined in screen pixels, ensuring they do not scale disproportionately when zooming.
 *   **Optimized Performance:** Data is loaded progressively. Station data, being the most numerous, is only fetched at high zoom levels.
 *   **Interactivity:** Clicking a prefecture zooms the map to its bounds. Clicking a railroad line highlights it.
+*   **Systematic Railroad Network:** Uses a processed topological network for accurate mapping and pathfinding.
+*   **Drag-and-Drop Pathfinding:** Users can drag from one station to another to find the shortest railroad path between them.
 
-## Dynamic Styling
+## Pathfinding & Graph Construction
 
-*   **Color Scheme:** A deterministic color hashing function assigns a unique and consistent color to each prefecture and railroad line based on its name.
-*   **Railroad Lines:** Each railroad line is rendered in its unique color. Clicking a line highlights it in a bright yellow.
-*   **Stations:** Station markers change their appearance based on the zoom level:
-    *   **Zoom <= 10:** Stations are displayed as small, solid dots (`radius: 2`), using the color of their corresponding railroad line to provide a subtle overview of station density.
-    *   **Zoom > 10:** Stations are rendered as larger, more prominent circles (`radius: 5`) with a white border, making them easily identifiable and clickable.
+*   **Accuracy:** The pathfinding system uses Dijkstra's algorithm on a topological graph of Japan's railroad network.
+*   **Inter-station Transfers:** Stations with the same name are logically connected (transfers) to allow routing between different lines.
+*   **Geometry Reconstruction:** Paths found in the graph are reconstructed into full geographic polylines for display on the map.
 
-## Current Plan: Advanced Styling Implementation
+## Current Plan: Pathfinding Accuracy Refinement
 
-1.  **Update `MapPane.tsx`:**
-    *   Pass the `getColor` utility function down to the `Railroads` and `Stations` components.
-
-2.  **Update `Railroads.tsx`:**
-    *   Receive the `getColor` function as a prop.
-    *   In the styling callback, use `getColor(feature.properties.N02_003)` to set a unique color for each railroad line based on its name.
-
-3.  **Update `Stations.tsx`:**
-    *   Receive the `getColor` function as a prop.
-    *   Modify the component to render `CircleMarker`s instead of simple `Marker`s.
-    *   Implement a dynamic styling function for the `CircleMarker`s that checks the `zoom` prop:
-        *   If `zoom <= 10`, apply styles for a small, solid dot.
-        *   If `zoom > 10`, apply styles for a larger circle with a border.
-    *   Use `getColor` with the station's line name (`station.lines[0]`) to determine the fill color of the circle, ensuring it matches the railroad line.
+1.  **Restrict Transfer Edges:**
+    *   Update `graphUtils.ts` to enforce a 1.0km maximum distance for transfer edges between same-name stations. This prevents "teleportation" between distant stations that happen to share a name (e.g., "Aisai" stations in different regions).
+2.  **Disambiguate UI Interactions:**
+    *   Modify `Stations.tsx` to pass the specific coordinate of the clicked marker to `MapPane.tsx`.
+    *   Update `MapPane.tsx` to use this coordinate to find the exact nearest station node (ID) as the start of the pathfinding, rather than just using the station name.
+3.  **Refine Search Result Selection:**
+    *   Ensure that when multiple stations with the same name exist, the pathfinding accurately selects the one the user actually interacted with.

@@ -29,11 +29,14 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
     // Graph and Recording State
     const [graph, setGraph] = useState<RailroadGraph | null>(null);
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
+    const [dragStartCoords, setDragStartCoords] = useState<[number, number] | null>(null);
     const dragStartStationRef = React.useRef(dragStartStation);
+    const dragStartCoordsRef = React.useRef(dragStartCoords);
 
     useEffect(() => {
         dragStartStationRef.current = dragStartStation;
-    }, [dragStartStation]);
+        dragStartCoordsRef.current = dragStartCoords;
+    }, [dragStartStation, dragStartCoords]);
 
     const [dragPath, setDragPath] = useState<[number, number][]>([]);
     const [previewPath, setPreviewPath] = useState<any>(null); // To show the "expected" line
@@ -42,8 +45,8 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
     const map = useMap();
 
     const colorPalette = useMemo(() => [
-        "#FFC300", "#FF5733", "#C70039", "#900C3F", "#581845",
-        "#DAF7A6", "#3A8DDE", "#2F6FAD", "#245282", "#1A3557"
+        "#1B4F72", "#7B241C", "#186A3B", "#7D6608", "#4A235A",
+        "#145A32", "#512E5F", "#0E6251", "#78281F", "#1B2631"
     ], []);
 
     const getColor = useCallback((name: string) => {
@@ -120,7 +123,7 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
 
     const visibleStations = useMemo(() => {
         if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
-        const data: Record<string, { allCoords: [number, number][], lines: string[], centroid: [number, number] }> = {};
+        const data: Record<string, { nodes: { id: string, coord: [number, number], lineKey: string }[], centroid: [number, number], lines: string[] }> = {};
 
         Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
             const parts = id.split('::');
@@ -136,15 +139,15 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
                 const coord: [number, number] = [lat, lng];
 
                 if (!data[name]) {
-                    data[name] = { allCoords: [coord], lines: [key], centroid: coord };
+                    data[name] = { nodes: [{ id, coord, lineKey: key }], centroid: coord, lines: [key] };
                 } else {
-                    data[name].allCoords.push(coord);
+                    data[name].nodes.push({ id, coord, lineKey: key });
                     if (!data[name].lines.includes(key)) data[name].lines.push(key);
 
                     // Recalculate centroid
-                    const n = data[name].allCoords.length;
-                    const latSum = data[name].allCoords.reduce((sum, c) => sum + c[0], 0);
-                    const lngSum = data[name].allCoords.reduce((sum, c) => sum + c[1], 0);
+                    const n = data[name].nodes.length;
+                    const latSum = data[name].nodes.reduce((sum, n) => sum + n.coord[0], 0);
+                    const lngSum = data[name].nodes.reduce((sum, n) => sum + n.coord[1], 0);
                     data[name].centroid = [latSum / n, lngSum / n];
                 }
             }
@@ -168,9 +171,9 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
                 return;
             }
 
-            // Check distance to ALL coords
-            data.allCoords.forEach(coord => {
-                const d = haversineDistance([lng, lat], [coord[1], coord[0]]);
+            // Check distance to ALL nodes
+            data.nodes.forEach(node => {
+                const d = haversineDistance([lng, lat], [node.coord[1], node.coord[0]]);
                 if (d < minDist && d < threshold) {
                     minDist = d;
                     nearest = name;
@@ -186,30 +189,32 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         mousemove: (e) => {
             const currentDragStation = dragStartStationRef.current;
             if (currentDragStation) {
-                // Don't draw the "drag path" (mouse trail) anymore. 
-                // setDragPath(prev => [...prev, [e.latlng.lng, e.latlng.lat]]); 
-
                 // Predictive Highlighting
                 const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
 
                 // If we have a nearest station that is NOT the start station...
                 if (nearest && nearest !== currentDragStation && graph) {
-                    // Calculate shortest path to nearest
-                    const startNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${currentDragStation}`));
-                    const endNodes = Array.from(graph.nodes.keys()).filter(id => id.endsWith(`::${nearest}`));
+                    // Extract end station data to get its coordinates for disambiguation
+                    const endStationData = visibleStations![nearest];
+                    // We'll use the first coord of the end station as a proxy for the end point
+                    const endCoords: [number, number] = [endStationData.centroid[1], endStationData.centroid[0]];
 
-                    if (startNodes.length > 0 && endNodes.length > 0) {
-                        const pathData = graph.getShortestPathByName(currentDragStation, nearest, selectedLines);
+                    const pathData = graph.getShortestPathByName(
+                        currentDragStation,
+                        nearest,
+                        selectedLines,
+                        dragStartCoordsRef.current || undefined,
+                        endCoords
+                    );
 
-                        if (pathData) {
-                            setPreviewPath(pathData);
-                        } else {
-                            setPreviewPath(null); // No valid path found on selected lines
-                        }
+                    if (pathData) {
+                        setPreviewPath(pathData);
+                    } else {
+                        setPreviewPath(null); // No valid path found on selected lines
                     }
-                } else {
-                    setPreviewPath(null);
                 }
+            } else {
+                setPreviewPath(null);
             }
         },
         mouseup: (e) => {
@@ -221,6 +226,7 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
             }
             // Always reset drag state on mouseup
             setDragStartStation(null);
+            setDragStartCoords(null);
             setDragPath([]);
             setPreviewPath(null);
         }
@@ -236,23 +242,29 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
     }, [onRailroadClick]);
 
     const handleStationClick = useCallback((name: string) => {
-        // setHighlightedStations(prev =>
-        //     prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
-        // );
-        // User requested to remove the "enlarge on click" effect.
         if (onStationClick) onStationClick(name);
     }, [onStationClick]);
 
-    const handleStationMouseDown = (name: string) => {
+    const handleStationMouseDown = (name: string, coords: [number, number]) => {
         setDragStartStation(name);
+        setDragStartCoords(coords);
         setDragPath([]);
         setPreviewPath(null);
     };
 
     const handleRecordTrip = (start: string, end: string) => {
-        if (!graph) return;
+        if (!graph || !visibleStations || !visibleStations[end]) return;
 
-        const pathData = graph.getShortestPathByName(start, end, selectedLines);
+        const endStationData = visibleStations[end];
+        const endCoords: [number, number] = [endStationData.centroid[1], endStationData.centroid[0]];
+
+        const pathData = graph.getShortestPathByName(
+            start,
+            end,
+            selectedLines,
+            dragStartCoords || undefined,
+            endCoords
+        );
 
         if (pathData) {
             setRecordedTrips(prev => [...prev, {
@@ -320,16 +332,11 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         recordedTrips.forEach(trip => {
             if (trip.path) {
                 trip.path.forEach((nodeId: string) => {
-                    if (nodeId.includes('::')) {
-                        const parts = nodeId.split('::');
-                        if (parts.length >= 3) {
-                            set.add(parts[2]);
-                        }
-                    }
+                    set.add(nodeId);
                 });
             }
-            set.add(trip.start);
-            set.add(trip.end);
+            // If trip.start/end are indices or names, they might need mapping back to IDs if they aren't already.
+            // But usually path includes them.
         });
         return set;
     }, [recordedTrips]);
