@@ -19,6 +19,7 @@ interface SidebarProps {
     onToggleLine: (line: string) => void;
     onSetSelectedLines: (lines: string[]) => void;
     lineLengths?: Record<string, number>;
+    visitedLineLengths?: Record<string, number>;
     activeLine?: string | null;
 }
 
@@ -30,7 +31,7 @@ type GroupedHierarchy = {
     nonRail: Record<string, Record<string, any>>;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, activeLine }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine }) => {
     const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
     const [groupedHierarchy, setGroupedHierarchy] = useState<GroupedHierarchy | null>(null);
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
@@ -196,9 +197,21 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                         />
                                         <span
                                             onClick={() => toggleCompany(company)}
-                                            style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '14px' }}
+                                            style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
                                         >
-                                            {company} ({lineNames.length}) {isExpanded ? '▼' : '▶'}
+                                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '8px' }}>
+                                                {company} ({lineNames.length}) {isExpanded ? '▼' : '▶'}
+                                            </span>
+                                            {(() => {
+                                                const companyTotal = lineNames.reduce((sum, l) => sum + (lineLengths[`${company}::${l}`] || 0), 0);
+                                                const companyVisited = lineNames.reduce((sum, l) => sum + (visitedLineLengths[`${company}::${l}`] || 0), 0);
+                                                const companyPercent = companyTotal > 0 ? (companyVisited / companyTotal) * 100 : 0;
+                                                return (
+                                                    <span style={{ fontSize: '10px', color: companyPercent >= 99.9 ? '#186A3B' : '#666', flexShrink: 0, backgroundColor: '#f5f5f5', padding: '2px 6px', borderRadius: '10px' }}>
+                                                        {companyPercent.toFixed(1)}%
+                                                    </span>
+                                                );
+                                            })()}
                                         </span>
                                     </div>
                                     {isExpanded && (
@@ -207,6 +220,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                 const key = `${company}::${line}`;
                                                 const isSelected = selectedLines.includes(key);
                                                 const isActive = activeLine === key;
+                                                const percent = lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key] * 100) : 0;
+                                                const isCompleted = percent >= 99.9;
+
                                                 return (
                                                     <div
                                                         key={line}
@@ -214,21 +230,51 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                         style={{
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            padding: '2px 0',
+                                                            padding: '6px 0',
                                                             backgroundColor: isActive ? '#e6f7ff' : 'transparent',
-                                                            borderRadius: '2px'
+                                                            borderRadius: '4px',
+                                                            borderBottom: '1px solid #f0f0f0'
                                                         }}
                                                     >
                                                         <input
                                                             type="checkbox"
                                                             checked={isSelected}
                                                             onChange={() => onToggleLine(key)}
-                                                            style={{ marginRight: '8px' }}
+                                                            style={{ marginRight: '10px', flexShrink: 0 }}
                                                         />
-                                                        <span style={{ fontSize: '13px', color: '#333' }}>
-                                                            {line}
-                                                            {lineLengths[key] ? ` (${lineLengths[key].toFixed(1)}km)` : ''}
-                                                        </span>
+                                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                                                                <span style={{
+                                                                    fontSize: '12px',
+                                                                    color: isCompleted ? '#186A3B' : '#333',
+                                                                    fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
+                                                                    whiteSpace: 'nowrap',
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    flex: 1
+                                                                }}>
+                                                                    {line}
+                                                                </span>
+                                                                <span style={{ fontSize: '10px', color: isCompleted ? '#186A3B' : '#999', flexShrink: 0, marginLeft: '8px', fontWeight: 'bold' }}>
+                                                                    {percent.toFixed(percent >= 100 ? 0 : 1)}%
+                                                                </span>
+                                                            </div>
+                                                            {lineLengths[key] > 0 && (
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <div style={{ fontSize: '9px', color: '#999', marginBottom: '2px' }}>
+                                                                        {(visitedLineLengths?.[key] || 0).toFixed(1)} / {lineLengths[key].toFixed(1)} km
+                                                                    </div>
+                                                                    <div style={{ width: '100%', height: '3px', backgroundColor: '#f0f0f0', borderRadius: '1.5px', overflow: 'hidden' }}>
+                                                                        <div style={{
+                                                                            width: `${Math.min(100, percent)}%`,
+                                                                            height: '100%',
+                                                                            backgroundColor: isCompleted ? '#27ae60' : '#3498db',
+                                                                            transition: 'width 0.4s ease-out'
+                                                                        }} />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}

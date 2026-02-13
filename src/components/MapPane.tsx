@@ -11,12 +11,23 @@ import { buildGraph, RailroadGraph, haversineDistance } from '../lib/graphUtils'
 
 interface MapPaneProps {
     selectedLines: string[];
+    recordedTrips: any[];
+    onRecordTrip?: (trip: any) => void;
     onRailroadClick?: (line: string) => void;
     onStationClick?: (name: string) => void;
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
+    onVisitedLengthsCalculated?: (lengths: Record<string, number>) => void;
 }
 
-const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onStationClick, onLengthsCalculated }) => {
+const MapPane: React.FC<MapPaneProps> = ({
+    selectedLines,
+    recordedTrips,
+    onRecordTrip,
+    onRailroadClick,
+    onStationClick,
+    onLengthsCalculated,
+    onVisitedLengthsCalculated
+}) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
     const [railroadNetwork, setRailroadNetwork] = useState<any>(null); // New systematic data
@@ -40,7 +51,6 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
 
     const [dragPath, setDragPath] = useState<[number, number][]>([]);
     const [previewPath, setPreviewPath] = useState<any>(null); // To show the "expected" line
-    const [recordedTrips, setRecordedTrips] = useState<any[]>([]);
 
     const map = useMap();
 
@@ -110,6 +120,71 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
             onLengthsCalculated(roundedLengths);
         }
     }, [railroadNetwork, onLengthsCalculated]);
+
+    // Calculate visited lengths
+    useEffect(() => {
+        if (!railroadNetwork) return;
+
+        const visitedPerLine: Record<string, Set<string>> = {};
+        const visitedDistances: Record<string, number> = {};
+
+        recordedTrips.forEach(trip => {
+            if (!trip.path || !trip.geometries) return;
+
+            for (let i = 0; i < trip.path.length - 1; i++) {
+                const uId = trip.path[i];
+                const vId = trip.path[i + 1];
+
+                // Extract line key from uId (company::line::name)
+                const partsU = uId.split('::');
+                const partsV = vId.split('::');
+
+                if (partsU.length < 3 || partsV.length < 3) continue;
+
+                const companyU = partsU[0];
+                const lineU = partsU[1];
+                const stationU = partsU[2];
+                const companyV = partsV[0];
+                const lineV = partsV[1];
+                const stationV = partsV[2];
+
+                // Only count if it's the same line (transfers are handles separately/not counted for railroad line progress)
+                if (companyU === companyV && lineU === lineV) {
+                    const lineKey = `${companyU}::${lineU}`;
+
+                    if (!visitedPerLine[lineKey]) visitedPerLine[lineKey] = new Set();
+
+                    // Edge unique ID: min-max of station names to be order-independent
+                    const edgeId = [stationU, stationV].sort().join('<->');
+
+                    if (!visitedPerLine[lineKey].has(edgeId)) {
+                        visitedPerLine[lineKey].add(edgeId);
+
+                        // Find the edge in railroadNetwork to get its distance
+                        const route = railroadNetwork.routes.find((r: any) => r.id === lineKey);
+                        if (route) {
+                            const edge = route.edges.find((e: any) =>
+                                (e.from === uId && e.to === vId) || (e.from === vId && e.to === uId)
+                            );
+                            if (edge) {
+                                visitedDistances[lineKey] = (visitedDistances[lineKey] || 0) + edge.distance;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Round and report
+        const roundedVisited: Record<string, number> = {};
+        Object.entries(visitedDistances).forEach(([key, dist]) => {
+            roundedVisited[key] = Math.round(dist * 10) / 10;
+        });
+
+        if (onVisitedLengthsCalculated) {
+            onVisitedLengthsCalculated(roundedVisited);
+        }
+    }, [recordedTrips, railroadNetwork, onVisitedLengthsCalculated]);
 
     // Disable map dragging during station drag
     useEffect(() => {
@@ -267,12 +342,14 @@ const MapPane: React.FC<MapPaneProps> = ({ selectedLines, onRailroadClick, onSta
         );
 
         if (pathData) {
-            setRecordedTrips(prev => [...prev, {
-                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // ensure unique key
-                start: start,
-                end: end,
-                ...pathData
-            }]);
+            if (onRecordTrip) {
+                onRecordTrip({
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, // ensure unique key
+                    start: start,
+                    end: end,
+                    ...pathData
+                });
+            }
         }
     };
     const handleStationMouseUp = (name: string) => {

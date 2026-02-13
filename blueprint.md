@@ -14,19 +14,18 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Interactivity:** Clicking a prefecture zooms the map to its bounds. Clicking a railroad line highlights it.
 *   **Systematic Railroad Network:** Uses a processed topological network for accurate mapping and pathfinding.
 *   **Drag-and-Drop Pathfinding:** Users can drag from one station to another to find the shortest railroad path between them.
+*   **Trip Persistence**: User progress (recorded trips) is saved to `localStorage` and automatically restored upon return.
+*   **Progress Tracking**: Calculates total and visited distances at both the line level and company level.
+*   **Company-level Statistics**: Summarizes completion progress for various railroad companies (JR, Private, etc.) in a structured accordion interface.
+*   **Refined Sidebar UI**: Features a structured, aligned layout with text truncation for long names and animated progress bars for visual completion tracking.
 
-## Pathfinding & Graph Construction
+## Technical Details
 
-*   **Accuracy:** The pathfinding system uses Dijkstra's algorithm on a topological graph of Japan's railroad network.
-*   **Inter-station Transfers:** Stations with the same name are logically connected (transfers) to allow routing between different lines.
-*   **Geometry Reconstruction:** Paths found in the graph are reconstructed into full geographic polylines for display on the map.
+### Pathfinding & Graph Construction
+- **Accuracy:** The pathfinding system uses Dijkstra's algorithm on a topological graph of Japan's railroad network.
+- **Inter-station Transfers:** Stations with the same name are logically connected (transfers) within 1.0km to allow routing between different lines.
+- **Geometry Reconstruction:** Paths found in the graph are reconstructed into full geographic polylines for display on the map.
 
-## Current Plan: Pathfinding Accuracy Refinement
-
-1.  **Restrict Transfer Edges:**
-    *   Update `graphUtils.ts` to enforce a 1.0km maximum distance for transfer edges between same-name stations. This prevents "teleportation" between distant stations that happen to share a name (e.g., "Aisai" stations in different regions).
-2.  **Disambiguate UI Interactions:**
-    *   Modify `Stations.tsx` to pass the specific coordinate of the clicked marker to `MapPane.tsx`.
-    *   Update `MapPane.tsx` to use this coordinate to find the exact nearest station node (ID) as the start of the pathfinding, rather than just using the station name.
-3.  **Refine Search Result Selection:**
-    *   Ensure that when multiple stations with the same name exist, the pathfinding accurately selects the one the user actually interacted with.
+### Data Management
+- **Persistence:** Uses `localStorage` to store an array of user trip objects (`id`, `path`, `geometries`, `distance`, etc.).
+- **Statistics Calculation:** Dynamically aggregates visited distance by matching topological edges between recorded trips and the systematic railroad network.

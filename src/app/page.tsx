@@ -18,15 +18,37 @@ const SidebarWithNoSSR = dynamic(() => import('../components/Sidebar'), {
 const Page = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
+    const [visitedLineLengths, setVisitedLineLengths] = React.useState<Record<string, number>>({});
+    const [recordedTrips, setRecordedTrips] = React.useState<any[]>([]);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
+
+    // Initial load from localStorage
+    React.useEffect(() => {
+        const saved = localStorage.getItem('jprail_trips');
+        if (saved) {
+            try {
+                setRecordedTrips(JSON.parse(saved));
+            } catch (e) {
+                console.error('Failed to parse saved trips', e);
+            }
+        }
+    }, []);
+
+    // Save to localStorage on change
+    React.useEffect(() => {
+        if (recordedTrips.length > 0) {
+            localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
+        }
+    }, [recordedTrips]);
+
+    const handleRecordTrip = React.useCallback((trip: any) => {
+        setRecordedTrips(prev => [...prev, trip]);
+    }, []);
 
     const toggleLine = React.useCallback((line: string) => {
         setSelectedLines(prev =>
             prev.includes(line) ? prev.filter(l => l !== line) : [...prev, line]
         );
-        // Set active line when clicked (for scrolling) - only if selecting? 
-        // Or always if it exists in the list? 
-        // Requirement: "Click line -> Scroll to sidebar item"
         setActiveLine(line);
     }, []);
 
@@ -66,6 +88,7 @@ const Page = () => {
                         onToggleLine={toggleLine}
                         onSetSelectedLines={setSelectedLinesList}
                         lineLengths={lineLengths}
+                        visitedLineLengths={visitedLineLengths}
                         activeLine={activeLine}
                     />
                 </div>
@@ -73,7 +96,10 @@ const Page = () => {
                     <MapWithNoSSR>
                         <MapPaneWithNoSSR
                             selectedLines={selectedLines}
+                            recordedTrips={recordedTrips}
+                            onRecordTrip={handleRecordTrip}
                             onLengthsCalculated={setLineLengths}
+                            onVisitedLengthsCalculated={setVisitedLineLengths}
                             onRailroadClick={toggleLine}
                         />
                     </MapWithNoSSR>
