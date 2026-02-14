@@ -32,6 +32,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, 
         <GeoJSON
             data={municipalities}
             style={style}
+            interactive={false}
         />
     );
 };

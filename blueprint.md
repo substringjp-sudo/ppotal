@@ -11,7 +11,8 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Hierarchical Layering:** All layers are organized using z-index to ensure logical visibility (stations > railroads > administrative boundaries).
 *   **Consistent Line Weight:** All line weights are defined in screen pixels, ensuring they do not scale disproportionately when zooming.
 *   **Optimized Performance:** Data is loaded progressively. Station data, being the most numerous, is only fetched at high zoom levels.
-*   **Interactivity:** Clicking a prefecture zooms the map to its bounds. Clicking a railroad line highlights it.
+*   **Interactive Railroads**: Hovering highlights lines and shows tooltips. Clicking a line opens a detailed bottom view showing the sequence of stations.
+*   **Station Progress Visualization**: The bottom view highlights segments between stations that the user has already visited.
 *   **Systematic Railroad Network:** Uses a processed topological network for accurate mapping and pathfinding.
 *   **Drag-and-Drop Pathfinding:** Users can drag from one station to another to find the shortest railroad path between them.
 *   **Trip Persistence**: User progress (recorded trips) is saved to `localStorage` and automatically restored upon return.

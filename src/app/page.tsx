@@ -15,12 +15,17 @@ const SidebarWithNoSSR = dynamic(() => import('../components/Sidebar'), {
     ssr: false
 });
 
+const LineDetailPaneWithNoSSR = dynamic(() => import('../components/LineDetailPane'), {
+    ssr: false
+});
+
 const Page = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
     const [visitedLineLengths, setVisitedLineLengths] = React.useState<Record<string, number>>({});
     const [recordedTrips, setRecordedTrips] = React.useState<any[]>([]);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
+    const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any> } | null>(null);
 
     // Initial load from localStorage
     React.useEffect(() => {
@@ -56,12 +61,21 @@ const Page = () => {
         setSelectedLines(lines);
     }, []);
 
+    const handleRailroadClick = React.useCallback((line: string) => {
+        setActiveLine(line);
+        // Ensure it's in selected lines for visualization
+        setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
+    }, []);
+
     return (
         <main style={{
             display: 'flex',
             flexDirection: 'column',
             height: '100vh',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            backgroundColor: '#eee',
+            backgroundImage: 'radial-gradient(#ccc 0.5px, transparent 0.5px)',
+            backgroundSize: '10px 10px'
         }}>
             <h1 style={{
                 textAlign: 'center',
@@ -69,7 +83,10 @@ const Page = () => {
                 margin: 0,
                 borderBottom: '1px solid #ccc',
                 fontSize: '24px',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(5px)',
+                zIndex: 10
             }}>
                 Japan Railroad Map
             </h1>
@@ -92,17 +109,32 @@ const Page = () => {
                         activeLine={activeLine}
                     />
                 </div>
-                <div style={{ flex: 1, position: 'relative' }}>
-                    <MapWithNoSSR>
-                        <MapPaneWithNoSSR
-                            selectedLines={selectedLines}
-                            recordedTrips={recordedTrips}
-                            onRecordTrip={handleRecordTrip}
-                            onLengthsCalculated={setLineLengths}
-                            onVisitedLengthsCalculated={setVisitedLineLengths}
-                            onRailroadClick={toggleLine}
-                        />
-                    </MapWithNoSSR>
+                <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ flex: 1, position: 'relative' }}>
+                        <MapWithNoSSR>
+                            <MapPaneWithNoSSR
+                                selectedLines={selectedLines}
+                                recordedTrips={recordedTrips}
+                                onRecordTrip={handleRecordTrip}
+                                onLengthsCalculated={setLineLengths}
+                                onVisitedLengthsCalculated={setVisitedLineLengths}
+                                onRailroadClick={handleRailroadClick}
+                                activeLine={activeLine}
+                                onLineDetailData={setLineDetailData}
+                            />
+                        </MapWithNoSSR>
+                    </div>
+                    {lineDetailData && activeLine && (
+                        <div style={{ height: '180px', flexShrink: 0, position: 'relative', zIndex: 1100 }}>
+                            <LineDetailPaneWithNoSSR
+                                lineId={activeLine}
+                                segments={lineDetailData.segments}
+                                nodes={lineDetailData.nodes}
+                                visitedEdges={lineDetailData.visitedEdges}
+                                onClose={() => setActiveLine(null)}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         </main>

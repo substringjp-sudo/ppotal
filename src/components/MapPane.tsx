@@ -17,6 +17,8 @@ interface MapPaneProps {
     onStationClick?: (name: string) => void;
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
     onVisitedLengthsCalculated?: (lengths: Record<string, number>) => void;
+    activeLine?: string | null;
+    onLineDetailData?: (data: { segments: any[], visitedEdges: Set<string>, nodes: Map<string, any> } | null) => void;
 }
 
 const MapPane: React.FC<MapPaneProps> = ({
@@ -26,7 +28,9 @@ const MapPane: React.FC<MapPaneProps> = ({
     onRailroadClick,
     onStationClick,
     onLengthsCalculated,
-    onVisitedLengthsCalculated
+    onVisitedLengthsCalculated,
+    activeLine,
+    onLineDetailData
 }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
@@ -185,6 +189,32 @@ const MapPane: React.FC<MapPaneProps> = ({
             onVisitedLengthsCalculated(roundedVisited);
         }
     }, [recordedTrips, railroadNetwork, onVisitedLengthsCalculated]);
+
+    // Handle Active Line Detail Data
+    useEffect(() => {
+        if (!activeLine || !graph || !onLineDetailData) {
+            if (onLineDetailData) onLineDetailData(null);
+            return;
+        }
+
+        const segments = graph.getLineSegments(activeLine);
+
+        // Calculate visited edges for THIS line
+        const visitedEdges = new Set<string>();
+        recordedTrips.forEach(trip => {
+            if (trip.path) {
+                for (let i = 0; i < trip.path.length - 1; i++) {
+                    const u = trip.path[i];
+                    const v = trip.path[i + 1];
+                    if (u.startsWith(activeLine) && v.startsWith(activeLine)) {
+                        visitedEdges.add([u, v].sort().join('<->'));
+                    }
+                }
+            }
+        });
+
+        onLineDetailData({ segments, visitedEdges, nodes: graph.nodes });
+    }, [activeLine, graph, recordedTrips, onLineDetailData]);
 
     // Disable map dragging during station drag
     useEffect(() => {
@@ -420,7 +450,8 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     return (
         <>
-            <Pane name="prefecture-fill" style={{ zIndex: 410 }}>
+            {/* Background Layer: Prefectures & Municipalities */}
+            <Pane name="background" style={{ zIndex: 100 }}>
                 <JapanMap
                     prefectures={prefectures}
                     onPrefectureClick={handlePrefectureClick}
@@ -428,8 +459,6 @@ const MapPane: React.FC<MapPaneProps> = ({
                     interactive={zoomLevel <= 8}
                     zoom={zoomLevel}
                 />
-            </Pane>
-            <Pane name="municipal-lines" style={{ zIndex: 412 }}>
                 {zoomLevel > 8 && municipalities && (
                     <MunicipalMap
                         municipalities={municipalities}
@@ -437,8 +466,6 @@ const MapPane: React.FC<MapPaneProps> = ({
                         zoom={zoomLevel}
                     />
                 )}
-            </Pane>
-            <Pane name="prefecture-outline" style={{ zIndex: 415 }}>
                 {zoomLevel > 8 && prefectures &&
                     <JapanMap
                         prefectures={prefectures}
@@ -449,7 +476,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     />
                 }
             </Pane>
-            <Pane name="railroads" style={{ zIndex: 420 }}>
+
+            {/* Interaction Layer: Railroads & Recorded Trips */}
+            <Pane name="interactive-elements" style={{ zIndex: 200 }}>
                 <Railroads
                     railroadNetwork={railroadNetwork}
                     selectedLines={selectedLines}
@@ -457,22 +486,6 @@ const MapPane: React.FC<MapPaneProps> = ({
                     getColor={getColor}
                     zoom={zoomLevel}
                 />
-            </Pane>
-            <Pane name="recorded-trips" style={{ zIndex: 430 }}>
-                {/* dragPath removed - replaced by snaking previewPath */}
-                {/* 
-                {dragPath.length > 1 && (
-                    <Polyline
-                        positions={dragPath.map(p => [p[1], p[0]])}
-                        pathOptions={{
-                            color: '#000000',
-                            weight: 3,
-                            opacity: 0.8,
-                            dashArray: '5, 10'
-                        }}
-                    />
-                )}
-                 */}
 
                 {previewPath && (
                     <Polyline
@@ -481,6 +494,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                             color: '#FF00FF',
                             weight: 6,
                             opacity: 0.5,
+                            interactive: false
                         }}
                     />
                 )}
@@ -499,7 +513,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                                             color: color,
                                             weight: 8,
                                             opacity: 1,
-                                            lineCap: 'butt'
+                                            lineCap: 'butt',
+                                            interactive: false
                                         }}
                                     />
                                     <Polyline
@@ -508,6 +523,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                                             color: '#000000',
                                             weight: 2,
                                             opacity: 1,
+                                            interactive: false
                                         }}
                                     />
                                 </React.Fragment>
@@ -516,7 +532,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     </React.Fragment>
                 ))}
             </Pane>
-            <Pane name="stations" style={{ zIndex: 500 }}>
+
+            {/* Top Layer: Stations */}
+            <Pane name="ui-elements" style={{ zIndex: 300 }}>
                 {visibleStations &&
                     <Stations
                         processedStations={visibleStations}
@@ -532,6 +550,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     />
                 }
             </Pane>
+
             <OffScreenIndicator />
         </>
     );

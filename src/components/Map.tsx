@@ -15,7 +15,6 @@ const Map: React.FC<MapProps> = ({ children }) => {
             zoom={5}
             style={{ height: '100%', width: '100%', background: '#f0f0f0' }}
             scrollWheelZoom={true}
-            preferCanvas={true}
         >
             {children}
         </MapContainer>

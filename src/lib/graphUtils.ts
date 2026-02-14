@@ -209,6 +209,79 @@ export class RailroadGraph {
             }
         }
     }
+
+    /**
+     * Extracts an ordered sequence of stations for a given line.
+     * Since lines can have branches, this returns a list of segments.
+     */
+    getLineSegments(lineId: string): { stations: string[], edges: { from: string, to: string, distance: number }[] }[] {
+        const lineEdges = Array.from(this.adj.entries())
+            .filter(([u]) => u.startsWith(lineId))
+            .flatMap(([u, edges]) => edges.filter(e => e.to.startsWith(lineId)).map(e => ({ from: u, ...e })));
+
+        if (lineEdges.length === 0) return [];
+
+        // Build a subgraph for this line
+        const lineAdj = new Map<string, { to: string, distance: number }[]>();
+        const inDegree = new Map<string, number>();
+        const nodes = new Set<string>();
+
+        lineEdges.forEach(e => {
+            if (!lineAdj.has(e.from)) lineAdj.set(e.from, []);
+            lineAdj.get(e.from)!.push({ to: e.to, distance: e.distance });
+            nodes.add(e.from);
+            nodes.add(e.to);
+            inDegree.set(e.to, (inDegree.get(e.to) || 0) + 1);
+            if (!inDegree.has(e.from)) inDegree.set(e.from, 0);
+        });
+
+        // Simple heuristic: Find "leaf" nodes (degree 1) and try to trace paths
+        const segments: { stations: string[], edges: { from: string, to: string, distance: number }[] }[] = [];
+        const visitedNodes = new Set<string>();
+        const visitedEdges = new Set<string>();
+
+        const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
+
+        const findPath = (start: string) => {
+            const stations = [start];
+            const edges: { from: string, to: string, distance: number }[] = [];
+            let curr = start;
+            visitedNodes.add(curr);
+
+            while (true) {
+                const nextEdges = lineAdj.get(curr) || [];
+                const next = nextEdges.find(e => !visitedEdges.has(getEdgeKey(curr, e.to)));
+
+                if (!next) break;
+
+                visitedEdges.add(getEdgeKey(curr, next.to));
+                edges.push({ from: curr, ...next });
+                curr = next.to;
+                stations.push(curr);
+                visitedNodes.add(curr);
+            }
+            return { stations, edges };
+        };
+
+        // 1. Start from true leaves (degree 1)
+        nodes.forEach(node => {
+            const degree = (lineAdj.get(node)?.length || 0);
+            if (degree === 1 && !visitedNodes.has(node)) {
+                const path = findPath(node);
+                if (path.stations.length > 1) segments.push(path);
+            }
+        });
+
+        // 2. Start from remaining nodes
+        nodes.forEach(node => {
+            if (!visitedNodes.has(node)) {
+                const path = findPath(node);
+                if (path.stations.length > 1) segments.push(path);
+            }
+        });
+
+        return segments;
+    }
 }
 
 export const haversineDistance = (coords1: [number, number], coords2: [number, number]): number => {

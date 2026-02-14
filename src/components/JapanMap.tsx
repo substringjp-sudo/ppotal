@@ -61,6 +61,8 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
         <GeoJSON
             data={prefectures}
             style={style}
+            onEachFeature={onEachFeature}
+            interactive={interactive}
         />
     );
 };
