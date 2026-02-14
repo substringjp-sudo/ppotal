@@ -59,15 +59,32 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
 
     const getEdgeKey = (s1: string, s2: string) => [s1, s2].sort().join('<->');
 
+    const visitedLogicalEdges = useMemo(() => {
+        const set = new Set<string>();
+        visitedEdges.forEach(key => {
+            const [id1, id2] = key.split('<->');
+            const n1 = nodes.get(id1)?.name;
+            const n2 = nodes.get(id2)?.name;
+            if (n1 && n2 && n1 !== n2) {
+                set.add([n1, n2].sort().join('<->'));
+            }
+        });
+        return set;
+    }, [visitedEdges, nodes]);
+
     const stats = useMemo(() => {
         let total = 0;
         let visited = 0;
         const visitedStations = new Set<string>();
 
+        const getName = (id: string) => nodes.get(id)?.name || id;
+
         segments.forEach((segment) => {
             segment.edges.forEach((edge) => {
                 total += edge.distance;
-                if (visitedEdges.has(getEdgeKey(edge.from, edge.to))) {
+                const logicalKey = [getName(edge.from), getName(edge.to)].sort().join('<->');
+
+                if (visitedLogicalEdges.has(logicalKey)) {
                     visited += edge.distance;
                     visitedStations.add(edge.from);
                     visitedStations.add(edge.to);
@@ -81,7 +98,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             percent: total > 0 ? Math.round((visited / total) * 100) : 0,
             visitedStations
         };
-    }, [segments, visitedEdges]);
+    }, [segments, visitedLogicalEdges, nodes]);
 
     // Simple layout logic for branching
     const layout = useMemo(() => {
@@ -305,7 +322,9 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                             {row.map((pos: StationPos, pIdx: number) => {
                                 if (pIdx === row.length - 1) return null;
                                 const nextPos = row[pIdx + 1];
-                                const isVisited = visitedEdges.has(getEdgeKey(pos.id, nextPos.id));
+                                const getName = (id: string) => nodes.get(id)?.name || id;
+                                const logicalKey = [getName(pos.id), getName(nextPos.id)].sort().join('<->');
+                                const isVisited = visitedLogicalEdges.has(logicalKey);
                                 return (
                                     <div
                                         key={`mini-edge-${rIdx}-${pIdx}`}
@@ -399,8 +418,9 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     const nextPos = row[pIdx + 1];
 
                                     // Check if this edge exists in the segment
-                                    const edgeKey = getEdgeKey(pos.id, nextPos.id);
-                                    const isVisited = visitedEdges.has(edgeKey);
+                                    const getName = (id: string) => nodes.get(id)?.name || id;
+                                    const logicalKey = [getName(pos.id), getName(nextPos.id)].sort().join('<->');
+                                    const isVisited = visitedLogicalEdges.has(logicalKey);
                                     const isPreview = dragPathPreview.has(pos.id) && dragPathPreview.has(nextPos.id);
 
                                     return (

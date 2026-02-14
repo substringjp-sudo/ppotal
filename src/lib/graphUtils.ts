@@ -212,18 +212,28 @@ export class RailroadGraph {
             }
         }
 
-        // 3. Add Transfer Edges (Same as buildGraph)
-        for (const name in this.stationsByName) {
-            const ids = this.stationsByName[name];
-            for (let i = 0; i < ids.length; i++) {
-                for (let j = i + 1; j < ids.length; j++) {
-                    const nodeI = this.nodes.get(ids[i]);
-                    const nodeJ = this.nodes.get(ids[j]);
-                    if (nodeI && nodeJ) {
-                        const dist = haversineDistance(nodeI.coords, nodeJ.coords);
-                        // Only add transfer if they are within 1km
-                        if (dist < 1.0) {
-                            this.addEdge(ids[i], ids[j], 0.05 + dist, [nodeI.coords, nodeJ.coords]);
+        // 3. Add Transfer Edges
+        if (data.transfers && Array.isArray(data.transfers)) {
+            for (const t of data.transfers) {
+                const nodeFrom = this.nodes.get(t.from);
+                const nodeTo = this.nodes.get(t.to);
+                if (nodeFrom && nodeTo) {
+                    this.addEdge(t.from, t.to, 0.05 + t.distance, [nodeFrom.coords, nodeTo.coords]);
+                }
+            }
+        } else {
+            // Fallback for legacy data (name-based)
+            for (const name in this.stationsByName) {
+                const ids = this.stationsByName[name];
+                for (let i = 0; i < ids.length; i++) {
+                    for (let j = i + 1; j < ids.length; j++) {
+                        const nodeI = this.nodes.get(ids[i]);
+                        const nodeJ = this.nodes.get(ids[j]);
+                        if (nodeI && nodeJ) {
+                            const dist = haversineDistance(nodeI.coords, nodeJ.coords);
+                            if (dist < 1.0) {
+                                this.addEdge(ids[i], ids[j], 0.05 + dist, [nodeI.coords, nodeJ.coords]);
+                            }
                         }
                     }
                 }
@@ -244,61 +254,96 @@ export class RailroadGraph {
 
         if (lineEdges.length === 0) return [];
 
-        // Build a subgraph for this line
-        const lineAdj = new Map<string, { to: string, distance: number }[]>();
-        const inDegree = new Map<string, number>();
-        const nodes = new Set<string>();
+        // Helper to get name from ID
+        const getName = (id: string) => this.nodes.get(id)?.name || id.split('::').pop() || id;
+
+        // Group platforms into logical stations by name
+        const nameToRepId = new Map<string, string>();
+        const logicalAdj = new Map<string, Map<string, number>>(); // Name -> { TargetName -> Distance }
 
         lineEdges.forEach(e => {
-            if (!lineAdj.has(e.from)) lineAdj.set(e.from, []);
-            lineAdj.get(e.from)!.push({ to: e.to, distance: e.distance });
-            nodes.add(e.from);
-            nodes.add(e.to);
-            inDegree.set(e.to, (inDegree.get(e.to) || 0) + 1);
-            if (!inDegree.has(e.from)) inDegree.set(e.from, 0);
+            const uName = getName(e.from);
+            const vName = getName(e.to);
+
+            if (uName === vName) return; // Skip internal platform connections
+
+            if (!nameToRepId.has(uName)) nameToRepId.set(uName, e.from);
+            if (!nameToRepId.has(vName)) nameToRepId.set(vName, e.to);
+
+            if (!logicalAdj.has(uName)) logicalAdj.set(uName, new Map());
+            const currentDist = logicalAdj.get(uName)!.get(vName) || Infinity;
+            logicalAdj.get(uName)!.set(vName, Math.min(currentDist, e.distance));
         });
 
-        // Simple heuristic: Find "leaf" nodes (degree 1) and try to trace paths
+        // Trace segments based on logical names
         const segments: { stations: string[], edges: { from: string, to: string, distance: number }[] }[] = [];
-        const visitedNodes = new Set<string>();
-        const visitedEdges = new Set<string>();
+        const visitedNames = new Set<string>();
+        const visitedEdgeKeys = new Set<string>();
 
         const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
 
-        const findPath = (start: string) => {
-            const stations = [start];
+        const findPath = (startName: string) => {
+            const names = [startName];
             const edges: { from: string, to: string, distance: number }[] = [];
-            let curr = start;
-            visitedNodes.add(curr);
+            let curr = startName;
+            visitedNames.add(curr);
 
             while (true) {
-                const nextEdges = lineAdj.get(curr) || [];
-                const next = nextEdges.find(e => !visitedEdges.has(getEdgeKey(curr, e.to)));
+                const neighbors = logicalAdj.get(curr);
+                if (!neighbors) break;
+
+                // Priority: pick a neighbor that hasn't been visited as a station yet
+                let next = Array.from(neighbors.entries()).find(([name]) => !visitedNames.has(name));
+
+                // Fallback: pick any neighbor if the edge hasn't been visited (for loops/complex junctions)
+                if (!next) {
+                    next = Array.from(neighbors.entries()).find(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
+                }
 
                 if (!next) break;
 
-                visitedEdges.add(getEdgeKey(curr, next.to));
-                edges.push({ from: curr, ...next });
-                curr = next.to;
-                stations.push(curr);
-                visitedNodes.add(curr);
+                const [nextName, dist] = next;
+                const edgeKey = getEdgeKey(curr, nextName);
+
+                if (visitedEdgeKeys.has(edgeKey) && visitedNames.has(nextName)) break; // Prevent infinite loops
+
+                visitedEdgeKeys.add(edgeKey);
+                edges.push({
+                    from: nameToRepId.get(curr)!,
+                    to: nameToRepId.get(nextName)!,
+                    distance: dist
+                });
+
+                curr = nextName;
+                if (!visitedNames.has(curr)) {
+                    names.push(curr);
+                    visitedNames.add(curr);
+                } else {
+                    // Re-visiting a station node, end segment here
+                    names.push(curr);
+                    break;
+                }
             }
-            return { stations, edges };
+            return { stations: names.map(n => nameToRepId.get(n)!), edges };
         };
 
-        // 1. Start from true leaves (degree 1)
-        nodes.forEach(node => {
-            const degree = (lineAdj.get(node)?.length || 0);
-            if (degree === 1 && !visitedNodes.has(node)) {
-                const path = findPath(node);
+        const logicalNodes = Array.from(nameToRepId.keys());
+
+        // 1. Start from logical leaves (nodes with only 1 aggregated connection)
+        logicalNodes.forEach(name => {
+            const degree = (logicalAdj.get(name)?.size || 0);
+            const inDegree = Array.from(logicalAdj.values()).filter(m => m.has(name)).length;
+
+            if ((degree + inDegree) === 1 && !visitedNames.has(name)) {
+                const path = findPath(name);
                 if (path.stations.length > 1) segments.push(path);
             }
         });
 
         // 2. Start from remaining nodes
-        nodes.forEach(node => {
-            if (!visitedNodes.has(node)) {
-                const path = findPath(node);
+        logicalNodes.forEach(name => {
+            if (!visitedNames.has(name)) {
+                const path = findPath(name);
                 if (path.stations.length > 1) segments.push(path);
             }
         });

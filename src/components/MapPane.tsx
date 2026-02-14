@@ -290,7 +290,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     const visibleStations = useMemo(() => {
         if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
-        const data: Record<string, { nodes: { id: string, coord: [number, number], lineKey: string }[], centroid: [number, number], lines: string[] }> = {};
+        const data: Record<string, { nodes: { id: string, coord: [number, number], lineKey: string, platforms?: [number, number][][] }[], centroid: [number, number], lines: string[] }> = {};
 
         Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
             const parts = id.split('::');
@@ -305,11 +305,12 @@ const MapPane: React.FC<MapPaneProps> = ({
                 lng >= mapBounds.getWest() && lng <= mapBounds.getEast()) {
 
                 const coord: [number, number] = [lat, lng];
+                const node = { id, coord, lineKey: key, platforms: s.platforms };
 
                 if (!data[name]) {
-                    data[name] = { nodes: [{ id, coord, lineKey: key }], centroid: coord, lines: [key] };
+                    data[name] = { nodes: [node], centroid: coord, lines: [key] };
                 } else {
-                    data[name].nodes.push({ id, coord, lineKey: key });
+                    data[name].nodes.push(node);
                     if (!data[name].lines.includes(key)) data[name].lines.push(key);
 
                     // Recalculate centroid

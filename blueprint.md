@@ -43,25 +43,19 @@ This application displays an interactive map of Japan, focusing on its administr
 - **Statistics Calculation:** Dynamically aggregates visited distance by matching topological edges between recorded trips and the systematic railroad network.
 
 # 새 목표
-- 지도를 이미지 형태로 출력
 - 노선목록에서 체크 말고 그냥 클릭하면 해당 노선 줌인
-- 점크기 좀 더 크게
-- 지도 오른쪽 패널에 내가 이용한 노선만 정리해서 표시
-- 노선 클릭하면 생기는 사각형 지우기
-- 신칸센, JR 등 대분류 전체 체크하기 기능
-- 하단노선도의 네비게이터를 가리지 않게 하단뷰 위로 올리기 
-- 노선목록 정렬 옵션(일본어순서, 알파벳순서, 가나다순서, 이용률순서)
-- 노선목록 모두닫기, 모두열기 기능 추가
-- 노선목록 전체선택/전체해제 적용 확인 표시
-- 최대줌/최소줌 제한
-- 줌슬라이더, 줌리셋 기능
+- 노선 선택하면 생기는 사각형 테두리 없애기
 - 하단노선도에서 역을 클릭하면 해당 역 위치로 줌 이동
+- 교토역 인근에서 끊긴 노선이 있음
+- 노선도에서 노선 목록이 의미없이 개행돼서 표시되는 경우 수정
+- 분기 더 제대로 표시 및 순환선도 노선도에서 표시하도록 방법 강구
+- 체크 안된 노선을 반투명이 아니라 좀 더 연한 색으로
+- 14이상 줌하면 플랫폼 형태로 표시(플랫폼 형태를 n02-22.xml에서 가져오기)
 
 # 미래목표
 - 안쓰는 파일 정리
 - https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html 사용규칙 적용하기
 - https://www.geoboundaries.org/ 사용규칙 적용하기 
-- 번역
-- 노선데이터 좀 더 보강하기
-- 여러 형태의 시각적 표시방식 설정
+- 역명, 노선명 영어/한국어로도 번역
+- 여러 형태의 시각적 표시방식 설정(노선별 굵기 변화, 역별 크기 변화, 노선별 색상 변화(노선색/단일색)) << 기본값을 슬라이더에서 표시, 선 굵기를 0으로 만들면 지도에서 미표시
 - 용량 압축, 최적화

@@ -2,13 +2,14 @@
 
 import React from 'react';
 import L from 'leaflet';
-import { CircleMarker, Tooltip, Marker, Polygon } from 'react-leaflet';
+import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
 
 interface StaticNode {
     id: string;
     coord: [number, number];
     lineKey: string;
+    platforms?: [number, number][][];
 }
 
 interface StationsProps {
@@ -75,7 +76,7 @@ const Stations: React.FC<StationsProps> = ({
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
         if (selectedLines.length === 0 && !activeLine) return false;
-        // Show dots only from zoom 7 (two stages later than initial 5)
+        // Show dots only from zoom 7
         if (zoom < 7) return false;
         return data.lines.some(line => selectedLines.includes(line) || activeLine === line);
     });
@@ -94,7 +95,6 @@ const Stations: React.FC<StationsProps> = ({
                 const weight = isLowZoom ? 0 : (isHighlighted ? 6 : 4);
 
                 const coords = station.nodes.map(n => n.coord);
-                const hasMultiplePoints = coords.length > 1;
 
                 // Format line names for tooltip
                 const formattedLines = lines.map(l => {
@@ -107,7 +107,6 @@ const Stations: React.FC<StationsProps> = ({
 
                 return (
                     <React.Fragment key={name}>
-
                         {zoom > 12 && isSelected && (
                             <Marker
                                 position={station.centroid}
@@ -147,49 +146,65 @@ const Stations: React.FC<StationsProps> = ({
                                 fillColor: isNodeVisited ? '#2ecc71' : (isDragging ? '#2ecc71' : lightenedColor),
                                 fillOpacity: (isNodeSelected || isNodeVisited) ? 1 : 0.8,
                                 stroke: !isLowZoom || isNodeSelected || isNodeVisited,
-                                color: isNodeVisited ? baseColor : baseColor, // Inner border is official
+                                color: isNodeVisited ? baseColor : baseColor,
                                 weight: isNodeVisited ? weight + 1 : weight,
                                 opacity: (isNodeSelected || isNodeVisited) ? 1 : 0.4,
                                 className: isNodeVisited ? 'visited-station-glow' : ''
                             };
 
                             return (
-                                <CircleMarker
-                                    key={`${node.id}-${idx}`}
-                                    className={`station-${name}`}
-                                    center={node.coord}
-                                    pathOptions={stationStyle}
-                                    radius={radius}
-                                    eventHandlers={{
-                                        click: () => handleStationClick(name),
-                                        mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
-                                        mouseup: () => onStationMouseUp(name),
-                                    }}
-                                >
-                                    <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
-                                        <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
-                                            <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
-                                                {name}
+                                <React.Fragment key={`${node.id}-${idx}`}>
+                                    {/* Platform Rendering Logic */}
+                                    {zoom >= 14 && node.platforms && node.platforms.map((plat, pidx) => (
+                                        <Polyline
+                                            key={`plat-${pidx}`}
+                                            positions={plat.map(pt => [pt[1], pt[0]])}
+                                            pathOptions={{
+                                                color: baseColor,
+                                                weight: isHighlighted ? 12 : 8,
+                                                opacity: 0.9,
+                                                lineCap: 'butt',
+                                                interactive: false
+                                            }}
+                                        />
+                                    ))}
+
+                                    <CircleMarker
+                                        className={`station-${name}`}
+                                        center={node.coord}
+                                        pathOptions={stationStyle}
+                                        radius={zoom >= 14 ? 0 : radius} // Hide dots when platforms are shown
+                                        eventHandlers={{
+                                            click: () => handleStationClick(name),
+                                            mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
+                                            mouseup: () => onStationMouseUp(name),
+                                        }}
+                                    >
+                                        <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                            <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
+                                                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
+                                                    {name}
+                                                </div>
+                                                <div style={{ fontSize: '11px', color: '#666' }}>
+                                                    {formattedLines.map((fl, fidx) => (
+                                                        <div key={fidx} style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            gap: '8px',
+                                                            padding: '1px 0',
+                                                            color: selectedLines.includes(fl.key) ? '#000' : '#888',
+                                                            fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
+                                                        }}>
+                                                            <span>{fl.company}</span>
+                                                            <span>{fl.line}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
                                             </div>
-                                            <div style={{ fontSize: '11px', color: '#666' }}>
-                                                {formattedLines.map((fl, fidx) => (
-                                                    <div key={fidx} style={{
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        gap: '8px',
-                                                        padding: '1px 0',
-                                                        color: selectedLines.includes(fl.key) ? '#000' : '#888',
-                                                        fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
-                                                    }}>
-                                                        <span>{fl.company}</span>
-                                                        <span>{fl.line}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
-                                        </div>
-                                    </Tooltip>
-                                </CircleMarker>
+                                        </Tooltip>
+                                    </CircleMarker>
+                                </React.Fragment>
                             );
                         })}
                     </React.Fragment>
