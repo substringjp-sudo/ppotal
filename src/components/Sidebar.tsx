@@ -21,6 +21,7 @@ interface SidebarProps {
     lineLengths?: Record<string, number>;
     visitedLineLengths?: Record<string, number>;
     activeLine?: string | null;
+    onResetTrips?: () => void;
 }
 
 const getProgressColor = (percent: number) => {
@@ -44,7 +45,7 @@ type GroupedHierarchy = {
     nonRail: Record<string, Record<string, any>>;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onResetTrips }) => {
     const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
     const [groupedHierarchy, setGroupedHierarchy] = useState<GroupedHierarchy | null>(null);
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
@@ -183,7 +184,24 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         alignItems: 'center'
                     }}
                 >
-                    <span>{title}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>{title}</span>
+                        {(() => {
+                            let total = 0;
+                            let visited = 0;
+                            Object.entries(companies).forEach(([comp, lines]) => {
+                                Object.keys(lines).forEach(l => {
+                                    total++;
+                                    if ((visitedLineLengths[`${comp}::${l}`] || 0) > 0) visited++;
+                                });
+                            });
+                            return (
+                                <span style={{ fontSize: '12px', color: '#666', fontWeight: 'normal' }}>
+                                    ({visited}/{total})
+                                </span>
+                            );
+                        })()}
+                    </div>
                     <span>{expandedGroups[groupKey] ? '▼' : '▶'}</span>
                 </div>
                 {expandedGroups[groupKey] && (
@@ -193,6 +211,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             const lineNames = Object.keys(lines);
                             const allLinesSelected = lineNames.every(l => selectedLines.includes(`${company}::${l}`));
                             const someLinesSelected = lineNames.some(l => selectedLines.includes(`${company}::${l}`));
+
+                            const companyTotal = lineNames.length;
+                            const companyVisitedCount = lineNames.filter(l => (visitedLineLengths[`${company}::${l}`] || 0) > 0).length;
 
                             return (
                                 <div key={company} style={{ marginTop: '8px' }}>
@@ -212,8 +233,16 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                             onClick={() => toggleCompany(company)}
                                             style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
                                         >
-                                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: '8px' }}>
-                                                {company} ({lineNames.length}) {isExpanded ? '▼' : '▶'}
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {company}
+                                                </span>
+                                                <span style={{ fontSize: '12px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
+                                                    ({companyVisitedCount}/{companyTotal})
+                                                </span>
+                                                <span style={{ flexShrink: 0 }}>
+                                                    {isExpanded ? '▼' : '▶'}
+                                                </span>
                                             </span>
                                             {(() => {
                                                 const companyTotal = lineNames.reduce((sum, l) => sum + (lineLengths[`${company}::${l}`] || 0), 0);

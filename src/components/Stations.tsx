@@ -3,6 +3,7 @@
 import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polygon } from 'react-leaflet';
+import { lightenColor } from '../lib/lineColors';
 
 interface StaticNode {
     id: string;
@@ -72,6 +73,8 @@ const Stations: React.FC<StationsProps> = ({
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
         if (selectedLines.length === 0) return false;
+        // Show dots only from zoom 7 (two stages later than initial 5)
+        if (zoom < 7) return false;
         return data.lines.some(line => selectedLines.includes(line));
     });
 
@@ -83,10 +86,10 @@ const Stations: React.FC<StationsProps> = ({
                 const lines = station.lines;
 
                 const isDragging = dragStartStation === name;
-                const isLowZoom = zoom <= 11;
+                const isLowZoom = zoom <= 13;
 
                 const radius = isLowZoom ? 2.5 : (isHighlighted ? 8 : 6);
-                const weight = isLowZoom ? 0 : 3;
+                const weight = isLowZoom ? 0 : (isHighlighted ? 5 : 3);
 
                 const coords = station.nodes.map(n => n.coord);
                 const hullPoints = coords.length > 2 ? convexHull(coords) : null;
@@ -104,7 +107,7 @@ const Stations: React.FC<StationsProps> = ({
                 return (
                     <React.Fragment key={name}>
                         {/* Grouping Polygon - Improved Visual */}
-                        {zoom > 13 && hasMultiplePoints && (hullPoints || coords.length === 2) && (
+                        {zoom > 12 && hasMultiplePoints && (hullPoints || coords.length === 2) && (
                             <Polygon
                                 positions={hullPoints || coords}
                                 pathOptions={{
@@ -119,7 +122,7 @@ const Stations: React.FC<StationsProps> = ({
                             />
                         )}
 
-                        {zoom > 13 && isSelected && (
+                        {zoom > 12 && isSelected && (
                             <Marker
                                 position={station.centroid}
                                 icon={L.divIcon({
@@ -150,14 +153,18 @@ const Stations: React.FC<StationsProps> = ({
                             const isNodeVisited = visitedStations.has(node.id);
                             const isNodeSelected = selectedLines.includes(node.lineKey);
 
+                            const baseColor = getColor(node.lineKey);
+                            const lightenedColor = lightenColor(baseColor, 60);
+
                             const stationStyle = {
                                 fill: !isLowZoom || isNodeSelected,
-                                fillColor: isNodeVisited ? '#000000' : (isDragging ? 'black' : 'white'),
-                                fillOpacity: (isNodeSelected || isNodeVisited) ? 1 : 0.3,
+                                fillColor: isNodeVisited ? '#2ecc71' : (isDragging ? '#2ecc71' : lightenedColor),
+                                fillOpacity: (isNodeSelected || isNodeVisited) ? 1 : 0.8,
                                 stroke: !isLowZoom || isNodeSelected || isNodeVisited,
-                                color: getColor(node.lineKey),
-                                weight: weight,
+                                color: isNodeVisited ? baseColor : baseColor, // Inner border is official
+                                weight: isNodeVisited ? weight + 1 : weight,
                                 opacity: (isNodeSelected || isNodeVisited) ? 1 : 0.4,
+                                className: isNodeVisited ? 'visited-station-glow' : ''
                             };
 
                             return (

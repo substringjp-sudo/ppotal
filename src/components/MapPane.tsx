@@ -8,6 +8,7 @@ import MunicipalMap from './MunicipalMap';
 import Railroads from './Railroads';
 import Stations from './Stations';
 import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils';
+import { getOfficialColor } from '../lib/lineColors';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -70,6 +71,10 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     const getColor = useCallback((name: string) => {
         if (!name) return "#CCCCCC";
+
+        const official = getOfficialColor(name);
+        if (official) return official;
+
         let hash = 0;
         for (let i = 0; i < name.length; i++) {
             hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -77,13 +82,29 @@ const MapPane: React.FC<MapPaneProps> = ({
         return colorPalette[Math.abs(hash) % colorPalette.length];
     }, [colorPalette]);
 
+    const [mapReady, setMapReady] = useState(false);
     const [hierarchy, setHierarchy] = useState<any>(null); // Add hierarchy state
 
     useEffect(() => {
-        if (map) {
-            setZoomLevel(map.getZoom());
-            setMapBounds(map.getBounds());
-            // setMapBounds(map.getBounds()); // Removed duplicate
+        if (!map) return;
+
+        const handleReady = () => {
+            try {
+                const center = map.getCenter();
+                if (center && center.lat !== undefined) {
+                    setZoomLevel(map.getZoom());
+                    setMapBounds(map.getBounds());
+                    setMapReady(true);
+                }
+            } catch (e) {
+                // Not quite ready yet
+            }
+        };
+
+        if ((map as any)._loaded) {
+            handleReady();
+        } else {
+            map.whenReady(handleReady);
         }
 
         fetch('/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()).then(data => {
@@ -228,7 +249,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     // Disable map dragging during station drag
     useEffect(() => {
-        if (!map) return;
+        if (!map || !map.dragging) return;
         if (dragStartStation) {
             map.dragging.disable();
         } else {
@@ -363,11 +384,6 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
     });
 
-    const handlePrefectureClick = useCallback((prefName: string) => {
-        const prefFeature = prefectures?.features.find((f: any) => f.properties.shapeName === prefName);
-        if (prefFeature?.properties.bounds) map.fitBounds(prefFeature.properties.bounds);
-    }, [prefectures, map]);
-
     const handleRailroadClick = useCallback((line: string) => {
         if (onRailroadClick) onRailroadClick(line);
     }, [onRailroadClick]);
@@ -439,13 +455,15 @@ const MapPane: React.FC<MapPaneProps> = ({
         return set;
     }, [recordedTrips]);
 
+    if (!mapReady) return null;
+
     return (
         <>
             {/* Background Layer: Prefectures & Municipalities */}
             <Pane name="background" style={{ zIndex: 100 }}>
                 <JapanMap
                     prefectures={prefectures}
-                    onPrefectureClick={handlePrefectureClick}
+                    onPrefectureClick={() => { }} // Disabled click effect
                     getColor={getColor}
                     interactive={zoomLevel <= 8}
                     zoom={zoomLevel}
@@ -473,7 +491,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 <Railroads
                     railroadNetwork={railroadNetwork}
                     selectedLines={selectedLines}
-                    onRailroadClick={handleRailroadClick}
+                    recordedTrips={recordedTrips}
+                    onRailroadClick={onRailroadClick}
                     getColor={getColor}
                     zoom={zoomLevel}
                     isDragging={!!dragStartStation}
@@ -502,19 +521,19 @@ const MapPane: React.FC<MapPaneProps> = ({
                                     <Polyline
                                         positions={g.map(pt => [pt[1], pt[0]])}
                                         pathOptions={{
-                                            color: color,
-                                            weight: zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5),
+                                            color: '#2ecc71', // Green Glow/Outline
+                                            weight: (zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5)) + 4,
                                             opacity: 1,
-                                            lineCap: 'butt',
                                             interactive: false
                                         }}
                                     />
                                     <Polyline
                                         positions={g.map(pt => [pt[1], pt[0]])}
                                         pathOptions={{
-                                            color: '#000000',
-                                            weight: 2,
+                                            color: color, // Official Line Color
+                                            weight: zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5),
                                             opacity: 1,
+                                            lineCap: 'butt',
                                             interactive: false
                                         }}
                                     />
@@ -559,9 +578,18 @@ const OffScreenIndicator = ({ map, mapBounds, dragStartStation, visibleStations 
     const { centroid } = visibleStations[dragStartStation];
     const latLng = L.latLng(centroid[0], centroid[1]);
 
-    if (mapBounds?.contains(latLng)) return null;
+    // Safety check: is map ready/loaded?
+    if (mapBounds && mapBounds.contains(latLng)) return null;
 
-    const containerPoint = map.latLngToContainerPoint(latLng);
+    let containerPoint;
+    try {
+        if (!(map as any)._loaded) return null;
+        const center = map.getCenter();
+        if (!center || center.lat === undefined) return null;
+        containerPoint = map.latLngToContainerPoint(latLng);
+    } catch (e) {
+        return null; // Silent fail if map is mid-transition or not ready
+    }
     const { x: width, y: height } = map.getSize();
 
     // Clamp to edges

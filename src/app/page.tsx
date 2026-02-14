@@ -24,6 +24,7 @@ const Page = () => {
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
     const [visitedLineLengths, setVisitedLineLengths] = React.useState<Record<string, number>>({});
     const [recordedTrips, setRecordedTrips] = React.useState<any[]>([]);
+    const [isLoaded, setIsLoaded] = React.useState(false);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
     const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any>, getShortestPath: any } | null>(null);
 
@@ -37,17 +38,55 @@ const Page = () => {
                 console.error('Failed to parse saved trips', e);
             }
         }
+        setIsLoaded(true);
     }, []);
 
     // Save to localStorage on change
     React.useEffect(() => {
-        if (recordedTrips.length > 0) {
+        if (isLoaded) {
             localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
         }
-    }, [recordedTrips]);
+    }, [recordedTrips, isLoaded]);
 
-    const handleRecordTrip = React.useCallback((trip: any) => {
-        setRecordedTrips(prev => [...prev, trip]);
+    const handleRecordTrip = React.useCallback((newTrip: any) => {
+        setRecordedTrips(prev => {
+            const getStationFingerprint = (path: string[]) =>
+                path.map(id => {
+                    const parts = id.split('::');
+                    return parts.length >= 3 ? parts[2] : id;
+                }).join(',');
+
+            const newPathFingerprint = getStationFingerprint(newTrip.path);
+            const reversedNewPathFingerprint = getStationFingerprint([...newTrip.path].reverse());
+
+            // 1. Robust Match: Same Start/End station names (User intention)
+            // This handles cases where pathfinder might return slightly different nodes between sessions
+            let existingIndex = prev.findIndex(t => {
+                return (t.start === newTrip.start && t.end === newTrip.end) ||
+                    (t.start === newTrip.end && t.end === newTrip.start);
+            });
+
+            // 2. Secondary Match: Exact station sequence fingerprint (Alternative paths)
+            if (existingIndex === -1) {
+                existingIndex = prev.findIndex(t => {
+                    const pFingerprint = getStationFingerprint(t.path);
+                    return pFingerprint === newPathFingerprint || pFingerprint === reversedNewPathFingerprint;
+                });
+            }
+
+            if (existingIndex !== -1) {
+                // Toggle: Remove if already exists
+                return prev.filter((_, i) => i !== existingIndex);
+            }
+            // Add if new
+            return [...prev, newTrip];
+        });
+    }, []);
+
+    const handleResetTrips = React.useCallback(() => {
+        if (typeof window !== 'undefined' && window.confirm('이동 기록을 모두 초기화하시겠습니까?')) {
+            setRecordedTrips([]);
+        }
     }, []);
 
     const toggleLine = React.useCallback((line: string) => {
@@ -67,6 +106,30 @@ const Page = () => {
         setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
     }, []);
 
+    const stats = React.useMemo(() => {
+        const visitedLineIds = Object.keys(visitedLineLengths);
+        const lineCount = visitedLineIds.length;
+        const distanceCount = Math.round(Object.values(visitedLineLengths).reduce((sum, val) => sum + val, 0) * 10) / 10;
+
+        const companySet = new Set<string>();
+        visitedLineIds.forEach(id => {
+            const company = id.split('::')[0];
+            if (company) companySet.add(company);
+        });
+
+        const stationSet = new Set<string>();
+        recordedTrips.forEach(trip => {
+            if (trip.path) trip.path.forEach((sid: string) => stationSet.add(sid));
+        });
+
+        return {
+            lines: lineCount,
+            stations: stationSet.size,
+            distance: distanceCount,
+            companies: companySet.size
+        };
+    }, [visitedLineLengths, recordedTrips]);
+
     return (
         <main style={{
             display: 'flex',
@@ -77,19 +140,72 @@ const Page = () => {
             backgroundImage: 'radial-gradient(#ccc 0.5px, transparent 0.5px)',
             backgroundSize: '10px 10px'
         }}>
-            <h1 style={{
-                textAlign: 'center',
-                padding: '10px 0',
-                margin: 0,
+            <header style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '10px 20px',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
                 borderBottom: '1px solid #ccc',
-                fontSize: '24px',
-                fontWeight: 'bold',
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(5px)',
-                zIndex: 10
+                zIndex: 100,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
             }}>
-                Japan Railroad Map
-            </h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-0.5px' }}>
+                        JAPAN RAIL MAP
+                    </h1>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                    <div style={{ display: 'flex', gap: '20px', color: '#666' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>노선 수</div>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.lines}</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>역 수</div>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.stations}</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>이동 거리</div>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.distance}<span style={{ fontSize: '10px', marginLeft: '2px' }}>km</span></div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>운영사 수</div>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.companies}</div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handleResetTrips}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#fff',
+                            color: '#e74c3c',
+                            border: '1.5px solid #e74c3c',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            fontWeight: '800',
+                            fontSize: '12px',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e74c3c';
+                            e.currentTarget.style.color = '#fff';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#fff';
+                            e.currentTarget.style.color = '#e74c3c';
+                        }}
+                    >
+                        RESET
+                    </button>
+                </div>
+            </header>
             <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
                 <div style={{
                     width: '350px',
@@ -107,6 +223,7 @@ const Page = () => {
                         lineLengths={lineLengths}
                         visitedLineLengths={visitedLineLengths}
                         activeLine={activeLine}
+                        onResetTrips={handleResetTrips}
                     />
                 </div>
                 <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>

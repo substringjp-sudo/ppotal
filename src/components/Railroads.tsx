@@ -7,6 +7,7 @@ import L from 'leaflet';
 interface RailroadsProps {
     railroadNetwork: any;
     selectedLines: string[];
+    recordedTrips: any[];
     onRailroadClick?: (line: string) => void;
     getColor: (name: string) => string;
     className?: string;
@@ -14,63 +15,164 @@ interface RailroadsProps {
     isDragging?: boolean;
 }
 
-const Railroads: React.FC<RailroadsProps> = ({ railroadNetwork, selectedLines, onRailroadClick, getColor, className, zoom, isDragging }) => {
+const Railroads: React.FC<RailroadsProps> = ({
+    railroadNetwork,
+    selectedLines,
+    recordedTrips,
+    onRailroadClick,
+    getColor,
+    className,
+    zoom,
+    isDragging
+}) => {
     const [hoveredLineKey, setHoveredLineKey] = React.useState<string | null>(null);
     const geoJsonRef = React.useRef<L.GeoJSON>(null);
 
-    const geoJsonData = useMemo(() => {
-        if (!railroadNetwork) return null;
-
-        // Group edges by route ID
-        const features = railroadNetwork.routes.map((route: any) => {
-            const coordinates = route.edges.map((edge: any) => edge.geometry);
-
-            return {
-                type: 'Feature',
-                properties: {
-                    id: route.id,
-                    company: route.company,
-                    line: route.line
-                },
-                geometry: {
-                    type: 'MultiLineString',
-                    coordinates: coordinates
+    // Get set of visited edge keys for fast lookup
+    const visitedEdgeKeys = useMemo(() => {
+        const keys = new Set<string>();
+        recordedTrips.forEach(trip => {
+            if (trip.path) {
+                for (let i = 0; i < trip.path.length - 1; i++) {
+                    keys.add([trip.path[i], trip.path[i + 1]].sort().join('<->'));
                 }
-            };
+            }
+        });
+        return keys;
+    }, [recordedTrips]);
+
+    // Group routes for layered rendering
+    const { visitedFeatures, selectedFeatures, normalFeatures } = useMemo(() => {
+        if (!railroadNetwork) return { visitedFeatures: [], selectedFeatures: [], normalFeatures: [] };
+
+        const visited: any[] = [];
+        const selected: any[] = [];
+        const normal: any[] = [];
+
+        railroadNetwork.routes.forEach((route: any) => {
+            const isLineSelected = selectedLines.includes(route.id);
+
+            // Split edges into visited and unvisited
+            const visitedCoords: any[][] = [];
+            const unvisitedCoords: any[][] = [];
+
+            route.edges.forEach((edge: any) => {
+                const edgeKey = [edge.from, edge.to].sort().join('<->');
+                if (visitedEdgeKeys.has(edgeKey)) {
+                    visitedCoords.push(edge.geometry);
+                } else {
+                    unvisitedCoords.push(edge.geometry);
+                }
+            });
+
+            if (visitedCoords.length > 0) {
+                visited.push({
+                    type: 'Feature',
+                    properties: { id: route.id, company: route.company, line: route.line, type: 'visited' },
+                    geometry: { type: 'MultiLineString', coordinates: visitedCoords }
+                });
+            }
+
+            if (unvisitedCoords.length > 0) {
+                const feature = {
+                    type: 'Feature',
+                    properties: { id: route.id, company: route.company, line: route.line, type: 'normal' },
+                    geometry: { type: 'MultiLineString', coordinates: unvisitedCoords }
+                };
+                if (isLineSelected) {
+                    selected.push(feature);
+                } else {
+                    normal.push(feature);
+                }
+            }
         });
 
-        return { type: 'FeatureCollection' as const, features };
-    }, [railroadNetwork]);
+        return { visitedFeatures: visited, selectedFeatures: selected, normalFeatures: normal };
+    }, [railroadNetwork, selectedLines, visitedEdgeKeys]);
 
-    const getFeatureStyle = useCallback((feature: any) => {
-        const lineKey = feature.properties.id;
-        const isHovered = !isDragging && hoveredLineKey === lineKey;
-        const isSelected = selectedLines.includes(lineKey);
-        const baseColor = getColor(lineKey);
+    const getBaseWeight = useCallback(() => {
+        if (zoom <= 6) return 1.5;
+        if (zoom <= 8) return 2.5;
+        if (zoom <= 10) return 4;
+        if (zoom <= 12) return 6;
+        return 9;
+    }, [zoom]);
 
-        // Dynamic weight based on zoom
-        let baseWeight = 2;
-        if (zoom > 7) baseWeight = 3;
-        if (zoom > 9) baseWeight = 5;
-        if (zoom > 11) baseWeight = 8;
+    const renderLayer = (features: any[], isOutline: boolean, type: 'normal' | 'selected' | 'visited') => {
+        if (features.length === 0) return null;
 
-        const weight = isHovered ? baseWeight * 1.5 : (isSelected ? baseWeight * 1.2 : baseWeight);
+        const baseWeight = getBaseWeight();
 
-        return {
-            color: isHovered ? '#ff4d4f' : baseColor,
-            weight: weight,
-            opacity: isHovered ? 1 : (isSelected ? 0.9 : 0.4),
-            lineCap: 'round' as L.LineCapShape,
-            lineJoin: 'round' as L.LineJoinShape,
+        const style = (feature: any) => {
+            const lineKey = feature.properties.id;
+            const isHovered = !isDragging && hoveredLineKey === lineKey;
+            const baseColor = getColor(lineKey);
+
+            let weight = baseWeight;
+            if (type === 'selected') weight *= 1.3;
+            if (type === 'visited') weight *= 1.5;
+            if (isHovered) weight *= 1.2;
+
+            if (isOutline) {
+                let outlineColor = '#ffffff';
+                let oWeight = weight + 2;
+                let opacity = type === 'normal' ? 0.3 : 0.8;
+
+                if (type === 'visited') {
+                    outlineColor = '#2ecc71'; // Vibrant green border for visited
+                    oWeight = weight + 4; // Thicker halo
+                    opacity = 1.0;
+                }
+
+                return {
+                    color: outlineColor,
+                    weight: oWeight,
+                    opacity: opacity,
+                    lineCap: 'round' as L.LineCapShape,
+                    lineJoin: 'round' as L.LineJoinShape,
+                };
+            }
+
+            let color = baseColor;
+            let opacity = 0.85;
+
+            if (type === 'visited') {
+                // visited color matches baseColor, but opacity is high
+                opacity = 1.0;
+            } else if (type === 'normal') {
+                opacity = 0.5;
+            }
+
+            if (isHovered) {
+                color = '#e74c3c'; // Coral red for hover
+                opacity = 1.0;
+            }
+
+            return {
+                color: color,
+                weight: weight,
+                opacity: opacity,
+                lineCap: 'round' as L.LineCapShape,
+                lineJoin: 'round' as L.LineJoinShape,
+            };
         };
-    }, [hoveredLineKey, selectedLines, getColor, isDragging, zoom]);
+
+        return (
+            <GeoJSON
+                key={`${type}-${isOutline ? 'outline' : 'color'}-${features.length}`}
+                data={{ type: 'FeatureCollection', features } as any}
+                style={style}
+                onEachFeature={onEachFeature}
+            />
+        );
+    };
 
     const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
         const lineKey = feature.properties.id;
         const lineName = feature.properties.line;
 
         layer.on({
-            mouseover: (e) => {
+            mouseover: () => {
                 if (isDragging) return;
                 setHoveredLineKey(lineKey);
                 const tooltipHtml = `
@@ -96,48 +198,35 @@ const Railroads: React.FC<RailroadsProps> = ({ railroadNetwork, selectedLines, o
         });
     }, [onRailroadClick, isDragging]);
 
-    // Force style update when selection changes (hover is handled by layer.on)
-    React.useEffect(() => {
-        if (!geoJsonRef.current) return;
-        geoJsonRef.current.eachLayer((layer: any) => {
-            if (layer.feature) {
-                layer.setStyle(getFeatureStyle(layer.feature));
-                if (selectedLines.includes(layer.feature.properties.id)) {
-                    layer.bringToFront();
-                }
-            }
-        });
-    }, [selectedLines, getFeatureStyle]);
-
-    if (!geoJsonData) return null;
+    if (!railroadNetwork) return null;
 
     return (
         <>
             <style dangerouslySetInnerHTML={{
                 __html: `
                 .railroad-tooltip {
-                    background: rgba(0, 0, 0, 0.95) !important;
+                    background: rgba(0, 0, 0, 0.9) !important;
                     color: white !important;
-                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
                     border-radius: 8px !important;
                     padding: 8px 12px !important;
                     font-size: 14px !important;
                     font-weight: 800 !important;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
                     pointer-events: none !important;
                     z-index: 3000 !important;
                 }
-                .railroad-tooltip:before {
-                    border-top-color: rgba(0, 0, 0, 0.95) !important;
-                }
             `}} />
-            <GeoJSON
-                ref={geoJsonRef}
-                key={`railroads-${geoJsonData.features.length}-${selectedLines.length}`}
-                data={geoJsonData}
-                style={getFeatureStyle}
-                onEachFeature={onEachFeature}
-            />
+
+            {/* Outline Layer (Bottom) */}
+            {renderLayer(normalFeatures, true, 'normal')}
+            {renderLayer(selectedFeatures, true, 'selected')}
+            {renderLayer(visitedFeatures, true, 'visited')}
+
+            {/* Color Layer (Top) */}
+            {renderLayer(normalFeatures, false, 'normal')}
+            {renderLayer(selectedFeatures, false, 'selected')}
+            {renderLayer(visitedFeatures, false, 'visited')}
         </>
     );
 };

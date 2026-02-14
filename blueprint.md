@@ -23,6 +23,11 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Line Detail Mini-map**: Provides an integrated overview of even complex branched routes with one-click navigation to any station.
 *   **Detail Pane Drag-to-Record**: Enables direct trip recording from the station detail view via intuitive drag-and-drop interactions.
 *   **Visited Station Highlighting**: Visually distinct markers (green with glow) for stations that have been visited, improving orientation within the line view.
+*   **Sidebar Statistics Tracking**: Displays visited line counts versus total line counts (e.g., 2/45) for both railroad companies and major categories within the sidebar.
+*   **Focused Map Interactions**: Map interactions are specifically optimized for railroad and station data, with administrative boundary zoom-on-click functionality disabled.
+*   **Intelligent Trip Management**: Features a "Toggle" logic where recording the same trip twice (even in reverse) removes it from the record.
+*   **Trip Reset**: Provides a dedicated button in the header (top right) to clear all travel history with confirmation.
+*   **User Statistics Dashboard**: A real-time header display showing total distance (km), lines completed, stations visited, and railroad companies used.
 
 ## Technical Details
 
