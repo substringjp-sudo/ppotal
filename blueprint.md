@@ -28,6 +28,8 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Intelligent Trip Management**: Features a "Toggle" logic where recording the same trip twice (even in reverse) removes it from the record.
 *   **Trip Reset**: Provides a dedicated button in the header (top right) to clear all travel history with confirmation.
 *   **User Statistics Dashboard**: A real-time header display showing total distance (km), lines completed, stations visited, and railroad companies used.
+*   **Firebase Hosting Deployment**: Successfully deployed to Firebase Hosting using optimized Next.js build and experiments for web framework support.
+*   **Firebase Configuration**: Integrated Firebase SDK for future expandability (Auth, Realtime database, etc.).
 
 ## Technical Details
 
