@@ -18,6 +18,7 @@ interface StationsProps {
     zoom: number;
     getColor: (name: string) => string;
     selectedLines: string[];
+    activeLine: string | null;
     onStationMouseDown: (name: string, coords: [number, number]) => void;
     onStationMouseUp: (name: string) => void;
     dragStartStation: string | null;
@@ -62,6 +63,7 @@ const Stations: React.FC<StationsProps> = ({
     zoom,
     getColor,
     selectedLines,
+    activeLine,
     onStationMouseDown,
     onStationMouseUp,
     dragStartStation,
@@ -72,10 +74,10 @@ const Stations: React.FC<StationsProps> = ({
     }
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
-        if (selectedLines.length === 0) return false;
+        if (selectedLines.length === 0 && !activeLine) return false;
         // Show dots only from zoom 7 (two stages later than initial 5)
         if (zoom < 7) return false;
-        return data.lines.some(line => selectedLines.includes(line));
+        return data.lines.some(line => selectedLines.includes(line) || activeLine === line);
     });
 
     return (
@@ -88,11 +90,10 @@ const Stations: React.FC<StationsProps> = ({
                 const isDragging = dragStartStation === name;
                 const isLowZoom = zoom <= 13;
 
-                const radius = isLowZoom ? 2.5 : (isHighlighted ? 8 : 6);
-                const weight = isLowZoom ? 0 : (isHighlighted ? 5 : 3);
+                const radius = isLowZoom ? 3 : (isHighlighted ? 10 : 7.5);
+                const weight = isLowZoom ? 0 : (isHighlighted ? 6 : 4);
 
                 const coords = station.nodes.map(n => n.coord);
-                const hullPoints = coords.length > 2 ? convexHull(coords) : null;
                 const hasMultiplePoints = coords.length > 1;
 
                 // Format line names for tooltip
@@ -106,21 +107,6 @@ const Stations: React.FC<StationsProps> = ({
 
                 return (
                     <React.Fragment key={name}>
-                        {/* Grouping Polygon - Improved Visual */}
-                        {zoom > 12 && hasMultiplePoints && (hullPoints || coords.length === 2) && (
-                            <Polygon
-                                positions={hullPoints || coords}
-                                pathOptions={{
-                                    color: isHighlighted ? '#FF0000' : getColor(lines[0]),
-                                    weight: 2,
-                                    fillColor: isHighlighted ? '#FF0000' : getColor(lines[0]),
-                                    fillOpacity: 0.15,
-                                    stroke: true,
-                                    lineJoin: 'round',
-                                    lineCap: 'round'
-                                }}
-                            />
-                        )}
 
                         {zoom > 12 && isSelected && (
                             <Marker
@@ -151,7 +137,7 @@ const Stations: React.FC<StationsProps> = ({
 
                         {station.nodes.map((node, idx) => {
                             const isNodeVisited = visitedStations.has(node.id);
-                            const isNodeSelected = selectedLines.includes(node.lineKey);
+                            const isNodeSelected = selectedLines.includes(node.lineKey) || activeLine === node.lineKey;
 
                             const baseColor = getColor(node.lineKey);
                             const lightenedColor = lightenColor(baseColor, 60);

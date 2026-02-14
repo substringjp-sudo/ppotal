@@ -25,7 +25,13 @@ interface MapPaneProps {
         nodes: Map<string, StationNode>,
         getShortestPath: any
     } | null) => void;
+    zoomTarget?: { type: 'line' | 'station', id: string } | null;
+    onZoomComplete?: () => void;
+    onLineMappingCreated?: (map: Map<string, string>) => void;
 }
+
+import MapControls from './MapControls';
+import html2canvas from 'html2canvas';
 
 const MapPane: React.FC<MapPaneProps> = ({
     selectedLines,
@@ -36,7 +42,10 @@ const MapPane: React.FC<MapPaneProps> = ({
     onLengthsCalculated,
     onVisitedLengthsCalculated,
     activeLine,
-    onLineDetailData
+    onLineDetailData,
+    zoomTarget,
+    onZoomComplete,
+    onLineMappingCreated
 }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
@@ -134,6 +143,23 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
     }, [railroadNetwork]);
 
+    // Create a mapping from simplified ID to full ID (company::lineName)
+    const lineIdMap = useMemo(() => {
+        if (!railroadNetwork) return new Map<string, string>();
+        const map = new Map<string, string>();
+        railroadNetwork.routes.forEach((route: any) => {
+            map.set(route.id, `${route.company}::${route.line}`);
+        });
+        return map;
+    }, [railroadNetwork]);
+
+    // Report mapping to parent in useEffect to avoid setState in render warning
+    useEffect(() => {
+        if (onLineMappingCreated && lineIdMap.size > 0) {
+            onLineMappingCreated(lineIdMap);
+        }
+    }, [lineIdMap, onLineMappingCreated]);
+
     // Calculate line lengths for sidebar
     useEffect(() => {
         if (!railroadNetwork) return;
@@ -143,7 +169,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             route.edges.forEach((edge: any) => {
                 totalLength += edge.distance;
             });
-            roundedLengths[route.id] = Math.round(totalLength * 10) / 10;
+            const fullId = `${route.company}::${route.line}`;
+            roundedLengths[fullId] = Math.round(totalLength * 10) / 10;
         });
         setLineLengths(roundedLengths);
         if (onLengthsCalculated) {
@@ -180,7 +207,8 @@ const MapPane: React.FC<MapPaneProps> = ({
 
                 // Only count if it's the same line (transfers are handles separately/not counted for railroad line progress)
                 if (companyU === companyV && lineU === lineV) {
-                    const lineKey = `${companyU}::${lineU}`;
+                    const simplifiedKey = `${companyU}::${lineU}`;
+                    const lineKey = lineIdMap.get(simplifiedKey) || simplifiedKey;
 
                     if (!visitedPerLine[lineKey]) visitedPerLine[lineKey] = new Set();
 
@@ -191,7 +219,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         visitedPerLine[lineKey].add(edgeId);
 
                         // Find the edge in railroadNetwork to get its distance
-                        const route = railroadNetwork.routes.find((r: any) => r.id === lineKey);
+                        const route = railroadNetwork.routes.find((r: any) => r.id === simplifiedKey);
                         if (route) {
                             const edge = route.edges.find((e: any) =>
                                 (e.from === uId && e.to === vId) || (e.from === vId && e.to === uId)
@@ -214,7 +242,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         if (onVisitedLengthsCalculated) {
             onVisitedLengthsCalculated(roundedVisited);
         }
-    }, [recordedTrips, railroadNetwork, onVisitedLengthsCalculated]);
+    }, [recordedTrips, railroadNetwork, onVisitedLengthsCalculated, lineIdMap]);
 
     // Handle Active Line Detail Data
     useEffect(() => {
@@ -232,7 +260,10 @@ const MapPane: React.FC<MapPaneProps> = ({
                 for (let i = 0; i < trip.path.length - 1; i++) {
                     const u = trip.path[i];
                     const v = trip.path[i + 1];
-                    if (u.startsWith(activeLine) && v.startsWith(activeLine)) {
+                    const nodeU = graph.nodes.get(u);
+                    const nodeV = graph.nodes.get(v);
+
+                    if (nodeU?.fullLineName === activeLine && nodeV?.fullLineName === activeLine) {
                         visitedEdges.add([u, v].sort().join('<->'));
                     }
                 }
@@ -264,9 +295,10 @@ const MapPane: React.FC<MapPaneProps> = ({
         Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
             const parts = id.split('::');
             const company = parts[0];
-            const line = parts[1];
+            const lineSimplified = parts[1];
             const name = s.name;
-            const key = `${company}::${line}`;
+            const simplifiedKey = `${company}::${lineSimplified}`;
+            const key = lineIdMap.get(simplifiedKey) || simplifiedKey;
             const [lng, lat] = s.coords;
 
             if (lat >= mapBounds.getSouth() && lat <= mapBounds.getNorth() &&
@@ -289,7 +321,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
         });
         return data;
-    }, [railroadNetwork, mapBounds, zoomLevel]);
+    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap]);
 
     const findNearestStation = useCallback((lat: number, lng: number) => {
         if (!visibleStations) return null;
@@ -455,11 +487,93 @@ const MapPane: React.FC<MapPaneProps> = ({
         return set;
     }, [recordedTrips]);
 
+
+    // Zoom to line/station
+    useEffect(() => {
+        if (!zoomTarget || !mapReady || !railroadNetwork) return;
+
+        if (zoomTarget.type === 'line') {
+            const lineFeatures = railroadNetwork.features.filter((f: any) => f.properties.id === zoomTarget.id);
+            if (lineFeatures.length > 0) {
+                const bounds = L.latLngBounds([]);
+                lineFeatures.forEach((f: any) => {
+                    const coords = f.geometry.type === 'LineString'
+                        ? f.geometry.coordinates
+                        : f.geometry.coordinates.flat(1);
+                    coords.forEach((c: any) => bounds.extend([c[1], c[0]]));
+                });
+                if (bounds.isValid()) {
+                    map.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
+                }
+            }
+        } else if (zoomTarget.type === 'station') {
+            const stationName = zoomTarget.id;
+            const allStations = Object.values(railroadNetwork.stations as Record<string, any>);
+            const stationData = allStations.find(s => s.name === stationName);
+
+            if (stationData) {
+                const [lng, lat] = stationData.coords;
+                map.flyTo([lat, lng], 15, { duration: 1.5 });
+            }
+        }
+
+        onZoomComplete?.();
+    }, [zoomTarget, mapReady, railroadNetwork, map, onZoomComplete]);
+
+    const exportMap = async () => {
+        const mapElement = document.querySelector('.leaflet-container') as HTMLElement;
+        if (!mapElement) return;
+
+        // Hide controls temporarily
+        const controls = document.querySelectorAll('.leaflet-control, .map-custom-control');
+        controls.forEach(c => (c as HTMLElement).style.display = 'none');
+
+        try {
+            const canvas = await html2canvas(mapElement, {
+                useCORS: true,
+                backgroundColor: '#a0c4ff'
+            });
+            const link = document.createElement('a');
+            link.download = `jprail-map-${new Date().toISOString().slice(0, 10)}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        } catch (err) {
+            console.error('Export failed:', err);
+        } finally {
+            controls.forEach(c => (c as HTMLElement).style.display = '');
+        }
+    };
+
     if (!mapReady) return null;
 
     return (
         <>
+            <MapControls zoom={zoomLevel} />
+            <button
+                onClick={exportMap}
+                className="map-custom-control"
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '250px', // Adjusted to not overlap sidebar if any
+                    zIndex: 1000,
+                    padding: '10px 16px',
+                    backgroundColor: '#2ecc71',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                }}
+            >
+                <span>📸</span> EXPORT MAP
+            </button>
             {/* Background Layer: Prefectures & Municipalities */}
+
             <Pane name="background" style={{ zIndex: 100 }}>
                 <JapanMap
                     prefectures={prefectures}
@@ -496,6 +610,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     getColor={getColor}
                     zoom={zoomLevel}
                     isDragging={!!dragStartStation}
+                    activeLine={activeLine}
                 />
 
                 {previewPath && (
@@ -554,6 +669,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         zoom={zoomLevel}
                         getColor={getColor}
                         selectedLines={selectedLines}
+                        activeLine={activeLine}
                         onStationMouseDown={handleStationMouseDown}
                         onStationMouseUp={handleStationMouseUp}
                         dragStartStation={dragStartStation}

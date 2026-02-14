@@ -19,6 +19,10 @@ const LineDetailPaneWithNoSSR = dynamic(() => import('../components/LineDetailPa
     ssr: false
 });
 
+const MyLinesPaneWithNoSSR = dynamic(() => import('../components/MyLinesPane'), {
+    ssr: false
+});
+
 const Page = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
@@ -96,14 +100,55 @@ const Page = () => {
         setActiveLine(line);
     }, []);
 
+    const [lineIdMapping, setLineIdMapping] = React.useState<Map<string, string>>(new Map());
+
+    const handleDeleteLineHistory = React.useCallback((lineId: string) => {
+        const lineName = lineId.split('::')[1] || lineId;
+        if (typeof window !== 'undefined' && window.confirm(`'${lineName}' 노선의 모든 이동 기록을 삭제하시겠습니까?`)) {
+            // Create a set of simplified IDs that map to this full lineId
+            const simplifiedLineIdsToDelete = new Set<string>();
+            // Add the target lineId itself (if it's a simplified ID)
+            simplifiedLineIdsToDelete.add(lineId);
+            // Add all simplified IDs that map to the target full lineId
+            lineIdMapping.forEach((fullId, simpleId) => {
+                if (fullId === lineId) {
+                    simplifiedLineIdsToDelete.add(simpleId);
+                }
+            });
+
+            setRecordedTrips(prev => prev.filter(trip => {
+                // Check if any node in the trip path belongs to any of the lines to be deleted
+                return !trip.path.some((sid: string) => {
+                    const sidParts = sid.split('::');
+                    if (sidParts.length < 2) return false;
+                    const sidPrefix = `${sidParts[0]}::${sidParts[1]}`;
+                    return simplifiedLineIdsToDelete.has(sidPrefix);
+                });
+            }));
+        }
+    }, [lineIdMapping]);
+
     const setSelectedLinesList = React.useCallback((lines: string[]) => {
         setSelectedLines(lines);
     }, []);
+
+    const [zoomTarget, setZoomTarget] = React.useState<{ type: 'line' | 'station', id: string } | null>(null);
 
     const handleRailroadClick = React.useCallback((line: string) => {
         setActiveLine(line);
         // Ensure it's in selected lines for visualization
         setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
+    }, []);
+
+    const handleLineClick = React.useCallback((line: string) => {
+        setActiveLine(line);
+        setZoomTarget({ type: 'line', id: line });
+        // Auto-select if not selected
+        setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
+    }, []);
+
+    const handleStationClick = React.useCallback((stationName: string) => {
+        setZoomTarget({ type: 'station', id: stationName });
     }, []);
 
     const stats = React.useMemo(() => {
@@ -153,7 +198,7 @@ const Page = () => {
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-0.5px' }}>
-                        JAPAN RAIL MAP
+                        JapanRailNote
                     </h1>
                 </div>
 
@@ -223,7 +268,7 @@ const Page = () => {
                         lineLengths={lineLengths}
                         visitedLineLengths={visitedLineLengths}
                         activeLine={activeLine}
-                        onResetTrips={handleResetTrips}
+                        onLineClick={handleLineClick}
                     />
                 </div>
                 <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -233,11 +278,15 @@ const Page = () => {
                                 selectedLines={selectedLines}
                                 recordedTrips={recordedTrips}
                                 onRecordTrip={handleRecordTrip}
+                                onRailroadClick={handleRailroadClick}
+                                onStationClick={handleStationClick}
                                 onLengthsCalculated={setLineLengths}
                                 onVisitedLengthsCalculated={setVisitedLineLengths}
-                                onRailroadClick={handleRailroadClick}
+                                onLineMappingCreated={setLineIdMapping}
                                 activeLine={activeLine}
                                 onLineDetailData={setLineDetailData}
+                                zoomTarget={zoomTarget}
+                                onZoomComplete={() => setZoomTarget(null)}
                             />
                         </MapWithNoSSR>
                     </div>
@@ -252,9 +301,28 @@ const Page = () => {
                                 getShortestPath={lineDetailData.getShortestPath}
                                 onRecordTrip={handleRecordTrip}
                                 onClose={() => setActiveLine(null)}
+                                onStationClick={handleStationClick}
                             />
                         </div>
                     )}
+                </div>
+                {/* Right Panel: My Lines */}
+                <div style={{
+                    width: '300px',
+                    height: '100%',
+                    borderLeft: '1px solid #ddd',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    zIndex: 1000,
+                    overflowY: 'auto'
+                }}>
+                    <MyLinesPaneWithNoSSR
+                        visitedLineLengths={visitedLineLengths}
+                        lineLengths={lineLengths}
+                        onLineClick={handleLineClick}
+                        onDeleteLineHistory={handleDeleteLineHistory}
+                        activeLine={activeLine}
+                    />
                 </div>
             </div>
         </main>

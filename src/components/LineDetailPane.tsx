@@ -12,6 +12,7 @@ interface LineDetailPaneProps {
     onRecordTrip?: (trip: any) => void;
     getShortestPath?: (start: string, end: string, lines: string[]) => any;
     onClose: () => void;
+    onStationClick?: (stationName: string) => void;
 }
 
 interface StationPos {
@@ -21,7 +22,7 @@ interface StationPos {
 }
 
 const LineDetailPane: React.FC<LineDetailPaneProps> = ({
-    lineId, segments, nodes, visitedEdges, selectedLines, onRecordTrip, getShortestPath, onClose
+    lineId, segments, nodes, visitedEdges, selectedLines, onRecordTrip, getShortestPath, onClose, onStationClick
 }) => {
     const [company, lineName] = lineId.split('::');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -281,7 +282,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 }}
                 style={{
                     position: 'absolute',
-                    top: '70px',
+                    bottom: 'calc(100% + 10px)',
                     right: '25px',
                     width: '240px',
                     height: '110px',
@@ -344,7 +345,12 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                             {row.map((pos: StationPos, pIdx: number) => (
                                 <div
                                     key={`mini-dot-${pos.id}-${rIdx}-${pIdx}`}
-                                    onClick={() => scrollToStation(pos.x)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const name = nodes.get(pos.id)?.name;
+                                        if (name) onStationClick?.(name);
+                                        scrollToStation(pos.x);
+                                    }}
                                     style={{
                                         position: 'absolute',
                                         left: `${((pos.x - layout.minX) / (layout.maxX - layout.minX + 1 || 1)) * 100 + 4}%`,

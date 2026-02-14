@@ -1,8 +1,9 @@
 export interface StationNode {
-    id: string; // company::line::stationName
+    id: string; // company::simplifiedLine::stationName::index
     name: string;
     company: string;
-    line: string;
+    line: string; // simplified line
+    fullLineName: string; // company::fullLineName
     coords: [number, number]; // [lon, lat]
 }
 
@@ -17,6 +18,10 @@ export class RailroadGraph {
     adj: Map<string, Edge[]> = new Map();
     // Index mapping name -> node IDs for fast lookup
     stationsByName: Record<string, string[]> = {};
+    // Mapping from simplified line key to full line key
+    lineIdMap: Map<string, string> = new Map();
+    // Mapping from full line key to simplified line keys (can be multiple if names are same? unlikely but possible)
+    reverseLineIdMap: Map<string, string[]> = new Map();
 
     addNode(node: StationNode) {
         this.nodes.set(node.id, node);
@@ -140,7 +145,7 @@ export class RailroadGraph {
                 if (allowedLines) {
                     const targetNode = this.nodes.get(neighbor.to);
                     if (targetNode) {
-                        const lineKey = `${targetNode.company}::${targetNode.line}`;
+                        const lineKey = targetNode.fullLineName;
                         if (!allowedLines.includes(lineKey)) {
                             continue;
                         }
@@ -169,16 +174,32 @@ export class RailroadGraph {
         this.adj.clear();
         this.stationsByName = {};
 
+        // 0. Build line mapping
+        this.lineIdMap.clear();
+        this.reverseLineIdMap.clear();
+        data.routes.forEach((route: any) => {
+            const fullId = `${route.company}::${route.line}`;
+            this.lineIdMap.set(route.id, fullId);
+            if (!this.reverseLineIdMap.has(fullId)) {
+                this.reverseLineIdMap.set(fullId, []);
+            }
+            this.reverseLineIdMap.get(fullId)!.push(route.id);
+        });
+
         // 1. Load Stations
         for (const [id, station] of Object.entries(data.stations as Record<string, any>)) {
             const parts = id.split('::');
             const company = parts[0];
             const line = parts[1];
+            const simplifiedLineKey = `${company}::${line}`;
+            const fullLineName = this.lineIdMap.get(simplifiedLineKey) || simplifiedLineKey;
+
             const node: StationNode = {
                 id,
                 name: station.name,
                 company,
                 line,
+                fullLineName,
                 coords: station.coords
             };
             this.addNode(node);
@@ -214,10 +235,12 @@ export class RailroadGraph {
      * Extracts an ordered sequence of stations for a given line.
      * Since lines can have branches, this returns a list of segments.
      */
-    getLineSegments(lineId: string): { stations: string[], edges: { from: string, to: string, distance: number }[] }[] {
+    getLineSegments(fullLineId: string): { stations: string[], edges: { from: string, to: string, distance: number }[] }[] {
+        const simplifiedIds = this.reverseLineIdMap.get(fullLineId) || [fullLineId];
+
         const lineEdges = Array.from(this.adj.entries())
-            .filter(([u]) => u.startsWith(lineId))
-            .flatMap(([u, edges]) => edges.filter(e => e.to.startsWith(lineId)).map(e => ({ from: u, ...e })));
+            .filter(([u]) => simplifiedIds.some(id => u.startsWith(id)))
+            .flatMap(([u, edges]) => edges.filter(e => simplifiedIds.some(id => e.to.startsWith(id))).map(e => ({ from: u, ...e })));
 
         if (lineEdges.length === 0) return [];
 
@@ -332,7 +355,7 @@ export const buildGraph = (stationsGeoJson: any, sectionGeoJson: any, hierarchy:
             (coords[0][1] + coords[coords.length - 1][1]) / 2
         ];
 
-        const node: StationNode = { id, name, company, line, coords: midpoint };
+        const node: StationNode = { id, name, company, line, fullLineName: lineKey, coords: midpoint };
         graph.addNode(node);
 
         if (!stationMap[lineKey]) stationMap[lineKey] = [];

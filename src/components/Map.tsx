@@ -13,8 +13,11 @@ const Map: React.FC<MapProps> = ({ children }) => {
         <MapContainer
             center={[35.6895, 139.6917]}
             zoom={5}
-            style={{ height: '100%', width: '100%', background: '#f0f0f0' }}
+            minZoom={5}
+            maxZoom={18}
+            style={{ height: '100%', width: '100%', background: '#a0c4ff' }}
             scrollWheelZoom={true}
+            zoomControl={false}
         >
             {children}
         </MapContainer>

@@ -13,6 +13,7 @@ interface RailroadsProps {
     className?: string;
     zoom: number;
     isDragging?: boolean;
+    activeLine: string | null;
 }
 
 const Railroads: React.FC<RailroadsProps> = ({
@@ -23,7 +24,8 @@ const Railroads: React.FC<RailroadsProps> = ({
     getColor,
     className,
     zoom,
-    isDragging
+    isDragging,
+    activeLine
 }) => {
     const [hoveredLineKey, setHoveredLineKey] = React.useState<string | null>(null);
     const geoJsonRef = React.useRef<L.GeoJSON>(null);
@@ -50,7 +52,8 @@ const Railroads: React.FC<RailroadsProps> = ({
         const normal: any[] = [];
 
         railroadNetwork.routes.forEach((route: any) => {
-            const isLineSelected = selectedLines.includes(route.id);
+            const lineKey = `${route.company}::${route.line}`;
+            const isLineSelected = selectedLines.includes(lineKey);
 
             // Split edges into visited and unvisited
             const visitedCoords: any[][] = [];
@@ -68,7 +71,7 @@ const Railroads: React.FC<RailroadsProps> = ({
             if (visitedCoords.length > 0) {
                 visited.push({
                     type: 'Feature',
-                    properties: { id: route.id, company: route.company, line: route.line, type: 'visited' },
+                    properties: { id: lineKey, company: route.company, line: route.line, type: 'visited' },
                     geometry: { type: 'MultiLineString', coordinates: visitedCoords }
                 });
             }
@@ -76,10 +79,11 @@ const Railroads: React.FC<RailroadsProps> = ({
             if (unvisitedCoords.length > 0) {
                 const feature = {
                     type: 'Feature',
-                    properties: { id: route.id, company: route.company, line: route.line, type: 'normal' },
+                    properties: { id: lineKey, company: route.company, line: route.line, type: 'normal' },
                     geometry: { type: 'MultiLineString', coordinates: unvisitedCoords }
                 };
-                if (isLineSelected) {
+                // Treat activeLine as selected for rendering priority and visibility
+                if (isLineSelected || activeLine === lineKey) {
                     selected.push(feature);
                 } else {
                     normal.push(feature);
@@ -88,7 +92,7 @@ const Railroads: React.FC<RailroadsProps> = ({
         });
 
         return { visitedFeatures: visited, selectedFeatures: selected, normalFeatures: normal };
-    }, [railroadNetwork, selectedLines, visitedEdgeKeys]);
+    }, [railroadNetwork, selectedLines, visitedEdgeKeys, activeLine]);
 
     const getBaseWeight = useCallback(() => {
         if (zoom <= 6) return 1.5;
@@ -105,22 +109,29 @@ const Railroads: React.FC<RailroadsProps> = ({
 
         const style = (feature: any) => {
             const lineKey = feature.properties.id;
+            const isActive = activeLine === lineKey;
             const isHovered = !isDragging && hoveredLineKey === lineKey;
             const baseColor = getColor(lineKey);
 
             let weight = baseWeight;
-            if (type === 'selected') weight *= 1.3;
+            if (type === 'selected') weight *= 1.4; // Slightly more weight
             if (type === 'visited') weight *= 1.5;
+            if (isActive) weight *= 1.8; // Active line is very bold
             if (isHovered) weight *= 1.2;
 
             if (isOutline) {
                 let outlineColor = '#ffffff';
-                let oWeight = weight + 2;
-                let opacity = type === 'normal' ? 0.3 : 0.8;
+                let oWeight = weight + (zoom > 10 ? 4 : 2);
+                let opacity = type === 'normal' ? 0.3 : 0.9; // Increased selected outline opacity
+
+                if (isActive) {
+                    outlineColor = '#3498db'; // Blue glow for active
+                    opacity = 1.0;
+                }
 
                 if (type === 'visited') {
-                    outlineColor = '#2ecc71'; // Vibrant green border for visited
-                    oWeight = weight + 4; // Thicker halo
+                    outlineColor = '#2ecc71';
+                    oWeight = weight + 4;
                     opacity = 1.0;
                 }
 
@@ -134,13 +145,12 @@ const Railroads: React.FC<RailroadsProps> = ({
             }
 
             let color = baseColor;
-            let opacity = 0.85;
+            let opacity = 0.9; // Increased base opacity for better visibility
 
-            if (type === 'visited') {
-                // visited color matches baseColor, but opacity is high
+            if (isActive || type === 'visited') {
                 opacity = 1.0;
             } else if (type === 'normal') {
-                opacity = 0.5;
+                opacity = 0.4;
             }
 
             if (isHovered) {
@@ -159,7 +169,7 @@ const Railroads: React.FC<RailroadsProps> = ({
 
         return (
             <GeoJSON
-                key={`${type}-${isOutline ? 'outline' : 'color'}-${features.length}`}
+                key={`${type}-${isOutline ? 'outline' : 'color'}-${features.length}-${visitedEdgeKeys.size}`}
                 data={{ type: 'FeatureCollection', features } as any}
                 style={style}
                 onEachFeature={onEachFeature}

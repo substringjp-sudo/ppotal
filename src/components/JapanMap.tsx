@@ -37,11 +37,11 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
         if (zoom <= 7) weight = 1;
 
         return {
-            fillColor: '#E0E0E0',
+            fillColor: '#ffffff',
+            fillOpacity: 1.0,
             weight: weight,
             opacity: 1,
-            color: '#A0A0A0',
-            fillOpacity: 0.6,
+            color: '#CCCCCC',
         };
     }, [getColor, outlineOnly, zoom]);
 

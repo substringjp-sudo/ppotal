@@ -1,4 +1,4 @@
-# Japan Map Application
+# JapanRailNote
 
 ## Overview
 
@@ -43,24 +43,25 @@ This application displays an interactive map of Japan, focusing on its administr
 - **Statistics Calculation:** Dynamically aggregates visited distance by matching topological edges between recorded trips and the systematic railroad network.
 
 # 새 목표
-- 노선데이터 좀 더 보강하기
-- 여러 형태의 시각적 표시방식 설정
 - 지도를 이미지 형태로 출력
 - 노선목록에서 체크 말고 그냥 클릭하면 해당 노선 줌인
-- 번역
 - 점크기 좀 더 크게
-- 오른쪽에 내가 이용한 노선만 정리해서 표시
-- 뭐 클릭하면 생기는 사각형 지우기
-- 방문노선/미방문노선/미체크노선/방문역/미방문역 각각 굵기/크기/투명도 조절
+- 지도 오른쪽 패널에 내가 이용한 노선만 정리해서 표시
+- 노선 클릭하면 생기는 사각형 지우기
 - 신칸센, JR 등 대분류 전체 체크하기 기능
-- 용량 압축, 최적화
-- 하단노선도 네비게이터 하단뷰 위로 올리기 
+- 하단노선도의 네비게이터를 가리지 않게 하단뷰 위로 올리기 
 - 노선목록 정렬 옵션(일본어순서, 알파벳순서, 가나다순서, 이용률순서)
-- 노선목록 모두닫기, 모두열기
-- 노선목록 전체선택/전체닫기 적용여부표시
+- 노선목록 모두닫기, 모두열기 기능 추가
+- 노선목록 전체선택/전체해제 적용 확인 표시
 - 최대줌/최소줌 제한
 - 줌슬라이더, 줌리셋 기능
 - 하단노선도에서 역을 클릭하면 해당 역 위치로 줌 이동
+
+# 미래목표
 - 안쓰는 파일 정리
 - https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html 사용규칙 적용하기
 - https://www.geoboundaries.org/ 사용규칙 적용하기 
+- 번역
+- 노선데이터 좀 더 보강하기
+- 여러 형태의 시각적 표시방식 설정
+- 용량 압축, 최적화

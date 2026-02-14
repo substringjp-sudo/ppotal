@@ -21,7 +21,7 @@ interface SidebarProps {
     lineLengths?: Record<string, number>;
     visitedLineLengths?: Record<string, number>;
     activeLine?: string | null;
-    onResetTrips?: () => void;
+    onLineClick?: (line: string) => void;
 }
 
 const getProgressColor = (percent: number) => {
@@ -45,7 +45,9 @@ type GroupedHierarchy = {
     nonRail: Record<string, Record<string, any>>;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onResetTrips }) => {
+type SortType = 'ja' | 'en' | 'ko' | 'usage';
+
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onLineClick }) => {
     const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
     const [groupedHierarchy, setGroupedHierarchy] = useState<GroupedHierarchy | null>(null);
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
@@ -56,6 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         otherPrivate: false,
         nonRail: false,
     });
+    const [sortType, setSortType] = useState<SortType>('ja');
     const lineRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
     useEffect(() => {
@@ -163,6 +166,54 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
     const handleDeselectAll = useCallback(() => onSetSelectedLines([]), [onSetSelectedLines]);
 
+    const handleToggleAllGroups = useCallback((expand: boolean) => {
+        setExpandedGroups({
+            shinkansen: expand,
+            jr: expand,
+            majorPrivate: expand,
+            otherPrivate: expand,
+            nonRail: expand,
+        });
+        if (hierarchy) {
+            const allCompanies: Record<string, boolean> = {};
+            Object.keys(hierarchy).forEach(c => allCompanies[c] = expand);
+            setExpandedCompanies(allCompanies);
+        }
+    }, [hierarchy]);
+
+    const handleCategoryToggle = useCallback((groupKey: keyof GroupedHierarchy) => {
+        if (!groupedHierarchy) return;
+        const companies = groupedHierarchy[groupKey];
+        const allKeys: string[] = [];
+        Object.entries(companies).forEach(([comp, lines]) => {
+            Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
+        });
+
+        const allSelected = allKeys.every(key => selectedLines.includes(key));
+        const newSelected = allSelected
+            ? selectedLines.filter(l => !allKeys.includes(l))
+            : [...selectedLines, ...allKeys.filter(key => !selectedLines.includes(key))];
+        onSetSelectedLines(newSelected);
+    }, [groupedHierarchy, selectedLines, onSetSelectedLines]);
+
+    const sortCompanies = useCallback((companies: [string, Record<string, any>][]) => {
+        return [...companies].sort((a, b) => {
+            if (sortType === 'usage') {
+                const getUsage = (comp: string, lines: Record<string, any>) => {
+                    let total = 0, visited = 0;
+                    Object.keys(lines).forEach(l => {
+                        total++;
+                        if ((visitedLineLengths[`${comp}::${l}`] || 0) > 0) visited++;
+                    });
+                    return visited / total;
+                };
+                return getUsage(b[0], b[1]) - getUsage(a[0], a[1]);
+            }
+            // For now, simple alphabetical/japanese fallback
+            return a[0].localeCompare(b[0], sortType === 'ja' ? 'ja' : 'en');
+        });
+    }, [sortType, visitedLineLengths]);
+
     if (!groupedHierarchy) return <div className="p-4">Loading...</div>;
 
     const renderGroup = (title: string, groupKey: keyof GroupedHierarchy) => {
@@ -173,7 +224,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         return (
             <div style={{ marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px' }}>
                 <div
-                    onClick={() => toggleGroup(groupKey)}
                     style={{
                         padding: '10px',
                         background: '#f0f0f0',
@@ -184,7 +234,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         alignItems: 'center'
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => toggleGroup(groupKey)}>
                         <span>{title}</span>
                         {(() => {
                             let total = 0;
@@ -202,11 +252,28 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             );
                         })()}
                     </div>
-                    <span>{expandedGroups[groupKey] ? '▼' : '▶'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input
+                            type="checkbox"
+                            checked={(() => {
+                                let all = true;
+                                Object.entries(companies).forEach(([c, ls]) => {
+                                    if (!Object.keys(ls).every(l => selectedLines.includes(`${c}::${l}`))) all = false;
+                                });
+                                return all;
+                            })()}
+                            onChange={(e) => {
+                                e.stopPropagation();
+                                handleCategoryToggle(groupKey);
+                            }}
+                            title="Toggle Category"
+                        />
+                        <span onClick={() => toggleGroup(groupKey)}>{expandedGroups[groupKey] ? '▼' : '▶'}</span>
+                    </div>
                 </div>
                 {expandedGroups[groupKey] && (
                     <div style={{ padding: '0 10px 10px 10px' }}>
-                        {Object.entries(companies).sort((a, b) => a[0].localeCompare(b[0], 'ja')).map(([company, lines]) => {
+                        {sortCompanies(Object.entries(companies)).map(([company, lines]) => {
                             const isExpanded = expandedCompanies[company];
                             const lineNames = Object.keys(lines);
                             const allLinesSelected = lineNames.every(l => selectedLines.includes(`${company}::${l}`));
@@ -296,15 +363,18 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                         />
                                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                                                                <span style={{
-                                                                    fontSize: '12px',
-                                                                    color: isCompleted ? '#186A3B' : '#333',
-                                                                    fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
-                                                                    whiteSpace: 'nowrap',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis',
-                                                                    flex: 1
-                                                                }}>
+                                                                <span
+                                                                    onClick={() => onLineClick?.(key)}
+                                                                    style={{
+                                                                        fontSize: '12px',
+                                                                        color: isCompleted ? '#186A3B' : '#333',
+                                                                        fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
+                                                                        whiteSpace: 'nowrap',
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
+                                                                        flex: 1,
+                                                                        cursor: 'pointer'
+                                                                    }}>
                                                                     {line}
                                                                 </span>
                                                                 {(() => {
@@ -357,23 +427,75 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     };
 
     return (
-        <div className="sidebar-content" style={{ padding: '20px', fontFamily: 'Pretendard, sans-serif' }}>
-            <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Railroad Filter</h2>
+        <div className="sidebar-content" style={{ padding: '20px', fontFamily: 'Pretendard, sans-serif', display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <h2 style={{ fontSize: '18px', marginBottom: '15px', fontWeight: '900', color: '#2c3e50', borderBottom: '3px solid #3498db', paddingBottom: '8px' }}>
+                JapanRailNote
+            </h2>
 
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                <button onClick={handleSelectAll} style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}>
-                    Select All
-                </button>
-                <button onClick={handleDeselectAll} style={{ flex: 1, padding: '5px', fontSize: '12px', cursor: 'pointer' }}>
-                    Deselect All
-                </button>
+            <div style={{ marginBottom: '15px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Sorting</div>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {[
+                        { id: 'ja', label: '日本語' },
+                        { id: 'en', label: 'ABC' },
+                        { id: 'ko', label: '한국어' },
+                        { id: 'usage', label: 'Usage' }
+                    ].map(opt => (
+                        <button
+                            key={opt.id}
+                            onClick={() => setSortType(opt.id as SortType)}
+                            style={{
+                                flex: 1,
+                                padding: '6px 4px',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                backgroundColor: sortType === opt.id ? '#3498db' : '#fff',
+                                color: sortType === opt.id ? '#fff' : '#333',
+                                fontWeight: sortType === opt.id ? 'bold' : 'normal',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {renderGroup('Shinkansen (新幹線)', 'shinkansen')}
-            {renderGroup('JR Lines', 'jr')}
-            {renderGroup('Major Private (16社)', 'majorPrivate')}
-            {renderGroup('Other Private Railways', 'otherPrivate')}
-            {renderGroup('Non-Rail / Cable Cars', 'nonRail')}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Selection</div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={handleSelectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                            All
+                        </button>
+                        <button onClick={handleDeselectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                            None
+                        </button>
+                    </div>
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Display</div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => handleToggleAllGroups(true)} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                            Open All
+                        </button>
+                        <button onClick={() => handleToggleAllGroups(false)} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                            Close All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
+                {renderGroup('Shinkansen (新幹線)', 'shinkansen')}
+                {renderGroup('JR Lines', 'jr')}
+                {renderGroup('Major Private (16社)', 'majorPrivate')}
+                {renderGroup('Other Private Railways', 'otherPrivate')}
+                {renderGroup('Non-Rail / Cable Cars', 'nonRail')}
+            </div>
+
         </div>
     );
 };
