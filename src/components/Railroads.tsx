@@ -3,6 +3,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
+import { normalizeKey } from '../lib/lineUtils';
+import { MapStyleSettings } from '../app/page';
 
 interface RailroadsProps {
     railroadNetwork: any;
@@ -136,9 +138,9 @@ const Railroads: React.FC<RailroadsProps> = ({
                 }
 
                 return {
-                    color: outlineColor,
-                    weight: oWeight,
-                    opacity: opacity,
+                    color: '#fff',
+                    weight: weight + (zoom > 10 ? 3 : 2),
+                    opacity: 0.8,
                     lineCap: 'round' as L.LineCapShape,
                     lineJoin: 'round' as L.LineJoinShape,
                 };

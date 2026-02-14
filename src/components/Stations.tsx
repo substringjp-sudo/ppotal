@@ -4,6 +4,8 @@ import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
+import { normalizeKey, normalizeLineName } from '../lib/lineUtils';
+import { MapStyleSettings } from '../app/page';
 
 interface StaticNode {
     id: string;
@@ -24,6 +26,7 @@ interface StationsProps {
     onStationMouseUp: (name: string) => void;
     dragStartStation: string | null;
     visitedStations: Set<string>;
+    styleSettings: MapStyleSettings;
 }
 
 // Convex Hull Algorithm (Monotone Chain)
@@ -68,7 +71,8 @@ const Stations: React.FC<StationsProps> = ({
     onStationMouseDown,
     onStationMouseUp,
     dragStartStation,
-    visitedStations
+    visitedStations,
+    styleSettings
 }) => {
     if (!processedStations) {
         return null;
@@ -85,8 +89,20 @@ const Stations: React.FC<StationsProps> = ({
         <>
             {stationEntries.map(([name, station]) => {
                 const isHighlighted = highlightedStations.includes(name);
-                const isSelected = selectedLines.some(line => station.lines.includes(line));
+                const isVisited = visitedStations.has(name);
+                const isSelected = station.lines.some(l =>
+                    selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l))
+                );
                 const lines = station.lines;
+
+                let radius = zoom > 14 ? 6 : (zoom > 12 ? 4 : (zoom > 10 ? 3 : 2));
+
+                // Apply user style size multipliers
+                if (isVisited) {
+                    radius *= styleSettings.visited.stationSize;
+                } else if (isSelected) {
+                    radius *= styleSettings.unvisited.stationSize;
+                }
 
                 const isDragging = dragStartStation === name;
                 const isLowZoom = zoom <= 13;

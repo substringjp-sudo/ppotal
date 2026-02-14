@@ -31,6 +31,22 @@ const Page = () => {
     const [isLoaded, setIsLoaded] = React.useState(false);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
     const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any>, getShortestPath: any } | null>(null);
+    const [zoomToLine, setZoomToLine] = React.useState<string | null>(null);
+    const [zoomToStation, setZoomToStation] = React.useState<string | null>(null);
+    const [showMyRoutes, setShowMyRoutes] = React.useState(false);
+    const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
+
+    // Zoom handlers
+    const handleZoomToLine = React.useCallback((lineKey: string) => {
+        setZoomToLine(lineKey);
+        // Clear after a delay to allow re-triggering if needed, or handle in useEffect
+        setTimeout(() => setZoomToLine(null), 2000);
+    }, []);
+
+    const handleZoomToStation = React.useCallback((stationName: string) => {
+        setZoomToStation(stationName);
+        setTimeout(() => setZoomToStation(null), 2000);
+    }, []);
 
     // Initial load from localStorage
     React.useEffect(() => {
@@ -42,6 +58,20 @@ const Page = () => {
                 console.error('Failed to parse saved trips', e);
             }
         }
+        const savedStyle = localStorage.getItem('jprail_style');
+        if (savedStyle) {
+            try {
+                // Merge with defaults to handle versioning
+                const parsed = JSON.parse(savedStyle);
+                setStyleSettings(prev => ({
+                    unselected: { ...prev.unselected, ...parsed.unselected },
+                    unvisited: { ...prev.unvisited, ...parsed.unvisited },
+                    visited: { ...prev.visited, ...parsed.visited },
+                }));
+            } catch (e) {
+                console.error('Failed to parse saved style', e);
+            }
+        }
         setIsLoaded(true);
     }, []);
 
@@ -49,8 +79,9 @@ const Page = () => {
     React.useEffect(() => {
         if (isLoaded) {
             localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
+            localStorage.setItem('jprail_style', JSON.stringify(styleSettings));
         }
-    }, [recordedTrips, isLoaded]);
+    }, [recordedTrips, styleSettings, isLoaded]);
 
     const handleRecordTrip = React.useCallback((newTrip: any) => {
         setRecordedTrips(prev => {
@@ -222,33 +253,36 @@ const Page = () => {
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleResetTrips}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#fff',
-                            color: '#e74c3c',
-                            border: '1.5px solid #e74c3c',
-                            borderRadius: '20px',
-                            cursor: 'pointer',
-                            fontWeight: '800',
-                            fontSize: '12px',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e74c3c';
-                            e.currentTarget.style.color = '#fff';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fff';
-                            e.currentTarget.style.color = '#e74c3c';
-                        }}
-                    >
-                        RESET
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+
+                        <button
+                            onClick={handleResetTrips}
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#fff',
+                                color: '#e74c3c',
+                                border: '1.5px solid #e74c3c',
+                                borderRadius: '20px',
+                                cursor: 'pointer',
+                                fontWeight: '800',
+                                fontSize: '12px',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#e74c3c';
+                                e.currentTarget.style.color = '#fff';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#fff';
+                                e.currentTarget.style.color = '#e74c3c';
+                            }}
+                        >
+                            RESET
+                        </button>
+                    </div>
                 </div>
             </header>
             <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
@@ -272,7 +306,7 @@ const Page = () => {
                     />
                 </div>
                 <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, position: 'relative' }}>
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                         <MapWithNoSSR>
                             <MapPaneWithNoSSR
                                 selectedLines={selectedLines}
@@ -284,6 +318,8 @@ const Page = () => {
                                 onVisitedLengthsCalculated={setVisitedLineLengths}
                                 onLineMappingCreated={setLineIdMapping}
                                 activeLine={activeLine}
+                                zoomToLine={zoomToLine}
+                                zoomToStation={zoomToStation}
                                 onLineDetailData={setLineDetailData}
                                 zoomTarget={zoomTarget}
                                 onZoomComplete={() => setZoomTarget(null)}
@@ -300,6 +336,7 @@ const Page = () => {
                                 selectedLines={selectedLines}
                                 getShortestPath={lineDetailData.getShortestPath}
                                 onRecordTrip={handleRecordTrip}
+                                onStationClick={handleZoomToStation}
                                 onClose={() => setActiveLine(null)}
                                 onStationClick={handleStationClick}
                             />

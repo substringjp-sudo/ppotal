@@ -13,6 +13,16 @@ export interface Edge {
     geometry: [number, number][];
 }
 
+const normalizeKey = (key: string): string => {
+    if (!key) return "";
+    const parts = key.split("::");
+    if (parts.length >= 2) {
+        // Simple internal normalization mirroring lineUtils to keep graphUtils robust
+        return `${parts[0]}::${parts[1].replace(/(線| Line| 선)$/, "").trim()}`;
+    }
+    return key;
+};
+
 export class RailroadGraph {
     nodes: Map<string, StationNode> = new Map();
     adj: Map<string, Edge[]> = new Map();
