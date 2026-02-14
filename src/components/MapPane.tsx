@@ -288,6 +288,14 @@ const MapPane: React.FC<MapPaneProps> = ({
         return nearest;
     }, [visibleStations, selectedLines]);
 
+    const lastNearestRef = React.useRef<string | null>(null);
+    const previewPathRef = React.useRef<any>(null);
+
+    // Sync previewPathRef to allow mousemove to check current state without re-binding
+    useEffect(() => {
+        previewPathRef.current = previewPath;
+    }, [previewPath]);
+
     useMapEvents({
         zoomend: (e) => setZoomLevel(e.target.getZoom()),
         moveend: (e) => setMapBounds(e.target.getBounds()),
@@ -297,11 +305,18 @@ const MapPane: React.FC<MapPaneProps> = ({
                 // Predictive Highlighting
                 const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
 
+                // Only update if target station changed
+                if (nearest === lastNearestRef.current) return;
+                lastNearestRef.current = nearest;
+
                 // If we have a nearest station that is NOT the start station...
                 if (nearest && nearest !== currentDragStation && graph) {
-                    // Extract end station data to get its coordinates for disambiguation
                     const endStationData = visibleStations![nearest];
-                    // We'll use the first coord of the end station as a proxy for the end point
+                    if (!endStationData) {
+                        setPreviewPath(null);
+                        return;
+                    }
+
                     const endCoords: [number, number] = [endStationData.centroid[1], endStationData.centroid[0]];
 
                     const pathData = graph.getShortestPathByName(
@@ -312,21 +327,21 @@ const MapPane: React.FC<MapPaneProps> = ({
                         endCoords
                     );
 
-                    if (pathData) {
-                        setPreviewPath(pathData);
-                    } else {
-                        setPreviewPath(null); // No valid path found on selected lines
-                    }
+                    setPreviewPath(pathData);
+                } else {
+                    setPreviewPath(null);
                 }
             } else {
-                setPreviewPath(null);
+                if (previewPathRef.current) setPreviewPath(null);
+                lastNearestRef.current = null;
             }
         },
         mouseup: (e) => {
-            if (dragStartStation) {
+            const currentDragStation = dragStartStationRef.current;
+            if (currentDragStation) {
                 const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
-                if (nearest && nearest !== dragStartStation) {
-                    handleRecordTrip(dragStartStation, nearest);
+                if (nearest && nearest !== currentDragStation) {
+                    handleRecordTrip(currentDragStation, nearest);
                 }
             }
             // Always reset drag state on mouseup
@@ -334,6 +349,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             setDragStartCoords(null);
             setDragPath([]);
             setPreviewPath(null);
+            lastNearestRef.current = null;
         }
     });
 
@@ -485,6 +501,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     onRailroadClick={handleRailroadClick}
                     getColor={getColor}
                     zoom={zoomLevel}
+                    isDragging={!!dragStartStation}
                 />
 
                 {previewPath && (
@@ -492,7 +509,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         positions={previewPath.geometries.map((g: [number, number][]) => g.map(pt => [pt[1], pt[0]]))}
                         pathOptions={{
                             color: '#FF00FF',
-                            weight: 6,
+                            weight: zoomLevel > 11 ? 10 : (zoomLevel > 9 ? 7 : 4),
                             opacity: 0.5,
                             interactive: false
                         }}
@@ -511,7 +528,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                                         positions={g.map(pt => [pt[1], pt[0]])}
                                         pathOptions={{
                                             color: color,
-                                            weight: 8,
+                                            weight: zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5),
                                             opacity: 1,
                                             lineCap: 'butt',
                                             interactive: false

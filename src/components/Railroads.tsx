@@ -11,9 +11,10 @@ interface RailroadsProps {
     getColor: (name: string) => string;
     className?: string;
     zoom: number;
+    isDragging?: boolean;
 }
 
-const Railroads: React.FC<RailroadsProps> = ({ railroadNetwork, selectedLines, onRailroadClick, getColor, className, zoom }) => {
+const Railroads: React.FC<RailroadsProps> = ({ railroadNetwork, selectedLines, onRailroadClick, getColor, className, zoom, isDragging }) => {
     const [hoveredLineKey, setHoveredLineKey] = React.useState<string | null>(null);
     const geoJsonRef = React.useRef<L.GeoJSON>(null);
 
@@ -42,44 +43,58 @@ const Railroads: React.FC<RailroadsProps> = ({ railroadNetwork, selectedLines, o
     }, [railroadNetwork]);
 
     const getFeatureStyle = useCallback((feature: any) => {
-        const key = feature.properties.id;
-        const isSelected = selectedLines.includes(key);
-        const isHovered = hoveredLineKey === key;
-        const baseColor = getColor(key);
+        const lineKey = feature.properties.id;
+        const isHovered = !isDragging && hoveredLineKey === lineKey;
+        const isSelected = selectedLines.includes(lineKey);
+        const baseColor = getColor(lineKey);
+
+        // Dynamic weight based on zoom
+        let baseWeight = 2;
+        if (zoom > 7) baseWeight = 3;
+        if (zoom > 9) baseWeight = 5;
+        if (zoom > 11) baseWeight = 8;
+
+        const weight = isHovered ? baseWeight * 1.5 : (isSelected ? baseWeight * 1.2 : baseWeight);
 
         return {
             color: isHovered ? '#ff4d4f' : baseColor,
-            weight: isHovered ? 12 : (isSelected ? 10 : 8),
+            weight: weight,
             opacity: isHovered ? 1 : (isSelected ? 0.9 : 0.4),
             lineCap: 'round' as L.LineCapShape,
             lineJoin: 'round' as L.LineJoinShape,
         };
-    }, [getColor, selectedLines, hoveredLineKey]);
+    }, [hoveredLineKey, selectedLines, getColor, isDragging, zoom]);
 
-    const onEachFeature = useCallback((feature: any, layer: any) => {
-        const key = feature.properties.id;
+    const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
+        const lineKey = feature.properties.id;
         const lineName = feature.properties.line;
-        const companyName = feature.properties.company;
-
-        layer.bindTooltip(`${companyName} ${lineName}`, {
-            sticky: true,
-            className: 'railroad-tooltip',
-            direction: 'top',
-            offset: [0, -10]
-        });
 
         layer.on({
-            mouseover: () => {
-                setHoveredLineKey(key);
-                layer.bringToFront();
+            mouseover: (e) => {
+                if (isDragging) return;
+                setHoveredLineKey(lineKey);
+                const tooltipHtml = `
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 10px; opacity: 0.7;">${feature.properties.company}</span>
+                        <span>${lineName}</span>
+                    </div>
+                `;
+                layer.bindTooltip(tooltipHtml, {
+                    sticky: true,
+                    className: 'railroad-tooltip',
+                    direction: 'top',
+                    offset: [0, -10]
+                }).openTooltip();
             },
-            mouseout: () => setHoveredLineKey(null),
-            click: (e: any) => {
-                L.DomEvent.stopPropagation(e);
-                if (onRailroadClick) onRailroadClick(key);
+            mouseout: () => {
+                setHoveredLineKey(null);
+                layer.unbindTooltip();
+            },
+            click: () => {
+                if (onRailroadClick && !isDragging) onRailroadClick(lineKey);
             }
         });
-    }, [onRailroadClick]);
+    }, [onRailroadClick, isDragging]);
 
     // Force style update when selection changes (hover is handled by layer.on)
     React.useEffect(() => {

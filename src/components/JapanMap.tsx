@@ -28,7 +28,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
 
             return {
                 weight: weight,
-                color: '#444444',
+                color: '#777777',
                 fillOpacity: 0,
             };
         }
