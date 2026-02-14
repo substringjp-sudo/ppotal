@@ -19,6 +19,44 @@ const LineDetailPaneWithNoSSR = dynamic(() => import('../components/LineDetailPa
     ssr: false
 });
 
+const MapStylePanelWithNoSSR = dynamic(() => import('../components/MapStylePanel'), {
+    ssr: false
+});
+
+export interface MapStyleSettings {
+    unselected: {
+        opacity: number;
+        weight: number;
+    };
+    unvisited: {
+        weight: number;
+        showOutline: boolean;
+        stationSize: number;
+    };
+    visited: {
+        weight: number;
+        showOutline: boolean;
+        stationSize: number;
+    };
+}
+
+const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
+    unselected: {
+        opacity: 0.5,
+        weight: 1.0,
+    },
+    unvisited: {
+        weight: 1.3,
+        showOutline: true,
+        stationSize: 1.0,
+    },
+    visited: {
+        weight: 1.5,
+        showOutline: true,
+        stationSize: 1.0,
+    }
+};
+
 const Page = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
@@ -27,6 +65,22 @@ const Page = () => {
     const [isLoaded, setIsLoaded] = React.useState(false);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
     const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any>, getShortestPath: any } | null>(null);
+    const [zoomToLine, setZoomToLine] = React.useState<string | null>(null);
+    const [zoomToStation, setZoomToStation] = React.useState<string | null>(null);
+    const [showMyRoutes, setShowMyRoutes] = React.useState(false);
+    const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
+
+    // Zoom handlers
+    const handleZoomToLine = React.useCallback((lineKey: string) => {
+        setZoomToLine(lineKey);
+        // Clear after a delay to allow re-triggering if needed, or handle in useEffect
+        setTimeout(() => setZoomToLine(null), 2000);
+    }, []);
+
+    const handleZoomToStation = React.useCallback((stationName: string) => {
+        setZoomToStation(stationName);
+        setTimeout(() => setZoomToStation(null), 2000);
+    }, []);
 
     // Initial load from localStorage
     React.useEffect(() => {
@@ -38,6 +92,20 @@ const Page = () => {
                 console.error('Failed to parse saved trips', e);
             }
         }
+        const savedStyle = localStorage.getItem('jprail_style');
+        if (savedStyle) {
+            try {
+                // Merge with defaults to handle versioning
+                const parsed = JSON.parse(savedStyle);
+                setStyleSettings(prev => ({
+                    unselected: { ...prev.unselected, ...parsed.unselected },
+                    unvisited: { ...prev.unvisited, ...parsed.unvisited },
+                    visited: { ...prev.visited, ...parsed.visited },
+                }));
+            } catch (e) {
+                console.error('Failed to parse saved style', e);
+            }
+        }
         setIsLoaded(true);
     }, []);
 
@@ -45,8 +113,9 @@ const Page = () => {
     React.useEffect(() => {
         if (isLoaded) {
             localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
+            localStorage.setItem('jprail_style', JSON.stringify(styleSettings));
         }
-    }, [recordedTrips, isLoaded]);
+    }, [recordedTrips, styleSettings, isLoaded]);
 
     const handleRecordTrip = React.useCallback((newTrip: any) => {
         setRecordedTrips(prev => {
@@ -177,33 +246,36 @@ const Page = () => {
                         </div>
                     </div>
 
-                    <button
-                        onClick={handleResetTrips}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#fff',
-                            color: '#e74c3c',
-                            border: '1.5px solid #e74c3c',
-                            borderRadius: '20px',
-                            cursor: 'pointer',
-                            fontWeight: '800',
-                            fontSize: '12px',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e74c3c';
-                            e.currentTarget.style.color = '#fff';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fff';
-                            e.currentTarget.style.color = '#e74c3c';
-                        }}
-                    >
-                        RESET
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+
+                        <button
+                            onClick={handleResetTrips}
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#fff',
+                                color: '#e74c3c',
+                                border: '1.5px solid #e74c3c',
+                                borderRadius: '20px',
+                                cursor: 'pointer',
+                                fontWeight: '800',
+                                fontSize: '12px',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#e74c3c';
+                                e.currentTarget.style.color = '#fff';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#fff';
+                                e.currentTarget.style.color = '#e74c3c';
+                            }}
+                        >
+                            RESET
+                        </button>
+                    </div>
                 </div>
             </header>
             <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
@@ -224,10 +296,11 @@ const Page = () => {
                         visitedLineLengths={visitedLineLengths}
                         activeLine={activeLine}
                         onResetTrips={handleResetTrips}
+                        onZoomToLine={handleZoomToLine}
                     />
                 </div>
                 <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ flex: 1, position: 'relative' }}>
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                         <MapWithNoSSR>
                             <MapPaneWithNoSSR
                                 selectedLines={selectedLines}
@@ -236,8 +309,16 @@ const Page = () => {
                                 onLengthsCalculated={setLineLengths}
                                 onVisitedLengthsCalculated={setVisitedLineLengths}
                                 onRailroadClick={handleRailroadClick}
+                                onStationClick={handleZoomToStation}
                                 activeLine={activeLine}
+                                zoomToLine={zoomToLine}
+                                zoomToStation={zoomToStation}
                                 onLineDetailData={setLineDetailData}
+                                styleSettings={styleSettings}
+                            />
+                            <MapStylePanelWithNoSSR
+                                settings={styleSettings}
+                                onSettingsChange={setStyleSettings}
                             />
                         </MapWithNoSSR>
                     </div>
@@ -251,10 +332,101 @@ const Page = () => {
                                 selectedLines={selectedLines}
                                 getShortestPath={lineDetailData.getShortestPath}
                                 onRecordTrip={handleRecordTrip}
+                                onStationClick={handleZoomToStation}
                                 onClose={() => setActiveLine(null)}
                             />
                         </div>
                     )}
+                </div>
+
+                {/* My Routes Collapsible Sidebar */}
+                <button
+                    onClick={() => setShowMyRoutes(!showMyRoutes)}
+                    style={{
+                        position: 'absolute',
+                        right: showMyRoutes ? '300px' : '0',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        zIndex: 1100,
+                        width: '30px',
+                        height: '100px',
+                        backgroundColor: 'white',
+                        border: '1px solid #ddd',
+                        borderRight: 'none',
+                        borderRadius: '12px 0 0 12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        boxShadow: '-2px 0 10px rgba(0,0,0,0.1)',
+                        transition: 'right 0.3s ease-in-out',
+                        color: '#2c3e50'
+                    }}
+                >
+                    <span style={{ fontSize: '12px' }}>{showMyRoutes ? '▶' : '◀'}</span>
+                    <div style={{
+                        writingMode: 'vertical-rl',
+                        fontSize: '10px',
+                        fontWeight: '900',
+                        letterSpacing: '1px',
+                        color: '#2c3e50'
+                    }}>
+                        MY ROUTES
+                    </div>
+                </button>
+
+                <div style={{
+                    width: showMyRoutes ? '300px' : '0px',
+                    height: '100%',
+                    backgroundColor: 'white',
+                    borderLeft: showMyRoutes ? '1px solid #ddd' : 'none',
+                    zIndex: 1000,
+                    overflow: 'hidden',
+                    transition: 'width 0.3s ease-in-out',
+                    position: 'relative'
+                }}>
+                    <div style={{ width: '300px', height: '100%', overflowY: 'auto', padding: '20px' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '15px', color: '#2c3e50' }}>Recorded Trips</h2>
+                        {recordedTrips.length === 0 ? (
+                            <p style={{ color: '#999', fontSize: '14px' }}>No routes recorded yet.</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {recordedTrips.map((trip, idx) => (
+                                    <div key={idx} style={{
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        background: '#f8f9fa',
+                                        border: '1px solid #eee',
+                                        transition: 'all 0.2s ease'
+                                    }}>
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px', color: '#2c3e50' }}>
+                                            {trip.start} ⇌ {trip.end}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#666' }}>
+                                            Distance: {Math.round(trip.distance * 10) / 10} km
+                                        </div>
+                                        <button
+                                            onClick={() => handleRecordTrip(trip)}
+                                            style={{
+                                                marginTop: '8px',
+                                                fontSize: '11px',
+                                                color: '#e74c3c',
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </main>

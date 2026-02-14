@@ -3,6 +3,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
+import { normalizeKey } from '../lib/lineUtils';
+import { MapStyleSettings } from '../app/page';
 
 interface RailroadsProps {
     railroadNetwork: any;
@@ -13,6 +15,7 @@ interface RailroadsProps {
     className?: string;
     zoom: number;
     isDragging?: boolean;
+    styleSettings: MapStyleSettings;
 }
 
 const Railroads: React.FC<RailroadsProps> = ({
@@ -23,7 +26,8 @@ const Railroads: React.FC<RailroadsProps> = ({
     getColor,
     className,
     zoom,
-    isDragging
+    isDragging,
+    styleSettings
 }) => {
     const [hoveredLineKey, setHoveredLineKey] = React.useState<string | null>(null);
     const geoJsonRef = React.useRef<L.GeoJSON>(null);
@@ -50,7 +54,8 @@ const Railroads: React.FC<RailroadsProps> = ({
         const normal: any[] = [];
 
         railroadNetwork.routes.forEach((route: any) => {
-            const isLineSelected = selectedLines.includes(route.id);
+            const normalizedRouteId = normalizeKey(route.id);
+            const isLineSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedRouteId);
 
             // Split edges into visited and unvisited
             const visitedCoords: any[][] = [];
@@ -109,25 +114,23 @@ const Railroads: React.FC<RailroadsProps> = ({
             const baseColor = getColor(lineKey);
 
             let weight = baseWeight;
-            if (type === 'selected') weight *= 1.3;
-            if (type === 'visited') weight *= 1.5;
+            if (type === 'selected') weight *= styleSettings.unvisited.weight;
+            if (type === 'visited') weight *= styleSettings.visited.weight;
+            if (type === 'normal') weight *= styleSettings.unselected.weight;
             if (isHovered) weight *= 1.2;
 
             if (isOutline) {
-                let outlineColor = '#ffffff';
-                let oWeight = weight + 2;
-                let opacity = type === 'normal' ? 0.3 : 0.8;
+                const showOutline = (type === 'selected' && styleSettings.unvisited.showOutline) ||
+                    (type === 'visited' && styleSettings.visited.showOutline);
 
-                if (type === 'visited') {
-                    outlineColor = '#2ecc71'; // Vibrant green border for visited
-                    oWeight = weight + 4; // Thicker halo
-                    opacity = 1.0;
+                if (!showOutline && type !== 'normal') {
+                    return { opacity: 0, weight: 0, color: 'transparent' };
                 }
 
                 return {
-                    color: outlineColor,
-                    weight: oWeight,
-                    opacity: opacity,
+                    color: '#fff',
+                    weight: weight + (zoom > 10 ? 3 : 2),
+                    opacity: 0.8,
                     lineCap: 'round' as L.LineCapShape,
                     lineJoin: 'round' as L.LineJoinShape,
                 };
@@ -137,10 +140,9 @@ const Railroads: React.FC<RailroadsProps> = ({
             let opacity = 0.85;
 
             if (type === 'visited') {
-                // visited color matches baseColor, but opacity is high
                 opacity = 1.0;
             } else if (type === 'normal') {
-                opacity = 0.5;
+                opacity = styleSettings.unselected.opacity;
             }
 
             if (isHovered) {

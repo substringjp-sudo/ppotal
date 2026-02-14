@@ -16,20 +16,16 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Systematic Railroad Network:** Uses a processed topological network for accurate mapping and pathfinding.
 *   **Drag-and-Drop Pathfinding:** Users can drag from one station to another to find the shortest railroad path between them.
 *   **Trip Persistence**: User progress (recorded trips) is saved to `localStorage` and automatically restored upon return.
-*   **Progress Tracking**: Calculates total and visited distances at both the line level and company level.
-*   **Company-level Statistics**: Summarizes completion progress for various railroad companies (JR, Private, etc.) in a structured accordion interface.
-*   **Refined Sidebar UI**: Features a structured, aligned layout with text truncation for long names and animated progress bars for visual completion tracking.
-*   **Dynamic Progress Visualization**: Sidebar chips use adaptive colors (gray -> light green -> deep green) to visually communicate completion percentage at a glance.
-*   **Line Detail Mini-map**: Provides an integrated overview of even complex branched routes with one-click navigation to any station.
-*   **Detail Pane Drag-to-Record**: Enables direct trip recording from the station detail view via intuitive drag-and-drop interactions.
-*   **Visited Station Highlighting**: Visually distinct markers (green with glow) for stations that have been visited, improving orientation within the line view.
-*   **Sidebar Statistics Tracking**: Displays visited line counts versus total line counts (e.g., 2/45) for both railroad companies and major categories within the sidebar.
-*   **Focused Map Interactions**: Map interactions are specifically optimized for railroad and station data, with administrative boundary zoom-on-click functionality disabled.
-*   **Intelligent Trip Management**: Features a "Toggle" logic where recording the same trip twice (even in reverse) removes it from the record.
-*   **Trip Reset**: Provides a dedicated button in the header (top right) to clear all travel history with confirmation.
-*   **User Statistics Dashboard**: A real-time header display showing total distance (km), lines completed, stations visited, and railroad companies used.
-*   **Firebase Hosting Deployment**: Successfully deployed to Firebase Hosting using optimized Next.js build and experiments for web framework support.
-*   **Firebase Configuration**: Integrated Firebase SDK for future expandability (Auth, Realtime database, etc.).
+*   **Advanced Sidebar Sorting**: Supports Japanese (JP), Alphabetical (EN), Korean (KO), and Usage % sorting for the railroad line list.
+*   **Bulk Selection Controls**: Category-level checkboxes allow for quick bulk selection/deselection of all lines within a major group (Shinkansen, JR, etc.), featuring indeterminate states.
+*   **Company Accordion Management**: Includes "Expand All" and "Collapse All" buttons for managing multiple railroad company accordions simultaneously.
+*   **Intuitive Click-to-Zoom**:
+    *   **Sidebar**: Clicking a line name automatically fits the map view to that line's geometry.
+    *   **Detail Pane**: Clicking a station name or dot in the bottom navigator zooms the map to that specific station (Zoom Level 15).
+*   **Custom Map Interface**: Features a bespoke, premium zoom slider and reset view button in the top-left corner, replacing default browser controls.
+*   **"My Routes" Summary Panel**: A dedicated, togglable right-side panel provides a clear list of all recorded trips with distance information and delete functionality.
+*   **Visual Polish & Animations**: Enhanced with smooth "fly-to" map transitions, glassmorphic UI elements, and refined typography (Inter) for a premium feel.
+*   **Firebase Hosting Deployment**: Successfully deployed to Firebase Hosting using optimized Next.js build.
 
 ## Technical Details
 
@@ -42,25 +38,3 @@ This application displays an interactive map of Japan, focusing on its administr
 - **Persistence:** Uses `localStorage` to store an array of user trip objects (`id`, `path`, `geometries`, `distance`, etc.).
 - **Statistics Calculation:** Dynamically aggregates visited distance by matching topological edges between recorded trips and the systematic railroad network.
 
-# 새 목표
-- 노선데이터 좀 더 보강하기
-- 여러 형태의 시각적 표시방식 설정
-- 지도를 이미지 형태로 출력
-- 노선목록에서 체크 말고 그냥 클릭하면 해당 노선 줌인
-- 번역
-- 점크기 좀 더 크게
-- 오른쪽에 내가 이용한 노선만 정리해서 표시
-- 뭐 클릭하면 생기는 사각형 지우기
-- 방문노선/미방문노선/미체크노선/방문역/미방문역 각각 굵기/크기/투명도 조절
-- 신칸센, JR 등 대분류 전체 체크하기 기능
-- 용량 압축, 최적화
-- 하단노선도 네비게이터 하단뷰 위로 올리기 
-- 노선목록 정렬 옵션(일본어순서, 알파벳순서, 가나다순서, 이용률순서)
-- 노선목록 모두닫기, 모두열기
-- 노선목록 전체선택/전체닫기 적용여부표시
-- 최대줌/최소줌 제한
-- 줌슬라이더, 줌리셋 기능
-- 하단노선도에서 역을 클릭하면 해당 역 위치로 줌 이동
-- 안쓰는 파일 정리
-- https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html 사용규칙 적용하기
-- https://www.geoboundaries.org/ 사용규칙 적용하기 

@@ -12,6 +12,16 @@ export interface Edge {
     geometry: [number, number][];
 }
 
+const normalizeKey = (key: string): string => {
+    if (!key) return "";
+    const parts = key.split("::");
+    if (parts.length >= 2) {
+        // Simple internal normalization mirroring lineUtils to keep graphUtils robust
+        return `${parts[0]}::${parts[1].replace(/(線| Line| 선)$/, "").trim()}`;
+    }
+    return key;
+};
+
 export class RailroadGraph {
     nodes: Map<string, StationNode> = new Map();
     adj: Map<string, Edge[]> = new Map();
@@ -140,8 +150,9 @@ export class RailroadGraph {
                 if (allowedLines) {
                     const targetNode = this.nodes.get(neighbor.to);
                     if (targetNode) {
-                        const lineKey = `${targetNode.company}::${targetNode.line}`;
-                        if (!allowedLines.includes(lineKey)) {
+                        const lineKey = normalizeKey(`${targetNode.company}::${targetNode.line}`);
+                        const normalizedAllowed = allowedLines.map(normalizeKey);
+                        if (!normalizedAllowed.includes(lineKey)) {
                             continue;
                         }
                     }
@@ -215,9 +226,10 @@ export class RailroadGraph {
      * Since lines can have branches, this returns a list of segments.
      */
     getLineSegments(lineId: string): { stations: string[], edges: { from: string, to: string, distance: number }[] }[] {
+        const normalizedLineId = normalizeKey(lineId);
         const lineEdges = Array.from(this.adj.entries())
-            .filter(([u]) => u.startsWith(lineId))
-            .flatMap(([u, edges]) => edges.filter(e => e.to.startsWith(lineId)).map(e => ({ from: u, ...e })));
+            .filter(([u]) => normalizeKey(u).startsWith(normalizedLineId))
+            .flatMap(([u, edges]) => edges.filter(e => normalizeKey(e.to).startsWith(normalizedLineId)).map(e => ({ from: u, ...e })));
 
         if (lineEdges.length === 0) return [];
 

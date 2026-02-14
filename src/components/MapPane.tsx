@@ -9,6 +9,8 @@ import Railroads from './Railroads';
 import Stations from './Stations';
 import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils';
 import { getOfficialColor } from '../lib/lineColors';
+import { normalizeKey } from '../lib/lineUtils';
+import { MapStyleSettings } from '../app/page';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -19,12 +21,15 @@ interface MapPaneProps {
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
     onVisitedLengthsCalculated?: (lengths: Record<string, number>) => void;
     activeLine: string | null;
+    zoomToLine?: string | null;
+    zoomToStation?: string | null;
     onLineDetailData?: (data: {
         segments: any[],
         visitedEdges: Set<string>,
         nodes: Map<string, StationNode>,
         getShortestPath: any
     } | null) => void;
+    styleSettings: MapStyleSettings;
 }
 
 const MapPane: React.FC<MapPaneProps> = ({
@@ -36,7 +41,10 @@ const MapPane: React.FC<MapPaneProps> = ({
     onLengthsCalculated,
     onVisitedLengthsCalculated,
     activeLine,
-    onLineDetailData
+    zoomToLine,
+    zoomToStation,
+    onLineDetailData,
+    styleSettings
 }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
@@ -143,7 +151,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             route.edges.forEach((edge: any) => {
                 totalLength += edge.distance;
             });
-            roundedLengths[route.id] = Math.round(totalLength * 10) / 10;
+            const normalizedId = normalizeKey(route.id);
+            roundedLengths[normalizedId] = Math.round(totalLength * 10) / 10;
         });
         setLineLengths(roundedLengths);
         if (onLengthsCalculated) {
@@ -208,7 +217,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         // Round and report
         const roundedVisited: Record<string, number> = {};
         Object.entries(visitedDistances).forEach(([key, dist]) => {
-            roundedVisited[key] = Math.round(dist * 10) / 10;
+            const normalizedKey = normalizeKey(key);
+            roundedVisited[normalizedKey] = Math.round(dist * 10) / 10;
         });
 
         if (onVisitedLengthsCalculated) {
@@ -227,12 +237,13 @@ const MapPane: React.FC<MapPaneProps> = ({
 
         // Calculate visited edges for THIS line
         const visitedEdges = new Set<string>();
+        const normalizedActiveLine = normalizeKey(activeLine);
         recordedTrips.forEach(trip => {
             if (trip.path) {
                 for (let i = 0; i < trip.path.length - 1; i++) {
                     const u = trip.path[i];
                     const v = trip.path[i + 1];
-                    if (u.startsWith(activeLine) && v.startsWith(activeLine)) {
+                    if (normalizeKey(u).startsWith(normalizedActiveLine) && normalizeKey(v).startsWith(normalizedActiveLine)) {
                         visitedEdges.add([u, v].sort().join('<->'));
                     }
                 }
@@ -258,7 +269,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [map, dragStartStation]);
 
     const visibleStations = useMemo(() => {
-        if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
+        if (!railroadNetwork || !mapBounds || zoomLevel <= 6) return null;
         const data: Record<string, { nodes: { id: string, coord: [number, number], lineKey: string }[], centroid: [number, number], lines: string[] }> = {};
 
         Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
@@ -496,6 +507,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     getColor={getColor}
                     zoom={zoomLevel}
                     isDragging={!!dragStartStation}
+                    styleSettings={styleSettings}
                 />
 
                 {previewPath && (
@@ -503,45 +515,62 @@ const MapPane: React.FC<MapPaneProps> = ({
                         positions={previewPath.geometries.map((g: [number, number][]) => g.map(pt => [pt[1], pt[0]]))}
                         pathOptions={{
                             color: '#FF00FF',
-                            weight: zoomLevel > 11 ? 10 : (zoomLevel > 9 ? 7 : 4),
+                            weight: (zoomLevel > 11 ? 10 : (zoomLevel > 9 ? 7 : 4)) * styleSettings.unvisited.weight,
                             opacity: 0.5,
                             interactive: false
                         }}
                     />
                 )}
 
-                {recordedTrips.map(trip => (
-                    <React.Fragment key={trip.id}>
-                        {trip.geometries.map((g: [number, number][], i: number) => {
-                            const startNodeId = trip.path[i];
-                            const color = getLineColorFromNode(startNodeId);
+                {recordedTrips.map((trip, tripIdx) => {
+                    // Validation Guard: Ensure trip data is valid and has geometries
+                    if (!trip || !trip.geometries || !Array.isArray(trip.geometries) || !trip.path) return null;
 
-                            return (
-                                <React.Fragment key={i}>
-                                    <Polyline
-                                        positions={g.map(pt => [pt[1], pt[0]])}
-                                        pathOptions={{
-                                            color: '#2ecc71', // Green Glow/Outline
-                                            weight: (zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5)) + 4,
-                                            opacity: 1,
-                                            interactive: false
-                                        }}
-                                    />
-                                    <Polyline
-                                        positions={g.map(pt => [pt[1], pt[0]])}
-                                        pathOptions={{
-                                            color: color, // Official Line Color
-                                            weight: zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5),
-                                            opacity: 1,
-                                            lineCap: 'butt',
-                                            interactive: false
-                                        }}
-                                    />
-                                </React.Fragment>
-                            )
-                        })}
-                    </React.Fragment>
-                ))}
+                    const tripKey = trip.id || `trip-${tripIdx}-${trip.start}-${trip.end}`;
+
+                    return (
+                        <React.Fragment key={tripKey}>
+                            {trip.geometries.map((g: [number, number][], i: number) => {
+                                // Double check nested geometry array
+                                if (!Array.isArray(g)) return null;
+
+                                // Ensure coordinates are valid [lon, lat] and converted to [lat, lon]
+                                const positions = g
+                                    .filter(pt => Array.isArray(pt) && pt.length >= 2 && typeof pt[0] === 'number' && typeof pt[1] === 'number')
+                                    .map(pt => [pt[1], pt[0]] as [number, number]);
+
+                                if (positions.length < 2) return null;
+
+                                const startNodeId = trip.path[i];
+                                const color = getLineColorFromNode(startNodeId);
+
+                                return (
+                                    <React.Fragment key={`${tripKey}-seg-${i}`}>
+                                        <Polyline
+                                            positions={positions}
+                                            pathOptions={{
+                                                color: '#2ecc71', // Green Glow/Outline
+                                                weight: ((zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5)) * styleSettings.visited.weight) + 4,
+                                                opacity: 1,
+                                                interactive: false
+                                            }}
+                                        />
+                                        <Polyline
+                                            positions={positions}
+                                            pathOptions={{
+                                                color: color, // Official Line Color
+                                                weight: (zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5)) * styleSettings.visited.weight,
+                                                opacity: 1,
+                                                lineCap: 'butt',
+                                                interactive: false
+                                            }}
+                                        />
+                                    </React.Fragment>
+                                );
+                            })}
+                        </React.Fragment>
+                    );
+                })}
             </Pane>
 
             {/* Top Layer: Stations */}
@@ -550,7 +579,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     <Stations
                         processedStations={visibleStations}
                         highlightedStations={highlightedStations}
-                        handleStationClick={handleStationClick}
+                        handleStationClick={onStationClick || (() => { })}
                         zoom={zoomLevel}
                         getColor={getColor}
                         selectedLines={selectedLines}
@@ -558,6 +587,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         onStationMouseUp={handleStationMouseUp}
                         dragStartStation={dragStartStation}
                         visitedStations={visitedStations}
+                        styleSettings={styleSettings}
                     />
                 }
             </Pane>

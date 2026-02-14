@@ -4,6 +4,8 @@ import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polygon } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
+import { normalizeKey, normalizeLineName } from '../lib/lineUtils';
+import { MapStyleSettings } from '../app/page';
 
 interface StaticNode {
     id: string;
@@ -22,6 +24,7 @@ interface StationsProps {
     onStationMouseUp: (name: string) => void;
     dragStartStation: string | null;
     visitedStations: Set<string>;
+    styleSettings: MapStyleSettings;
 }
 
 // Convex Hull Algorithm (Monotone Chain)
@@ -65,7 +68,8 @@ const Stations: React.FC<StationsProps> = ({
     onStationMouseDown,
     onStationMouseUp,
     dragStartStation,
-    visitedStations
+    visitedStations,
+    styleSettings
 }) => {
     if (!processedStations) {
         return null;
@@ -75,20 +79,35 @@ const Stations: React.FC<StationsProps> = ({
         if (selectedLines.length === 0) return false;
         // Show dots only from zoom 7 (two stages later than initial 5)
         if (zoom < 7) return false;
-        return data.lines.some(line => selectedLines.includes(line));
+
+        // Use normalized matching for filtering
+        return data.lines.some(l =>
+            selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l))
+        );
     });
 
     return (
         <>
             {stationEntries.map(([name, station]) => {
                 const isHighlighted = highlightedStations.includes(name);
-                const isSelected = selectedLines.some(line => station.lines.includes(line));
+                const isVisited = visitedStations.has(name);
+                const isSelected = station.lines.some(l =>
+                    selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l))
+                );
                 const lines = station.lines;
+
+                let radius = zoom > 14 ? 6 : (zoom > 12 ? 4 : (zoom > 10 ? 3 : 2));
+
+                // Apply user style size multipliers
+                if (isVisited) {
+                    radius *= styleSettings.visited.stationSize;
+                } else if (isSelected) {
+                    radius *= styleSettings.unvisited.stationSize;
+                }
 
                 const isDragging = dragStartStation === name;
                 const isLowZoom = zoom <= 13;
 
-                const radius = isLowZoom ? 2.5 : (isHighlighted ? 8 : 6);
                 const weight = isLowZoom ? 0 : (isHighlighted ? 5 : 3);
 
                 const coords = station.nodes.map(n => n.coord);
@@ -151,7 +170,10 @@ const Stations: React.FC<StationsProps> = ({
 
                         {station.nodes.map((node, idx) => {
                             const isNodeVisited = visitedStations.has(node.id);
-                            const isNodeSelected = selectedLines.includes(node.lineKey);
+                            // Use normalized matching for node selection
+                            const isNodeSelected = selectedLines.some(sl =>
+                                normalizeKey(sl) === normalizeKey(node.lineKey)
+                            );
 
                             const baseColor = getColor(node.lineKey);
                             const lightenedColor = lightenColor(baseColor, 60);

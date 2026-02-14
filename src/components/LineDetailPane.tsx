@@ -11,6 +11,7 @@ interface LineDetailPaneProps {
     selectedLines: string[];
     onRecordTrip?: (trip: any) => void;
     getShortestPath?: (start: string, end: string, lines: string[]) => any;
+    onStationClick?: (name: string) => void;
     onClose: () => void;
 }
 
@@ -21,7 +22,7 @@ interface StationPos {
 }
 
 const LineDetailPane: React.FC<LineDetailPaneProps> = ({
-    lineId, segments, nodes, visitedEdges, selectedLines, onRecordTrip, getShortestPath, onClose
+    lineId, segments, nodes, visitedEdges, selectedLines, onRecordTrip, getShortestPath, onStationClick, onClose
 }) => {
     const [company, lineName] = lineId.split('::');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -208,7 +209,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
         setDragPathPreview(new Set());
     };
 
-    const paneHeight = Math.min(450, 180 + (layout.rows.length * 90));
+    const paneHeight = Math.min(550, 240 + (layout.rows.length * 90));
 
     return (
         <div style={{
@@ -227,8 +228,14 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
             transition: 'all 0.3s ease-in-out'
         }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                <div>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '15px',
+                gap: '20px'
+            }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
                         <span style={{ fontSize: '12px', color: '#666' }}>{company}</span>
                         <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{lineName}</span>
@@ -257,6 +264,99 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         </div>
                     </div>
                 </div>
+
+                {/* Enhanced Mini-map - Repositioned to not cover the graph */}
+                <div
+                    ref={miniMapRef}
+                    onMouseDown={(e) => {
+                        setIsMiniMapDragging(true);
+                        handleMiniMapInteraction(e);
+                    }}
+                    style={{
+                        position: 'relative',
+                        width: '320px',
+                        height: '90px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        border: '1px solid #ccc',
+                        borderRadius: '10px',
+                        padding: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        userSelect: 'none',
+                        cursor: 'crosshair',
+                        marginRight: '10px'
+                    }}>
+                    <div style={{ fontSize: '9px', fontWeight: 'bold', color: '#666', marginBottom: '4px', textAlign: 'center', letterSpacing: '0.05em' }}>NAVIGATOR</div>
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', backgroundColor: '#fdfdfd', borderRadius: '4px', border: '1px solid #eee' }}>
+                        {/* Render Lines in Mini-map */}
+                        {layout.rows.map((row: StationPos[], rIdx: number) => (
+                            <React.Fragment key={`mini-edges-${rIdx}`}>
+                                {row.map((pos: StationPos, pIdx: number) => {
+                                    if (pIdx === row.length - 1) return null;
+                                    const nextPos = row[pIdx + 1];
+                                    const isVisited = visitedEdges.has(getEdgeKey(pos.id, nextPos.id));
+                                    return (
+                                        <div
+                                            key={`mini-edge-${rIdx}-${pIdx}`}
+                                            style={{
+                                                position: 'absolute',
+                                                left: `${((pos.x - layout.minX) / (layout.maxX - layout.minX + 1 || 1)) * 100 + 4}%`,
+                                                top: `${(pos.y / (layout.rows.length || 1)) * 80 + 10}%`,
+                                                width: `${((nextPos.x - pos.x) / (layout.maxX - layout.minX + 1 || 1)) * 100}%`,
+                                                height: '2px',
+                                                backgroundColor: isVisited ? '#27ae60' : '#e0e0e0',
+                                                transform: 'translateY(-50%)',
+                                                zIndex: 1
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </React.Fragment>
+                        ))}
+
+                        {/* Viewport Indicator */}
+                        <div style={{
+                            position: 'absolute',
+                            left: `${(viewport.left / viewport.totalWidth) * 100}%`,
+                            width: `${(viewport.width / viewport.totalWidth) * 100}%`,
+                            top: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            border: '1.5px solid #3498db',
+                            borderRadius: '2px',
+                            zIndex: 2,
+                            pointerEvents: 'none'
+                        }} />
+
+                        {/* Station Dots in Mini-map */}
+                        {layout.rows.map((row: StationPos[], rIdx: number) => (
+                            <React.Fragment key={`mini-row-${rIdx}`}>
+                                {row.map((pos: StationPos, pIdx: number) => (
+                                    <div
+                                        key={`mini-dot-${pos.id}-${rIdx}-${pIdx}`}
+                                        onClick={() => scrollToStation(pos.x)}
+                                        style={{
+                                            position: 'absolute',
+                                            left: `${((pos.x - layout.minX) / (layout.maxX - layout.minX + 1 || 1)) * 100 + 4}%`,
+                                            top: `${(pos.y / (layout.rows.length || 1)) * 80 + 10}%`,
+                                            width: '5px',
+                                            height: '5px',
+                                            borderRadius: '50%',
+                                            backgroundColor: stats.visitedStations.has(pos.id) ? '#27ae60' : '#e0e0e0',
+                                            cursor: 'pointer',
+                                            transform: 'translate(-50%, -50%)',
+                                            zIndex: 3,
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                        }}
+                                        title={nodes.get(pos.id)?.name || pos.id}
+                                    />
+                                ))}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </div>
+
                 <button
                     onClick={onClose}
                     style={{
@@ -265,105 +365,14 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         fontSize: '24px',
                         cursor: 'pointer',
                         color: '#999',
-                        marginTop: '-5px'
+                        padding: '5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                     }}
                 >
                     ×
                 </button>
-            </div>
-
-            {/* Enhanced Mini-map */}
-            <div
-                ref={miniMapRef}
-                onMouseDown={(e) => {
-                    setIsMiniMapDragging(true);
-                    handleMiniMapInteraction(e);
-                }}
-                style={{
-                    position: 'absolute',
-                    top: '70px',
-                    right: '25px',
-                    width: '240px',
-                    height: '110px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    border: '1px solid #ccc',
-                    borderRadius: '10px',
-                    padding: '8px',
-                    zIndex: 1200,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    userSelect: 'none',
-                    cursor: 'crosshair'
-                }}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textAlign: 'center', letterSpacing: '0.05em' }}>NAVIGATOR</div>
-                <div style={{ flex: 1, position: 'relative', overflow: 'hidden', backgroundColor: '#fdfdfd', borderRadius: '4px', border: '1px solid #eee' }}>
-                    {/* Render Lines in Mini-map */}
-                    {layout.rows.map((row: StationPos[], rIdx: number) => (
-                        <React.Fragment key={`mini-edges-${rIdx}`}>
-                            {row.map((pos: StationPos, pIdx: number) => {
-                                if (pIdx === row.length - 1) return null;
-                                const nextPos = row[pIdx + 1];
-                                const isVisited = visitedEdges.has(getEdgeKey(pos.id, nextPos.id));
-                                return (
-                                    <div
-                                        key={`mini-edge-${rIdx}-${pIdx}`}
-                                        style={{
-                                            position: 'absolute',
-                                            left: `${((pos.x - layout.minX) / (layout.maxX - layout.minX + 1 || 1)) * 100 + 4}%`,
-                                            top: `${(pos.y / (layout.rows.length || 1)) * 80 + 10}%`,
-                                            width: `${((nextPos.x - pos.x) / (layout.maxX - layout.minX + 1 || 1)) * 100}%`,
-                                            height: '2px',
-                                            backgroundColor: isVisited ? '#27ae60' : '#e0e0e0',
-                                            transform: 'translateY(-50%)',
-                                            zIndex: 1
-                                        }}
-                                    />
-                                );
-                            })}
-                        </React.Fragment>
-                    ))}
-
-                    {/* Viewport Indicator */}
-                    <div style={{
-                        position: 'absolute',
-                        left: `${(viewport.left / viewport.totalWidth) * 100}%`,
-                        width: `${(viewport.width / viewport.totalWidth) * 100}%`,
-                        top: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        border: '1.5px solid #3498db',
-                        borderRadius: '2px',
-                        zIndex: 2,
-                        pointerEvents: 'none'
-                    }} />
-
-                    {/* Station Dots in Mini-map */}
-                    {layout.rows.map((row: StationPos[], rIdx: number) => (
-                        <React.Fragment key={`mini-row-${rIdx}`}>
-                            {row.map((pos: StationPos, pIdx: number) => (
-                                <div
-                                    key={`mini-dot-${pos.id}-${rIdx}-${pIdx}`}
-                                    onClick={() => scrollToStation(pos.x)}
-                                    style={{
-                                        position: 'absolute',
-                                        left: `${((pos.x - layout.minX) / (layout.maxX - layout.minX + 1 || 1)) * 100 + 4}%`,
-                                        top: `${(pos.y / (layout.rows.length || 1)) * 80 + 10}%`,
-                                        width: '5px',
-                                        height: '5px',
-                                        borderRadius: '50%',
-                                        backgroundColor: stats.visitedStations.has(pos.id) ? '#27ae60' : '#e0e0e0',
-                                        cursor: 'pointer',
-                                        transform: 'translate(-50%, -50%)',
-                                        zIndex: 3,
-                                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                                    }}
-                                    title={nodes.get(pos.id)?.name || pos.id}
-                                />
-                            ))}
-                        </React.Fragment>
-                    ))}
-                </div>
             </div>
 
             <div
@@ -478,6 +487,11 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                         key={`node-${rIdx}-${pIdx}`}
                                         onMouseDown={() => handleStationMouseDown(pos.id)}
                                         onMouseEnter={() => handleStationMouseEnter(pos.id)}
+                                        onClick={(e) => {
+                                            if (dragStart === pos.id && !dragHover) {
+                                                onStationClick?.(pos.id);
+                                            }
+                                        }}
                                         style={{
                                             position: 'absolute',
                                             left: `${(pos.x - layout.minX) * 120 + 20}px`,
