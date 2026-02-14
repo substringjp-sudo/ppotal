@@ -61,3 +61,6 @@ This application displays an interactive map of Japan, focusing on its administr
 - 최대줌/최소줌 제한
 - 줌슬라이더, 줌리셋 기능
 - 하단노선도에서 역을 클릭하면 해당 역 위치로 줌 이동
+- 안쓰는 파일 정리
+- https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html 사용규칙 적용하기
+- https://www.geoboundaries.org/ 사용규칙 적용하기 
