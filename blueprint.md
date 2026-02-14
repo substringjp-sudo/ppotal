@@ -19,6 +19,10 @@ This application displays an interactive map of Japan, focusing on its administr
 *   **Progress Tracking**: Calculates total and visited distances at both the line level and company level.
 *   **Company-level Statistics**: Summarizes completion progress for various railroad companies (JR, Private, etc.) in a structured accordion interface.
 *   **Refined Sidebar UI**: Features a structured, aligned layout with text truncation for long names and animated progress bars for visual completion tracking.
+*   **Dynamic Progress Visualization**: Sidebar chips use adaptive colors (gray -> light green -> deep green) to visually communicate completion percentage at a glance.
+*   **Line Detail Mini-map**: Provides an integrated overview of even complex branched routes with one-click navigation to any station.
+*   **Detail Pane Drag-to-Record**: Enables direct trip recording from the station detail view via intuitive drag-and-drop interactions.
+*   **Visited Station Highlighting**: Visually distinct markers (green with glow) for stations that have been visited, improving orientation within the line view.
 
 ## Technical Details
 

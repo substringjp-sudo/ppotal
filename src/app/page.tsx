@@ -25,7 +25,7 @@ const Page = () => {
     const [visitedLineLengths, setVisitedLineLengths] = React.useState<Record<string, number>>({});
     const [recordedTrips, setRecordedTrips] = React.useState<any[]>([]);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
-    const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any> } | null>(null);
+    const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any>, getShortestPath: any } | null>(null);
 
     // Initial load from localStorage
     React.useEffect(() => {
@@ -131,6 +131,9 @@ const Page = () => {
                                 segments={lineDetailData.segments}
                                 nodes={lineDetailData.nodes}
                                 visitedEdges={lineDetailData.visitedEdges}
+                                selectedLines={selectedLines}
+                                getShortestPath={lineDetailData.getShortestPath}
+                                onRecordTrip={handleRecordTrip}
                                 onClose={() => setActiveLine(null)}
                             />
                         </div>

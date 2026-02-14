@@ -7,7 +7,7 @@ import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
 import Railroads from './Railroads';
 import Stations from './Stations';
-import { buildGraph, RailroadGraph, haversineDistance } from '../lib/graphUtils';
+import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -17,8 +17,13 @@ interface MapPaneProps {
     onStationClick?: (name: string) => void;
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
     onVisitedLengthsCalculated?: (lengths: Record<string, number>) => void;
-    activeLine?: string | null;
-    onLineDetailData?: (data: { segments: any[], visitedEdges: Set<string>, nodes: Map<string, any> } | null) => void;
+    activeLine: string | null;
+    onLineDetailData?: (data: {
+        segments: any[],
+        visitedEdges: Set<string>,
+        nodes: Map<string, StationNode>,
+        getShortestPath: any
+    } | null) => void;
 }
 
 const MapPane: React.FC<MapPaneProps> = ({
@@ -213,7 +218,12 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
         });
 
-        onLineDetailData({ segments, visitedEdges, nodes: graph.nodes });
+        onLineDetailData({
+            segments,
+            visitedEdges,
+            nodes: graph.nodes,
+            getShortestPath: graph.getShortestPathByName.bind(graph)
+        });
     }, [activeLine, graph, recordedTrips, onLineDetailData]);
 
     // Disable map dragging during station drag
@@ -402,42 +412,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         // Redundant with global mouseup handler which handles snapping.
     };
 
-    const OffScreenIndicator = () => {
-        const activeStation = dragStartStation;
-        if (!activeStation || !visibleStations || !visibleStations[activeStation]) return null;
-
-        const { centroid } = visibleStations[activeStation];
-        const latLng = L.latLng(centroid[0], centroid[1]);
-
-        if (mapBounds?.contains(latLng)) return null;
-
-        const containerPoint = map.latLngToContainerPoint(latLng);
-        const { x: width, y: height } = map.getSize();
-
-        // Clamp to edges
-        const edgePadding = 20;
-        const clampedX = Math.max(edgePadding, Math.min(width - edgePadding, containerPoint.x));
-        const clampedY = Math.max(edgePadding, Math.min(height - edgePadding, containerPoint.y));
-
-        const angle = Math.atan2(containerPoint.y - height / 2, containerPoint.x - width / 2) * (180 / Math.PI);
-
-        return (
-            <div style={{
-                position: 'fixed',
-                left: clampedX,
-                top: clampedY,
-                transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-                zIndex: 1000,
-                color: '#FF00FF',
-                fontSize: '24px',
-                pointerEvents: 'none',
-                filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))',
-                userSelect: 'none'
-            }}>
-                ➤
-            </div>
-        );
-    };
+    // Moved OffScreenIndicator outside
 
     // Function to get color from node ID (company::line::station)
     const getLineColorFromNode = (nodeId: string) => {
@@ -568,8 +543,49 @@ const MapPane: React.FC<MapPaneProps> = ({
                 }
             </Pane>
 
-            <OffScreenIndicator />
+            <OffScreenIndicator
+                map={map}
+                mapBounds={mapBounds}
+                dragStartStation={dragStartStation}
+                visibleStations={visibleStations}
+            />
         </>
+    );
+};
+
+const OffScreenIndicator = ({ map, mapBounds, dragStartStation, visibleStations }: any) => {
+    if (!dragStartStation || !visibleStations || !visibleStations[dragStartStation] || !map) return null;
+
+    const { centroid } = visibleStations[dragStartStation];
+    const latLng = L.latLng(centroid[0], centroid[1]);
+
+    if (mapBounds?.contains(latLng)) return null;
+
+    const containerPoint = map.latLngToContainerPoint(latLng);
+    const { x: width, y: height } = map.getSize();
+
+    // Clamp to edges
+    const edgePadding = 20;
+    const clampedX = Math.max(edgePadding, Math.min(width - edgePadding, containerPoint.x));
+    const clampedY = Math.max(edgePadding, Math.min(height - edgePadding, containerPoint.y));
+
+    const angle = Math.atan2(containerPoint.y - height / 2, containerPoint.x - width / 2) * (180 / Math.PI);
+
+    return (
+        <div style={{
+            position: 'fixed',
+            left: clampedX,
+            top: clampedY,
+            transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+            zIndex: 1000,
+            color: '#FF00FF',
+            fontSize: '24px',
+            pointerEvents: 'none',
+            filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))',
+            userSelect: 'none'
+        }}>
+            ➤
+        </div>
     );
 };
 

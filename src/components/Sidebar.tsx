@@ -23,6 +23,19 @@ interface SidebarProps {
     activeLine?: string | null;
 }
 
+const getProgressColor = (percent: number) => {
+    if (percent >= 99.9) return { bg: '#27ae60', text: '#fff' };
+    if (percent <= 0) return { bg: '#f5f5f5', text: '#666' };
+    // Mix between light gray and theme green
+    // Start with light green bg
+    const saturation = 30 + (percent * 0.4); // 30% -> 70%
+    const lightness = 96 - (percent * 0.4); // 96% -> 56%
+    return {
+        bg: `hsl(145, ${saturation}%, ${lightness}%)`,
+        text: percent > 50 ? '#fff' : '#186A3B'
+    };
+};
+
 type GroupedHierarchy = {
     shinkansen: Record<string, Record<string, any>>;
     jr: Record<string, Record<string, any>>;
@@ -206,8 +219,18 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                 const companyTotal = lineNames.reduce((sum, l) => sum + (lineLengths[`${company}::${l}`] || 0), 0);
                                                 const companyVisited = lineNames.reduce((sum, l) => sum + (visitedLineLengths[`${company}::${l}`] || 0), 0);
                                                 const companyPercent = companyTotal > 0 ? (companyVisited / companyTotal) * 100 : 0;
+                                                const colors = getProgressColor(companyPercent);
                                                 return (
-                                                    <span style={{ fontSize: '10px', color: companyPercent >= 99.9 ? '#186A3B' : '#666', flexShrink: 0, backgroundColor: '#f5f5f5', padding: '2px 6px', borderRadius: '10px' }}>
+                                                    <span style={{
+                                                        fontSize: '10px',
+                                                        color: colors.text,
+                                                        flexShrink: 0,
+                                                        backgroundColor: colors.bg,
+                                                        padding: '2px 8px',
+                                                        borderRadius: '10px',
+                                                        fontWeight: '800',
+                                                        transition: 'all 0.3s ease'
+                                                    }}>
                                                         {companyPercent.toFixed(1)}%
                                                     </span>
                                                 );
@@ -255,9 +278,24 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                                 }}>
                                                                     {line}
                                                                 </span>
-                                                                <span style={{ fontSize: '10px', color: isCompleted ? '#186A3B' : '#999', flexShrink: 0, marginLeft: '8px', fontWeight: 'bold' }}>
-                                                                    {percent.toFixed(percent >= 100 ? 0 : 1)}%
-                                                                </span>
+                                                                {(() => {
+                                                                    const colors = getProgressColor(percent);
+                                                                    return (
+                                                                        <span style={{
+                                                                            fontSize: '10px',
+                                                                            color: colors.text,
+                                                                            flexShrink: 0,
+                                                                            marginLeft: '8px',
+                                                                            fontWeight: '800',
+                                                                            backgroundColor: colors.bg,
+                                                                            padding: '1px 6px',
+                                                                            borderRadius: '8px',
+                                                                            transition: 'all 0.3s ease'
+                                                                        }}>
+                                                                            {percent.toFixed(percent >= 100 ? 0 : 1)}%
+                                                                        </span>
+                                                                    );
+                                                                })()}
                                                             </div>
                                                             {lineLengths[key] > 0 && (
                                                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
