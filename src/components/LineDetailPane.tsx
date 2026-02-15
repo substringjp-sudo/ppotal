@@ -11,9 +11,8 @@ interface LineDetailPaneProps {
     selectedLines: string[];
     onRecordTrip?: (trip: any) => void;
     getShortestPath?: (start: string, end: string, lines: string[]) => any;
-    onStationClick?: (name: string) => void;
-    onClose: () => void;
     onStationClick?: (stationName: string) => void;
+    onClose: () => void;
 }
 
 interface StationPos {
@@ -383,178 +382,180 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         ))}
                     </div>
                 </div>
+            </div>
 
-                <div
-                    ref={scrollRef}
-                    onMouseLeave={handleMouseUp}
-                    onMouseUp={handleMouseUp}
-                    style={{
-                        flex: 1,
-                        overflow: 'auto',
-                        padding: '20px',
-                        position: 'relative',
-                        minHeight: '140px',
-                        userSelect: 'none'
-                    }}>
-                    <div style={{
-                        position: 'relative',
-                        width: `${(layout.maxX - layout.minX + 1) * 120}px`,
-                        height: `${layout.rows.length * 90}px`,
-                        margin: '0 auto'
-                    }}>
-                        {/* Render Edges first */}
-                        {layout.rows.map((row: StationPos[], rIdx: number) => {
-                            return (
-                                <React.Fragment key={`edges-${rIdx}`}>
-                                    {row.map((pos: StationPos, pIdx: number) => {
-                                        if (pIdx === row.length - 1) return null;
-                                        const nextPos = row[pIdx + 1];
-
-                                        // Check if this edge exists in the segment
-                                        const getName = (id: string) => nodes.get(id)?.name || id;
-                                        const logicalKey = [getName(pos.id), getName(nextPos.id)].sort().join('<->');
-                                        const isVisited = visitedLogicalEdges.has(logicalKey);
-                                        const isPreview = dragPathPreview.has(pos.id) && dragPathPreview.has(nextPos.id);
-
-                                        return (
-                                            <div
-                                                key={`edge-${rIdx}-${pIdx}`}
-                                                style={{
-                                                    position: 'absolute',
-                                                    left: `${(pos.x - layout.minX) * 120 + 40}px`,
-                                                    top: `${pos.y * 90 + 20}px`,
-                                                    width: `${(nextPos.x - pos.x) * 120}px`,
-                                                    height: '4px',
-                                                    backgroundColor: isPreview ? '#FF00FF' : (isVisited ? '#27ae60' : '#ddd'),
-                                                    boxShadow: isPreview ? '0 0 10px #FF00FF' : 'none',
-                                                    zIndex: isPreview ? 2 : 1,
-                                                    transition: 'all 0.4s ease'
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </React.Fragment>
-                            );
-                        })}
-
-                        {/* Render Junction Connections */}
-                        {layout.rows.map((row: StationPos[], rIdx: number) => {
-                            if (rIdx === 0) return null;
-
-                            // Find where this row connects to a previous row
-                            let junctionInCurrent = -1;
-                            let junctionX = -1;
-                            let junctionParentY = -1;
-
-                            for (let j = 0; j < row.length; j++) {
-                                const sid = row[j].id;
-                                // Search in previous rows
-                                for (let prevR = 0; prevR < rIdx; prevR++) {
-                                    const found: StationPos | undefined = layout.rows[prevR].find((p: StationPos) => p.id === sid);
-                                    if (found) {
-                                        junctionInCurrent = j;
-                                        junctionX = row[j].x;
-                                        junctionParentY = found.y;
-                                        break;
-                                    }
-                                }
-                                if (junctionInCurrent !== -1) break;
-                            }
-
-                            if (junctionInCurrent !== -1) {
-                                return (
-                                    <div
-                                        key={`junction-${rIdx}`}
-                                        style={{
-                                            position: 'absolute',
-                                            left: `${(junctionX - layout.minX) * 120 + 38}px`,
-                                            top: `${junctionParentY * 90 + 25}px`,
-                                            width: '4px',
-                                            height: `${(rIdx - junctionParentY) * 90}px`,
-                                            backgroundColor: '#ddd',
-                                            zIndex: 0,
-                                            borderLeft: '2px dashed #bbb'
-                                        }}
-                                    />
-                                );
-                            }
-                            return null;
-                        })}
-
-                        {/* Render Stations */}
-                        {layout.rows.map((row: StationPos[], rIdx: number) => (
-                            <React.Fragment key={`stations-${rIdx}`}>
+            <div
+                ref={scrollRef}
+                onMouseLeave={handleMouseUp}
+                onMouseUp={handleMouseUp}
+                style={{
+                    flex: 1,
+                    overflow: 'auto',
+                    padding: '20px',
+                    position: 'relative',
+                    minHeight: '140px',
+                    userSelect: 'none'
+                }}>
+                <div style={{
+                    position: 'relative',
+                    width: `${(layout.maxX - layout.minX + 1) * 120}px`,
+                    height: `${layout.rows.length * 90}px`,
+                    margin: '0 auto'
+                }}>
+                    {/* Render Edges first */}
+                    {layout.rows.map((row: StationPos[], rIdx: number) => {
+                        return (
+                            <React.Fragment key={`edges-${rIdx}`}>
                                 {row.map((pos: StationPos, pIdx: number) => {
-                                    const node = nodes.get(pos.id);
-                                    const name = node ? node.name : pos.id.split('::').pop();
-                                    const isVisited = stats.visitedStations.has(pos.id);
-                                    const isDragging = dragStart === pos.id;
-                                    const isDragTarget = dragHover === pos.id;
-                                    const isPreview = dragPathPreview.has(pos.id);
+                                    if (pIdx === row.length - 1) return null;
+                                    const nextPos = row[pIdx + 1];
+
+                                    // Check if this edge exists in the segment
+                                    const getName = (id: string) => nodes.get(id)?.name || id;
+                                    const logicalKey = [getName(pos.id), getName(nextPos.id)].sort().join('<->');
+                                    const isVisited = visitedLogicalEdges.has(logicalKey);
+                                    const isPreview = dragPathPreview.has(pos.id) && dragPathPreview.has(nextPos.id);
 
                                     return (
                                         <div
-                                            key={`node-${rIdx}-${pIdx}`}
-                                            onMouseDown={() => handleStationMouseDown(pos.id)}
-                                            onMouseEnter={() => handleStationMouseEnter(pos.id)}
-                                            onClick={(e) => {
-                                                if (dragStart === pos.id && !dragHover) {
-                                                    onStationClick?.(pos.id);
-                                                }
-                                            }}
+                                            key={`edge-${rIdx}-${pIdx}`}
                                             style={{
                                                 position: 'absolute',
-                                                left: `${(pos.x - layout.minX) * 120 + 20}px`,
-                                                top: `${pos.y * 90 + 14}px`,
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                width: '40px',
-                                                zIndex: 3,
-                                                cursor: 'pointer'
+                                                left: `${(pos.x - layout.minX) * 120 + 40}px`,
+                                                top: `${pos.y * 90 + 20}px`,
+                                                width: `${(nextPos.x - pos.x) * 120}px`,
+                                                height: '4px',
+                                                backgroundColor: isPreview ? '#FF00FF' : (isVisited ? '#27ae60' : '#ddd'),
+                                                boxShadow: isPreview ? '0 0 10px #FF00FF' : 'none',
+                                                zIndex: isPreview ? 2 : 1,
+                                                transition: 'all 0.4s ease'
                                             }}
-                                        >
-                                            <div style={{
-                                                width: isDragging || isDragTarget ? '16px' : '12px',
-                                                height: isDragging || isDragTarget ? '16px' : '12px',
-                                                borderRadius: '50%',
-                                                backgroundColor: isPreview ? '#FF00FF' : (isVisited ? '#27ae60' : '#e0e0e0'),
-                                                border: '2px solid #fff',
-                                                boxShadow: isPreview
-                                                    ? '0 0 15px #FF00FF, 0 0 0 1px #FF00FF'
-                                                    : (isVisited
-                                                        ? '0 0 10px rgba(39, 174, 96, 0.5), 0 0 0 1px #27ae60'
-                                                        : '0 0 0 1px #ccc'),
-                                                marginBottom: '6px',
-                                                transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                                                transform: isDragging || isDragTarget ? 'scale(1.2)' : 'scale(1)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                {isVisited && !isDragging && !isDragTarget && (
-                                                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#fff' }} />
-                                                )}
-                                            </div>
-                                            <span style={{
-                                                fontSize: '11px',
-                                                fontWeight: isVisited || isDragging || isDragTarget ? 'bold' : 'normal',
-                                                color: isVisited ? '#186A3B' : '#888',
-                                                textAlign: 'center',
-                                                whiteSpace: 'normal',
-                                                width: '80px',
-                                                lineHeight: '1.2',
-                                                transition: 'all 0.2s'
-                                            }}>{name}</span>
-                                        </div>
+                                        />
                                     );
                                 })}
                             </React.Fragment>
-                        ))}
-                    </div>
+                        );
+                    })}
+
+                    {/* Render Junction Connections */}
+                    {layout.rows.map((row: StationPos[], rIdx: number) => {
+                        if (rIdx === 0) return null;
+
+                        // Find where this row connects to a previous row
+                        let junctionInCurrent = -1;
+                        let junctionX = -1;
+                        let junctionParentY = -1;
+
+                        for (let j = 0; j < row.length; j++) {
+                            const sid = row[j].id;
+                            // Search in previous rows
+                            for (let prevR = 0; prevR < rIdx; prevR++) {
+                                const found: StationPos | undefined = layout.rows[prevR].find((p: StationPos) => p.id === sid);
+                                if (found) {
+                                    junctionInCurrent = j;
+                                    junctionX = row[j].x;
+                                    junctionParentY = found.y;
+                                    break;
+                                }
+                            }
+                            if (junctionInCurrent !== -1) break;
+                        }
+
+                        if (junctionInCurrent !== -1) {
+                            return (
+                                <div
+                                    key={`junction-${rIdx}`}
+                                    style={{
+                                        position: 'absolute',
+                                        left: `${(junctionX - layout.minX) * 120 + 38}px`,
+                                        top: `${junctionParentY * 90 + 25}px`,
+                                        width: '4px',
+                                        height: `${(rIdx - junctionParentY) * 90}px`,
+                                        backgroundColor: '#ddd',
+                                        zIndex: 0,
+                                        borderLeft: '2px dashed #bbb'
+                                    }}
+                                />
+                            );
+                        }
+                        return null;
+                    })}
+
+                    {/* Render Stations */}
+                    {layout.rows.map((row: StationPos[], rIdx: number) => (
+                        <React.Fragment key={`stations-${rIdx}`}>
+                            {row.map((pos: StationPos, pIdx: number) => {
+                                const node = nodes.get(pos.id);
+                                const name = node ? node.name : pos.id.split('::').pop();
+                                const isVisited = stats.visitedStations.has(pos.id);
+                                const isDragging = dragStart === pos.id;
+                                const isDragTarget = dragHover === pos.id;
+                                const isPreview = dragPathPreview.has(pos.id);
+
+                                return (
+                                    <div
+                                        key={`node-${rIdx}-${pIdx}`}
+                                        onMouseDown={() => handleStationMouseDown(pos.id)}
+                                        onMouseEnter={() => handleStationMouseEnter(pos.id)}
+                                        onClick={(e) => {
+                                            if (dragStart === pos.id && !dragHover) {
+                                                const name = nodes.get(pos.id)?.name;
+                                                if (name) onStationClick?.(name);
+                                            }
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            left: `${(pos.x - layout.minX) * 120 + 20}px`,
+                                            top: `${pos.y * 90 + 14}px`,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            width: '40px',
+                                            zIndex: 3,
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: isDragging || isDragTarget ? '16px' : '12px',
+                                            height: isDragging || isDragTarget ? '16px' : '12px',
+                                            borderRadius: '50%',
+                                            backgroundColor: isPreview ? '#FF00FF' : (isVisited ? '#27ae60' : '#e0e0e0'),
+                                            border: '2px solid #fff',
+                                            boxShadow: isPreview
+                                                ? '0 0 15px #FF00FF, 0 0 0 1px #FF00FF'
+                                                : (isVisited
+                                                    ? '0 0 10px rgba(39, 174, 96, 0.5), 0 0 0 1px #27ae60'
+                                                    : '0 0 0 1px #ccc'),
+                                            marginBottom: '6px',
+                                            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                            transform: isDragging || isDragTarget ? 'scale(1.2)' : 'scale(1)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {isVisited && !isDragging && !isDragTarget && (
+                                                <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#fff' }} />
+                                            )}
+                                        </div>
+                                        <span style={{
+                                            fontSize: '11px',
+                                            fontWeight: isVisited || isDragging || isDragTarget ? 'bold' : 'normal',
+                                            color: isVisited ? '#186A3B' : '#888',
+                                            textAlign: 'center',
+                                            whiteSpace: 'normal',
+                                            width: '80px',
+                                            lineHeight: '1.2',
+                                            transition: 'all 0.2s'
+                                        }}>{name}</span>
+                                    </div>
+                                );
+                            })}
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
-            );
+        </div>
+    );
 };
 
-            export default LineDetailPane;
+export default LineDetailPane;

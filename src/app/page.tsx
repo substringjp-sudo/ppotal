@@ -23,6 +23,40 @@ const MyLinesPaneWithNoSSR = dynamic(() => import('../components/MyLinesPane'), 
     ssr: false
 });
 
+export interface MapStyleSettings {
+    unselected: {
+        opacity: number;
+        weight: number;
+    };
+    unvisited: {
+        weight: number;
+        showOutline: boolean;
+        stationSize: number;
+    };
+    visited: {
+        weight: number;
+        showOutline: boolean;
+        stationSize: number;
+    };
+}
+
+export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
+    unselected: {
+        opacity: 0.3,
+        weight: 1.0,
+    },
+    unvisited: {
+        weight: 2.5,
+        showOutline: true,
+        stationSize: 1.0,
+    },
+    visited: {
+        weight: 3.5,
+        showOutline: true,
+        stationSize: 1.2,
+    }
+};
+
 const Page = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
@@ -323,6 +357,7 @@ const Page = () => {
                                 onLineDetailData={setLineDetailData}
                                 zoomTarget={zoomTarget}
                                 onZoomComplete={() => setZoomTarget(null)}
+                                styleSettings={styleSettings}
                             />
                         </MapWithNoSSR>
                     </div>
@@ -336,9 +371,8 @@ const Page = () => {
                                 selectedLines={selectedLines}
                                 getShortestPath={lineDetailData.getShortestPath}
                                 onRecordTrip={handleRecordTrip}
-                                onStationClick={handleZoomToStation}
-                                onClose={() => setActiveLine(null)}
                                 onStationClick={handleStationClick}
+                                onClose={() => setActiveLine(null)}
                             />
                         </div>
                     )}

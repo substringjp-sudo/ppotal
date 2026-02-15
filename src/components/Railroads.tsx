@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState, useRef } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { normalizeKey } from '../lib/lineUtils';
-import { MapStyleSettings } from '../app/page';
 
 interface RailroadsProps {
     railroadNetwork: any;
@@ -29,8 +28,7 @@ const Railroads: React.FC<RailroadsProps> = ({
     isDragging,
     activeLine
 }) => {
-    const [hoveredLineKey, setHoveredLineKey] = React.useState<string | null>(null);
-    const geoJsonRef = React.useRef<L.GeoJSON>(null);
+    const [hoveredLineKey, setHoveredLineKey] = useState<string | null>(null);
 
     // Get set of visited edge keys for fast lookup
     const visitedEdgeKeys = useMemo(() => {
@@ -104,81 +102,6 @@ const Railroads: React.FC<RailroadsProps> = ({
         return 9;
     }, [zoom]);
 
-    const renderLayer = (features: any[], isOutline: boolean, type: 'normal' | 'selected' | 'visited') => {
-        if (features.length === 0) return null;
-
-        const baseWeight = getBaseWeight();
-
-        const style = (feature: any) => {
-            const lineKey = feature.properties.id;
-            const isActive = activeLine === lineKey;
-            const isHovered = !isDragging && hoveredLineKey === lineKey;
-            const baseColor = getColor(lineKey);
-
-            let weight = baseWeight;
-            if (type === 'selected') weight *= 1.4; // Slightly more weight
-            if (type === 'visited') weight *= 1.5;
-            if (isActive) weight *= 1.8; // Active line is very bold
-            if (isHovered) weight *= 1.2;
-
-            if (isOutline) {
-                let outlineColor = '#ffffff';
-                let oWeight = weight + (zoom > 10 ? 4 : 2);
-                let opacity = type === 'normal' ? 0.3 : 0.9; // Increased selected outline opacity
-
-                if (isActive) {
-                    outlineColor = '#3498db'; // Blue glow for active
-                    opacity = 1.0;
-                }
-
-                if (type === 'visited') {
-                    outlineColor = '#2ecc71';
-                    oWeight = weight + 4;
-                    opacity = 1.0;
-                }
-
-                return {
-                    color: '#fff',
-                    weight: weight + (zoom > 10 ? 3 : 2),
-                    opacity: 0.8,
-                    lineCap: 'round' as L.LineCapShape,
-                    lineJoin: 'round' as L.LineJoinShape,
-                };
-            }
-
-            let color = baseColor;
-            let opacity = 0.9; // Increased base opacity for better visibility
-
-            if (isActive || type === 'visited') {
-                opacity = 1.0;
-            } else if (type === 'normal') {
-                opacity = 0.4;
-            }
-
-            if (isHovered) {
-                color = '#e74c3c'; // Coral red for hover
-                opacity = 1.0;
-            }
-
-            return {
-                color: color,
-                weight: weight,
-                opacity: opacity,
-                lineCap: 'round' as L.LineCapShape,
-                lineJoin: 'round' as L.LineJoinShape,
-            };
-        };
-
-        return (
-            <GeoJSON
-                key={`${type}-${isOutline ? 'outline' : 'color'}-${features.length}-${visitedEdgeKeys.size}`}
-                data={{ type: 'FeatureCollection', features } as any}
-                style={style}
-                onEachFeature={onEachFeature}
-            />
-        );
-    };
-
     const onEachFeature = useCallback((feature: any, layer: L.Layer) => {
         const lineKey = feature.properties.id;
         const lineName = feature.properties.line;
@@ -209,6 +132,81 @@ const Railroads: React.FC<RailroadsProps> = ({
             }
         });
     }, [onRailroadClick, isDragging]);
+
+    const renderLayer = (features: any[], isOutline: boolean, type: 'normal' | 'selected' | 'visited') => {
+        if (features.length === 0) return null;
+
+        const baseWeight = getBaseWeight();
+
+        const style = (feature: any) => {
+            const lineKey = feature.properties.id;
+            const isActive = activeLine === lineKey;
+            const isHovered = !isDragging && hoveredLineKey === lineKey;
+            const baseColor = getColor(lineKey);
+
+            let weight = baseWeight;
+            if (type === 'selected') weight *= 1.4;
+            if (type === 'visited') weight *= 1.5;
+            if (isActive) weight *= 1.8;
+            if (isHovered) weight *= 1.2;
+
+            if (isOutline) {
+                let outlineColor = '#ffffff';
+                let oWeight = weight + (zoom > 10 ? 4 : 2);
+                let opacity = type === 'normal' ? 0.3 : 0.9;
+
+                if (isActive) {
+                    outlineColor = '#3498db';
+                    opacity = 1.0;
+                }
+
+                if (type === 'visited') {
+                    outlineColor = '#2ecc71';
+                    oWeight = weight + 4;
+                    opacity = 1.0;
+                }
+
+                return {
+                    color: outlineColor,
+                    weight: oWeight,
+                    opacity: opacity,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                };
+            }
+
+            let color = baseColor;
+            let opacity = 0.9;
+
+            if (isActive || type === 'visited') {
+                opacity = 1.0;
+            } else if (type === 'normal') {
+                opacity = 0.4;
+            }
+
+            if (isHovered) {
+                color = '#e74c3c';
+                opacity = 1.0;
+            }
+
+            return {
+                color: color,
+                weight: weight,
+                opacity: opacity,
+                lineCap: 'round',
+                lineJoin: 'round',
+            };
+        };
+
+        return (
+            <GeoJSON
+                key={`${type}-${isOutline ? 'outline' : 'color'}-${features.length}-${visitedEdgeKeys.size}`}
+                data={{ type: 'FeatureCollection', features } as any}
+                style={style}
+                onEachFeature={onEachFeature}
+            />
+        );
+    };
 
     if (!railroadNetwork) return null;
 

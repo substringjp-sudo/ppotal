@@ -172,7 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         setExpandedCompanies(prev => ({ ...prev, [company]: !prev[company] }));
     }, []);
 
-    const toggleGroupExpand = useCallback((group: keyof GroupedHierarchy) => {
+    const toggleGroup = useCallback((group: keyof GroupedHierarchy) => {
         setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
     }, []);
 
@@ -242,26 +242,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         onSetSelectedLines(newSelected);
     }, [groupedHierarchy, selectedLines, onSetSelectedLines]);
 
-    const sortCompanies = useCallback((companies: [string, Record<string, any>][]) => {
-        return [...companies].sort((a, b) => {
-            if (sortType === 'usage') {
-                const getUsage = (comp: string, lines: Record<string, any>) => {
-                    let total = 0, visited = 0;
-                    Object.keys(lines).forEach(l => {
-                        total++;
-                        if ((visitedLineLengths[`${comp}::${l}`] || 0) > 0) visited++;
-                    });
-                    return visited / total;
-                };
-                return getUsage(b[0], b[1]) - getUsage(a[0], a[1]);
-            }
-            // For now, simple alphabetical/japanese fallback
-            return a[0].localeCompare(b[0], sortType === 'ja' ? 'ja' : 'en');
-        });
-    }, [sortType, visitedLineLengths]);
-
-    if (!groupedHierarchy) return <div className="p-4">Loading...</div>;
-
     const sortLines = (lineNames: string[], company: string) => {
         const getLineUsage = (line: string) => {
             const key = normalizeKey(`${company}::${line}`);
@@ -269,35 +249,36 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         };
 
         return [...lineNames].sort((a, b) => {
-            if (sortBy === 'ja') return a.localeCompare(b, 'ja');
-            if (sortBy === 'en') return a.localeCompare(b, 'en');
-            if (sortBy === 'ko') return getKoName(a).localeCompare(getKoName(b), 'ko');
-            if (sortBy === 'usage') return getLineUsage(b) - getLineUsage(a);
-            return 0;
-        });
-    };
-
-    const sortCompanies = (companyEntries: [string, Record<string, any>][]) => {
-        const getCompanyUsage = (comp: string, lines: Record<string, any>) => {
-            const names = Object.keys(lines);
-            const total = names.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
-            const visited = names.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
-            return total > 0 ? (visited / total) : 0;
-        };
-
-        return [...companyEntries].sort((a, b) => {
-            if (sortBy === 'ja') return a[0].localeCompare(b[0], 'ja');
-            if (sortBy === 'en') return a[0].localeCompare(b[0], 'en');
-            if (sortBy === 'ko') return getKoName(a[0]).localeCompare(getKoName(b[0]), 'ko');
-            if (sortBy === 'usage') return getCompanyUsage(b[0], b[1]) - getCompanyUsage(a[0], a[1]);
+            if (sortType === 'ja') return a.localeCompare(b, 'ja');
+            if (sortType === 'en') return a.localeCompare(b, 'en');
+            if (sortType === 'ko') return getKoName(a).localeCompare(getKoName(b), 'ko');
+            if (sortType === 'usage') return getLineUsage(b) - getLineUsage(a);
             return 0;
         });
     };
 
     const renderGroup = (title: string, groupKey: keyof GroupedHierarchy) => {
+        if (!groupedHierarchy) return null;
         const companies = groupedHierarchy[groupKey];
         const isEmpty = Object.keys(companies).length === 0;
         if (isEmpty) return null;
+
+        const sortCompaniesForRender = (companyEntries: [string, Record<string, any>][]) => {
+            const getCompanyUsage = (comp: string, lines: Record<string, any>) => {
+                const names = Object.keys(lines);
+                const total = names.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
+                const visited = names.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
+                return total > 0 ? (visited / total) : 0;
+            };
+
+            return [...companyEntries].sort((a, b) => {
+                if (sortType === 'ja') return a[0].localeCompare(b[0], 'ja');
+                if (sortType === 'en') return a[0].localeCompare(b[0], 'en');
+                if (sortType === 'ko') return getKoName(a[0]).localeCompare(getKoName(b[0]), 'ko');
+                if (sortType === 'usage') return getCompanyUsage(b[0], b[1]) - getCompanyUsage(a[0], a[1]);
+                return 0;
+            });
+        };
 
         const allGroupKeys: string[] = [];
         Object.entries(companies).forEach(([comp, lines]) => {
@@ -314,7 +295,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         padding: '10px',
                         background: '#f0f0f0',
                         display: 'flex',
-                        alignItems: 'center',
                         justifyContent: 'space-between',
                         alignItems: 'center'
                     }}
@@ -358,157 +338,155 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 </div>
                 {expandedGroups[groupKey] && (
                     <div style={{ padding: '0 10px 10px 10px' }}>
-                        {sortCompanies(Object.entries(companies)).map(([company, lines]) => {
-                            {
-                                sortCompanies(Object.entries(companies)).map(([company, lines]) => {
-                                    const isExpanded = expandedCompanies[company];
-                                    const lineNames = Object.keys(lines);
-                                    const allLinesSelected = lineNames.every(l => selectedLines.includes(`${company}::${l}`));
-                                    const someLinesSelected = lineNames.some(l => selectedLines.includes(`${company}::${l}`));
+                        {sortCompaniesForRender(Object.entries(companies)).map(([company, lines]) => {
+                            const isExpanded = expandedCompanies[company];
+                            const lineNames = Object.keys(lines);
+                            const allLinesSelected = lineNames.every(l => selectedLines.includes(`${company}::${l}`));
+                            const someLinesSelected = lineNames.some(l => selectedLines.includes(`${company}::${l}`));
 
-                                    const companyTotalLines = lineNames.length;
-                                    const companyVisitedCount = lineNames.filter(l => (visitedLineLengths[normalizeKey(`${company}::${l}`)] || 0) > 0).length;
+                            const companyTotalLines = lineNames.length;
+                            const companyVisitedCount = lineNames.filter(l => (visitedLineLengths[normalizeKey(`${company}::${l}`)] || 0) > 0).length;
 
-                                    return (
-                                        <div key={company} style={{ marginTop: '8px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={allLinesSelected}
-                                                    ref={input => {
-                                                        if (input) {
-                                                            input.indeterminate = someLinesSelected && !allLinesSelected;
-                                                        }
-                                                    }}
-                                                    onChange={() => handleCompanyToggle(company, lines)}
-                                                    style={{ marginRight: '8px', cursor: 'pointer' }}
-                                                />
-                                                <span
-                                                    onClick={() => toggleCompany(company)}
-                                                    style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
-                                                >
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-                                                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {company}
-                                                        </span>
-                                                        <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
-                                                            ({companyVisitedCount}/{companyTotalLines})
-                                                        </span>
-                                                        <span style={{ flexShrink: 0, fontSize: '10px' }}>
-                                                            {isExpanded ? '▼' : '▶'}
-                                                        </span>
-                                                    </span>
-                                                    {(() => {
-                                                        const totalLen = lineNames.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${company}::${l}`)] || 0), 0);
-                                                        const visitedLen = lineNames.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${company}::${l}`)] || 0), 0);
-                                                        const companyPercent = totalLen > 0 ? (visitedLen / totalLen) * 100 : 0;
-                                                        const colors = getProgressColor(companyPercent);
-                                                        return (
-                                                            <span style={{
-                                                                fontSize: '10px',
-                                                                color: colors.text,
-                                                                flexShrink: 0,
-                                                                backgroundColor: colors.bg,
-                                                                padding: '1px 6px',
-                                                                borderRadius: '8px',
-                                                                fontWeight: '800',
-                                                                transition: 'all 0.3s ease'
-                                                            }}>
-                                                                {companyPercent.toFixed(1)}%
-                                                            </span>
-                                                        );
-                                                    })()}
+                            return (
+                                <div key={company} style={{ marginTop: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allLinesSelected}
+                                            ref={input => {
+                                                if (input) {
+                                                    input.indeterminate = someLinesSelected && !allLinesSelected;
+                                                }
+                                            }}
+                                            onChange={() => handleCompanyToggle(company, lines)}
+                                            style={{ marginRight: '8px', cursor: 'pointer' }}
+                                        />
+                                        <span
+                                            onClick={() => toggleCompany(company)}
+                                            style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
+                                        >
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {company}
                                                 </span>
-                                            </div>
-                                            {isExpanded && (
-                                                <div style={{ marginLeft: '22px' }}>
-                                                    {sortLines(lineNames, company).map(line => {
-                                                        const key = `${company}::${line}`;
-                                                        const normalizedKey = normalizeKey(key);
-                                                        const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey);
-                                                        const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
-                                                        const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
-                                                        const isCompleted = percent >= 99.9;
+                                                <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
+                                                    ({companyVisitedCount}/{companyTotalLines})
+                                                </span>
+                                                <span style={{ flexShrink: 0, fontSize: '10px' }}>
+                                                    {isExpanded ? '▼' : '▶'}
+                                                </span>
+                                            </span>
+                                            {(() => {
+                                                const totalLen = lineNames.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${company}::${l}`)] || 0), 0);
+                                                const visitedLen = lineNames.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${company}::${l}`)] || 0), 0);
+                                                const companyPercent = totalLen > 0 ? (visitedLen / totalLen) * 100 : 0;
+                                                const colors = getProgressColor(companyPercent);
+                                                return (
+                                                    <span style={{
+                                                        fontSize: '10px',
+                                                        color: colors.text,
+                                                        flexShrink: 0,
+                                                        backgroundColor: colors.bg,
+                                                        padding: '1px 6px',
+                                                        borderRadius: '8px',
+                                                        fontWeight: '800',
+                                                        transition: 'all 0.3s ease'
+                                                    }}>
+                                                        {companyPercent.toFixed(1)}%
+                                                    </span>
+                                                );
+                                            })()}
+                                        </span>
+                                    </div>
+                                    {isExpanded && (
+                                        <div style={{ marginLeft: '22px' }}>
+                                            {sortLines(lineNames, company).map(line => {
+                                                const key = `${company}::${line}`;
+                                                const normalizedKey = normalizeKey(key);
+                                                const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey);
+                                                const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
+                                                const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
+                                                const isCompleted = percent >= 99.9;
 
-                                                        return (
-                                                            <div
-                                                                key={line}
-                                                                ref={el => { lineRefs.current[key] = el; }}
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    padding: '4px 0',
-                                                                    backgroundColor: isActive ? '#e6f7ff' : 'transparent',
-                                                                    borderRadius: '4px',
-                                                                    borderBottom: '1px solid #f9f9f9'
-                                                                }}
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={isSelected}
-                                                                    onChange={() => onToggleLine(key)}
-                                                                    style={{ marginRight: '8px', flexShrink: 0, cursor: 'pointer' }}
-                                                                />
-                                                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                                                                        <span
-                                                                            onClick={() => onLineClick?.(key)}
-                                                                            style={{
-                                                                                fontSize: '12px',
-                                                                                color: isCompleted ? '#186A3B' : '#333',
-                                                                                fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
-                                                                                whiteSpace: 'nowrap',
-                                                                                overflow: 'hidden',
-                                                                                textOverflow: 'ellipsis',
-                                                                                flex: 1,
-                                                                                cursor: 'pointer'
-                                                                            }}>
-                                                                            {line}
+                                                return (
+                                                    <div
+                                                        key={line}
+                                                        ref={el => { lineRefs.current[key] = el; }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            padding: '4px 0',
+                                                            backgroundColor: isActive ? '#e6f7ff' : 'transparent',
+                                                            borderRadius: '4px',
+                                                            borderBottom: '1px solid #f9f9f9'
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => onToggleLine(key)}
+                                                            style={{ marginRight: '8px', flexShrink: 0, cursor: 'pointer' }}
+                                                        />
+                                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                                                                <span
+                                                                    onClick={() => onLineClick?.(key)}
+                                                                    style={{
+                                                                        fontSize: '12px',
+                                                                        color: isCompleted ? '#186A3B' : '#333',
+                                                                        fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
+                                                                        whiteSpace: 'nowrap',
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
+                                                                        flex: 1,
+                                                                        cursor: 'pointer'
+                                                                    }}>
+                                                                    {line}
+                                                                </span>
+                                                                {(() => {
+                                                                    const colors = getProgressColor(percent);
+                                                                    return (
+                                                                        <span style={{
+                                                                            fontSize: '9px',
+                                                                            color: colors.text,
+                                                                            flexShrink: 0,
+                                                                            marginLeft: '6px',
+                                                                            fontWeight: '800',
+                                                                            backgroundColor: colors.bg,
+                                                                            padding: '0px 5px',
+                                                                            borderRadius: '6px',
+                                                                            transition: 'all 0.3s ease'
+                                                                        }}>
+                                                                            {percent.toFixed(percent >= 100 ? 0 : 1)}%
                                                                         </span>
-                                                                        {(() => {
-                                                                            const colors = getProgressColor(percent);
-                                                                            return (
-                                                                                <span style={{
-                                                                                    fontSize: '9px',
-                                                                                    color: colors.text,
-                                                                                    flexShrink: 0,
-                                                                                    marginLeft: '6px',
-                                                                                    fontWeight: '800',
-                                                                                    backgroundColor: colors.bg,
-                                                                                    padding: '0px 5px',
-                                                                                    borderRadius: '6px',
-                                                                                    transition: 'all 0.3s ease'
-                                                                                }}>
-                                                                                    {percent.toFixed(percent >= 100 ? 0 : 1)}%
-                                                                                </span>
-                                                                            );
-                                                                        })()}
-                                                                    </div>
-                                                                    {lineLengths[key] > 0 && (
-                                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                            <div style={{ fontSize: '9px', color: '#999', marginBottom: '1px' }}>
-                                                                                {(visitedLineLengths?.[key] || 0).toFixed(1)} / {lineLengths[key].toFixed(1)} km
-                                                                            </div>
-                                                                            <div style={{ width: '100%', height: '2px', backgroundColor: '#f0f0f0', borderRadius: '1px', overflow: 'hidden' }}>
-                                                                                <div style={{
-                                                                                    width: `${Math.min(100, percent)}%`,
-                                                                                    height: '100%',
-                                                                                    backgroundColor: isCompleted ? '#27ae60' : '#3498db',
-                                                                                    transition: 'width 0.4s ease-out'
-                                                                                }} />
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                                    );
+                                                                })()}
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
+                                                            {lineLengths[key] > 0 && (
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <div style={{ fontSize: '9px', color: '#999', marginBottom: '1px' }}>
+                                                                        {(visitedLineLengths?.[key] || 0).toFixed(1)} / {lineLengths[key].toFixed(1)} km
+                                                                    </div>
+                                                                    <div style={{ width: '100%', height: '2px', backgroundColor: '#f0f0f0', borderRadius: '1px', overflow: 'hidden' }}>
+                                                                        <div style={{
+                                                                            width: `${Math.min(100, percent)}%`,
+                                                                            height: '100%',
+                                                                            backgroundColor: isCompleted ? '#27ae60' : '#3498db',
+                                                                            transition: 'width 0.4s ease-out'
+                                                                        }} />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
-                                    );
-                                })
-                            }
+                                    )}
+                                </div>
+                            );
+                        })
+                        }
                     </div>
                 )}
             </div>

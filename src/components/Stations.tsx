@@ -79,10 +79,11 @@ const Stations: React.FC<StationsProps> = ({
     }
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
-        if (selectedLines.length === 0 && !activeLine) return false;
-        // Show dots only from zoom 7
+        const isSelected = data.lines.some(line => selectedLines.includes(line) || activeLine === line);
+        // Show dots if selected OR if zoom is high enough to see general context
         if (zoom < 7) return false;
-        return data.lines.some(line => selectedLines.includes(line) || activeLine === line);
+        if (zoom >= 10) return true; // Show all stations at high zoom for better orientation
+        return isSelected;
     });
 
     return (
@@ -95,7 +96,13 @@ const Stations: React.FC<StationsProps> = ({
                 );
                 const lines = station.lines;
 
-                let radius = zoom > 14 ? 6 : (zoom > 12 ? 4 : (zoom > 10 ? 3 : 2));
+                const isLowZoom = zoom <= 13;
+                let radius = isLowZoom ? 3 : (isHighlighted ? 10 : 7.5);
+
+                // Fine-tune radius based on zoom if not low zoom and not highlighted
+                if (!isLowZoom && !isHighlighted) {
+                    radius = zoom > 14 ? 8 : (zoom > 12 ? 6 : 4);
+                }
 
                 // Apply user style size multipliers
                 if (isVisited) {
@@ -105,9 +112,6 @@ const Stations: React.FC<StationsProps> = ({
                 }
 
                 const isDragging = dragStartStation === name;
-                const isLowZoom = zoom <= 13;
-
-                const radius = isLowZoom ? 3 : (isHighlighted ? 10 : 7.5);
                 const weight = isLowZoom ? 0 : (isHighlighted ? 6 : 4);
 
                 const coords = station.nodes.map(n => n.coord);
@@ -171,19 +175,62 @@ const Stations: React.FC<StationsProps> = ({
                             return (
                                 <React.Fragment key={`${node.id}-${idx}`}>
                                     {/* Platform Rendering Logic */}
-                                    {zoom >= 14 && node.platforms && node.platforms.map((plat, pidx) => (
-                                        <Polyline
-                                            key={`plat-${pidx}`}
-                                            positions={plat.map(pt => [pt[1], pt[0]])}
-                                            pathOptions={{
-                                                color: baseColor,
-                                                weight: isHighlighted ? 12 : 8,
-                                                opacity: 0.9,
-                                                lineCap: 'butt',
-                                                interactive: false
-                                            }}
-                                        />
-                                    ))}
+                                    {zoom >= 14 && node.platforms && node.platforms.map((plat, pidx) => {
+                                        const positions = plat.filter(pt => pt && pt.length >= 2).map(pt => [pt[1], pt[0]] as [number, number]);
+                                        if (positions.length < 2) return null;
+
+                                        return (
+                                            <Polyline
+                                                key={`plat-${pidx}`}
+                                                positions={positions}
+                                                pathOptions={{
+                                                    color: '#000', // Black as requested
+                                                    weight: isHighlighted ? 12 : 8,
+                                                    opacity: 0.9,
+                                                    lineCap: 'butt', // Flat ends as requested
+                                                    interactive: true
+                                                }}
+                                                eventHandlers={{
+                                                    click: (e) => {
+                                                        L.DomEvent.stopPropagation(e);
+                                                        handleStationClick(name);
+                                                    },
+                                                    mousedown: (e) => {
+                                                        L.DomEvent.stopPropagation(e as any);
+                                                        onStationMouseDown(name, [e.latlng.lat, e.latlng.lng]);
+                                                    },
+                                                    mouseup: (e) => {
+                                                        L.DomEvent.stopPropagation(e as any);
+                                                        onStationMouseUp(name);
+                                                    },
+                                                }}
+                                            >
+                                                <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                                    <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
+                                                        <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
+                                                            {name}
+                                                        </div>
+                                                        <div style={{ fontSize: '11px', color: '#666' }}>
+                                                            {formattedLines.map((fl, fidx) => (
+                                                                <div key={fidx} style={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'space-between',
+                                                                    gap: '8px',
+                                                                    padding: '1px 0',
+                                                                    color: selectedLines.includes(fl.key) ? '#000' : '#888',
+                                                                    fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
+                                                                }}>
+                                                                    <span>{fl.company}</span>
+                                                                    <span>{fl.line}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
+                                                    </div>
+                                                </Tooltip>
+                                            </Polyline>
+                                        );
+                                    })}
 
                                     <CircleMarker
                                         className={`station-${name}`}

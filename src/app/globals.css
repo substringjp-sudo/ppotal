@@ -30,3 +30,8 @@ body {
   filter: drop-shadow(0 0 3px #2ecc71);
   transition: filter 0.3s ease;
 }
+
+/* Fix selection rectangle artifact */
+.leaflet-container:focus {
+  outline: none !important;
+}

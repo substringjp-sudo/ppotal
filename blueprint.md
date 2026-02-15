@@ -1,62 +1,32 @@
-# JapanRailNote
+# jprail Project Blueprint
 
-## Overview
+## Project Overview
+jprail is a web application for visualizing and tracking Japanese railroad networks. It features an interactive map with detailed line and station information, progress tracking for visited segments, and a hierarchical sidebar for easy navigation.
 
-This application displays an interactive map of Japan, focusing on its administrative boundaries and transportation infrastructure. The map initially shows the entire country with prefectural boundaries. As the user zooms in, the map dynamically shows municipal boundaries while retaining a clear, bold outline of the prefectural boundaries. Railroads and stations are also displayed with dynamic styling based on the map's zoom level.
+## Project Outline (Styles, Design, Features)
+### Design & Aesthetics
+- **Premium Map Experience**: Uses vibrant colors, dark modes, and smooth animations.
+- **Visual Depth**: Multi-layered drop shadows for cards and markers.
+- **Iconography**: Modern, interactive icons for railroad types and actions.
+- **Typography**: Expressive fonts with stressed sizes for better readability.
+- **Animations**: Subtle micro-animations for hover effects and transitions.
 
-## Features
+### Key Features
+- **Interactive Map**: Built with React-Leaflet, showing railroad networks and stations.
+- **Systematic Network Data**: Loads data from `systematic_railroad_network.json` for accurate routing and rendering.
+- **Station Hierarchy**: Hierarchical navigation for companies, lines, and stations.
+- **Trip Recording**: Users can record trips between stations, calculating distances and marking segments as visited.
+- **Progress Tracking**: Visualizes visited line segments with distinct colors and glows.
+- **Detail Panes**: Dedicated views for line-specific details, including segments and pathfinding.
+- **Customizable Styles**: User-controlled styling settings for visited and unvisited elements.
 
-*   **Interactive Map:** Users can pan and zoom the map.
-*   **Dynamic Boundary Display:** Automatically shows municipal boundaries when zoomed in, with prefectural boundaries remaining visible as a thicker outline for context.
-*   **Hierarchical Layering:** All layers are organized using z-index to ensure logical visibility (stations > railroads > administrative boundaries).
-*   **Consistent Line Weight:** All line weights are defined in screen pixels, ensuring they do not scale disproportionately when zooming.
-*   **Optimized Performance:** Data is loaded progressively. Station data, being the most numerous, is only fetched at high zoom levels.
-*   **Interactive Railroads**: Hovering highlights lines and shows tooltips. Clicking a line opens a detailed bottom view showing the sequence of stations.
-*   **Station Progress Visualization**: The bottom view highlights segments between stations that the user has already visited.
-*   **Systematic Railroad Network:** Uses a processed topological network for accurate mapping and pathfinding.
-*   **Drag-and-Drop Pathfinding:** Users can drag from one station to another to find the shortest railroad path between them.
-*   **Trip Persistence**: User progress (recorded trips) is saved to `localStorage` and automatically restored upon return.
-*   **Advanced Sidebar Sorting**: Supports Japanese (JP), Alphabetical (EN), Korean (KO), and Usage % sorting for the railroad line list.
-*   **Bulk Selection Controls**: Category-level checkboxes allow for quick bulk selection/deselection of all lines within a major group (Shinkansen, JR, etc.), featuring indeterminate states.
-*   **Company Accordion Management**: Includes "Expand All" and "Collapse All" buttons for managing multiple railroad company accordions simultaneously.
-*   **Intuitive Click-to-Zoom**:
-    *   **Sidebar**: Clicking a line name automatically fits the map view to that line's geometry.
-    *   **Detail Pane**: Clicking a station name or dot in the bottom navigator zooms the map to that specific station (Zoom Level 15).
-*   **Custom Map Interface**: Features a bespoke, premium zoom slider and reset view button in the top-left corner, replacing default browser controls.
-*   **"My Routes" Summary Panel**: A dedicated, togglable right-side panel provides a clear list of all recorded trips with distance information and delete functionality.
-*   **Visual Polish & Animations**: Enhanced with smooth "fly-to" map transitions, glassmorphic UI elements, and refined typography (Inter) for a premium feel.
-*   **Firebase Hosting Deployment**: Successfully deployed to Firebase Hosting using optimized Next.js build.
+## Current Planned Changes (Investigating Missing Kyoto Data)
+### Goal
+Identify and fix the issue where certain JR West Tokaido Line segments and major stations (Kyoto, Yamashina) are missing from the map.
 
-## Technical Details
-
-### Pathfinding & Graph Construction
-- **Accuracy:** The pathfinding system uses Dijkstra's algorithm on a topological graph of Japan's railroad network.
-- **Inter-station Transfers:** Stations with the same name are logically connected (transfers) within 1.0km to allow routing between different lines.
-- **Geometry Reconstruction:** Paths found in the graph are reconstructed into full geographic polylines for display on the map.
-
-### Data Management
-- **Persistence:** Uses `localStorage` to store an array of user trip objects (`id`, `path`, `geometries`, `distance`, etc.).
-- **Statistics Calculation:** Dynamically aggregates visited distance by matching topological edges between recorded trips and the systematic railroad network.
-
-# 새 목표
-- 노선데이터 좀 더 보강하기
-- 여러 형태의 시각적 표시방식 설정
-- 지도를 이미지 형태로 출력
-- 노선목록에서 체크 말고 그냥 클릭하면 해당 노선 줌인
-- 번역
-- 점크기 좀 더 크게
-- 오른쪽에 내가 이용한 노선만 정리해서 표시
-- 뭐 클릭하면 생기는 사각형 지우기
-- 방문노선/미방문노선/미체크노선/방문역/미방문역 각각 굵기/크기/투명도 조절
-- 신칸센, JR 등 대분류 전체 체크하기 기능
-- 용량 압축, 최적화
-- 하단노선도 네비게이터 하단뷰 위로 올리기 
-- 노선목록 정렬 옵션(일본어순서, 알파벳순서, 가나다순서, 이용률순서)
-- 노선목록 모두닫기, 모두열기
-- 노선목록 전체선택/전체닫기 적용여부표시
-- 최대줌/최소줌 제한
-- 줌슬라이더, 줌리셋 기능
-- 하단노선도에서 역을 클릭하면 해당 역 위치로 줌 이동
-- 안쓰는 파일 정리
-- https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html 사용규칙 적용하기
-- https://www.geoboundaries.org/ 사용규칙 적용하기 
+### Proposed Steps
+1. **Modify Station Visibility**: Update `Stations.tsx` to ensure major stations are visible even when their specific line is not selected, especially at higher zoom levels.
+2. **Improve Line Segment Rendering**: Research and implement logic to handle cross-line segments (segments labeled as one line that logically belong to another, like Kyoto-Yamashina) to ensure they render with their logical parent line.
+3. **Resolve "Selection Rectangle"**: Audit CSS and component styles to remove any unintended selection indicators or focus rings.
+4. **Data Verification**: Confirm station IDs and line associations in `systematic_railroad_network.json` match the expected hierarchy.
+5. **Verify Fixes**: Ensure Kyoto and Yamashina stations and their connecting lines are correctly displayed and interactable.

@@ -22,13 +22,14 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
 
     const style = useCallback((feature: any) => {
         if (outlineOnly) {
-            let weight = 3;
-            if (zoom <= 7) weight = 1;
-            else if (zoom <= 9) weight = 2;
+            let weight = 1.5;
+            if (zoom <= 7) weight = 0.5;
+            else if (zoom <= 9) weight = 1.0;
 
             return {
                 weight: weight,
-                color: '#777777',
+                color: '#888888',
+                opacity: 0.5,
                 fillOpacity: 0,
             };
         }

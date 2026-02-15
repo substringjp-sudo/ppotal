@@ -32,6 +32,7 @@ interface MapPaneProps {
     zoomTarget?: { type: 'line' | 'station', id: string } | null;
     onZoomComplete?: () => void;
     onLineMappingCreated?: (map: Map<string, string>) => void;
+    styleSettings: MapStyleSettings;
 }
 
 import MapControls from './MapControls';
@@ -49,7 +50,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     onLineDetailData,
     zoomTarget,
     onZoomComplete,
-    onLineMappingCreated
+    onLineMappingCreated,
+    styleSettings
 }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
@@ -298,6 +300,20 @@ const MapPane: React.FC<MapPaneProps> = ({
         if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
         const data: Record<string, { nodes: { id: string, coord: [number, number], lineKey: string, platforms?: [number, number][][] }[], centroid: [number, number], lines: string[] }> = {};
 
+        // Pre-calculate name-to-lines mapping from hierarchy
+        const nameToLogicalLines = new Map<string, Set<string>>();
+        if (hierarchy) {
+            Object.entries(hierarchy).forEach(([company, lines]: [string, any]) => {
+                Object.entries(lines).forEach(([lineName, stations]: [string, any]) => {
+                    const fullLineKey = `${company}::${lineName}`;
+                    stations.forEach((sName: string) => {
+                        if (!nameToLogicalLines.has(sName)) nameToLogicalLines.set(sName, new Set());
+                        nameToLogicalLines.get(sName)!.add(fullLineKey);
+                    });
+                });
+            });
+        }
+
         Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
             const parts = id.split('::');
             const company = parts[0];
@@ -314,10 +330,20 @@ const MapPane: React.FC<MapPaneProps> = ({
                 const node = { id, coord, lineKey: key, platforms: s.platforms };
 
                 if (!data[name]) {
-                    data[name] = { nodes: [node], centroid: coord, lines: [key] };
+                    const logicalLines = Array.from(nameToLogicalLines.get(name) || []);
+                    const allLines = new Set([key, ...logicalLines]);
+                    data[name] = { nodes: [node], centroid: coord, lines: Array.from(allLines) };
                 } else {
                     data[name].nodes.push(node);
                     if (!data[name].lines.includes(key)) data[name].lines.push(key);
+
+                    // Add any logical lines missing
+                    const logicalLines = nameToLogicalLines.get(name);
+                    if (logicalLines) {
+                        logicalLines.forEach(l => {
+                            if (!data[name].lines.includes(l)) data[name].lines.push(l);
+                        });
+                    }
 
                     // Recalculate centroid
                     const n = data[name].nodes.length;
@@ -328,7 +354,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
         });
         return data;
-    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap]);
+    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap, hierarchy]);
 
     const findNearestStation = useCallback((lat: number, lng: number) => {
         if (!visibleStations) return null;
@@ -338,7 +364,10 @@ const MapPane: React.FC<MapPaneProps> = ({
         const threshold = 30;
 
         Object.entries(visibleStations).forEach(([name, data]) => {
-            // Only snap to visible stations (those on selected lines)
+            // Snapping logic:
+            // 1. Regular dots snapping at low/medium zoom
+            // 2. Platform segment snapping at high zoom (>= 14)
+
             if (selectedLines.length > 0) {
                 const isVisible = data.lines.some((line: string) => selectedLines.includes(line));
                 if (!isVisible) return;
@@ -346,17 +375,41 @@ const MapPane: React.FC<MapPaneProps> = ({
                 return;
             }
 
-            // Check distance to ALL nodes
+            // Check distance to ALL nodes (dots)
             data.nodes.forEach(node => {
                 const d = haversineDistance([lng, lat], [node.coord[1], node.coord[0]]);
                 if (d < minDist && d < threshold) {
                     minDist = d;
                     nearest = name;
                 }
+
+                // If zoom is high, also check against platform geometries
+                if (zoomLevel >= 14 && node.platforms) {
+                    node.platforms.forEach(plat => {
+                        for (let i = 0; i < plat.length - 1; i++) {
+                            const p1 = plat[i];
+                            const p2 = plat[i + 1];
+                            // Distance from point to line segment
+                            const dPlat = distToSegment([lng, lat], p1 as [number, number], p2 as [number, number]);
+                            if (dPlat < minDist && dPlat < (threshold / 10)) { // Much tighter snapping for platforms
+                                minDist = dPlat;
+                                nearest = name;
+                            }
+                        }
+                    });
+                }
             });
         });
         return nearest;
-    }, [visibleStations, selectedLines]);
+    }, [visibleStations, selectedLines, zoomLevel]);
+
+    const distToSegment = (p: [number, number], v: [number, number], w: [number, number]) => {
+        const l2 = Math.pow(v[0] - w[0], 2) + Math.pow(v[1] - w[1], 2);
+        if (l2 === 0) return haversineDistance(p, v);
+        let t = ((p[0] - v[0]) * (w[0] - v[0]) + (p[1] - v[1]) * (w[1] - v[1])) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return haversineDistance(p, [v[0] + t * (w[0] - v[0]), v[1] + t * (w[1] - v[1])]);
+    };
 
     const lastNearestRef = React.useRef<string | null>(null);
     const previewPathRef = React.useRef<any>(null);
@@ -411,7 +464,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (currentDragStation) {
                 const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
                 if (nearest && nearest !== currentDragStation) {
-                    handleRecordTrip(currentDragStation, nearest);
+                    // Pass the actual event latlng as the end point for snapping
+                    handleRecordTrip(currentDragStation, nearest, [e.latlng.lng, e.latlng.lat]);
                 }
             }
             // Always reset drag state on mouseup
@@ -438,11 +492,12 @@ const MapPane: React.FC<MapPaneProps> = ({
         setPreviewPath(null);
     };
 
-    const handleRecordTrip = (start: string, end: string) => {
+    const handleRecordTrip = (start: string, end: string, endCoordsOverride?: [number, number]) => {
         if (!graph || !visibleStations || !visibleStations[end]) return;
 
         const endStationData = visibleStations[end];
-        const endCoords: [number, number] = [endStationData.centroid[1], endStationData.centroid[0]];
+        // Use centroid if no override, but override is preferred for platform-exact snapping
+        const endCoords: [number, number] = endCoordsOverride || [endStationData.centroid[1], endStationData.centroid[0]];
 
         const pathData = graph.getShortestPathByName(
             start,
@@ -500,14 +555,11 @@ const MapPane: React.FC<MapPaneProps> = ({
         if (!zoomTarget || !mapReady || !railroadNetwork) return;
 
         if (zoomTarget.type === 'line') {
-            const lineFeatures = railroadNetwork.features.filter((f: any) => f.properties.id === zoomTarget.id);
-            if (lineFeatures.length > 0) {
+            const route = railroadNetwork.routes.find((r: any) => r.id === zoomTarget.id);
+            if (route) {
                 const bounds = L.latLngBounds([]);
-                lineFeatures.forEach((f: any) => {
-                    const coords = f.geometry.type === 'LineString'
-                        ? f.geometry.coordinates
-                        : f.geometry.coordinates.flat(1);
-                    coords.forEach((c: any) => bounds.extend([c[1], c[0]]));
+                route.edges.forEach((edge: any) => {
+                    edge.geometry.forEach((c: any) => bounds.extend([c[1], c[0]]));
                 });
                 if (bounds.isValid()) {
                     map.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
