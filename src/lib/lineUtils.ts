@@ -1,3 +1,5 @@
+import { translate, Language } from './translations';
+
 export const normalizeLineName = (name: string): string => {
     if (!name) return "";
     // Strip common suffixes: Japanese "線", English " Line", Korean " 선"
@@ -15,4 +17,8 @@ export const normalizeKey = (key: string): string => {
         return `${parts[0]}::${normalizeLineName(parts[1])}`;
     }
     return key;
+};
+
+export const translateName = (name: string, lang: Language, type: 'company' | 'line' | 'station' = 'station'): string => {
+    return translate(name, lang, type);
 };

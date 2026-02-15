@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { normalizeKey } from '../lib/lineUtils';
+import { normalizeKey, translateName } from '../lib/lineUtils';
+import { Language } from '../lib/translations';
 
 // Group definitions
 const JR_COMPANIES = [
@@ -23,6 +24,8 @@ interface SidebarProps {
     visitedLineLengths?: Record<string, number>;
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
+    language: Language;
+    onLanguageChange: (lang: Language) => void;
 }
 
 const getProgressColor = (percent: number) => {
@@ -48,7 +51,7 @@ type GroupedHierarchy = {
 
 type SortType = 'ja' | 'en' | 'ko' | 'usage';
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onLineClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onLineClick, language, onLanguageChange }) => {
     const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
     const [groupedHierarchy, setGroupedHierarchy] = useState<GroupedHierarchy | null>(null);
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
@@ -59,38 +62,12 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         otherPrivate: false,
         nonRail: false,
     });
-    const [sortType, setSortType] = useState<SortType>('ja');
     const lineRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
-    // Simple Korean mapping for sorting (can be expanded)
-    const KO_MAP: Record<string, string> = {
-        '北海道旅客鉄道': '홋카이도 여객철도',
-        '東日本旅客鉄道': '동일본 여객철도',
-        '東海旅客鉄道': '도카이 여객철도',
-        '西日本旅客鉄道': '서일본 여객철도',
-        '四国旅客鉄道': '시코쿠 여객철도',
-        '九州旅客鉄道': '큐슈 여객철도',
-        '日本貨物鉄道': '일본 화물철도',
-        '東京地下鉄': '도쿄 메트로',
-        '東武鉄道': '토부 철도',
-        '西武鉄道': '세이부 철도',
-        '京成電鉄': '케이세이 전철',
-        '京王電鉄': '케이오 전철',
-        '小田急電鉄': '오다큐 전철',
-        '東急電鉄': '토큐 전철',
-        '京浜急行電鉄': '케이힌 급행전철',
-        '相模鉄道': '사가미 철도',
-        '名古屋鉄道': '나고야 철도',
-        '近畿日本鉄道': '긴키 일본철도',
-        '南海電気鉄道': '난카이 전기철도',
-        '京阪電気鉄道': '케이한 전기철도',
-        '阪急電鉄': '한큐 전철',
-        '阪神電気鉄道': '한신 전기철도',
-        '西日本鉄道': '서일본 철도',
-        '新幹線': '신칸센',
+    const getLocalizedName = (name: string, type: 'company' | 'line' | 'station' = 'station') => {
+        if (language === 'ja') return name;
+        return translateName(name, language, type);
     };
-
-    const getKoName = (name: string) => KO_MAP[name] || name;
 
     useEffect(() => {
         fetch('/station_hierarchy.json')
@@ -249,10 +226,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         };
 
         return [...lineNames].sort((a, b) => {
-            if (sortType === 'ja') return a.localeCompare(b, 'ja');
-            if (sortType === 'en') return a.localeCompare(b, 'en');
-            if (sortType === 'ko') return getKoName(a).localeCompare(getKoName(b), 'ko');
-            if (sortType === 'usage') return getLineUsage(b) - getLineUsage(a);
+            if (language === 'ja') return a.localeCompare(b, 'ja');
+            if (language === 'en') return translateName(a, 'en', 'line').localeCompare(translateName(b, 'en', 'line'), 'en');
+            if (language === 'ko') return translateName(a, 'ko', 'line').localeCompare(translateName(b, 'ko', 'line'), 'ko');
             return 0;
         });
     };
@@ -272,10 +248,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             };
 
             return [...companyEntries].sort((a, b) => {
-                if (sortType === 'ja') return a[0].localeCompare(b[0], 'ja');
-                if (sortType === 'en') return a[0].localeCompare(b[0], 'en');
-                if (sortType === 'ko') return getKoName(a[0]).localeCompare(getKoName(b[0]), 'ko');
-                if (sortType === 'usage') return getCompanyUsage(b[0], b[1]) - getCompanyUsage(a[0], a[1]);
+                if (language === 'ja') return a[0].localeCompare(b[0], 'ja');
+                if (language === 'en') return translateName(a[0], 'en', 'company').localeCompare(translateName(b[0], 'en', 'company'), 'en');
+                if (language === 'ko') return translateName(a[0], 'ko', 'company').localeCompare(translateName(b[0], 'ko', 'company'), 'ko');
                 return 0;
             });
         };
@@ -367,7 +342,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                         >
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
                                                 <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                    {company}
+                                                    {getLocalizedName(company, 'company')}
                                                 </span>
                                                 <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
                                                     ({companyVisitedCount}/{companyTotalLines})
@@ -441,7 +416,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                                         flex: 1,
                                                                         cursor: 'pointer'
                                                                     }}>
-                                                                    {line}
+                                                                    {getLocalizedName(line, 'line')}
                                                                 </span>
                                                                 {(() => {
                                                                     const colors = getProgressColor(percent);
@@ -506,11 +481,10 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         { id: 'ja', label: '日本語' },
                         { id: 'en', label: 'ABC' },
                         { id: 'ko', label: '한국어' },
-                        { id: 'usage', label: 'Usage' }
                     ].map(opt => (
                         <button
                             key={opt.id}
-                            onClick={() => setSortType(opt.id as SortType)}
+                            onClick={() => onLanguageChange(opt.id as Language)}
                             style={{
                                 flex: 1,
                                 padding: '6px 4px',
@@ -518,9 +492,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                 cursor: 'pointer',
                                 border: '1px solid #ddd',
                                 borderRadius: '4px',
-                                backgroundColor: sortType === opt.id ? '#3498db' : '#fff',
-                                color: sortType === opt.id ? '#fff' : '#333',
-                                fontWeight: sortType === opt.id ? 'bold' : 'normal',
+                                backgroundColor: language === opt.id ? '#3498db' : '#fff',
+                                color: language === opt.id ? '#fff' : '#333',
+                                fontWeight: language === opt.id ? 'bold' : 'normal',
                                 transition: 'all 0.2s'
                             }}
                         >

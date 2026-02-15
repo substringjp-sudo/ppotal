@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo } from 'react';
+import { translateName } from '../lib/lineUtils';
+import { Language } from '../lib/translations';
 
 interface MyLinesPaneProps {
     visitedLineLengths: Record<string, number>;
@@ -8,9 +10,10 @@ interface MyLinesPaneProps {
     onLineClick: (line: string) => void;
     onDeleteLineHistory: (line: string) => void;
     activeLine: string | null;
+    language: Language;
 }
 
-const MyLinesPane: React.FC<MyLinesPaneProps> = ({ visitedLineLengths, lineLengths, onLineClick, onDeleteLineHistory, activeLine }) => {
+const MyLinesPane: React.FC<MyLinesPaneProps> = ({ visitedLineLengths, lineLengths, onLineClick, onDeleteLineHistory, activeLine, language }) => {
     const utilizedLines = useMemo(() => {
         return Object.entries(visitedLineLengths)
             .filter(([_, length]) => length > 0)
@@ -50,9 +53,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({ visitedLineLengths, lineLengt
                                 boxShadow: activeLine === line.id ? '0 2px 8px rgba(39, 174, 96, 0.1)' : 'none'
                             }}
                         >
-                            <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>{line.company}</div>
+                            <div style={{ fontSize: '10px', color: '#666', marginBottom: '2px' }}>{translateName(line.company, language, 'company')}</div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{line.name}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{translateName(line.name, language, 'line')}</div>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();

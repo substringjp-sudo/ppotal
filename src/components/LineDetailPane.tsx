@@ -2,6 +2,8 @@
 
 import React, { useMemo, useRef } from 'react';
 import { StationNode } from '../lib/graphUtils';
+import { translateName } from '../lib/lineUtils';
+import { Language } from '../lib/translations';
 
 interface LineDetailPaneProps {
     lineId: string;
@@ -12,7 +14,9 @@ interface LineDetailPaneProps {
     onRecordTrip?: (trip: any) => void;
     getShortestPath?: (start: string, end: string, lines: string[]) => any;
     onStationClick?: (stationName: string) => void;
+    onStationClick?: (stationName: string) => void;
     onClose: () => void;
+    language: Language;
 }
 
 interface StationPos {
@@ -22,7 +26,7 @@ interface StationPos {
 }
 
 const LineDetailPane: React.FC<LineDetailPaneProps> = ({
-    lineId, segments, nodes, visitedEdges, selectedLines, onRecordTrip, getShortestPath, onClose, onStationClick
+    lineId, segments, nodes, visitedEdges, selectedLines, onRecordTrip, getShortestPath, onClose, onStationClick, language
 }) => {
     const [company, lineName] = lineId.split('::');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -254,8 +258,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             }}>
                 <div style={{ flex: 1, minWidth: '200px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '12px', color: '#666' }}>{company}</span>
-                        <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{lineName}</span>
+                        <span style={{ fontSize: '12px', color: '#666' }}>{translateName(company, language, 'company')}</span>
+                        <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{translateName(lineName, language, 'line')}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ fontSize: '14px', color: '#444', fontWeight: 'bold' }}>
@@ -546,7 +550,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                             width: '80px',
                                             lineHeight: '1.2',
                                             transition: 'all 0.2s'
-                                        }}>{name}</span>
+                                        }}>{translateName(name || '', language, 'station')}</span>
                                     </div>
                                 );
                             })}

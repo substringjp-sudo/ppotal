@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import { Language } from '../lib/translations';
 import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
 import JapanMap from './JapanMap';
@@ -31,8 +32,9 @@ interface MapPaneProps {
     } | null) => void;
     zoomTarget?: { type: 'line' | 'station', id: string } | null;
     onZoomComplete?: () => void;
-    onLineMappingCreated?: (map: Map<string, string>) => void;
+    onLineMappingCreated?: (mapping: Map<string, string>) => void;
     styleSettings: MapStyleSettings;
+    language: Language;
 }
 
 import MapControls from './MapControls';
@@ -51,7 +53,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     zoomTarget,
     onZoomComplete,
     onLineMappingCreated,
-    styleSettings
+    styleSettings,
+    language
 }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
@@ -670,6 +673,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     zoom={zoomLevel}
                     isDragging={!!dragStartStation}
                     activeLine={activeLine}
+                    language={language}
                 />
 
                 {previewPath && (
@@ -750,7 +754,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                         onStationMouseUp={handleStationMouseUp}
                         dragStartStation={dragStartStation}
                         visitedStations={visitedStations}
-                        styleSettings={styleSettings}
+                        settings={styleSettings}
+                        language={language}
                     />
                 }
             </Pane>

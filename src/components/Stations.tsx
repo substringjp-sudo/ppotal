@@ -4,8 +4,9 @@ import React from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
-import { normalizeKey, normalizeLineName } from '../lib/lineUtils';
+import { normalizeKey, normalizeLineName, translateName } from '../lib/lineUtils';
 import { MapStyleSettings } from '../app/page';
+import { Language } from '../lib/translations';
 
 interface StaticNode {
     id: string;
@@ -25,8 +26,10 @@ interface StationsProps {
     onStationMouseDown: (name: string, coords: [number, number]) => void;
     onStationMouseUp: (name: string) => void;
     dragStartStation: string | null;
+    onLineMappingCreated?: (mapping: Map<string, string>) => void;
     visitedStations: Set<string>;
-    styleSettings: MapStyleSettings;
+    settings: MapStyleSettings;
+    language: Language;
 }
 
 // Convex Hull Algorithm (Monotone Chain)
@@ -71,8 +74,10 @@ const Stations: React.FC<StationsProps> = ({
     onStationMouseDown,
     onStationMouseUp,
     dragStartStation,
+    onLineMappingCreated,
     visitedStations,
-    styleSettings
+    settings,
+    language
 }) => {
     if (!processedStations) {
         return null;
@@ -106,9 +111,9 @@ const Stations: React.FC<StationsProps> = ({
 
                 // Apply user style size multipliers
                 if (isVisited) {
-                    radius *= styleSettings.visited.stationSize;
+                    radius *= settings.visited.stationSize;
                 } else if (isSelected) {
-                    radius *= styleSettings.unvisited.stationSize;
+                    radius *= settings.unvisited.stationSize;
                 }
 
                 const isDragging = dragStartStation === name;
@@ -145,7 +150,7 @@ const Stations: React.FC<StationsProps> = ({
                                                 position: absolute;
                                                 top: 0;
                                                 pointer-events: none;
-                                            ">${name}</div>
+                                            ">${translateName(name, language, 'station')}</div>
                                         </div>
                                     `,
                                     iconSize: [0, 0],
@@ -208,7 +213,7 @@ const Stations: React.FC<StationsProps> = ({
                                                 <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
                                                     <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
                                                         <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
-                                                            {name}
+                                                            {translateName(name, language, 'station')}
                                                         </div>
                                                         <div style={{ fontSize: '11px', color: '#666' }}>
                                                             {formattedLines.map((fl, fidx) => (
@@ -221,7 +226,7 @@ const Stations: React.FC<StationsProps> = ({
                                                                     fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
                                                                 }}>
                                                                     <span>{fl.company}</span>
-                                                                    <span>{fl.line}</span>
+                                                                    <span>{translateName(fl.line, language, 'line')}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -246,7 +251,7 @@ const Stations: React.FC<StationsProps> = ({
                                         <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
                                             <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
                                                 <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
-                                                    {name}
+                                                    {translateName(name, language, 'station')}
                                                 </div>
                                                 <div style={{ fontSize: '11px', color: '#666' }}>
                                                     {formattedLines.map((fl, fidx) => (
@@ -259,7 +264,7 @@ const Stations: React.FC<StationsProps> = ({
                                                             fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
                                                         }}>
                                                             <span>{fl.company}</span>
-                                                            <span>{fl.line}</span>
+                                                            <span>{translateName(fl.line, language, 'line')}</span>
                                                         </div>
                                                     ))}
                                                 </div>

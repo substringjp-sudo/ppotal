@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import React from 'react';
+import { translateName } from '../lib/lineUtils';
+import { Language } from '../lib/translations';
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
     ssr: false
@@ -69,6 +71,7 @@ const Page = () => {
     const [zoomToStation, setZoomToStation] = React.useState<string | null>(null);
     const [showMyRoutes, setShowMyRoutes] = React.useState(false);
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
+    const [language, setLanguage] = React.useState<Language>('ja');
 
     // Zoom handlers
     const handleZoomToLine = React.useCallback((lineKey: string) => {
@@ -287,6 +290,27 @@ const Page = () => {
                         </div>
                     </div>
 
+                    <div style={{ display: 'flex', gap: '8px', marginRight: '20px' }}>
+                        {(['ja', 'en', 'ko'] as Language[]).map(lang => (
+                            <button
+                                key={lang}
+                                onClick={() => setLanguage(lang)}
+                                style={{
+                                    padding: '4px 10px',
+                                    fontSize: '11px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #ddd',
+                                    backgroundColor: language === lang ? '#3498db' : '#fff',
+                                    color: language === lang ? '#fff' : '#333',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                {lang === 'ja' ? '日本語' : lang === 'en' ? 'EN' : 'KO'}
+                            </button>
+                        ))}
+                    </div>
+
                     <div style={{ display: 'flex', gap: '10px' }}>
 
                         <button
@@ -337,6 +361,8 @@ const Page = () => {
                         visitedLineLengths={visitedLineLengths}
                         activeLine={activeLine}
                         onLineClick={handleLineClick}
+                        language={language}
+                        onLanguageChange={setLanguage}
                     />
                 </div>
                 <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
@@ -358,6 +384,7 @@ const Page = () => {
                                 zoomTarget={zoomTarget}
                                 onZoomComplete={() => setZoomTarget(null)}
                                 styleSettings={styleSettings}
+                                language={language}
                             />
                         </MapWithNoSSR>
                     </div>
@@ -373,6 +400,7 @@ const Page = () => {
                                 onRecordTrip={handleRecordTrip}
                                 onStationClick={handleStationClick}
                                 onClose={() => setActiveLine(null)}
+                                language={language}
                             />
                         </div>
                     )}
@@ -393,6 +421,7 @@ const Page = () => {
                         onLineClick={handleLineClick}
                         onDeleteLineHistory={handleDeleteLineHistory}
                         activeLine={activeLine}
+                        language={language}
                     />
                 </div>
             </div>

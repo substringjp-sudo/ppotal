@@ -3,7 +3,8 @@
 import React, { useCallback, useMemo, useState, useRef } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
-import { normalizeKey } from '../lib/lineUtils';
+import { normalizeKey, translateName } from '../lib/lineUtils';
+import { Language } from '../lib/translations';
 
 interface RailroadsProps {
     railroadNetwork: any;
@@ -15,6 +16,7 @@ interface RailroadsProps {
     zoom: number;
     isDragging?: boolean;
     activeLine: string | null;
+    language: Language;
 }
 
 const Railroads: React.FC<RailroadsProps> = ({
@@ -26,7 +28,8 @@ const Railroads: React.FC<RailroadsProps> = ({
     className,
     zoom,
     isDragging,
-    activeLine
+    activeLine,
+    language
 }) => {
     const [hoveredLineKey, setHoveredLineKey] = useState<string | null>(null);
 
@@ -112,8 +115,8 @@ const Railroads: React.FC<RailroadsProps> = ({
                 setHoveredLineKey(lineKey);
                 const tooltipHtml = `
                     <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 10px; opacity: 0.7;">${feature.properties.company}</span>
-                        <span>${lineName}</span>
+                        <span style="font-size: 10px; opacity: 0.7;">${translateName(feature.properties.company, language, 'company')}</span>
+                        <span>${translateName(lineName, language, 'line')}</span>
                     </div>
                 `;
                 layer.bindTooltip(tooltipHtml, {
