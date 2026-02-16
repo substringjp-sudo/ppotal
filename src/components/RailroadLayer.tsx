@@ -24,120 +24,90 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     onRailroadHover,
     zoomLevel
 }) => {
-    // Optimization: Use a Set for fast visibility lookups
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
     const isFilterActive = useMemo(() => {
         if (isNoneExplicitlySelected) return true;
-        if (selectionSet.size === 0) return false; // "Show All" context mode
+        if (selectionSet.size === 0) return false;
         if (selectionSet.size === 1 && activeLine && selectionSet.has(activeLine)) return false;
         return true;
     }, [selectionSet, isNoneExplicitlySelected, activeLine]);
 
-    // 1. Convert ALL routes to GeoJSON (Memoized)
+    const dynamicSmoothFactor = useMemo(() => {
+        if (zoomLevel <= 8) return 2.0;
+        return 1.0;
+    }, [zoomLevel]);
+
     const geoJsonData = useMemo(() => {
         if (!railroadNetwork || !railroadNetwork.routes) return null;
-
         const features: any[] = [];
-        const routes = railroadNetwork.routes;
-
-        routes.forEach((route: any) => {
+        railroadNetwork.routes.forEach((route: any) => {
             if (!route) return;
-            const lineId = route.id;
-
-            let coordinates: number[][][] = [];
-            if (route.routeGeometry) {
-                coordinates = route.routeGeometry;
-            } else if (route.edges) {
-                coordinates = route.edges.map((edge: any) => edge.geometry);
-            }
-
+            let coordinates = route.routeGeometry || route.edges?.map((e: any) => e.geometry) || [];
             if (coordinates.length === 0) return;
-
             features.push({
                 type: 'Feature',
                 properties: {
-                    id: lineId,
+                    id: route.id,
                     name: route.line || route.name || '',
                     company: route.company,
-                    color: getOfficialColor(lineId) || route.color || '#999',
+                    color: getOfficialColor(route.id) || route.color || '#999',
                     endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : ''
                 },
-                geometry: {
-                    type: 'MultiLineString',
-                    coordinates: coordinates
-                }
+                geometry: { type: 'MultiLineString', coordinates }
             });
         });
-
-        return {
-            type: 'FeatureCollection',
-            features: features
-        };
+        return { type: 'FeatureCollection', features };
     }, [railroadNetwork]);
 
-    // 2. Style Function
-    const style = (feature: any) => {
-        if (!feature) return {};
+    const highlightData = useMemo(() => {
+        if (!geoJsonData) return null;
+        const highlighted = geoJsonData.features.filter(f => f.properties.id === activeLine || f.properties.id === hoveredLine);
+        return highlighted.length > 0 ? { type: 'FeatureCollection', features: highlighted } : null;
+    }, [geoJsonData, activeLine, hoveredLine]);
 
+    // Visually-only Styles (Non-interactive)
+    const baseStyle = (feature: any) => {
         const id = feature.properties.id;
-        const isClicked = activeLine === id;
-        const isHovered = hoveredLine === id;
-
-        // Visibility Logic
-        let isVisible = false;
-        if (isNoneExplicitlySelected) {
-            isVisible = isClicked;
-        } else if (!isFilterActive) {
-            isVisible = true;
-        } else {
-            isVisible = selectionSet.has(id) || isClicked;
-        }
-
-        // Responsive Weight Logic (User request: reduce by 1, scale for zoom <= 9)
+        const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
         const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
 
-        // Base Style (Invisible / Faded Gray / Context)
-        let color = '#999999';
-        let weight = (zoomLevel >= 12 ? 3 : 1) * weightFactor;
-        let opacity = 0.4;
-        let dashArray: string | undefined = '4, 8';
+        let color = isVisible ? feature.properties.color : '#999999';
+        let weight = (isVisible ? (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) : (zoomLevel >= 12 ? 3 : 1)) * weightFactor;
+        let opacity = isVisible ? 0.8 : 0.4;
+        let dashArray = isVisible ? undefined : '4, 8';
 
-        // 1. Visible Road (Solid / Original Color)
-        if (isVisible) {
-            color = feature.properties.color;
-            opacity = 0.8;
-            dashArray = undefined;
-            weight = (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) * weightFactor;
-        }
+        return { color, weight, opacity, dashArray, lineCap: 'round', lineJoin: 'round', smoothFactor: dynamicSmoothFactor, interactive: false } as L.PathOptions;
+    };
 
-        // 2. Clicked Road (Active) -> Blue, Thick, Solid
-        if (isClicked) {
-            color = '#007AFF';
-            weight = 7 * weightFactor; // 8 -> 7
-            opacity = 1.0;
-            dashArray = undefined;
-        }
-
-        // 3. Hovered Road -> Yellow Solid 
-        if (isHovered) {
-            color = '#FFD700';
-            weight = 7 * weightFactor; // 8 -> 7
-            opacity = 1.0;
-            dashArray = undefined;
-        }
+    const highlightStyle = (feature: any) => {
+        const id = feature.properties.id;
+        const isHovered = hoveredLine === id;
+        const isClicked = activeLine === id;
+        const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
 
         return {
-            color,
-            weight,
-            opacity,
-            dashArray,
+            color: isHovered ? '#FFD700' : (isClicked ? '#007AFF' : 'transparent'),
+            weight: 12 * weightFactor,
+            opacity: 0.7,
             lineCap: 'round',
-            lineJoin: 'round'
+            lineJoin: 'round',
+            smoothFactor: dynamicSmoothFactor,
+            interactive: false
         } as L.PathOptions;
     };
 
-    // 3. Event Handlers
+    // Invisible Hit Area Style (Topmost, handles mouse events)
+    const hitAreaStyle = () => {
+        return {
+            color: 'transparent', // Invisible
+            weight: 20,           // Very generous hit box
+            opacity: 0,
+            interactive: true,
+            pane: 'station-interact' // Topmost shared interaction pane
+        } as L.PathOptions;
+    };
+
     const onEachFeature = (feature: any, layer: L.Layer) => {
         const { name, company, endpoints } = feature.properties;
         const tooltipContent = `
@@ -152,7 +122,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             direction: 'top',
             offset: [0, -10],
             opacity: 0.9,
-            className: 'railroad-tooltip'
+            className: 'railroad-tooltip',
+            pane: 'top-tooltips'
         });
 
         layer.on({
@@ -160,28 +131,44 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 L.DomEvent.stopPropagation(e);
                 onRailroadClick(feature.properties.id);
             },
-            mouseover: (e) => {
-                const target = e.target as L.Path;
-                target.openTooltip();
-                onRailroadHover(feature.properties.id);
-            },
-            mouseout: (e) => {
-                const target = e.target as L.Path;
-                target.closeTooltip();
-                onRailroadHover(null);
-            }
+            mouseover: () => onRailroadHover(feature.properties.id),
+            mouseout: () => onRailroadHover(null)
         });
     };
 
     if (!geoJsonData) return null;
 
     return (
-        <GeoJSON
-            data={geoJsonData as any}
-            style={style}
-            onEachFeature={onEachFeature}
-            pane="railroad-interact"
-        />
+        <>
+            {/* 1. Visual Highlight (Bottom) */}
+            {highlightData && (
+                <GeoJSON
+                    key={`vis-highlight-${activeLine}-${hoveredLine}`}
+                    data={highlightData as any}
+                    style={highlightStyle}
+                    interactive={false}
+                    pane="railroad-glow"
+                />
+            )}
+
+            {/* 2. Visual Main Line */}
+            <GeoJSON
+                key="vis-base"
+                data={geoJsonData as any}
+                style={baseStyle}
+                interactive={false}
+                pane="railroad-lines"
+            />
+
+            {/* 3. Invisible Interaction Hit Area (TOPMOST SHARED) */}
+            <GeoJSON
+                key="hit-area"
+                data={geoJsonData as any}
+                style={hitAreaStyle}
+                onEachFeature={onEachFeature}
+                pane="station-interact"
+            />
+        </>
     );
 };
 

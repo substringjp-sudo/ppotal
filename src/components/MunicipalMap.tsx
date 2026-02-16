@@ -5,8 +5,8 @@ import { GeoJSON } from 'react-leaflet';
 
 interface MunicipalMapProps {
     municipalities: any;
-    className?: string; // Kept in interface
-    getColor?: (name: string) => string; // Optional if not used
+    className?: string;
+    getColor?: (name: string) => string;
     zoom: number;
 }
 
@@ -15,6 +15,8 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, 
         let weight = 1;
         if (zoom <= 9) weight = 0.5;
 
+        // Removed simplification (smoothFactor) to avoid gaps between neighboring city/town boundaries.
+        // Keeping the geometry as is to maintain visual integrity.
         return {
             fillColor: '#ffffff',
             fillOpacity: 1.0,

@@ -9,7 +9,7 @@ interface JapanMapProps {
     getColor: (name: string) => string;
     outlineOnly?: boolean;
     interactive?: boolean;
-    className?: string; // Kept in interface but might not be used in GeoJSON
+    className?: string;
     zoom: number;
 }
 
@@ -21,6 +21,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
     }, [onPrefectureClick]);
 
     const style = useCallback((feature: any) => {
+        // Removed simplification (smoothFactor) to avoid gaps between neighboring boundaries.
         if (outlineOnly) {
             let weight = 1.5;
             if (zoom <= 7) weight = 0.5;

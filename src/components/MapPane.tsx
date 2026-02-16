@@ -51,12 +51,12 @@ import MapControls from './MapControls';
 import html2canvas from 'html2canvas';
 
 const PANE_STYLES = {
-    railroadInteract: { zIndex: 800 },
-    stationInteract: { zIndex: 750 },
     topTooltips: { zIndex: 1000 },
+    stationInteract: { zIndex: 900 }, // SHARED INTERACTION LAYER (Topmost)
+    uiElements: { zIndex: 850 },      // Station dots
+    railroadLines: { zIndex: 820 },    // Railroad colors
+    railroadGlow: { zIndex: 810 },     // Railroad highlights
     background: { zIndex: 100 },
-    railroads: { zIndex: 200 },
-    uiElements: { zIndex: 300 }
 };
 
 
@@ -814,12 +814,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         <>
             <MapControls zoom={zoomLevel} />
             {/* Managed Pane for Tooltips to ensure they are on top of everything */}
-            {/* Managed Pane for Tooltips to ensure they are on top of everything */}
-            <Pane name="railroad-interact" style={PANE_STYLES.railroadInteract} />
-            <Pane name="station-interact" style={PANE_STYLES.stationInteract} />
             <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
-            <Pane name="railroads" style={PANE_STYLES.railroads} />
-            <Pane name="ui-elements" style={PANE_STYLES.uiElements} />
 
             <button
                 onClick={exportMap}
@@ -846,10 +841,11 @@ const MapPane: React.FC<MapPaneProps> = ({
             </button>
             {/* Background Layer: Prefectures & Municipalities */}
 
+            {/* 1. Background Layer */}
             <Pane name="background" style={PANE_STYLES.background}>
                 <JapanMap
                     prefectures={prefectures}
-                    onPrefectureClick={() => { }} // Disabled click effect
+                    onPrefectureClick={() => { }}
                     getColor={getColor}
                     interactive={zoomLevel <= 8}
                     zoom={zoomLevel}
@@ -872,8 +868,10 @@ const MapPane: React.FC<MapPaneProps> = ({
                 }
             </Pane>
 
-            {/* Middle Layer: Railroads */}
-            {/* Middle Layer: Railroads */}
+            {/* 2. Railroad Visual & Interaction Layers (Managed inside specialized panes) */}
+            <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
+            <Pane name="railroad-lines" style={PANE_STYLES.railroadLines} />
+
             <RailroadLayer
                 railroadNetwork={railroadNetwork}
                 selectedLines={selectedLines}
@@ -884,50 +882,55 @@ const MapPane: React.FC<MapPaneProps> = ({
                 zoomLevel={zoomLevel}
             />
 
+            {/* 3. UI Elements Pane (Station dots, labels) */}
+            <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
+                <TripLayer recordedTrips={recordedTrips} />
 
-            {/* Top Layer: Stations & Interaction */}
-            {/* Top Layer: Stations & Interaction */}
-            <TripLayer recordedTrips={recordedTrips} />
+                {dragPath && dragPath.length > 0 && (
+                    <React.Fragment>
+                        {dragPath.map((segment, idx) => (
+                            <Polyline
+                                key={`drag-path-${idx}`}
+                                positions={segment.map(c => [c[1], c[0]])} // [lng, lat] to [lat, lng]
+                                pathOptions={{
+                                    color: '#007AFF',
+                                    weight: 6,
+                                    opacity: 0.8,
+                                    dashArray: '10, 10',
+                                    lineCap: 'round',
+                                    lineJoin: 'round',
+                                    pane: 'ui-elements'
+                                }}
+                                interactive={false}
+                            />
+                        ))}
+                    </React.Fragment>
+                )}
+            </Pane>
 
-            {dragPath && dragPath.length > 0 && (
-                <React.Fragment>
-                    {dragPath.map((segment, idx) => (
-                        <Polyline
-                            key={`drag-path-${idx}`}
-                            positions={segment.map(c => [c[1], c[0]])} // [lng, lat] to [lat, lng]
-                            pathOptions={{
-                                color: '#007AFF',
-                                weight: 6,
-                                opacity: 0.8,
-                                dashArray: '10, 10',
-                                lineCap: 'round',
-                                lineJoin: 'round',
-                                pane: 'ui-elements'
-                            }}
-                            interactive={false}
-                        />
-                    ))}
-                </React.Fragment>
-            )}
-
-            {visibleStations &&
-                <Stations
-                    processedStations={visibleStations}
-                    highlightedStations={highlightedStations}
-                    handleStationClick={handleStationClick} // Use local handler wrapper
-                    zoom={zoomLevel}
-                    getColor={getColor}
-                    selectedLines={selectedLines}
-                    activeLine={activeLine}
-                    hoveredLine={hoveredLine} // Pass hoveredLine
-                    onStationMouseDown={handleStationMouseDown}
-                    onStationMouseUp={handleStationMouseUp}
-                    dragStartStation={dragStartStation}
-                    visitedStations={visitedStations}
-                    settings={styleSettings}
-                    language={language}
-                />
-            }
+            {/* 4. Station Interaction Pane (Topmost interaction) */}
+            <Pane name="station-interact" style={PANE_STYLES.stationInteract}>
+                {/* This pane handles station hitboxes. Stations component will render markers into ui-elements 
+                    and interaction logic into this pane via the 'pane' prop in individual markers. */}
+                {visibleStations &&
+                    <Stations
+                        processedStations={visibleStations}
+                        highlightedStations={highlightedStations}
+                        handleStationClick={handleStationClick}
+                        zoom={zoomLevel}
+                        getColor={getColor}
+                        selectedLines={selectedLines}
+                        activeLine={activeLine}
+                        hoveredLine={hoveredLine}
+                        onStationMouseDown={handleStationMouseDown}
+                        onStationMouseUp={handleStationMouseUp}
+                        dragStartStation={dragStartStation}
+                        visitedStations={visitedStations}
+                        settings={styleSettings}
+                        language={language}
+                    />
+                }
+            </Pane>
 
 
 
