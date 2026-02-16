@@ -33,6 +33,12 @@ export class RailroadGraph {
     // Mapping from full line key to simplified line keys (can be multiple if names are same? unlikely but possible)
     reverseLineIdMap: Map<string, string[]> = new Map();
 
+    constructor(data?: any) {
+        if (data) {
+            this.loadFromSystematicJson(data);
+        }
+    }
+
     addNode(node: StationNode) {
         this.nodes.set(node.id, node);
         if (!this.adj.has(node.id)) {

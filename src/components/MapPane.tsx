@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { Language } from '../lib/translations';
-import { useMap, useMapEvents, Pane } from 'react-leaflet';
+import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
 
 
@@ -299,107 +299,109 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
     }, [map, dragStartStation]);
 
-    const visibleStations = useMemo(() => {
-        if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
-        const data: Record<string, { nodes: { id: string, coord: [number, number], lineKey: string, platforms?: [number, number][][] }[], centroid: [number, number], lines: string[] }> = {};
+    // Optimization: Pre-calculate name-to-lines mapping from hierarchy once
+    const nameToLogicalLines = useMemo(() => {
+        const mapping = new Map<string, Set<string>>();
+        if (!hierarchy) return mapping;
 
-        // Pre-calculate name-to-lines mapping from hierarchy
-        const nameToLogicalLines = new Map<string, Set<string>>();
-        if (hierarchy) {
-            Object.entries(hierarchy).forEach(([company, lines]: [string, any]) => {
-                Object.entries(lines).forEach(([lineName, stations]: [string, any]) => {
-                    const fullLineKey = `${company}::${lineName}`;
-                    stations.forEach((sName: string) => {
-                        if (!nameToLogicalLines.has(sName)) nameToLogicalLines.set(sName, new Set());
-                        nameToLogicalLines.get(sName)!.add(fullLineKey);
-                    });
+        Object.entries(hierarchy).forEach(([company, lines]: [string, any]) => {
+            Object.entries(lines).forEach(([lineName, stations]: [string, any]) => {
+                const fullLineKey = `${company}::${lineName}`;
+                stations.forEach((sName: string) => {
+                    if (!mapping.has(sName)) mapping.set(sName, new Set());
+                    mapping.get(sName)!.add(fullLineKey);
                 });
             });
-        }
+        });
+        return mapping;
+    }, [hierarchy]);
 
-        Object.entries(railroadNetwork.stations as Record<string, any>).forEach(([id, s]) => {
+    // Optimization: Pre-index station master list for fast lookup
+    const platformLookup = useMemo(() => {
+        const lookup = new Map<string, { platforms: any, group: string }>();
+        if (!stationMasterList || !hierarchy) return lookup;
+
+        Object.entries(hierarchy).forEach(([company, lines]: [string, any]) => {
+            Object.entries(lines).forEach(([lineName, stations]: [string, any]) => {
+                stations.forEach((hs: any) => {
+                    if (hs.group && stationMasterList[hs.group]) {
+                        const platforms = stationMasterList[hs.group].stations;
+                        const myEntry = platforms.find((st: any) => st.line === lineName && st.name === hs.name && st.company === company);
+                        if (myEntry && (myEntry.geometries || myEntry.platforms)) {
+                            const key = `${company}::${lineName}::${hs.name}`;
+                            lookup.set(key, {
+                                platforms: myEntry.geometries || myEntry.platforms,
+                                group: hs.group
+                            });
+                        }
+                    }
+                });
+            });
+        });
+        return lookup;
+    }, [stationMasterList, hierarchy]);
+
+    const visibleStations = useMemo(() => {
+        if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
+        const data: Record<string, { nodes: any[], centroid: [number, number], lines: string[] }> = {};
+
+        const bounds = {
+            s: mapBounds.getSouth(),
+            n: mapBounds.getNorth(),
+            w: mapBounds.getWest(),
+            e: mapBounds.getEast()
+        };
+
+        const stationEntries = Object.entries(railroadNetwork.stations);
+
+        for (let i = 0; i < stationEntries.length; i++) {
+            const [id, s] = stationEntries[i] as [string, any];
+            const [lng, lat] = s.coords;
+
+            // Spatial Culling
+            if (lat < bounds.s || lat > bounds.n || lng < bounds.w || lng > bounds.e) continue;
+
             const parts = id.split('::');
             const company = parts[0];
             const lineSimplified = parts[1];
             const name = s.name;
             const simplifiedKey = `${company}::${lineSimplified}`;
             const key = lineIdMap.get(simplifiedKey) || simplifiedKey;
-            const [lng, lat] = s.coords;
 
-            if (lat >= mapBounds.getSouth() && lat <= mapBounds.getNorth() &&
-                lng >= mapBounds.getWest() && lng <= mapBounds.getEast()) {
+            // Fast lookup for platforms/group
+            const enriched = platformLookup.get(`${company}::${lineSimplified}::${name}`);
+            const platforms = enriched?.platforms || s.platforms;
+            const group = enriched?.group;
 
-                const coord: [number, number] = [lat, lng];
+            const node = { id, coord: [lat, lng] as [number, number], lineKey: key, platforms, group };
 
-                // Look up enriched info from master list
-                let platforms = s.platforms;
-                let group = null;
+            if (!data[name]) {
+                const logicalLines = Array.from(nameToLogicalLines.get(name) || []);
+                const allLines = new Set([key, ...logicalLines]);
+                data[name] = {
+                    nodes: [node],
+                    centroid: [lat, lng],
+                    lines: Array.from(allLines)
+                };
+            } else {
+                data[name].nodes.push(node);
+                if (!data[name].lines.includes(key)) data[name].lines.push(key);
 
-                // Try to find in stationMasterList
-                // The master list is keyed by group ID, but we need to find by (line, name)
-                // Or we can rely on hierarchy -> group ID -> master list
-                // Let's do a direct lookup if we can index it, but iterating master list is slow.
-                // Better approach: When loading master list, create a lookup map: string(key) -> { platforms, group }
-                // For now, let's do it on the fly if it's fast enough, or rely on what we have.
-                // 
-                // Actually, s.platforms is existing data? No, railroadNetwork might not have it enriched yet.
-                // usage of enrich_stations.py updated station_master_list.json but did it update systematic_railroad_network?
-                // No, it updated station_hierarchy_enriched and station_master_list.
-                // structure of systematic_railroad_network needs to be checked or we merge here.
-
-                // Let's use the hierarchy to find the group code, then look up the master list.
-                // hierarchy[company][line] -> array of stations with { code, group, ... }
-
-                if (hierarchy && hierarchy[company] && hierarchy[company][lineSimplified]) {
-                    const hStation = hierarchy[company][lineSimplified].find((hs: any) => hs.name === name);
-                    if (hStation && hStation.group) {
-                        group = hStation.group;
-                        if (stationMasterList && stationMasterList[group]) {
-                            // The master list has aggregated geometries for the group. 
-                            // But we want the specific platform geometry for THIS station node?
-                            // Or do we want the whole group's platforms?
-                            // The request says: "show platform shapes... and border around platforms"
-
-                            // Find the specific station entry in the master group to get ITS geometry
-                            const stations = stationMasterList[group].stations;
-                            const myEntry = stations.find((st: any) => st.line === lineSimplified && st.name === name && st.company === company);
-                            if (myEntry && myEntry.geometries) {
-                                platforms = myEntry.geometries;
-                            }
-
-                            // Also we might want the group ID for the hull rendering in Stations.tsx
-                        }
-                    }
+                const logicalLines = nameToLogicalLines.get(name);
+                if (logicalLines) {
+                    logicalLines.forEach(l => {
+                        if (!data[name].lines.includes(l)) data[name].lines.push(l);
+                    });
                 }
 
-                const node = { id, coord, lineKey: key, platforms: platforms, group: group };
-
-                if (!data[name]) {
-                    const logicalLines = Array.from(nameToLogicalLines.get(name) || []);
-                    const allLines = new Set([key, ...logicalLines]);
-                    data[name] = { nodes: [node], centroid: coord, lines: Array.from(allLines) };
-                } else {
-                    data[name].nodes.push(node);
-                    if (!data[name].lines.includes(key)) data[name].lines.push(key);
-
-                    // Add any logical lines missing
-                    const logicalLines = nameToLogicalLines.get(name);
-                    if (logicalLines) {
-                        logicalLines.forEach(l => {
-                            if (!data[name].lines.includes(l)) data[name].lines.push(l);
-                        });
-                    }
-
-                    // Recalculate centroid
-                    const n = data[name].nodes.length;
-                    const latSum = data[name].nodes.reduce((sum, n) => sum + n.coord[0], 0);
-                    const lngSum = data[name].nodes.reduce((sum, n) => sum + n.coord[1], 0);
-                    data[name].centroid = [latSum / n, lngSum / n];
-                }
+                // Incremental centroid update is faster than reduce
+                const n = data[name].nodes.length;
+                data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + lat) / n;
+                data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + lng) / n;
             }
-        });
+        }
         return data;
-    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap, hierarchy, stationMasterList]);
+    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap, nameToLogicalLines, platformLookup]);
 
     const findNearestStation = useCallback((lat: number, lng: number) => {
         if (!visibleStations) return null;
@@ -458,11 +460,24 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     const lastNearestRef = React.useRef<string | null>(null);
 
+    // Drag State for Snake Logic
+    const dragState = React.useRef<{
+        waypoints: string[];
+        segments: { path: string[], geometries: [number, number][][], distance: number }[];
+    }>({ waypoints: [], segments: [] });
+
+    // Ref for visibleStations to access in event handlers without stale closures
+    const visibleStationsRef = React.useRef(visibleStations);
+    useEffect(() => {
+        visibleStationsRef.current = visibleStations;
+    }, [visibleStations]);
+
+    // Trace logic state
+    const lastLayerPointRef = React.useRef<L.Point | null>(null);
+
     useMapEvents({
         load: () => setMapReady(true),
         click: (e) => {
-            // Click on map background to deselect/close pane
-            // Be careful only to trigger if not dragging or hitting interactive UI
             if (onSetActiveLine) {
                 onSetActiveLine(null);
             }
@@ -471,56 +486,145 @@ const MapPane: React.FC<MapPaneProps> = ({
         moveend: (e) => setMapBounds(e.target.getBounds()),
         mousemove: (e) => {
             const currentDragStation = dragStartStationRef.current;
-            if (currentDragStation && graph) {
-                // Predictive Highlighting & Path finding
-                const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
+            const mapInstance = e.target;
 
-                // Only update if target station changed
-                if (nearest && nearest !== lastNearestRef.current) {
-                    lastNearestRef.current = nearest;
+            if (currentDragStation && graph && mapInstance) {
+                const currentLayerPoint = e.layerPoint;
+                const prevLayerPoint = lastLayerPointRef.current;
+                const stations = visibleStationsRef.current;
 
-                    if (nearest !== currentDragStation) {
-                        const pathData = graph.getShortestPathByName(
-                            currentDragStation,
-                            nearest,
-                            selectedLines,
-                            dragStartCoordsRef.current || undefined,
-                            // End coords might be needed for better accuracy if nearest is far, 
-                            // but station name is usually enough.
-                            undefined
-                        );
-                        if (pathData && pathData.geometries) {
-                            setDragPath(pathData.geometries);
-                        } else {
-                            setDragPath([]);
+                if (prevLayerPoint && stations) {
+                    // 1. Detect stations along the mouse trajectory (Segment prev -> curr)
+                    const candidates: { name: string, dist: number, projDist: number }[] = [];
+
+                    // Optimization: Define a bounding box for the segment with padding
+                    const padding = 30; // 30px hit radius
+                    const minX = Math.min(prevLayerPoint.x, currentLayerPoint.x) - padding;
+                    const maxX = Math.max(prevLayerPoint.x, currentLayerPoint.x) + padding;
+                    const minY = Math.min(prevLayerPoint.y, currentLayerPoint.y) - padding;
+                    const maxY = Math.max(prevLayerPoint.y, currentLayerPoint.y) + padding;
+
+                    Object.entries(stations).forEach(([name, data]) => {
+                        // Project staton lat/lng to layer point
+                        // Caution: projecting thousands of points every mousemove is expensive.
+                        // visibleStations is usually filtered, so it should be okay (hundreds).
+                        // If performance drops, consider spatial indexing (e.g. RBush).
+                        const stLatLng = L.latLng(data.centroid[0], data.centroid[1]);
+                        const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
+
+                        // AABB check first
+                        if (stPoint.x >= minX && stPoint.x <= maxX && stPoint.y >= minY && stPoint.y <= maxY) {
+                            // Exact distance check
+                            const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
+                            if (d < 20) { // 20px hit threshold
+                                // Distance from start of segment (to sort by visit order)
+                                const distFromStart = prevLayerPoint.distanceTo(stPoint);
+                                candidates.push({ name, dist: d, projDist: distFromStart });
+                            }
                         }
-                    } else {
-                        setDragPath([]);
+                    });
+
+                    // 2. Sort candidates by sequence along the path
+                    candidates.sort((a, b) => a.projDist - b.projDist);
+
+                    // 3. Process candidates
+                    const { waypoints, segments } = dragState.current;
+
+                    // Safety init
+                    if (waypoints.length === 0) waypoints.push(currentDragStation);
+
+                    candidates.forEach(c => {
+                        const lastWaypoint = waypoints[waypoints.length - 1];
+                        if (c.name === lastWaypoint) return;
+
+                        // Backtracking Check
+                        if (waypoints.length > 1 && c.name === waypoints[waypoints.length - 2]) {
+                            waypoints.pop();
+                            segments.pop();
+                        }
+                        // Add New Segment
+                        else {
+                            // Basic graph connectivity check
+                            const pathData = graph.getShortestPathByName(lastWaypoint, c.name);
+                            if (pathData) {
+                                waypoints.push(c.name);
+                                segments.push({
+                                    path: pathData.path,
+                                    geometries: pathData.geometries,
+                                    distance: pathData.distance
+                                });
+                            }
+                        }
+                    });
+
+                    // 4. Update UI Visualization
+                    let allGeoms = segments.flatMap(s => s.geometries);
+
+                    // Add Guide Line to cursor
+                    const lastWaypoint = waypoints[waypoints.length - 1];
+                    if (stations[lastWaypoint]) {
+                        const startCoords = stations[lastWaypoint].centroid;
+                        const cursorCoords: [number, number] = [e.latlng.lat, e.latlng.lng];
+                        allGeoms = [...allGeoms, [startCoords, cursorCoords]];
                     }
-                } else if (!nearest) {
-                    lastNearestRef.current = null;
-                    setDragPath([]);
+
+                    setDragPath(allGeoms);
                 }
+
+                // Update previous point for next frame
+                lastLayerPointRef.current = currentLayerPoint;
+
             } else {
-                lastNearestRef.current = null;
+                lastLayerPointRef.current = e.layerPoint; // Track mouse even if not dragging, or reset
             }
         },
         mouseup: (e) => {
             const currentDragStation = dragStartStationRef.current;
-            if (currentDragStation) {
-                const nearest = findNearestStation(e.latlng.lat, e.latlng.lng);
-                if (nearest && nearest !== currentDragStation) {
-                    // Pass the actual event latlng as the end point for snapping
-                    handleRecordTrip(currentDragStation, nearest, [e.latlng.lng, e.latlng.lat]);
+            if (currentDragStation && graph) {
+                const { waypoints, segments } = dragState.current;
+
+                if (segments.length > 0 && onRecordTrip) {
+                    // Merge segments
+                    const fullPath: string[] = [];
+                    const fullGeoms: [number, number][][] = [];
+                    let totalDist = 0;
+
+                    segments.forEach((seg, idx) => {
+                        if (idx === 0) {
+                            fullPath.push(...seg.path);
+                        } else {
+                            fullPath.push(...seg.path.slice(1));
+                        }
+                        fullGeoms.push(...seg.geometries);
+                        totalDist += seg.distance;
+                    });
+
+                    // Check if mouse up is on a valid station that wasn't added yet (final snap)
+                    // (The mousemove trace logic usually catches it, but just in case)
+                    // ... Optional: Explicit point-in-circle check for end station if needed.
+
+                    onRecordTrip({
+                        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                        start: waypoints[0],
+                        end: waypoints[waypoints.length - 1],
+                        path: fullPath,
+                        distance: totalDist,
+                        geometries: fullGeoms
+                    });
                 }
             }
-            // Always reset drag state on mouseup
+            // Reset
             setDragStartStation(null);
             setDragStartCoords(null);
             setDragPath([]);
-            lastNearestRef.current = null;
+            dragState.current = { waypoints: [], segments: [] };
+            lastLayerPointRef.current = null;
+            if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
         }
     });
+
+    const mapInstanceRef = React.useRef<L.Map | null>(null);
+    useEffect(() => { if (map) mapInstanceRef.current = map; }, [map]);
 
     const getColor = useCallback((lineKey: string) => {
         return getOfficialColor(lineKey) || '#666';
@@ -548,7 +652,38 @@ const MapPane: React.FC<MapPaneProps> = ({
         setDragStartStation(name);
         setDragStartCoords(coords);
         setDragPath([]);
+
+        // Fix: Update refs immediately so mousemove/mouseup handlers see it in the same event loop
+        dragStartStationRef.current = name;
+        dragStartCoordsRef.current = coords;
+
+        dragState.current = {
+            waypoints: [name],
+            segments: []
+        };
+
+        // Initialize trajectory start point
+        if (map) {
+            map.dragging.disable();
+            const latLng = L.latLng(coords[0], coords[1]);
+            // Use try-catch or check if map is ready, though map object exists here
+            try {
+                lastLayerPointRef.current = map.latLngToLayerPoint(latLng);
+            } catch (e) {
+                console.warn("Failed to project initial point", e);
+            }
+        }
     };
+
+    // Disable map dragging while making a path
+    useEffect(() => {
+        if (!map) return;
+        if (dragStartStation) {
+            map.dragging.disable();
+        } else {
+            map.dragging.enable();
+        }
+    }, [map, dragStartStation]);
 
     const handleRecordTrip = (start: string, end: string, endCoordsOverride?: [number, number]) => {
         if (!graph || !visibleStations || !visibleStations[end]) return;

@@ -30,6 +30,12 @@ export class RoutingGraph {
     adj: Map<string, RouteEdge[]> = new Map();
     stationToNodes: Map<string, string[]> = new Map(); // "StationName" -> [NodeIDs...]
 
+    constructor(data?: any) {
+        if (data) {
+            this.loadSystematicData(data);
+        }
+    }
+
     loadSystematicData(data: any) {
         this.nodes.clear();
         this.adj.clear();

@@ -37,43 +37,47 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             const fullId = `${route.company}::${route.line}`;
             const isSelected = selectedLines.includes(fullId);
 
-            // Calculate endpoints (Degree 1 nodes)
-            const stationCounts = new Map<string, number>();
-            route.edges.forEach((edge: any) => {
-                const fromParts = edge.from.split('::');
-                const toParts = edge.to.split('::');
-                const fromName = fromParts[fromParts.length - 1];
-                const toName = toParts[toParts.length - 1];
-
-                stationCounts.set(fromName, (stationCounts.get(fromName) || 0) + 1);
-                stationCounts.set(toName, (stationCounts.get(toName) || 0) + 1);
-            });
-
-            const terminals: string[] = [];
-            stationCounts.forEach((count, name) => {
-                if (count === 1) terminals.push(name);
-            });
-            // Should usually be 2, but for loop lines it might be 0, for branched lines > 2
-            const endpointsStr = terminals.length > 0 ? terminals.join(' ↔ ') : 'Loop / Complex';
-
-            const lineData = {
-                id: fullId,
-                name: route.line,
-                company: route.company,
-                color: getColor(fullId),
-                edges: route.edges,
-                endpoints: endpointsStr
-            };
-
             if (isSelected) {
-                visible.push(lineData);
+                // Only calculate endpoints for SELECTED lines to save CPU
+                const stationCounts = new Map<string, number>();
+                route.edges.forEach((edge: any) => {
+                    const fromParts = edge.from.split('::');
+                    const toParts = edge.to.split('::');
+                    const fromName = fromParts[fromParts.length - 1];
+                    const toName = toParts[toParts.length - 1];
+
+                    stationCounts.set(fromName, (stationCounts.get(fromName) || 0) + 1);
+                    stationCounts.set(toName, (stationCounts.get(toName) || 0) + 1);
+                });
+
+                const terminals: string[] = [];
+                stationCounts.forEach((count, name) => {
+                    if (count === 1) terminals.push(name);
+                });
+                const endpointsStr = terminals.length > 0 ? terminals.join(' ↔ ') : 'Loop / Complex';
+
+                visible.push({
+                    id: fullId,
+                    name: route.line,
+                    company: route.company,
+                    color: getColor(fullId),
+                    edges: route.edges,
+                    endpoints: endpointsStr
+                });
             } else {
-                invisible.push(lineData);
+                invisible.push({
+                    id: fullId,
+                    name: route.line,
+                    company: route.company,
+                    color: '#ccc',
+                    edges: route.edges,
+                    endpoints: '' // Skip calculation
+                });
             }
         });
 
         return { invisibleLines: invisible, visibleLines: visible };
-    }, [railroadNetwork, selectedLines]);
+    }, [railroadNetwork, selectedLines, getColor]);
 
     // Dynamic weights based on zoom
     const { visWeight, invWeight } = useMemo(() => {
@@ -91,109 +95,123 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             {/* Invisible Roads (Unselected) */}
             {invisibleLines.map((line) => (
                 <React.Fragment key={`inv-${line.id}`}>
-                    {line.edges.map((edge: any, idx: number) => (
-                        <Polyline
-                            key={`inv-edge-${line.id}-${idx}`}
-                            positions={edge.geometry.map((c: any) => [c[1], c[0]])}
-                            pathOptions={{
-                                color: '#ccc',
-                                weight: invWeight,
-                                opacity: 0.5,
-                                dashArray: '5, 10',
-                                lineCap: 'round',
-                                lineJoin: 'round'
-                            }}
-                            eventHandlers={{
-                                click: (e) => {
-                                    L.DomEvent.stopPropagation(e);
-                                    onRailroadClick(line.id);
-                                },
-                                mouseover: (e) => {
-                                    onRailroadHover(line.id);
-                                    e.target.setStyle({ color: '#999', weight: invWeight * 2, opacity: 0.8 });
-                                },
-                                mouseout: (e) => {
-                                    onRailroadHover(null);
-                                    e.target.setStyle({ color: '#ccc', weight: invWeight, opacity: 0.5 });
-                                }
-                            }}
-                        >
-                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top">
-                                {line.company} {line.name} ({line.endpoints})
-                            </Tooltip>
-                        </Polyline>
-                    ))}
+                    {line.edges.map((edge: any, idx: number) => {
+                        const positions = edge.geometry.map((c: any) => [c[1], c[0]]);
+                        return (
+                            <React.Fragment key={`inv-edge-group-${line.id}-${idx}`}>
+                                {/* Visible Line (Non-interactive) */}
+                                <Polyline
+                                    positions={positions}
+                                    pathOptions={{
+                                        color: '#ccc',
+                                        weight: invWeight,
+                                        opacity: 0.5,
+                                        dashArray: '5, 10',
+                                        lineCap: 'round',
+                                        lineJoin: 'round'
+                                    }}
+                                    interactive={false}
+                                />
+                                {/* Hit Box Line (Transparent, Thicker, Interactive) */}
+                                <Polyline
+                                    positions={positions}
+                                    pathOptions={{
+                                        stroke: true,
+                                        color: '#000', // Color doesn't matter if opacity is 0, but needed for hit test in some renderers?
+                                        weight: Math.max(15, invWeight * 5), // Thicker hit area
+                                        opacity: 0.0,
+                                        lineCap: 'round',
+                                        lineJoin: 'round'
+                                    }}
+                                    eventHandlers={{
+                                        click: (e) => {
+                                            L.DomEvent.stopPropagation(e);
+                                            onRailroadClick(line.id);
+                                        },
+                                        mouseover: (e) => {
+                                            onRailroadHover(line.id);
+                                            // No style change, just hover state for tooltip
+                                            e.target.openTooltip();
+                                        },
+                                        mouseout: (e) => {
+                                            onRailroadHover(null);
+                                            e.target.closeTooltip();
+                                        }
+                                    }}
+                                >
+                                    <Tooltip sticky pane="top-tooltips" offset={[0, -10]} direction="top">
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontWeight: 'bold' }}>{line.name}</div>
+                                            <div style={{ fontSize: '0.8em', color: '#666' }}>{line.company}</div>
+                                        </div>
+                                    </Tooltip>
+                                </Polyline>
+                            </React.Fragment>
+                        );
+                    })}
                 </React.Fragment>
             ))}
 
             {/* Visible Roads (Selected) */}
             {visibleLines.map((line) => (
                 <React.Fragment key={`vis-${line.id}`}>
-                    {line.edges.map((edge: any, idx: number) => (
-                        <Polyline
-                            key={`vis-edge-${line.id}-${idx}`}
-                            positions={edge.geometry.map((c: any) => [c[1], c[0]])}
-                            pathOptions={{
-                                color: line.color,
-                                weight: visWeight,
-                                opacity: 1.0,
-                                lineCap: 'round',
-                                lineJoin: 'round'
-                            }}
-                            eventHandlers={{
-                                click: (e) => {
-                                    L.DomEvent.stopPropagation(e);
-                                    onRailroadClick(line.id);
-                                },
-                                mouseover: (e) => {
-                                    onRailroadHover(line.id);
-                                    e.target.setStyle({ weight: visWeight * 1.5, opacity: 1.0 });
-                                },
-                                mouseout: (e) => {
-                                    onRailroadHover(null);
-                                    e.target.setStyle({ weight: visWeight, opacity: 1.0 });
-                                }
-                            }}
-                        >
-                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top">
-                                {line.company} {line.name} ({line.endpoints})
-                            </Tooltip>
-                        </Polyline>
-                    ))}
+                    {line.edges.map((edge: any, idx: number) => {
+                        const positions = edge.geometry.map((c: any) => [c[1], c[0]]);
+                        return (
+                            <React.Fragment key={`vis-edge-group-${line.id}-${idx}`}>
+                                {/* Visible Line (Non-interactive) */}
+                                <Polyline
+                                    positions={positions}
+                                    pathOptions={{
+                                        color: line.color,
+                                        weight: visWeight,
+                                        opacity: 1.0,
+                                        lineCap: 'round',
+                                        lineJoin: 'round'
+                                    }}
+                                    interactive={false}
+                                />
+                                {/* Hit Box Line */}
+                                <Polyline
+                                    positions={positions}
+                                    pathOptions={{
+                                        stroke: true,
+                                        color: line.color,
+                                        weight: Math.max(15, visWeight * 4),
+                                        opacity: 0.0, // Invisible hit box
+                                        lineCap: 'round',
+                                        lineJoin: 'round'
+                                    }}
+                                    eventHandlers={{
+                                        click: (e) => {
+                                            L.DomEvent.stopPropagation(e);
+                                            onRailroadClick(line.id);
+                                        },
+                                        mouseover: (e) => {
+                                            onRailroadHover(line.id);
+                                            e.target.openTooltip();
+                                        },
+                                        mouseout: (e) => {
+                                            onRailroadHover(null);
+                                            e.target.closeTooltip();
+                                        }
+                                    }}
+                                >
+                                    <Tooltip sticky pane="top-tooltips" offset={[0, -10]} direction="top">
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ fontWeight: 'bold' }}>{line.name}</div>
+                                            <div style={{ fontSize: '0.8em', color: '#666' }}>{line.company}</div>
+                                            {line.endpoints && <div style={{ fontSize: '0.7em', color: '#888' }}>({line.endpoints})</div>}
+                                        </div>
+                                    </Tooltip>
+                                </Polyline>
+                            </React.Fragment>
+                        );
+                    })}
                 </React.Fragment>
             ))}
 
-            {/* Hover Effect Layer (Optional: separate outline if needed, but setStyle in eventHandlers is efficient enough for now) */}
-            {/* If we strictly follow "Hover Road: ... connected railroad whole border highlighted", 
-                 we might need a separate layer that renders ON TOP when hoveredLine is set. 
-                 Let's add that for the "whole line border" requirement.
-             */}
-            {hoveredLine && (() => {
-                // Find the line data
-                const route = railroadNetwork.routes.find((r: any) => `${r.company}::${r.line}` === hoveredLine);
-                if (!route) return null;
-
-                // Render a thick outlines/highlight for the WHOLE line
-                return (
-                    <React.Fragment key={`hover-highlight-${hoveredLine}`}>
-                        {route.edges.map((edge: any, idx: number) => (
-                            <Polyline
-                                key={`hover-edge-${idx}`}
-                                positions={edge.geometry.map((c: any) => [c[1], c[0]])}
-                                pathOptions={{
-                                    color: '#FFD700', // Gold highlight
-                                    weight: 8,
-                                    opacity: 0.4,
-                                    lineCap: 'round',
-                                    lineJoin: 'round',
-                                    className: 'blinking-highlight' // We can add CSS animation if we want
-                                }}
-                                interactive={false} // Pass through to underlying line
-                            />
-                        ))}
-                    </React.Fragment>
-                );
-            })()}
+            {/* Hover Highlight Removed as requested */}
         </>
     );
 };
