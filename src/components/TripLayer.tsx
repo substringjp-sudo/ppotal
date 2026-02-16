@@ -21,7 +21,8 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips }) => {
                                 weight: 6,
                                 opacity: 0.8,
                                 lineCap: 'round',
-                                lineJoin: 'round'
+                                lineJoin: 'round',
+                                pane: 'ui-elements'
                             }}
                             interactive={false} // Allow clicking through to underlying lines? Or show tooltip?
                         >

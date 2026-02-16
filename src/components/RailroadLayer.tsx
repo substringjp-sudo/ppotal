@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Polyline, Tooltip } from 'react-leaflet';
+import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { getOfficialColor } from '../lib/lineColors';
 
 interface RailroadLayerProps {
     railroadNetwork: any;
     selectedLines: string[];
-    hoveredLine: string | null;
     activeLine: string | null;
+    hoveredLine: string | null;
     onRailroadClick: (lineId: string) => void;
     onRailroadHover: (lineId: string | null) => void;
     zoomLevel: number;
@@ -18,211 +18,168 @@ interface RailroadLayerProps {
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
     railroadNetwork,
     selectedLines,
-    hoveredLine,
     activeLine,
+    hoveredLine,
     onRailroadClick,
     onRailroadHover,
     zoomLevel
 }) => {
-    if (!railroadNetwork) return null;
+    // Optimization: Use a Set for fast visibility lookups
+    const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
+    const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
+    const isFilterActive = useMemo(() => {
+        if (isNoneExplicitlySelected) return true;
+        if (selectionSet.size === 0) return false;
+        // If only the active line is in the selection, we don't treat it as a background-hiding filter.
+        if (selectionSet.size === 1 && activeLine && selectionSet.has(activeLine)) return false;
+        return true;
+    }, [selectionSet, isNoneExplicitlySelected, activeLine]);
 
-    // Helper to get color
-    const getColor = (name: string) => {
-        const official = getOfficialColor(name);
-        return official || "#333";
-    };
+    // 1. Convert ALL routes to GeoJSON (Memoized)
+    const geoJsonData = useMemo(() => {
+        if (!railroadNetwork || !railroadNetwork.routes) return null;
 
-    // Memoize line processing to avoid recalculation on every render
-    const { invisibleLines, visibleLines } = useMemo(() => {
-        const invisible: any[] = [];
-        const visible: any[] = [];
+        const features: any[] = [];
+        const routes = railroadNetwork.routes;
 
-        railroadNetwork.routes.forEach((route: any) => {
-            const fullId = `${route.company}::${route.line}`;
-            const isSelected = selectedLines.includes(fullId);
+        routes.forEach((route: any) => {
+            if (!route) return;
+            const lineId = route.id;
 
-            // routeGeometry 사용 (모든 section 포함, 끊김 없음)
-            // fallback: edge geometry
-            const positions = route.routeGeometry
-                ? route.routeGeometry.map((geom: any) => geom.map((c: any) => [c[1], c[0]]))
-                : route.edges.map((e: any) => e.geometry.map((c: any) => [c[1], c[0]]));
-
-            if (isSelected) {
-                // Only calculate endpoints for SELECTED lines to save CPU
-                const stationCounts = new Map<string, number>();
-                route.edges.forEach((edge: any) => {
-                    const fromParts = edge.from.split('::');
-                    const toParts = edge.to.split('::');
-                    const fromName = fromParts[fromParts.length - 1];
-                    const toName = toParts[toParts.length - 1];
-
-                    stationCounts.set(fromName, (stationCounts.get(fromName) || 0) + 1);
-                    stationCounts.set(toName, (stationCounts.get(toName) || 0) + 1);
-                });
-
-                const terminals: string[] = [];
-                stationCounts.forEach((count, name) => {
-                    if (count === 1) terminals.push(name);
-                });
-                const endpointsStr = terminals.length > 0 ? terminals.join(' ↔ ') : 'Loop / Complex';
-
-                visible.push({
-                    id: fullId,
-                    name: route.line,
-                    company: route.company,
-                    color: getColor(fullId),
-                    positions,
-                    endpoints: endpointsStr
-                });
-            } else {
-                invisible.push({
-                    id: fullId,
-                    name: route.line,
-                    company: route.company,
-                    color: '#ccc',
-                    positions,
-                    endpoints: ''
-                });
+            let coordinates: number[][][] = [];
+            if (route.routeGeometry) {
+                coordinates = route.routeGeometry;
+            } else if (route.edges) {
+                coordinates = route.edges.map((edge: any) => edge.geometry);
             }
+
+            if (coordinates.length === 0) return;
+
+            features.push({
+                type: 'Feature',
+                properties: {
+                    id: lineId,
+                    name: route.line || route.name || '',
+                    company: route.company,
+                    color: getOfficialColor(lineId) || route.color || '#999',
+                    endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : ''
+                },
+                geometry: {
+                    type: 'MultiLineString',
+                    coordinates: coordinates
+                }
+            });
         });
 
-        return { invisibleLines: invisible, visibleLines: visible };
-    }, [railroadNetwork, selectedLines]);
+        return {
+            type: 'FeatureCollection',
+            features: features
+        };
+    }, [railroadNetwork]);
 
-    // Dynamic weights based on zoom
-    const visWeight = zoomLevel <= 10 ? 1 : 2;
-    const invWeight = zoomLevel <= 10 ? 0.5 : 1;
+    // 2. Style Function
+    const style = (feature: any) => {
+        if (!feature) return {};
+
+        const id = feature.properties.id;
+        const isClicked = activeLine === id;
+        const isHovered = hoveredLine === id;
+
+        // Visibility Logic
+        let isVisible = false;
+        if (isNoneExplicitlySelected) {
+            isVisible = isClicked; // Only show what is specifically clicked
+        } else if (!isFilterActive) {
+            isVisible = true; // Show all by default (context mode)
+        } else {
+            isVisible = selectionSet.has(id) || isClicked;
+        }
+
+        // Base Style (Invisible / Faded Gray)
+        let color = '#999999';
+        let weight = zoomLevel >= 12 ? 4 : 2;
+        let opacity = 0.4;
+        let dashArray: string | undefined = '4, 8';
+
+        // 1. Visible Road (Solid / Original Color)
+        if (isVisible) {
+            color = feature.properties.color;
+            opacity = 0.8;
+            dashArray = undefined;
+            weight = zoomLevel >= 12 ? 6 : (zoomLevel >= 10 ? 4 : 2);
+        }
+
+        // 2. Clicked Road (Active) -> Blue, Thick, Solid
+        if (isClicked) {
+            color = '#007AFF';
+            weight = 8;
+            opacity = 1.0;
+            dashArray = undefined;
+        }
+
+        // 3. Hovered Road -> Yellow Solid 
+        if (isHovered) {
+            color = '#FFD700';
+            weight = 8;
+            opacity = 1.0;
+            dashArray = undefined;
+        }
+
+        return {
+            color,
+            weight,
+            opacity,
+            dashArray,
+            lineCap: 'round',
+            lineJoin: 'round'
+        } as L.PathOptions;
+    };
+
+    // 3. Event Handlers
+    const onEachFeature = (feature: any, layer: L.Layer) => {
+        const { name, company, endpoints } = feature.properties;
+        const tooltipContent = `
+            <div style="text-align: center;">
+                <div style="font-weight: bold;">${name}</div>
+                <div style="font-size: 0.8em; color: #666;">${company}</div>
+                ${endpoints ? `<div style="font-size: 0.7em; color: #888;">(${endpoints})</div>` : ''}
+            </div>
+        `;
+        layer.bindTooltip(tooltipContent, {
+            sticky: true,
+            direction: 'top',
+            offset: [0, -10],
+            opacity: 0.9,
+            className: 'railroad-tooltip'
+        });
+
+        layer.on({
+            click: (e) => {
+                L.DomEvent.stopPropagation(e);
+                onRailroadClick(feature.properties.id);
+            },
+            mouseover: (e) => {
+                const target = e.target as L.Path;
+                target.openTooltip();
+                onRailroadHover(feature.properties.id);
+            },
+            mouseout: (e) => {
+                const target = e.target as L.Path;
+                target.closeTooltip();
+                onRailroadHover(null);
+            }
+        });
+    };
+
+    if (!geoJsonData) return null;
 
     return (
-        <>
-            {/* Invisible Roads (Unselected) */}
-            {invisibleLines.map((line) => {
-                return (
-                    <React.Fragment key={`inv-${line.id}`}>
-                        {/* Visible Line (Non-interactive) */}
-                        <Polyline
-                            positions={line.positions}
-                            pathOptions={{
-                                color: '#999',
-                                weight: invWeight,
-                                opacity: 0.4,
-                                dashArray: '2, 6',
-                                lineCap: 'round',
-                                lineJoin: 'round',
-                                pane: 'railroads'
-                            }}
-                            interactive={false}
-                        />
-                        {/* Hit Box Line (Transparent, Thicker, Top-most interaction) */}
-                        <Polyline
-                            positions={line.positions}
-                            pathOptions={{
-                                stroke: true,
-                                color: '#000',
-                                weight: 20,
-                                opacity: 0.0,
-                                lineCap: 'round',
-                                lineJoin: 'round',
-                                pane: 'railroad-interact'
-                            }}
-                            eventHandlers={{
-                                click: (e) => {
-                                    L.DomEvent.stopPropagation(e);
-                                    onRailroadClick(line.id);
-                                },
-                                mouseover: (e) => {
-                                    onRailroadHover(line.id);
-                                    e.target.openTooltip();
-                                },
-                                mouseout: (e) => {
-                                    onRailroadHover(null);
-                                    e.target.closeTooltip();
-                                }
-                            }}
-                        >
-                            <Tooltip sticky pane="top-tooltips" offset={[0, -10]} direction="top">
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontWeight: 'bold' }}>{line.name}</div>
-                                    <div style={{ fontSize: '0.8em', color: '#666' }}>{line.company}</div>
-                                </div>
-                            </Tooltip>
-                        </Polyline>
-                    </React.Fragment>
-                );
-            })}
-
-            {/* Visible Roads (Selected) */}
-            {visibleLines.map((line) => {
-                const isActive = activeLine === line.id;
-                return (
-                    <React.Fragment key={`vis-${line.id}`}>
-                        {/* Active Line Glow Outline - 강조색 테두리 */}
-                        {isActive && (
-                            <Polyline
-                                positions={line.positions}
-                                pathOptions={{
-                                    color: line.color,
-                                    weight: zoomLevel <= 10 ? 8 : 14,
-                                    opacity: 0.35,
-                                    lineCap: 'round',
-                                    lineJoin: 'round',
-                                    pane: 'railroads'
-                                }}
-                                interactive={false}
-                            />
-                        )}
-                        {/* Visible Line (Non-interactive) */}
-                        <Polyline
-                            positions={line.positions}
-                            pathOptions={{
-                                color: line.color,
-                                weight: visWeight,
-                                opacity: 1.0,
-                                lineCap: 'round',
-                                lineJoin: 'round',
-                                pane: 'railroads'
-                            }}
-                            interactive={false}
-                        />
-                        {/* Hit Box Line */}
-                        <Polyline
-                            positions={line.positions}
-                            pathOptions={{
-                                stroke: true,
-                                color: line.color,
-                                weight: 20,
-                                opacity: 0.0,
-                                lineCap: 'round',
-                                lineJoin: 'round',
-                                pane: 'railroad-interact'
-                            }}
-                            eventHandlers={{
-                                click: (e) => {
-                                    L.DomEvent.stopPropagation(e);
-                                    onRailroadClick(line.id);
-                                },
-                                mouseover: (e) => {
-                                    onRailroadHover(line.id);
-                                    e.target.openTooltip();
-                                },
-                                mouseout: (e) => {
-                                    onRailroadHover(null);
-                                    e.target.closeTooltip();
-                                }
-                            }}
-                        >
-                            <Tooltip sticky pane="top-tooltips" offset={[0, -10]} direction="top">
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontWeight: 'bold' }}>{line.name}</div>
-                                    <div style={{ fontSize: '0.8em', color: '#666' }}>{line.company}</div>
-                                    {line.endpoints && <div style={{ fontSize: '0.7em', color: '#888' }}>({line.endpoints})</div>}
-                                </div>
-                            </Tooltip>
-                        </Polyline>
-                    </React.Fragment>
-                );
-            })}
-        </>
+        <GeoJSON
+            data={geoJsonData as any}
+            style={style}
+            onEachFeature={onEachFeature}
+            pane="railroad-interact"
+        />
     );
 };
 

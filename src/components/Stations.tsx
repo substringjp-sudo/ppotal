@@ -192,7 +192,8 @@ const Stations: React.FC<StationsProps> = ({
                                     fill: true,
                                     fillColor: '#ccc',
                                     fillOpacity: 0.1,
-                                    interactive: false // Let clicks pass through to platforms/markers
+                                    interactive: false,
+                                    pane: 'ui-elements'
                                 }}
                             />
                         )}
@@ -261,7 +262,8 @@ const Stations: React.FC<StationsProps> = ({
                                                         weight: isHighlighted ? 8 : 5,
                                                         opacity: 1,
                                                         lineCap: 'butt',
-                                                        interactive: false
+                                                        interactive: false,
+                                                        pane: 'ui-elements'
                                                     }}
                                                 />
                                                 {/* Hit Box Line (Interactive, Higher Priority) */}
@@ -343,7 +345,7 @@ const Stations: React.FC<StationsProps> = ({
                                             {/* Visual Station Dot (Non-interactive) */}
                                             <CircleMarker
                                                 center={node.coord}
-                                                pathOptions={{ ...stationStyle, interactive: false }}
+                                                pathOptions={{ ...stationStyle, pane: 'ui-elements', interactive: false }}
                                                 radius={radius}
                                             />
                                             {/* Hit Box Circle (Transparent, Larger, Top-most interaction) */}

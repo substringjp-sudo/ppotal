@@ -187,7 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         onSetSelectedLines(allKeys);
     }, [hierarchy, onSetSelectedLines]);
 
-    const handleDeselectAll = useCallback(() => onSetSelectedLines([]), [onSetSelectedLines]);
+    const handleDeselectAll = useCallback(() => onSetSelectedLines(["__NONE__"]), [onSetSelectedLines]);
 
     const handleToggleAllGroups = useCallback((expand: boolean) => {
         setExpandedGroups({
@@ -378,8 +378,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                             {sortLines(lineNames, company).map(line => {
                                                 const key = `${company}::${line}`;
                                                 const normalizedKey = normalizeKey(key);
-                                                const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey);
                                                 const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
+                                                const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey) || isActive;
                                                 const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
                                                 const isCompleted = percent >= 99.9;
 

@@ -50,6 +50,16 @@ interface MapPaneProps {
 import MapControls from './MapControls';
 import html2canvas from 'html2canvas';
 
+const PANE_STYLES = {
+    railroadInteract: { zIndex: 800 },
+    stationInteract: { zIndex: 750 },
+    topTooltips: { zIndex: 1000 },
+    background: { zIndex: 100 },
+    railroads: { zIndex: 200 },
+    uiElements: { zIndex: 300 }
+};
+
+
 const MapPane: React.FC<MapPaneProps> = ({
     selectedLines,
     recordedTrips,
@@ -101,6 +111,13 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [dragPath, setDragPath] = useState<[number, number][][]>([]); // Changed type to geometry array
 
     const map = useMap();
+
+    // Clear selection when clicking on empty map area
+    useMapEvents({
+        click: () => {
+            onSetActiveLine?.(null);
+        }
+    });
 
     useEffect(() => {
         fetch('/data/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()).then(setPrefectures);
@@ -634,7 +651,10 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     const handleRailroadClick = useCallback((line: string) => {
         if (onRailroadClick) onRailroadClick(line);
-    }, [onRailroadClick]);
+        if (onSetActiveLine) onSetActiveLine(line);
+        // Removed onSetSelectedLines sync here to prevent other lines from becoming invisible.
+        // Sidebar will now use activeLine to highlight the checkbox.
+    }, [onRailroadClick, onSetActiveLine]);
 
     const handleStationClick = useCallback((name: string) => {
         if (onStationClick) onStationClick(name);
@@ -793,6 +813,14 @@ const MapPane: React.FC<MapPaneProps> = ({
     return (
         <>
             <MapControls zoom={zoomLevel} />
+            {/* Managed Pane for Tooltips to ensure they are on top of everything */}
+            {/* Managed Pane for Tooltips to ensure they are on top of everything */}
+            <Pane name="railroad-interact" style={PANE_STYLES.railroadInteract} />
+            <Pane name="station-interact" style={PANE_STYLES.stationInteract} />
+            <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
+            <Pane name="railroads" style={PANE_STYLES.railroads} />
+            <Pane name="ui-elements" style={PANE_STYLES.uiElements} />
+
             <button
                 onClick={exportMap}
                 className="map-custom-control"
@@ -818,7 +846,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             </button>
             {/* Background Layer: Prefectures & Municipalities */}
 
-            <Pane name="background" style={{ zIndex: 100 }}>
+            <Pane name="background" style={PANE_STYLES.background}>
                 <JapanMap
                     prefectures={prefectures}
                     onPrefectureClick={() => { }} // Disabled click effect
@@ -845,66 +873,64 @@ const MapPane: React.FC<MapPaneProps> = ({
             </Pane>
 
             {/* Middle Layer: Railroads */}
-            <Pane name="railroads" style={{ zIndex: 200 }}>
-                <RailroadLayer
-                    railroadNetwork={railroadNetwork}
-                    selectedLines={selectedLines}
-                    hoveredLine={hoveredLine}
-                    activeLine={activeLine}
-                    onRailroadClick={handleRailroadClick}
-                    onRailroadHover={setHoveredLine}
-                    zoomLevel={zoomLevel}
-                />
-            </Pane>
+            {/* Middle Layer: Railroads */}
+            <RailroadLayer
+                railroadNetwork={railroadNetwork}
+                selectedLines={selectedLines}
+                hoveredLine={hoveredLine}
+                activeLine={activeLine}
+                onRailroadClick={handleRailroadClick}
+                onRailroadHover={setHoveredLine}
+                zoomLevel={zoomLevel}
+            />
+
 
             {/* Top Layer: Stations & Interaction */}
-            <Pane name="ui-elements" style={{ zIndex: 300 }}>
-                <TripLayer recordedTrips={recordedTrips} />
+            {/* Top Layer: Stations & Interaction */}
+            <TripLayer recordedTrips={recordedTrips} />
 
-                {dragPath && dragPath.length > 0 && (
-                    <React.Fragment>
-                        {dragPath.map((segment, idx) => (
-                            <Polyline
-                                key={`drag-path-${idx}`}
-                                positions={segment.map(c => [c[1], c[0]])} // [lng, lat] to [lat, lng]
-                                pathOptions={{
-                                    color: '#007AFF',
-                                    weight: 6,
-                                    opacity: 0.8,
-                                    dashArray: '10, 10',
-                                    lineCap: 'round',
-                                    lineJoin: 'round'
-                                }}
-                                interactive={false}
-                            />
-                        ))}
-                    </React.Fragment>
-                )}
+            {dragPath && dragPath.length > 0 && (
+                <React.Fragment>
+                    {dragPath.map((segment, idx) => (
+                        <Polyline
+                            key={`drag-path-${idx}`}
+                            positions={segment.map(c => [c[1], c[0]])} // [lng, lat] to [lat, lng]
+                            pathOptions={{
+                                color: '#007AFF',
+                                weight: 6,
+                                opacity: 0.8,
+                                dashArray: '10, 10',
+                                lineCap: 'round',
+                                lineJoin: 'round',
+                                pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                </React.Fragment>
+            )}
 
-                {visibleStations &&
-                    <Stations
-                        processedStations={visibleStations}
-                        highlightedStations={highlightedStations}
-                        handleStationClick={handleStationClick} // Use local handler wrapper
-                        zoom={zoomLevel}
-                        getColor={getColor}
-                        selectedLines={selectedLines}
-                        activeLine={activeLine}
-                        hoveredLine={hoveredLine} // Pass hoveredLine
-                        onStationMouseDown={handleStationMouseDown}
-                        onStationMouseUp={handleStationMouseUp}
-                        dragStartStation={dragStartStation}
-                        visitedStations={visitedStations}
-                        settings={styleSettings}
-                        language={language}
-                    />
-                }
-            </Pane>
+            {visibleStations &&
+                <Stations
+                    processedStations={visibleStations}
+                    highlightedStations={highlightedStations}
+                    handleStationClick={handleStationClick} // Use local handler wrapper
+                    zoom={zoomLevel}
+                    getColor={getColor}
+                    selectedLines={selectedLines}
+                    activeLine={activeLine}
+                    hoveredLine={hoveredLine} // Pass hoveredLine
+                    onStationMouseDown={handleStationMouseDown}
+                    onStationMouseUp={handleStationMouseUp}
+                    dragStartStation={dragStartStation}
+                    visitedStations={visitedStations}
+                    settings={styleSettings}
+                    language={language}
+                />
+            }
 
-            {/* Managed Pane for Tooltips to ensure they are on top of everything */}
-            <Pane name="railroad-interact" style={{ zIndex: 600 }} />
-            <Pane name="station-interact" style={{ zIndex: 700 }} />
-            <Pane name="top-tooltips" style={{ zIndex: 1000 }} />
+
+
 
             <OffScreenIndicator
                 map={map}
