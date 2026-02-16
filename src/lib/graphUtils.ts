@@ -181,7 +181,81 @@ export class RailroadGraph {
     }
 
     getShortestPath(startId: string, endId: string, allowedLines: string[] | null = null): { path: string[], distance: number, geometries: [number, number][][] } | null {
-        // ... legacy/direct ID internal logic if needed, or remove?
+        if (!this.nodes.has(startId) || !this.nodes.has(endId)) return null;
+
+        const distances: Record<string, number> = {};
+        const previous: Record<string, string | null> = {};
+        const geometries: Record<string, [number, number][][]> = {};
+        const nodes = new Set<string>();
+
+        // Initialize
+        for (const nodeId of this.nodes.keys()) {
+            distances[nodeId] = Infinity;
+            previous[nodeId] = null;
+            geometries[nodeId] = [];
+            nodes.add(nodeId);
+        }
+
+        distances[startId] = 0;
+
+        while (nodes.size > 0) {
+            let closestNode: string | null = null;
+            let minDist = Infinity;
+
+            // Simple linear scan
+            for (const nodeId of nodes) {
+                if (distances[nodeId] < minDist) {
+                    minDist = distances[nodeId];
+                    closestNode = nodeId;
+                }
+            }
+
+            if (closestNode === null || distances[closestNode] === Infinity) break;
+            if (closestNode === endId) {
+                // Reconstruct path
+                const path: string[] = [];
+                let curr: string | null = endId;
+                while (curr !== null) {
+                    path.unshift(curr);
+                    if (curr === startId) break;
+                    curr = previous[curr];
+                }
+
+                return {
+                    path,
+                    distance: distances[endId],
+                    geometries: geometries[endId]
+                };
+            }
+
+            nodes.delete(closestNode);
+
+            const neighbors = this.adj.get(closestNode) || [];
+            for (const neighbor of neighbors) {
+                if (!nodes.has(neighbor.to)) continue;
+
+                // FILTERING LOGIC
+                if (allowedLines) {
+                    const targetNode = this.nodes.get(neighbor.to);
+                    if (targetNode) {
+                        // Check if target node belongs to allowed lines
+                        // Note: normalizeKey might be needed if allowedLines formats differ, 
+                        // but assuming exact match for now as per MapPane usage.
+                        if (!allowedLines.includes(targetNode.fullLineName)) {
+                            continue;
+                        }
+                    }
+                }
+
+                const alt = distances[closestNode] + neighbor.distance;
+                if (alt < distances[neighbor.to]) {
+                    distances[neighbor.to] = alt;
+                    previous[neighbor.to] = closestNode;
+                    geometries[neighbor.to] = [...geometries[closestNode], neighbor.geometry];
+                }
+            }
+        }
+
         return null;
     }
 

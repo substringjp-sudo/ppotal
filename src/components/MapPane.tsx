@@ -306,7 +306,9 @@ const MapPane: React.FC<MapPaneProps> = ({
             segments,
             visitedEdges,
             nodes: graph.nodes,
-            getShortestPath: graph.getShortestPathByName.bind(graph)
+            getShortestPath: (start: string, end: string, allowedLines?: string[]) => {
+                return graph.getShortestPath(start, end, allowedLines);
+            }
         });
     }, [activeLine, graph, recordedTrips, onLineDetailData]);
 
@@ -494,8 +496,142 @@ const MapPane: React.FC<MapPaneProps> = ({
         visibleStationsRef.current = visibleStations;
     }, [visibleStations]);
 
-    // Trace logic state
+    // Auto-scroll refs
+    const scrollVelocityRef = React.useRef<{ x: number, y: number }>({ x: 0, y: 0 });
+    const lastContainerPointRef = React.useRef<L.Point | null>(null);
+    const animationFrameRef = React.useRef<number | null>(null);
     const lastLayerPointRef = React.useRef<L.Point | null>(null);
+
+    const updateDragPath = (mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
+        const currentDragStation = dragStartStationRef.current;
+        const prevLayerPoint = lastLayerPointRef.current;
+        const stations = visibleStationsRef.current;
+
+        if (currentDragStation && graph && prevLayerPoint && stations) {
+            // 1. Detect stations along the mouse trajectory (Segment prev -> curr)
+            const candidates: { name: string, dist: number, projDist: number }[] = [];
+
+            // Optimization: Define a bounding box for the segment with padding
+            const padding = 30; // 30px hit radius
+            const minX = Math.min(prevLayerPoint.x, currentLayerPoint.x) - padding;
+            const maxX = Math.max(prevLayerPoint.x, currentLayerPoint.x) + padding;
+            const minY = Math.min(prevLayerPoint.y, currentLayerPoint.y) - padding;
+            const maxY = Math.max(prevLayerPoint.y, currentLayerPoint.y) + padding;
+
+            Object.entries(stations).forEach(([name, data]) => {
+                const stLatLng = L.latLng(data.centroid[0], data.centroid[1]);
+                const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
+
+                // AABB check
+                if (stPoint.x >= minX && stPoint.x <= maxX && stPoint.y >= minY && stPoint.y <= maxY) {
+                    const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
+                    if (d < 20) {
+                        const distFromStart = prevLayerPoint.distanceTo(stPoint);
+                        candidates.push({ name, dist: d, projDist: distFromStart });
+                    }
+                }
+            });
+
+            candidates.sort((a, b) => a.projDist - b.projDist);
+
+            const { waypoints, segments } = dragState.current;
+            if (waypoints.length === 0) waypoints.push(currentDragStation);
+
+            candidates.forEach(c => {
+                const lastWaypoint = waypoints[waypoints.length - 1];
+                if (c.name === lastWaypoint) return;
+
+                if (waypoints.length > 1 && c.name === waypoints[waypoints.length - 2]) {
+                    waypoints.pop();
+                    segments.pop();
+                } else {
+                    const pathData = graph.getShortestPathByName(lastWaypoint, c.name);
+
+                    if (pathData) {
+                        // Heuristic: Prevent jumping to geometrically close but topologically distant stations
+                        const lastStData = stations[lastWaypoint];
+                        const currStData = stations[c.name];
+                        let isValid = true;
+
+                        if (lastStData && currStData) {
+                            const crowDist = haversineDistance(lastStData.centroid, currStData.centroid);
+                            const railDist = pathData.distance;
+
+                            // 1. Hard cap on single-step distance (e.g., 100km). 
+                            // Unless it's a huge zoom level, you shouldn't drag 100km in one frame.
+                            if (railDist > 100) isValid = false;
+
+                            // 2. Detour Ratio for close stations
+                            // If visually close (< 5km) but rail distance is effectively a detour (> 4x), ignore.
+                            // This prevents jumping between parallel lines or nearby unconnected stations.
+                            // We add 0.1 to crowDist to avoid division by zero.
+                            if (isValid && crowDist < 5 && railDist > 3.0 && (railDist / (crowDist + 0.05)) > 4.0) {
+                                isValid = false;
+                            }
+                        }
+
+                        if (isValid) {
+                            waypoints.push(c.name);
+                            segments.push({
+                                path: pathData.path,
+                                geometries: pathData.geometries,
+                                distance: pathData.distance
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Update UI
+            let allGeoms = segments.flatMap(s => s.geometries);
+            const lastWaypoint = waypoints[waypoints.length - 1];
+            if (stations[lastWaypoint]) {
+                const startCoords = stations[lastWaypoint].centroid;
+                const cursorCoords: [number, number] = [currentLatLng.lat, currentLatLng.lng];
+                allGeoms = [...allGeoms, [startCoords, cursorCoords]];
+            }
+
+            setDragPath(allGeoms);
+        }
+
+        // Always update lastLayerPoint
+        lastLayerPointRef.current = currentLayerPoint;
+    };
+
+    // Auto-scroll Loop
+    useEffect(() => {
+        if (!dragStartStation) return;
+
+        const loop = () => {
+            const velocity = scrollVelocityRef.current;
+            if ((velocity.x !== 0 || velocity.y !== 0) && map && lastContainerPointRef.current) {
+                // Pan map
+                map.panBy([velocity.x, velocity.y], { animate: false });
+
+                // Recalculate positions after pan
+                // The mouse container point is static (relative to viewport), but latlng changes
+                const containerPoint = lastContainerPointRef.current;
+                const newLatLng = map.containerPointToLatLng(containerPoint);
+                const newLayerPoint = map.latLngToLayerPoint(newLatLng);
+
+                // We need to update the snake path because the "cursor latlng" changed
+                // AND we might have panned over new stations.
+                // Note: pointToSegmentDistance uses LayerPoints.
+                // When panning, the map layer moves.
+                // We simulated a move from 'lastLayerPoint' (which was correct for previous frame) to 'newLayerPoint'.
+                // This correctly represents the "movement" of the cursor relative to the map.
+
+                updateDragPath(map, newLayerPoint, newLatLng);
+            }
+            animationFrameRef.current = requestAnimationFrame(loop);
+        };
+        animationFrameRef.current = requestAnimationFrame(loop);
+        return () => {
+            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        };
+    }, [map, dragStartStation]); // Only run loop when dragging
+    // Note: updateDragPath uses refs (graph, etc), so it's safe to call in loop.
+    // However, setDragPath might trigger re-render, but that's what we want.
 
     useMapEvents({
         load: () => setMapReady(true),
@@ -512,94 +648,34 @@ const MapPane: React.FC<MapPaneProps> = ({
             const currentDragStation = dragStartStationRef.current;
             const mapInstance = e.target;
 
-            if (currentDragStation && graph && mapInstance) {
-                const currentLayerPoint = e.layerPoint;
-                const prevLayerPoint = lastLayerPointRef.current;
-                const stations = visibleStationsRef.current;
+            // Track mouse pos for auto-scroll
+            lastContainerPointRef.current = e.containerPoint;
 
-                if (prevLayerPoint && stations) {
-                    // 1. Detect stations along the mouse trajectory (Segment prev -> curr)
-                    const candidates: { name: string, dist: number, projDist: number }[] = [];
+            // Calculate Scroll Velocity
+            if (currentDragStation) {
+                const { x, y } = e.containerPoint;
+                const { x: w, y: h } = mapInstance.getSize();
+                const threshold = 50;
+                const speed = 10; // Pixels per frame
 
-                    // Optimization: Define a bounding box for the segment with padding
-                    const padding = 30; // 30px hit radius
-                    const minX = Math.min(prevLayerPoint.x, currentLayerPoint.x) - padding;
-                    const maxX = Math.max(prevLayerPoint.x, currentLayerPoint.x) + padding;
-                    const minY = Math.min(prevLayerPoint.y, currentLayerPoint.y) - padding;
-                    const maxY = Math.max(prevLayerPoint.y, currentLayerPoint.y) + padding;
+                let vx = 0;
+                let vy = 0;
 
-                    Object.entries(stations).forEach(([name, data]) => {
-                        // Project staton lat/lng to layer point
-                        // Caution: projecting thousands of points every mousemove is expensive.
-                        // visibleStations is usually filtered, so it should be okay (hundreds).
-                        // If performance drops, consider spatial indexing (e.g. RBush).
-                        const stLatLng = L.latLng(data.centroid[0], data.centroid[1]);
-                        const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
+                if (x < threshold) vx = -speed;
+                else if (x > w - threshold) vx = speed;
 
-                        // AABB check first
-                        if (stPoint.x >= minX && stPoint.x <= maxX && stPoint.y >= minY && stPoint.y <= maxY) {
-                            // Exact distance check
-                            const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
-                            if (d < 20) { // 20px hit threshold
-                                // Distance from start of segment (to sort by visit order)
-                                const distFromStart = prevLayerPoint.distanceTo(stPoint);
-                                candidates.push({ name, dist: d, projDist: distFromStart });
-                            }
-                        }
-                    });
+                if (y < threshold) vy = -speed;
+                else if (y > h - threshold) vy = speed;
 
-                    // 2. Sort candidates by sequence along the path
-                    candidates.sort((a, b) => a.projDist - b.projDist);
-
-                    // 3. Process candidates
-                    const { waypoints, segments } = dragState.current;
-
-                    // Safety init
-                    if (waypoints.length === 0) waypoints.push(currentDragStation);
-
-                    candidates.forEach(c => {
-                        const lastWaypoint = waypoints[waypoints.length - 1];
-                        if (c.name === lastWaypoint) return;
-
-                        // Backtracking Check
-                        if (waypoints.length > 1 && c.name === waypoints[waypoints.length - 2]) {
-                            waypoints.pop();
-                            segments.pop();
-                        }
-                        // Add New Segment
-                        else {
-                            // Basic graph connectivity check
-                            const pathData = graph.getShortestPathByName(lastWaypoint, c.name);
-                            if (pathData) {
-                                waypoints.push(c.name);
-                                segments.push({
-                                    path: pathData.path,
-                                    geometries: pathData.geometries,
-                                    distance: pathData.distance
-                                });
-                            }
-                        }
-                    });
-
-                    // 4. Update UI Visualization
-                    let allGeoms = segments.flatMap(s => s.geometries);
-
-                    // Add Guide Line to cursor
-                    const lastWaypoint = waypoints[waypoints.length - 1];
-                    if (stations[lastWaypoint]) {
-                        const startCoords = stations[lastWaypoint].centroid;
-                        const cursorCoords: [number, number] = [e.latlng.lat, e.latlng.lng];
-                        allGeoms = [...allGeoms, [startCoords, cursorCoords]];
-                    }
-
-                    setDragPath(allGeoms);
-                }
-
-                // Update previous point for next frame
-                lastLayerPointRef.current = currentLayerPoint;
-
+                scrollVelocityRef.current = { x: vx, y: vy };
             } else {
-                lastLayerPointRef.current = e.layerPoint; // Track mouse even if not dragging, or reset
+                scrollVelocityRef.current = { x: 0, y: 0 };
+            }
+
+            if (currentDragStation && graph && mapInstance) {
+                updateDragPath(mapInstance, e.layerPoint, e.latlng);
+            } else {
+                lastLayerPointRef.current = e.layerPoint;
             }
         },
         mouseup: (e) => {

@@ -21,7 +21,8 @@ interface LineDetailPaneProps {
 }
 
 const LineDetailPane: React.FC<LineDetailPaneProps> = ({
-    lineId, segments, nodes, visitedEdges, selectedLines, onClose, onStationClick, language, onToggleLine
+    lineId, segments, nodes, visitedEdges, selectedLines, onClose, onStationClick, language, onToggleLine,
+    getShortestPath, onRecordTrip
 }) => {
     const [company, lineName] = lineId.split('::');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -260,6 +261,33 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     visitedEdges={visitedEdges}
                                     onStationClick={onStationClick}
                                     language={language}
+                                    onPathCreate={(start, end) => {
+                                        if (getShortestPath && onRecordTrip) {
+                                            // Ensure we stay on the current line if possible? 
+                                            // The user is in Line Detail, so they probably want to record on this line.
+                                            // Passing [lineId] as restriction might be good, but users might drag across branches?
+                                            // The `selectedLines` prop might be better.
+                                            // Actually, `activeLine` context is usually implies focusing on one line.
+                                            // Let's pass `selectedLines` combined with current line if needed, 
+                                            // but `getShortestPath` usually takes an array of allowed lines.
+
+                                            // If we just pass the current lineId, we ensure the path stays on this line 
+                                            // (which is what Line Detail is for).
+
+                                            const pathData = getShortestPath(start, end, [lineId]);
+                                            // If pathData is null, maybe try with all lines?
+                                            // But for LineDetail, restricting to lineId is safer to avoid jumping to other lines.
+
+                                            if (pathData) {
+                                                onRecordTrip({
+                                                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                                    start,
+                                                    end,
+                                                    ...pathData
+                                                });
+                                            }
+                                        }
+                                    }}
                                 />
                             </div>
                         ))}
