@@ -265,9 +265,32 @@ const Page = () => {
                 boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-1.5px' }}>
                         JapanRailNote
                     </h1>
+                    <a
+                        href="/credits"
+                        style={{
+                            fontSize: '11px',
+                            color: '#999',
+                            textDecoration: 'none',
+                            padding: '2px 8px',
+                            border: '1px solid #eee',
+                            borderRadius: '10px',
+                            transition: 'all 0.2s',
+                            fontWeight: '600'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.color = '#3498db';
+                            e.currentTarget.style.borderColor = '#3498db';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.color = '#999';
+                            e.currentTarget.style.borderColor = '#eee';
+                        }}
+                    >
+                        Data Sources
+                    </a>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
