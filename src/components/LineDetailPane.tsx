@@ -4,6 +4,7 @@ import React, { useMemo, useRef } from 'react';
 import { StationNode } from '../lib/graphUtils';
 import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
+import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
 
 interface LineDetailPaneProps {
@@ -168,7 +169,10 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '15px' }}>
                     {/* Toggle Button */}
                     <button
-                        onClick={() => onToggleLine && onToggleLine(lineId)}
+                        onClick={() => {
+                            onToggleLine && onToggleLine(lineId);
+                            // Event tracking is handled in Page.tsx's toggleLine handler now
+                        }}
                         style={{
                             width: '32px',
                             height: '32px',
@@ -220,7 +224,10 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 </div>
 
                 <button
-                    onClick={onClose}
+                    onClick={() => {
+                        onClose();
+                        trackEvent('close_line_detail', 'ui_interaction', lineId);
+                    }}
                     style={{
                         background: 'none',
                         border: 'none',

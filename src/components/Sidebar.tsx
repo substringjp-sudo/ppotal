@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { normalizeKey, translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
+import { trackEvent } from '../lib/gtag';
 
 // Group definitions
 const JR_COMPANIES = [
@@ -147,11 +148,19 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     }, [activeLine, groupedHierarchy]);
 
     const toggleCompany = useCallback((company: string) => {
-        setExpandedCompanies(prev => ({ ...prev, [company]: !prev[company] }));
+        setExpandedCompanies(prev => {
+            const newState = !prev[company];
+            trackEvent('company_toggle', 'ui_interaction', company, newState ? 1 : 0);
+            return { ...prev, [company]: newState };
+        });
     }, []);
 
     const toggleGroup = useCallback((group: keyof GroupedHierarchy) => {
-        setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
+        setExpandedGroups(prev => {
+            const newState = !prev[group];
+            trackEvent('group_toggle', 'ui_interaction', group, newState ? 1 : 0);
+            return { ...prev, [group]: newState };
+        });
     }, []);
 
     const handleGroupToggle = useCallback((groupKey: keyof GroupedHierarchy) => {
@@ -199,9 +208,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
         });
         onSetSelectedLines(allKeys);
+        trackEvent('select_all', 'interaction', 'all_lines');
     }, [hierarchy, onSetSelectedLines]);
 
-    const handleDeselectAll = useCallback(() => onSetSelectedLines(["__NONE__"]), [onSetSelectedLines]);
+    const handleDeselectAll = useCallback(() => {
+        onSetSelectedLines(["__NONE__"]);
+        trackEvent('deselect_all', 'interaction', 'none');
+    }, [onSetSelectedLines]);
 
     const handleToggleAllGroups = useCallback((expand: boolean) => {
         setExpandedGroups({
@@ -418,7 +431,10 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                                         <input
                                                             type="checkbox"
                                                             checked={isSelected}
-                                                            onChange={() => onToggleLine(key)}
+                                                            onChange={() => {
+                                                                onToggleLine(key);
+                                                                trackEvent('line_toggle', 'interaction', key);
+                                                            }}
                                                             style={{ marginRight: '8px', flexShrink: 0, cursor: 'pointer' }}
                                                         />
                                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -505,7 +521,10 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                     ].map(opt => (
                         <button
                             key={opt.id}
-                            onClick={() => setSortMode(opt.id as 'ja' | 'usage')}
+                            onClick={() => {
+                                setSortMode(opt.id as 'ja' | 'usage');
+                                trackEvent('sort_mode_change', 'filter', opt.id);
+                            }}
                             style={{
                                 flex: 1,
                                 padding: '6px 4px',

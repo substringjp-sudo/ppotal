@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import React from 'react';
 import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
+import { trackEvent } from '../lib/gtag';
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
     ssr: false
@@ -131,8 +132,8 @@ const Page = () => {
 
     const handleRecordTrip = React.useCallback((trip: any) => {
         setRecordedTrips(prev => {
-            // Check for duplicates
             if (prev.find(t => t.id === trip.id)) return prev;
+            trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
             return [...prev, trip];
         });
     }, []);
@@ -140,8 +141,8 @@ const Page = () => {
     const toggleLine = React.useCallback((line: string) => {
         setSelectedLines(prev => {
             const isSelected = prev.includes(line);
+            trackEvent('line_toggle', 'interaction', line, isSelected ? 0 : 1);
             let next = isSelected ? prev.filter(l => l !== line) : [...prev, line];
-            // Remove __NONE__ if we are now selecting at least one valid line
             if (next.length > 1 && next.includes("__NONE__")) {
                 next = next.filter(l => l !== "__NONE__");
             }
@@ -187,8 +188,9 @@ const Page = () => {
             setRecordedTrips([]);
             setVisitedLineLengths({});
             localStorage.removeItem('jprail_trips');
+            trackEvent('reset_all_trips', 'engagement', 'confirm');
         }
-    }, []);
+    }, [trackEvent]);
 
     const handleDeleteLineHistory = React.useCallback((lineId: string) => {
         if (!window.confirm('이 노선의 이동 기록을 모두 삭제하시겠습니까?')) return;
@@ -241,6 +243,7 @@ const Page = () => {
             const next = prev.filter(t => t.id !== id);
             return next;
         });
+        trackEvent('delete_trip', 'engagement', id);
     }, []);
 
     return (
@@ -314,6 +317,27 @@ const Page = () => {
                     </div>
 
                     <div style={{ display: 'flex', gap: '6px' }}>
+                        {(['ja', 'ko', 'en'] as Language[]).map(lang => (
+                            <button
+                                key={lang}
+                                onClick={() => {
+                                    setLanguage(lang);
+                                    trackEvent('change_language', 'setting', lang);
+                                }}
+                                style={{
+                                    padding: '4px 8px',
+                                    fontSize: '11px',
+                                    fontWeight: language === lang ? 'bold' : 'normal',
+                                    backgroundColor: language === lang ? '#3498db' : '#fff',
+                                    color: language === lang ? '#fff' : '#666',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {lang.toUpperCase()}
+                            </button>
+                        ))}
                     </div>
 
                     <div style={{ display: 'flex', gap: '10px' }}>
@@ -361,7 +385,10 @@ const Page = () => {
                 }}>
                     <div style={{ display: 'flex', borderBottom: '1px solid #ddd' }}>
                         <button
-                            onClick={() => setSideMode('lines')}
+                            onClick={() => {
+                                setSideMode('lines');
+                                trackEvent('tab_switch', 'ui_interaction', 'lines');
+                            }}
                             style={{
                                 flex: 1, padding: '10px', border: 'none', background: sideMode === 'lines' ? '#fff' : '#f5f5f5',
                                 fontWeight: 'bold', color: sideMode === 'lines' ? '#2c3e50' : '#999', cursor: 'pointer'
@@ -370,7 +397,10 @@ const Page = () => {
                             Lines
                         </button>
                         <button
-                            onClick={() => setSideMode('route')}
+                            onClick={() => {
+                                setSideMode('route');
+                                trackEvent('tab_switch', 'ui_interaction', 'route');
+                            }}
                             style={{
                                 flex: 1, padding: '10px', border: 'none', background: sideMode === 'route' ? '#fff' : '#f5f5f5',
                                 fontWeight: 'bold', color: sideMode === 'route' ? '#2c3e50' : '#999', cursor: 'pointer'

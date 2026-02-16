@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Language } from '../lib/translations';
+import { trackEvent } from '../lib/gtag';
 
 interface RoutePaneProps {
     startStation: string | null;
@@ -36,6 +37,12 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     useEffect(() => {
         setEndInput(endStation || '');
     }, [endStation]);
+
+    useEffect(() => {
+        if (routeResult && routeResult.totalDistance > 0) {
+            trackEvent('route_search_success', 'engagement', `${startStation} to ${endStation}`, Math.round(routeResult.totalDistance));
+        }
+    }, [routeResult, startStation, endStation]);
 
     useEffect(() => {
         // Load station master list for autocomplete
@@ -82,12 +89,14 @@ const RoutePane: React.FC<RoutePaneProps> = ({
         setStartInput(name);
         onSetStartStation(name);
         setStartSuggestions([]);
+        trackEvent('route_set_start', 'interaction', name);
     };
 
     const selectEnd = (name: string) => {
         setEndInput(name);
         onSetEndStation(name);
         setEndSuggestions([]);
+        trackEvent('route_set_end', 'interaction', name);
     };
 
     const swap = () => {
@@ -95,6 +104,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
         setStartInput(endInput);
         setEndInput(temp);
         onSwapStations();
+        trackEvent('route_swap', 'interaction', 'swap');
     };
 
     const formatDistance = (d: number) => {

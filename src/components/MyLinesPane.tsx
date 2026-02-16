@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
+import { trackEvent } from '../lib/gtag';
 
 interface MyLinesPaneProps {
     visitedLineLengths: Record<string, number>;
@@ -63,7 +64,10 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                 <button
-                    onClick={() => setActiveTab('lines')}
+                    onClick={() => {
+                        setActiveTab('lines');
+                        trackEvent('history_tab_switch', 'ui_interaction', 'lines');
+                    }}
                     style={{
                         flex: 1,
                         padding: '8px',
@@ -78,7 +82,10 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     LINES ({utilizedLines.length})
                 </button>
                 <button
-                    onClick={() => setActiveTab('trips')}
+                    onClick={() => {
+                        setActiveTab('trips');
+                        trackEvent('history_tab_switch', 'ui_interaction', 'trips');
+                    }}
                     style={{
                         flex: 1,
                         padding: '8px',
@@ -123,6 +130,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDeleteLineHistory(line.id);
+                                            trackEvent('delete_line_history', 'engagement', line.id);
                                         }}
                                         style={{
                                             background: 'none',
@@ -187,7 +195,10 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                                     <div style={{ fontSize: '10px', color: '#999' }}>{formatTime(trip.id)}</div>
                                     <button
-                                        onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
+                                        onClick={() => {
+                                            onDeleteTrip && onDeleteTrip(trip.id);
+                                            trackEvent('delete_trip_item', 'engagement', trip.id);
+                                        }}
                                         style={{
                                             background: 'none',
                                             border: 'none',

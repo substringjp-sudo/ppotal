@@ -16,6 +16,7 @@ import { RoutingGraph, RouteResult } from '../lib/RoutingGraph';
 import { getOfficialColor } from '../lib/lineColors';
 import { normalizeKey } from '../lib/lineUtils';
 import { MapStyleSettings } from '../app/page';
+import { trackEvent } from '../lib/gtag';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -733,12 +734,12 @@ const MapPane: React.FC<MapPaneProps> = ({
     const handleRailroadClick = useCallback((line: string) => {
         if (onRailroadClick) onRailroadClick(line);
         if (onSetActiveLine) onSetActiveLine(line);
-        // Removed onSetSelectedLines sync here to prevent other lines from becoming invisible.
-        // Sidebar will now use activeLine to highlight the checkbox.
+        trackEvent('line_click', 'interaction', line);
     }, [onRailroadClick, onSetActiveLine]);
 
     const handleStationClick = useCallback((name: string) => {
         if (onStationClick) onStationClick(name);
+        trackEvent('station_click', 'interaction', name);
 
         // Auto-select connected lines
         if (visibleStations && visibleStations[name] && onSetSelectedLines) {
@@ -882,6 +883,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             link.download = `jprail-map-${new Date().toISOString().slice(0, 10)}.png`;
             link.href = canvas.toDataURL();
             link.click();
+            trackEvent('export_map', 'engagement', 'png');
         } catch (err) {
             console.error('Export failed:', err);
         } finally {
