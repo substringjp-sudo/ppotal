@@ -94,6 +94,20 @@ const Page = () => {
         setTimeout(() => setZoomToStation(null), 2000);
     }, []);
 
+    // Load all lines on first load
+    React.useEffect(() => {
+        fetch('/data/station_hierarchy.json')
+            .then(res => res.json())
+            .then((data: Record<string, Record<string, any>>) => {
+                const allKeys: string[] = [];
+                Object.entries(data).forEach(([comp, lines]) => {
+                    Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
+                });
+                setSelectedLines(allKeys);
+            })
+            .catch(err => console.error("Failed to load hierarchy for initial selection", err));
+    }, []);
+
     // Initial load from localStorage
     React.useEffect(() => {
         const saved = localStorage.getItem('jprail_trips');

@@ -29,8 +29,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
     const isFilterActive = useMemo(() => {
         if (isNoneExplicitlySelected) return true;
-        if (selectionSet.size === 0) return false;
-        // If only the active line is in the selection, we don't treat it as a background-hiding filter.
+        if (selectionSet.size === 0) return false; // "Show All" context mode
         if (selectionSet.size === 1 && activeLine && selectionSet.has(activeLine)) return false;
         return true;
     }, [selectionSet, isNoneExplicitlySelected, activeLine]);
@@ -88,16 +87,19 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // Visibility Logic
         let isVisible = false;
         if (isNoneExplicitlySelected) {
-            isVisible = isClicked; // Only show what is specifically clicked
+            isVisible = isClicked;
         } else if (!isFilterActive) {
-            isVisible = true; // Show all by default (context mode)
+            isVisible = true;
         } else {
             isVisible = selectionSet.has(id) || isClicked;
         }
 
-        // Base Style (Invisible / Faded Gray)
+        // Responsive Weight Logic (User request: reduce by 1, scale for zoom <= 9)
+        const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
+
+        // Base Style (Invisible / Faded Gray / Context)
         let color = '#999999';
-        let weight = zoomLevel >= 12 ? 4 : 2;
+        let weight = (zoomLevel >= 12 ? 3 : 1) * weightFactor;
         let opacity = 0.4;
         let dashArray: string | undefined = '4, 8';
 
@@ -106,13 +108,13 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             color = feature.properties.color;
             opacity = 0.8;
             dashArray = undefined;
-            weight = zoomLevel >= 12 ? 6 : (zoomLevel >= 10 ? 4 : 2);
+            weight = (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) * weightFactor;
         }
 
         // 2. Clicked Road (Active) -> Blue, Thick, Solid
         if (isClicked) {
             color = '#007AFF';
-            weight = 8;
+            weight = 7 * weightFactor; // 8 -> 7
             opacity = 1.0;
             dashArray = undefined;
         }
@@ -120,7 +122,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // 3. Hovered Road -> Yellow Solid 
         if (isHovered) {
             color = '#FFD700';
-            weight = 8;
+            weight = 7 * weightFactor; // 8 -> 7
             opacity = 1.0;
             dashArray = undefined;
         }
