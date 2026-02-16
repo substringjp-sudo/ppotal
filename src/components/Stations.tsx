@@ -13,6 +13,7 @@ interface StaticNode {
     coord: [number, number];
     lineKey: string;
     platforms?: [number, number][][];
+    group?: string;
 }
 
 interface StationsProps {
@@ -33,11 +34,15 @@ interface StationsProps {
 }
 
 // Convex Hull Algorithm (Monotone Chain)
+// Points are [lat, lng]
 const convexHull = (points: [number, number][]): [number, number][] => {
     if (points.length < 3) return points;
 
+    // Sort by lat, then lng
     const sorted = [...points].sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
 
+    // Cross product of vectors OA and OB
+    // A value > 0 means counter-clockwise turn, < 0 clockwise, 0 collinear
     const cross = (o: [number, number], a: [number, number], b: [number, number]) => {
         return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
     };
@@ -130,8 +135,45 @@ const Stations: React.FC<StationsProps> = ({
                     return { company: 'Unknown', line: l, key: l };
                 });
 
+                // Calculate Convex Hull for the station GROUP if zoom is high
+                let hullPoints: [number, number][] | null = null;
+                if (zoom >= 14) {
+                    const allPoints: [number, number][] = [];
+                    // Collect points from platform geometries
+                    station.nodes.forEach(node => {
+                        if (node.platforms) {
+                            node.platforms.forEach(plat => {
+                                plat.forEach(p => allPoints.push([p[1], p[0]])); // p is [lon, lat], we want [lat, lon]
+                            });
+                        }
+                        // Also include node center just in case
+                        allPoints.push(node.coord);
+                    });
+
+                    if (allPoints.length > 2) {
+                        hullPoints = convexHull(allPoints);
+                    }
+                }
+
                 return (
                     <React.Fragment key={name}>
+                        {/* Group Border (Convex Hull) */}
+                        {zoom >= 14 && hullPoints && hullPoints.length > 2 && (
+                            <Polyline
+                                positions={hullPoints}
+                                pathOptions={{
+                                    color: isHighlighted ? '#ff0000' : '#666',
+                                    weight: 1,
+                                    opacity: 0.5,
+                                    dashArray: '4, 4',
+                                    fill: true,
+                                    fillColor: '#ccc',
+                                    fillOpacity: 0.1,
+                                    interactive: false // Let clicks pass through to platforms/markers
+                                }}
+                            />
+                        )}
+
                         {zoom > 12 && isSelected && (
                             <Marker
                                 position={station.centroid}
@@ -177,10 +219,12 @@ const Stations: React.FC<StationsProps> = ({
                                 className: isNodeVisited ? 'visited-station-glow' : ''
                             };
 
+                            const hasPlatforms = zoom >= 14 && node.platforms && node.platforms.length > 0;
+
                             return (
                                 <React.Fragment key={`${node.id}-${idx}`}>
                                     {/* Platform Rendering Logic */}
-                                    {zoom >= 14 && node.platforms && node.platforms.map((plat, pidx) => {
+                                    {hasPlatforms && node.platforms!.map((plat, pidx) => {
                                         const positions = plat.filter(pt => pt && pt.length >= 2).map(pt => [pt[1], pt[0]] as [number, number]);
                                         if (positions.length < 2) return null;
 
@@ -189,10 +233,10 @@ const Stations: React.FC<StationsProps> = ({
                                                 key={`plat-${pidx}`}
                                                 positions={positions}
                                                 pathOptions={{
-                                                    color: '#000', // Black as requested
-                                                    weight: isHighlighted ? 12 : 8,
-                                                    opacity: 0.9,
-                                                    lineCap: 'butt', // Flat ends as requested
+                                                    color: '#333', // Dark grey for platform lines
+                                                    weight: isHighlighted ? 8 : 5,
+                                                    opacity: 1,
+                                                    lineCap: 'butt',
                                                     interactive: true
                                                 }}
                                                 eventHandlers={{
@@ -237,41 +281,44 @@ const Stations: React.FC<StationsProps> = ({
                                         );
                                     })}
 
-                                    <CircleMarker
-                                        className={`station-${name}`}
-                                        center={node.coord}
-                                        pathOptions={stationStyle}
-                                        radius={zoom >= 14 ? 0 : radius} // Hide dots when platforms are shown
-                                        eventHandlers={{
-                                            click: () => handleStationClick(name),
-                                            mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
-                                            mouseup: () => onStationMouseUp(name),
-                                        }}
-                                    >
-                                        <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
-                                            <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
-                                                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
-                                                    {translateName(name, language, 'station')}
+                                    {/* Hide dot if platforms are shown, unless it's a dragging target or we want a visual anchor */}
+                                    {(!hasPlatforms || isDragging) && (
+                                        <CircleMarker
+                                            className={`station-${name}`}
+                                            center={node.coord}
+                                            pathOptions={stationStyle}
+                                            radius={radius}
+                                            eventHandlers={{
+                                                click: () => handleStationClick(name),
+                                                mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
+                                                mouseup: () => onStationMouseUp(name),
+                                            }}
+                                        >
+                                            <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                                <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
+                                                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
+                                                        {translateName(name, language, 'station')}
+                                                    </div>
+                                                    <div style={{ fontSize: '11px', color: '#666' }}>
+                                                        {formattedLines.map((fl, fidx) => (
+                                                            <div key={fidx} style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                gap: '8px',
+                                                                padding: '1px 0',
+                                                                color: selectedLines.includes(fl.key) ? '#000' : '#888',
+                                                                fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
+                                                            }}>
+                                                                <span>{fl.company}</span>
+                                                                <span>{translateName(fl.line, language, 'line')}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
                                                 </div>
-                                                <div style={{ fontSize: '11px', color: '#666' }}>
-                                                    {formattedLines.map((fl, fidx) => (
-                                                        <div key={fidx} style={{
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            gap: '8px',
-                                                            padding: '1px 0',
-                                                            color: selectedLines.includes(fl.key) ? '#000' : '#888',
-                                                            fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
-                                                        }}>
-                                                            <span>{fl.company}</span>
-                                                            <span>{translateName(fl.line, language, 'line')}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
-                                            </div>
-                                        </Tooltip>
-                                    </CircleMarker>
+                                            </Tooltip>
+                                        </CircleMarker>
+                                    )}
                                 </React.Fragment>
                             );
                         })}

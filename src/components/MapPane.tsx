@@ -9,7 +9,7 @@ import MunicipalMap from './MunicipalMap';
 import Railroads from './Railroads';
 import Stations from './Stations';
 import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils';
-import { RoutingGraph } from '../lib/RoutingGraph';
+import { RoutingGraph, RouteResult } from '../lib/RoutingGraph';
 import { getOfficialColor } from '../lib/lineColors';
 import { normalizeKey } from '../lib/lineUtils';
 import { MapStyleSettings } from '../app/page';
@@ -36,6 +36,10 @@ interface MapPaneProps {
     onLineMappingCreated?: (mapping: Map<string, string>) => void;
     styleSettings: MapStyleSettings;
     language: Language;
+    routeStart?: string | null;
+    routeEnd?: string | null;
+    routeResult?: RouteResult | null;
+    onRouteResult?: (result: RouteResult | null) => void;
 }
 
 import MapControls from './MapControls';
@@ -55,11 +59,16 @@ const MapPane: React.FC<MapPaneProps> = ({
     onZoomComplete,
     onLineMappingCreated,
     styleSettings,
-    language
+    language,
+    routeStart,
+    routeEnd,
+    routeResult,
+    onRouteResult
 }) => {
     const [prefectures, setPrefectures] = useState<any>(null);
     const [municipalities, setMunicipalities] = useState<any>(null);
     const [railroadNetwork, setRailroadNetwork] = useState<any>(null); // New systematic data
+    const [stationMasterList, setStationMasterList] = useState<any>(null);
     const [stations, setStations] = useState<any>(null); // We might still use this for some metadata or keep it null
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
@@ -142,6 +151,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         fetch('/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()).then(setMunicipalities);
         fetch('/systematic_railroad_network.json').then(res => res.json()).then(setRailroadNetwork).catch(console.error);
         fetch('/station_hierarchy.json').then(res => res.json()).then(setHierarchy).catch(console.error); // Fetch hierarchy
+        fetch('/station_master_list.json').then(res => res.json()).then(setStationMasterList).catch(console.error);
     }, [map]);
 
     // Build graph when data is loaded
@@ -158,6 +168,33 @@ const MapPane: React.FC<MapPaneProps> = ({
             console.log("RoutingGraph initialized with", rg.nodes.size, "nodes");
         }
     }, [railroadNetwork]);
+
+    useEffect(() => {
+        if (routingGraph && hierarchy) {
+            routingGraph.buildTransferEdgesFromHierarchy(hierarchy);
+            console.log("RoutingGraph updated with transfer edges from hierarchy");
+        }
+    }, [routingGraph, hierarchy]);
+
+    // Routing Effect
+    useEffect(() => {
+        if (!routingGraph || !routeStart || !routeEnd) {
+            // Clear visualization if start/end cleared?
+            // But we might want to keep it until explictly cleared?
+            // If props are null, we should probably clear.
+            if ((!routeStart || !routeEnd) && onRouteResult) {
+                onRouteResult(null);
+            }
+            return;
+        }
+
+        console.log(`Calculating route from ${routeStart} to ${routeEnd}`);
+        const result = routingGraph.findRoute(routeStart, routeEnd);
+        if (onRouteResult) {
+            onRouteResult(result);
+        }
+
+    }, [routingGraph, routeStart, routeEnd, onRouteResult]);
 
     // Create a mapping from simplified ID to full ID (company::lineName)
     const lineIdMap = useMemo(() => {
@@ -337,7 +374,49 @@ const MapPane: React.FC<MapPaneProps> = ({
                 lng >= mapBounds.getWest() && lng <= mapBounds.getEast()) {
 
                 const coord: [number, number] = [lat, lng];
-                const node = { id, coord, lineKey: key, platforms: s.platforms };
+
+                // Look up enriched info from master list
+                let platforms = s.platforms;
+                let group = null;
+
+                // Try to find in stationMasterList
+                // The master list is keyed by group ID, but we need to find by (line, name)
+                // Or we can rely on hierarchy -> group ID -> master list
+                // Let's do a direct lookup if we can index it, but iterating master list is slow.
+                // Better approach: When loading master list, create a lookup map: string(key) -> { platforms, group }
+                // For now, let's do it on the fly if it's fast enough, or rely on what we have.
+                // 
+                // Actually, s.platforms is existing data? No, railroadNetwork might not have it enriched yet.
+                // usage of enrich_stations.py updated station_master_list.json but did it update systematic_railroad_network?
+                // No, it updated station_hierarchy_enriched and station_master_list.
+                // structure of systematic_railroad_network needs to be checked or we merge here.
+
+                // Let's use the hierarchy to find the group code, then look up the master list.
+                // hierarchy[company][line] -> array of stations with { code, group, ... }
+
+                if (hierarchy && hierarchy[company] && hierarchy[company][lineSimplified]) {
+                    const hStation = hierarchy[company][lineSimplified].find((hs: any) => hs.name === name);
+                    if (hStation && hStation.group) {
+                        group = hStation.group;
+                        if (stationMasterList && stationMasterList[group]) {
+                            // The master list has aggregated geometries for the group. 
+                            // But we want the specific platform geometry for THIS station node?
+                            // Or do we want the whole group's platforms?
+                            // The request says: "show platform shapes... and border around platforms"
+
+                            // Find the specific station entry in the master group to get ITS geometry
+                            const stations = stationMasterList[group].stations;
+                            const myEntry = stations.find((st: any) => st.line === lineSimplified && st.name === name && st.company === company);
+                            if (myEntry && myEntry.geometries) {
+                                platforms = myEntry.geometries;
+                            }
+
+                            // Also we might want the group ID for the hull rendering in Stations.tsx
+                        }
+                    }
+                }
+
+                const node = { id, coord, lineKey: key, platforms: platforms, group: group };
 
                 if (!data[name]) {
                     const logicalLines = Array.from(nameToLogicalLines.get(name) || []);
@@ -364,7 +443,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
         });
         return data;
-    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap, hierarchy]);
+    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap, hierarchy, stationMasterList]);
 
     const findNearestStation = useCallback((lat: number, lng: number) => {
         if (!visibleStations) return null;
@@ -694,6 +773,20 @@ const MapPane: React.FC<MapPaneProps> = ({
                         }}
                     />
                 )}
+
+                {routeResult && routeResult.legs && routeResult.legs.map((leg: any, i: number) => (
+                    <Polyline
+                        key={`route-leg-${i}`}
+                        positions={leg.geometry}
+                        pathOptions={{
+                            color: leg.type === 'TRANSFER' ? '#7f8c8d' : getColor(lineIdMap.get(leg.lineId) || leg.lineId), // method is available in scope
+                            weight: 8,
+                            opacity: 0.8,
+                            dashArray: leg.type === 'TRANSFER' ? '5, 10' : undefined,
+                            interactive: false
+                        }}
+                    />
+                ))}
 
                 {recordedTrips.map((trip, tripIdx) => {
                     // Validation Guard: Ensure trip data is valid and has geometries

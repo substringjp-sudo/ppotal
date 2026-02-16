@@ -25,6 +25,10 @@ const MyLinesPaneWithNoSSR = dynamic(() => import('../components/MyLinesPane'), 
     ssr: false
 });
 
+const RoutePaneWithNoSSR = dynamic(() => import('../components/RoutePane'), {
+    ssr: false
+});
+
 export interface MapStyleSettings {
     unselected: {
         opacity: number;
@@ -73,10 +77,15 @@ const Page = () => {
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [language, setLanguage] = React.useState<Language>('ja');
 
+    // Routing State
+    const [sideMode, setSideMode] = React.useState<'lines' | 'route'>('lines');
+    const [routeStart, setRouteStart] = React.useState<string | null>(null);
+    const [routeEnd, setRouteEnd] = React.useState<string | null>(null);
+    const [routeResult, setRouteResult] = React.useState<any | null>(null);
+
     // Zoom handlers
     const handleZoomToLine = React.useCallback((lineKey: string) => {
         setZoomToLine(lineKey);
-        // Clear after a delay to allow re-triggering if needed, or handle in useEffect
         setTimeout(() => setZoomToLine(null), 2000);
     }, []);
 
@@ -132,7 +141,6 @@ const Page = () => {
             const reversedNewPathFingerprint = getStationFingerprint([...newTrip.path].reverse());
 
             // 1. Robust Match: Same Start/End station names (User intention)
-            // This handles cases where pathfinder might return slightly different nodes between sessions
             let existingIndex = prev.findIndex(t => {
                 return (t.start === newTrip.start && t.end === newTrip.end) ||
                     (t.start === newTrip.end && t.end === newTrip.start);
@@ -173,11 +181,8 @@ const Page = () => {
     const handleDeleteLineHistory = React.useCallback((lineId: string) => {
         const lineName = lineId.split('::')[1] || lineId;
         if (typeof window !== 'undefined' && window.confirm(`'${lineName}' 노선의 모든 이동 기록을 삭제하시겠습니까?`)) {
-            // Create a set of simplified IDs that map to this full lineId
             const simplifiedLineIdsToDelete = new Set<string>();
-            // Add the target lineId itself (if it's a simplified ID)
             simplifiedLineIdsToDelete.add(lineId);
-            // Add all simplified IDs that map to the target full lineId
             lineIdMapping.forEach((fullId, simpleId) => {
                 if (fullId === lineId) {
                     simplifiedLineIdsToDelete.add(simpleId);
@@ -185,7 +190,6 @@ const Page = () => {
             });
 
             setRecordedTrips(prev => prev.filter(trip => {
-                // Check if any node in the trip path belongs to any of the lines to be deleted
                 return !trip.path.some((sid: string) => {
                     const sidParts = sid.split('::');
                     if (sidParts.length < 2) return false;
@@ -204,19 +208,20 @@ const Page = () => {
 
     const handleRailroadClick = React.useCallback((line: string) => {
         setActiveLine(line);
-        // Ensure it's in selected lines for visualization
         setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
     }, []);
 
     const handleLineClick = React.useCallback((line: string) => {
         setActiveLine(line);
         setZoomTarget({ type: 'line', id: line });
-        // Auto-select if not selected
         setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
     }, []);
 
     const handleStationClick = React.useCallback((stationName: string) => {
+        // If in routing mode, maybe we want to select start/end?
+        // But for now behavior is zoom.
         setZoomTarget({ type: 'station', id: stationName });
+        // Future: Check sideMode and setRouteStart/End if empty?
     }, []);
 
     const stats = React.useMemo(() => {
@@ -312,7 +317,6 @@ const Page = () => {
                     </div>
 
                     <div style={{ display: 'flex', gap: '10px' }}>
-
                         <button
                             onClick={handleResetTrips}
                             style={{
@@ -343,6 +347,7 @@ const Page = () => {
                     </div>
                 </div>
             </header>
+
             <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
                 <div style={{
                     width: '350px',
@@ -351,20 +356,61 @@ const Page = () => {
                     background: 'rgba(255, 255, 255, 0.8)',
                     backdropFilter: 'blur(10px)',
                     zIndex: 1000,
-                    overflowY: 'auto'
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
-                    <SidebarWithNoSSR
-                        selectedLines={selectedLines}
-                        onToggleLine={toggleLine}
-                        onSetSelectedLines={setSelectedLinesList}
-                        lineLengths={lineLengths}
-                        visitedLineLengths={visitedLineLengths}
-                        activeLine={activeLine}
-                        onLineClick={handleLineClick}
-                        language={language}
-                        onLanguageChange={setLanguage}
-                    />
+                    <div style={{ display: 'flex', borderBottom: '1px solid #ddd' }}>
+                        <button
+                            onClick={() => setSideMode('lines')}
+                            style={{
+                                flex: 1, padding: '10px', border: 'none', background: sideMode === 'lines' ? '#fff' : '#f5f5f5',
+                                fontWeight: 'bold', color: sideMode === 'lines' ? '#2c3e50' : '#999', cursor: 'pointer'
+                            }}
+                        >
+                            Lines
+                        </button>
+                        <button
+                            onClick={() => setSideMode('route')}
+                            style={{
+                                flex: 1, padding: '10px', border: 'none', background: sideMode === 'route' ? '#fff' : '#f5f5f5',
+                                fontWeight: 'bold', color: sideMode === 'route' ? '#2c3e50' : '#999', cursor: 'pointer'
+                            }}
+                        >
+                            Route
+                        </button>
+                    </div>
+
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                        {sideMode === 'lines' ? (
+                            <SidebarWithNoSSR
+                                selectedLines={selectedLines}
+                                onToggleLine={toggleLine}
+                                onSetSelectedLines={setSelectedLinesList}
+                                lineLengths={lineLengths}
+                                visitedLineLengths={visitedLineLengths}
+                                activeLine={activeLine}
+                                onLineClick={handleLineClick}
+                                language={language}
+                                onLanguageChange={setLanguage}
+                            />
+                        ) : (
+                            <RoutePaneWithNoSSR
+                                startStation={routeStart}
+                                endStation={routeEnd}
+                                onSetStartStation={setRouteStart}
+                                onSetEndStation={setRouteEnd}
+                                routeResult={routeResult}
+                                onSwapStations={() => {
+                                    const temp = routeStart;
+                                    setRouteStart(routeEnd);
+                                    setRouteEnd(temp);
+                                }}
+                                language={language}
+                            />
+                        )}
+                    </div>
                 </div>
+
                 <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                         <MapWithNoSSR>
@@ -385,6 +431,9 @@ const Page = () => {
                                 onZoomComplete={() => setZoomTarget(null)}
                                 styleSettings={styleSettings}
                                 language={language}
+                                routeStart={routeStart}
+                                routeEnd={routeEnd}
+                                onRouteResult={setRouteResult}
                             />
                         </MapWithNoSSR>
                     </div>
@@ -405,6 +454,7 @@ const Page = () => {
                         </div>
                     )}
                 </div>
+
                 {/* Right Panel: My Lines */}
                 <div style={{
                     width: '300px',
