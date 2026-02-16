@@ -106,7 +106,7 @@ export const OFFICIAL_LINE_COLORS: Record<string, string> = {
     "御堂筋線": "#e5171f",
     "谷町線": "#9b509e",
     "四つ橋線": "#0078ba",
-    "中央線": "#019a66",
+    "大阪メトロ中央線": "#019a66",
     "千日前線": "#e44d93",
     "堺筋線": "#814721",
     "長堀鶴見緑地線": "#a9cc51",
@@ -168,8 +168,17 @@ export const getOfficialColor = (lineKey: string): string | null => {
     const lineName = parts.length >= 2 ? parts[1] : parts[0];
     const company = parts.length >= 2 ? parts[0] : null;
 
+    // 1. 정확한 노선명 매칭
     if (OFFICIAL_LINE_COLORS[lineName]) return OFFICIAL_LINE_COLORS[lineName];
 
+    // 2. 회사명 포함 키로 매칭 (예: 大阪メトロ中央線)
+    if (company) {
+        for (const [key, color] of Object.entries(OFFICIAL_LINE_COLORS)) {
+            if (key.includes(company) && key.includes(lineName)) return color;
+        }
+    }
+
+    // 3. 부분 매칭
     for (const [key, color] of Object.entries(OFFICIAL_LINE_COLORS)) {
         if (lineName.includes(key) || key.includes(lineName)) return color;
     }

@@ -179,7 +179,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 totalLength += edge.distance;
             });
             const fullId = `${route.company}::${route.line}`;
-            roundedLengths[fullId] = Math.round(totalLength * 10) / 10;
+            const normalizedId = normalizeKey(fullId);
+            roundedLengths[normalizedId] = Math.round(totalLength * 10) / 10;
         });
         setLineLengths(roundedLengths);
         if (onLengthsCalculated) {
@@ -433,7 +434,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
                 // If zoom is high, also check against platform geometries
                 if (zoomLevel >= 14 && node.platforms) {
-                    node.platforms.forEach(plat => {
+                    node.platforms.forEach((plat: [number, number][]) => {
                         for (let i = 0; i < plat.length - 1; i++) {
                             const p1 = plat[i];
                             const p2 = plat[i + 1];
@@ -849,6 +850,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     railroadNetwork={railroadNetwork}
                     selectedLines={selectedLines}
                     hoveredLine={hoveredLine}
+                    activeLine={activeLine}
                     onRailroadClick={handleRailroadClick}
                     onRailroadHover={setHoveredLine}
                     zoomLevel={zoomLevel}

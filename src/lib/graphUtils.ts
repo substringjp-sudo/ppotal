@@ -260,6 +260,7 @@ export class RailroadGraph {
     /**
      * Extracts an ordered sequence of stations for a given line.
      * Since lines can have branches, this returns a list of segments.
+     * Uses bidirectional adjacency for complete graph traversal.
      */
     getLineSegments(fullLineId: string): { stations: string[], edges: { from: string, to: string, distance: number }[] }[] {
         const simplifiedIds = this.reverseLineIdMap.get(fullLineId) || [fullLineId];
@@ -275,7 +276,8 @@ export class RailroadGraph {
 
         // Group platforms into logical stations by name
         const nameToRepId = new Map<string, string>();
-        const logicalAdj = new Map<string, Map<string, number>>(); // Name -> { TargetName -> Distance }
+        // 양방향 인접 리스트: Name -> Map<TargetName, Distance>
+        const biAdj = new Map<string, Map<string, number>>();
 
         lineEdges.forEach(e => {
             const uName = getName(e.from);
@@ -286,83 +288,120 @@ export class RailroadGraph {
             if (!nameToRepId.has(uName)) nameToRepId.set(uName, e.from);
             if (!nameToRepId.has(vName)) nameToRepId.set(vName, e.to);
 
-            if (!logicalAdj.has(uName)) logicalAdj.set(uName, new Map());
-            const currentDist = logicalAdj.get(uName)!.get(vName) || Infinity;
-            logicalAdj.get(uName)!.set(vName, Math.min(currentDist, e.distance));
+            // 양방향으로 저장
+            if (!biAdj.has(uName)) biAdj.set(uName, new Map());
+            if (!biAdj.has(vName)) biAdj.set(vName, new Map());
+
+            const fwdDist = biAdj.get(uName)!.get(vName) || Infinity;
+            biAdj.get(uName)!.set(vName, Math.min(fwdDist, e.distance));
+            const bwdDist = biAdj.get(vName)!.get(uName) || Infinity;
+            biAdj.get(vName)!.set(uName, Math.min(bwdDist, e.distance));
         });
 
-        // Trace segments based on logical names
-        const segments: { stations: string[], edges: { from: string, to: string, distance: number }[] }[] = [];
-        const visitedNames = new Set<string>();
+        // edge key를 사용하여 중복 방문 방지
+        const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
         const visitedEdgeKeys = new Set<string>();
 
-        const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
+        const segments: { stations: string[], edges: { from: string, to: string, distance: number }[] }[] = [];
 
-        const findPath = (startName: string) => {
+        // DFS로 segment 추출: 한 시작점에서 분기점까지 또는 끝까지
+        const traceSegment = (startName: string, firstNeighbor?: string) => {
             const names = [startName];
             const edges: { from: string, to: string, distance: number }[] = [];
             let curr = startName;
-            visitedNames.add(curr);
+
+            // 첫 번째 이웃이 지정된 경우 해당 방향으로 시작
+            if (firstNeighbor) {
+                const dist = biAdj.get(curr)!.get(firstNeighbor)!;
+                const edgeKey = getEdgeKey(curr, firstNeighbor);
+                if (visitedEdgeKeys.has(edgeKey)) return null;
+                visitedEdgeKeys.add(edgeKey);
+                edges.push({
+                    from: nameToRepId.get(curr)!,
+                    to: nameToRepId.get(firstNeighbor)!,
+                    distance: dist
+                });
+                names.push(firstNeighbor);
+                curr = firstNeighbor;
+            }
 
             while (true) {
-                const neighbors = logicalAdj.get(curr);
+                const neighbors = biAdj.get(curr);
                 if (!neighbors) break;
 
-                // Priority: pick a neighbor that hasn't been visited as a station yet
-                let next = Array.from(neighbors.entries()).find(([name]) => !visitedNames.has(name));
+                // 미방문 edge가 있는 이웃 찾기
+                const unvisited = Array.from(neighbors.entries())
+                    .filter(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
 
-                // Fallback: pick any neighbor if the edge hasn't been visited (for loops/complex junctions)
-                if (!next) {
-                    next = Array.from(neighbors.entries()).find(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
-                }
+                if (unvisited.length === 0) break;
 
-                if (!next) break;
-
-                const [nextName, dist] = next;
+                // 미방문 edge가 1개면 직선 진행
+                // 미방문 edge가 2개 이상이면 분기점 - 하나만 따라가고 나머지는 나중에
+                const [nextName, dist] = unvisited[0];
                 const edgeKey = getEdgeKey(curr, nextName);
-
-                if (visitedEdgeKeys.has(edgeKey) && visitedNames.has(nextName)) break; // Prevent infinite loops
-
                 visitedEdgeKeys.add(edgeKey);
                 edges.push({
                     from: nameToRepId.get(curr)!,
                     to: nameToRepId.get(nextName)!,
                     distance: dist
                 });
-
+                names.push(nextName);
                 curr = nextName;
-                if (!visitedNames.has(curr)) {
-                    names.push(curr);
-                    visitedNames.add(curr);
-                } else {
-                    // Re-visiting a station node, end segment here
-                    names.push(curr);
-                    break;
+
+                // 다음 노드가 분기점(미방문 edge 2개 이상)이면 여기서 끊어서
+                // 후속 segment가 이 노드에서 시작하여 branch로 연결되도록 함
+                const nextNeighbors = biAdj.get(curr);
+                if (nextNeighbors) {
+                    const nextUnvisited = Array.from(nextNeighbors.entries())
+                        .filter(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
+                    if (nextUnvisited.length > 1) break; // 다음 노드가 분기점이면 segment 종료
                 }
             }
-            return { stations: names.map(n => nameToRepId.get(n)!), edges };
+
+            if (names.length > 1) {
+                return { stations: names.map(n => nameToRepId.get(n)!), edges };
+            }
+            return null;
         };
 
         const logicalNodes = Array.from(nameToRepId.keys());
 
-        // 1. Start from logical leaves (nodes with only 1 aggregated connection)
-        logicalNodes.forEach(name => {
-            const degree = (logicalAdj.get(name)?.size || 0);
-            const inDegree = Array.from(logicalAdj.values()).filter(m => m.has(name)).length;
+        // 1. leaf 노드 (degree 1)를 먼저 탐색하여 메인 라인 시작
+        const leaves = logicalNodes.filter(name => (biAdj.get(name)?.size || 0) === 1);
 
-            if ((degree + inDegree) === 1 && !visitedNames.has(name)) {
-                const path = findPath(name);
-                if (path.stations.length > 1) segments.push(path);
-            }
-        });
+        for (const leaf of leaves) {
+            const neighbors = biAdj.get(leaf);
+            if (!neighbors) continue;
 
-        // 2. Start from remaining nodes
-        logicalNodes.forEach(name => {
-            if (!visitedNames.has(name)) {
-                const path = findPath(name);
-                if (path.stations.length > 1) segments.push(path);
+            for (const [neighbor] of neighbors) {
+                const edgeKey = getEdgeKey(leaf, neighbor);
+                if (visitedEdgeKeys.has(edgeKey)) continue;
+
+                const seg = traceSegment(leaf, neighbor);
+                if (seg) segments.push(seg);
             }
-        });
+        }
+
+        // 2. 분기점에서 남은 edge 처리
+        let changed = true;
+        while (changed) {
+            changed = false;
+            for (const name of logicalNodes) {
+                const neighbors = biAdj.get(name);
+                if (!neighbors) continue;
+
+                for (const [neighbor] of neighbors) {
+                    const edgeKey = getEdgeKey(name, neighbor);
+                    if (visitedEdgeKeys.has(edgeKey)) continue;
+
+                    const seg = traceSegment(name, neighbor);
+                    if (seg) {
+                        segments.push(seg);
+                        changed = true;
+                    }
+                }
+            }
+        }
 
         return segments;
     }

@@ -19,8 +19,8 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, 
             fillColor: '#ffffff',
             fillOpacity: 1.0,
             weight: weight,
-            opacity: 1,
-            color: '#DDDDDD',
+            opacity: 0.6,
+            color: '#f5f5f5',
         };
     }, [zoom]);
 

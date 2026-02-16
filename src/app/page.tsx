@@ -137,6 +137,7 @@ const Page = () => {
 
     const handleRailroadClick = React.useCallback((line: string) => {
         setActiveLine(line);
+        setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
     }, []);
 
     const handleLineClick = React.useCallback((line: string) => {

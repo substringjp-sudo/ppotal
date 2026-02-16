@@ -201,7 +201,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     </button>
                                 </div>
                                 <div style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    {trip.from} <span style={{ color: '#27ae60' }}>➝</span> {trip.to}
+                                    {trip.start} <span style={{ color: '#27ae60' }}>➝</span> {trip.end}
                                 </div>
                                 {trip.distance > 0 && (
                                     <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>

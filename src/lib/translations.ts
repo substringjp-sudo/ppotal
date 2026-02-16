@@ -154,7 +154,6 @@ export const LINE_TRANSLATIONS: Record<string, Record<Language, string>> = {
     "御堂筋線": { ja: "御堂筋線", en: "Midosuji Line", ko: "미도스지선" },
     "谷町線": { ja: "谷町線", en: "Tanimachi Line", ko: "타니마치선" },
     "四つ橋線": { ja: "四つ橋線", en: "Yotsubashi Line", ko: "요츠바시선" },
-    "中央線": { ja: "中央線", en: "Chuo Line", ko: "주오선" },
     "千日前線": { ja: "千日前線", en: "Sennichimae Line", ko: "센니치마에선" },
     "堺筋線": { ja: "堺筋線", en: "Sakaisuji Line", ko: "사카이스지선" },
     "長堀鶴見緑地線": { ja: "長堀鶴見緑地線", en: "Nagahori Tsurumi-ryokuchi Line", ko: "나가호리츠루미료쿠치선" },

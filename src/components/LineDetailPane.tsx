@@ -27,56 +27,73 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // --- Dynamic Topology Generation from Graph Data ---
-    const generatedTopology = useMemo(() => {
-        if (!segments || segments.length === 0) return null;
+    const generatedTopologies = useMemo(() => {
+        if (!segments || segments.length === 0) return [];
 
-        // 1. Sort segments by length (station count) descending to find the "Main Line"
-        const sortedSegments = [...segments].sort((a, b) => b.stations.length - a.stations.length);
-        const mainSegment = sortedSegments[0];
+        let unprocessedSegments = [...segments];
+        const topologies: Array<{
+            type: string;
+            main_line: string[];
+            branches: Array<{ junction: string, path: string[] }>;
+        }> = [];
 
-        const mainLine = mainSegment.stations;
-        const processedStations = new Set<string>(mainLine);
+        while (unprocessedSegments.length > 0) {
+            // 1. Sort remaining segments by length logic
+            unprocessedSegments.sort((a, b) => b.stations.length - a.stations.length);
+            const mainSegment = unprocessedSegments[0];
 
-        const branches: Array<{ junction: string, path: string[] }> = [];
+            // Remove main segment from pool
+            unprocessedSegments.shift();
 
-        // 2. Process remaining segments as branches
-        for (let i = 1; i < sortedSegments.length; i++) {
-            const seg = sortedSegments[i];
-            const stations = seg.stations;
+            const mainLine = mainSegment.stations;
+            const processedStations = new Set<string>(mainLine);
+            const branches: Array<{ junction: string, path: string[] }> = [];
 
-            if (stations.length === 0) continue;
+            // 2. Iteratively attach remaining segments as branches
+            let changed = true;
+            while (changed) {
+                changed = false;
+                const nextUnprocessed: typeof segments = [];
 
-            const startNode = stations[0];
-            const endNode = stations[stations.length - 1];
+                for (const seg of unprocessedSegments) {
+                    const stations = seg.stations;
+                    if (stations.length === 0) continue;
 
-            // Check connectivity to existing structure
-            const startConnected = processedStations.has(startNode);
-            const endConnected = processedStations.has(endNode);
+                    const startNode = stations[0];
+                    const endNode = stations[stations.length - 1];
 
-            if (startConnected) {
-                // Determine path: exclude junction point
-                const path = stations.slice(1);
-                if (path.length > 0) {
-                    branches.push({ junction: startNode, path });
-                    path.forEach(s => processedStations.add(s));
+                    const startConnected = processedStations.has(startNode);
+                    const endConnected = processedStations.has(endNode);
+
+                    if (startConnected) {
+                        const path = stations.slice(1);
+                        if (path.length > 0) {
+                            branches.push({ junction: startNode, path });
+                            path.forEach(s => processedStations.add(s));
+                            changed = true;
+                        }
+                    } else if (endConnected) {
+                        const path = stations.slice(0, stations.length - 1).reverse();
+                        if (path.length > 0) {
+                            branches.push({ junction: endNode, path });
+                            path.forEach(s => processedStations.add(s));
+                            changed = true;
+                        }
+                    } else {
+                        nextUnprocessed.push(seg);
+                    }
                 }
-            } else if (endConnected) {
-                // Reverse path so it flows OUT from the junction
-                const path = stations.slice(0, stations.length - 1).reverse();
-                if (path.length > 0) {
-                    branches.push({ junction: endNode, path });
-                    path.forEach(s => processedStations.add(s));
-                }
-            } else {
-                console.warn("Found disconnected or complex branch segment:", seg);
+                unprocessedSegments = nextUnprocessed;
             }
+
+            topologies.push({
+                type: 'generated',
+                main_line: mainLine,
+                branches
+            });
         }
 
-        return {
-            type: 'generated',
-            main_line: mainLine,
-            branches
-        };
+        return topologies;
     }, [segments]);
 
     const visitedLogicalEdges = useMemo(() => {
@@ -226,16 +243,27 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     userSelect: 'none'
                 }}>
 
-                {generatedTopology ? (
-                    <TubeMap
-                        lineId={lineId}
-                        topology={generatedTopology}
-                        nodes={nodes}
-                        visitedStations={stats.visitedStations}
-                        visitedEdges={visitedEdges}
-                        onStationClick={onStationClick}
-                        language={language}
-                    />
+                {generatedTopologies && generatedTopologies.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+                        {generatedTopologies.map((topology, idx) => (
+                            <div key={idx}>
+                                {generatedTopologies.length > 1 && (
+                                    <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#999', borderBottom: '1px dashed #eee', paddingBottom: '5px' }}>
+                                        Section {idx + 1}
+                                    </h4>
+                                )}
+                                <TubeMap
+                                    lineId={lineId}
+                                    topology={topology}
+                                    nodes={nodes}
+                                    visitedStations={stats.visitedStations}
+                                    visitedEdges={visitedEdges}
+                                    onStationClick={onStationClick}
+                                    language={language}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
                         Processing Line Topology...

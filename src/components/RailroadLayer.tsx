@@ -9,6 +9,7 @@ interface RailroadLayerProps {
     railroadNetwork: any;
     selectedLines: string[];
     hoveredLine: string | null;
+    activeLine: string | null;
     onRailroadClick: (lineId: string) => void;
     onRailroadHover: (lineId: string | null) => void;
     zoomLevel: number;
@@ -18,6 +19,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     railroadNetwork,
     selectedLines,
     hoveredLine,
+    activeLine,
     onRailroadClick,
     onRailroadHover,
     zoomLevel
@@ -38,6 +40,12 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         railroadNetwork.routes.forEach((route: any) => {
             const fullId = `${route.company}::${route.line}`;
             const isSelected = selectedLines.includes(fullId);
+
+            // routeGeometry 사용 (모든 section 포함, 끊김 없음)
+            // fallback: edge geometry
+            const positions = route.routeGeometry
+                ? route.routeGeometry.map((geom: any) => geom.map((c: any) => [c[1], c[0]]))
+                : route.edges.map((e: any) => e.geometry.map((c: any) => [c[1], c[0]]));
 
             if (isSelected) {
                 // Only calculate endpoints for SELECTED lines to save CPU
@@ -63,7 +71,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     name: route.line,
                     company: route.company,
                     color: getColor(fullId),
-                    edges: route.edges,
+                    positions,
                     endpoints: endpointsStr
                 });
             } else {
@@ -72,7 +80,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     name: route.line,
                     company: route.company,
                     color: '#ccc',
-                    edges: route.edges,
+                    positions,
                     endpoints: ''
                 });
             }
@@ -89,17 +97,16 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         <>
             {/* Invisible Roads (Unselected) */}
             {invisibleLines.map((line) => {
-                const allPositions = line.edges.map((e: any) => e.geometry.map((c: any) => [c[1], c[0]]));
                 return (
                     <React.Fragment key={`inv-${line.id}`}>
                         {/* Visible Line (Non-interactive) */}
                         <Polyline
-                            positions={allPositions}
+                            positions={line.positions}
                             pathOptions={{
-                                color: '#ccc',
+                                color: '#999',
                                 weight: invWeight,
-                                opacity: 0.5,
-                                dashArray: '5, 10',
+                                opacity: 0.4,
+                                dashArray: '2, 6',
                                 lineCap: 'round',
                                 lineJoin: 'round',
                                 pane: 'railroads'
@@ -108,7 +115,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         />
                         {/* Hit Box Line (Transparent, Thicker, Top-most interaction) */}
                         <Polyline
-                            positions={allPositions}
+                            positions={line.positions}
                             pathOptions={{
                                 stroke: true,
                                 color: '#000',
@@ -146,12 +153,27 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
             {/* Visible Roads (Selected) */}
             {visibleLines.map((line) => {
-                const allPositions = line.edges.map((e: any) => e.geometry.map((c: any) => [c[1], c[0]]));
+                const isActive = activeLine === line.id;
                 return (
                     <React.Fragment key={`vis-${line.id}`}>
+                        {/* Active Line Glow Outline - 강조색 테두리 */}
+                        {isActive && (
+                            <Polyline
+                                positions={line.positions}
+                                pathOptions={{
+                                    color: line.color,
+                                    weight: zoomLevel <= 10 ? 8 : 14,
+                                    opacity: 0.35,
+                                    lineCap: 'round',
+                                    lineJoin: 'round',
+                                    pane: 'railroads'
+                                }}
+                                interactive={false}
+                            />
+                        )}
                         {/* Visible Line (Non-interactive) */}
                         <Polyline
-                            positions={allPositions}
+                            positions={line.positions}
                             pathOptions={{
                                 color: line.color,
                                 weight: visWeight,
@@ -164,7 +186,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         />
                         {/* Hit Box Line */}
                         <Polyline
-                            positions={allPositions}
+                            positions={line.positions}
                             pathOptions={{
                                 stroke: true,
                                 color: line.color,
