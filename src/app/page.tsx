@@ -219,9 +219,8 @@ const Page = () => {
 
     const handleStationClick = React.useCallback((stationName: string) => {
         // If in routing mode, maybe we want to select start/end?
-        // But for now behavior is zoom.
-        setZoomTarget({ type: 'station', id: stationName });
-        // Future: Check sideMode and setRouteStart/End if empty?
+        // Behavior: Just report click to parent, no auto-zoom.
+        console.log("Station clicked:", stationName);
     }, []);
 
     const stats = React.useMemo(() => {
@@ -247,6 +246,13 @@ const Page = () => {
             companies: companySet.size
         };
     }, [visitedLineLengths, recordedTrips]);
+
+    const handleDeleteTrip = React.useCallback((id: string) => {
+        setRecordedTrips(prev => {
+            const next = prev.filter(t => t.id !== id);
+            return next;
+        });
+    }, []);
 
     return (
         <main style={{
@@ -420,6 +426,8 @@ const Page = () => {
                                 onRecordTrip={handleRecordTrip}
                                 onRailroadClick={handleRailroadClick}
                                 onStationClick={handleStationClick}
+                                onSetSelectedLines={setSelectedLinesList} // New prop
+                                onSetActiveLine={setActiveLine} // New prop
                                 onLengthsCalculated={setLineLengths}
                                 onVisitedLengthsCalculated={setVisitedLineLengths}
                                 onLineMappingCreated={setLineIdMapping}
@@ -455,6 +463,9 @@ const Page = () => {
                     )}
                 </div>
 
+
+                return (
+                // ...
                 {/* Right Panel: My Lines */}
                 <div style={{
                     width: '300px',
@@ -472,6 +483,8 @@ const Page = () => {
                         onDeleteLineHistory={handleDeleteLineHistory}
                         activeLine={activeLine}
                         language={language}
+                        recordedTrips={recordedTrips}
+                        onDeleteTrip={handleDeleteTrip}
                     />
                 </div>
             </div>

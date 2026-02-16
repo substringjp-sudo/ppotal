@@ -24,6 +24,7 @@ interface StationsProps {
     getColor: (name: string) => string;
     selectedLines: string[];
     activeLine: string | null;
+    hoveredLine: string | null; // Added prop
     onStationMouseDown: (name: string, coords: [number, number]) => void;
     onStationMouseUp: (name: string) => void;
     dragStartStation: string | null;
@@ -76,6 +77,7 @@ const Stations: React.FC<StationsProps> = ({
     getColor,
     selectedLines,
     activeLine,
+    hoveredLine, // Destructure new prop
     onStationMouseDown,
     onStationMouseUp,
     dragStartStation,
@@ -89,11 +91,24 @@ const Stations: React.FC<StationsProps> = ({
     }
 
     const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
-        const isSelected = data.lines.some(line => selectedLines.includes(line) || activeLine === line);
-        // Show dots if selected OR if zoom is high enough to see general context
-        if (zoom < 7) return false;
-        if (zoom >= 10) return true; // Show all stations at high zoom for better orientation
-        return isSelected;
+        const isSelected = data.lines.some(line =>
+            selectedLines.includes(line) ||
+            activeLine === line ||
+            (hoveredLine && normalizeKey(line) === normalizeKey(hoveredLine))
+        );
+
+        // Requirements: 
+        // 1. Invisible road (unselected) -> Stations NOT visible.
+        // 2. Visible road (selected/hovered) -> Stations visible depending on zoom.
+
+        if (!isSelected) return false;
+
+        // Force show all stations of selected lines if zoom >= 10.
+        // If zoom < 10, maybe show nothing or just major transfer stations?
+        // User said: "zoom >= 10 dot appears". So < 10 implies no dot.
+        if (zoom < 10) return false;
+
+        return true;
     });
 
     return (
@@ -174,7 +189,7 @@ const Stations: React.FC<StationsProps> = ({
                             />
                         )}
 
-                        {zoom > 12 && isSelected && (
+                        {zoom >= 12 && (
                             <Marker
                                 position={station.centroid}
                                 icon={L.divIcon({
@@ -205,7 +220,7 @@ const Stations: React.FC<StationsProps> = ({
                             const isNodeVisited = visitedStations.has(node.id);
                             const isNodeSelected = selectedLines.includes(node.lineKey) || activeLine === node.lineKey;
 
-                            const baseColor = getColor(node.lineKey);
+                            const baseColor = getColor(node.lineKey) || '#666';
                             const lightenedColor = lightenColor(baseColor, 60);
 
                             const stationStyle = {
@@ -254,7 +269,7 @@ const Stations: React.FC<StationsProps> = ({
                                                     },
                                                 }}
                                             >
-                                                <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                                <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
                                                     <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
                                                         <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
                                                             {translateName(name, language, 'station')}
@@ -312,7 +327,7 @@ const Stations: React.FC<StationsProps> = ({
                                                 mouseup: () => onStationMouseUp(name),
                                             }}
                                         >
-                                            <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
                                                 <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
                                                     <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
                                                         {translateName(name, language, 'station')}
