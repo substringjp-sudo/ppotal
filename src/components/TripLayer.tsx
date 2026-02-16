@@ -3,10 +3,15 @@ import { Polyline, Tooltip } from 'react-leaflet';
 
 interface TripLayerProps {
     recordedTrips: any[];
+    zoomLevel: number;
 }
 
-const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips }) => {
+const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel }) => {
     if (!recordedTrips || recordedTrips.length === 0) return null;
+
+    const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
+    const baseWeight = 6;
+    const dynamicWeight = baseWeight * weightFactor;
 
     return (
         <>
@@ -18,7 +23,7 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips }) => {
                             positions={segment.map((c: any) => [c[1], c[0]])} // [lng, lat] -> [lat, lng]
                             pathOptions={{
                                 color: '#2ecc71', // Green for used/visited
-                                weight: 6,
+                                weight: dynamicWeight,
                                 opacity: 0.8,
                                 lineCap: 'round',
                                 lineJoin: 'round',

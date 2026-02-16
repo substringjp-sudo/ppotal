@@ -90,6 +90,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [stations, setStations] = useState<any>(null); // We might still use this for some metadata or keep it null
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
+
     const [lineLengths, setLineLengths] = useState<Record<string, number>>({});
     const [highlightedStations, setHighlightedStations] = useState<string[]>([]);
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
@@ -129,6 +130,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         // Mark map as ready if we have the map instance
         if (map) {
             setMapReady(true);
+            setZoomLevel(map.getZoom());
+            setMapBounds(map.getBounds());
         }
     }, [map]);
 
@@ -501,7 +504,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                 onSetActiveLine(null);
             }
         },
+        zoom: (e) => setZoomLevel(e.target.getZoom()),
         zoomend: (e) => setZoomLevel(e.target.getZoom()),
+        move: (e) => setMapBounds(e.target.getBounds()),
         moveend: (e) => setMapBounds(e.target.getBounds()),
         mousemove: (e) => {
             const currentDragStation = dragStartStationRef.current;
@@ -884,7 +889,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             {/* 3. UI Elements Pane (Station dots, labels) */}
             <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
-                <TripLayer recordedTrips={recordedTrips} />
+                <TripLayer recordedTrips={recordedTrips} zoomLevel={zoomLevel} />
 
                 {dragPath && dragPath.length > 0 && (
                     <React.Fragment>
@@ -894,7 +899,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                                 positions={segment.map(c => [c[1], c[0]])} // [lng, lat] to [lat, lng]
                                 pathOptions={{
                                     color: '#007AFF',
-                                    weight: 6,
+                                    weight: 6 * (zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0),
                                     opacity: 0.8,
                                     dashArray: '10, 10',
                                     lineCap: 'round',
@@ -925,6 +930,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         onStationMouseDown={handleStationMouseDown}
                         onStationMouseUp={handleStationMouseUp}
                         dragStartStation={dragStartStation}
+                        onLineMappingCreated={onLineMappingCreated}
                         visitedStations={visitedStations}
                         settings={styleSettings}
                         language={language}

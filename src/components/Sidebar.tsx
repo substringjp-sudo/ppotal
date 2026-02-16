@@ -54,6 +54,7 @@ type SortType = 'ja' | 'en' | 'ko' | 'usage';
 const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onLineClick, language, onLanguageChange }) => {
     const [hierarchy, setHierarchy] = useState<Record<string, Record<string, any>> | null>(null);
     const [groupedHierarchy, setGroupedHierarchy] = useState<GroupedHierarchy | null>(null);
+    const [sortMode, setSortMode] = useState<'ja' | 'usage'>('ja');
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
     const [expandedGroups, setExpandedGroups] = useState<Record<keyof GroupedHierarchy, boolean>>({
         shinkansen: true,
@@ -162,9 +163,18 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         });
 
         const allSelected = allKeys.every(key => selectedLines.includes(key));
-        const newSelected = allSelected
+        let newSelected = allSelected
             ? selectedLines.filter(l => !allKeys.includes(l))
             : Array.from(new Set([...selectedLines, ...allKeys]));
+
+        // Remove __NONE__ if we are selecting something
+        if (newSelected.length > 1 && newSelected.includes("__NONE__")) {
+            newSelected = newSelected.filter(l => l !== "__NONE__");
+        } else if (newSelected.length === 0) {
+            // If empty, we can keep it empty or return to __NONE__ if desired, 
+            // but usually empty means 'Show All' in our RailRoadLayer logic.
+        }
+
         onSetSelectedLines(newSelected);
     }, [groupedHierarchy, selectedLines, onSetSelectedLines]);
 
@@ -172,9 +182,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         const lineNames = Object.keys(lines);
         const compositeKeys = lineNames.map(line => `${company}::${line}`);
         const allSelected = compositeKeys.every(key => selectedLines.includes(key));
-        const newSelected = allSelected
+        let newSelected = allSelected
             ? selectedLines.filter(l => !compositeKeys.includes(l))
             : Array.from(new Set([...selectedLines, ...compositeKeys]));
+
+        if (newSelected.length > 1 && newSelected.includes("__NONE__")) {
+            newSelected = newSelected.filter(l => l !== "__NONE__");
+        }
         onSetSelectedLines(newSelected);
     }, [selectedLines, onSetSelectedLines]);
 
@@ -213,24 +227,25 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         });
 
         const allSelected = allKeys.every(key => selectedLines.includes(key));
-        const newSelected = allSelected
+        let newSelected = allSelected
             ? selectedLines.filter(l => !allKeys.includes(l))
             : [...selectedLines, ...allKeys.filter(key => !selectedLines.includes(key))];
+
+        if (newSelected.length > 1 && newSelected.includes("__NONE__")) {
+            newSelected = newSelected.filter(l => l !== "__NONE__");
+        }
         onSetSelectedLines(newSelected);
     }, [groupedHierarchy, selectedLines, onSetSelectedLines]);
 
     const sortLines = (lineNames: string[], company: string) => {
-        const getLineUsage = (line: string) => {
-            const key = normalizeKey(`${company}::${line}`);
-            return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
-        };
-
-        return [...lineNames].sort((a, b) => {
-            if (language === 'ja') return a.localeCompare(b, 'ja');
-            if (language === 'en') return translateName(a, 'en', 'line').localeCompare(translateName(b, 'en', 'line'), 'en');
-            if (language === 'ko') return translateName(a, 'ko', 'line').localeCompare(translateName(b, 'ko', 'line'), 'ko');
-            return 0;
-        });
+        if (sortMode === 'usage') {
+            const getLineUsage = (line: string) => {
+                const key = normalizeKey(`${company}::${line}`);
+                return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
+            };
+            return [...lineNames].sort((a, b) => getLineUsage(b) - getLineUsage(a));
+        }
+        return [...lineNames].sort((a, b) => a.localeCompare(b, 'ja'));
     };
 
     const renderGroup = (title: string, groupKey: keyof GroupedHierarchy) => {
@@ -247,12 +262,16 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 return total > 0 ? (visited / total) : 0;
             };
 
-            return [...companyEntries].sort((a, b) => {
-                if (language === 'ja') return a[0].localeCompare(b[0], 'ja');
-                if (language === 'en') return translateName(a[0], 'en', 'company').localeCompare(translateName(b[0], 'en', 'company'), 'en');
-                if (language === 'ko') return translateName(a[0], 'ko', 'company').localeCompare(translateName(b[0], 'ko', 'company'), 'ko');
-                return 0;
-            });
+            if (sortMode === 'usage') {
+                const getCompanyUsage = (comp: string, lines: Record<string, any>) => {
+                    const names = Object.keys(lines);
+                    const total = names.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
+                    const visited = names.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
+                    return total > 0 ? (visited / total) : 0;
+                };
+                return [...companyEntries].sort((a, b) => getCompanyUsage(b[0], b[1]) - getCompanyUsage(a[0], a[1]));
+            }
+            return [...companyEntries].sort((a, b) => a[0].localeCompare(b[0], 'ja'));
         };
 
         const allGroupKeys: string[] = [];
@@ -478,13 +497,12 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Sorting</div>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {[
-                        { id: 'ja', label: '日本語' },
-                        { id: 'en', label: 'ABC' },
-                        { id: 'ko', label: '한국어' },
+                        { id: 'ja', label: 'Alphabetical' },
+                        { id: 'usage', label: 'Usage Rate' },
                     ].map(opt => (
                         <button
                             key={opt.id}
-                            onClick={() => onLanguageChange(opt.id as Language)}
+                            onClick={() => setSortMode(opt.id as 'ja' | 'usage')}
                             style={{
                                 flex: 1,
                                 padding: '6px 4px',
@@ -492,9 +510,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                 cursor: 'pointer',
                                 border: '1px solid #ddd',
                                 borderRadius: '4px',
-                                backgroundColor: language === opt.id ? '#3498db' : '#fff',
-                                color: language === opt.id ? '#fff' : '#333',
-                                fontWeight: language === opt.id ? 'bold' : 'normal',
+                                backgroundColor: sortMode === opt.id ? '#3498db' : '#fff',
+                                color: sortMode === opt.id ? '#fff' : '#333',
+                                fontWeight: sortMode === opt.id ? 'bold' : 'normal',
                                 transition: 'all 0.2s'
                             }}
                         >
@@ -509,10 +527,10 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                     <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Selection</div>
                     <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={handleSelectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            All
+                            Select All
                         </button>
                         <button onClick={handleDeselectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            None
+                            Deselect All
                         </button>
                     </div>
                 </div>

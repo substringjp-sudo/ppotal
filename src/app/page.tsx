@@ -138,9 +138,15 @@ const Page = () => {
     }, []);
 
     const toggleLine = React.useCallback((line: string) => {
-        setSelectedLines(prev =>
-            prev.includes(line) ? prev.filter(l => l !== line) : [...prev, line]
-        );
+        setSelectedLines(prev => {
+            const isSelected = prev.includes(line);
+            let next = isSelected ? prev.filter(l => l !== line) : [...prev, line];
+            // Remove __NONE__ if we are now selecting at least one valid line
+            if (next.length > 1 && next.includes("__NONE__")) {
+                next = next.filter(l => l !== "__NONE__");
+            }
+            return next;
+        });
     }, []);
 
     const setSelectedLinesList = React.useCallback((lines: string[]) => {
@@ -151,13 +157,25 @@ const Page = () => {
 
     const handleRailroadClick = React.useCallback((line: string) => {
         setActiveLine(line);
-        setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
+        setSelectedLines(prev => {
+            let next = prev.includes(line) ? prev : [...prev, line];
+            if (next.length > 1 && next.includes("__NONE__")) {
+                next = next.filter(l => l !== "__NONE__");
+            }
+            return next;
+        });
     }, []);
 
     const handleLineClick = React.useCallback((line: string) => {
         setActiveLine(line);
         setZoomTarget({ type: 'line', id: line });
-        setSelectedLines(prev => prev.includes(line) ? prev : [...prev, line]);
+        setSelectedLines(prev => {
+            let next = prev.includes(line) ? prev : [...prev, line];
+            if (next.length > 1 && next.includes("__NONE__")) {
+                next = next.filter(l => l !== "__NONE__");
+            }
+            return next;
+        });
     }, []);
 
     const handleStationClick = React.useCallback((stationName: string) => {
@@ -255,42 +273,24 @@ const Page = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
                     <div style={{ display: 'flex', gap: '20px', color: '#666' }}>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>노선 수</div>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>Lines</div>
                             <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.lines}</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>역 수</div>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>Stations</div>
                             <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.stations}</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>이동 거리</div>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>Distance</div>
                             <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.distance}<span style={{ fontSize: '10px', marginLeft: '2px' }}>km</span></div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>운영사 수</div>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>Companies</div>
                             <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.companies}</div>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '8px', marginRight: '20px' }}>
-                        {(['ja', 'en', 'ko'] as Language[]).map(lang => (
-                            <button
-                                key={lang}
-                                onClick={() => setLanguage(lang)}
-                                style={{
-                                    padding: '4px 10px',
-                                    fontSize: '11px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ddd',
-                                    backgroundColor: language === lang ? '#3498db' : '#fff',
-                                    color: language === lang ? '#fff' : '#333',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {lang === 'ja' ? '日本語' : lang === 'en' ? 'EN' : 'KO'}
-                            </button>
-                        ))}
+                    <div style={{ display: 'flex', gap: '6px' }}>
                     </div>
 
                     <div style={{ display: 'flex', gap: '10px' }}>

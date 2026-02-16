@@ -120,13 +120,18 @@ const Stations: React.FC<StationsProps> = ({
                     selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l))
                 );
                 const lines = station.lines;
-
                 const isLowZoom = zoom <= 13;
-                let radius = isLowZoom ? 3 : (isHighlighted ? 10 : 7.5);
 
-                // Fine-tune radius based on zoom if not low zoom and not highlighted
-                if (!isLowZoom && !isHighlighted) {
-                    radius = zoom > 14 ? 8 : (zoom > 12 ? 6 : 4);
+                // Smoothly interpolate radius based on zoom level to avoid "snapping" or afterimage effects
+                let radius = 3;
+                if (zoom > 13) {
+                    // Linear interpolation between zoom 13 (radius 3) and zoom 15 (radius 8)
+                    const factor = Math.min(1, (zoom - 13) / 2);
+                    radius = 3 + factor * 5;
+                }
+
+                if (isHighlighted) {
+                    radius = Math.max(radius, 10);
                 }
 
                 // Apply user style size multipliers
@@ -137,7 +142,7 @@ const Stations: React.FC<StationsProps> = ({
                 }
 
                 const isDragging = dragStartStation === name;
-                const weight = isLowZoom ? 0 : (isHighlighted ? 6 : 4);
+                const weight = zoom <= 12 ? 0 : (isHighlighted ? 6 : 4);
 
                 const coords = station.nodes.map(n => n.coord);
 
