@@ -356,6 +356,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
         for (let i = 0; i < stationEntries.length; i++) {
             const [id, s] = stationEntries[i] as [string, any];
+            if (!s || !s.coords || s.coords.length < 2) continue;
             const [lng, lat] = s.coords;
 
             // Spatial Culling
@@ -899,6 +900,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             </Pane>
 
             {/* Managed Pane for Tooltips to ensure they are on top of everything */}
+            <Pane name="railroad-interact" style={{ zIndex: 600 }} />
+            <Pane name="station-interact" style={{ zIndex: 700 }} />
             <Pane name="top-tooltips" style={{ zIndex: 1000 }} />
 
             <OffScreenIndicator

@@ -158,11 +158,19 @@ const Stations: React.FC<StationsProps> = ({
                     station.nodes.forEach(node => {
                         if (node.platforms) {
                             node.platforms.forEach(plat => {
-                                plat.forEach(p => allPoints.push([p[1], p[0]])); // p is [lon, lat], we want [lat, lon]
+                                if (Array.isArray(plat)) {
+                                    plat.forEach(p => {
+                                        if (Array.isArray(p) && p.length >= 2) {
+                                            allPoints.push([p[1], p[0]]); // p is [lon, lat], we want [lat, lon]
+                                        }
+                                    });
+                                }
                             });
                         }
-                        // Also include node center just in case
-                        allPoints.push(node.coord);
+                        // Also include node center
+                        if (node.coord && node.coord.length >= 2) {
+                            allPoints.push(node.coord);
+                        }
                     });
 
                     if (allPoints.length > 2) {
@@ -244,29 +252,116 @@ const Stations: React.FC<StationsProps> = ({
                                         if (positions.length < 2) return null;
 
                                         return (
-                                            <Polyline
-                                                key={`plat-${pidx}`}
-                                                positions={positions}
+                                            <React.Fragment key={`plat-group-${pidx}`}>
+                                                {/* Visual Platform Line (Non-interactive) */}
+                                                <Polyline
+                                                    positions={positions}
+                                                    pathOptions={{
+                                                        color: '#333',
+                                                        weight: isHighlighted ? 8 : 5,
+                                                        opacity: 1,
+                                                        lineCap: 'butt',
+                                                        interactive: false
+                                                    }}
+                                                />
+                                                {/* Hit Box Line (Interactive, Higher Priority) */}
+                                                <Polyline
+                                                    positions={positions}
+                                                    pathOptions={{
+                                                        stroke: true,
+                                                        color: '#000',
+                                                        weight: 20, // Expanded hitbox for platforms
+                                                        opacity: 0.0,
+                                                        lineCap: 'butt',
+                                                        pane: 'station-interact', // Higher than railroad-interact
+                                                        interactive: true
+                                                    }}
+                                                    eventHandlers={{
+                                                        click: (e) => {
+                                                            L.DomEvent.stopPropagation(e);
+                                                            handleStationClick(name);
+                                                        },
+                                                        mousedown: (e) => {
+                                                            L.DomEvent.stopPropagation(e as any);
+                                                            onStationMouseDown(name, [e.latlng.lat, e.latlng.lng]);
+                                                        },
+                                                        mouseup: (e) => {
+                                                            L.DomEvent.stopPropagation(e as any);
+                                                            onStationMouseUp(name);
+                                                        },
+                                                    }}
+                                                >
+                                                    <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                                        <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
+                                                            <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
+                                                                {translateName(name, language, 'station')}
+                                                            </div>
+                                                            <div style={{ fontSize: '12px', color: '#333' }}>
+                                                                <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                                    Available Lines
+                                                                </div>
+                                                                {formattedLines.map((fl, fidx) => (
+                                                                    <div key={fidx} style={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center',
+                                                                        gap: '12px',
+                                                                        padding: '3px 0',
+                                                                        borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
+                                                                        color: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '#2980b9' : '#555',
+                                                                        fontWeight: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '800' : '500'
+                                                                    }}>
+                                                                        <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
+                                                                        <span>{translateName(fl.line, language, 'line')}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            {isNodeVisited && (
+                                                                <div style={{
+                                                                    marginTop: '8px',
+                                                                    padding: '4px 8px',
+                                                                    backgroundColor: '#2ecc71',
+                                                                    color: '#fff',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 'bold',
+                                                                    borderRadius: '4px',
+                                                                    display: 'inline-block'
+                                                                }}>
+                                                                    ✓ VISITED
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </Tooltip>
+                                                </Polyline>
+                                            </React.Fragment>
+                                        );
+                                    })}
+
+                                    {/* Hide dot if platforms are shown, unless it's a dragging target or we want a visual anchor */}
+                                    {(!hasPlatforms || isDragging) && (
+                                        <React.Fragment>
+                                            {/* Visual Station Dot (Non-interactive) */}
+                                            <CircleMarker
+                                                center={node.coord}
+                                                pathOptions={{ ...stationStyle, interactive: false }}
+                                                radius={radius}
+                                            />
+                                            {/* Hit Box Circle (Transparent, Larger, Top-most interaction) */}
+                                            <CircleMarker
+                                                center={node.coord}
                                                 pathOptions={{
-                                                    color: '#333', // Dark grey for platform lines
-                                                    weight: isHighlighted ? 8 : 5,
-                                                    opacity: 1,
-                                                    lineCap: 'butt',
+                                                    stroke: false,
+                                                    fill: true,
+                                                    fillColor: '#000',
+                                                    fillOpacity: 0.0,
+                                                    pane: 'station-interact', // Higher priority than railroads
                                                     interactive: true
                                                 }}
+                                                radius={radius + 8} // margin for hovering
                                                 eventHandlers={{
-                                                    click: (e) => {
-                                                        L.DomEvent.stopPropagation(e);
-                                                        handleStationClick(name);
-                                                    },
-                                                    mousedown: (e) => {
-                                                        L.DomEvent.stopPropagation(e as any);
-                                                        onStationMouseDown(name, [e.latlng.lat, e.latlng.lng]);
-                                                    },
-                                                    mouseup: (e) => {
-                                                        L.DomEvent.stopPropagation(e as any);
-                                                        onStationMouseUp(name);
-                                                    },
+                                                    click: () => handleStationClick(name),
+                                                    mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
+                                                    mouseup: () => onStationMouseUp(name),
                                                 }}
                                             >
                                                 <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
@@ -310,65 +405,8 @@ const Stations: React.FC<StationsProps> = ({
                                                         )}
                                                     </div>
                                                 </Tooltip>
-                                            </Polyline>
-                                        );
-                                    })}
-
-                                    {/* Hide dot if platforms are shown, unless it's a dragging target or we want a visual anchor */}
-                                    {(!hasPlatforms || isDragging) && (
-                                        <CircleMarker
-                                            className={`station-${name}`}
-                                            center={node.coord}
-                                            pathOptions={stationStyle}
-                                            radius={radius}
-                                            eventHandlers={{
-                                                click: () => handleStationClick(name),
-                                                mousedown: () => onStationMouseDown(name, [node.coord[1], node.coord[0]]),
-                                                mouseup: () => onStationMouseUp(name),
-                                            }}
-                                        >
-                                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
-                                                <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
-                                                    <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                                        {translateName(name, language, 'station')}
-                                                    </div>
-                                                    <div style={{ fontSize: '12px', color: '#333' }}>
-                                                        <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                            Available Lines
-                                                        </div>
-                                                        {formattedLines.map((fl, fidx) => (
-                                                            <div key={fidx} style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'center',
-                                                                gap: '12px',
-                                                                padding: '3px 0',
-                                                                borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                                color: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '#2980b9' : '#555',
-                                                                fontWeight: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '800' : '500'
-                                                            }}>
-                                                                <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
-                                                                <span>{translateName(fl.line, language, 'line')}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    {isNodeVisited && (
-                                                        <div style={{
-                                                            marginTop: '8px',
-                                                            padding: '4px 8px',
-                                                            backgroundColor: '#2ecc71',
-                                                            color: '#fff',
-                                                            fontSize: '10px',
-                                                            fontWeight: 'bold',
-                                                            borderRadius: '4px',
-                                                            display: 'inline-block'
-                                                        }}>
-                                                            ✓ VISITED
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Tooltip>
-                                        </CircleMarker>
+                                            </CircleMarker>
+                                        </React.Fragment>
                                     )}
                                 </React.Fragment>
                             );
