@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "JapanRailNote",
   description: "Interactive Japan Railroad Map & Progress Tracker",
+  other: {
+    "google-adsense-account": "ca-pub-2007288082586284",
+  },
 };
 
 export default function RootLayout({

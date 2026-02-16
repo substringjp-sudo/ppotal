@@ -877,7 +877,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             const canvas = await html2canvas(mapElement, {
                 useCORS: true,
                 backgroundColor: '#a0c4ff'
-            });
+            } as any);
             const link = document.createElement('a');
             link.download = `jprail-map-${new Date().toISOString().slice(0, 10)}.png`;
             link.href = canvas.toDataURL();
