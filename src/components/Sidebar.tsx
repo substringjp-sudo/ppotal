@@ -70,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     };
 
     useEffect(() => {
-        fetch('/station_hierarchy.json')
+        fetch('/data/station_hierarchy.json')
             .then(res => res.json())
             .then((data: Record<string, Record<string, any>>) => {
                 setHierarchy(data);

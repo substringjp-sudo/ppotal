@@ -108,209 +108,207 @@ export class RoutingGraph {
                 }
             });
         }
+    }
 
-    });
-}
+    buildTransferEdgesFromHierarchy(hierarchy: any) {
+        const groupToNodes = new Map<string, string[]>();
 
-buildTransferEdgesFromHierarchy(hierarchy: any) {
-    const groupToNodes = new Map<string, string[]>();
+        // 1. Map nodes to groups based on hierarchy
+        Object.entries(hierarchy).forEach(([company, lines]) => {
+            Object.entries(lines as Record<string, any[]>).forEach(([lineName, stations]) => {
+                stations.forEach(station => {
+                    // Start with name-based ID construction to match systematic data
+                    // ID format in systematic is "Company::Line::StationName"
+                    // But wait, some stations might have different names in hierarchy vs systematic?
+                    // Generally they should match.
 
-    // 1. Map nodes to groups based on hierarchy
-    Object.entries(hierarchy).forEach(([company, lines]) => {
-        Object.entries(lines as Record<string, any[]>).forEach(([lineName, stations]) => {
-            stations.forEach(station => {
-                // Start with name-based ID construction to match systematic data
-                // ID format in systematic is "Company::Line::StationName"
-                // But wait, some stations might have different names in hierarchy vs systematic?
-                // Generally they should match.
+                    const nodeId = `${company}::${lineName}::${station.name}`;
 
-                const nodeId = `${company}::${lineName}::${station.name}`;
-
-                if (this.nodes.has(nodeId) && station.group) {
-                    if (!groupToNodes.has(station.group)) {
-                        groupToNodes.set(station.group, []);
+                    if (this.nodes.has(nodeId) && station.group) {
+                        if (!groupToNodes.has(station.group)) {
+                            groupToNodes.set(station.group, []);
+                        }
+                        groupToNodes.get(station.group)!.push(nodeId);
                     }
-                    groupToNodes.get(station.group)!.push(nodeId);
-                }
+                });
             });
         });
-    });
 
-    console.log(`Building transfers for ${groupToNodes.size} groups...`);
+        console.log(`Building transfers for ${groupToNodes.size} groups...`);
 
-    // 2. systematic transfer generation
-    groupToNodes.forEach((nodeIds, groupCode) => {
-        for (let i = 0; i < nodeIds.length; i++) {
-            for (let j = i + 1; j < nodeIds.length; j++) {
-                const u = this.nodes.get(nodeIds[i])!;
-                const v = this.nodes.get(nodeIds[j])!;
+        // 2. systematic transfer generation
+        groupToNodes.forEach((nodeIds, groupCode) => {
+            for (let i = 0; i < nodeIds.length; i++) {
+                for (let j = i + 1; j < nodeIds.length; j++) {
+                    const u = this.nodes.get(nodeIds[i])!;
+                    const v = this.nodes.get(nodeIds[j])!;
 
-                // Avoid duplicate edges if they already exist (e.g. from name matching)
-                // But name matching is name-based, this is group-based.
-                // Let's check if edge exists? 
-                // adj is Map<string, RouteEdge[]>
-                const existing = this.adj.get(u.id)?.some(e => e.to === v.id && e.type === 'TRANSFER');
-                if (!existing) {
-                    // Calc distance
-                    const dist = haversineDistance(u.coords, v.coords);
+                    // Avoid duplicate edges if they already exist (e.g. from name matching)
+                    // But name matching is name-based, this is group-based.
+                    // Let's check if edge exists? 
+                    // adj is Map<string, RouteEdge[]>
+                    const existing = this.adj.get(u.id)?.some(e => e.to === v.id && e.type === 'TRANSFER');
+                    if (!existing) {
+                        // Calc distance
+                        const dist = haversineDistance(u.coords, v.coords);
 
-                    const edge: RouteEdge = {
-                        from: u.id,
-                        to: v.id,
-                        distance: dist,
-                        lineId: 'TRANSFER',
-                        type: 'TRANSFER'
-                    };
-                    this.adj.get(u.id)?.push(edge);
-                    const revEdge = { ...edge, from: v.id, to: u.id };
-                    this.adj.get(v.id)?.push(revEdge);
+                        const edge: RouteEdge = {
+                            from: u.id,
+                            to: v.id,
+                            distance: dist,
+                            lineId: 'TRANSFER',
+                            type: 'TRANSFER'
+                        };
+                        this.adj.get(u.id)?.push(edge);
+                        const revEdge = { ...edge, from: v.id, to: u.id };
+                        this.adj.get(v.id)?.push(revEdge);
+                    }
+                }
+            }
+        });
+    }
+
+    findRoute(startName: string, endName: string): RouteResult | null {
+        const startIds = this.stationToNodes.get(startName) || [];
+        const endIds = new Set(this.stationToNodes.get(endName) || []);
+
+        if (startIds.length === 0 || endIds.size === 0) return null;
+
+        // Dijkstra
+        const dists = new Map<string, number>();
+        const prev = new Map<string, { node: string, edge: RouteEdge } | null>();
+        const pq = new Set<string>(); // Simple set for "queue" (inefficient but OK for typical rail graph size)
+
+        startIds.forEach(id => {
+            dists.set(id, 0);
+            prev.set(id, null);
+            pq.add(id);
+        });
+
+        const visited = new Set<string>();
+
+        // We need to visit all reachable nodes to find min path to ANY endId
+        // Optimization: Stop when we extract an endId that has min dist? 
+        // Yes, if we use a proper Priority Queue. With set, we scan.
+
+        let finalEndId: string | null = null;
+
+        while (pq.size > 0) {
+            // Extract min
+            let u: string | null = null;
+            let minDist = Infinity;
+
+            for (const id of pq) {
+                const d = dists.get(id);
+                if (d !== undefined && d < minDist) {
+                    minDist = d;
+                    u = id;
+                }
+            }
+
+            if (u === null) break;
+            pq.delete(u);
+            visited.add(u);
+
+            if (dists.get(u)! === Infinity) break;
+
+            if (endIds.has(u)) {
+                finalEndId = u;
+                break; // Found shortest path to one of the destination platforms
+            }
+
+            const neighbors = this.adj.get(u) || [];
+            for (const edge of neighbors) {
+                if (visited.has(edge.to)) continue;
+
+                const weight = edge.type === 'TRANSFER' ? (edge.distance + 0.5) : edge.distance;
+                // 0.5km penalty for transfer to discourage unnecessary switching
+
+                const alt = dists.get(u)! + weight;
+                const existingDist = dists.get(edge.to);
+
+                if (existingDist === undefined || alt < existingDist) {
+                    dists.set(edge.to, alt);
+                    prev.set(edge.to, { node: u, edge });
+                    pq.add(edge.to);
                 }
             }
         }
-    });
-}
 
-findRoute(startName: string, endName: string): RouteResult | null {
-    const startIds = this.stationToNodes.get(startName) || [];
-    const endIds = new Set(this.stationToNodes.get(endName) || []);
+        if (!finalEndId) return null;
 
-    if (startIds.length === 0 || endIds.size === 0) return null;
-
-    // Dijkstra
-    const dists = new Map<string, number>();
-    const prev = new Map<string, { node: string, edge: RouteEdge } | null>();
-    const pq = new Set<string>(); // Simple set for "queue" (inefficient but OK for typical rail graph size)
-
-    startIds.forEach(id => {
-        dists.set(id, 0);
-        prev.set(id, null);
-        pq.add(id);
-    });
-
-    const visited = new Set<string>();
-
-    // We need to visit all reachable nodes to find min path to ANY endId
-    // Optimization: Stop when we extract an endId that has min dist? 
-    // Yes, if we use a proper Priority Queue. With set, we scan.
-
-    let finalEndId: string | null = null;
-
-    while (pq.size > 0) {
-        // Extract min
-        let u: string | null = null;
-        let minDist = Infinity;
-
-        for (const id of pq) {
-            const d = dists.get(id);
-            if (d !== undefined && d < minDist) {
-                minDist = d;
-                u = id;
-            }
+        // Reconstruct Path
+        const path: RouteEdge[] = [];
+        let curr = finalEndId;
+        while (curr) {
+            const p = prev.get(curr);
+            if (!p) break;
+            path.unshift(p.edge);
+            curr = p.node;
         }
 
-        if (u === null) break;
-        pq.delete(u);
-        visited.add(u);
-
-        if (dists.get(u)! === Infinity) break;
-
-        if (endIds.has(u)) {
-            finalEndId = u;
-            break; // Found shortest path to one of the destination platforms
-        }
-
-        const neighbors = this.adj.get(u) || [];
-        for (const edge of neighbors) {
-            if (visited.has(edge.to)) continue;
-
-            const weight = edge.type === 'TRANSFER' ? (edge.distance + 0.5) : edge.distance;
-            // 0.5km penalty for transfer to discourage unnecessary switching
-
-            const alt = dists.get(u)! + weight;
-            const existingDist = dists.get(edge.to);
-
-            if (existingDist === undefined || alt < existingDist) {
-                dists.set(edge.to, alt);
-                prev.set(edge.to, { node: u, edge });
-                pq.add(edge.to);
-            }
-        }
+        return this.edgesToLegs(path);
     }
-
-    if (!finalEndId) return null;
-
-    // Reconstruct Path
-    const path: RouteEdge[] = [];
-    let curr = finalEndId;
-    while (curr) {
-        const p = prev.get(curr);
-        if (!p) break;
-        path.unshift(p.edge);
-        curr = p.node;
-    }
-
-    return this.edgesToLegs(path);
-}
 
     private edgesToLegs(edges: RouteEdge[]): RouteResult {
-    const legs: RouteLeg[] = [];
-    let totalDistance = 0;
-    let transferCount = 0;
+        const legs: RouteLeg[] = [];
+        let totalDistance = 0;
+        let transferCount = 0;
 
-    if (edges.length === 0) return { legs: [], totalDistance: 0, transferCount: 0 };
+        if (edges.length === 0) return { legs: [], totalDistance: 0, transferCount: 0 };
 
-    let currentLeg: RouteLeg | null = null;
+        let currentLeg: RouteLeg | null = null;
 
-    for (const edge of edges) {
-        totalDistance += edge.distance;
-        const fromNode = this.nodes.get(edge.from)!;
-        const toNode = this.nodes.get(edge.to)!;
+        for (const edge of edges) {
+            totalDistance += edge.distance;
+            const fromNode = this.nodes.get(edge.from)!;
+            const toNode = this.nodes.get(edge.to)!;
 
-        if (edge.type === 'TRANSFER') {
-            // Finalize current rail leg if exists
-            if (currentLeg) {
-                legs.push(currentLeg);
-                currentLeg = null;
-            }
-
-            legs.push({
-                type: 'TRANSFER',
-                fromStation: { id: fromNode.id, name: fromNode.name },
-                toStation: { id: toNode.id, name: toNode.name },
-                distance: edge.distance,
-                geometry: edge.geometry || [fromNode.coords, toNode.coords]
-            });
-            transferCount++;
-        } else {
-            // RAIL Edge
-            if (currentLeg && currentLeg.type === 'RIDE' && currentLeg.lineId === edge.lineId) {
-                // Extend current leg
-                currentLeg.toStation = { id: toNode.id, name: toNode.name };
-                currentLeg.distance += edge.distance;
-                if (edge.geometry) {
-                    currentLeg.geometry.push(...edge.geometry);
+            if (edge.type === 'TRANSFER') {
+                // Finalize current rail leg if exists
+                if (currentLeg) {
+                    legs.push(currentLeg);
+                    currentLeg = null;
                 }
-                if (!currentLeg.intermediates) currentLeg.intermediates = [];
-                currentLeg.intermediates.push(toNode.id);
-            } else {
-                // Start new rail leg
-                if (currentLeg) legs.push(currentLeg);
 
-                currentLeg = {
-                    type: 'RIDE',
-                    lineId: edge.lineId,
+                legs.push({
+                    type: 'TRANSFER',
                     fromStation: { id: fromNode.id, name: fromNode.name },
                     toStation: { id: toNode.id, name: toNode.name },
                     distance: edge.distance,
-                    geometry: edge.geometry ? [...edge.geometry] : [fromNode.coords, toNode.coords],
-                    intermediates: [toNode.id]
-                };
+                    geometry: edge.geometry || [fromNode.coords, toNode.coords]
+                });
+                transferCount++;
+            } else {
+                // RAIL Edge
+                if (currentLeg && currentLeg.type === 'RIDE' && currentLeg.lineId === edge.lineId) {
+                    // Extend current leg
+                    currentLeg.toStation = { id: toNode.id, name: toNode.name };
+                    currentLeg.distance += edge.distance;
+                    if (edge.geometry) {
+                        currentLeg.geometry.push(...edge.geometry);
+                    }
+                    if (!currentLeg.intermediates) currentLeg.intermediates = [];
+                    currentLeg.intermediates.push(toNode.id);
+                } else {
+                    // Start new rail leg
+                    if (currentLeg) legs.push(currentLeg);
+
+                    currentLeg = {
+                        type: 'RIDE',
+                        lineId: edge.lineId,
+                        fromStation: { id: fromNode.id, name: fromNode.name },
+                        toStation: { id: toNode.id, name: toNode.name },
+                        distance: edge.distance,
+                        geometry: edge.geometry ? [...edge.geometry] : [fromNode.coords, toNode.coords],
+                        intermediates: [toNode.id]
+                    };
+                }
             }
         }
+
+        if (currentLeg) legs.push(currentLeg);
+
+        return { legs, totalDistance, transferCount };
     }
-
-    if (currentLeg) legs.push(currentLeg);
-
-    return { legs, totalDistance, transferCount };
-}
 }

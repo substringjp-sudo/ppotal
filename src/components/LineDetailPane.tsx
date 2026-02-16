@@ -41,7 +41,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     const [topologyData, setTopologyData] = useState<any>(null);
 
     useEffect(() => {
-        fetch('/railroad_topology.json')
+        fetch('/data/railroad_topology.json')
             .then(res => res.json())
             .then(setTopologyData)
             .catch(console.error);

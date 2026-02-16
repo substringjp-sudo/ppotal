@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
 import { Language } from '../lib/translations';
-import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
+import { useMap, useMapEvents, Pane } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
+
+
 import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
-import Railroads from './Railroads';
 import Stations from './Stations';
 import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils';
 import { RoutingGraph, RouteResult } from '../lib/RoutingGraph';
@@ -89,7 +90,6 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [dragStartStation, dragStartCoords]);
 
     const [dragPath, setDragPath] = useState<[number, number][]>([]);
-    const [previewPath, setPreviewPath] = useState<any>(null); // To show the "expected" line
 
     const map = useMap();
 
@@ -136,7 +136,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             map.whenReady(handleReady);
         }
 
-        fetch('/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()).then(data => {
+        fetch('/data/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()).then(data => {
             const getBounds = (coords: any) => {
                 let minLng = 180, maxLng = -180, minLat = 90, maxLat = -90;
                 coords.flat(Infinity).forEach((c: number, i: number) => {
@@ -148,10 +148,10 @@ const MapPane: React.FC<MapPaneProps> = ({
             data.features.forEach((f: any) => f.properties.bounds = getBounds(f.geometry.coordinates));
             setPrefectures(data);
         });
-        fetch('/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()).then(setMunicipalities);
-        fetch('/systematic_railroad_network.json').then(res => res.json()).then(setRailroadNetwork).catch(console.error);
-        fetch('/station_hierarchy.json').then(res => res.json()).then(setHierarchy).catch(console.error); // Fetch hierarchy
-        fetch('/station_master_list.json').then(res => res.json()).then(setStationMasterList).catch(console.error);
+        fetch('/data/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()).then(setMunicipalities);
+        fetch('/data/systematic_railroad_network.json').then(res => res.json()).then(setRailroadNetwork).catch(console.error);
+        fetch('/data/station_hierarchy.json').then(res => res.json()).then(setHierarchy).catch(console.error); // Fetch hierarchy
+        fetch('/data/station_master_list.json').then(res => res.json()).then(setStationMasterList).catch(console.error);
     }, [map]);
 
     // Build graph when data is loaded
@@ -501,12 +501,6 @@ const MapPane: React.FC<MapPaneProps> = ({
     };
 
     const lastNearestRef = React.useRef<string | null>(null);
-    const previewPathRef = React.useRef<any>(null);
-
-    // Sync previewPathRef to allow mousemove to check current state without re-binding
-    useEffect(() => {
-        previewPathRef.current = previewPath;
-    }, [previewPath]);
 
     useMapEvents({
         zoomend: (e) => setZoomLevel(e.target.getZoom()),
@@ -520,31 +514,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 // Only update if target station changed
                 if (nearest === lastNearestRef.current) return;
                 lastNearestRef.current = nearest;
-
-                // If we have a nearest station that is NOT the start station...
-                if (nearest && nearest !== currentDragStation && graph) {
-                    const endStationData = visibleStations![nearest];
-                    if (!endStationData) {
-                        setPreviewPath(null);
-                        return;
-                    }
-
-                    const endCoords: [number, number] = [endStationData.centroid[1], endStationData.centroid[0]];
-
-                    const pathData = graph.getShortestPathByName(
-                        currentDragStation,
-                        nearest,
-                        selectedLines,
-                        dragStartCoordsRef.current || undefined,
-                        endCoords
-                    );
-
-                    setPreviewPath(pathData);
-                } else {
-                    setPreviewPath(null);
-                }
             } else {
-                if (previewPathRef.current) setPreviewPath(null);
                 lastNearestRef.current = null;
             }
         },
@@ -561,7 +531,6 @@ const MapPane: React.FC<MapPaneProps> = ({
             setDragStartStation(null);
             setDragStartCoords(null);
             setDragPath([]);
-            setPreviewPath(null);
             lastNearestRef.current = null;
         }
     });
@@ -578,7 +547,6 @@ const MapPane: React.FC<MapPaneProps> = ({
         setDragStartStation(name);
         setDragStartCoords(coords);
         setDragPath([]);
-        setPreviewPath(null);
     };
 
     const handleRecordTrip = (start: string, end: string, endCoordsOverride?: [number, number]) => {
@@ -613,16 +581,6 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     // Moved OffScreenIndicator outside
 
-    // Function to get color from node ID (company::line::station)
-    const getLineColorFromNode = (nodeId: string) => {
-        if (!nodeId) return '#000';
-        const parts = nodeId.split('::');
-        if (parts.length >= 2) {
-            const key = `${parts[0]}::${parts[1]}`;
-            return getColor(key);
-        }
-        return '#000';
-    };
 
     const visitedStations = useMemo(() => {
         const set = new Set<string>();
@@ -748,96 +706,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 }
             </Pane>
 
-            {/* Interaction Layer: Railroads & Recorded Trips */}
-            <Pane name="interactive-elements" style={{ zIndex: 200 }}>
-                <Railroads
-                    railroadNetwork={railroadNetwork}
-                    selectedLines={selectedLines}
-                    recordedTrips={recordedTrips}
-                    onRailroadClick={onRailroadClick}
-                    getColor={getColor}
-                    zoom={zoomLevel}
-                    isDragging={!!dragStartStation}
-                    activeLine={activeLine}
-                    language={language}
-                />
 
-                {previewPath && (
-                    <Polyline
-                        positions={previewPath.geometries.map((g: [number, number][]) => g.map(pt => [pt[1], pt[0]]))}
-                        pathOptions={{
-                            color: '#FF00FF',
-                            weight: (zoomLevel > 11 ? 10 : (zoomLevel > 9 ? 7 : 4)) * styleSettings.unvisited.weight,
-                            opacity: 0.5,
-                            interactive: false
-                        }}
-                    />
-                )}
 
-                {routeResult && routeResult.legs && routeResult.legs.map((leg: any, i: number) => (
-                    <Polyline
-                        key={`route-leg-${i}`}
-                        positions={leg.geometry}
-                        pathOptions={{
-                            color: leg.type === 'TRANSFER' ? '#7f8c8d' : getColor(lineIdMap.get(leg.lineId) || leg.lineId), // method is available in scope
-                            weight: 8,
-                            opacity: 0.8,
-                            dashArray: leg.type === 'TRANSFER' ? '5, 10' : undefined,
-                            interactive: false
-                        }}
-                    />
-                ))}
-
-                {recordedTrips.map((trip, tripIdx) => {
-                    // Validation Guard: Ensure trip data is valid and has geometries
-                    if (!trip || !trip.geometries || !Array.isArray(trip.geometries) || !trip.path) return null;
-
-                    const tripKey = trip.id || `trip-${tripIdx}-${trip.start}-${trip.end}`;
-
-                    return (
-                        <React.Fragment key={tripKey}>
-                            {trip.geometries.map((g: [number, number][], i: number) => {
-                                // Double check nested geometry array
-                                if (!Array.isArray(g)) return null;
-
-                                // Ensure coordinates are valid [lon, lat] and converted to [lat, lon]
-                                const positions = g
-                                    .filter(pt => Array.isArray(pt) && pt.length >= 2 && typeof pt[0] === 'number' && typeof pt[1] === 'number')
-                                    .map(pt => [pt[1], pt[0]] as [number, number]);
-
-                                if (positions.length < 2) return null;
-
-                                const startNodeId = trip.path[i];
-                                const color = getLineColorFromNode(startNodeId);
-
-                                return (
-                                    <React.Fragment key={`${tripKey}-seg-${i}`}>
-                                        <Polyline
-                                            positions={positions}
-                                            pathOptions={{
-                                                color: '#2ecc71', // Green Glow/Outline
-                                                weight: ((zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5)) * styleSettings.visited.weight) + 4,
-                                                opacity: 1,
-                                                interactive: false
-                                            }}
-                                        />
-                                        <Polyline
-                                            positions={positions}
-                                            pathOptions={{
-                                                color: color, // Official Line Color
-                                                weight: (zoomLevel > 11 ? 12 : (zoomLevel > 9 ? 8 : 5)) * styleSettings.visited.weight,
-                                                opacity: 1,
-                                                lineCap: 'butt',
-                                                interactive: false
-                                            }}
-                                        />
-                                    </React.Fragment>
-                                );
-                            })}
-                        </React.Fragment>
-                    );
-                })}
-            </Pane>
 
             {/* Top Layer: Stations */}
             <Pane name="ui-elements" style={{ zIndex: 300 }}>

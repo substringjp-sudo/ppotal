@@ -255,26 +255,44 @@ const Stations: React.FC<StationsProps> = ({
                                                 }}
                                             >
                                                 <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
-                                                    <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
-                                                        <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
+                                                    <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
+                                                        <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
                                                             {translateName(name, language, 'station')}
                                                         </div>
-                                                        <div style={{ fontSize: '11px', color: '#666' }}>
+                                                        <div style={{ fontSize: '12px', color: '#333' }}>
+                                                            <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                                Available Lines
+                                                            </div>
                                                             {formattedLines.map((fl, fidx) => (
                                                                 <div key={fidx} style={{
                                                                     display: 'flex',
                                                                     justifyContent: 'space-between',
-                                                                    gap: '8px',
-                                                                    padding: '1px 0',
-                                                                    color: selectedLines.includes(fl.key) ? '#000' : '#888',
-                                                                    fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
+                                                                    alignItems: 'center',
+                                                                    gap: '12px',
+                                                                    padding: '3px 0',
+                                                                    borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
+                                                                    color: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '#2980b9' : '#555',
+                                                                    fontWeight: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '800' : '500'
                                                                 }}>
-                                                                    <span>{fl.company}</span>
+                                                                    <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
                                                                     <span>{translateName(fl.line, language, 'line')}</span>
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
+                                                        {isNodeVisited && (
+                                                            <div style={{
+                                                                marginTop: '8px',
+                                                                padding: '4px 8px',
+                                                                backgroundColor: '#2ecc71',
+                                                                color: '#fff',
+                                                                fontSize: '10px',
+                                                                fontWeight: 'bold',
+                                                                borderRadius: '4px',
+                                                                display: 'inline-block'
+                                                            }}>
+                                                                ✓ VISITED
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </Tooltip>
                                             </Polyline>
@@ -295,26 +313,44 @@ const Stations: React.FC<StationsProps> = ({
                                             }}
                                         >
                                             <Tooltip sticky pane="tooltipPane" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
-                                                <div style={{ zIndex: 1000, position: 'relative', minWidth: '150px' }}>
-                                                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', borderBottom: '1px solid #ddd', paddingBottom: '2px' }}>
+                                                <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
+                                                    <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
                                                         {translateName(name, language, 'station')}
                                                     </div>
-                                                    <div style={{ fontSize: '11px', color: '#666' }}>
+                                                    <div style={{ fontSize: '12px', color: '#333' }}>
+                                                        <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                            Available Lines
+                                                        </div>
                                                         {formattedLines.map((fl, fidx) => (
                                                             <div key={fidx} style={{
                                                                 display: 'flex',
                                                                 justifyContent: 'space-between',
-                                                                gap: '8px',
-                                                                padding: '1px 0',
-                                                                color: selectedLines.includes(fl.key) ? '#000' : '#888',
-                                                                fontWeight: selectedLines.includes(fl.key) ? 'bold' : 'normal'
+                                                                alignItems: 'center',
+                                                                gap: '12px',
+                                                                padding: '3px 0',
+                                                                borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
+                                                                color: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '#2980b9' : '#555',
+                                                                fontWeight: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '800' : '500'
                                                             }}>
-                                                                <span>{fl.company}</span>
+                                                                <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
                                                                 <span>{translateName(fl.line, language, 'line')}</span>
                                                             </div>
                                                         ))}
                                                     </div>
-                                                    {isNodeVisited && <div style={{ marginTop: '4px', fontSize: '11px', color: '#000', fontWeight: 'bold' }}>✓ Visited</div>}
+                                                    {isNodeVisited && (
+                                                        <div style={{
+                                                            marginTop: '8px',
+                                                            padding: '4px 8px',
+                                                            backgroundColor: '#2ecc71',
+                                                            color: '#fff',
+                                                            fontSize: '10px',
+                                                            fontWeight: 'bold',
+                                                            borderRadius: '4px',
+                                                            display: 'inline-block'
+                                                        }}>
+                                                            ✓ VISITED
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </Tooltip>
                                         </CircleMarker>

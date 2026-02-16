@@ -39,7 +39,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
 
     useEffect(() => {
         // Load station master list for autocomplete
-        fetch('/station_master_list.json')
+        fetch('/data/station_master_list.json')
             .then(res => res.json())
             .then((data: Record<string, any>) => {
                 const names = new Set<string>();
