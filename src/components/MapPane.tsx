@@ -9,6 +9,7 @@ import MunicipalMap from './MunicipalMap';
 import Railroads from './Railroads';
 import Stations from './Stations';
 import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils';
+import { RoutingGraph } from '../lib/RoutingGraph';
 import { getOfficialColor } from '../lib/lineColors';
 import { normalizeKey } from '../lib/lineUtils';
 import { MapStyleSettings } from '../app/page';
@@ -67,6 +68,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     // Graph and Recording State
     const [graph, setGraph] = useState<RailroadGraph | null>(null);
+    const [routingGraph, setRoutingGraph] = useState<RoutingGraph | null>(null);
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
     const [dragStartCoords, setDragStartCoords] = useState<[number, number] | null>(null);
     const dragStartStationRef = React.useRef(dragStartStation);
@@ -149,6 +151,11 @@ const MapPane: React.FC<MapPaneProps> = ({
             builtGraph.loadFromSystematicJson(railroadNetwork);
             setGraph(builtGraph);
             console.log('Graph loaded from systematic network with', builtGraph.nodes.size, 'nodes');
+
+            const rg = new RoutingGraph();
+            rg.loadSystematicData(railroadNetwork);
+            setRoutingGraph(rg);
+            console.log("RoutingGraph initialized with", rg.nodes.size, "nodes");
         }
     }, [railroadNetwork]);
 
