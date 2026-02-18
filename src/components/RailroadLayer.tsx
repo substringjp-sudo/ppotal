@@ -72,8 +72,19 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
         const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
 
+        // Smoothly interpolate base weight based on zoom level
+        // Zoom <= 10: 1, Zoom 12: 5 (linear interpolation)
+        const getBaseWeight = (z: number, selected: boolean) => {
+            if (z <= 10) return 1;
+            if (z >= 12) return selected ? 5 : 3;
+            // Interpolate between 10 and 12
+            const t = (z - 10) / 2;
+            const target = selected ? 5 : 3;
+            return 1 + t * (target - 1);
+        };
+
         let color = isVisible ? feature.properties.color : '#999999';
-        let weight = (isVisible ? (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) : (zoomLevel >= 12 ? 3 : 1)) * weightFactor;
+        let weight = getBaseWeight(zoomLevel, isVisible) * weightFactor;
         let opacity = isVisible ? 0.8 : 0.4;
         let dashArray = isVisible ? undefined : '4, 8';
 

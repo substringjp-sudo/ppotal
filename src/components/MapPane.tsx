@@ -15,7 +15,7 @@ import { RailroadGraph, StationNode, haversineDistance } from '../lib/graphUtils
 import { RoutingGraph, RouteResult } from '../lib/RoutingGraph';
 import { getOfficialColor } from '../lib/lineColors';
 import { normalizeKey } from '../lib/lineUtils';
-import { MapStyleSettings } from '../app/page';
+import { MapStyleSettings } from '../app/AppClient';
 import { trackEvent } from '../lib/gtag';
 
 interface MapPaneProps {
@@ -643,8 +643,10 @@ const MapPane: React.FC<MapPaneProps> = ({
         },
         zoom: (e) => setZoomLevel(e.target.getZoom()),
         zoomend: (e) => setZoomLevel(e.target.getZoom()),
-        move: (e) => setMapBounds(e.target.getBounds()),
-        moveend: (e) => setMapBounds(e.target.getBounds()),
+        moveend: (e) => {
+            setMapBounds(e.target.getBounds());
+            setZoomLevel(e.target.getZoom());
+        },
         mousemove: (e) => {
             const currentDragStation = dragStartStationRef.current;
             const mapInstance = e.target;

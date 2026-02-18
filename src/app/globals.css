@@ -35,3 +35,14 @@ body {
 .leaflet-container:focus {
   outline: none !important;
 }
+
+/* SEO Content Visibility */
+#content-info {
+  display: block;
+}
+
+@media print {
+  #content-info {
+    display: block !important;
+  }
+}

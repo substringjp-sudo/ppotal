@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
 import { normalizeKey, normalizeLineName, translateName } from '../lib/lineUtils';
-import { MapStyleSettings } from '../app/page';
+import { MapStyleSettings } from '../app/AppClient';
 import { Language } from '../lib/translations';
 
 interface StaticNode {
@@ -142,7 +142,15 @@ const Stations: React.FC<StationsProps> = ({
                 }
 
                 const isDragging = dragStartStation === name;
-                const weight = zoom <= 12 ? 0 : (isHighlighted ? 6 : 4);
+
+                // Smoothly calculate weight
+                // Zoom <= 11: 0, Zoom >= 13: 4 or 6
+                let weight = 0;
+                if (zoom > 11) {
+                    const baseWeight = isHighlighted ? 6 : 4;
+                    const weightT = Math.min(1, (zoom - 11) / 2);
+                    weight = weightT * baseWeight;
+                }
 
                 const coords = station.nodes.map(n => n.coord);
 

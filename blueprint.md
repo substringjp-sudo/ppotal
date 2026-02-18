@@ -20,26 +20,27 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Detail Panes**: Dedicated views for line-specific details, including segments and pathfinding.
 - **Customizable Styles**: User-controlled styling settings for visited and unvisited elements.
 
-## Current Planned Changes (Investigating Missing Kyoto Data)
-### Goal
-Identify and fix the issue where certain JR West Tokaido Line segments and major stations (Kyoto, Yamashina) are missing from the map.
+- **SEO Optimization**: Implemented Server-Side Rendering (SSR) for core content and enhanced metadata for better AdSense and search engine discoverability.
+- **How-To Guide**: A responsive modal guide for desktop and mobile users to ease onboarding.
+- **Static Content Injection**: Added descriptive hidden content for bots to ensure AdSense compliance.
 
-### Proposed Steps
-1. **Modify Station Visibility**: Update `Stations.tsx` to ensure major stations are visible even when their specific line is not selected, especially at higher zoom levels.
-2. **Improve Line Segment Rendering**: Research and implement logic to handle cross-line segments (segments labeled as one line that logically belong to another, like Kyoto-Yamashina) to ensure they render with their logical parent line.
-3. **Resolve "Selection Rectangle"**: Audit CSS and component styles to remove any unintended selection indicators or focus rings.
-4. **Data Verification**: Confirm station IDs and line associations in `systematic_railroad_network.json` match the expected hierarchy.
-5. **Verify Fixes**: Ensure Kyoto and Yamashina stations and their connecting lines are correctly displayed and interactable.
+## Current Status
+- **AdSense Policy Violation Resolved**: Refactored to SSR and added indexable content to address "no content" issues.
+- **Improved Discoverability**: Expanded keywords and metadata.
+- **User Onboarding**: Integrated 'HOW TO' functionality in the header.
+- **Build & Deployment Stability**: Fixed TypeScript dependency issues in build scripts.
 
 #메모
 우리에겐 좀 복잡하지만 여러 노선의 상태가 존재해.
 1. 체크된 노선
 2. 체크안된 노선
 3. 이용경로인 노선
-3. 마우스로 지도 위에서 클릭해서 현재 하단에 노선도가 보이고 노선이 굵게 표시되는 노선
+4. 마우스로 지도 위에서 클릭해서 현재 하단에 노선도가 보이고 노선이 굵게 표시되는 노선
 
-~~여기서 왼쪽 노선목록에서 노선을 클릭하면 하단에 노선도가 보이기는 하는데 지도에서 해당 노선이 굵게 표시는 안돼. 지도 위에도 굵게 표시되게 해줘.~~ ✅ 완료
-~~그리고 선 자체를 굵게 표시하는게 아니라 클릭한 노선의 강조색으로 감싸는 테두리를 좀더 굵게 해줘.~~ ✅ 완료 (반투명 glow outline 방식)
-~~그리고 지도의 노선이나 역이 없는 빈공간을 클릭하면 클릭 및 하단 노선도 보여주는 상태를 해제시켜줘.~~ ✅ 이미 구현됨
+- [x] 왼쪽 노선목록에서 노선을 클릭하면 하단에 노선도가 보이고 지도에서도 강조 표시되도록 개선.
+- [x] 클릭한 노선의 강조색 테두리(glow) 최적화.
+- [x] 지도 빈 공간 클릭 시 선택 상태 해제 로직 확인.
+- [x] AdSense "콘텐츠 없음" 문제 해결을 위한 SSR 전환 및 SEO 강화.
+- [x] 사용자 가이드(How-To) 모달 추가.
 
 
