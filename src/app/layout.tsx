@@ -14,16 +14,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JapanRailNote | 일본 철도 지도 & 여행 기록 | 日本鉄道地図・旅行記録",
-  description: "Explore Japan's railway network and track your trips. 일본 전역의 철도 노선을 지도로 확인하고 나만의 여행을 기록하세요. 日本全国の鉄道網を地図で確認し、あなたの旅行を記録しましょう。",
-  keywords: ["Japan Railway Map", "JR Pass", "Travel Tracker", "일본 철도 지도", "JR 노선도", "철도 여행 기록", "日本鉄道地図", "鉄道旅行", "乗りつぶし"],
+  title: "JapanRailNote | 일본 철도 핵심 지도 & 여행 트래커 | 日本鉄道網・乗りつぶし記録",
+  description: "JapanRailNote는 일본 전역의 JR, 사철, 지하철, 노면전차 노선을 인터랙티브 지도로 시각화하고 나만의 여행 경로를 기록하는 서비스입니다. JR 패스 여행자, 철도 마니아를 위한 노선별 거리 계산, 다국어 역명 검색, 최단 경로 탐색 기능을 무료로 이용하세요.",
+  keywords: [
+    "일본 철도 지도", "JR 패스 노선도", "일본 기차 여행", "신칸센 지도", "도쿄 지하철 노선도",
+    "오사카 지하철 노선도", "일본 철도 거리 계산", "철도 여행 기록", "노리테츠", "도리테츠",
+    "JR East", "JR West", "JR Central", "JR Kyushu", "JR Hokkaido", "JR Shikoku",
+    "Japan Railway Map", "JR Pass Route", "Japan Train Tracker", "Shinkansen Network",
+    "Interactive Japan Map", "Japan Rail Pass Planner", "日本鉄道地図", "乗りつぶし", "鉄道旅行"
+  ],
   openGraph: {
-    title: "JapanRailNote",
-    description: "Interactive Japan Railroad Map & Progress Tracker",
+    title: "JapanRailNote - 일본 모든 철도의 시각화 및 여행 기록",
+    description: "일본 전역의 복잡한 철도 노선을 한눈에 파악하고, 당신의 철도 여행을 체계적으로 기록하고 공유하세요.",
     url: "https://jprail.web.app",
     siteName: "JapanRailNote",
+    images: [
+      {
+        url: "/og-image.png", // Ensure this exists or suggest creating it
+        width: 1200,
+        height: 630,
+        alt: "JapanRailNote Interactive Map",
+      },
+    ],
     locale: "ko_KR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "JapanRailNote | 일본 철도 여행의 모든 것",
+    description: "인터랙티브 지도로 만나는 일본 철도 네트워크. 나만의 철도 여행 기록을 시작하세요.",
+    images: ["/og-image.png"],
   },
   verification: {
     google: "Oo0SWvr4Xz_o5XCFW1jQJzwupMzZW3qVFB2mlIHA7AE",
