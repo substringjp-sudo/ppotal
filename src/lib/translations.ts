@@ -46,6 +46,12 @@ export const COMPANY_TRANSLATIONS: Record<string, Record<Language, string>> = {
     "沖縄都市モノレール": { ja: "沖縄都市モノレール", en: "Okinawa Monorail (Yui Rail)", ko: "오키나와 도시 모노레일 (유이 레일)" },
 };
 
+export const UI_TRANSLATIONS: Record<string, Record<Language, string>> = {
+    "about": { ja: "サービス紹介", en: "About", ko: "서비스 소개" },
+    "credits": { ja: "データ出典", en: "Data Sources", ko: "데이터 출처" },
+    "about_credits": { ja: "サービス紹介・出典", en: "About & Credits", ko: "서비스 소개 및 출처" },
+};
+
 export const LINE_TRANSLATIONS: Record<string, Record<Language, string>> = {
     // JR East
     "山手線": { ja: "山手線", en: "Yamanote Line", ko: "야마노테선" },
@@ -267,41 +273,15 @@ export const STATION_TRANSLATIONS: Record<string, Record<Language, string>> = {
 };
 
 export const translate = (name: string, lang: Language, type: 'company' | 'line' | 'station' = 'station'): string => {
-    if (lang === 'ja') return name;
+    if (lang === 'ja' || type === 'line' || type === 'company') return name;
 
     let targetMap: Record<string, Record<Language, string>>;
-    if (type === 'company') targetMap = COMPANY_TRANSLATIONS;
-    else if (type === 'line') {
-        targetMap = LINE_TRANSLATIONS;
-        // Also check if fallback translation exists in keys without suffix
-        const normName = normalizeLineName(name);
-        if (targetMap[normName]) return targetMap[normName][lang];
-    }
-    else targetMap = STATION_TRANSLATIONS;
+    // Since we return early for 'line' and 'company', targetMap will always be STATION_TRANSLATIONS here
+    // But we keep the structure for future expansion if needed.
+    targetMap = STATION_TRANSLATIONS;
 
     if (targetMap[name] && targetMap[name][lang]) {
         return targetMap[name][lang];
-    }
-
-    // Attempt    // 4. Try basic suffix normalization translations
-    if (type === 'line') {
-        // Try stripping standard suffixes and translating the core
-        const suffixes = ['線', '本線', '快速', '各駅停車'];
-        for (const suffix of suffixes) {
-            if (name.endsWith(suffix)) {
-                const core = name.slice(0, -suffix.length);
-                const coreTrans = LINE_TRANSLATIONS[core]?.[lang];
-                if (coreTrans) {
-                    const suffixTrans = {
-                        '線': { en: ' Line', ko: '선' },
-                        '本線': { en: ' Main Line', ko: ' 본선' },
-                        '快速': { en: ' (Rapid)', ko: ' 쾌속' },
-                        '各駅停車': { en: ' (Local)', ko: ' 각역정차' }
-                    }[suffix]?.[lang as 'en' | 'ko'] || suffix;
-                    return coreTrans + suffixTrans;
-                }
-            }
-        }
     }
 
     if (type === 'station') {

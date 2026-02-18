@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { getOfficialColor } from '../lib/lineColors';
+import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
 
 interface RailroadLayerProps {
     railroadNetwork: any;
@@ -13,6 +14,7 @@ interface RailroadLayerProps {
     onRailroadClick: (lineId: string) => void;
     onRailroadHover: (lineId: string | null) => void;
     zoomLevel: number;
+    isMobile: boolean;
 }
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
@@ -22,7 +24,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     hoveredLine,
     onRailroadClick,
     onRailroadHover,
-    zoomLevel
+    zoomLevel,
+    isMobile
 }) => {
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
@@ -72,23 +75,31 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
         const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
 
-        // Smoothly interpolate base weight based on zoom level
-        // Zoom <= 10: 1, Zoom 12: 5 (linear interpolation)
-        const getBaseWeight = (z: number, selected: boolean) => {
-            if (z <= 10) return 1;
-            if (z >= 12) return selected ? 5 : 3;
-            // Interpolate between 10 and 12
-            const t = (z - 10) / 2;
-            const target = selected ? 5 : 3;
-            return 1 + t * (target - 1);
-        };
-
         let color = isVisible ? feature.properties.color : '#999999';
-        let weight = getBaseWeight(zoomLevel, isVisible) * weightFactor;
+        let weight = (isVisible ? (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) : (zoomLevel >= 12 ? 3 : 1)) * weightFactor;
         let opacity = isVisible ? 0.8 : 0.4;
         let dashArray = isVisible ? undefined : '4, 8';
 
         return { color, weight, opacity, dashArray, lineCap: 'round', lineJoin: 'round', smoothFactor: dynamicSmoothFactor, interactive: false } as L.PathOptions;
+    };
+
+    const casingStyle = (feature: any) => {
+        const id = feature.properties.id;
+        const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
+        if (!isVisible && zoomLevel < 10) return { opacity: 0, interactive: false }; // Hide casing for invisible lines at low zoom
+
+        const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
+        let baseWeight = (isVisible ? (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) : (zoomLevel >= 12 ? 3 : 1)) * weightFactor;
+
+        return {
+            color: '#000000',
+            weight: baseWeight + (zoomLevel >= 12 ? 1.5 : 1), // Slightly thicker
+            opacity: isVisible ? 0.6 : 0.2,
+            lineCap: 'round',
+            lineJoin: 'round',
+            smoothFactor: dynamicSmoothFactor,
+            interactive: false
+        } as L.PathOptions;
     };
 
     const highlightStyle = (feature: any) => {
@@ -122,28 +133,41 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const onEachFeature = (feature: any, layer: L.Layer) => {
         const { name, company, endpoints } = feature.properties;
         const tooltipContent = `
-            <div style="text-align: center;">
-                <div style="font-weight: bold;">${name}</div>
-                <div style="font-size: 0.8em; color: #666;">${company}</div>
-                ${endpoints ? `<div style="font-size: 0.7em; color: #888;">(${endpoints})</div>` : ''}
+            <div style="text-align: center; font-family: sans-serif;">
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <div style="font-weight: bold; font-size: 1.1em;">${name}</div>
+                    <div style="font-size: 0.8em; font-weight: 400; color: #555; margin-top: -2px;">${LINE_EN_NAMES[name] || name}</div>
+                </div>
+                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 0px;">
+                    <div style="font-size: 0.85em; color: #444; font-weight: 500;">${company}</div>
+                    <div style="font-size: 0.7em; font-weight: 400; color: #666; margin-top: -1px;">${COMPANY_EN_NAMES[company] || company}</div>
+                </div>
+                ${endpoints ? `<div style="font-size: 0.7em; color: #aaa; margin-top: 4px; border-top: 1px solid #eee; padding-top: 2px;">(${endpoints})</div>` : ''}
             </div>
         `;
-        layer.bindTooltip(tooltipContent, {
-            sticky: true,
-            direction: 'top',
-            offset: [0, -10],
-            opacity: 0.9,
-            className: 'railroad-tooltip',
-            pane: 'top-tooltips'
-        });
+
+        if (!isMobile) {
+            layer.bindTooltip(tooltipContent, {
+                sticky: true,
+                direction: 'top',
+                offset: [0, -10],
+                opacity: 0.9,
+                className: 'railroad-tooltip',
+                pane: 'top-tooltips'
+            });
+        }
 
         layer.on({
             click: (e) => {
                 L.DomEvent.stopPropagation(e);
                 onRailroadClick(feature.properties.id);
             },
-            mouseover: () => onRailroadHover(feature.properties.id),
-            mouseout: () => onRailroadHover(null)
+            mouseover: () => {
+                if (!isMobile) onRailroadHover(feature.properties.id);
+            },
+            mouseout: () => {
+                if (!isMobile) onRailroadHover(null);
+            }
         });
     };
 
@@ -162,7 +186,18 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 />
             )}
 
-            {/* 2. Visual Main Line */}
+            {/* 2. Line Casing (Outlines) - Only show at zoom 10+ */}
+            {zoomLevel >= 10 && (
+                <GeoJSON
+                    key="vis-casing"
+                    data={geoJsonData as any}
+                    style={casingStyle}
+                    interactive={false}
+                    pane="railroad-casing"
+                />
+            )}
+
+            {/* 3. Visual Main Line */}
             <GeoJSON
                 key="vis-base"
                 data={geoJsonData as any}

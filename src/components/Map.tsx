@@ -19,8 +19,8 @@ const Map: React.FC<MapProps> = ({ children }) => {
             style={{ height: '100%', width: '100%', background: '#a0c4ff' }}
             scrollWheelZoom={true}
             zoomControl={false}
-            zoomSnap={0}
-            zoomDelta={0.1}
+            zoomSnap={1}
+            zoomDelta={1}
         >
             {children}
         </MapContainer>

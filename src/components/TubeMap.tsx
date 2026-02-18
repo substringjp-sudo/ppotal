@@ -20,6 +20,7 @@ interface TubeMapProps {
     onStationClick?: (stationName: string) => void;
     language: Language;
     onPathCreate?: (startId: string, endId: string) => void;
+    onDragUpdate?: (waypoints: string[]) => void;
 }
 
 const STATION_SPACING = 60;
@@ -43,7 +44,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
     visitedEdges,
     onStationClick,
     language,
-    onPathCreate
+    onPathCreate,
+    onDragUpdate
 }) => {
     // 1. Calculate Layout
     const { nodePositions, edges, svgWidth, svgHeight, minX, minY } = useMemo(() => {
@@ -84,8 +86,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
             junctionPos.isJunction = true;
 
             // Determine direction (up or down based on index to alternate)
-            // Or just always down for now? 
-            // Let's alternate: even branches down, odd branches up
             const direction = bIdx % 2 === 0 ? 1 : -1;
 
             let prevId = junctionId;
@@ -93,10 +93,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
             let currentY = junctionPos.y;
 
             branch.path.forEach((stationId, idx) => {
-                // Angle off for the first segment, then maybe straight?
-                // Or constant angle?
-                // Let's do constant 45 degree angle
-
                 currentX += BRANCH_LENGTH * Math.cos(BRANCH_ANGLE_RAD);
                 currentY += BRANCH_LENGTH * Math.sin(BRANCH_ANGLE_RAD) * direction;
 
@@ -148,115 +144,97 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const lineColor = useMemo(() => {
         const official = getOfficialColor(lineId);
         if (official) return official;
-        // Fallback hash color
-        let hash = 0;
-        for (let i = 0; i < lineId.length; i++) {
-            hash = lineId.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const colorPalette = [
-            "#1B4F72", "#7B241C", "#186A3B", "#7D6608", "#4A235A",
-            "#145A32", "#512E5F", "#0E6251", "#78281F", "#1B2631"
-        ];
-        return colorPalette[Math.abs(hash) % colorPalette.length];
+        return '#333';
     }, [lineId]);
 
-
-    // Helper to get edge color
-    const getEdgeColor = (u: string, v: string) => {
-        const getName = (id: string) => nodes.get(id)?.name || id;
-        const uName = getName(u);
-        const vName = getName(v);
-        // Check both directions (name-based key)
-        const key = [uName, vName].sort().join('<->');
-        return visitedEdges.has(key) ? '#2ecc71' : lineColor; // Green if visited, else line color
-    };
-
-    const getEdgeOpacity = (u: string, v: string) => {
-        const getName = (id: string) => nodes.get(id)?.name || id;
-        const uName = getName(u);
-        const vName = getName(v);
-        const key = [uName, vName].sort().join('<->');
-        // If visited, full opacity. If not visited, lighter opacity?
-        // Actually, typically the "line" is the line color, visited is overlay.
-        // But here let's just use color to distinguish.
-        return visitedEdges.has(key) ? 1.0 : 0.4;
-    };
-
-    const getStrokeWidth = (u: string, v: string) => {
-        const getName = (id: string) => nodes.get(id)?.name || id;
-        const uName = getName(u);
-        const vName = getName(v);
-        const key = [uName, vName].sort().join('<->');
-        return visitedEdges.has(key) ? 8 : 6;
-    }
-
-
-    // Drag State
     const [dragStartId, setDragStartId] = React.useState<string | null>(null);
     const [dragCurrentPt, setDragCurrentPt] = React.useState<{ x: number, y: number } | null>(null);
     const [dragTargetId, setDragTargetId] = React.useState<string | null>(null);
     const [highlightedEdges, setHighlightedEdges] = React.useState<Set<string>>(new Set());
 
     const svgRef = React.useRef<SVGSVGElement>(null);
-
-    // Auto-scroll refs
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+    const animationFrameRef = React.useRef<number | undefined>(undefined);
     const scrollVelocityRef = React.useRef<number>(0);
-    const animationFrameRef = React.useRef<number | null>(null);
 
-    // BFS to find path between two nodes
-    const findPath = (start: string, end: string) => {
-        const queue: string[] = [start];
-        const visited = new Set<string>();
-        visited.add(start);
-        const parent = new Map<string, string>();
+    // Helper to get edge color
+    const getEdgeColor = (u: string, v: string) => {
+        const uNode = nodes.get(u);
+        const vNode = nodes.get(v);
+        if (!uNode || !vNode) return lineColor;
 
-        // Build adjacency if not already handy, or just search edges
-        // We have `renderEdges` from useMemo, but we need adjacency list for efficient BFS
-        // Let's build it on the fly or just iterate edges (small graph)
-        // Optimization: Pre-calculate adjacency in useMemo if needed, but for < 100 nodes, straightforward is fine.
+        const edgeKey = [u, v].sort().join('<->');
+        if (highlightedEdges.has(edgeKey)) return '#FF5733'; // Orange for dragging
+
+        const key = [uNode.name, vNode.name].sort().join('<->');
+        return visitedEdges.has(key) ? '#2ecc71' : lineColor; // Green if visited, else line color
+    };
+
+    const getEdgeOpacity = (u: string, v: string) => {
+        const uNode = nodes.get(u);
+        const vNode = nodes.get(v);
+        if (!uNode || !vNode) return 0.4;
+
+        const edgeKey = [u, v].sort().join('<->');
+        if (highlightedEdges.has(edgeKey)) return 1.0;
+
+        const key = [uNode.name, vNode.name].sort().join('<->');
+        return visitedEdges.has(key) ? 1.0 : 0.4;
+    };
+
+    const getStrokeWidth = (u: string, v: string) => {
+        const uNode = nodes.get(u);
+        const vNode = nodes.get(v);
+        if (!uNode || !vNode) return 6;
+
+        const edgeKey = [u, v].sort().join('<->');
+        if (highlightedEdges.has(edgeKey)) return 10;
+
+        const key = [uNode.name, vNode.name].sort().join('<->');
+        return visitedEdges.has(key) ? 8 : 6;
+    }
+
+    // BFS to find path between two nodes in the topology
+    const findPath = (startId: string, endId: string): Set<string> => {
+        const queue: Array<{ id: string, path: string[] }> = [{ id: startId, path: [] }];
+        const visited = new Set<string>([startId]);
 
         while (queue.length > 0) {
-            const u = queue.shift()!;
-            if (u === end) break;
+            const { id, path } = queue.shift()!;
+            if (id === endId) return new Set(path);
 
             // Find neighbors
             edges.forEach(edge => {
-                let v: string | null = null;
-                if (edge.u === u && !visited.has(edge.v)) v = edge.v;
-                else if (edge.v === u && !visited.has(edge.u)) v = edge.u;
+                let neighbor: string | null = null;
+                if (edge.u === id) neighbor = edge.v;
+                else if (edge.v === id) neighbor = edge.u;
 
-                if (v) {
-                    visited.add(v);
-                    parent.set(v, u);
-                    queue.push(v);
+                if (neighbor && !visited.has(neighbor)) {
+                    visited.add(neighbor);
+                    const edgeKey = [id, neighbor].sort().join('<->');
+                    queue.push({ id: neighbor, path: [...path, edgeKey] });
                 }
             });
         }
-
-        // Reconstruct path
-        const pathEdges = new Set<string>();
-        let curr = end;
-        while (curr !== start && parent.has(curr)) {
-            const p = parent.get(curr)!;
-            const key = [p, curr].sort().join('<->');
-            pathEdges.add(key);
-            curr = p;
-        }
-        return pathEdges;
+        return new Set();
     };
 
-    // Auto-scroll loop
+    // Auto-scroll logic
     React.useEffect(() => {
-        if (!dragStartId) {
-            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-            scrollVelocityRef.current = 0;
-            return;
-        }
-
         const loop = () => {
             if (scrollVelocityRef.current !== 0 && scrollContainerRef.current) {
                 scrollContainerRef.current.scrollLeft += scrollVelocityRef.current;
+
+                // When scrolling, we need to re-find the nearest node based on current cursor
+                // because the stations moved relative to the screen.
+                if (lastScreenCoordsRef.current && svgRef.current) {
+                    const svg = svgRef.current;
+                    const pt = svg.createSVGPoint();
+                    pt.x = lastScreenCoordsRef.current.x;
+                    pt.y = lastScreenCoordsRef.current.y;
+                    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+                    updateDragTarget(svgP.x, svgP.y);
+                }
             }
             animationFrameRef.current = requestAnimationFrame(loop);
         };
@@ -264,47 +242,18 @@ const TubeMap: React.FC<TubeMapProps> = ({
         return () => {
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         };
-    }, [dragStartId]);
+    }, [dragStartId, nodePositions, minX, minY]);
 
-    const handleStationMouseDown = (e: React.MouseEvent, stationId: string) => {
-        e.stopPropagation();
-        e.preventDefault();
-        setDragStartId(stationId);
-        setDragTargetId(stationId);
-        setHighlightedEdges(new Set());
+    const lastScreenCoordsRef = React.useRef<{ x: number, y: number } | null>(null);
 
-        const svg = svgRef.current;
-        if (svg) {
-            const pt = svg.createSVGPoint();
-            pt.x = e.clientX;
-            pt.y = e.clientY;
-            const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-            setDragCurrentPt({ x: svgP.x, y: svgP.y });
-        }
-    };
-
-    const handleSvgMouseMove = (e: React.MouseEvent) => {
-        if (!dragStartId) return;
-        const svg = svgRef.current;
-        let svgP = { x: 0, y: 0 };
-
-        if (svg) {
-            const pt = svg.createSVGPoint();
-            pt.x = e.clientX;
-            pt.y = e.clientY;
-            svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
-            setDragCurrentPt({ x: svgP.x, y: svgP.y });
-        }
-
-        // Find Nearest Station for Drag Target
+    const updateDragTarget = (svgX: number, svgY: number) => {
         let minDist = Infinity;
         let nearestId: string | null = null;
 
         nodePositions.forEach((pos, id) => {
-            const dx = pos.x + minX - svgP.x;
-            const dy = pos.y + minY - svgP.y;
+            const dx = pos.x + minX - svgX;
+            const dy = pos.y + minY - svgY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            // Hint: Trigger radius can be generous
             if (dist < 40 && dist < minDist) {
                 minDist = dist;
                 nearestId = id;
@@ -316,21 +265,39 @@ const TubeMap: React.FC<TubeMapProps> = ({
             if (dragStartId) {
                 const newPath = findPath(dragStartId, nearestId);
                 setHighlightedEdges(newPath);
+
+                // Provide real-time feedback to parent
+                if (onDragUpdate) {
+                    const waypointNames = [];
+                    if (nodes.has(dragStartId)) waypointNames.push(nodes.get(dragStartId)!.name);
+                    if (nodes.has(nearestId)) waypointNames.push(nodes.get(nearestId)!.name);
+                    onDragUpdate(waypointNames);
+                }
             }
-        } else if (!nearestId && dragTargetId !== null) {
-            // Optional: retain last target or clear? 
-            // Clearing feels more responsive if you move far away.
-            setDragTargetId(null);
-            setHighlightedEdges(new Set());
+        }
+    };
+
+    const handleDragMove = (clientX: number, clientY: number) => {
+        if (!dragStartId) return;
+        lastScreenCoordsRef.current = { x: clientX, y: clientY };
+
+        const svg = svgRef.current;
+        if (svg) {
+            const pt = svg.createSVGPoint();
+            pt.x = clientX;
+            pt.y = clientY;
+            const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+            setDragCurrentPt({ x: svgP.x, y: svgP.y });
+            updateDragTarget(svgP.x, svgP.y);
         }
 
         // Calculate scroll velocity
         if (scrollContainerRef.current) {
             const rect = scrollContainerRef.current.getBoundingClientRect();
-            const relX = e.clientX - rect.left;
+            const relX = clientX - rect.left;
             const w = rect.width;
-            const threshold = 50;
-            const speed = 10;
+            const threshold = 60; // Slightly larger for mobile/touch
+            const speed = 12;
 
             if (relX < threshold) scrollVelocityRef.current = -speed;
             else if (relX > w - threshold) scrollVelocityRef.current = speed;
@@ -338,12 +305,39 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
     };
 
+    const handleStationMouseDown = (e: React.MouseEvent, stationId: string) => {
+        e.stopPropagation();
+        setDragStartId(stationId);
+        setDragTargetId(stationId);
+        setHighlightedEdges(new Set());
+        handleDragMove(e.clientX, e.clientY);
+    };
+
+    const handleStationTouchStart = (e: React.TouchEvent, stationId: string) => {
+        e.stopPropagation();
+        // Don't preventDefault here as it might block scrolling if we don't start a drag
+        const touch = e.touches[0];
+        setDragStartId(stationId);
+        setDragTargetId(stationId);
+        setHighlightedEdges(new Set());
+        handleDragMove(touch.clientX, touch.clientY);
+    };
+
+    const handleSvgMouseMove = (e: React.MouseEvent) => {
+        handleDragMove(e.clientX, e.clientY);
+    };
+
+    const handleSvgTouchMove = (e: React.TouchEvent) => {
+        if (!dragStartId) return;
+        // If dragging stations, prevent page scroll
+        if (e.cancelable) e.preventDefault();
+        const touch = e.touches[0];
+        handleDragMove(touch.clientX, touch.clientY);
+    };
+
     const handleSvgMouseUp = () => {
-        // If dropped on empty space but we have a valid target from hovering
         if (dragStartId && dragTargetId && dragStartId !== dragTargetId) {
-            if (onPathCreate) {
-                onPathCreate(dragStartId, dragTargetId);
-            }
+            if (onPathCreate) onPathCreate(dragStartId, dragTargetId);
         }
         setDragStartId(null);
         setDragCurrentPt(null);
@@ -352,11 +346,12 @@ const TubeMap: React.FC<TubeMapProps> = ({
         scrollVelocityRef.current = 0;
     };
 
-    const handleStationMouseUp = (e: React.MouseEvent, stationId: string) => {
+    const handleSvgTouchEnd = (e: React.TouchEvent) => {
+        handleSvgMouseUp();
+    };
+
+    const handleStationMouseUp = (e: React.MouseEvent | React.TouchEvent, stationId: string) => {
         e.stopPropagation();
-        // Handled basically same as dropping on global, but more specific.
-        // If duplicate logic, just call general handler logic?
-        // But here we ensure stationId is definitely the target.
         if (dragStartId && dragStartId !== stationId) {
             if (onPathCreate) {
                 onPathCreate(dragStartId, stationId);
@@ -378,10 +373,12 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 width={svgWidth}
                 height={svgHeight}
                 className="tube-map"
-                style={{ minWidth: '100%', cursor: dragStartId ? 'grabbing' : 'default' }}
+                style={{ minWidth: '100%', cursor: dragStartId ? 'grabbing' : 'default', touchAction: 'none' }}
                 onMouseMove={handleSvgMouseMove}
                 onMouseUp={handleSvgMouseUp}
                 onMouseLeave={handleSvgMouseUp}
+                onTouchMove={handleSvgTouchMove}
+                onTouchEnd={handleSvgTouchEnd}
             >
                 {/* Defs for gradients or filters if needed */}
 
@@ -396,18 +393,16 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     const vX = paramsV.x + minX;
                     const vY = paramsV.y + minY;
 
-                    const key = [edge.u, edge.v].sort().join('<->');
-                    const isHighlighted = highlightedEdges.has(key);
-
                     return (
-                        <g key={`edge-${idx}`}>
-                            {/* Outer glow/stroke for visited */}
-                            {/* Main Stroke */}
+                        <g key={`${edge.u}-${edge.v}-${idx}`}>
                             <line
-                                x1={uX} y1={uY} x2={vX} y2={vY}
-                                stroke={isHighlighted ? '#FF5733' : getEdgeColor(edge.u, edge.v)}
-                                strokeWidth={isHighlighted ? 10 : getStrokeWidth(edge.u, edge.v)}
-                                strokeOpacity={isHighlighted ? 0.8 : getEdgeOpacity(edge.u, edge.v)}
+                                x1={uX}
+                                y1={uY}
+                                x2={vX}
+                                y2={vY}
+                                stroke={getEdgeColor(edge.u, edge.v)}
+                                strokeWidth={getStrokeWidth(edge.u, edge.v)}
+                                strokeOpacity={getEdgeOpacity(edge.u, edge.v)}
                                 strokeLinecap="round"
                             />
                         </g>
@@ -415,12 +410,12 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 })}
 
                 {/* Render Stations */}
-                {Array.from(nodePositions.values()).map(pos => {
+                {Array.from(nodePositions.values()).map((pos, idx) => {
                     const cx = pos.x + minX;
                     const cy = pos.y + minY;
                     const node = nodes.get(pos.id);
                     const name = node ? translateName(node.name, language, 'station') : pos.id.split('::').pop();
-                    const isVisited = visitedStations.has(pos.id);
+                    const isVisited = node ? visitedStations.has(node.name) : false;
 
                     // Highlight if start of drag or current target
                     const isDragStart = dragStartId === pos.id;
@@ -437,6 +432,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
                             }}
                             onMouseDown={(e) => handleStationMouseDown(e, pos.id)}
                             onMouseUp={(e) => handleStationMouseUp(e, pos.id)}
+                            onTouchStart={(e) => handleStationTouchStart(e, pos.id)}
                             style={{ cursor: 'pointer' }}
                         >
                             {/* Station Dot */}
@@ -449,23 +445,38 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                 strokeWidth={inPath ? 5 : (isVisited ? 3 : 2)}
                             />
 
-                            {/* Station Name Label */}
+                            {/* Station Label */}
                             <text
                                 x={cx}
-                                y={cy + 15}
-                                transform={`rotate(45, ${cx}, ${cy + 15})`}
-                                fontSize="12"
-                                fontWeight={isVisited || inPath ? "bold" : "normal"}
-                                fill={isVisited || inPath ? (inPath ? "#FF5733" : "#2ecc71") : "#333"}
-                                textAnchor="start"
-                                alignmentBaseline="middle"
-                                style={{ pointerEvents: 'none', userSelect: 'none' }}
+                                y={cy + (pos.branchIndex === 0 ? (idx % 2 === 0 ? 25 : -20) : (pos.branchIndex! % 2 === 0 ? 25 : -20))}
+                                textAnchor="middle"
+                                style={{
+                                    fontSize: inPath ? '12px' : '10px',
+                                    fontWeight: inPath || isVisited ? 'bold' : 'normal',
+                                    fill: inPath ? '#FF5733' : (isVisited ? '#27ae60' : '#333'),
+                                    pointerEvents: 'none',
+                                    userSelect: 'none'
+                                }}
                             >
                                 {name}
                             </text>
                         </g>
                     );
                 })}
+
+                {/* Drag preview line */}
+                {dragStartId && dragCurrentPt && (
+                    <line
+                        x1={nodePositions.get(dragStartId)!.x + minX}
+                        y1={nodePositions.get(dragStartId)!.y + minY}
+                        x2={dragCurrentPt.x}
+                        y2={dragCurrentPt.y}
+                        stroke="#FF5733"
+                        strokeWidth="4"
+                        strokeDasharray="8,8"
+                        style={{ pointerEvents: 'none' }}
+                    />
+                )}
             </svg>
         </div>
     );

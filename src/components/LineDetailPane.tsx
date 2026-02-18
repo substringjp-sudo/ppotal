@@ -6,10 +6,12 @@ import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
+import { useLineTopology, TopologySegment } from '../hooks/useLineTopology';
+import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
 
 interface LineDetailPaneProps {
     lineId: string;
-    segments: { stations: string[], edges: { from: string, to: string, distance: number }[] }[];
+    segments: TopologySegment[];
     nodes: Map<string, StationNode>;
     visitedEdges: Set<string>; // Set of edge keys like "stationId1<->stationId2"
     selectedLines: string[];
@@ -29,74 +31,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     const scrollRef = useRef<HTMLDivElement>(null);
 
     // --- Dynamic Topology Generation from Graph Data ---
-    const generatedTopologies = useMemo(() => {
-        if (!segments || segments.length === 0) return [];
-
-        let unprocessedSegments = [...segments];
-        const topologies: Array<{
-            type: string;
-            main_line: string[];
-            branches: Array<{ junction: string, path: string[] }>;
-        }> = [];
-
-        while (unprocessedSegments.length > 0) {
-            // 1. Sort remaining segments by length logic
-            unprocessedSegments.sort((a, b) => b.stations.length - a.stations.length);
-            const mainSegment = unprocessedSegments[0];
-
-            // Remove main segment from pool
-            unprocessedSegments.shift();
-
-            const mainLine = mainSegment.stations;
-            const processedStations = new Set<string>(mainLine);
-            const branches: Array<{ junction: string, path: string[] }> = [];
-
-            // 2. Iteratively attach remaining segments as branches
-            let changed = true;
-            while (changed) {
-                changed = false;
-                const nextUnprocessed: typeof segments = [];
-
-                for (const seg of unprocessedSegments) {
-                    const stations = seg.stations;
-                    if (stations.length === 0) continue;
-
-                    const startNode = stations[0];
-                    const endNode = stations[stations.length - 1];
-
-                    const startConnected = processedStations.has(startNode);
-                    const endConnected = processedStations.has(endNode);
-
-                    if (startConnected) {
-                        const path = stations.slice(1);
-                        if (path.length > 0) {
-                            branches.push({ junction: startNode, path });
-                            path.forEach(s => processedStations.add(s));
-                            changed = true;
-                        }
-                    } else if (endConnected) {
-                        const path = stations.slice(0, stations.length - 1).reverse();
-                        if (path.length > 0) {
-                            branches.push({ junction: endNode, path });
-                            path.forEach(s => processedStations.add(s));
-                            changed = true;
-                        }
-                    } else {
-                        nextUnprocessed.push(seg);
-                    }
-                }
-                unprocessedSegments = nextUnprocessed;
-            }
-
-            topologies.push({
-                type: 'generated',
-                main_line: mainLine,
-                branches
-            });
-        }
-
-        return topologies;
-    }, [segments]);
+    const generatedTopologies = useLineTopology(segments);
 
     const visitedLogicalEdges = useMemo(() => {
         const set = new Set<string>();
@@ -171,7 +106,6 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     <button
                         onClick={() => {
                             onToggleLine && onToggleLine(lineId);
-                            // Event tracking is handled in Page.tsx's toggleLine handler now
                         }}
                         style={{
                             width: '32px',
@@ -192,33 +126,38 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         {selectedLines.includes(lineId) ? '✓' : ''}
                     </button>
 
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                            <span style={{ fontSize: '12px', color: '#666' }}>{translateName(company, language, 'company')}</span>
-                            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{translateName(lineName, language, 'line')}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
+                            <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>{company}</span>
+                            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{lineName}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ fontSize: '14px', color: '#444', fontWeight: 'bold' }}>
-                                {stats.visited}km / {stats.total}km
-                            </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '-4px' }}>
+                            <span style={{ fontSize: '10px', color: '#666', fontWeight: '400' }}>{COMPANY_EN_NAMES[company] || company}</span>
+                            <span style={{ fontSize: '12px', color: '#555', fontWeight: '400' }}>{LINE_EN_NAMES[lineName] || lineName}</span>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ fontSize: '14px', color: '#444', fontWeight: 'bold' }}>
+                            {stats.visited}km / {stats.total}km
+                        </div>
+                        <div style={{
+                            width: '120px',
+                            height: '6px',
+                            backgroundColor: '#eee',
+                            borderRadius: '3px',
+                            overflow: 'hidden',
+                            display: 'flex'
+                        }}>
                             <div style={{
-                                width: '120px',
-                                height: '6px',
-                                backgroundColor: '#eee',
-                                borderRadius: '3px',
-                                overflow: 'hidden',
-                                display: 'flex'
-                            }}>
-                                <div style={{
-                                    width: `${stats.percent}%`,
-                                    height: '100%',
-                                    backgroundColor: '#27ae60',
-                                    transition: 'width 0.5s ease'
-                                }} />
-                            </div>
-                            <div style={{ fontSize: '14px', color: '#27ae60', fontWeight: '800' }}>
-                                {stats.percent}%
-                            </div>
+                                width: `${stats.percent}%`,
+                                height: '100%',
+                                backgroundColor: '#27ae60',
+                                transition: 'width 0.5s ease'
+                            }} />
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#27ae60', fontWeight: '800' }}>
+                            {stats.percent}%
                         </div>
                     </div>
                 </div>
@@ -270,21 +209,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     language={language}
                                     onPathCreate={(start, end) => {
                                         if (getShortestPath && onRecordTrip) {
-                                            // Ensure we stay on the current line if possible? 
-                                            // The user is in Line Detail, so they probably want to record on this line.
-                                            // Passing [lineId] as restriction might be good, but users might drag across branches?
-                                            // The `selectedLines` prop might be better.
-                                            // Actually, `activeLine` context is usually implies focusing on one line.
-                                            // Let's pass `selectedLines` combined with current line if needed, 
-                                            // but `getShortestPath` usually takes an array of allowed lines.
-
-                                            // If we just pass the current lineId, we ensure the path stays on this line 
-                                            // (which is what Line Detail is for).
-
                                             const pathData = getShortestPath(start, end, [lineId]);
-                                            // If pathData is null, maybe try with all lines?
-                                            // But for LineDetail, restricting to lineId is safer to avoid jumping to other lines.
-
                                             if (pathData) {
                                                 onRecordTrip({
                                                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

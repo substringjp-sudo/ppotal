@@ -40,7 +40,7 @@ const MapControls: React.FC<MapControlsProps> = ({ zoom, minZoom = 5, maxZoom = 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#666' }}>ZOOM</span>
-                    <span style={{ fontSize: '12px', fontWeight: '900', color: '#2c3e50' }}>{zoom}</span>
+                    <span style={{ fontSize: '12px', fontWeight: '900', color: '#2c3e50' }}>{zoom.toFixed(1)}</span>
                 </div>
                 <input
                     type="range"
