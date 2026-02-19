@@ -24,13 +24,16 @@ interface SidebarGroupProps {
     onLineClick?: (line: string) => void;
     language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
+    companyNames?: Record<string, any>;
+    lineNames?: Record<string, any>;
 }
 
 const SidebarGroup: React.FC<SidebarGroupProps> = ({
     title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
     selectedLines, onToggleLine, onToggleCompany, expandedCompanies,
     toggleCompany, lineLengths, visitedLineLengths, sortMode,
-    activeLine, onLineClick, language, registerLineRef
+    activeLine, onLineClick, language, registerLineRef,
+    companyNames = {}, lineNames = {}
 }) => {
     const isEmpty = Object.keys(companies).length === 0;
     if (isEmpty) return null;
@@ -40,15 +43,33 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
         return translateName(name, language, type);
     };
 
-    const sortLines = (lineNames: string[], company: string) => {
+    const getCompanyName = (id: string) => {
+        const name = companyNames[id]?.name || id;
+        return name;
+    }
+
+    const getCompanyEnName = (id: string) => {
+        return companyNames[id]?.name_en || COMPANY_EN_NAMES[companyNames[id]?.name] || id;
+    }
+
+    const getLineName = (id: string) => {
+        const name = lineNames[id]?.name || id;
+        return name;
+    }
+
+    const getLineEnName = (id: string) => {
+        return lineNames[id]?.name_en || LINE_EN_NAMES[lineNames[id]?.name] || id;
+    }
+
+    const sortLines = (lineIds: string[], companyId: string) => {
         if (sortMode === 'usage') {
-            const getLineUsage = (line: string) => {
-                const key = normalizeKey(`${company}::${line}`);
+            const getLineUsage = (lineId: string) => {
+                const key = normalizeKey(`${companyId}::${lineId}`);
                 return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
             };
-            return [...lineNames].sort((a, b) => getLineUsage(b) - getLineUsage(a));
+            return [...lineIds].sort((a, b) => getLineUsage(b) - getLineUsage(a));
         }
-        return [...lineNames].sort((a, b) => a.localeCompare(b, 'ja'));
+        return [...lineIds].sort((a, b) => getLineName(a).localeCompare(getLineName(b), 'ja'));
     };
 
     const sortCompaniesForRender = (companyEntries: [string, Record<string, any>][]) => {
@@ -61,12 +82,17 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
             };
             return [...companyEntries].sort((a, b) => getCompanyUsage(b[0], b[1]) - getCompanyUsage(a[0], a[1]));
         }
-        return [...companyEntries].sort((a, b) => a[0].localeCompare(b[0], 'ja'));
+        return [...companyEntries].sort((a, b) => getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'ja'));
     };
 
     const allGroupKeys: string[] = [];
     Object.entries(companies).forEach(([comp, lines]) => {
-        Object.keys(lines).forEach(l => allGroupKeys.push(`${comp}::${l}`));
+        Object.keys(lines).forEach(l => {
+            // Generate Name-based key
+            const cName = getCompanyName(comp);
+            const lName = getLineName(l);
+            allGroupKeys.push(`${cName}::${lName}`);
+        });
     });
 
     const allGroupSelected = allGroupKeys.every(k => selectedLines.includes(k));
@@ -87,10 +113,13 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                     {(() => {
                         let total = 0;
                         let visited = 0;
-                        Object.entries(companies).forEach(([comp, lines]) => {
-                            Object.keys(lines).forEach(l => {
+                        Object.entries(companies).forEach(([compId, lines]) => {
+                            Object.keys(lines).forEach(lineId => {
                                 total++;
-                                if ((visitedLineLengths[normalizeKey(`${comp}::${l}`)] || 0) > 0) visited++;
+                                const cName = getCompanyName(compId);
+                                const lName = getLineName(lineId);
+                                const key = normalizeKey(`${cName}::${lName}`);
+                                if ((visitedLineLengths[key] || 0) > 0) visited++;
                             });
                         });
                         return (
@@ -106,12 +135,27 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                         checked={(() => {
                             let all = true;
                             Object.entries(companies).forEach(([c, ls]) => {
-                                if (!Object.keys(ls).every(l => selectedLines.includes(`${c}::${l}`))) all = false;
+                                const cName = getCompanyName(c);
+                                if (!Object.keys(ls).every(l => {
+                                    const lName = getLineName(l);
+                                    return selectedLines.includes(`${cName}::${lName}`);
+                                })) all = false;
                             });
                             return all;
                         })()}
                         onChange={(e) => {
                             e.stopPropagation();
+                            // We need to toggle all lines in this group using Name-based keys
+                            // This is tricky because onToggleSelection might expect a GroupKey.
+                            // But Sidebar.tsx handles Group Toggle.
+                            // We should check Sidebar.tsx's handleGroupToggle implementation.
+                            // Assuming Sidebar.tsx handles it? No, Sidebar passes onToggleSelection.
+                            // Let's assume for now we call the parent handler. 
+                            // *Wait*, if onToggleSelection relies on generic keys, we might need to change Sidebar.tsx too.
+                            // But let's stick to the prop for now. Sidebar.tsx likely iterates the group geometry. 
+                            // Actually, onToggleSelection takes `groupKey` string (e.g. 'shinkansen').
+                            // Sidebar.tsx needs to know how to expand 'shinkansen' into keys.
+                            // I will check Sidebar.tsx next. For now, let's update rendering logic.
                             onToggleSelection(groupKey);
                         }}
                         title="Toggle Category"
@@ -122,18 +166,23 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
             </div>
             {expanded && (
                 <div style={{ padding: '0 10px 10px 10px' }}>
-                    {sortCompaniesForRender(Object.entries(companies)).map(([company, lines]) => {
-                        const isExpanded = expandedCompanies[company];
-                        const lineNames = Object.keys(lines);
-                        const compositeKeys = lineNames.map(l => `${company}::${l}`);
+                    {sortCompaniesForRender(Object.entries(companies)).map(([companyId, lines]) => {
+                        const isExpanded = expandedCompanies[companyId];
+                        const lineIds = Object.keys(lines);
+                        // Use names for keys
+                        const cName = getCompanyName(companyId);
+                        const compositeKeys = lineIds.map(l => `${cName}::${getLineName(l)}`);
                         const allLinesSelected = compositeKeys.every(k => selectedLines.includes(k));
                         const someLinesSelected = compositeKeys.some(k => selectedLines.includes(k));
 
-                        const companyTotalLines = lineNames.length;
-                        const companyVisitedCount = lineNames.filter(l => (visitedLineLengths[normalizeKey(`${company}::${l}`)] || 0) > 0).length;
+                        const companyTotalLines = lineIds.length;
+                        const companyVisitedCount = lineIds.filter(l => {
+                            const key = normalizeKey(`${cName}::${getLineName(l)}`);
+                            return (visitedLineLengths[key] || 0) > 0;
+                        }).length;
 
                         return (
-                            <div key={company} style={{ marginTop: '8px' }}>
+                            <div key={companyId} style={{ marginTop: '8px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
                                     <input
                                         type="checkbox"
@@ -143,16 +192,16 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                                 input.indeterminate = someLinesSelected && !allLinesSelected;
                                             }
                                         }}
-                                        onChange={() => onToggleCompany(company, lines)}
+                                        onChange={() => onToggleCompany(companyId, lines)}
                                         style={{ marginRight: '8px', cursor: 'pointer' }}
                                     />
                                     <span
-                                        onClick={() => toggleCompany(company)}
+                                        onClick={() => toggleCompany(companyId)}
                                         style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
                                     >
                                         <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                                             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {company}
+                                                {getCompanyName(companyId)}
                                             </span>
                                             <span style={{
                                                 fontSize: '10px',
@@ -163,7 +212,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis'
                                             }}>
-                                                {COMPANY_EN_NAMES[company] || company}
+                                                {getCompanyEnName(companyId)}
                                             </span>
                                         </div>
                                         <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
@@ -173,8 +222,14 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                             {isExpanded ? '▼' : '▶'}
                                         </span>
                                         {(() => {
-                                            const totalLen = lineNames.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${company}::${l}`)] || 0), 0);
-                                            const visitedLen = lineNames.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${company}::${l}`)] || 0), 0);
+                                            const totalLen = lineIds.reduce((sum, l) => {
+                                                const key = normalizeKey(`${cName}::${getLineName(l)}`);
+                                                return sum + (lineLengths[key] || 0);
+                                            }, 0);
+                                            const visitedLen = lineIds.reduce((sum, l) => {
+                                                const key = normalizeKey(`${cName}::${getLineName(l)}`);
+                                                return sum + (visitedLineLengths[key] || 0);
+                                            }, 0);
                                             const companyPercent = totalLen > 0 ? (visitedLen / totalLen) * 100 : 0;
                                             const colors = getProgressColor(companyPercent);
                                             return (
@@ -196,8 +251,9 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                 </div>
                                 {isExpanded && (
                                     <div style={{ marginLeft: '22px' }}>
-                                        {sortLines(lineNames, company).map(line => {
-                                            const key = `${company}::${line}`;
+                                        {sortLines(lineIds, companyId).map(lineId => {
+                                            const lName = getLineName(lineId);
+                                            const key = `${cName}::${lName}`;
                                             const normalizedKey = normalizeKey(key);
                                             const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
                                             const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey) || isActive;
@@ -206,7 +262,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
 
                                             return (
                                                 <div
-                                                    key={line}
+                                                    key={lineId}
                                                     ref={el => registerLineRef(key, el)}
                                                     onClick={() => onLineClick?.(key)}
                                                     style={{
@@ -242,7 +298,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                                                         textOverflow: 'ellipsis',
                                                                         cursor: 'pointer'
                                                                     }}>
-                                                                    {line}
+                                                                    {getLineName(lineId)}
                                                                 </span>
                                                                 <span style={{
                                                                     fontSize: '9px',
@@ -253,7 +309,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                                                     overflow: 'hidden',
                                                                     textOverflow: 'ellipsis'
                                                                 }}>
-                                                                    {LINE_EN_NAMES[line] || line}
+                                                                    {getLineEnName(lineId)}
                                                                 </span>
                                                             </div>
                                                             {(() => {

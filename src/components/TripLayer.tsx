@@ -1,8 +1,9 @@
 import React from 'react';
 import { Polyline, Tooltip } from 'react-leaflet';
+import { Trip } from '../types/trip';
 
 interface TripLayerProps {
-    recordedTrips: any[];
+    recordedTrips: Trip[];
     zoomLevel: number;
 }
 
@@ -18,7 +19,7 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel }) => {
             {recordedTrips.map((trip) => (
                 <React.Fragment key={trip.id}>
                     {trip.geometries && trip.geometries.map((segment: any, idx: number) => {
-                        const positions = segment.map((c: any) => [c[1], c[0]]);
+                        const positions = segment.map((c: any) => [c[1], c[0]] as [number, number]);
                         return (
                             <React.Fragment key={`${trip.id}-${idx}`}>
                                 {/* Trip Casing - Only show at zoom 10+ */}
@@ -49,7 +50,7 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel }) => {
                                     }}
                                     interactive={false}
                                 >
-                                    <Tooltip sticky>Trip: {trip.from} ↔ {trip.to}</Tooltip>
+                                    <Tooltip sticky>Trip: {trip.start} ↔ {trip.end}</Tooltip>
                                 </Polyline>
                             </React.Fragment>
                         );

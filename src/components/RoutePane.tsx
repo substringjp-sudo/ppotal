@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
+import { RailData } from '../types/railData';
 
 interface RoutePaneProps {
     startStation: string | null;
@@ -11,6 +12,7 @@ interface RoutePaneProps {
     routeResult: any | null; // RouteResult from RoutingGraph
     onSwapStations: () => void;
     language: Language;
+    railData?: RailData | null;
 }
 
 const RoutePane: React.FC<RoutePaneProps> = ({
@@ -20,7 +22,8 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     onSetEndStation,
     routeResult,
     onSwapStations,
-    language
+    language,
+    railData
 }) => {
     const [stationList, setStationList] = useState<{ id: string, name: string, primary_name: string }[]>([]);
     const [startInput, setStartInput] = useState(startStation || '');
@@ -45,24 +48,21 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     }, [routeResult, startStation, endStation]);
 
     useEffect(() => {
-        // Load station master list for autocomplete
-        fetch('/data/station_master_list.json')
-            .then(res => res.json())
-            .then((data: Record<string, any>) => {
-                const names = new Set<string>();
-                const list: any[] = [];
-                Object.values(data).forEach((group: any) => {
-                    if (!names.has(group.primary_name)) {
-                        names.add(group.primary_name);
-                        list.push({ name: group.primary_name });
-                    }
-                });
-                setStationList(list.sort((a, b) => a.name.localeCompare(b.name)));
-            })
-            .catch(err => {
-                console.error("Failed to load station master list", err);
-            });
-    }, []);
+        if (!railData?.stations) return;
+
+        const names = new Set<string>();
+        const list: any[] = [];
+
+        Object.values(railData.stations).forEach((station) => {
+            // Assuming station.name is the primary name we want to index
+            if (!names.has(station.name)) {
+                names.add(station.name);
+                list.push({ name: station.name, id: station.id, primary_name: station.name });
+            }
+        });
+
+        setStationList(list.sort((a, b) => a.name.localeCompare(b.name)));
+    }, [railData]);
 
     const filterStations = (input: string) => {
         if (!input) return [];

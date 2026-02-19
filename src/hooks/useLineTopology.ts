@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { StationNode } from '../lib/graphUtils';
 
 export interface TopologySegment {
     stations: string[];

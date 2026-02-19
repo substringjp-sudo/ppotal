@@ -1,4 +1,5 @@
 import { StationNode, haversineDistance } from './graphUtils';
+import { RailData } from '../types/railData';
 
 export interface RouteEdge {
     from: string;
@@ -32,7 +33,12 @@ export class RoutingGraph {
 
     constructor(data?: any) {
         if (data) {
-            this.loadSystematicData(data);
+            // Check if it's the new granular format
+            if ('stations' in data && 'railroadGraph' in data && 'lines' in data) {
+                this.loadGranularData(data as RailData);
+            } else {
+                this.loadSystematicData(data);
+            }
         }
     }
 
@@ -113,6 +119,130 @@ export class RoutingGraph {
                     this.adj.get(t.to)?.push(revEdge);
                 }
             });
+        }
+    }
+
+    loadGranularData(data: RailData) {
+        this.nodes.clear();
+        this.adj.clear();
+        this.stationToNodes.clear();
+
+        // Helpers
+        const companyNameMap = new Map<number, string>();
+        Object.values(data.companies).forEach(c => companyNameMap.set(c.id, c.name));
+
+        const lineNameMap = new Map<number, { name: string, companyId: number }>();
+        Object.values(data.lines).forEach(l => lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+
+        // 1. Load Nodes
+        Object.values(data.stations).forEach((station: any) => {
+            // Logic to determine Company/Line names (same as graphUtils)
+            let companyName = "Unknown";
+            let lineName = "Unknown";
+            let fullLineName = "Unknown::Unknown";
+
+            if (station.platform_ids && station.platform_ids.length > 0) {
+                const firstPlatformId = station.platform_ids[0];
+                const platform = data.platforms[firstPlatformId];
+                if (platform) {
+                    companyName = companyNameMap.get(platform.company) || String(platform.company);
+                    const lineInfo = lineNameMap.get(platform.line);
+                    lineName = lineInfo ? lineInfo.name : String(platform.line);
+                    fullLineName = `${companyName}::${lineName}`;
+                }
+            }
+
+            const node: StationNode = {
+                id: station.id,
+                name: station.name,
+                company: companyName,
+                line: lineName,
+                fullLineName: fullLineName,
+                coords: [station.lon, station.lat]
+            };
+
+            this.nodes.set(station.id, node);
+            this.adj.set(station.id, []);
+
+            if (!this.stationToNodes.has(station.name)) {
+                this.stationToNodes.set(station.name, []);
+            }
+            this.stationToNodes.get(station.name)!.push(station.id);
+        });
+
+        // 2. Load Rail Edges
+        const sectionMap = new Map<number, any>();
+        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
+
+        Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
+            Object.entries(targets).forEach(([targetId, sectionIds]) => {
+                let totalDistance = 0;
+                let combinedGeometry: [number, number][] = [];
+                let lineId = "";
+
+                let currentPos = sourceId;
+
+                (sectionIds as number[]).forEach((secId: number) => {
+                    const section = sectionMap.get(secId);
+                    if (!section) return;
+
+                    const lInfo = lineNameMap.get(section.line_id);
+                    const cName = companyNameMap.get(section.company_id) || "";
+                    const lName = lInfo ? lInfo.name : "";
+                    const thisLineId = `${cName}::${lName}`;
+                    if (!lineId) lineId = thisLineId;
+
+                    totalDistance += section.length;
+
+                    const geom = section.geometry;
+                    if (section.start_station === currentPos) {
+                        combinedGeometry.push(...geom);
+                        currentPos = section.end_station;
+                    } else if (section.end_station === currentPos) {
+                        combinedGeometry.push(...[...geom].reverse());
+                        currentPos = section.start_station;
+                    } else {
+                        combinedGeometry.push(...geom);
+                    }
+                });
+
+                // Add Edge
+                const edge: RouteEdge = {
+                    from: sourceId,
+                    to: targetId,
+                    distance: totalDistance,
+                    lineId: lineId,
+                    type: 'RAIL',
+                    geometry: combinedGeometry
+                };
+
+                this.adj.get(sourceId)?.push(edge);
+            });
+        });
+
+        // 3. Generate Transfers
+        for (const name of this.stationToNodes.keys()) {
+            const ids = this.stationToNodes.get(name)!;
+            for (let i = 0; i < ids.length; i++) {
+                for (let j = i + 1; j < ids.length; j++) {
+                    const u = this.nodes.get(ids[i])!;
+                    const v = this.nodes.get(ids[j])!;
+                    const dist = haversineDistance(u.coords, v.coords);
+
+                    if (dist < 1.0) {
+                        const edge: RouteEdge = {
+                            from: u.id,
+                            to: v.id,
+                            distance: dist,
+                            lineId: 'TRANSFER',
+                            type: 'TRANSFER'
+                        };
+                        this.adj.get(u.id)?.push(edge);
+                        const revEdge = { ...edge, from: v.id, to: u.id };
+                        this.adj.get(v.id)?.push(revEdge);
+                    }
+                }
+            }
         }
     }
 

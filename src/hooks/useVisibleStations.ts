@@ -1,64 +1,21 @@
 import { useMemo } from 'react';
 import { LatLngBounds } from 'leaflet';
 import { ProcessedStation, StaticNode } from '../types/mapTypes';
+import { RailData } from '../types/railData';
 
 interface VisibleStationsProps {
-    railroadNetwork: any;
+    railroadNetwork: RailData | null;
     mapBounds: LatLngBounds | null;
     zoomLevel: number;
     lineIdMap: Map<string, string>;
-    hierarchy: any;
-    stationMasterList: any;
 }
 
 export const useVisibleStations = ({
     railroadNetwork,
     mapBounds,
     zoomLevel,
-    lineIdMap,
-    hierarchy,
-    stationMasterList
+    lineIdMap
 }: VisibleStationsProps) => {
-
-    const nameToLogicalLines = useMemo(() => {
-        const mapping = new Map<string, Set<string>>();
-        if (!hierarchy) return mapping;
-
-        Object.entries(hierarchy).forEach(([company, lines]: [string, any]) => {
-            Object.entries(lines).forEach(([lineName, stations]: [string, any]) => {
-                const fullLineKey = `${company}::${lineName}`;
-                stations.forEach((sName: string) => {
-                    if (!mapping.has(sName)) mapping.set(sName, new Set());
-                    mapping.get(sName)!.add(fullLineKey);
-                });
-            });
-        });
-        return mapping;
-    }, [hierarchy]);
-
-    const platformLookup = useMemo(() => {
-        const lookup = new Map<string, { platforms: any, group: string }>();
-        if (!stationMasterList || !hierarchy) return lookup;
-
-        Object.entries(hierarchy).forEach(([company, lines]: [string, any]) => {
-            Object.entries(lines).forEach(([lineName, stations]: [string, any]) => {
-                stations.forEach((hs: any) => {
-                    if (hs.group && stationMasterList[hs.group]) {
-                        const platforms = stationMasterList[hs.group].stations;
-                        const myEntry = platforms.find((st: any) => st.line === lineName && st.name === hs.name && st.company === company);
-                        if (myEntry && (myEntry.geometries || myEntry.platforms)) {
-                            const key = `${company}::${lineName}::${hs.name}`;
-                            lookup.set(key, {
-                                platforms: myEntry.geometries || myEntry.platforms,
-                                group: hs.group
-                            });
-                        }
-                    }
-                });
-            });
-        });
-        return lookup;
-    }, [stationMasterList, hierarchy]);
 
     const visibleStations = useMemo(() => {
         if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
@@ -71,61 +28,79 @@ export const useVisibleStations = ({
             e: mapBounds.getEast()
         };
 
-        const stationEntries = Object.entries(railroadNetwork.stations);
+        if (railroadNetwork.stations && railroadNetwork.platforms) {
+            // Granular Data (RailData)
+            const railData = railroadNetwork as RailData;
+            const companyNameMap = new Map<number, string>();
+            Object.values(railData.companies).forEach((c: any) => companyNameMap.set(c.id, c.name));
 
-        for (let i = 0; i < stationEntries.length; i++) {
-            const [id, s] = stationEntries[i] as [string, any];
-            if (!s || !s.coords || s.coords.length < 2) continue;
-            const [lng, lat] = s.coords;
+            const lineInfoMap = new Map<number, { name: string, companyId: number }>();
+            Object.values(railData.lines).forEach((l: any) => lineInfoMap.set(l.id, { name: l.name, companyId: l.corp_id }));
 
-            // Spatial Culling
-            if (lat < bounds.s || lat > bounds.n || lng < bounds.w || lng > bounds.e) continue;
+            Object.values(railData.stations).forEach((s: any) => {
+                if (s.lat < bounds.s || s.lat > bounds.n || s.lon < bounds.w || s.lon > bounds.e) return;
 
-            const parts = id.split('::');
-            const company = parts[0];
-            const lineSimplified = parts[1];
-            const name = s.name;
-            const simplifiedKey = `${company}::${lineSimplified}`;
-            const key = lineIdMap.get(simplifiedKey) || simplifiedKey;
+                let companyName = "Unknown";
+                let lineName = "Unknown";
+                let fullLineName = "Unknown::Unknown";
 
-            const enriched = platformLookup.get(`${company}::${lineSimplified}::${name}`);
-            const platforms = enriched?.platforms || s.platforms;
-            const group = enriched?.group;
+                if (s.platform_ids && s.platform_ids.length > 0) {
+                    const pid = s.platform_ids[0];
+                    const p = railData.platforms[pid];
+                    if (p) {
+                        const cId = p.company;
+                        const lId = p.line;
+                        companyName = companyNameMap.get(cId) || String(cId);
+                        const lInfo = lineInfoMap.get(lId);
+                        lineName = lInfo ? lInfo.name : String(lId);
+                        fullLineName = `${companyName}::${lineName}`;
+                    }
+                }
 
-            const node: StaticNode = {
-                id,
-                coord: [lat, lng],
-                lineKey: key,
-                platforms,
-                group
-            };
-
-            if (!data[name]) {
-                const logicalLines = Array.from(nameToLogicalLines.get(name) || []);
-                const allLines = new Set([key, ...logicalLines]);
-                data[name] = {
-                    nodes: [node],
-                    centroid: [lat, lng],
-                    lines: Array.from(allLines)
-                };
-            } else {
-                data[name].nodes.push(node);
-                if (!data[name].lines.includes(key)) data[name].lines.push(key);
-
-                const logicalLines = nameToLogicalLines.get(name);
-                if (logicalLines) {
-                    logicalLines.forEach(l => {
-                        if (!data[name].lines.includes(l)) data[name].lines.push(l);
+                // Collect Platforms (Geometries)
+                const platforms: any[] = [];
+                if (s.platform_ids) {
+                    s.platform_ids.forEach((pid: string) => {
+                        const p = railData.platforms[pid];
+                        if (p && p.geometries) {
+                            if (Array.isArray(p.geometries)) {
+                                platforms.push(...p.geometries);
+                            }
+                        }
                     });
                 }
 
-                const n = data[name].nodes.length;
-                data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + lat) / n;
-                data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + lng) / n;
-            }
-        }
-        return data;
-    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap, nameToLogicalLines, platformLookup]);
+                const name = s.name;
+                const key = fullLineName; // Simplify key lookup for now
 
-    return { visibleStations, platformLookup };
+                const node: StaticNode = {
+                    id: s.id,
+                    coord: [s.lat, s.lon],
+                    lineKey: key,
+                    platforms: platforms.length > 0 ? platforms : undefined,
+                    group: undefined
+                };
+
+                if (!data[name]) {
+                    data[name] = {
+                        nodes: [node],
+                        centroid: [s.lat, s.lon],
+                        lines: [key]
+                    };
+                } else {
+                    data[name].nodes.push(node);
+                    if (!data[name].lines.includes(key)) data[name].lines.push(key);
+
+                    const n = data[name].nodes.length;
+                    data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + s.lat) / n;
+                    data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + s.lon) / n;
+                }
+            });
+
+        }
+
+        return data;
+    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap]);
+
+    return { visibleStations };
 };

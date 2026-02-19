@@ -1,15 +1,24 @@
+import { RailData } from '../types/railData';
+
 export interface StationNode {
-    id: string; // company::simplifiedLine::stationName::index
+    id: string; // station_id (from stations.json)
     name: string;
-    company: string;
-    line: string; // simplified line
-    fullLineName: string; // company::fullLineName
+    company: string; // company NAME (looked up)
+    line: string; // line NAME (looked up)
+    fullLineName: string; // keeping "Company::Line" format for compatibility
     coords: [number, number]; // [lon, lat]
 }
 
 export interface Edge {
     to: string;
     distance: number;
+    geometry: [number, number][];
+    lineId?: string; // Add lineId for coloring edges correctly
+}
+
+export interface LineSegment {
+    stations: string[];
+    edges: { from: string, to: string, distance: number }[];
     geometry: [number, number][];
 }
 
@@ -35,7 +44,12 @@ export class RailroadGraph {
 
     constructor(data?: any) {
         if (data) {
-            this.loadFromSystematicJson(data);
+            // Check if it's the new granular format
+            if ('stations' in data && 'railroadGraph' in data && 'lines' in data) {
+                this.loadFromGranularData(data as RailData);
+            } else {
+                this.loadFromSystematicJson(data);
+            }
         }
     }
 
@@ -50,13 +64,13 @@ export class RailroadGraph {
         this.stationsByName[node.name].push(node.id);
     }
 
-    addEdge(u: string, v: string, distance: number, geometry: [number, number][]) {
+    addEdge(u: string, v: string, distance: number, geometry: [number, number][], lineId?: string) {
         if (!this.adj.has(u)) this.adj.set(u, []);
         if (!this.adj.has(v)) this.adj.set(v, []);
 
-        this.adj.get(u)?.push({ to: v, distance, geometry });
+        this.adj.get(u)?.push({ to: v, distance, geometry, lineId });
         // Assuming undirected for now, but need to check if geometry needs reversing
-        this.adj.get(v)?.push({ to: u, distance, geometry: [...geometry].reverse() });
+        this.adj.get(v)?.push({ to: u, distance, geometry: [...geometry].reverse(), lineId });
     }
 
     getShortestPathByName(startName: string, endName: string, allowedLines: string[] | null = null, startCoords?: [number, number], endCoords?: [number, number]): { path: string[], distance: number, geometries: [number, number][][] } | null {
@@ -336,12 +350,22 @@ export class RailroadGraph {
      * Since lines can have branches, this returns a list of segments.
      * Uses bidirectional adjacency for complete graph traversal.
      */
-    getLineSegments(fullLineId: string): { stations: string[], edges: { from: string, to: string, distance: number }[] }[] {
-        const simplifiedIds = this.reverseLineIdMap.get(fullLineId) || [fullLineId];
+    getLineSegments(inputId: string): LineSegment[] {
+        // Resolve to full ID (e.g. "Company::Line Name")
+        // Try exact match, then normalized match (e.g. "Company::Line" -> "Company::Line Name")
+        const fullLineId = this.lineIdMap.get(inputId) || this.lineIdMap.get(normalizeKey(inputId)) || inputId;
 
-        const lineEdges = Array.from(this.adj.entries())
-            .filter(([u]) => simplifiedIds.some(id => u.startsWith(id)))
-            .flatMap(([u, edges]) => edges.filter(e => simplifiedIds.some(id => e.to.startsWith(id))).map(e => ({ from: u, ...e })));
+        // Collect all edges belonging to this line
+        const lineEdges: { from: string, to: string, distance: number, geometry: [number, number][] }[] = [];
+
+        for (const [u, edges] of this.adj.entries()) {
+            for (const e of edges) {
+                // Check edge ownership
+                if (e.lineId === fullLineId) {
+                    lineEdges.push({ from: u, ...e });
+                }
+            }
+        }
 
         if (lineEdges.length === 0) return [];
 
@@ -350,8 +374,9 @@ export class RailroadGraph {
 
         // Group platforms into logical stations by name
         const nameToRepId = new Map<string, string>();
-        // 양방향 인접 리스트: Name -> Map<TargetName, Distance>
-        const biAdj = new Map<string, Map<string, number>>();
+        // adj map: Name -> Map<TargetName, Edge>
+        // We store the Edge object to retrieve geometry later
+        const biAdj = new Map<string, Map<string, { distance: number, geometry: [number, number][], originalFrom: string, originalTo: string }>>();
 
         lineEdges.forEach(e => {
             const uName = getName(e.from);
@@ -366,35 +391,68 @@ export class RailroadGraph {
             if (!biAdj.has(uName)) biAdj.set(uName, new Map());
             if (!biAdj.has(vName)) biAdj.set(vName, new Map());
 
-            const fwdDist = biAdj.get(uName)!.get(vName) || Infinity;
-            biAdj.get(uName)!.set(vName, Math.min(fwdDist, e.distance));
-            const bwdDist = biAdj.get(vName)!.get(uName) || Infinity;
-            biAdj.get(vName)!.set(uName, Math.min(bwdDist, e.distance));
+            // We keep the shortest edge if multiple exist (unlikely for same line, but possible)
+            // Actually, we should keep the one matching our traversal direction if possible.
+            // But here we group by NAME.
+            // Let's store the edge.
+
+            const existingU = biAdj.get(uName)!.get(vName);
+            if (!existingU || e.distance < existingU.distance) {
+                biAdj.get(uName)!.set(vName, { distance: e.distance, geometry: e.geometry, originalFrom: e.from, originalTo: e.to });
+            }
+
+            // For reverse direction v->u, we need e.geometry REVERSED unless e was already v->u?
+            // "e" comes from this.adj.get(u). So e is u->v.
+            // So v->u should use reverse geometry.
+            const existingV = biAdj.get(vName)!.get(uName);
+            if (!existingV || e.distance < existingV.distance) {
+                biAdj.get(vName)!.set(uName, {
+                    distance: e.distance,
+                    geometry: [...e.geometry].reverse(),
+                    originalFrom: e.to,
+                    originalTo: e.from
+                });
+            }
         });
 
         // edge key를 사용하여 중복 방문 방지
         const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
         const visitedEdgeKeys = new Set<string>();
 
-        const segments: { stations: string[], edges: { from: string, to: string, distance: number }[] }[] = [];
+        const segments: LineSegment[] = [];
 
-        // DFS로 segment 추출: 한 시작점에서 분기점까지 또는 끝까지
+        // DFS로 segment 추출
         const traceSegment = (startName: string, firstNeighbor?: string) => {
             const names = [startName];
             const edges: { from: string, to: string, distance: number }[] = [];
+            const geometry: [number, number][] = [];
+
             let curr = startName;
 
-            // 첫 번째 이웃이 지정된 경우 해당 방향으로 시작
+            // Start Station Coords?
+            // geometry should ideally allow plotting.
+            // We'll append edge geometries.
+
             if (firstNeighbor) {
-                const dist = biAdj.get(curr)!.get(firstNeighbor)!;
+                const edgeData = biAdj.get(curr)!.get(firstNeighbor)!;
                 const edgeKey = getEdgeKey(curr, firstNeighbor);
                 if (visitedEdgeKeys.has(edgeKey)) return null;
                 visitedEdgeKeys.add(edgeKey);
+
                 edges.push({
                     from: nameToRepId.get(curr)!,
                     to: nameToRepId.get(firstNeighbor)!,
-                    distance: dist
+                    distance: edgeData.distance
                 });
+
+                if (geometry.length === 0) {
+                    geometry.push(...edgeData.geometry);
+                } else {
+                    // Check if we need to stitch
+                    // Usually edgeData.geometry[0] matches last point
+                    geometry.push(...edgeData.geometry);
+                }
+
                 names.push(firstNeighbor);
                 curr = firstNeighbor;
             }
@@ -409,31 +467,40 @@ export class RailroadGraph {
 
                 if (unvisited.length === 0) break;
 
-                // 미방문 edge가 1개면 직선 진행
-                // 미방문 edge가 2개 이상이면 분기점 - 하나만 따라가고 나머지는 나중에
-                const [nextName, dist] = unvisited[0];
+                const [nextName, edgeData] = unvisited[0];
                 const edgeKey = getEdgeKey(curr, nextName);
                 visitedEdgeKeys.add(edgeKey);
+
                 edges.push({
                     from: nameToRepId.get(curr)!,
                     to: nameToRepId.get(nextName)!,
-                    distance: dist
+                    distance: edgeData.distance
                 });
+
+                if (geometry.length > 0) {
+                    // Stitching: if last point == new first point, drop duplicate?
+                    // It's safer to just push all for render, Leaflet handles it fine usually.
+                    // But for cleaner data, distinct.
+                    // const last = geometry[geometry.length - 1];
+                    // const first = edgeData.geometry[0];
+                    // if (last[0]===first[0] && last[1]===first[1]) ... 
+                    // Let's just push.
+                }
+                geometry.push(...edgeData.geometry);
+
                 names.push(nextName);
                 curr = nextName;
 
-                // 다음 노드가 분기점(미방문 edge 2개 이상)이면 여기서 끊어서
-                // 후속 segment가 이 노드에서 시작하여 branch로 연결되도록 함
                 const nextNeighbors = biAdj.get(curr);
                 if (nextNeighbors) {
                     const nextUnvisited = Array.from(nextNeighbors.entries())
                         .filter(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
-                    if (nextUnvisited.length > 1) break; // 다음 노드가 분기점이면 segment 종료
+                    if (nextUnvisited.length > 1) break;
                 }
             }
 
             if (names.length > 1) {
-                return { stations: names.map(n => nameToRepId.get(n)!), edges };
+                return { stations: names.map(n => nameToRepId.get(n)!), edges, geometry };
             }
             return null;
         };
@@ -479,6 +546,143 @@ export class RailroadGraph {
 
         return segments;
     }
+
+    loadFromGranularData(data: RailData) {
+        this.nodes.clear();
+        this.adj.clear();
+        this.stationsByName = {};
+        this.lineIdMap.clear();
+        this.reverseLineIdMap.clear();
+
+        // Helper maps for meaningful names
+        const companyNameMap = new Map<number, string>();
+        Object.values(data.companies).forEach((c: any) => companyNameMap.set(c.id, c.name));
+
+        const lineNameMap = new Map<number, { name: string, companyId: number }>();
+        Object.values(data.lines).forEach((l: any) => lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+
+        // 1. Load Stations
+        Object.values(data.stations).forEach((station: any) => {
+            let companyName = "Unknown";
+            let lineName = "Unknown";
+            let fullLineName = "Unknown::Unknown";
+
+            if (station.platform_ids && station.platform_ids.length > 0) {
+                const firstPlatformId = station.platform_ids[0];
+                const platform = data.platforms[firstPlatformId];
+                if (platform) {
+                    companyName = companyNameMap.get(platform.company) || String(platform.company);
+                    const lineInfo = lineNameMap.get(platform.line);
+                    lineName = lineInfo ? lineInfo.name : String(platform.line);
+                    fullLineName = `${companyName}::${lineName}`;
+                }
+            }
+
+            const node: StationNode = {
+                id: station.id,
+                name: station.name,
+                company: companyName,
+                line: lineName,
+                fullLineName: fullLineName,
+                coords: [station.lon, station.lat]
+            };
+            this.addNode(node);
+        });
+
+        // 2. Load Edges from railroad_graph.json
+        const sectionMap = new Map<number, any>();
+        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
+
+        Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
+            Object.entries(targets).forEach(([targetId, sectionIds]) => {
+                let totalDistance = 0;
+                let combinedGeometry: [number, number][] = [];
+                let lineId = "";
+
+                let currentPos = sourceId;
+
+                (sectionIds as number[]).forEach((secId: number) => {
+                    const section = sectionMap.get(secId);
+                    if (!section) return;
+
+                    const lInfo = lineNameMap.get(section.line_id);
+                    const cName = companyNameMap.get(section.company_id) || "";
+                    const lName = lInfo ? lInfo.name : "";
+                    const thisLineId = `${cName}::${lName}`;
+                    if (!lineId) lineId = thisLineId;
+
+                    totalDistance += section.length;
+
+                    const geom = section.geometry;
+
+                    if (section.start_station === currentPos) {
+                        combinedGeometry.push(...geom);
+                        currentPos = section.end_station;
+                    } else if (section.end_station === currentPos) {
+                        combinedGeometry.push(...[...geom].reverse());
+                        currentPos = section.start_station;
+                    } else {
+                        combinedGeometry.push(...geom);
+                    }
+                });
+
+                const existsForward = this.adj.get(sourceId)?.some(e => e.to === targetId);
+                if (!existsForward) {
+                    this.addEdge(sourceId, targetId, totalDistance, combinedGeometry, lineId);
+                }
+            });
+        });
+
+        // 3. Hierarchy / Line Mapping
+        Object.values(data.lines).forEach((l: any) => {
+            const companyName = companyNameMap.get(l.corp_id) || String(l.corp_id);
+            const fullId = `${companyName}::${l.name}`;
+            const simplifiedKey = `${companyName}::${l.name}`;
+            this.lineIdMap.set(simplifiedKey, fullId);
+
+            // Register exact match
+            if (!this.reverseLineIdMap.has(fullId)) {
+                this.reverseLineIdMap.set(fullId, []);
+            }
+            const exactList = this.reverseLineIdMap.get(fullId)!;
+            if (!exactList.includes(simplifiedKey)) {
+                exactList.push(simplifiedKey);
+            }
+
+            // Register normalized match for robustness
+            const normalizedKey = normalizeKey(simplifiedKey);
+            if (normalizedKey !== simplifiedKey) {
+                // Ensure map points to fullId
+                this.lineIdMap.set(normalizedKey, fullId);
+
+                if (!this.reverseLineIdMap.has(normalizedKey)) {
+                    this.reverseLineIdMap.set(normalizedKey, []);
+                }
+                const normList = this.reverseLineIdMap.get(normalizedKey)!;
+                if (!normList.includes(simplifiedKey)) {
+                    normList.push(simplifiedKey);
+                }
+            }
+        });
+
+        // 4. Add Transfer Edges (Same station name)
+        for (const name in this.stationsByName) {
+            const ids = this.stationsByName[name];
+            for (let i = 0; i < ids.length; i++) {
+                for (let j = i + 1; j < ids.length; j++) {
+                    const nodeI = this.nodes.get(ids[i]);
+                    const nodeJ = this.nodes.get(ids[j]);
+                    if (nodeI && nodeJ) {
+                        const dist = haversineDistance(nodeI.coords, nodeJ.coords);
+                        // Transfer edge with small penalty + actual distance
+                        if (dist < 1.0) {
+                            this.addEdge(ids[i], ids[j], 0.05 + dist, [nodeI.coords, nodeJ.coords]);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 export const haversineDistance = (coords1: [number, number], coords2: [number, number]): number => {
@@ -494,12 +698,6 @@ export const haversineDistance = (coords1: [number, number], coords2: [number, n
     return R * c;
 };
 
-/**
- * Calculates the shortest distance from a point to a line segment.
- * @param p [lon, lat]
- * @param v segment start [lon, lat]
- * @param w segment end [lon, lat]
- */
 export const pointToSegmentDistance = (p: [number, number], v: [number, number], w: [number, number]): number => {
     const l2 = Math.pow(v[0] - w[0], 2) + Math.pow(v[1] - w[1], 2);
     if (l2 === 0) return haversineDistance(p, v);
@@ -697,7 +895,6 @@ export const buildGraph = (stationsGeoJson: any, sectionGeoJson: any, hierarchy:
                             // Create a straight-line fallback edge
                             const dist = haversineDistance(nodeA.coords, nodeB.coords);
                             const straightGeom: [number, number][] = [nodeA.coords, nodeB.coords];
-                            // console.log(`Adding logical fallback edge: ${nameA} -> ${nameB} (${lineName})`);
                             graph.addEdge(idA, idB, dist, straightGeom);
                         }
                     }

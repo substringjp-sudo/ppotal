@@ -7,6 +7,7 @@ import { Language, UI_TRANSLATIONS } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
 import HowToModal from '../components/HowToModal';
+import { useRailData } from '../hooks/useRailData';
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
     ssr: false
@@ -58,7 +59,6 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
 const MobileBottomSheet = dynamic(() => import('../components/Mobile/MobileBottomSheet'), { ssr: false });
 const MobileEditLinePanelWithNoSSR = dynamic(() => import('../components/Mobile/MobileEditLinePanel'), { ssr: false });
 const RouteCreationPanelWithNoSSR = dynamic(() => import('../components/Mobile/RouteCreationPanel'), { ssr: false });
-const RulerOverlayWithNoSSR = dynamic(() => import('../components/RulerOverlay'), { ssr: false });
 
 const Page = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
@@ -123,28 +123,17 @@ const Page = () => {
         }
     };
 
-    const handleZoomToLine = React.useCallback((lineKey: string) => {
-        setZoomToLine(lineKey);
-        setTimeout(() => setZoomToLine(null), 2000);
-    }, []);
-
-    const handleZoomToStation = React.useCallback((stationName: string) => {
-        setZoomToStation(stationName);
-        setTimeout(() => setZoomToStation(null), 2000);
-    }, []);
+    const { railData } = useRailData();
 
     React.useEffect(() => {
-        fetch('/data/station_hierarchy.json')
-            .then(res => res.json())
-            .then((data: Record<string, Record<string, any>>) => {
-                const allKeys: string[] = [];
-                Object.entries(data).forEach(([comp, lines]) => {
-                    Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
-                });
-                setSelectedLines(allKeys);
-            })
-            .catch(err => console.error("Failed to load hierarchy for initial selection", err));
-    }, []);
+        if (railData && railData.hierarchy) {
+            const allKeys: string[] = [];
+            Object.entries(railData.hierarchy).forEach(([comp, lines]: [string, any]) => {
+                Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
+            });
+            setSelectedLines(allKeys);
+        }
+    }, [railData]);
 
     React.useEffect(() => {
         const saved = localStorage.getItem('jprail_trips');
@@ -225,9 +214,9 @@ const Page = () => {
         }
     }, [trackEvent]);
 
-    const handleDeleteLineHistory = React.useCallback((lineId: string) => {
+    const handleDeleteLineHistory = React.useCallback(() => {
         if (!window.confirm('이 노선의 이동 기록을 모두 삭제하시겠습니까?')) return;
-        setRecordedTrips(prev => prev.filter(trip => true)); // Simplistic implementation as before
+        setRecordedTrips(prev => prev.filter(() => true)); // Simplistic implementation as before
     }, []);
 
     const [lineIdMapping, setLineIdIdMapping] = React.useState<Map<string, string>>(new Map());

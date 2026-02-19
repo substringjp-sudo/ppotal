@@ -5,9 +5,10 @@ import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import { getOfficialColor } from '../lib/lineColors';
 import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
+import { RailData, Section } from '../types/railData';
 
 interface RailroadLayerProps {
-    railroadNetwork: any;
+    railroadNetwork: RailData | any;
     selectedLines: string[];
     activeLine: string | null;
     hoveredLine: string | null;
@@ -42,24 +43,68 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     }, [zoomLevel]);
 
     const geoJsonData = useMemo(() => {
-        if (!railroadNetwork || !railroadNetwork.routes) return null;
+        if (!railroadNetwork) return null;
+
         const features: any[] = [];
-        railroadNetwork.routes.forEach((route: any) => {
-            if (!route) return;
-            let coordinates = route.routeGeometry || route.edges?.map((e: any) => e.geometry) || [];
-            if (coordinates.length === 0) return;
-            features.push({
-                type: 'Feature',
-                properties: {
-                    id: route.id,
-                    name: route.line || route.name || '',
-                    company: route.company,
-                    color: getOfficialColor(route.id) || route.color || '#999',
-                    endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : ''
-                },
-                geometry: { type: 'MultiLineString', coordinates }
+
+        // Check for Granular Data (RailData)
+        if (railroadNetwork.stations && railroadNetwork.sections && railroadNetwork.lines) {
+            const data = railroadNetwork as RailData;
+            const companyNameMap = new Map<number, string>();
+            Object.values(data.companies).forEach((c) => companyNameMap.set(c.id, c.name));
+
+            const lineInfoMap = new Map<number, { name: string, companyId: number, color?: string }>();
+            Object.values(data.lines).forEach((l) => lineInfoMap.set(l.id, { name: l.name, companyId: l.corp_id, color: l.color }));
+
+            // Group sections by line_id (MultiLineString per line)
+            const lineSections = new Map<number, any[]>();
+            // sections is { sections: Section[] }
+            if (data.sections && Array.isArray(data.sections.sections)) {
+                data.sections.sections.forEach((s: Section) => {
+                    if (!lineSections.has(s.line_id)) lineSections.set(s.line_id, []);
+                    lineSections.get(s.line_id)!.push(s.geometry);
+                });
+            }
+
+            lineSections.forEach((geoms, lineId) => {
+                const info = lineInfoMap.get(lineId);
+                if (!info) return;
+                const companyName = companyNameMap.get(info.companyId) || String(info.companyId);
+                const fullId = `${companyName}::${info.name}`;
+
+                features.push({
+                    type: 'Feature',
+                    properties: {
+                        id: fullId,
+                        name: info.name,
+                        company: companyName,
+                        color: getOfficialColor(fullId) || info.color || '#999',
+                        endpoints: '' // Granular data doesn't provide pre-calculated endpoints
+                    },
+                    geometry: { type: 'MultiLineString', coordinates: geoms }
+                });
             });
-        });
+
+        } else if (railroadNetwork.routes) {
+            // Systematic Data (Original Logic)
+            railroadNetwork.routes.forEach((route: any) => {
+                if (!route) return;
+                let coordinates = route.routeGeometry || route.edges?.map((e: any) => e.geometry) || [];
+                if (coordinates.length === 0) return;
+                features.push({
+                    type: 'Feature',
+                    properties: {
+                        id: route.id,
+                        name: route.line || route.name || '',
+                        company: route.company,
+                        color: getOfficialColor(route.id) || route.color || '#999',
+                        endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : ''
+                    },
+                    geometry: { type: 'MultiLineString', coordinates }
+                });
+            });
+        }
+
         return { type: 'FeatureCollection', features };
     }, [railroadNetwork]);
 

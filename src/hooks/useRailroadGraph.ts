@@ -1,84 +1,108 @@
 import { useState, useMemo, useEffect } from 'react';
 import { RailroadGraph } from '../lib/graphUtils';
+import { RailData } from '../types/railData';
 import { normalizeKey } from '../lib/lineUtils';
 
-export const useRailroadGraph = (railroadNetwork: any, recordedTrips: any[]) => {
-    const [graph, setGraph] = useState<RailroadGraph | null>(null);
-    const [lineLengths, setLineLengths] = useState<Record<string, number>>({});
+export const useRailroadGraph = (railData: RailData | any, recordedTrips: any[]) => {
 
-    useEffect(() => {
-        if (!railroadNetwork) return;
-        setGraph(new RailroadGraph(railroadNetwork));
-    }, [railroadNetwork]);
+    // 1. Initialize Graph
+    const graph = useMemo(() => {
+        if (!railData) return null;
+        const g = new RailroadGraph();
+        // Check for granular data signature
+        if (railData.stations && railData.railroadGraph) {
+            g.loadFromGranularData(railData as RailData);
+        } else if (railData.routes) {
+            g.loadFromSystematicJson(railData);
+        }
+        return g;
+    }, [railData]);
 
+    // 2. Line ID Map
+    // We can derive this from graph if available, or compute it.
+    // graph.lineIdMap is populated during load.
     const lineIdMap = useMemo(() => {
-        if (!railroadNetwork) return new Map<string, string>();
-        const map = new Map<string, string>();
-        railroadNetwork.routes.forEach((route: any) => {
-            map.set(route.id, `${route.company}::${route.line}`);
-        });
-        return map;
-    }, [railroadNetwork]);
+        if (graph) return graph.lineIdMap;
+        return new Map<string, string>();
+    }, [graph]);
 
-    // Calculate Lengths
-    useEffect(() => {
-        if (!railroadNetwork) return;
-        const rounded: Record<string, number> = {};
-        railroadNetwork.routes.forEach((route: any) => {
-            let total = 0;
-            route.edges.forEach((edge: any) => total += edge.distance);
-            const fullId = `${route.company}::${route.line}`;
-            rounded[normalizeKey(fullId)] = Math.round(total * 10) / 10;
-        });
-        setLineLengths(rounded);
-    }, [railroadNetwork]);
+    // 3. Calculate Line Lengths
+    const lineLengths = useMemo(() => {
+        if (!railData) return {};
+        const lengths: Record<string, number> = {};
 
-    // Calculate Visited Lengths
+        if (railData.stations && railData.railroadGraph) {
+            // Granular Data
+            const data = railData as RailData;
+            // Iterate sections to sum lengths per line
+            // We need mapping from line_id (number) to "Company::Line" (string)
+            // graph.lineNameMap is private/internal
+
+            // Re-create mapping or access from graph if we expose it?
+            // Let's re-create mapping to be safe/stand-alone
+            const companyNameMap = new Map<number, string>();
+            Object.values(data.companies).forEach(c => companyNameMap.set(c.id, c.name));
+
+            const lineNameMap = new Map<number, { name: string, companyId: number }>();
+            Object.values(data.lines).forEach(l => lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+
+            const lineDistances: Record<string, number> = {};
+
+            data.sections.sections.forEach(section => {
+                const lInfo = lineNameMap.get(section.line_id);
+                if (lInfo) {
+                    const cName = companyNameMap.get(lInfo.companyId) || String(lInfo.companyId);
+                    const fullId = `${cName}::${lInfo.name}`;
+                    lineDistances[fullId] = (lineDistances[fullId] || 0) + section.length;
+                }
+            });
+
+            Object.entries(lineDistances).forEach(([id, dist]) => {
+                lengths[normalizeKey(id)] = Math.round(dist * 10) / 10;
+            });
+
+        } else if (railData.routes) {
+            // Systematic Data
+            railData.routes.forEach((route: any) => {
+                const fullId = `${route.company}::${route.line}`;
+                let total = 0;
+                route.edges.forEach((e: any) => total += e.distance);
+                lengths[normalizeKey(fullId)] = Math.round(total * 10) / 10;
+            });
+        }
+        return lengths;
+    }, [railData]);
+
+    // 4. Calculate Visited Lengths
     const visitedLineLengths = useMemo(() => {
-        if (!railroadNetwork || !recordedTrips) return {};
+        if (!graph || !recordedTrips) return {};
 
-        const visitedPerLine: Record<string, Set<string>> = {};
+        const visitedPerLine: Record<string, Set<string>> = {}; // Set of edge IDs (u-v)
         const visitedDistances: Record<string, number> = {};
 
         recordedTrips.forEach(trip => {
-            if (!trip.path || !trip.geometries) return;
+            if (!trip.path) return;
 
             for (let i = 0; i < trip.path.length - 1; i++) {
                 const uId = trip.path[i];
                 const vId = trip.path[i + 1];
 
-                const partsU = uId.split('::');
-                const partsV = vId.split('::');
+                // Get edge from graph to identify line
+                // graph.adj is Map<string, Edge[]>
+                const neighbors = graph.adj.get(uId);
+                const edge = neighbors?.find(e => e.to === vId);
 
-                if (partsU.length < 3 || partsV.length < 3) continue;
-
-                const companyU = partsU[0];
-                const lineU = partsU[1];
-                const stationU = partsU[2];
-                const companyV = partsV[0];
-                const lineV = partsV[1];
-                const stationV = partsV[2];
-
-                if (companyU === companyV && lineU === lineV) {
-                    const simplifiedKey = `${companyU}::${lineU}`;
-                    const lineKey = lineIdMap.get(simplifiedKey) || simplifiedKey;
+                if (edge && edge.lineId) {
+                    const lineKey = edge.lineId;
 
                     if (!visitedPerLine[lineKey]) visitedPerLine[lineKey] = new Set();
 
-                    const edgeId = [stationU, stationV].sort().join('<->');
+                    // Unique edge identifier
+                    const edgeId = [uId, vId].sort().join('<->');
 
                     if (!visitedPerLine[lineKey].has(edgeId)) {
                         visitedPerLine[lineKey].add(edgeId);
-
-                        const route = railroadNetwork.routes.find((r: any) => r.id === simplifiedKey);
-                        if (route) {
-                            const edge = route.edges.find((e: any) =>
-                                (e.from === uId && e.to === vId) || (e.from === vId && e.to === uId)
-                            );
-                            if (edge) {
-                                visitedDistances[lineKey] = (visitedDistances[lineKey] || 0) + edge.distance;
-                            }
-                        }
+                        visitedDistances[lineKey] = (visitedDistances[lineKey] || 0) + edge.distance;
                     }
                 }
             }
@@ -86,11 +110,11 @@ export const useRailroadGraph = (railroadNetwork: any, recordedTrips: any[]) => 
 
         const roundedVisited: Record<string, number> = {};
         Object.entries(visitedDistances).forEach(([key, dist]) => {
-            const normalizedKey = normalizeKey(key);
-            roundedVisited[normalizedKey] = Math.round(dist * 10) / 10;
+            roundedVisited[normalizeKey(key)] = Math.round(dist * 10) / 10;
         });
         return roundedVisited;
-    }, [recordedTrips, railroadNetwork, lineIdMap]);
+
+    }, [graph, recordedTrips]);
 
     return {
         graph,

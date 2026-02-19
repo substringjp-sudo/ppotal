@@ -1,22 +1,23 @@
 "use client";
 
 import React, { useMemo, useRef } from 'react';
-import { StationNode } from '../lib/graphUtils';
+import { StationNode, LineSegment } from '../lib/graphUtils';
 import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
-import { useLineTopology, TopologySegment } from '../hooks/useLineTopology';
+import { useLineTopology } from '../hooks/useLineTopology';
 import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
+import { Trip } from '../types/trip';
 
 interface LineDetailPaneProps {
     lineId: string;
-    segments: TopologySegment[];
+    segments: LineSegment[];
     nodes: Map<string, StationNode>;
     visitedEdges: Set<string>; // Set of edge keys like "stationId1<->stationId2"
     selectedLines: string[];
-    onRecordTrip?: (trip: any) => void;
-    getShortestPath?: (start: string, end: string, lines: string[]) => any;
+    onRecordTrip?: (trip: Trip) => void;
+    getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][] } | null;
     onStationClick?: (stationName: string) => void;
     onClose: () => void;
     language: Language;
@@ -215,7 +216,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                                                     start,
                                                     end,
-                                                    ...pathData
+                                                    ...pathData,
+                                                    waypoints: [start, end]
                                                 });
                                             }
                                         }

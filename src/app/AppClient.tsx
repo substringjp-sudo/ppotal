@@ -6,6 +6,7 @@ import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import HowToModal from '../components/HowToModal';
+import { useRailData } from '../hooks/useRailData';
 
 const MapWithNoSSR = dynamic(() => import('../components/Map'), {
     ssr: false
@@ -79,6 +80,14 @@ const AppClient = () => {
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [language, setLanguage] = React.useState<Language>('ja');
     const [showHowTo, setShowHowTo] = React.useState(false);
+    const [isMobile, setIsMobile] = React.useState(false);
+
+    React.useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Routing State
     const [sideMode, setSideMode] = React.useState<'lines' | 'route'>('lines');
@@ -98,18 +107,17 @@ const AppClient = () => {
     }, []);
 
     // Load all lines on first load
+    const { railData } = useRailData();
+
     React.useEffect(() => {
-        fetch('/data/station_hierarchy.json')
-            .then(res => res.json())
-            .then((data: Record<string, Record<string, any>>) => {
-                const allKeys: string[] = [];
-                Object.entries(data).forEach(([comp, lines]) => {
-                    Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
-                });
-                setSelectedLines(allKeys);
-            })
-            .catch(err => console.error("Failed to load hierarchy for initial selection", err));
-    }, []);
+        if (railData && railData.hierarchy) {
+            const allKeys: string[] = [];
+            Object.entries(railData.hierarchy).forEach(([comp, lines]: [string, any]) => {
+                Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
+            });
+            setSelectedLines(allKeys);
+        }
+    }, [railData]);
 
     // Initial load from localStorage
     React.useEffect(() => {
@@ -487,6 +495,7 @@ const AppClient = () => {
                                 routeStart={routeStart}
                                 routeEnd={routeEnd}
                                 onRouteResult={setRouteResult}
+                                isMobile={isMobile}
                             />
                         </MapWithNoSSR>
                     </div>
