@@ -192,15 +192,15 @@ export class RoutingGraph {
                     const thisLineId = `${cName}::${lName}`;
                     if (!lineId) lineId = thisLineId;
 
-                    totalDistance += section.length;
+                    totalDistance += section.length / 1000;
 
                     const geom = section.geometry;
-                    if (section.start_station === currentPos) {
+                    if (section.start === currentPos) {
                         combinedGeometry.push(...geom);
-                        currentPos = section.end_station;
-                    } else if (section.end_station === currentPos) {
+                        currentPos = section.end;
+                    } else if (section.end === currentPos) {
                         combinedGeometry.push(...[...geom].reverse());
-                        currentPos = section.start_station;
+                        currentPos = section.start;
                     } else {
                         combinedGeometry.push(...geom);
                     }

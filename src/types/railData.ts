@@ -38,9 +38,9 @@ export interface Section {
     company_id: number;
     line_id: number;
     geometry: [number, number][]; // LineString
-    start_station: string; // Station ID (Group ID if possible, or Platform ID?) - Schema says "010136" which looks like platform/station ID
-    end_station: string;
-    length: number;
+    start: string; // Station group_id or platform_id
+    end: string;
+    length: number; // In integer meters
 }
 
 export interface RailroadGraphEdge {

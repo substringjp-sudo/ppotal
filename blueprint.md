@@ -20,18 +20,18 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Detail Panes**: Dedicated views for line-specific details, including segments and pathfinding.
 - **Customizable Styles**: User-controlled styling settings for visited and unvisited elements.
 
-## Current Planned Changes (Investigating Missing Kyoto Data)
+## Current Planned Changes (Refining Sections Data)
 ### Goal
-Identify and fix the issue where certain JR West Tokaido Line segments and major stations (Kyoto, Yamashina) are missing from the map.
+Refine `sections.json` to reduce file size and optimize for the application.
 
 ### Proposed Steps
-1. **Modify Station Visibility**: Update `Stations.tsx` to ensure major stations are visible even when their specific line is not selected, especially at higher zoom levels.
-2. **Improve Line Segment Rendering**: Research and implement logic to handle cross-line segments (segments labeled as one line that logically belong to another, like Kyoto-Yamashina) to ensure they render with their logical parent line.
-3. **Resolve "Selection Rectangle"**: Audit CSS and component styles to remove any unintended selection indicators or focus rings.
-4. **Data Verification**: Confirm station IDs and line associations in `systematic_railroad_network.json` match the expected hierarchy.
-5. **Verify Fixes**: Ensure Kyoto and Yamashina stations and their connecting lines are correctly displayed and interactable.
+1. **Filter Redundant Sections**: Remove entries where `start_station` and `end_station` are identical (representing purely internal platform connections).
+2. **Convert Length Units**: Convert `length` from kilometers to meters (integer) to simplify calculations and reduce decimal precision overhead.
+3. **Shorten Keys**: Rename `start_station` and `end_station` to `start` and `end` respectively for more compact JSON representation.
+4. **Update File**: Save the refined data back to `sections.json`.
 
 #메모
+... (생략)
 우리에겐 좀 복잡하지만 여러 노선의 상태가 존재해.
 1. 체크된 노선
 2. 체크안된 노선

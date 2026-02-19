@@ -53,7 +53,7 @@ export const useRailroadGraph = (railData: RailData | any, recordedTrips: any[])
                 if (lInfo) {
                     const cName = companyNameMap.get(lInfo.companyId) || String(lInfo.companyId);
                     const fullId = `${cName}::${lInfo.name}`;
-                    lineDistances[fullId] = (lineDistances[fullId] || 0) + section.length;
+                    lineDistances[fullId] = (lineDistances[fullId] || 0) + (section.length / 1000);
                 }
             });
 
