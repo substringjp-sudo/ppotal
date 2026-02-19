@@ -28,6 +28,130 @@ interface SidebarGroupProps {
     lineNames?: Record<string, any>;
 }
 
+const SidebarLineItem: React.FC<{
+    lineId: string;
+    cName: string;
+    getLineName: (id: string | any) => string;
+    getLineEnName: (id: string | any) => string;
+    registerLineRef: (key: string, el: HTMLDivElement | null) => void;
+    onLineClick?: (line: string) => void;
+    onToggleLine: (lineKey: string) => void;
+    selectedLines: string[];
+    activeLine?: string | null;
+    lineLengths: Record<string, number>;
+    visitedLineLengths: Record<string, number>;
+}> = ({ lineId, cName, getLineName, getLineEnName, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
+    const lName = getLineName(lineId);
+    const key = `${cName}::${lName}`;
+    const normalizedKey = normalizeKey(key);
+    const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
+    const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey) || isActive;
+    const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
+    const isCompleted = percent >= 99.9;
+
+    const [itemHovered, setItemHovered] = React.useState(false);
+    const itemHoverTimeout = React.useRef<NodeJS.Timeout | null>(null);
+
+    return (
+        <div
+            ref={el => registerLineRef(key, el)}
+            onClick={() => onLineClick?.(key)}
+            onMouseEnter={() => {
+                if (itemHoverTimeout.current) clearTimeout(itemHoverTimeout.current);
+                itemHoverTimeout.current = setTimeout(() => {
+                    setItemHovered(true);
+                }, 1000);
+            }}
+            onMouseLeave={() => {
+                if (itemHoverTimeout.current) clearTimeout(itemHoverTimeout.current);
+                setItemHovered(false);
+            }}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px 0',
+                backgroundColor: isActive ? '#e6f7ff' : (itemHovered ? '#f5f5f5' : 'transparent'),
+                borderRadius: '4px',
+                borderBottom: '1px solid #f9f9f9',
+                cursor: 'pointer'
+            }}
+        >
+            <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => {
+                    e.stopPropagation();
+                    onToggleLine(key);
+                    trackEvent('line_toggle', 'interaction', key);
+                }}
+                style={{ marginRight: '8px', flexShrink: 0, cursor: 'pointer' }}
+            />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+                        <span
+                            style={{
+                                fontSize: '12px',
+                                color: isCompleted ? '#186A3B' : '#333',
+                                fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                cursor: 'pointer'
+                            }}>
+                            {lName}
+                        </span>
+                        <span style={{
+                            fontSize: '9px',
+                            fontWeight: '400',
+                            color: '#666',
+                            marginTop: '-1px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}>
+                            {getLineEnName(lineId)}
+                        </span>
+                    </div>
+                    {(() => {
+                        const colors = getProgressColor(percent);
+                        return (
+                            <span style={{
+                                fontSize: '9px',
+                                color: colors.text,
+                                flexShrink: 0,
+                                marginLeft: '6px',
+                                fontWeight: '800',
+                                backgroundColor: colors.bg,
+                                padding: '0px 5px',
+                                borderRadius: '6px',
+                                transition: 'all 0.3s ease'
+                            }}>
+                                {percent.toFixed(percent >= 100 ? 0 : 1)}%
+                            </span>
+                        );
+                    })()}
+                </div>
+                {lineLengths[normalizedKey] > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontSize: '9px', color: '#999', marginBottom: '1px' }}>
+                            {(visitedLineLengths?.[normalizedKey] || 0).toFixed(1)} / {lineLengths[normalizedKey].toFixed(1)} km
+                        </div>
+                        <div style={{ width: '100%', height: '2px', backgroundColor: '#f0f0f0', borderRadius: '1px', overflow: 'hidden' }}>
+                            <div style={{
+                                width: `${Math.min(100, percent)}%`,
+                                height: '100%',
+                                backgroundColor: isCompleted ? '#27ae60' : '#3498db',
+                                transition: 'width 0.4s ease-out'
+                            }} />
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const SidebarGroup: React.FC<SidebarGroupProps> = ({
     title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
     selectedLines, onToggleLine, onToggleCompany, expandedCompanies,
@@ -37,11 +161,6 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
 }) => {
     const isEmpty = Object.keys(companies).length === 0;
     if (isEmpty) return null;
-
-    const getLocalizedName = (name: string, type: 'company' | 'line' | 'station' = 'station') => {
-        if (language === 'ja') return name;
-        return translateName(name, language, type);
-    };
 
     const getCompanyName = (id: string) => {
         const name = companyNames[id]?.name || id;
@@ -84,18 +203,6 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
         }
         return [...companyEntries].sort((a, b) => getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'ja'));
     };
-
-    const allGroupKeys: string[] = [];
-    Object.entries(companies).forEach(([comp, lines]) => {
-        Object.keys(lines).forEach(l => {
-            // Generate Name-based key
-            const cName = getCompanyName(comp);
-            const lName = getLineName(l);
-            allGroupKeys.push(`${cName}::${lName}`);
-        });
-    });
-
-    const allGroupSelected = allGroupKeys.every(k => selectedLines.includes(k));
 
     return (
         <div style={{ marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
@@ -145,17 +252,6 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                         })()}
                         onChange={(e) => {
                             e.stopPropagation();
-                            // We need to toggle all lines in this group using Name-based keys
-                            // This is tricky because onToggleSelection might expect a GroupKey.
-                            // But Sidebar.tsx handles Group Toggle.
-                            // We should check Sidebar.tsx's handleGroupToggle implementation.
-                            // Assuming Sidebar.tsx handles it? No, Sidebar passes onToggleSelection.
-                            // Let's assume for now we call the parent handler. 
-                            // *Wait*, if onToggleSelection relies on generic keys, we might need to change Sidebar.tsx too.
-                            // But let's stick to the prop for now. Sidebar.tsx likely iterates the group geometry. 
-                            // Actually, onToggleSelection takes `groupKey` string (e.g. 'shinkansen').
-                            // Sidebar.tsx needs to know how to expand 'shinkansen' into keys.
-                            // I will check Sidebar.tsx next. For now, let's update rendering logic.
                             onToggleSelection(groupKey);
                         }}
                         title="Toggle Category"
@@ -169,7 +265,6 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                     {sortCompaniesForRender(Object.entries(companies)).map(([companyId, lines]) => {
                         const isExpanded = expandedCompanies[companyId];
                         const lineIds = Object.keys(lines);
-                        // Use names for keys
                         const cName = getCompanyName(companyId);
                         const compositeKeys = lineIds.map(l => `${cName}::${getLineName(l)}`);
                         const allLinesSelected = compositeKeys.every(k => selectedLines.includes(k));
@@ -251,111 +346,27 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                 </div>
                                 {isExpanded && (
                                     <div style={{ marginLeft: '22px' }}>
-                                        {sortLines(lineIds, companyId).map(lineId => {
-                                            const lName = getLineName(lineId);
-                                            const key = `${cName}::${lName}`;
-                                            const normalizedKey = normalizeKey(key);
-                                            const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
-                                            const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey) || isActive;
-                                            const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
-                                            const isCompleted = percent >= 99.9;
-
-                                            return (
-                                                <div
-                                                    key={lineId}
-                                                    ref={el => registerLineRef(key, el)}
-                                                    onClick={() => onLineClick?.(key)}
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        padding: '4px 0',
-                                                        backgroundColor: isActive ? '#e6f7ff' : 'transparent',
-                                                        borderRadius: '4px',
-                                                        borderBottom: '1px solid #f9f9f9',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isSelected}
-                                                        onChange={(e) => {
-                                                            e.stopPropagation();
-                                                            onToggleLine(key);
-                                                            trackEvent('line_toggle', 'interaction', key);
-                                                        }}
-                                                        style={{ marginRight: '8px', flexShrink: 0, cursor: 'pointer' }}
-                                                    />
-                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                                                                <span
-                                                                    style={{
-                                                                        fontSize: '12px',
-                                                                        color: isCompleted ? '#186A3B' : '#333',
-                                                                        fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
-                                                                        whiteSpace: 'nowrap',
-                                                                        overflow: 'hidden',
-                                                                        textOverflow: 'ellipsis',
-                                                                        cursor: 'pointer'
-                                                                    }}>
-                                                                    {getLineName(lineId)}
-                                                                </span>
-                                                                <span style={{
-                                                                    fontSize: '9px',
-                                                                    fontWeight: '400',
-                                                                    color: '#666',
-                                                                    marginTop: '-1px',
-                                                                    whiteSpace: 'nowrap',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis'
-                                                                }}>
-                                                                    {getLineEnName(lineId)}
-                                                                </span>
-                                                            </div>
-                                                            {(() => {
-                                                                const colors = getProgressColor(percent);
-                                                                return (
-                                                                    <span style={{
-                                                                        fontSize: '9px',
-                                                                        color: colors.text,
-                                                                        flexShrink: 0,
-                                                                        marginLeft: '6px',
-                                                                        fontWeight: '800',
-                                                                        backgroundColor: colors.bg,
-                                                                        padding: '0px 5px',
-                                                                        borderRadius: '6px',
-                                                                        transition: 'all 0.3s ease'
-                                                                    }}>
-                                                                        {percent.toFixed(percent >= 100 ? 0 : 1)}%
-                                                                    </span>
-                                                                );
-                                                            })()}
-                                                        </div>
-                                                        {lineLengths[normalizedKey] > 0 && (
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <div style={{ fontSize: '9px', color: '#999', marginBottom: '1px' }}>
-                                                                    {(visitedLineLengths?.[normalizedKey] || 0).toFixed(1)} / {lineLengths[normalizedKey].toFixed(1)} km
-                                                                </div>
-                                                                <div style={{ width: '100%', height: '2px', backgroundColor: '#f0f0f0', borderRadius: '1px', overflow: 'hidden' }}>
-                                                                    <div style={{
-                                                                        width: `${Math.min(100, percent)}%`,
-                                                                        height: '100%',
-                                                                        backgroundColor: isCompleted ? '#27ae60' : '#3498db',
-                                                                        transition: 'width 0.4s ease-out'
-                                                                    }} />
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                        {sortLines(lineIds, companyId).map(lId => (
+                                            <SidebarLineItem
+                                                key={lId}
+                                                lineId={lId}
+                                                cName={cName}
+                                                getLineName={getLineName}
+                                                getLineEnName={getLineEnName}
+                                                registerLineRef={registerLineRef}
+                                                onLineClick={onLineClick}
+                                                onToggleLine={onToggleLine}
+                                                selectedLines={selectedLines}
+                                                activeLine={activeLine}
+                                                lineLengths={lineLengths}
+                                                visitedLineLengths={visitedLineLengths}
+                                            />
+                                        ))}
                                     </div>
                                 )}
                             </div>
                         );
-                    })
-                    }
+                    })}
                 </div>
             )}
         </div>

@@ -128,11 +128,17 @@ export const useTripRecorder = ({
                     segments.pop();
                     changed = true;
                 } else {
-                    const pathData = graph.getShortestPathByName(lastWaypoint, c.name);
+                    const lastStData = stations[lastWaypoint];
+                    const currStData = stations[c.name];
+                    const pathData = graph.getShortestPathByName(
+                        lastWaypoint,
+                        c.name,
+                        null,
+                        lastStData?.centroid,
+                        currStData?.centroid
+                    );
 
                     if (pathData) {
-                        const lastStData = stations[lastWaypoint];
-                        const currStData = stations[c.name];
                         let isValid = true;
 
                         if (lastStData && currStData) {

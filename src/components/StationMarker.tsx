@@ -52,7 +52,9 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     const isHighlighted = highlightedStations.includes(name);
     const isVisited = visitedStations.has(name);
     const isSelected = station.lines.some(l =>
-        selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l))
+        selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l)) ||
+        (activeLine && normalizeKey(activeLine) === normalizeKey(l)) ||
+        (hoveredLine && normalizeKey(hoveredLine) === normalizeKey(l))
     );
     const lines = station.lines;
     const isLowZoom = zoom <= 13;
@@ -83,6 +85,93 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     const isDragging = dragStartStation === name;
     const isStationSelected = isMobile && (selectedStation === name);
     const weight = zoom <= 12 ? 0 : (isHighlighted || (isMobile && isStationSelected) ? 6 : 4);
+
+    const [showTooltip, setShowTooltip] = React.useState(false);
+    const tooltipTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+    const handleMouseOver = () => {
+        if (isMobile || isEditMode) return;
+
+        if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
+
+        tooltipTimeoutRef.current = setTimeout(() => {
+            setShowTooltip(true);
+            tooltipTimeoutRef.current = null;
+        }, 1000); // 1-second delay
+    };
+
+    const handleMouseOut = () => {
+        if (tooltipTimeoutRef.current) {
+            clearTimeout(tooltipTimeoutRef.current);
+            tooltipTimeoutRef.current = null;
+        }
+        setShowTooltip(false);
+    };
+
+    const createEventHandlers = (nodeCoord: [number, number]) => ({
+        click: (e: any) => {
+            L.DomEvent.stopPropagation(e);
+            if (!isEditMode) {
+                handleStationClick(name, lines);
+            }
+        },
+        mouseover: (e: any) => {
+            handleMouseOver();
+        },
+        mouseout: (e: any) => {
+            handleMouseOut();
+        },
+        mousedown: (e: any) => {
+            // Mouse down logic for desktop or emulated touch
+            L.DomEvent.stopPropagation(e);
+            if (isEditMode || !isMobile) {
+                // Prevent default drag initiation if needed, but allow bubbling?
+                // Actually, stopping propagation is good to avoid map drag.
+                onStationMouseDown(name, nodeCoord);
+            }
+        },
+        mouseup: (e: any) => {
+            L.DomEvent.stopPropagation(e);
+            onStationMouseUp(name);
+        },
+        touchstart: (e: any) => {
+            if (isEditMode) {
+                // Prevent browser scrolling/zoom to allow immediate draw interaction
+                L.DomEvent.preventDefault(e);
+                L.DomEvent.stopPropagation(e);
+
+                let lat = nodeCoord[0];
+                let lng = nodeCoord[1];
+                if (e.latlng) {
+                    lat = e.latlng.lat;
+                    lng = e.latlng.lng;
+                }
+                onStationMouseDown(name, [lat, lng]);
+            }
+        }
+    });
+
+    if (station.isJoint) {
+        // Find the node coordinate (joints only have one node)
+        const nodeCoord = station.nodes[0]?.coord || station.centroid;
+        const handlers = createEventHandlers(nodeCoord);
+
+        return (
+            <CircleMarker
+                center={nodeCoord}
+                pathOptions={{
+                    stroke: false,
+                    fill: true,
+                    fillColor: '#000',
+                    fillOpacity: 0.0,
+                    pane: 'station-interact',
+                    interactive: true
+                }}
+                radius={radius + 8}
+                eventHandlers={handlers}
+            />
+        );
+    }
 
     // Format line names for tooltip
     const formattedLines = lines.map(l => {
@@ -121,42 +210,6 @@ const StationMarker: React.FC<StationMarkerProps> = ({
         }
     }
 
-    const createEventHandlers = (nodeCoord: [number, number]) => ({
-        click: (e: any) => {
-            L.DomEvent.stopPropagation(e);
-            if (!isEditMode) {
-                handleStationClick(name, lines);
-            }
-        },
-        mousedown: (e: any) => {
-            // Mouse down logic for desktop or emulated touch
-            L.DomEvent.stopPropagation(e);
-            if (isEditMode || !isMobile) {
-                // Prevent default drag initiation if needed, but allow bubbling?
-                // Actually, stopping propagation is good to avoid map drag.
-                onStationMouseDown(name, nodeCoord);
-            }
-        },
-        mouseup: (e: any) => {
-            L.DomEvent.stopPropagation(e);
-            onStationMouseUp(name);
-        },
-        touchstart: (e: any) => {
-            if (isEditMode) {
-                // Prevent browser scrolling/zoom to allow immediate draw interaction
-                L.DomEvent.preventDefault(e);
-                L.DomEvent.stopPropagation(e);
-
-                let lat = nodeCoord[0];
-                let lng = nodeCoord[1];
-                if (e.latlng) {
-                    lat = e.latlng.lat;
-                    lng = e.latlng.lng;
-                }
-                onStationMouseDown(name, [lat, lng]);
-            }
-        }
-    });
 
     return (
         <React.Fragment>
@@ -207,7 +260,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
 
             {station.nodes.map((node, idx) => {
                 const isNodeVisited = visitedStations.has(node.id);
-                const isNodeSelected = selectedLines.includes(node.lineKey) || activeLine === node.lineKey;
+                const isNodeSelected = isSelected;
 
                 const baseColor = getColor(node.lineKey) || '#666';
                 const lightenedColor = lightenColor(baseColor, 60);
@@ -271,7 +324,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                         eventHandlers={handlers}
                                     >
                                         {!isMobile && !isEditMode && (
-                                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={showTooltip ? (isDragging ? 0 : (isSelected ? 1 : 0.7)) : 0}>
                                                 <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
                                                     <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
                                                         {translateName(name, language, 'station')}
@@ -288,8 +341,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                                                 gap: '12px',
                                                                 padding: '3px 0',
                                                                 borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                                color: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '#2980b9' : '#555',
-                                                                fontWeight: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '800' : '500'
+                                                                color: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '#2980b9' : '#555',
+                                                                fontWeight: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '800' : '500'
                                                             }}>
                                                                 <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
                                                                 <span>{translateName(fl.line, language, 'line')}</span>
@@ -340,7 +393,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                     eventHandlers={handlers}
                                 >
                                     {!isMobile && !isEditMode && (
-                                        <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={isDragging ? 0 : (isSelected ? 1 : 0.7)}>
+                                        <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={showTooltip ? (isDragging ? 0 : (isSelected ? 1 : 0.7)) : 0}>
                                             <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
                                                 <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
                                                     {translateName(name, language, 'station')}
@@ -357,8 +410,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                                             gap: '12px',
                                                             padding: '3px 0',
                                                             borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                            color: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '#2980b9' : '#555',
-                                                            fontWeight: (selectedLines.includes(fl.key) || activeLine === fl.key) ? '800' : '500'
+                                                            color: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '#2980b9' : '#555',
+                                                            fontWeight: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '800' : '500'
                                                         }}>
                                                             <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
                                                             <span>{translateName(fl.line, language, 'line')}</span>

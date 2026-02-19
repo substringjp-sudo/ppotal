@@ -53,10 +53,10 @@ const Stations: React.FC<StationsProps> = ({
         // If in Edit Mode, we assume selected lines logic still applies for visibility?
         // Or should we show ALL stations in edit mode?
         // Usually we only show selected lines to avoid clutter. Consistent behavior is safer.
-        const isSelected = data.lines.some(line =>
-            selectedLines.includes(line) ||
-            activeLine === line ||
-            (hoveredLine && normalizeKey(line) === normalizeKey(hoveredLine))
+        const isSelected = data.lines.some(l =>
+            selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l)) ||
+            (activeLine && normalizeKey(activeLine) === normalizeKey(l)) ||
+            (hoveredLine && normalizeKey(hoveredLine) === normalizeKey(l))
         );
 
         if (!isSelected) return false;

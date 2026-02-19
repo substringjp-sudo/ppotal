@@ -1,79 +1,85 @@
 import { useMemo } from 'react';
+import { StationNode, LineSegment } from '../lib/graphUtils';
+
+export interface TopologyNode {
+    id: string;
+    name: string;
+    x: number;
+    y: number;
+    isJoint: boolean;
+    isVisited: boolean;
+}
+
+export interface TopologyEdge {
+    from: string;
+    to: string;
+    isVisited: boolean;
+}
 
 export interface TopologySegment {
-    stations: string[];
-    edges: { from: string, to: string, distance: number }[];
+    nodes: TopologyNode[];
+    edges: TopologyEdge[];
 }
 
-export interface GeneratedTopology {
-    type: string;
-    main_line: string[];
-    branches: Array<{ junction: string, path: string[] }>;
-}
-
-export const useLineTopology = (segments: TopologySegment[] | undefined) => {
+export function useLineTopology(
+    lineId: string,
+    segments: LineSegment[],
+    nodes: Map<string, StationNode>,
+    visitedStations: Set<string>,
+    visitedEdges: Set<string>
+) {
     return useMemo(() => {
-        if (!segments || segments.length === 0) return [];
+        if (!segments || segments.length === 0) return { nodes: [], edges: [] };
 
-        let unprocessedSegments = [...segments];
-        const topologies: GeneratedTopology[] = [];
+        const topoNodes = new Map<string, TopologyNode>();
+        const topoEdges: TopologyEdge[] = [];
 
-        while (unprocessedSegments.length > 0) {
-            // 1. Sort remaining segments by length logic
-            unprocessedSegments.sort((a, b) => b.stations.length - a.stations.length);
-            const mainSegment = unprocessedSegments[0];
+        // Basic layout logic: try to align segments linearly
+        // This is a simplified version of the original TubeMap logic
+        let currentX = 50;
+        const spacing = 100;
+        const processedNodes = new Set<string>();
 
-            // Remove main segment from pool
-            unprocessedSegments.shift();
+        segments.forEach((seg, segIdx) => {
+            let segY = 50 + (segIdx * 80);
+            let segX = currentX;
 
-            const mainLine = mainSegment.stations;
-            const processedStations = new Set<string>(mainLine);
-            const branches: Array<{ junction: string, path: string[] }> = [];
+            seg.edges.forEach((edge, edgeIdx) => {
+                const nodeIds = [edge.from, edge.to];
 
-            // 2. Iteratively attach remaining segments as branches
-            let changed = true;
-            while (changed) {
-                changed = false;
-                const nextUnprocessed: TopologySegment[] = [];
+                nodeIds.forEach((id, idx) => {
+                    if (!topoNodes.has(id)) {
+                        const nodeData = nodes.get(id);
+                        const isJoint = id.startsWith('J_');
+                        const isVisited = !isJoint && nodeData ? visitedStations.has(nodeData.name) : false;
 
-                for (const seg of unprocessedSegments) {
-                    const stations = seg.stations;
-                    if (stations.length === 0) continue;
+                        // Heuristic: move X for each node in a segment
+                        const xPos = segX + (idx + edgeIdx) * spacing;
 
-                    const startNode = stations[0];
-                    const endNode = stations[stations.length - 1];
-
-                    const startConnected = processedStations.has(startNode);
-                    const endConnected = processedStations.has(endNode);
-
-                    if (startConnected) {
-                        const path = stations.slice(1);
-                        if (path.length > 0) {
-                            branches.push({ junction: startNode, path });
-                            path.forEach(s => processedStations.add(s));
-                            changed = true;
-                        }
-                    } else if (endConnected) {
-                        const path = stations.slice(0, stations.length - 1).reverse();
-                        if (path.length > 0) {
-                            branches.push({ junction: endNode, path });
-                            path.forEach(s => processedStations.add(s));
-                            changed = true;
-                        }
-                    } else {
-                        nextUnprocessed.push(seg);
+                        topoNodes.set(id, {
+                            id,
+                            name: nodeData?.name || id,
+                            x: xPos,
+                            y: segY,
+                            isJoint,
+                            isVisited
+                        });
+                        processedNodes.add(id);
                     }
-                }
-                unprocessedSegments = nextUnprocessed;
-            }
+                });
 
-            topologies.push({
-                type: 'generated',
-                main_line: mainLine,
-                branches
+                const edgeKey = [edge.from, edge.to].sort().join('<->');
+                topoEdges.push({
+                    from: edge.from,
+                    to: edge.to,
+                    isVisited: visitedEdges.has(edgeKey)
+                });
             });
-        }
+        });
 
-        return topologies;
-    }, [segments]);
-};
+        return {
+            nodes: Array.from(topoNodes.values()),
+            edges: topoEdges
+        };
+    }, [segments, nodes, visitedStations, visitedEdges]);
+}

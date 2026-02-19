@@ -51,6 +51,12 @@ export interface RailroadGraphData {
     [sourceStationId: string]: RailroadGraphEdge;
 }
 
+export interface Joint {
+    id: string;
+    coordinates: [number, number];
+    line_ids: number[];
+}
+
 export interface RailData {
     companies: Record<string, Company>;
     lines: Record<string, Line>;
@@ -59,4 +65,5 @@ export interface RailData {
     sections: { sections: Section[] };
     railroadGraph: RailroadGraphData;
     hierarchy: any; // Keep hierarchy flexible for now or define strictly if needed
+    joints: { joints: Joint[] };
 }

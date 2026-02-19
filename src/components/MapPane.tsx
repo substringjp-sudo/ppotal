@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, memo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 import { Language } from '../lib/translations';
 import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
@@ -18,6 +18,7 @@ import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
 
 import { useMapData } from '../hooks/useMapData';
+import { normalizeKey } from '../lib/lineUtils';
 import { useRailData } from '../hooks/useRailData';
 import { useRailroadGraph } from '../hooks/useRailroadGraph';
 import { useVisibleStations } from '../hooks/useVisibleStations';
@@ -192,12 +193,16 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     // Handle Active Line Detail Data
     useEffect(() => {
-        if (!activeLine || !graph || !onLineDetailData) {
+        if (!activeLine || !graph || !railData || !onLineDetailData) {
             if (onLineDetailData) onLineDetailData(null);
             return;
         }
 
-        const segments = graph.getLineSegments(activeLine);
+        let segments = graph.getLineSegmentsFromHierarchy(activeLine, railData);
+        if (segments.length === 0) {
+            console.warn(`No segments found in hierarchy for ${activeLine}, falling back to graph search.`);
+            segments = graph.getLineSegments(activeLine);
+        }
 
         const visitedEdges = new Set<string>();
         const visitedStationNames = new Set<string>();
@@ -206,7 +211,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (trip.path) {
                 trip.path.forEach((sid: string) => {
                     const node = graph.nodes.get(sid);
-                    if (node?.fullLineName === activeLine) {
+                    // Compare using normalized keys for robustness
+                    if (node && normalizeKey(node.fullLineName) === normalizeKey(activeLine)) {
                         visitedStationNames.add(node.name);
                     }
                 });
@@ -214,13 +220,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 for (let i = 0; i < trip.path.length - 1; i++) {
                     const uId = trip.path[i];
                     const vId = trip.path[i + 1];
-                    const nodeU = graph.nodes.get(uId);
-                    const nodeV = graph.nodes.get(vId);
-
-                    if (nodeU?.fullLineName === activeLine && nodeV?.fullLineName === activeLine) {
-                        const key = [nodeU.name, nodeV.name].sort().join('<->');
-                        visitedEdges.add(key);
-                    }
+                    const key = [uId, vId].sort().join('<->');
+                    visitedEdges.add(key);
                 }
             }
         });
@@ -234,7 +235,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 return graph.getShortestPath(start, end, allowedLines);
             }
         });
-    }, [activeLine, graph, recordedTrips, onLineDetailData]);
+    }, [activeLine, graph, railData, recordedTrips, onLineDetailData]);
 
     const getColor = useCallback((lineKey: string) => {
         return getOfficialColor(lineKey) || '#666';
@@ -273,15 +274,22 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     const visitedStations = useMemo(() => {
         const set = new Set<string>();
+        if (!graph) return set;
+
         recordedTrips.forEach(trip => {
             if (trip.path) {
                 trip.path.forEach((nodeId: string) => {
-                    set.add(nodeId);
+                    const node = graph.nodes.get(nodeId);
+                    if (node && node.name) {
+                        set.add(node.name);
+                    } else {
+                        set.add(nodeId);
+                    }
                 });
             }
         });
         return set;
-    }, [recordedTrips]);
+    }, [recordedTrips, graph, railroadNetwork]);
 
     // Zoom Handling
     useEffect(() => {

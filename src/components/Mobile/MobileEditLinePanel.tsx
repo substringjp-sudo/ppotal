@@ -1,13 +1,15 @@
-import React from 'react';
-import { StationNode } from '../../lib/graphUtils';
-import { Language } from '../../lib/translations';
-import { useLineTopology, TopologySegment } from '../../hooks/useLineTopology';
+import React, { useMemo } from 'react';
+import { StationNode, LineSegment } from '../../lib/graphUtils';
 import TubeMap from '../TubeMap';
+import { useLineTopology } from '../../hooks/useLineTopology';
+import { translateName } from '../../lib/lineUtils';
+import { Language } from '../../lib/translations';
 import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../../lib/railwayData';
+import { getOfficialColor } from '../../lib/lineColors';
 
 interface MobileEditLinePanelProps {
     lineId: string;
-    segments: TopologySegment[];
+    segments: LineSegment[];
     nodes: Map<string, StationNode>;
     visitedEdges: Set<string>;
     visitedStations: Set<string>;
@@ -26,81 +28,96 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
     onPathCreate,
     onDragUpdate,
     onClose,
-    language
+    language,
 }) => {
     const [company, lineName] = lineId.split('::');
-    const generatedTopologies = useLineTopology(segments);
+    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
+
+    // Calculate topology data using the hook
+    const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
 
     return (
         <div style={{
-            padding: '12px 16px',
-            backgroundColor: '#fff',
-            borderTop: '1px solid #ddd',
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(20px)',
+            borderTopLeftRadius: '32px',
+            borderTopRightRadius: '32px',
+            padding: '24px',
+            boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.1)',
+            zIndex: 1000,
+            maxHeight: '80vh',
             display: 'flex',
-            flexDirection: 'column',
-            maxHeight: '45vh',
-            width: '100%',
-            boxSizing: 'border-box'
+            flexDirection: 'column'
         }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                        <span style={{ fontSize: '11px', color: '#666', fontWeight: 'bold' }}>{company}</span>
-                        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{lineName}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '-2px' }}>
-                        <span style={{ fontSize: '9px', color: '#999' }}>{COMPANY_EN_NAMES[company] || company}</span>
-                        <span style={{ fontSize: '10px', color: '#888' }}>{LINE_EN_NAMES[lineName] || lineName}</span>
-                    </div>
+                    <span style={{ fontSize: '12px', color: '#666', fontWeight: 'bold' }}>
+                        {translateName(company, language, 'company')}
+                    </span>
+                    <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                        {translateName(lineName, language, 'line')}
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
+                        두 역을 순서대로 선택하여 이동 경로를 기록하세요.
+                    </span>
                 </div>
                 <button
                     onClick={onClose}
                     style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '20px',
                         border: 'none',
-                        background: '#f0f0f0',
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        fontSize: '14px',
-                        color: '#666',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        backgroundColor: '#eee',
+                        fontSize: '20px',
                         cursor: 'pointer'
                     }}
                 >
-                    ✕
+                    ×
                 </button>
             </div>
 
-            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <p style={{ fontSize: '11px', color: '#2980b9', margin: '0 0 10px 0', fontWeight: 'bold' }}>
-                    💡 {language === 'ko' ? '역을 누른 채 옆으로 드래그하여 경로를 추가하세요' : 'Press and drag a station to record your route'}
-                </p>
-                <div style={{ flex: 1, overflow: 'auto', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
-                    {generatedTopologies && generatedTopologies.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            {generatedTopologies.map((topology, idx) => (
-                                <TubeMap
-                                    key={idx}
-                                    lineId={lineId}
-                                    topology={topology}
-                                    nodes={nodes}
-                                    visitedStations={visitedStations}
-                                    visitedEdges={visitedEdges}
-                                    language={language}
-                                    onPathCreate={onPathCreate}
-                                    onDragUpdate={onDragUpdate}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div style={{ padding: '20px', textAlign: 'center', color: '#999', fontSize: '12px' }}>
-                            노선도 데이터를 불러올 수 없습니다
-                        </div>
-                    )}
-                </div>
+            {/* Topology Area */}
+            <div style={{ flex: 1, overflow: 'hidden', marginBottom: '20px' }}>
+                <TubeMap
+                    nodes={topology.nodes}
+                    edges={topology.edges}
+                    visitedStations={visitedStations}
+                    visitedEdges={visitedEdges}
+                    lineColor={lineColor}
+                    onPathCreate={onPathCreate}
+                    language={language}
+                />
+            </div>
+
+            {/* Guide */}
+            <div style={{
+                padding: '16px',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+            }}>
+                <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '16px',
+                    backgroundColor: lineColor,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: '#fff',
+                    fontWeight: 'bold'
+                }}>!</div>
+                <span style={{ fontSize: '13px', color: '#444' }}>
+                    노선도에서 역을 탭하여 시작점과 도착점을 지정할 수 있습니다.
+                </span>
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
-import { RailData } from '../types/railData';
+import { Company, Line, Station, Section, RailData } from '../types/railData';
+import { normalizeKey, normalizeCompanyName } from './lineUtils';
 
 export interface StationNode {
     id: string; // station_id (from stations.json)
@@ -22,15 +23,6 @@ export interface LineSegment {
     geometry: [number, number][];
 }
 
-const normalizeKey = (key: string): string => {
-    if (!key) return "";
-    const parts = key.split("::");
-    if (parts.length >= 2) {
-        // Simple internal normalization mirroring lineUtils to keep graphUtils robust
-        return `${parts[0]}::${parts[1].replace(/(線| Line| 선)$/, "").trim()}`;
-    }
-    return key;
-};
 
 export class RailroadGraph {
     nodes: Map<string, StationNode> = new Map();
@@ -76,6 +68,10 @@ export class RailroadGraph {
     getShortestPathByName(startName: string, endName: string, allowedLines: string[] | null = null, startCoords?: [number, number], endCoords?: [number, number]): { path: string[], distance: number, geometries: [number, number][][] } | null {
         let startIds = this.stationsByName[startName];
         let endIds = this.stationsByName[endName];
+
+        // If not found by name, check if it's a direct ID (e.g. for joints)
+        if (!startIds && this.nodes.has(startName)) startIds = [startName];
+        if (!endIds && this.nodes.has(endName)) endIds = [endName];
 
         if (!startIds || !endIds) return null;
 
@@ -351,16 +347,11 @@ export class RailroadGraph {
      * Uses bidirectional adjacency for complete graph traversal.
      */
     getLineSegments(inputId: string): LineSegment[] {
-        // Resolve to full ID (e.g. "Company::Line Name")
-        // Try exact match, then normalized match (e.g. "Company::Line" -> "Company::Line Name")
         const fullLineId = this.lineIdMap.get(inputId) || this.lineIdMap.get(normalizeKey(inputId)) || inputId;
-
-        // Collect all edges belonging to this line
         const lineEdges: { from: string, to: string, distance: number, geometry: [number, number][] }[] = [];
 
         for (const [u, edges] of this.adj.entries()) {
             for (const e of edges) {
-                // Check edge ownership
                 if (e.lineId === fullLineId) {
                     lineEdges.push({ from: u, ...e });
                 }
@@ -369,41 +360,26 @@ export class RailroadGraph {
 
         if (lineEdges.length === 0) return [];
 
-        // Helper to get name from ID
         const getName = (id: string) => this.nodes.get(id)?.name || id.split('::').pop() || id;
-
-        // Group platforms into logical stations by name
         const nameToRepId = new Map<string, string>();
-        // adj map: Name -> Map<TargetName, Edge>
-        // We store the Edge object to retrieve geometry later
         const biAdj = new Map<string, Map<string, { distance: number, geometry: [number, number][], originalFrom: string, originalTo: string }>>();
 
         lineEdges.forEach(e => {
             const uName = getName(e.from);
             const vName = getName(e.to);
-
-            if (uName === vName) return; // Skip internal platform connections
+            if (uName === vName) return;
 
             if (!nameToRepId.has(uName)) nameToRepId.set(uName, e.from);
             if (!nameToRepId.has(vName)) nameToRepId.set(vName, e.to);
 
-            // 양방향으로 저장
             if (!biAdj.has(uName)) biAdj.set(uName, new Map());
             if (!biAdj.has(vName)) biAdj.set(vName, new Map());
-
-            // We keep the shortest edge if multiple exist (unlikely for same line, but possible)
-            // Actually, we should keep the one matching our traversal direction if possible.
-            // But here we group by NAME.
-            // Let's store the edge.
 
             const existingU = biAdj.get(uName)!.get(vName);
             if (!existingU || e.distance < existingU.distance) {
                 biAdj.get(uName)!.set(vName, { distance: e.distance, geometry: e.geometry, originalFrom: e.from, originalTo: e.to });
             }
 
-            // For reverse direction v->u, we need e.geometry REVERSED unless e was already v->u?
-            // "e" comes from this.adj.get(u). So e is u->v.
-            // So v->u should use reverse geometry.
             const existingV = biAdj.get(vName)!.get(uName);
             if (!existingV || e.distance < existingV.distance) {
                 biAdj.get(vName)!.set(uName, {
@@ -415,134 +391,166 @@ export class RailroadGraph {
             }
         });
 
-        // edge key를 사용하여 중복 방문 방지
         const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
         const visitedEdgeKeys = new Set<string>();
-
         const segments: LineSegment[] = [];
 
-        // DFS로 segment 추출
-        const traceSegment = (startName: string, firstNeighbor?: string) => {
+        const traceSegment = (startName: string, firstNeighborName: string) => {
             const names = [startName];
             const edges: { from: string, to: string, distance: number }[] = [];
             const geometry: [number, number][] = [];
 
-            let curr = startName;
+            const edgeData = biAdj.get(startName)!.get(firstNeighborName)!;
+            const edgeKey = getEdgeKey(startName, firstNeighborName);
+            if (visitedEdgeKeys.has(edgeKey)) return null;
+            visitedEdgeKeys.add(edgeKey);
 
-            // Start Station Coords?
-            // geometry should ideally allow plotting.
-            // We'll append edge geometries.
+            edges.push({
+                from: nameToRepId.get(startName)!,
+                to: nameToRepId.get(firstNeighborName)!,
+                distance: edgeData.distance
+            });
+            geometry.push(...edgeData.geometry);
+            names.push(firstNeighborName);
 
-            if (firstNeighbor) {
-                const edgeData = biAdj.get(curr)!.get(firstNeighbor)!;
-                const edgeKey = getEdgeKey(curr, firstNeighbor);
-                if (visitedEdgeKeys.has(edgeKey)) return null;
-                visitedEdgeKeys.add(edgeKey);
-
-                edges.push({
-                    from: nameToRepId.get(curr)!,
-                    to: nameToRepId.get(firstNeighbor)!,
-                    distance: edgeData.distance
-                });
-
-                if (geometry.length === 0) {
-                    geometry.push(...edgeData.geometry);
-                } else {
-                    // Check if we need to stitch
-                    // Usually edgeData.geometry[0] matches last point
-                    geometry.push(...edgeData.geometry);
-                }
-
-                names.push(firstNeighbor);
-                curr = firstNeighbor;
-            }
-
+            let curr = firstNeighborName;
             while (true) {
                 const neighbors = biAdj.get(curr);
                 if (!neighbors) break;
-
-                // 미방문 edge가 있는 이웃 찾기
                 const unvisited = Array.from(neighbors.entries())
                     .filter(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
 
                 if (unvisited.length === 0) break;
-
-                const [nextName, edgeData] = unvisited[0];
-                const edgeKey = getEdgeKey(curr, nextName);
-                visitedEdgeKeys.add(edgeKey);
+                const [nextName, nextData] = unvisited[0];
+                visitedEdgeKeys.add(getEdgeKey(curr, nextName));
 
                 edges.push({
                     from: nameToRepId.get(curr)!,
                     to: nameToRepId.get(nextName)!,
-                    distance: edgeData.distance
+                    distance: nextData.distance
                 });
-
-                if (geometry.length > 0) {
-                    // Stitching: if last point == new first point, drop duplicate?
-                    // It's safer to just push all for render, Leaflet handles it fine usually.
-                    // But for cleaner data, distinct.
-                    // const last = geometry[geometry.length - 1];
-                    // const first = edgeData.geometry[0];
-                    // if (last[0]===first[0] && last[1]===first[1]) ... 
-                    // Let's just push.
-                }
-                geometry.push(...edgeData.geometry);
-
+                geometry.push(...nextData.geometry.slice(1));
                 names.push(nextName);
                 curr = nextName;
 
                 const nextNeighbors = biAdj.get(curr);
                 if (nextNeighbors) {
-                    const nextUnvisited = Array.from(nextNeighbors.entries())
-                        .filter(([name]) => !visitedEdgeKeys.has(getEdgeKey(curr, name)));
+                    const nextUnvisited = Array.from(nextNeighbors.keys())
+                        .filter(n => !visitedEdgeKeys.has(getEdgeKey(curr, n)));
                     if (nextUnvisited.length > 1) break;
                 }
             }
-
-            if (names.length > 1) {
-                return { stations: names.map(n => nameToRepId.get(n)!), edges, geometry };
-            }
-            return null;
+            return { stations: names.map(n => nameToRepId.get(n)!), edges, geometry };
         };
 
         const logicalNodes = Array.from(nameToRepId.keys());
+        const startCandidates = logicalNodes.filter(n => (biAdj.get(n)?.size || 0) !== 2);
+        const roots = startCandidates.length > 0 ? startCandidates : [logicalNodes[0]];
 
-        // 1. leaf 노드 (degree 1)를 먼저 탐색하여 메인 라인 시작
-        const leaves = logicalNodes.filter(name => (biAdj.get(name)?.size || 0) === 1);
-
-        for (const leaf of leaves) {
-            const neighbors = biAdj.get(leaf);
-            if (!neighbors) continue;
-
-            for (const [neighbor] of neighbors) {
-                const edgeKey = getEdgeKey(leaf, neighbor);
-                if (visitedEdgeKeys.has(edgeKey)) continue;
-
-                const seg = traceSegment(leaf, neighbor);
+        roots.forEach(r => {
+            const neighbors = biAdj.get(r);
+            if (!neighbors) return;
+            neighbors.forEach((_, n) => {
+                const seg = traceSegment(r, n);
                 if (seg) segments.push(seg);
-            }
-        }
+            });
+        });
 
-        // 2. 분기점에서 남은 edge 처리
-        let changed = true;
-        while (changed) {
-            changed = false;
-            for (const name of logicalNodes) {
-                const neighbors = biAdj.get(name);
-                if (!neighbors) continue;
+        return segments;
+    }
 
-                for (const [neighbor] of neighbors) {
-                    const edgeKey = getEdgeKey(name, neighbor);
-                    if (visitedEdgeKeys.has(edgeKey)) continue;
+    getLineSegmentsFromHierarchy(inputId: string, data: RailData): LineSegment[] {
+        const fullLineId = this.lineIdMap.get(inputId) || this.lineIdMap.get(normalizeKey(inputId)) || inputId;
+        const [companyName, lineName] = fullLineId.split('::');
 
-                    const seg = traceSegment(name, neighbor);
-                    if (seg) {
-                        segments.push(seg);
-                        changed = true;
+        let hierarchyLine: any = null;
+        if (data.hierarchy && data.hierarchy.companies) {
+            for (const companyId in data.hierarchy.companies) {
+                const comp = data.hierarchy.companies[companyId];
+                const companyObj = (data.companies as any)[comp.id];
+                if (companyObj && normalizeCompanyName(companyObj.name) === normalizeCompanyName(companyName)) {
+                    for (const lineIdKey in comp.lines) {
+                        const line = comp.lines[lineIdKey];
+                        // Hierarchy lines might not have 'name' directly, check data.lines
+                        // Check after normalizing line names as well
+                        const lineInfo = data.lines[line.id];
+                        if (lineInfo && (lineInfo.name === lineName || normalizeKey(`${companyName}::${lineInfo.name}`) === normalizeKey(fullLineId))) {
+                            hierarchyLine = line;
+                            break;
+                        }
                     }
                 }
+                if (hierarchyLine) break;
             }
         }
+
+        if (!hierarchyLine || !hierarchyLine.sections) return [];
+
+        const sectionIds = hierarchyLine.sections as number[];
+        const sectionMap = new Map<number, any>();
+        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
+
+        const biAdj = new Map<string, Map<string, { distance: number, geometry: [number, number][] }>>();
+
+        sectionIds.forEach(id => {
+            const s = sectionMap.get(id);
+            if (!s) return;
+            if (!biAdj.has(s.start)) biAdj.set(s.start, new Map());
+            if (!biAdj.has(s.end)) biAdj.set(s.end, new Map());
+            biAdj.get(s.start)!.set(s.end, { distance: s.length / 1000, geometry: s.geometry });
+            biAdj.get(s.end)!.set(s.start, { distance: s.length / 1000, geometry: [...s.geometry].reverse() });
+        });
+
+        const segments: LineSegment[] = [];
+        const visitedEdgeKeys = new Set<string>();
+        const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
+
+        const traceSegment = (startNode: string, firstNeighbor: string) => {
+            const nodes = [startNode];
+            const edges: { from: string, to: string, distance: number }[] = [];
+            const geometry: [number, number][] = [];
+
+            const firstEdgeData = biAdj.get(startNode)!.get(firstNeighbor)!;
+            const firstKey = getEdgeKey(startNode, firstNeighbor);
+            if (visitedEdgeKeys.has(firstKey)) return null;
+            visitedEdgeKeys.add(firstKey);
+
+            nodes.push(firstNeighbor);
+            edges.push({ from: startNode, to: firstNeighbor, distance: firstEdgeData.distance });
+            geometry.push(...firstEdgeData.geometry);
+
+            let curr = firstNeighbor;
+            while (curr) {
+                const neighbors = biAdj.get(curr);
+                if (!neighbors) break;
+                const nextCandidates = Array.from(neighbors.keys()).filter(n => !visitedEdgeKeys.has(getEdgeKey(curr, n)));
+                if (nextCandidates.length === 1) {
+                    const next = nextCandidates[0];
+                    const edgeData = neighbors.get(next)!;
+                    visitedEdgeKeys.add(getEdgeKey(curr, next));
+                    nodes.push(next);
+                    edges.push({ from: curr, to: next, distance: edgeData.distance });
+                    geometry.push(...edgeData.geometry.slice(1));
+                    curr = next;
+                } else {
+                    break;
+                }
+            }
+            return { stations: nodes, edges, geometry };
+        };
+
+        const allNodes = Array.from(biAdj.keys());
+        const startNodes = allNodes.filter(n => (biAdj.get(n)?.size || 0) !== 2);
+        const rootNodes = startNodes.length > 0 ? startNodes : [allNodes[0]];
+
+        rootNodes.forEach(startNode => {
+            const neighbors = biAdj.get(startNode);
+            if (!neighbors) return;
+            neighbors.forEach((_, neighbor) => {
+                const seg = traceSegment(startNode, neighbor);
+                if (seg) segments.push(seg);
+            });
+        });
 
         return segments;
     }
@@ -556,13 +564,13 @@ export class RailroadGraph {
 
         // Helper maps for meaningful names
         const companyNameMap = new Map<number, string>();
-        Object.values(data.companies).forEach((c: any) => companyNameMap.set(c.id, c.name));
+        Object.values(data.companies).forEach((c: Company) => companyNameMap.set(c.id, c.name));
 
         const lineNameMap = new Map<number, { name: string, companyId: number }>();
-        Object.values(data.lines).forEach((l: any) => lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+        Object.values(data.lines).forEach((l: Line) => lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id }));
 
-        // 1. Load Stations
-        Object.values(data.stations).forEach((station: any) => {
+        // 1. Load Stations & Platforms
+        Object.values(data.stations).forEach((station: Station) => {
             let companyName = "Unknown";
             let lineName = "Unknown";
             let fullLineName = "Unknown::Unknown";
@@ -587,11 +595,48 @@ export class RailroadGraph {
                 coords: [station.lon, station.lat]
             };
             this.addNode(node);
+
+            // Also map all platform IDs to this node for lookup flexibility
+            if (station.platform_ids) {
+                station.platform_ids.forEach((pid: string) => {
+                    if (pid !== station.id) {
+                        this.nodes.set(pid, node);
+                    }
+                });
+            }
         });
 
+        // 2. Load Joints from hierarchy as nodes
+        const jointDataMap = new Map<string, any>();
+        if (data.joints && data.joints.joints) {
+            data.joints.joints.forEach((j: any) => jointDataMap.set(j.id, j));
+        }
+
+        if (data.hierarchy && data.hierarchy.companies) {
+            Object.values(data.hierarchy.companies).forEach((comp: any) => {
+                Object.values(comp.lines).forEach((line: any) => {
+                    if (line.joints) {
+                        line.joints.forEach((jid: string) => {
+                            if (!this.nodes.has(jid)) {
+                                const jointInfo = jointDataMap.get(jid);
+                                this.nodes.set(jid, {
+                                    id: jid,
+                                    name: "", // Joints are unnamed
+                                    company: "",
+                                    line: "",
+                                    fullLineName: "",
+                                    coords: jointInfo ? jointInfo.coordinates : [0, 0]
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
         // 2. Load Edges from railroad_graph.json
-        const sectionMap = new Map<number, any>();
-        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
+        const sectionMap = new Map<number, Section>();
+        data.sections.sections.forEach((s: Section) => sectionMap.set(s.id, s));
 
         Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
             Object.entries(targets).forEach(([targetId, sectionIds]) => {
@@ -634,7 +679,7 @@ export class RailroadGraph {
         });
 
         // 3. Hierarchy / Line Mapping
-        Object.values(data.lines).forEach((l: any) => {
+        Object.values(data.lines).forEach((l: Line) => {
             const companyName = companyNameMap.get(l.corp_id) || String(l.corp_id);
             const fullId = `${companyName}::${l.name}`;
             const simplifiedKey = `${companyName}::${l.name}`;

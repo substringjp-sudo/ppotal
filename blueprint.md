@@ -9,7 +9,8 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Visual Depth**: Multi-layered drop shadows for cards and markers.
 - **Iconography**: Modern, interactive icons for railroad types and actions.
 - **Typography**: Expressive fonts with stressed sizes for better readability.
-- **Animations**: Subtle micro-animations for hover effects and transitions.
+- **Animations**: Subtle micro-animations and delayed hover effects for reduced visual clutter.
+- **Hover Delay (Dwell Interaction)**: 1-second delay for all mouse hover effects (tooltips, highlights) to provide a more deliberate and stable browsing experience.
 
 ### Key Features
 - **Interactive Map**: Built with React-Leaflet, showing railroad networks and stations.
@@ -17,29 +18,18 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Station Hierarchy**: Hierarchical navigation for companies, lines, and stations.
 - **Trip Recording**: Users can record trips between stations, calculating distances and marking segments as visited.
 - **Progress Tracking**: Visualizes visited line segments with distinct colors and glows.
+- **TubeMap Visualization (Restored)**: Simplified, interactive topology maps for line details, optimized for path creation and node selection.
 - **Detail Panes**: Dedicated views for line-specific details, including segments and pathfinding.
-- **Customizable Styles**: User-controlled styling settings for visited and unvisited elements.
 
-## Current Planned Changes (Refining Sections Data)
-### Goal
-Refine `sections.json` to reduce file size and optimize for the application.
+## Implementation History & Current State
+### Recent Major Changes
+1.  **Topology Visualization Restoration**: Reverted to `TubeMap.tsx` from `vis-network` to prioritize drag-and-drop interactivity and easier path creation for users. ✅
+2.  **Hover Interaction Delay**: Implemented a global 1-second dwell delay for mouse hover events across the map (railroads, stations) and sidebar items. This prevents accidental tooltips and flickering during rapid mouse movement. ✅
+3.  **Data Synchronization**: Fully synchronized the hierarchy with the raw section data, ensuring all segments and joint connections are represented. ✅
+4.  **Premium UI Polish**: Maintained high-fidelity styles with consistent spacing and glassmorphism in detail panes. ✅
 
-### Proposed Steps
-1. **Filter Redundant Sections**: Remove entries where `start_station` and `end_station` are identical (representing purely internal platform connections).
-2. **Convert Length Units**: Convert `length` from kilometers to meters (integer) to simplify calculations and reduce decimal precision overhead.
-3. **Shorten Keys**: Rename `start_station` and `end_station` to `start` and `end` respectively for more compact JSON representation.
-4. **Update File**: Save the refined data back to `sections.json`.
-
-#메모
-... (생략)
-우리에겐 좀 복잡하지만 여러 노선의 상태가 존재해.
-1. 체크된 노선
-2. 체크안된 노선
-3. 이용경로인 노선
-3. 마우스로 지도 위에서 클릭해서 현재 하단에 노선도가 보이고 노선이 굵게 표시되는 노선
-
-~~여기서 왼쪽 노선목록에서 노선을 클릭하면 하단에 노선도가 보이기는 하는데 지도에서 해당 노선이 굵게 표시는 안돼. 지도 위에도 굵게 표시되게 해줘.~~ ✅ 완료
-~~그리고 선 자체를 굵게 표시하는게 아니라 클릭한 노선의 강조색으로 감싸는 테두리를 좀더 굵게 해줘.~~ ✅ 완료 (반투명 glow outline 방식)
-~~그리고 지도의 노선이나 역이 없는 빈공간을 클릭하면 클릭 및 하단 노선도 보여주는 상태를 해제시켜줘.~~ ✅ 이미 구현됨
-
-
+# 메모
+- **데이버 호버 지연 (1s Delay)**: 마우스가 특정 요소(철도 노선, 역, 사이드바 아이템) 위에 1초간 머물 때만 호버 효과(툴팁, 하이라이트)가 트리거되도록 수정하여 시각적 피로도를 낮추고 의도된 인터랙션만 발생하도록 개선했습니다.
+- **노선도 시각화 (TubeMap 복원)**: 사용자의 경로 생성 편의성을 위해 드래그 및 노드 선택이 용이한 기존의 `TubeMap` 엔진으로 복원했습니다.
+- **데이터 정제 완료**: `sections.json` 데이터를 기반으로 모든 노선 계층 구조를 동기화하여 연결 누락 없는 완전한 그래프를 구현했습니다.
+- **프리미엄 UI/UX**: 글래스모피즘과 세련된 타이포그래피를 유지하며, 모바일과 웹 모두에서 최적화된 경험을 제공합니다.

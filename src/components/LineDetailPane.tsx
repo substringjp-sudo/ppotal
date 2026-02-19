@@ -9,12 +9,13 @@ import TubeMap from './TubeMap';
 import { useLineTopology } from '../hooks/useLineTopology';
 import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
 import { Trip } from '../types/trip';
+import { getOfficialColor } from '../lib/lineColors';
 
 interface LineDetailPaneProps {
     lineId: string;
     segments: LineSegment[];
     nodes: Map<string, StationNode>;
-    visitedEdges: Set<string>; // Set of edge keys like "stationId1<->stationId2"
+    visitedEdges: Set<string>;
     selectedLines: string[];
     onRecordTrip?: (trip: Trip) => void;
     getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][] } | null;
@@ -29,42 +30,24 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     getShortestPath, onRecordTrip
 }) => {
     const [company, lineName] = lineId.split('::');
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    // --- Dynamic Topology Generation from Graph Data ---
-    const generatedTopologies = useLineTopology(segments);
-
-    const visitedLogicalEdges = useMemo(() => {
-        const set = new Set<string>();
-        visitedEdges.forEach(key => {
-            const [id1, id2] = key.split('<->');
-            const n1 = nodes.get(id1)?.name;
-            const n2 = nodes.get(id2)?.name;
-            if (n1 && n2 && n1 !== n2) {
-                set.add([n1, n2].sort().join('<->'));
-            }
-        });
-        return set;
-    }, [visitedEdges, nodes]);
+    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
 
     // --- Stats Calculation ---
     const stats = useMemo(() => {
         let total = 0;
         let visited = 0;
-        const visitedStations = new Set<string>();
-
-        const getName = (id: string) => nodes.get(id)?.name || id;
+        const visitedStationsSet = new Set<string>();
 
         if (segments) {
             segments.forEach((segment) => {
                 segment.edges.forEach((edge) => {
                     total += edge.distance;
-                    const logicalKey = [getName(edge.from), getName(edge.to)].sort().join('<->');
+                    const edgeKey = [edge.from, edge.to].sort().join('<->');
 
-                    if (visitedLogicalEdges.has(logicalKey)) {
+                    if (visitedEdges.has(edgeKey)) {
                         visited += edge.distance;
-                        visitedStations.add(edge.from);
-                        visitedStations.add(edge.to);
+                        visitedStationsSet.add(edge.from);
+                        visitedStationsSet.add(edge.to);
                     }
                 });
             });
@@ -74,9 +57,12 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             total: Math.round(total * 10) / 10,
             visited: Math.round(visited * 10) / 10,
             percent: total > 0 ? Math.round((visited / total) * 100) : 0,
-            visitedStations
+            visitedStations: visitedStationsSet
         };
-    }, [segments, visitedLogicalEdges, nodes]);
+    }, [segments, visitedEdges]);
+
+    // Calculate topology data using the hook
+    const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
 
     return (
         <div style={{
@@ -84,81 +70,77 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             bottom: 0,
             left: 0,
             right: 0,
-            maxHeight: '60vh',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderTop: '2px solid #ddd',
+            maxHeight: '70vh',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(20px)',
+            borderTop: '1px solid rgba(0,0,0,0.1)',
             zIndex: 1100,
             display: 'flex',
             flexDirection: 'column',
-            padding: '15px',
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
-            transition: 'all 0.3s ease-in-out'
+            padding: '20px',
+            boxShadow: '0 -10px 40px rgba(0,0,0,0.15)',
+            borderTopLeftRadius: '24px',
+            borderTopRightRadius: '24px'
         }}>
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: '15px',
-                gap: '20px'
+                marginBottom: '20px',
+                gap: '24px'
             }}>
-                <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                     {/* Toggle Button */}
                     <button
                         onClick={() => {
                             onToggleLine && onToggleLine(lineId);
                         }}
                         style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            border: '2px solid #3498db',
-                            backgroundColor: selectedLines.includes(lineId) ? '#3498db' : 'transparent',
-                            color: selectedLines.includes(lineId) ? '#fff' : '#3498db',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '12px',
+                            border: '1px solid #eee',
+                            backgroundColor: selectedLines.includes(lineId) ? '#3498db' : '#f8f9fa',
+                            color: selectedLines.includes(lineId) ? '#fff' : '#666',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: 'pointer',
-                            fontSize: '16px',
+                            fontSize: '18px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                             transition: 'all 0.2s'
                         }}
                         title={selectedLines.includes(lineId) ? "Hide Line" : "Show Line"}
                     >
-                        {selectedLines.includes(lineId) ? '✓' : ''}
+                        {selectedLines.includes(lineId) ? '✓' : '+'}
                     </button>
 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
-                            <span style={{ fontSize: '13px', color: '#666', fontWeight: 'bold' }}>{company}</span>
-                            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{lineName}</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                            <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>{company}</span>
+                            <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>{lineName}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '-4px' }}>
-                            <span style={{ fontSize: '10px', color: '#666', fontWeight: '400' }}>{COMPANY_EN_NAMES[company] || company}</span>
-                            <span style={{ fontSize: '12px', color: '#555', fontWeight: '400' }}>{LINE_EN_NAMES[lineName] || lineName}</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', opacity: 0.6 }}>
+                            <span style={{ fontSize: '11px', fontWeight: '500' }}>{COMPANY_EN_NAMES[company] || company}</span>
+                            <span style={{ fontSize: '13px', fontWeight: '500' }}>{LINE_EN_NAMES[lineName] || lineName}</span>
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ fontSize: '14px', color: '#444', fontWeight: 'bold' }}>
-                            {stats.visited}km / {stats.total}km
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: '20px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ fontSize: '11px', color: '#888', fontWeight: 'bold', textTransform: 'uppercase' }}>Completion</div>
+                            <div style={{ fontSize: '16px', color: '#1a1a1a', fontWeight: '900' }}>
+                                {stats.visited} <span style={{ fontSize: '11px', color: '#888' }}>/ {stats.total} km</span>
+                            </div>
                         </div>
-                        <div style={{
-                            width: '120px',
-                            height: '6px',
-                            backgroundColor: '#eee',
-                            borderRadius: '3px',
-                            overflow: 'hidden',
-                            display: 'flex'
-                        }}>
-                            <div style={{
-                                width: `${stats.percent}%`,
-                                height: '100%',
-                                backgroundColor: '#27ae60',
-                                transition: 'width 0.5s ease'
-                            }} />
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#27ae60', fontWeight: '800' }}>
-                            {stats.percent}%
+                        <div style={{ position: 'relative', width: '60px', height: '60px' }}>
+                            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" strokeWidth="3" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#27ae60" strokeWidth="3" strokeDasharray={`${stats.percent}, 100`} strokeLinecap="round" style={{ transition: 'stroke-dasharray 1s ease' }} />
+                            </svg>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', fontWeight: '900', color: '#27ae60' }}>
+                                {stats.percent}%
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -169,11 +151,17 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         trackEvent('close_line_detail', 'ui_interaction', lineId);
                     }}
                     style={{
-                        background: 'none',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        backgroundColor: '#f1f2f6',
                         border: 'none',
-                        fontSize: '24px',
+                        fontSize: '20px',
                         cursor: 'pointer',
-                        color: '#666'
+                        color: '#666',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                     }}
                 >
                     ×
@@ -181,56 +169,35 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             </div>
 
             <div
-                ref={scrollRef}
                 style={{
                     flex: 1,
-                    overflow: 'auto',
-                    padding: '20px',
+                    minHeight: '400px',
                     position: 'relative',
-                    minHeight: '140px',
-                    userSelect: 'none'
+                    overflow: 'hidden'
                 }}>
-
-                {generatedTopologies && generatedTopologies.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-                        {generatedTopologies.map((topology, idx) => (
-                            <div key={idx}>
-                                {generatedTopologies.length > 1 && (
-                                    <h4 style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#999', borderBottom: '1px dashed #eee', paddingBottom: '5px' }}>
-                                        Section {idx + 1}
-                                    </h4>
-                                )}
-                                <TubeMap
-                                    lineId={lineId}
-                                    topology={topology}
-                                    nodes={nodes}
-                                    visitedStations={stats.visitedStations}
-                                    visitedEdges={visitedEdges}
-                                    onStationClick={onStationClick}
-                                    language={language}
-                                    onPathCreate={(start, end) => {
-                                        if (getShortestPath && onRecordTrip) {
-                                            const pathData = getShortestPath(start, end, [lineId]);
-                                            if (pathData) {
-                                                onRecordTrip({
-                                                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                                    start,
-                                                    end,
-                                                    ...pathData,
-                                                    waypoints: [start, end]
-                                                });
-                                            }
-                                        }
-                                    }}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                        Processing Line Topology...
-                    </div>
-                )}
+                <TubeMap
+                    nodes={topology.nodes}
+                    edges={topology.edges}
+                    visitedStations={stats.visitedStations}
+                    visitedEdges={visitedEdges}
+                    lineColor={lineColor}
+                    onStationClick={onStationClick}
+                    language={language}
+                    onPathCreate={(start, end) => {
+                        if (getShortestPath && onRecordTrip) {
+                            const pathData = getShortestPath(start, end, [lineId]);
+                            if (pathData) {
+                                onRecordTrip({
+                                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                    start,
+                                    end,
+                                    ...pathData,
+                                    waypoints: [start, end]
+                                });
+                            }
+                        }
+                    }}
+                />
             </div>
         </div>
     );

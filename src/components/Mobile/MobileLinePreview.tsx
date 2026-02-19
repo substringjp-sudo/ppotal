@@ -1,17 +1,18 @@
-import React, { useRef } from 'react';
-import { StationNode } from '../../lib/graphUtils';
+import React, { useMemo } from 'react';
+import { StationNode, LineSegment } from '../../lib/graphUtils';
 import { translateName } from '../../lib/lineUtils';
 import { Language } from '../../lib/translations';
-import { useLineTopology, TopologySegment } from '../../hooks/useLineTopology';
-import TubeMap from '../TubeMap';
-
 import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../../lib/railwayData';
+import TubeMap from '../TubeMap';
+import { useLineTopology } from '../../hooks/useLineTopology';
+import { getOfficialColor } from '../../lib/lineColors';
 
 interface MobileLinePreviewProps {
     lineId: string;
-    segments: TopologySegment[];
+    segments: LineSegment[];
     nodes: Map<string, StationNode>;
     visitedEdges: Set<string>;
+    visitedStations: Set<string>;
     selectedLines: string[];
     onToggleLine: (lineId: string) => void;
     language: Language;
@@ -22,140 +23,94 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     segments,
     nodes,
     visitedEdges,
+    visitedStations,
     selectedLines,
     onToggleLine,
     language
 }) => {
-    const [company, lineName] = lineId.split('::');
-    const generatedTopologies = useLineTopology(segments);
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const isSelected = selectedLines.includes(lineId);
+    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
 
-    const isVisible = selectedLines.includes(lineId);
+    // Calculate topology data using the hook
+    const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
 
-    // Calculate stats
-    const stats = React.useMemo(() => {
-        let total = 0;
-        let visited = 0;
+    const stats = useMemo(() => {
+        let totalDistance = 0;
+        let visitedDistance = 0;
 
-        const getName = (id: string) => nodes.get(id)?.name || id;
-        const visitedLogicalEdges = new Set<string>();
-        visitedEdges.forEach(key => {
-            const [id1, id2] = key.split('<->');
-            const n1 = nodes.get(id1)?.name;
-            const n2 = nodes.get(id2)?.name;
-            if (n1 && n2 && n1 !== n2) {
-                visitedLogicalEdges.add([n1, n2].sort().join('<->'));
-            }
+        segments.forEach((segment) => {
+            segment.edges.forEach((edge) => {
+                const edgeKey = [edge.from, edge.to].sort().join('<->');
+                totalDistance += edge.distance;
+                if (visitedEdges.has(edgeKey)) {
+                    visitedDistance += edge.distance;
+                }
+            });
         });
 
-        if (segments) {
-            segments.forEach((segment) => {
-                segment.edges.forEach((edge) => {
-                    total += edge.distance;
-                    const logicalKey = [getName(edge.from), getName(edge.to)].sort().join('<->');
-                    if (visitedLogicalEdges.has(logicalKey)) {
-                        visited += edge.distance;
-                    }
-                });
-            });
-        }
         return {
-            total: Math.round(total * 10) / 10,
-            visited: Math.round(visited * 10) / 10,
-            percent: total > 0 ? Math.round((visited / total) * 100) : 0
+            total: (totalDistance / 1000).toFixed(1),
+            visited: (visitedDistance / 1000).toFixed(1),
+            percent: totalDistance > 0 ? Math.round((visitedDistance / totalDistance) * 100) : 0
         };
-    }, [segments, visitedEdges, nodes]);
+    }, [segments, visitedEdges]);
+
+    const [company, lineName] = lineId.split('::');
 
     return (
         <div style={{
-            padding: '16px',
-            backgroundColor: '#fff',
-            borderBottom: '1px solid #ddd',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-            position: 'relative',
-            zIndex: 1000,
-            maxHeight: '40vh',
-            display: 'flex',
-            flexDirection: 'column'
+            padding: '20px',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '24px',
+            margin: '10px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
         }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                            <span style={{ fontSize: '11px', color: '#666', fontWeight: 'bold' }}>{translateName(company, language, 'company')}</span>
-                            <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{translateName(lineName, language, 'line')}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '-2px', marginBottom: '4px' }}>
-                            <span style={{ fontSize: '10px', color: '#999', fontWeight: '400' }}>{COMPANY_EN_NAMES[company] || company}</span>
-                            <span style={{ fontSize: '11px', color: '#888', fontWeight: '400' }}>{LINE_EN_NAMES[lineName] || lineName}</span>
-                        </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
-                        <span style={{ fontWeight: 'bold', color: '#444' }}>{stats.visited}km / {stats.total}km</span>
-                        <span style={{ color: stats.percent >= 100 ? '#27ae60' : '#3498db', fontWeight: 'bold' }}>
-                            ({stats.percent}%)
-                        </span>
-                    </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '12px', color: '#666', fontWeight: 'bold' }}>
+                        {translateName(company, language, 'company')}
+                    </span>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: lineColor }}>
+                        {translateName(lineName, language, 'line')}
+                    </span>
                 </div>
-
-                <label style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 10px',
-                    backgroundColor: isVisible ? '#e8f5e9' : '#f5f5f5',
-                    borderRadius: '20px',
-                    cursor: 'pointer',
-                    border: `1px solid ${isVisible ? '#a5d6a7' : '#ddd'}`,
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: isVisible ? '#2e7d32' : '#666'
-                }}>
-                    <input
-                        type="checkbox"
-                        checked={isVisible}
-                        onChange={() => onToggleLine(lineId)}
-                        style={{ margin: 0 }}
-                    />
-                    Show on Map
-                </label>
+                <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>{stats.percent}%</div>
+                    <div style={{ fontSize: '12px', color: '#999' }}>{stats.visited} / {stats.total} km</div>
+                </div>
             </div>
 
-            <div
-                ref={scrollRef}
+            <div style={{ marginBottom: '20px' }}>
+                <TubeMap
+                    nodes={topology.nodes}
+                    edges={topology.edges}
+                    visitedStations={visitedStations}
+                    visitedEdges={visitedEdges}
+                    lineColor={lineColor}
+                    language={language}
+                />
+            </div>
+
+            <button
+                onClick={() => onToggleLine(lineId)}
                 style={{
-                    flex: 1,
-                    overflow: 'auto',
-                    border: '1px solid #eee',
-                    borderRadius: '8px',
-                    padding: '10px',
-                    marginTop: '8px',
-                    backgroundColor: '#fff'
+                    width: '100%',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    backgroundColor: isSelected ? '#eee' : lineColor,
+                    color: isSelected ? '#666' : '#fff',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
                 }}
             >
-                {generatedTopologies && generatedTopologies.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {generatedTopologies.map((topology, idx) => (
-                            <TubeMap
-                                key={idx}
-                                lineId={lineId}
-                                topology={topology}
-                                nodes={nodes}
-                                visitedStations={new Set()} // Not highlighting stations specifically unless we want to, using empty set for now or pass actual visited
-                                visitedEdges={visitedEdges}
-                                language={language}
-                            // onStationClick logic could be passed if needed
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
-                        Details not available
-                    </div>
-                )}
-            </div>
+                {isSelected ? '지도에서 숨기기' : '지도에 표시하기'}
+            </button>
         </div>
     );
 };
 
-export default MobileLinePreview;
+export default React.memo(MobileLinePreview);

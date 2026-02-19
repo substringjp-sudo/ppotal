@@ -17,7 +17,8 @@ export const useRailData = () => {
                     stationsRes,
                     sectionsRes,
                     graphRes,
-                    hierarchyRes
+                    hierarchyRes,
+                    jointsRes
                 ] = await Promise.all([
                     fetch('/rail/companies.json'),
                     fetch('/rail/lines.json'),
@@ -25,10 +26,11 @@ export const useRailData = () => {
                     fetch('/rail/stations.json'),
                     fetch('/rail/sections.json'),
                     fetch('/rail/railroad_graph.json'),
-                    fetch('/rail/railroad_hierarchy.json')
+                    fetch('/rail/railroad_hierarchy.json'),
+                    fetch('/rail/joints.json')
                 ]);
 
-                if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok || !sectionsRes.ok || !graphRes.ok || !hierarchyRes.ok) {
+                if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok || !sectionsRes.ok || !graphRes.ok || !hierarchyRes.ok || !jointsRes.ok) {
                     throw new Error('Failed to fetch one or more rail data files');
                 }
 
@@ -39,6 +41,7 @@ export const useRailData = () => {
                 const sections = await sectionsRes.json();
                 const railroadGraph = await graphRes.json();
                 const hierarchy = await hierarchyRes.json();
+                const joints = await jointsRes.json();
 
                 setRailData({
                     companies,
@@ -47,7 +50,8 @@ export const useRailData = () => {
                     stations,
                     sections,
                     railroadGraph,
-                    hierarchy
+                    hierarchy,
+                    joints
                 });
             } catch (err) {
                 console.error("Error loading rail data:", err);

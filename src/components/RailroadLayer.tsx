@@ -202,16 +202,32 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             });
         }
 
+        let tooltipTimeout: NodeJS.Timeout | null = null;
+
         layer.on({
             click: (e) => {
                 L.DomEvent.stopPropagation(e);
                 onRailroadClick(feature.properties.id);
             },
-            mouseover: () => {
-                if (!isMobile) onRailroadHover(feature.properties.id);
+            mouseover: (e) => {
+                if (!isMobile) {
+                    if (tooltipTimeout) clearTimeout(tooltipTimeout);
+                    tooltipTimeout = setTimeout(() => {
+                        onRailroadHover(feature.properties.id);
+                        layer.openTooltip();
+                        tooltipTimeout = null;
+                    }, 1000);
+                }
             },
             mouseout: () => {
-                if (!isMobile) onRailroadHover(null);
+                if (!isMobile) {
+                    if (tooltipTimeout) {
+                        clearTimeout(tooltipTimeout);
+                        tooltipTimeout = null;
+                    }
+                    onRailroadHover(null);
+                    layer.closeTooltip();
+                }
             }
         });
     };
