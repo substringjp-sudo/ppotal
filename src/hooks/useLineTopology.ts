@@ -75,7 +75,7 @@ export function useLineTopology(
                 x,
                 y,
                 isJoint,
-                isVisited: !isJoint && nodeData ? visitedStations.has(nodeData.name) : false
+                isVisited: !isJoint && nodeData ? visitedStations.has(id) : false
             });
 
             const neighbors = Array.from(adj.get(id) || []).filter(n => !processedNodes.has(n));

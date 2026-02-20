@@ -101,6 +101,9 @@ const MapPane: React.FC<MapPaneProps> = ({
     onDraftComplete,
     onDragUpdate,
     rulerTopOffset = 80,
+    routeStart,
+    routeEnd,
+    onRouteResult
 }) => {
     // 1. Map Data & State
     const map = useMap();
@@ -280,11 +283,16 @@ const MapPane: React.FC<MapPaneProps> = ({
         setHoveredLine(lineId);
     }, [isMobile]);
 
-    const handleStationClick = useCallback((name: string, lines?: string[]) => {
-        if (onStationClick) onStationClick(name, lines);
-        trackEvent('station_click', 'interaction', name);
-        if (isMobile || !visibleStations || !visibleStations[name] || !onSetSelectedLines) return;
-        const connectedLines = visibleStations[name].lines || [];
+    const handleStationClick = useCallback((id: string, lines?: string[]) => {
+        if (onStationClick) onStationClick(id, lines);
+        const st = visibleStations ? visibleStations[id] : null;
+        if (st) {
+            trackEvent('station_click', 'interaction', st.name);
+        } else {
+            trackEvent('station_click', 'interaction', id);
+        }
+        if (isMobile || !visibleStations || !visibleStations[id] || !onSetSelectedLines) return;
+        const connectedLines = visibleStations[id].lines || [];
         if (connectedLines.length > 0) {
             const newSelection = Array.from(new Set([...selectedLines, ...connectedLines]));
             onSetSelectedLines(newSelection);
@@ -320,9 +328,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 bounds = L.latLngBounds(latlngs);
             }
         } else if (type === 'station') {
-            const stationNodes = graph.getNodesByName(id);
-            if (stationNodes.length > 0) {
-                const node = stationNodes[0];
+            const node = graph.getNode(id);
+            if (node) {
                 map.flyTo([node.coords[1], node.coords[0]], 15, { duration: 1.5 });
             }
         }

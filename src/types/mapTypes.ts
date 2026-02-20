@@ -7,6 +7,8 @@ export interface StaticNode {
 }
 
 export interface ProcessedStation {
+    id: string;
+    name: string;
     nodes: StaticNode[];
     centroid: [number, number];
     lines: string[];

@@ -7,8 +7,8 @@ import { RailData } from '../types/railData';
 interface RoutePaneProps {
     startStation: string | null;
     endStation: string | null;
-    onSetStartStation: (name: string) => void;
-    onSetEndStation: (name: string) => void;
+    onSetStartStation: (id: string) => void;
+    onSetEndStation: (id: string) => void;
     routeResult: any | null; // RouteResult from RoutingGraph
     onSwapStations: () => void;
     language: Language;
@@ -34,18 +34,28 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     const [endSuggestions, setEndSuggestions] = useState<any[]>([]);
 
     useEffect(() => {
-        setStartInput(startStation || '');
-    }, [startStation]);
+        if (startStation && railData?.stations?.[startStation]) {
+            setStartInput(railData.stations[startStation].name);
+        } else {
+            setStartInput('');
+        }
+    }, [startStation, railData]);
 
     useEffect(() => {
-        setEndInput(endStation || '');
-    }, [endStation]);
+        if (endStation && railData?.stations?.[endStation]) {
+            setEndInput(railData.stations[endStation].name);
+        } else {
+            setEndInput('');
+        }
+    }, [endStation, railData]);
 
     useEffect(() => {
         if (routeResult && routeResult.totalDistance > 0) {
-            trackEvent('route_search_success', 'engagement', `${startStation} to ${endStation}`, Math.round(routeResult.totalDistance));
+            const startName = startStation && railData?.stations?.[startStation] ? railData.stations[startStation].name : startStation;
+            const endName = endStation && railData?.stations?.[endStation] ? railData.stations[endStation].name : endStation;
+            trackEvent('route_search_success', 'engagement', `${startName} to ${endName}`, Math.round(routeResult.totalDistance));
         }
-    }, [routeResult, startStation, endStation]);
+    }, [routeResult, startStation, endStation, railData]);
 
     useEffect(() => {
         if (!railData?.stations) return;
@@ -85,24 +95,23 @@ const RoutePane: React.FC<RoutePaneProps> = ({
         if (val === '') onSetEndStation('');
     };
 
-    const selectStart = (name: string) => {
+    const selectStart = (id: string, name: string) => {
         setStartInput(name);
-        onSetStartStation(name);
+        onSetStartStation(id);
         setStartSuggestions([]);
         trackEvent('route_set_start', 'interaction', name);
     };
 
-    const selectEnd = (name: string) => {
+    const selectEnd = (id: string, name: string) => {
         setEndInput(name);
-        onSetEndStation(name);
+        onSetEndStation(id);
         setEndSuggestions([]);
         trackEvent('route_set_end', 'interaction', name);
     };
 
     const swap = () => {
-        const temp = startInput;
-        setStartInput(endInput);
-        setEndInput(temp);
+        // Just call onSwapStations and let the parent swap the IDs.
+        // The useEffect will update the input fields.
         onSwapStations();
         trackEvent('route_swap', 'interaction', 'swap');
     };
@@ -130,7 +139,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                     {startSuggestions.length > 0 && (
                         <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: '4px', zIndex: 1000, margin: 0, padding: 0, listStyle: 'none', maxHeight: '150px', overflowY: 'auto' }}>
                             {startSuggestions.map(s => (
-                                <li key={s.name} onClick={() => selectStart(s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}>
+                                <li key={s.id} onClick={() => selectStart(s.id, s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}>
                                     {s.name}
                                 </li>
                             ))}
@@ -156,7 +165,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                     {endSuggestions.length > 0 && (
                         <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: '4px', zIndex: 1000, margin: 0, padding: 0, listStyle: 'none', maxHeight: '150px', overflowY: 'auto' }}>
                             {endSuggestions.map(s => (
-                                <li key={s.name} onClick={() => selectEnd(s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}>
+                                <li key={s.id} onClick={() => selectEnd(s.id, s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}>
                                     {s.name}
                                 </li>
                             ))}

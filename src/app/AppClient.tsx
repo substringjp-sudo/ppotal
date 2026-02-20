@@ -176,8 +176,8 @@ const AppClient = () => {
         });
     }, []);
 
-    const handleStationClick = React.useCallback((stationName: string) => {
-        console.log("Station clicked:", stationName);
+    const handleStationClick = React.useCallback((id: string, lines?: string[]) => {
+        console.log("Station clicked:", id);
     }, []);
 
     const handleResetTrips = React.useCallback(() => {

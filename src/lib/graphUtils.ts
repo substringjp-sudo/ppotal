@@ -52,10 +52,6 @@ export class RailroadGraph {
         if (!this.adj.has(node.id)) {
             this.adj.set(node.id, []);
         }
-        if (!this.stationsByName[node.name]) {
-            this.stationsByName[node.name] = [];
-        }
-        this.stationsByName[node.name].push(node.id);
     }
 
     addEdge(u: string, v: string, distance: number, geometry: [number, number][], lineId?: string) {
@@ -65,131 +61,6 @@ export class RailroadGraph {
         this.adj.get(u)?.push({ to: v, distance, geometry, lineId });
         // Assuming undirected for now, but need to check if geometry needs reversing
         this.adj.get(v)?.push({ to: u, distance, geometry: [...geometry].reverse(), lineId });
-    }
-
-    getShortestPathByName(startName: string, endName: string, allowedLines: string[] | null = null, startCoords?: [number, number], endCoords?: [number, number]): { path: string[], distance: number, geometries: [number, number][][] } | null {
-        let startIds = this.stationsByName[startName];
-        let endIds = this.stationsByName[endName];
-
-        // If not found by name, check if it's a direct ID (e.g. for joints)
-        if (!startIds && this.nodes.has(startName)) startIds = [startName];
-        if (!endIds && this.nodes.has(endName)) endIds = [endName];
-
-        if (!startIds || !endIds) return null;
-
-        // Disambiguation using coordinates
-        if (startCoords) {
-            let minDist = Infinity;
-            let closestId = startIds[0];
-            for (const id of startIds) {
-                const node = this.nodes.get(id);
-                if (node) {
-                    const d = haversineDistance(startCoords, node.coords);
-                    if (d < minDist) {
-                        minDist = d;
-                        closestId = id;
-                    }
-                }
-            }
-            startIds = [closestId];
-        }
-
-        if (endCoords) {
-            let minDist = Infinity;
-            let closestId = endIds[0];
-            for (const id of endIds) {
-                const node = this.nodes.get(id);
-                if (node) {
-                    const d = haversineDistance(endCoords, node.coords);
-                    if (d < minDist) {
-                        minDist = d;
-                        closestId = id;
-                    }
-                }
-            }
-            endIds = [closestId];
-        }
-
-        // Multi-source Dijkstra
-        const distances: Record<string, number> = {};
-        const previous: Record<string, string | null> = {};
-        const geometries: Record<string, [number, number][][]> = {};
-        const nodes = new Set<string>();
-
-        // Initialize all nodes
-        for (const nodeId of this.nodes.keys()) {
-            distances[nodeId] = Infinity;
-            previous[nodeId] = null;
-            geometries[nodeId] = [];
-            nodes.add(nodeId);
-        }
-
-        // Set distance 0 for ALL start nodes
-        for (const startId of startIds) {
-            distances[startId] = 0;
-        }
-
-        while (nodes.size > 0) {
-            let closestNode: string | null = null;
-            let minDist = Infinity;
-
-            // Simple linear scan (could be optimized)
-            for (const nodeId of nodes) {
-                if (distances[nodeId] < minDist) {
-                    minDist = distances[nodeId];
-                    closestNode = nodeId;
-                }
-            }
-
-            if (closestNode === null || distances[closestNode] === Infinity) break;
-
-            // Check if we reached ANY end node
-            if (endIds.includes(closestNode)) {
-                // Reconstruct path
-                const endId = closestNode;
-                const path: string[] = [];
-                let curr: string | null = endId;
-                while (curr !== null) {
-                    path.unshift(curr);
-                    // Stop if we hit any start node (since its prev is null)
-                    if (startIds.includes(curr) && previous[curr] === null) break;
-                    curr = previous[curr];
-                }
-
-                return {
-                    path,
-                    distance: distances[endId],
-                    geometries: geometries[endId]
-                };
-            }
-
-            nodes.delete(closestNode);
-
-            const neighbors = this.adj.get(closestNode) || [];
-            for (const neighbor of neighbors) {
-                if (!nodes.has(neighbor.to)) continue;
-
-                // FILTERING LOGIC
-                if (allowedLines) {
-                    const targetNode = this.nodes.get(neighbor.to);
-                    if (targetNode) {
-                        const lineKey = targetNode.fullLineId;
-                        if (!allowedLines.includes(lineKey)) {
-                            continue;
-                        }
-                    }
-                }
-
-                const alt = distances[closestNode] + neighbor.distance;
-                if (alt < distances[neighbor.to]) {
-                    distances[neighbor.to] = alt;
-                    previous[neighbor.to] = closestNode;
-                    geometries[neighbor.to] = [...geometries[closestNode], neighbor.geometry];
-                }
-            }
-        }
-
-        return null;
     }
 
     getShortestPath(startId: string, endId: string, allowedLines: string[] | null = null): { path: string[], distance: number, geometries: [number, number][][] } | null {
@@ -466,7 +337,6 @@ export class RailroadGraph {
     loadFromGranularData(data: RailData) {
         this.nodes.clear();
         this.adj.clear();
-        this.stationsByName = {};
         this.lineIdMap.clear();
         this.reverseLineIdMap.clear();
 

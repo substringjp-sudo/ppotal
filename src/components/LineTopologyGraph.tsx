@@ -14,7 +14,7 @@ interface LineTopologyGraphProps {
     nodes: Map<string, StationNode>;
     visitedStations: Set<string>;
     visitedEdges: Set<string>;
-    onStationClick?: (stationName: string) => void;
+    onStationClick?: (id: string) => void;
     language: Language;
     railData: RailData | null;
 }
@@ -250,7 +250,7 @@ const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
                         const stationName = language === 'en' && nodeData.name_en ? nodeData.name_en : nodeData.name;
 
                         return (
-                            <g key={id} transform={`translate(${pos.x}, ${pos.y})`} onClick={() => onStationClick?.(nodeData.name)} onMouseEnter={() => setHoveredStation(id)} onMouseLeave={() => setHoveredStation(null)} style={{ cursor: 'pointer' }}>
+                            <g key={id} transform={`translate(${pos.x}, ${pos.y})`} onClick={() => onStationClick?.(id)} onMouseEnter={() => setHoveredStation(id)} onMouseLeave={() => setHoveredStation(null)} style={{ cursor: 'pointer' }}>
                                 <circle r={NODE_SIZE} fill={isHovered ? '#FF5733' : '#ffffff'} stroke={isVisited ? visitedColor : lineColor} strokeWidth={isVisited ? STROKE_WIDTH_VISITED : STROKE_WIDTH} />
                                 <text fontSize={FONT_SIZE} fontFamily="Inter, system-ui, sans-serif" fontWeight="500" fill="#333" textAnchor="middle" y={-NODE_SIZE * 2} style={{ pointerEvents: 'none' }}>
                                     {stationName}

@@ -18,7 +18,7 @@ export interface LineDetailPaneProps {
     selectedLines: string[];
     onRecordTrip?: (trip: Trip) => void;
     getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][] } | null;
-    onStationClick?: (stationName: string) => void;
+    onStationClick?: (id: string) => void;
     onClose: () => void;
     language: Language;
     onToggleLine?: (lineId: string) => void;

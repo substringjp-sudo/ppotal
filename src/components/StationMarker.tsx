@@ -9,17 +9,17 @@ import { ProcessedStation } from '../types/mapTypes';
 import { RailData } from '../types/railData';
 
 interface StationMarkerProps {
-    name: string;
+    id: string;
     station: ProcessedStation;
     highlightedStations: string[];
     selectedLines: string[];
     activeLine: string | null;
     hoveredLine: string | null;
     zoom: number;
-    getColor: (name: string) => string;
-    handleStationClick: (name: string, lines?: string[]) => void;
-    onStationMouseDown: (name: string, coords: [number, number]) => void;
-    onStationMouseUp: (name: string) => void;
+    getColor: (lineKey: string) => string;
+    handleStationClick: (id: string, lines?: string[]) => void;
+    onStationMouseDown: (id: string, coords: [number, number]) => void;
+    onStationMouseUp: (id: string) => void;
     dragStartStation: string | null;
     visitedStations: Set<string>;
     settings: MapStyleSettings;
@@ -32,7 +32,7 @@ interface StationMarkerProps {
 }
 
 const StationMarker: React.FC<StationMarkerProps> = ({
-    name,
+    id,
     station,
     highlightedStations,
     selectedLines,
@@ -53,8 +53,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     isMoving = false,
     railData
 }) => {
-    const isHighlighted = highlightedStations.includes(name);
-    const isVisited = visitedStations.has(name);
+    const isHighlighted = highlightedStations.includes(id);
+    const isVisited = visitedStations.has(id);
     const isSelected = station.lines.some(l =>
         selectedLines.includes(l) ||
         (activeLine === l) ||
@@ -75,7 +75,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
         radius *= 1.5; // Make dots larger on mobile
     }
 
-    if (isHighlighted || (isMobile && selectedStation === name)) {
+    if (isHighlighted || (isMobile && selectedStation === id)) {
         radius = Math.max(radius, 10);
     }
 
@@ -86,8 +86,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
         radius *= settings.unvisited.stationSize;
     }
 
-    const isDragging = dragStartStation === name;
-    const isStationSelected = isMobile && (selectedStation === name);
+    const isDragging = dragStartStation === id;
+    const isStationSelected = isMobile && (selectedStation === id);
     const weight = zoom <= 12 ? 0 : (isHighlighted || (isMobile && isStationSelected) ? 6 : 4);
 
     const [showTooltip, setShowTooltip] = React.useState(false);
@@ -116,7 +116,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
         click: (e: any) => {
             L.DomEvent.stopPropagation(e);
             if (!isEditMode) {
-                handleStationClick(name, lines);
+                handleStationClick(id, lines);
             }
         },
         mouseover: (e: any) => {
@@ -131,12 +131,12 @@ const StationMarker: React.FC<StationMarkerProps> = ({
             if (isEditMode || !isMobile) {
                 // Prevent default drag initiation if needed, but allow bubbling?
                 // Actually, stopping propagation is good to avoid map drag.
-                onStationMouseDown(name, nodeCoord);
+                onStationMouseDown(id, nodeCoord);
             }
         },
         mouseup: (e: any) => {
             L.DomEvent.stopPropagation(e);
-            onStationMouseUp(name);
+            onStationMouseUp(id);
         },
         touchstart: (e: any) => {
             if (isEditMode) {
@@ -150,7 +150,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                     lat = e.latlng.lat;
                     lng = e.latlng.lng;
                 }
-                onStationMouseDown(name, [lat, lng]);
+                onStationMouseDown(id, [lat, lng]);
             }
         }
     });
@@ -254,7 +254,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                     position: absolute;
                                     top: 0;
                                     pointer-events: none;
-                                ">${language === 'en' ? (station.name_en || name) : name}</div>
+                                ">${language === 'en' ? (station.name_en || station.name) : station.name}</div>
                             </div>
                         `,
                         iconSize: [0, 0],
@@ -355,7 +355,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                             <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={showTooltip ? (isDragging ? 0 : (isSelected ? 1 : 0.7)) : 0}>
                                                 <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
                                                     <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                                        {language === 'en' ? (station.name_en || name) : name}
+                                                        {language === 'en' ? (station.name_en || station.name) : station.name}
                                                     </div>
                                                     <div style={{ fontSize: '12px', color: '#333' }}>
                                                         <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>

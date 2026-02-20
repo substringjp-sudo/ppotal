@@ -16,11 +16,11 @@ export class RoutingGraph {
     stationToNodes: Map<string, string[]> = new Map();
     lineIdMap: Map<string, string> = new Map();
     lineLengths: Record<string, number> = {};
-    stationsByName: Record<string, string[]> = {};
 
     // Name to ID mappings for granular data
     companyNameToId: Map<string, string> = new Map();
     lineNameToId: Map<string, string> = new Map();
+    sectionsMap: Map<number, any> = new Map();
 
     constructor(data?: RailData) {
         if (data) {
@@ -33,12 +33,12 @@ export class RoutingGraph {
         this.adj.clear();
         this.stationToNodes.clear();
         this.lineLengths = {};
-        this.stationsByName = {};
         this.lineIdMap.clear();
         this.companyNameToId.clear();
         this.lineNameToId.clear();
+        this.sectionsMap.clear();
 
-        if (!data.stations || !data.railroadGraph || !data.lines || !data.companies || !data.sections) return;
+        if (!data.stations || !data.lines || !data.companies || !data.sections) return;
 
         const companyNameMap = new Map<number, string>();
         Object.values(data.companies).forEach(c => {
@@ -88,10 +88,6 @@ export class RoutingGraph {
                 this.stationToNodes.set(station.name, []);
             }
             this.stationToNodes.get(station.name)!.push(station.id);
-            if (!this.stationsByName[station.name]) {
-                this.stationsByName[station.name] = [];
-            }
-            this.stationsByName[station.name].push(station.id);
 
             // Map platform IDs to the same node
             if (station.platform_ids) {
@@ -103,9 +99,26 @@ export class RoutingGraph {
             }
         });
 
+        // 1.1 Load Joints if available
+        if (data.joints && Array.isArray(data.joints.joints)) {
+            data.joints.joints.forEach((joint: any) => {
+                const node: StationNode = {
+                    id: joint.id,
+                    name: "Joint",
+                    name_en: "Joint",
+                    company: "Network",
+                    line: "Multiple",
+                    companyId: 0,
+                    lineId: 0,
+                    fullLineId: "0::0",
+                    coords: joint.coordinates
+                };
+                this.nodes.set(joint.id, node);
+            });
+        }
+
         // 2. Load Line IDs and populate lineLengths
-        const sectionMap = new Map<number, any>();
-        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
+        data.sections.sections.forEach((s: any) => this.sectionsMap.set(s.id, s));
 
         if (data.railroadGraph) {
             Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
@@ -116,7 +129,7 @@ export class RoutingGraph {
                     let currentPos = sourceId;
 
                     (sectionIds as number[]).forEach((secId: number) => {
-                        const section = sectionMap.get(secId);
+                        const section = this.sectionsMap.get(secId);
                         if (!section) return;
 
                         // Use numeric IDs for internal lineId
@@ -147,6 +160,36 @@ export class RoutingGraph {
                     }
                 });
             });
+        } else {
+            // Build graph directly from sections if pre-computed graph is missing
+            data.sections.sections.forEach(section => {
+                const lineId = `${section.company_id}::${section.line_id}`;
+                const edge: RouteEdge = {
+                    from: section.start,
+                    to: section.end,
+                    distance: section.length / 1000,
+                    lineId,
+                    type: 'RAIL',
+                    geometry: section.geometry
+                };
+
+                if (!this.adj.has(section.start)) this.adj.set(section.start, []);
+                this.adj.get(section.start)?.push(edge);
+
+                const revEdge: RouteEdge = {
+                    from: section.end,
+                    to: section.start,
+                    distance: section.length / 1000,
+                    lineId,
+                    type: 'RAIL',
+                    geometry: [...section.geometry].reverse()
+                };
+
+                if (!this.adj.has(section.end)) this.adj.set(section.end, []);
+                this.adj.get(section.end)?.push(revEdge);
+
+                this.lineLengths[lineId] = (this.lineLengths[lineId] || 0) + (section.length / 1000);
+            });
         }
 
         // 3. Transfers
@@ -173,7 +216,6 @@ export class RoutingGraph {
     getEdge = (fromId: string, toId: string): RouteEdge | undefined => this.adj.get(fromId)?.find(edge => edge.to === toId);
     getLineIdMap = (): Map<string, string> => this.lineIdMap;
     getLineLengths = (): Record<string, number> => this.lineLengths;
-    getNodesByName = (name: string): StationNode[] => (this.stationToNodes.get(name) || []).map(id => this.getNode(id)).filter((n): n is StationNode => !!n);
 
     getLineSegments = (lineId: string, hierarchy: any): LineSegment[] => {
         const segments: LineSegment[] = [];
@@ -188,12 +230,28 @@ export class RoutingGraph {
         const lineEntry = compEntry.lines?.[lineNumericId];
         if (!lineEntry) return [];
 
+        // Reconstruction PRIORITY:
+        // 1. If hierarchy lists sections, use them (most reliable for all parts of line including joints/branches)
+        if (lineEntry.sections && lineEntry.sections.length > 0) {
+            lineEntry.sections.forEach((secId: number) => {
+                const section = this.sectionsMap.get(secId);
+                if (section) {
+                    segments.push({
+                        stations: [section.start, section.end],
+                        edges: [{ from: section.start, to: section.end, distance: section.length / 1000 }],
+                        geometry: section.geometry
+                    });
+                }
+            });
+            if (segments.length > 0) return segments;
+        }
+
+        // 2. Fallback to platform-based reconstruction (original logic)
         if (lineEntry.platforms && lineEntry.platforms.length > 0) {
             for (let i = 0; i < lineEntry.platforms.length - 1; i++) {
                 const startId = lineEntry.platforms[i].station_id;
                 const endId = lineEntry.platforms[i + 1].station_id;
 
-                // Try direct edge first
                 const directEdge = this.getEdge(startId, endId);
                 if (directEdge) {
                     segments.push({
@@ -222,10 +280,6 @@ export class RoutingGraph {
                     }
                 }
             }
-        }
-        else if (lineEntry.sections) {
-            // Fallback to sections if platforms are not direct StationNodes
-            // But usually stations are better for topology.
         }
 
         return segments;
@@ -271,13 +325,21 @@ export class RoutingGraph {
 
         if (!dists.has(endId) || dists.get(endId) === Infinity) return null;
 
+        return this.reconstructPath(endId, prev);
+    }
+
+
+    private reconstructPath(endId: string, prev: Map<string, { node: string, edge: RouteEdge } | null>) {
         const S: string[] = [];
         const G: [number, number][][] = [];
         let u = endId;
+        let currentTotalDistance = 0;
+
         while (prev.get(u)) {
             S.unshift(u);
             const p = prev.get(u)!;
             const edge = p.edge;
+            currentTotalDistance += edge.distance;
             if (edge.geometry) {
                 if (edge.to === u) {
                     G.unshift(edge.geometry);
@@ -291,7 +353,7 @@ export class RoutingGraph {
 
         return {
             path: S,
-            distance: dists.get(endId)!,
+            distance: currentTotalDistance,
             geometries: G
         };
     }

@@ -61,19 +61,19 @@ export const useTripRecorder = ({
         }
     }, [map, dragStartStation]);
 
-    const handleStationMouseDown = useCallback((name: string, coords: [number, number]) => {
-        setDragStartStation(name);
+    const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
+        setDragStartStation(id);
         setDragStartCoords(coords);
         setDragPath([]);
 
-        dragStartStationRef.current = name;
+        dragStartStationRef.current = id;
 
         dragState.current = {
-            waypoints: [name],
+            waypoints: [id],
             segments: []
         };
 
-        if (onDragUpdate) onDragUpdate([name]);
+        if (onDragUpdate) onDragUpdate([id]);
 
         if (map) {
             map.dragging.disable();
@@ -92,14 +92,14 @@ export const useTripRecorder = ({
         const stations = visibleStationsRef.current;
 
         if (currentDragStation && graph && prevLayerPoint && stations) {
-            const candidates: { name: string, dist: number, projDist: number }[] = [];
+            const candidates: { id: string, dist: number, projDist: number }[] = [];
             const padding = 30;
             const minX = Math.min(prevLayerPoint.x, currentLayerPoint.x) - padding;
             const maxX = Math.max(prevLayerPoint.x, currentLayerPoint.x) + padding;
             const minY = Math.min(prevLayerPoint.y, currentLayerPoint.y) - padding;
             const maxY = Math.max(prevLayerPoint.y, currentLayerPoint.y) + padding;
 
-            Object.entries(stations).forEach(([name, data]: [string, any]) => {
+            Object.entries(stations).forEach(([id, data]: [string, any]) => {
                 const stLatLng = L.latLng(data.centroid[0], data.centroid[1]);
                 const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
 
@@ -107,7 +107,7 @@ export const useTripRecorder = ({
                     const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
                     if (d < 20) {
                         const distFromStart = prevLayerPoint.distanceTo(stPoint);
-                        candidates.push({ name, dist: d, projDist: distFromStart });
+                        candidates.push({ id, dist: d, projDist: distFromStart });
                     }
                 }
             });
@@ -121,21 +121,19 @@ export const useTripRecorder = ({
 
             candidates.forEach(c => {
                 const lastWaypoint = waypoints[waypoints.length - 1];
-                if (c.name === lastWaypoint) return;
+                if (c.id === lastWaypoint) return;
 
-                if (waypoints.length > 1 && c.name === waypoints[waypoints.length - 2]) {
+                if (waypoints.length > 1 && c.id === waypoints[waypoints.length - 2]) {
                     waypoints.pop();
                     segments.pop();
                     changed = true;
                 } else {
                     const lastStData = stations[lastWaypoint];
-                    const currStData = stations[c.name];
-                    const pathData = graph.getShortestPathByName(
+                    const currStData = stations[c.id];
+                    const pathData = graph.getShortestPath(
                         lastWaypoint,
-                        c.name,
-                        null,
-                        lastStData?.centroid,
-                        currStData?.centroid
+                        c.id,
+                        null
                     );
 
                     if (pathData) {
@@ -152,7 +150,7 @@ export const useTripRecorder = ({
                         }
 
                         if (isValid) {
-                            waypoints.push(c.name);
+                            waypoints.push(c.id);
                             segments.push({
                                 path: pathData.path,
                                 geometries: pathData.geometries,

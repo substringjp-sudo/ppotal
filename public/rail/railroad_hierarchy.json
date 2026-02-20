@@ -40882,7 +40882,76 @@
         "417": {
           "id": 417,
           "corp_id": 127,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "004617",
+              "platform_id": "004617"
+            },
+            {
+              "station_id": "004672",
+              "platform_id": "004670"
+            },
+            {
+              "station_id": "004642",
+              "platform_id": "004643"
+            },
+            {
+              "station_id": "004669",
+              "platform_id": "004669"
+            },
+            {
+              "station_id": "004668",
+              "platform_id": "004668"
+            },
+            {
+              "station_id": "004640",
+              "platform_id": "004640"
+            },
+            {
+              "station_id": "004655",
+              "platform_id": "004655"
+            },
+            {
+              "station_id": "004653",
+              "platform_id": "004653"
+            },
+            {
+              "station_id": "004624",
+              "platform_id": "004624"
+            },
+            {
+              "station_id": "004623",
+              "platform_id": "004623"
+            },
+            {
+              "station_id": "004614",
+              "platform_id": "004614"
+            },
+            {
+              "station_id": "004604",
+              "platform_id": "004604"
+            },
+            {
+              "station_id": "004594",
+              "platform_id": "004595"
+            },
+            {
+              "station_id": "004594",
+              "platform_id": "004594"
+            },
+            {
+              "station_id": "004615",
+              "platform_id": "004615"
+            },
+            {
+              "station_id": "004626",
+              "platform_id": "004626"
+            },
+            {
+              "station_id": "004652",
+              "platform_id": "004652"
+            }
+          ],
           "sections": [
             10177,
             10178,

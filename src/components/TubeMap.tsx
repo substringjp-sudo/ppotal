@@ -9,7 +9,7 @@ interface TubeMapProps {
     visitedStations?: Set<string>;
     visitedEdges?: Set<string>;
     lineColor: string;
-    onStationClick?: (stationName: string) => void;
+    onStationClick?: (id: string) => void;
     onPathCreate?: (startId: string, endId: string) => void;
     language: Language;
 }
@@ -83,7 +83,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
             } else {
                 const node = nodes.find(n => n.id === nodeId);
                 if (node && !node.isJoint) {
-                    onStationClick?.(node.name);
+                    onStationClick?.(node.id);
                 }
             }
         }

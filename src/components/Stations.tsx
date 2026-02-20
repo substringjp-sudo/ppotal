@@ -10,14 +10,14 @@ import { RailData } from '../types/railData';
 interface StationsProps {
     processedStations: Record<string, ProcessedStation> | null;
     highlightedStations: string[];
-    handleStationClick: (name: string, lines?: string[]) => void;
+    handleStationClick: (id: string, lines?: string[]) => void;
     zoom: number;
-    getColor: (name: string) => string;
+    getColor: (lineKey: string) => string;
     selectedLines: string[];
     activeLine: string | null;
     hoveredLine: string | null;
-    onStationMouseDown: (name: string, coords: [number, number]) => void;
-    onStationMouseUp: (name: string) => void;
+    onStationMouseDown: (id: string, coords: [number, number]) => void;
+    onStationMouseUp: (id: string) => void;
     dragStartStation: string | null;
     onLineMappingCreated?: (mapping: Map<string, string>) => void;
     visitedStations: Set<string>;
@@ -53,7 +53,7 @@ const Stations: React.FC<StationsProps> = ({
 }) => {
     if (!processedStations) return null;
 
-    const stationEntries = Object.entries(processedStations).filter(([name, data]) => {
+    const stationEntries = Object.entries(processedStations).filter(([id, data]) => {
         // If in Edit Mode, we assume selected lines logic still applies for visibility?
         // Or should we show ALL stations in edit mode?
         // Usually we only show selected lines to avoid clutter. Consistent behavior is safer.
@@ -71,10 +71,10 @@ const Stations: React.FC<StationsProps> = ({
 
     return (
         <>
-            {stationEntries.map(([name, station]) => (
+            {stationEntries.map(([id, station]) => (
                 <StationMarker
-                    key={name}
-                    name={name}
+                    key={id}
+                    id={id}
                     station={station}
                     highlightedStations={highlightedStations}
                     selectedLines={selectedLines}

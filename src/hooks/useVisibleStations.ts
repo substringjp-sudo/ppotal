@@ -112,7 +112,7 @@ export const useVisibleStations = ({
                         });
                     }
 
-                    const name = s.name;
+                    const id = s.id;
                     const node: StaticNode = {
                         id: s.id,
                         coord: [s.lat, s.lon],
@@ -120,20 +120,22 @@ export const useVisibleStations = ({
                         platforms: platforms.length > 0 ? platforms : undefined
                     };
 
-                    if (!data[name]) {
-                        data[name] = {
+                    if (!data[id]) {
+                        data[id] = {
+                            id: id,
                             nodes: [node],
                             centroid: [s.lat, s.lon],
                             lines: Array.from(stationLines),
-                            name_en: s.name_en
+                            name_en: s.name_en,
+                            name: s.name
                         };
                     } else {
-                        data[name].nodes.push(node);
-                        stationLines.forEach(l => { if (!data[name].lines.includes(l)) data[name].lines.push(l); });
-                        const n = data[name].nodes.length;
-                        data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + s.lat) / n;
-                        data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + s.lon) / n;
-                        if (!data[name].name_en && s.name_en) data[name].name_en = s.name_en;
+                        data[id].nodes.push(node);
+                        stationLines.forEach(l => { if (!data[id].lines.includes(l)) data[id].lines.push(l); });
+                        const n = data[id].nodes.length;
+                        data[id].centroid[0] = (data[id].centroid[0] * (n - 1) + s.lat) / n;
+                        data[id].centroid[1] = (data[id].centroid[1] * (n - 1) + s.lon) / n;
+                        if (!data[id].name_en && s.name_en) data[id].name_en = s.name_en;
                     }
                 });
 
@@ -155,6 +157,8 @@ export const useVisibleStations = ({
                     }
 
                     data[id] = {
+                        id: id,
+                        name: "",
                         nodes: [{ id: id, coord: [jLat, jLon], lineKey: jointLines[0] || "" }],
                         centroid: [jLat, jLon],
                         lines: jointLines,
