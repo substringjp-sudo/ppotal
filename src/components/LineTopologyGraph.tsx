@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useMemo } from 'react';
-import { Network, Options, Node, Edge } from 'vis-network';
-import { DataSet } from 'vis-data';
+import React, { useMemo, useState } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { getOfficialColor } from '../lib/lineColors';
 
+// --- PROPS INTERFACE ---
 interface LineTopologyGraphProps {
     lineId: string;
     segments: LineSegment[];
@@ -16,200 +15,244 @@ interface LineTopologyGraphProps {
     visitedEdges: Set<string>;
     onStationClick?: (stationName: string) => void;
     language: Language;
-    onPathCreate?: (startId: string, endId: string) => void;
 }
 
-const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
-    lineId,
-    segments,
-    nodes,
-    visitedStations,
-    visitedEdges,
-    onStationClick,
-    language,
-    onPathCreate
-}) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const networkRef = useRef<Network | null>(null);
+// --- LAYOUT CONSTANTS ---
+const NODE_SIZE = 8;
+const GRID_SPACING_X = 90; // Increased for more space
+const GRID_SPACING_Y = 60;
+const JOINT_SPACING_X = 25; // Reduced spacing for joints
+const JOINT_SPACING_Y = 25;
+const STROKE_WIDTH = 4;
+const STROKE_WIDTH_VISITED = 6;
+const FONT_SIZE = 14;
 
-    const lineColor = useMemo(() => {
-        const official = getOfficialColor(lineId);
-        return official || '#3498db';
-    }, [lineId]);
+// --- SVG PATH GENERATION ---
+const createCurvePath = (
+    p1: { x: number; y: number },
+    p2: { x: number; y: number },
+    isLongDistance: boolean
+): string => {
+    const [start, end] = p1.x < p2.x ? [p1, p2] : [p2, p1];
+    const midX = (start.x + end.x) / 2;
 
-    useEffect(() => {
-        if (!containerRef.current || !segments) return;
+    if (isLongDistance) {
+        const arcHeight = Math.abs(end.x - start.x) / 3;
+        const direction = (start.y >= 0 && end.y >= 0) ? -1 : 1;
+        const controlY = Math.min(start.y, end.y) + arcHeight * direction;
+        return `M ${start.x} ${start.y} Q ${midX} ${controlY}, ${end.x} ${end.y}`;
+    }
 
-        // 1. Prepare Data
-        const seenNodes = new Set<string>();
-        const seenEdges = new Set<string>();
+    const cx1 = midX, cy1 = start.y;
+    const cx2 = midX, cy2 = end.y;
+    return `M ${start.x} ${start.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${end.x} ${end.y}`;
+};
 
-        const visNodes: Node[] = [];
-        const visEdges: Edge[] = [];
+// --- LAYOUT ALGORITHM HOOK ---
+const useSubwayLayout = (segments: LineSegment[], nodes: Map<string, StationNode>) => {
+    return useMemo(() => {
+        if (!segments || segments.length === 0) {
+            return { nodePositions: new Map(), edges: [], boundingBox: { minX: 0, minY: 0, maxX: 0, maxY: 0 } };
+        }
+
+        const adj = new Map<string, string[]>();
+        const allEdges = new Set<string>();
+        const edgeObjects: { from: string, to: string }[] = [];
 
         segments.forEach(seg => {
-            seg.edges.forEach(edge => {
-                // Add Nodes
-                [edge.from, edge.to].forEach(id => {
-                    if (!seenNodes.has(id)) {
-                        seenNodes.add(id);
-                        const nodeData = nodes.get(id);
-                        const isJoint = id.startsWith('J_');
-
-                        if (!isJoint) {
-                            const name = nodeData ? translateName(nodeData.name, language, 'station') : id;
-                            const isVisited = nodeData ? visitedStations.has(nodeData.name) : false;
-
-                            visNodes.push({
-                                id,
-                                label: name,
-                                color: {
-                                    background: '#ffffff',
-                                    border: isVisited ? '#2ecc71' : lineColor,
-                                    highlight: {
-                                        background: '#ffffff',
-                                        border: '#FF5733'
-                                    }
-                                },
-                                borderWidth: isVisited ? 4 : 2,
-                                shape: 'dot',
-                                size: 12,
-                                font: {
-                                    size: 14,
-                                    face: 'Inter, system-ui, sans-serif',
-                                    strokeWidth: 4,
-                                    strokeColor: '#ffffff'
-                                }
-                            });
-                        } else {
-                            // Invisible/Small joint nodes
-                            visNodes.push({
-                                id,
-                                shape: 'dot',
-                                size: 2,
-                                color: lineColor,
-                                label: undefined
-                            });
-                        }
-                    }
-                });
-
-                // Add Edge
-                const edgeKey = [edge.from, edge.to].sort().join('<->');
-                if (!seenEdges.has(edgeKey)) {
-                    seenEdges.add(edgeKey);
-                    const isVisited = visitedEdges.has(edgeKey);
-
-                    visEdges.push({
-                        id: edgeKey,
-                        from: edge.from,
-                        to: edge.to,
-                        color: {
-                            color: isVisited ? '#2ecc71' : lineColor,
-                            highlight: '#FF5733',
-                            opacity: isVisited ? 1.0 : 0.4
-                        },
-                        width: isVisited ? 6 : 4,
-                        smooth: false
-                    });
+            seg.edges.forEach(({ from, to }) => {
+                if (!adj.has(from)) adj.set(from, []);
+                if (!adj.has(to)) adj.set(to, []);
+                adj.get(from)!.push(to);
+                adj.get(to)!.push(from);
+                const edgeKey = [from, to].sort().join('-');
+                if (!allEdges.has(edgeKey)) {
+                    allEdges.add(edgeKey);
+                    edgeObjects.push({ from, to });
                 }
             });
         });
 
-        // 2. Network Options
-        // 2. Network Options
-        const options: Options = {
-            nodes: {
-                font: {
-                    multi: true
+        // 1. Find Longest Path (Backbone)
+        let longestPath: string[] = [];
+        let endpoints = Array.from(adj.keys()).filter(id => (adj.get(id)?.length ?? 0) <= 1);
+
+        // Handle pure cycles (e.g., Yamanote Line)
+        if (endpoints.length === 0 && adj.size > 0) {
+            const isPureCycle = Array.from(adj.keys()).every(id => adj.get(id)?.length === 2);
+            if (isPureCycle) {
+                const startNode = Array.from(adj.keys())[0];
+                const path: string[] = [];
+                let curr = startNode;
+                const visitedInCycle = new Set<string>();
+                while (curr && !visitedInCycle.has(curr)) {
+                    path.push(curr);
+                    visitedInCycle.add(curr);
+                    const next = (adj.get(curr) || []).find(n => !visitedInCycle.has(n));
+                    curr = next!;
                 }
-            },
-            edges: {
-                arrows: {
-                    to: { enabled: false }
-                },
-                smooth: {
-                    enabled: true,
-                    type: 'continuous',
-                    roundness: 0.5
+                longestPath = path;
+                // Add the closing edge for the cycle
+                const closingEdgeKey = [path[0], path[path.length - 1]].sort().join('-');
+                if (!allEdges.has(closingEdgeKey)) {
+                    edgeObjects.push({ from: path[0], to: path[path.length - 1] });
                 }
-            },
-            physics: {
-                enabled: true,
-                solver: 'forceAtlas2Based',
-                forceAtlas2Based: {
-                    gravitationalConstant: -50,
-                    centralGravity: 0.01,
-                    springLength: 80,
-                    springConstant: 0.08,
-                    damping: 0.4,
-                    avoidOverlap: 1
-                },
-                stabilization: {
-                    enabled: true,
-                    iterations: 1000,
-                    updateInterval: 25
-                }
-            },
-            interaction: {
-                hover: true,
-                dragNodes: true,
-                zoomView: true,
-                dragView: true
+            } else {
+                 // For complex graphs with no endpoints, start from the most connected node
+                endpoints = [Array.from(adj.keys()).sort((a, b) => (adj.get(b)?.length ?? 0) - (adj.get(a)?.length ?? 0))[0]];
             }
-        };
+        }
 
-        // 3. Initialize Network
-        const data = {
-            nodes: new DataSet(visNodes),
-            edges: new DataSet(visEdges)
-        };
+        if (longestPath.length === 0) {
+            endpoints.forEach(startNode => {
+                 const stack: { node: string; path: string[] }[] = [{ node: startNode, path: [startNode] }];
+                 const visited = new Set([startNode]);
+                 while (stack.length > 0) {
+                     const { node, path } = stack.pop()!;
+                     if (path.length > longestPath.length) longestPath = path;
+                     (adj.get(node) || []).forEach(neighbor => {
+                         if (!visited.has(neighbor)) {
+                             visited.add(neighbor);
+                             stack.push({ node: neighbor, path: [...path, neighbor] });
+                         }
+                     });
+                 }
+             });
+        }
+        
+        const nodePositions = new Map<string, { x: number; y: number }>();
+        const occupiedCoords = new Set<string>();
 
-        const network = new Network(containerRef.current, data, options);
-        networkRef.current = network;
-
-        // 4. Events
-        network.on('click', (params) => {
-            if (params.nodes.length > 0) {
-                const nodeId = params.nodes[0];
-                const nodeData = nodes.get(nodeId);
-                if (nodeData && !nodeId.startsWith('J_')) {
-                    onStationClick?.(nodeData.name);
-                }
+        // 2. Place Backbone Nodes with adaptive spacing
+        let currentX = 0;
+        longestPath.forEach((nodeId, index) => {
+            if (index > 0) {
+                const prevNodeId = longestPath[index - 1];
+                const isCurrentJoint = nodeId.startsWith('J_');
+                const isPrevJoint = prevNodeId.startsWith('J_');
+                currentX += isCurrentJoint || isPrevJoint ? JOINT_SPACING_X : GRID_SPACING_X;
             }
+            const pos = { x: currentX, y: 0 };
+            nodePositions.set(nodeId, pos);
+            occupiedCoords.add(`${pos.x},${pos.y}`);
         });
 
-        // Path creation via double selection or similar?
-        // Let's keep it simple for now: select two nodes to create path.
-        let selectedNodes: string[] = [];
-        network.on('selectNode', (params) => {
-            selectedNodes = params.nodes;
-            if (selectedNodes.length === 2) {
-                onPathCreate?.(selectedNodes[0], selectedNodes[1]);
-                // network.unselectAll();
-            }
-        });
+        // 3. Place Branch Nodes using BFS with adaptive spacing
+        const queue: string[] = [...longestPath];
+        const visited = new Set<string>(longestPath);
 
-        return () => {
-            if (networkRef.current) {
-                networkRef.current.destroy();
-                networkRef.current = null;
-            }
-        };
-    }, [segments, visitedStations, visitedEdges, language, lineColor, nodes]);
+        while (queue.length > 0) {
+            const parentId = queue.shift()!;
+            const parentPos = nodePositions.get(parentId)!;
+
+            (adj.get(parentId) || []).forEach(childId => {
+                if (!visited.has(childId)) {
+                    visited.add(childId);
+                    const isChildJoint = childId.startsWith('J_');
+                    const spacingX = isChildJoint ? JOINT_SPACING_X : GRID_SPACING_X;
+                    const spacingY = isChildJoint ? JOINT_SPACING_Y : GRID_SPACING_Y;
+
+                    let offset = 1;
+                    while (true) {
+                        const yOffset = (offset % 2 !== 0) ? Math.ceil(offset / 2) : -Math.ceil(offset / 2);
+                        const targetY = parentPos.y + yOffset * spacingY;
+                        const targetX = parentPos.x + spacingX;
+                        if (!occupiedCoords.has(`${targetX},${targetY}`)) {
+                            const pos = { x: targetX, y: targetY };
+                            nodePositions.set(childId, pos);
+                            occupiedCoords.add(`${pos.x},${pos.y}`);
+                            break;
+                        }
+                        offset++;
+                    }
+                    queue.push(childId);
+                }
+            });
+        }
+        
+        // Calculate bounding box
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for(const pos of nodePositions.values()){
+            minX = Math.min(minX, pos.x); minY = Math.min(minY, pos.y);
+            maxX = Math.max(maxX, pos.x); maxY = Math.max(maxY, pos.y);
+        }
+        const padding = FONT_SIZE * 4;
+        const boundingBox = { minX: minX - padding, minY: minY - padding, maxX: maxX + padding, maxY: maxY + padding };
+
+        return { nodePositions, edges: edgeObjects, boundingBox };
+
+    }, [segments, nodes]);
+};
+
+// --- MAIN COMPONENT ---
+const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
+    lineId, segments, nodes, visitedStations, visitedEdges, onStationClick, language
+}) => {
+    const { nodePositions, edges, boundingBox } = useSubwayLayout(segments, nodes);
+    const [hoveredStation, setHoveredStation] = useState<string | null>(null);
+
+    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
+    const visitedColor = '#2ecc71';
+
+    const width = boundingBox.maxX - boundingBox.minX;
+    const height = boundingBox.maxY - boundingBox.minY;
 
     return (
-        <div
-            ref={containerRef}
-            style={{
-                width: '100%',
-                height: '450px',
-                backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                border: '1px solid #eee',
-                overflow: 'hidden'
-            }}
-        />
+        <div style={{ width: '100%', height: '450px', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #eee', overflow: 'auto', position: 'relative' }}>
+            <svg viewBox={`${boundingBox.minX} ${boundingBox.minY} ${width} ${height}`} style={{ minWidth: '100%', minHeight: '100%' }}>
+                {/* Render Edges */}
+                <g>
+                    {edges.map(({ from, to }) => {
+                        const p1 = nodePositions.get(from);
+                        const p2 = nodePositions.get(to);
+                        if (!p1 || !p2) return null;
+                        
+                        const edgeKey = [from, to].sort().join('<->');
+                        const isVisited = visitedEdges.has(edgeKey);
+                        const isJointEdge = from.startsWith('J_') || to.startsWith('J_');
+                        const xDist = Math.abs(p1.x - p2.x);
+                        const yDist = Math.abs(p1.y - p2.y);
+                        const isLongDistance = xDist > (isJointEdge ? JOINT_SPACING_X * 2 : GRID_SPACING_X * 1.5) || yDist > GRID_SPACING_Y * 2;
+
+                        return (
+                            <path
+                                key={`${from}-${to}`}
+                                d={createCurvePath(p1, p2, isLongDistance)}
+                                fill="none"
+                                stroke={isVisited ? visitedColor : lineColor}
+                                strokeWidth={isVisited ? STROKE_WIDTH_VISITED : STROKE_WIDTH}
+                                strokeOpacity={isVisited ? 1.0 : (isJointEdge ? 0.6 : 0.8)}
+                            />
+                        );
+                    })}
+                </g>
+
+                {/* Render Nodes */}
+                <g>
+                    {Array.from(nodePositions.entries()).map(([id, pos]) => {
+                        const nodeData = nodes.get(id);
+                        if (id.startsWith('J_')) {
+                            // Render joints as small, subtle dots
+                            return <circle key={id} cx={pos.x} cy={pos.y} r={STROKE_WIDTH / 2} fill={lineColor} />
+                        }
+                        if (!nodeData) return null;
+
+                        const isVisited = visitedStations.has(nodeData.name);
+                        const isHovered = hoveredStation === id;
+                        const stationName = translateName(nodeData.name, language, 'station');
+
+                        return (
+                            <g key={id} transform={`translate(${pos.x}, ${pos.y})`} onClick={() => onStationClick?.(nodeData.name)} onMouseEnter={() => setHoveredStation(id)} onMouseLeave={() => setHoveredStation(null)} style={{ cursor: 'pointer' }}>
+                                <circle r={NODE_SIZE} fill={isHovered ? '#FF5733' : '#ffffff'} stroke={isVisited ? visitedColor : lineColor} strokeWidth={isVisited ? STROKE_WIDTH_VISITED : STROKE_WIDTH} />
+                                <text fontSize={FONT_SIZE} fontFamily="Inter, system-ui, sans-serif" fontWeight="500" fill="#333" textAnchor="middle" y={-NODE_SIZE * 2} style={{ pointerEvents: 'none' }}>
+                                    {stationName}
+                                </text>
+                            </g>
+                        );
+                    })}
+                </g>
+            </svg>
+        </div>
     );
 };
 

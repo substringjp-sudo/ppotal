@@ -74,8 +74,6 @@ const Page = () => {
         nodes: Map<string, any>,
         getShortestPath: any
     } | null>(null);
-    const [zoomToLine, setZoomToLine] = React.useState<string | null>(null);
-    const [zoomToStation, setZoomToStation] = React.useState<string | null>(null);
     const [showMyRoutes, setShowMyRoutes] = React.useState(false);
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [language, setLanguage] = React.useState<Language>('en');
@@ -527,6 +525,7 @@ const Page = () => {
                                         visitedEdges={lineDetailData.visitedEdges}
                                         segments={lineDetailData.segments}
                                         nodes={lineDetailData.nodes}
+                                        visitedStations={lineDetailData.visitedStations}
                                         language={language}
                                         selectedLines={selectedLines}
                                         onToggleLine={toggleLine}
@@ -560,8 +559,6 @@ const Page = () => {
                                     onVisitedLengthsCalculated={setVisitedLineLengths}
                                     onLineMappingCreated={setLineIdMapping}
                                     activeLine={activeLine}
-                                    zoomToLine={zoomToLine}
-                                    zoomToStation={zoomToStation}
                                     onLineDetailData={setLineDetailData}
                                     zoomTarget={zoomTarget}
                                     onZoomComplete={() => setZoomTarget(null)}

@@ -74,8 +74,6 @@ const AppClient = () => {
     const [isLoaded, setIsLoaded] = React.useState(false);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
     const [lineDetailData, setLineDetailData] = React.useState<{ segments: any[], visitedEdges: Set<string>, nodes: Map<string, any>, getShortestPath: any } | null>(null);
-    const [zoomToLine, setZoomToLine] = React.useState<string | null>(null);
-    const [zoomToStation, setZoomToStation] = React.useState<string | null>(null);
     const [showMyRoutes, setShowMyRoutes] = React.useState(false);
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [language, setLanguage] = React.useState<Language>('ja');
@@ -94,17 +92,6 @@ const AppClient = () => {
     const [routeStart, setRouteStart] = React.useState<string | null>(null);
     const [routeEnd, setRouteEnd] = React.useState<string | null>(null);
     const [routeResult, setRouteResult] = React.useState<any | null>(null);
-
-    // Zoom handlers
-    const handleZoomToLine = React.useCallback((lineKey: string) => {
-        setZoomToLine(lineKey);
-        setTimeout(() => setZoomToLine(null), 2000);
-    }, []);
-
-    const handleZoomToStation = React.useCallback((stationName: string) => {
-        setZoomToStation(stationName);
-        setTimeout(() => setZoomToStation(null), 2000);
-    }, []);
 
     // Load all lines on first load
     const { railData } = useRailData();
@@ -485,8 +472,6 @@ const AppClient = () => {
                                 onVisitedLengthsCalculated={setVisitedLineLengths}
                                 onLineMappingCreated={setLineIdMapping}
                                 activeLine={activeLine}
-                                zoomToLine={zoomToLine}
-                                zoomToStation={zoomToStation}
                                 onLineDetailData={setLineDetailData}
                                 zoomTarget={zoomTarget}
                                 onZoomComplete={() => setZoomTarget(null)}

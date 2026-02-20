@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 import { Language } from '../lib/translations';
 import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
-import L, { LatLngBounds } from 'leaflet';
+import L, { LatLngBounds, LatLngExpression } from 'leaflet';
 
 import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
@@ -20,7 +20,7 @@ import OffScreenIndicator from './OffScreenIndicator';
 import { useMapData } from '../hooks/useMapData';
 import { normalizeKey } from '../lib/lineUtils';
 import { useRailData } from '../hooks/useRailData';
-import { useRailroadGraph } from '../hooks/useRailroadGraph';
+import { RoutingGraph } from '../lib/RoutingGraph';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
 import RulerOverlay from './RulerOverlay';
@@ -35,8 +35,6 @@ interface MapPaneProps {
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
     onVisitedLengthsCalculated?: (lengths: Record<string, number>) => void;
     activeLine: string | null;
-    zoomToLine?: string | null;
-    zoomToStation?: string | null;
     onLineDetailData?: (data: {
         segments: LineSegment[],
         visitedEdges: Set<string>,
@@ -104,9 +102,6 @@ const MapPane: React.FC<MapPaneProps> = ({
     onDraftComplete,
     onDragUpdate,
     rulerTopOffset = 80,
-    routeStart,
-    routeEnd,
-    onRouteResult
 }) => {
     // 1. Map Data & State
     const map = useMap();
@@ -114,21 +109,51 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
     const [mapReady, setMapReady] = useState(false);
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
-    const [highlightedStations, setHighlightedStations] = useState<string[]>([]);
-    const [stationMapping, setStationMapping] = useState<Map<string, string>>(new Map());
     const [isMoving, setIsMoving] = useState(false);
     const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const { prefectures, municipalities } = useMapData();
     const { railData } = useRailData();
-    const railroadNetwork = railData; // Alias for compatibility with components expecting 'railroadNetwork'
 
     // 2. Graph & Calculations
-    const { graph, lineIdMap, lineLengths, visitedLineLengths } = useRailroadGraph(railData, recordedTrips);
+    const graph: RoutingGraph | null = useMemo(() => (railData ? new RoutingGraph(railData) : null), [railData]);
+
+    const { lineIdMap, lineLengths, visitedLineLengths } = useMemo(() => {
+        if (!graph) {
+            return {
+                lineIdMap: new Map<string, string>(),
+                lineLengths: {},
+                visitedLineLengths: {},
+            };
+        }
+        const newVisitedLineLengths: Record<string, number> = {};
+        recordedTrips.forEach(trip => {
+            if (!trip.path) return;
+            for (let i = 0; i < trip.path.length - 1; i++) {
+                const node1Id = trip.path[i];
+                const node2Id = trip.path[i + 1];
+
+                const node1 = graph.getNode(node1Id);
+                const edge = graph.getEdge(node1Id, node2Id);
+
+                if (node1 && edge && node1.fullLineName) {
+                    const lineId = node1.fullLineName;
+                    newVisitedLineLengths[lineId] = (newVisitedLineLengths[lineId] || 0) + edge.distance;
+                }
+            }
+        });
+
+        return {
+            lineIdMap: graph.getLineIdMap(),
+            lineLengths: graph.getLineLengths(),
+            visitedLineLengths: newVisitedLineLengths,
+        };
+    }, [graph, recordedTrips]);
+
 
     // 3. Visible Stations (Spatial Culling)
     const { visibleStations } = useVisibleStations({
-        railroadNetwork,
+        railroadNetwork: railData,
         mapBounds,
         zoomLevel,
         lineIdMap,
@@ -138,11 +163,10 @@ const MapPane: React.FC<MapPaneProps> = ({
     // 4. Interactions (Trip Recording / Dragging)
     const {
         dragStartStation,
-        dragStartCoords,
         dragPath,
         handleStationMouseDown
     } = useTripRecorder({
-        graph,
+        graph: graph as any,
         visibleStations,
         onRecordTrip,
         isEditMode,
@@ -187,11 +211,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         },
         zoomstart: () => setIsMoving(true),
         zoom: (e) => {
-            // Only update zoom level to whole numbers or specific steps to reduce re-renders
             const z = e.target.getZoom();
-            if (Math.abs(z - zoomLevel) > 0.1) {
-                setZoomLevel(z);
-            }
+            if (Math.abs(z - zoomLevel) > 0.1) setZoomLevel(z);
         },
         zoomend: (e) => {
             setZoomLevel(e.target.getZoom());
@@ -199,11 +220,10 @@ const MapPane: React.FC<MapPaneProps> = ({
         },
         movestart: () => setIsMoving(true),
         move: (e) => {
-            // Throttled bounds update
             if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
             moveEndTimeoutRef.current = setTimeout(() => {
                 setMapBounds(e.target.getBounds());
-            }, 150); // Increased throttle for smoother panning
+            }, 150);
         },
         moveend: (e) => {
             setMapBounds(e.target.getBounds());
@@ -219,29 +239,21 @@ const MapPane: React.FC<MapPaneProps> = ({
             return;
         }
 
-        let segments = graph.getLineSegmentsFromHierarchy(activeLine, railData);
-        if (segments.length === 0) {
-            console.warn(`No segments found in hierarchy for ${activeLine}, falling back to graph search.`);
-            segments = graph.getLineSegments(activeLine);
-        }
-
+        const segments = graph.getLineSegments(activeLine, railData.hierarchy);
         const visitedEdges = new Set<string>();
         const visitedStationNames = new Set<string>();
 
         recordedTrips.forEach(trip => {
             if (trip.path) {
                 trip.path.forEach((sid: string) => {
-                    const node = graph.nodes.get(sid);
-                    // Compare using normalized keys for robustness
+                    const node = graph.getNode(sid);
                     if (node && normalizeKey(node.fullLineName) === normalizeKey(activeLine)) {
                         visitedStationNames.add(node.name);
                     }
                 });
 
                 for (let i = 0; i < trip.path.length - 1; i++) {
-                    const uId = trip.path[i];
-                    const vId = trip.path[i + 1];
-                    const key = [uId, vId].sort().join('<->');
+                    const key = [trip.path[i], trip.path[i + 1]].sort().join('<->');
                     visitedEdges.add(key);
                 }
             }
@@ -251,16 +263,12 @@ const MapPane: React.FC<MapPaneProps> = ({
             segments,
             visitedEdges,
             visitedStations: visitedStationNames,
-            nodes: graph.nodes,
-            getShortestPath: (start: string, end: string, allowedLines?: string[]) => {
-                return graph.getShortestPath(start, end, allowedLines);
-            }
+            nodes: graph.getNodes(),
+            getShortestPath: (start, end, allowedLines) => graph.getShortestPath(start, end, allowedLines),
         });
     }, [activeLine, graph, railData, recordedTrips, onLineDetailData]);
 
-    const getColor = useCallback((lineKey: string) => {
-        return getOfficialColor(lineKey) || '#666';
-    }, []);
+    const getColor = useCallback((lineKey: string) => getOfficialColor(lineKey) || '#666', []);
 
     const handleRailroadClick = useCallback((line: string) => {
         if (onRailroadClick) onRailroadClick(line);
@@ -276,78 +284,55 @@ const MapPane: React.FC<MapPaneProps> = ({
     const handleStationClick = useCallback((name: string, lines?: string[]) => {
         if (onStationClick) onStationClick(name, lines);
         trackEvent('station_click', 'interaction', name);
-
-        if (isMobile) return;
-
-        // Auto-select connected lines
-        if (visibleStations && visibleStations[name] && onSetSelectedLines) {
-            const connectedLines = visibleStations[name].lines || [];
-            if (connectedLines.length > 0) {
-                const newSelection = Array.from(new Set([...selectedLines, ...connectedLines]));
-                onSetSelectedLines(newSelection);
-            }
+        if (isMobile || !visibleStations || !visibleStations[name] || !onSetSelectedLines) return;
+        const connectedLines = visibleStations[name].lines || [];
+        if (connectedLines.length > 0) {
+            const newSelection = Array.from(new Set([...selectedLines, ...connectedLines]));
+            onSetSelectedLines(newSelection);
         }
     }, [onStationClick, visibleStations, onSetSelectedLines, selectedLines, isMobile]);
-
-    const handleStationMouseUp = (name: string) => {
-        // Redundant with global mouseup handler
-    };
 
     const visitedStations = useMemo(() => {
         const set = new Set<string>();
         if (!graph) return set;
-
         recordedTrips.forEach(trip => {
             if (trip.path) {
                 trip.path.forEach((nodeId: string) => {
-                    const node = graph.nodes.get(nodeId);
-                    if (node && node.name) {
-                        set.add(node.name);
-                    } else {
-                        set.add(nodeId);
-                    }
+                    const node = graph.getNode(nodeId);
+                    if (node && node.name) set.add(node.name);
+                    else set.add(nodeId);
                 });
             }
         });
         return set;
-    }, [recordedTrips, graph, railroadNetwork]);
+    }, [recordedTrips, graph]);
 
     // Zoom Handling
     useEffect(() => {
-        if (!zoomTarget || !mapReady || !railroadNetwork || !map || !graph) return;
+        if (!zoomTarget || !mapReady || !map || !graph || !railData) return;
 
         const { type, id } = zoomTarget;
         let bounds: LatLngBounds | null = null;
 
         if (type === 'line') {
-            const segments = graph.getLineSegments(id);
+            const segments = graph.getLineSegments(id, railData.hierarchy);
             if (segments && segments.length > 0) {
-                bounds = L.latLngBounds([]);
-                segments.forEach((seg: LineSegment) => {
-                    if (seg.geometry) {
-                        seg.geometry.forEach((c: [number, number]) => bounds!.extend([c[1], c[0]]));
-                    }
-                });
+                const latlngs = segments.flatMap((seg: LineSegment) => seg.geometry.map((c: [number, number]) => [c[1], c[0]] as [number, number]));
+                bounds = L.latLngBounds(latlngs);
             }
         } else if (type === 'station') {
-            const stationName = zoomTarget.id;
-            // Use graph to find station by name
-            const ids = graph.stationsByName[stationName];
-            if (ids && ids.length > 0) {
-                const node = graph.nodes.get(ids[0]);
-                if (node) {
-                    const [lng, lat] = node.coords;
-                    map.flyTo([lat, lng], 15, { duration: 1.5 });
-                }
+            const stationNodes = graph.getNodesByName(id);
+            if (stationNodes.length > 0) {
+                const node = stationNodes[0];
+                map.flyTo([node.coords[1], node.coords[0]], 15, { duration: 1.5 });
             }
         }
 
         if (bounds && bounds.isValid()) {
             map.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
         }
-
         onZoomComplete?.();
-    }, [zoomTarget, mapReady, railroadNetwork, map, graph, onZoomComplete]);
+    }, [zoomTarget, mapReady, map, graph, onZoomComplete, railData]);
 
     if (!mapReady) return null;
 
@@ -356,37 +341,17 @@ const MapPane: React.FC<MapPaneProps> = ({
             {!isMobile && <MapControls zoom={zoomLevel} />}
             <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
             <Pane name="background" style={PANE_STYLES.background}>
-                <JapanMap
-                    prefectures={prefectures}
-                    onPrefectureClick={() => { }}
-                    getColor={getColor}
-                    interactive={zoomLevel <= 8 && !isMoving}
-                    zoom={zoomLevel}
-                />
-                {zoomLevel > 8 && municipalities && !isMoving && (
-                    <MunicipalMap
-                        municipalities={municipalities}
-                        getColor={getColor}
-                        zoom={zoomLevel}
-                    />
-                )}
-                {zoomLevel > 8 && prefectures && !isMoving &&
-                    <JapanMap
-                        prefectures={prefectures}
-                        getColor={getColor}
-                        outlineOnly={true}
-                        interactive={false}
-                        zoom={zoomLevel}
-                    />
-                }
+                <JapanMap prefectures={prefectures} getColor={getColor} interactive={zoomLevel <= 8 && !isMoving} zoom={zoomLevel} />
+                {zoomLevel > 8 && municipalities && !isMoving && <MunicipalMap municipalities={municipalities} getColor={getColor} zoom={zoomLevel} />}
+                {zoomLevel > 8 && prefectures && !isMoving && <JapanMap prefectures={prefectures} getColor={getColor} outlineOnly={true} interactive={false} zoom={zoomLevel} />}
             </Pane>
 
             <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
             <Pane name="railroad-casing" style={PANE_STYLES.railroadCasing} />
             <Pane name="railroad-lines" style={PANE_STYLES.railroadLines} />
 
-            <RailroadLayer
-                railroadNetwork={railroadNetwork}
+            {railData && <RailroadLayer
+                railroadNetwork={railData}
                 selectedLines={selectedLines}
                 hoveredLine={hoveredLine}
                 activeLine={activeLine}
@@ -395,49 +360,39 @@ const MapPane: React.FC<MapPaneProps> = ({
                 zoomLevel={zoomLevel}
                 isMobile={isMobile}
                 isMoving={isMoving}
-            />
+            />}
 
             <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
                 <TripLayer recordedTrips={recordedTrips} zoomLevel={zoomLevel} isMoving={isMoving} />
                 {dragPath && dragPath.length > 0 && (
-                    <React.Fragment>
-                        {dragPath.map((segment, idx) => (
-                            <Polyline
-                                key={`drag-path-${idx}`}
-                                positions={segment.map(c => [c[1], c[0]])}
-                                pathOptions={{
-                                    color: '#007AFF',
-                                    weight: 6 * (zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0),
-                                    opacity: 0.8,
-                                    dashArray: '10, 10',
-                                    lineCap: 'round',
-                                    lineJoin: 'round',
-                                    pane: 'ui-elements'
-                                }}
-                                interactive={false}
-                            />
-                        ))}
-                    </React.Fragment>
+                    <Polyline
+                        positions={dragPath.map(segment => segment.map(c => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
+                        pathOptions={{
+                            color: '#007AFF',
+                            weight: 6 * (zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0),
+                            opacity: 0.8,
+                            dashArray: '10, 10',
+                            lineCap: 'round',
+                            lineJoin: 'round',
+                            pane: 'ui-elements'
+                        }}
+                        interactive={false}
+                    />
                 )}
                 {draftTrip && (
-                    <React.Fragment>
-                        {draftTrip.geometries.map((segment: number[][], idx: number) => (
-                            <Polyline
-                                key={`draft-path-${idx}`}
-                                positions={segment.map((c: number[]) => [c[1], c[0]] as [number, number])}
-                                pathOptions={{
-                                    color: '#ff9800',
-                                    weight: 6,
-                                    opacity: 0.9,
-                                    dashArray: '5, 10',
-                                    lineCap: 'round',
-                                    lineJoin: 'round',
-                                    pane: 'ui-elements'
-                                }}
-                                interactive={false}
-                            />
-                        ))}
-                    </React.Fragment>
+                    <Polyline
+                        positions={draftTrip.geometries.map((segment: number[][]) => segment.map((c: number[]) => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
+                        pathOptions={{
+                            color: '#ff9800',
+                            weight: 6,
+                            opacity: 0.9,
+                            dashArray: '5, 10',
+                            lineCap: 'round',
+                            lineJoin: 'round',
+                            pane: 'ui-elements'
+                        }}
+                        interactive={false}
+                    />
                 )}
             </Pane>
 
@@ -445,7 +400,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 {visibleStations &&
                     <Stations
                         processedStations={visibleStations}
-                        highlightedStations={highlightedStations}
+                        highlightedStations={[]}
                         handleStationClick={handleStationClick}
                         zoom={zoomLevel}
                         getColor={getColor}
@@ -453,7 +408,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         activeLine={activeLine}
                         hoveredLine={hoveredLine}
                         onStationMouseDown={handleStationMouseDown}
-                        onStationMouseUp={handleStationMouseUp}
+                        onStationMouseUp={() => {}}
                         dragStartStation={dragStartStation}
                         onLineMappingCreated={onLineMappingCreated}
                         visitedStations={visitedStations}
@@ -471,12 +426,12 @@ const MapPane: React.FC<MapPaneProps> = ({
                 <RulerOverlay topOffset={rulerTopOffset} />
             )}
 
-            <OffScreenIndicator
+            {railData && <OffScreenIndicator
                 map={map}
                 mapBounds={mapBounds}
                 dragStartStation={dragStartStation}
                 visibleStations={visibleStations}
-            />
+            />}
         </>
     );
 };

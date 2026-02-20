@@ -57,4 +57,5 @@ export interface RailData {
     sections: { sections: Section[] };
     hierarchy: any; // Keep hierarchy flexible for now or define strictly if needed
     joints: { joints: Joint[] };
+    railroadGraph: Record<string, Record<string, number[]>>;
 }
