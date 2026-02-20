@@ -1,180 +1,1108 @@
 {
-    "0": { "id": 0, "name": "IRいしかわ鉄道", "name_en": "IR Ishikawa Railway", "category_id": 4 },
-    "1": { "id": 1, "name": "WILLER TRAINS", "name_en": "WILLER TRAINS (Kyoto Tango Railway)", "category_id": 3 },
-    "2": { "id": 2, "name": "あいの風とやま鉄道", "name_en": "Ainokaze Toyama Railway", "category_id": 4 },
-    "3": { "id": 3, "name": "いすみ鉄道", "name_en": "Isumi Railway", "category_id": 4 },
-    "4": { "id": 4, "name": "えちごトキめき鉄道", "name_en": "Echigo Tokimeki Railway", "category_id": 4 },
-    "5": { "id": 5, "name": "えちぜん鉄道", "name_en": "Echizen Railway", "category_id": 4 },
-    "6": { "id": 6, "name": "くま川鉄道", "name_en": "Kumagawa Railroad", "category_id": 4 },
-    "7": { "id": 7, "name": "しなの鉄道", "name_en": "Shinano Railway", "category_id": 4 },
-    "8": { "id": 8, "name": "とさでん交通", "name_en": "Tosaden Kotsu", "category_id": 3 },
-    "9": { "id": 9, "name": "のと鉄道", "name_en": "Noto Railway", "category_id": 4 },
-    "10": { "id": 10, "name": "ひたちなか海浜鉄道", "name_en": "Hitachinaka Kaihin Railway", "category_id": 4 },
-    "11": { "id": 11, "name": "ゆりかもめ", "name_en": "Yurikamome", "category_id": 6 },
-    "12": { "id": 12, "name": "わたらせ渓谷鐵道", "name_en": "Watarase Keikoku Railway", "category_id": 4 },
-    "13": { "id": 13, "name": "アイジーアールいわて銀河鉄道", "name_en": "IGR Iwate Ginga Railway", "category_id": 4 },
-    "14": { "id": 14, "name": "アルピコ交通", "name_en": "Alpico Kotsu", "category_id": 3 },
-    "15": { "id": 15, "name": "スカイレールサービス", "name_en": "Sky Rail Service", "category_id": 6 },
-    "16": { "id": 16, "name": "ラクテンチ", "name_en": "Rakutenchi (Beppu Rakutenchi Cable Car)", "category_id": 6 },
-    "17": { "id": 17, "name": "一畑電車", "name_en": "Ichibata Electric Railway", "category_id": 3 },
-    "18": { "id": 18, "name": "一般社団法人札幌市交通事業振興公社", "name_en": "Sapporo City Transportation Business Promotion Corporation", "category_id": 5 },
-    "19": { "id": 19, "name": "一般社団法人神戸住環境整備公社", "name_en": "Kobe Housing & Urban Development Corporation", "category_id": 6 },
-    "20": { "id": 20, "name": "一般財団法人青函トンネル記念館", "name_en": "Seikan Tunnel Museum (Seikan Tunnel Tappi Shako Line)", "category_id": 6 },
-    "21": { "id": 21, "name": "万葉線", "name_en": "Manyosen", "category_id": 4 },
-    "22": { "id": 22, "name": "三岐鉄道", "name_en": "Sangi Railway", "category_id": 3 },
-    "23": { "id": 23, "name": "三陸鉄道", "name_en": "Sanriku Railway", "category_id": 4 },
-    "24": { "id": 24, "name": "上信電鉄", "name_en": "Joshin Electric Railway", "category_id": 3 },
-    "25": { "id": 25, "name": "上毛電気鉄道", "name_en": "Jomo Electric Railway", "category_id": 3 },
-    "26": { "id": 26, "name": "上田電鉄", "name_en": "Ueda Railway", "category_id": 3 },
-    "27": { "id": 27, "name": "丹後海陸交通", "name_en": "Tango Kairiku Kotsu (Amanohashidate Cable Car)", "category_id": 6 },
-    "28": { "id": 28, "name": "九州旅客鉄道", "name_en": "JR Kyushu (Kyushu Railway Company)", "category_id": 1 },
-    "29": { "id": 29, "name": "井原鉄道", "name_en": "Ibara Railway", "category_id": 4 },
-    "30": { "id": 30, "name": "京成電鉄", "name_en": "Keisei Electric Railway", "category_id": 2 },
-    "31": { "id": 31, "name": "京浜急行電鉄", "name_en": "Keikyu Electric Railway", "category_id": 2 },
-    "32": { "id": 32, "name": "京王電鉄", "name_en": "Keio Corporation", "category_id": 2 },
-    "33": { "id": 33, "name": "京福電気鉄道", "name_en": "Keifuku Electric Railway (Randen)", "category_id": 3 },
-    "34": { "id": 34, "name": "京都市", "name_en": "Kyoto City Transportation Bureau", "category_id": 5 },
-    "35": { "id": 35, "name": "京阪電気鉄道", "name_en": "Keihan Electric Railway", "category_id": 2 },
-    "36": { "id": 36, "name": "仙台市", "name_en": "Sendai City Transportation Bureau", "category_id": 5 },
-    "37": { "id": 37, "name": "仙台空港鉄道", "name_en": "Sendai Airport Transit", "category_id": 4 },
-    "38": { "id": 38, "name": "伊予鉄道", "name_en": "Iyotetsu", "category_id": 3 },
-    "39": { "id": 39, "name": "伊勢鉄道", "name_en": "Ise Railway", "category_id": 4 },
-    "40": { "id": 40, "name": "伊豆急行", "name_en": "Izukyu Corporation", "category_id": 3 },
-    "41": { "id": 41, "name": "伊豆箱根鉄道", "name_en": "Izuhakone Railway", "category_id": 3 },
-    "42": { "id": 42, "name": "伊賀鉄道", "name_en": "Iga Railway", "category_id": 3 },
-    "43": { "id": 43, "name": "会津鉄道", "name_en": "Aizu Railway", "category_id": 4 },
-    "44": { "id": 44, "name": "信楽高原鐵道", "name_en": "Shigaraki Kohan Railway", "category_id": 4 },
-    "45": { "id": 45, "name": "六甲山観光", "name_en": "Rokkosan Kanko (Rokko Cable Car)", "category_id": 6 },
-    "46": { "id": 46, "name": "函館市", "name_en": "Hakodate City Tram", "category_id": 5 },
-    "47": { "id": 47, "name": "北九州高速鉄道", "name_en": "Kitakyushu Monorail", "category_id": 4 },
-    "48": { "id": 48, "name": "北大阪急行電鉄", "name_en": "Kita-Osaka Kyuko Railway", "category_id": 3 },
-    "49": { "id": 49, "name": "北条鉄道", "name_en": "Hojo Railway", "category_id": 4 },
-    "50": { "id": 50, "name": "北海道旅客鉄道", "name_en": "JR Hokkaido (Hokkaido Railway Company)", "category_id": 1 },
-    "51": { "id": 51, "name": "北総鉄道", "name_en": "Hokuso Railway", "category_id": 3 },
-    "52": { "id": 52, "name": "北越急行", "name_en": "Hokuetsu Express", "category_id": 4 },
-    "53": { "id": 53, "name": "北陸鉄道", "name_en": "Hokuriku Railroad", "category_id": 3 },
-    "54": { "id": 54, "name": "十국峠", "name_en": "Jukkoku Pass Cable Car", "category_id": 6 },
-    "55": { "id": 55, "name": "千葉都市モノレール", "name_en": "Chiba Urban Monorail", "category_id": 4 },
-    "56": { "id": 56, "name": "南海電気鉄道", "name_en": "Nankai Electric Railway", "category_id": 2 },
-    "57": { "id": 57, "name": "南阿蘇鉄道", "name_en": "Minamiaso Railway", "category_id": 4 },
-    "58": { "id": 58, "name": "叡山電鉄", "name_en": "Eizan Electric Railway", "category_id": 3 },
-    "59": { "id": 59, "name": "名古屋ガイドウェイバス", "name_en": "Nagoya Guideway Bus (Yutorito Line)", "category_id": 6 },
-    "60": { "id": 60, "name": "名古屋市", "name_en": "Nagoya City Transportation Bureau", "category_id": 5 },
-    "61": { "id": 61, "name": "名古屋臨海高速鉄道", "name_en": "Nagoya Rinkai Rapid Railway (Aonami Line)", "category_id": 4 },
-    "62": { "id": 62, "name": "名古屋鉄道", "name_en": "Nagoya Railroad (Meitetsu)", "category_id": 2 },
-    "63": { "id": 63, "name": "和歌山電鐵", "name_en": "Wakayama Electric Railway", "category_id": 3 },
-    "64": { "id": 64, "name": "四国ケーブル", "name_en": "Shikoku Cable", "category_id": 6 },
-    "65": { "id": 65, "name": "四국旅客鉄道", "name_en": "JR Shikoku (Shikoku Railway Company)", "category_id": 1 },
-    "66": { "id": 66, "name": "四日市あすなろう鉄道", "name_en": "Yokkaichi Asunarou Railway", "category_id": 3 },
-    "67": { "id": 67, "name": "土佐くろしお鉄道", "name_en": "Tosa Kuroshio Railway", "category_id": 4 },
-    "68": { "id": 68, "name": "埼玉新都市交通", "name_en": "Saitama New Urban Transit (New Shuttle)", "category_id": 4 },
-    "69": { "id": 69, "name": "埼玉高速鉄道", "name_en": "Saitama Railway", "category_id": 4 },
-    "70": { "id": 70, "name": "多摩都市モノレール", "name_en": "Tama Toshin Monorail", "category_id": 4 },
-    "71": { "id": 71, "name": "大井川鐵道", "name_en": "Oigawa Railway", "category_id": 3 },
-    "72": { "id": 72, "name": "大山観光電鉄", "name_en": "Oyama Kanko Railway", "category_id": 6 },
-    "73": { "id": 73, "name": "大阪モノレール", "name_en": "Osaka Monorail", "category_id": 4 },
-    "74": { "id": 74, "name": "大阪市高速電気軌道", "name_en": "Osaka Metro", "category_id": 3 },
-    "75": { "id": 75, "name": "天竜浜名湖鉄道", "name_en": "Tenryu Hamanako Railroad", "category_id": 4 },
-    "76": { "id": 76, "name": "富士山麓電気鉄道", "name_en": "Fujikyu Railway", "category_id": 3 },
-    "77": { "id": 77, "name": "富山地方鉄道", "name_en": "Toyama Chihou Railway", "category_id": 3 },
-    "78": { "id": 78, "name": "小湊鐵道", "name_en": "Kominato Railway", "category_id": 3 },
-    "79": { "id": 79, "name": "小田急電鉄", "name_en": "Odakyu Electric Railway", "category_id": 2 },
-    "80": { "id": 80, "name": "山万", "name_en": "Yamaman (Yukarigaoka Line)", "category_id": 3 },
-    "81": { "id": 81, "name": "山形鉄道", "name_en": "Yamagata Railway", "category_id": 4 },
-    "82": { "id": 82, "name": "山陽電気鉄道", "name_en": "Sanyo Electric Railway", "category_id": 3 },
-    "83": { "id": 83, "name": "岡山電気軌道", "name_en": "Okayama Electric Tramway", "category_id": 3 },
-    "84": { "id": 84, "name": "岳南電車", "name_en": "Gakunan Electric Train", "category_id": 3 },
-    "85": { "id": 85, "name": "島原鉄道", "name_en": "Shimabara Railway", "category_id": 3 },
-    "86": { "id": 86, "name": "嵯峨野観光鉄道", "name_en": "Sagano Scenic Railway", "category_id": 3 },
-    "87": { "id": 87, "name": "平成筑豊鉄道", "name_en": "Heisei Chikuho Railway", "category_id": 4 },
-    "88": { "id": 88, "name": "広島電鉄", "name_en": "Hiroshima Electric Railway (Hiroden)", "category_id": 3 },
-    "89": { "id": 89, "name": "広島高速交通", "name_en": "Hiroshima Rapid Transit (Astram Line)", "category_id": 4 },
-    "90": { "id": 90, "name": "弘南鉄道", "name_en": "Konan Railway", "category_id": 3 },
-    "91": { "id": 91, "name": "御岳登山鉄道", "name_en": "Mitake Tozan Railway", "category_id": 6 },
-    "92": { "id": 92, "name": "愛知環状鉄道", "name_en": "Aichi Loop Railway", "category_id": 4 },
-    "93": { "id": 93, "name": "愛知高速交通", "name_en": "Aichi Rapid Transit (Linimo)", "category_id": 4 },
-    "94": { "id": 94, "name": "新京成電鉄", "name_en": "Shin-Keisei Electric Railway", "category_id": 3 },
-    "95": { "id": 95, "name": "明知鉄道", "name_en": "Akechi Railway", "category_id": 4 },
-    "96": { "id": 96, "name": "智頭急行", "name_en": "Chizu Express", "category_id": 4 },
-    "97": { "id": 97, "name": "札幌市", "name_en": "Sapporo City Transportation Bureau", "category_id": 5 },
-    "98": { "id": 98, "name": "東京モノレール", "name_en": "Tokyo Monorail", "category_id": 3 },
-    "99": { "id": 99, "name": "東京地下鉄", "name_en": "Tokyo Metro", "category_id": 2 },
-    "100": { "id": 100, "name": "東京臨海高速鉄道", "name_en": "Tokyo Waterfront Area Rapid Transit (Rinkai Line)", "category_id": 4 },
-    "101": { "id": 101, "name": "東京都", "name_en": "Toei Transportation (Tokyo Metropolitan Bureau of Transportation)", "category_id": 5 },
-    "102": { "id": 102, "name": "東急電鉄", "name_en": "Tokyu Railways", "category_id": 2 },
-    "103": { "id": 103, "name": "東日本旅客鉄道", "name_en": "JR East (East Japan Railway Company)", "category_id": 1 },
-    "104": { "id": 104, "name": "東武鉄道", "name_en": "Tobu Railway", "category_id": 2 },
-    "105": { "id": 105, "name": "東海交通事業", "name_en": "Tokai Transport Service (TKJ)", "category_id": 3 },
-    "106": { "id": 106, "name": "東海旅客鉄道", "name_en": "JR Central (Central Japan Railway Company)", "category_id": 1 },
-    "107": { "id": 107, "name": "東葉高速鉄道", "name_en": "Toyo Rapid Railway", "category_id": 4 },
-    "108": { "id": 108, "name": "松浦鉄道", "name_en": "Matsuura Railway", "category_id": 4 },
-    "109": { "id": 109, "name": "横浜シーサイドライン", "name_en": "Yokohama Seaside Line", "category_id": 4 },
-    "110": { "id": 110, "name": "横浜市", "name_en": "Yokohama City Transportation Bureau", "category_id": 5 },
-    "111": { "id": 111, "name": "横浜高速鉄道", "name_en": "Yokohama Minatomirai Railway", "category_id": 4 },
-    "112": { "id": 112, "name": "樽見鉄道", "name_en": "Tarumi Railway", "category_id": 4 },
-    "113": { "id": 113, "name": "比叡山鉄道", "name_en": "Hieizan Railway", "category_id": 6 },
-    "114": { "id": 114, "name": "水島臨海鉄道", "name_en": "Mizushima Rinkai Railway", "category_id": 4 },
-    "115": { "id": 115, "name": "水間鉄道", "name_en": "Mizuma Railway", "category_id": 3 },
-    "116": { "id": 116, "name": "江ノ島電鉄", "name_en": "Enoshima Electric Railway (Enoden)", "category_id": 3 },
-    "117": { "id": 117, "name": "沖縄都市モノレール", "name_en": "Okinawa Monorail (Yui Rail)", "category_id": 4 },
-    "118": { "id": 118, "name": "泉北高速鉄道", "name_en": "Semboku Rapid Railway", "category_id": 3 },
-    "119": { "id": 119, "name": "津軽鉄道", "name_en": "Tsugaru Railway", "category_id": 3 },
-    "120": { "id": 120, "name": "流鉄", "name_en": "Ryutetsu", "category_id": 3 },
-    "121": { "id": 121, "name": "湘南モノレール", "name_en": "Shonan Monorail", "category_id": 3 },
-    "122": { "id": 122, "name": "熊本市", "name_en": "Kumamoto City Tram", "category_id": 5 },
-    "123": { "id": 123, "name": "熊本電気鉄道", "name_en": "Kumamoto Electric Railway", "category_id": 3 },
-    "124": { "id": 124, "name": "甘木鉄道", "name_en": "Amagi Railway", "category_id": 4 },
-    "125": { "id": 125, "name": "由利高原鉄道", "name_en": "Yuri Kogen Railway", "category_id": 4 },
-    "126": { "id": 126, "name": "皿倉登山鉄道", "name_en": "Sarakurayama Railway", "category_id": 6 },
-    "127": { "id": 127, "name": "相模鉄道", "name_en": "Sagami Railway (Sotetsu)", "category_id": 2 },
-    "128": { "id": 128, "name": "真岡鐵道", "name_en": "Mooka Railway", "category_id": 4 },
-    "129": { "id": 129, "name": "神戸市", "name_en": "Kobe City Transportation Bureau", "category_id": 5 },
-    "130": { "id": 130, "name": "神戸新交通", "name_en": "Kobe New Transit", "category_id": 4 },
-    "131": { "id": 131, "name": "神戸電鉄", "name_en": "Kobe Electric Railway (Shintetsu)", "category_id": 3 },
-    "132": { "id": 132, "name": "福井鉄道", "name_en": "Fukui Railway", "category_id": 3 },
-    "133": { "id": 133, "name": "福岡市", "name_en": "Fukuoka City Transportation Bureau", "category_id": 5 },
-    "134": { "id": 134, "name": "福島交通", "name_en": "Fukushima Kotsu", "category_id": 3 },
-    "135": { "id": 135, "name": "秋田内陸縦貫鉄道", "name_en": "Akita Nairiku Jukan Railway", "category_id": 4 },
-    "136": { "id": 136, "name": "秩父鉄道", "name_en": "Chichibu Railway", "category_id": 3 },
-    "137": { "id": 137, "name": "立山黒部貫光", "name_en": "Tateyama Kurobe Kanko", "category_id": 6 },
-    "138": { "id": 138, "name": "筑波観光鉄道", "name_en": "Tsukuba Kanko Railway", "category_id": 6 },
-    "139": { "id": 139, "name": "筑豊電気鉄道", "name_en": "Chikuho Electric Railroad", "category_id": 3 },
-    "140": { "id": 140, "name": "箱根登山鉄道", "name_en": "Hakone Tozan Railway", "category_id": 3 },
-    "141": { "id": 141, "name": "紀州鉄道", "name_en": "Kishu Railway", "category_id": 3 },
-    "142": { "id": 142, "name": "肥薩おれんじ鉄道", "name_en": "Hisatsu Orange Railway", "category_id": 4 },
-    "143": { "id": 143, "name": "能勢電鉄", "name_en": "Nose Electric Railway", "category_id": 3 },
-    "144": { "id": 144, "name": "舞浜リゾートライン", "name_en": "Maihama Resort Line (Disney Resort Line)", "category_id": 6 },
-    "145": { "id": 145, "name": "芝山鉄道", "name_en": "Shibayama Railway", "category_id": 4 },
-    "146": { "id": 146, "name": "若桜鉄道", "name_en": "Wakasa Railway", "category_id": 4 },
-    "147": { "id": 147, "name": "西日本旅客鉄道", "name_en": "JR West (West Japan Railway Company)", "category_id": 1 },
-    "148": { "id": 148, "name": "西日本鉄道", "name_en": "Nishitetsu Railway", "category_id": 2 },
-    "149": { "id": 149, "name": "西武鉄道", "name_en": "Seibu Railway", "category_id": 2 },
-    "150": { "id": 150, "name": "豊橋鉄道", "name_en": "Toyohashi Railroad", "category_id": 3 },
-    "151": { "id": 151, "name": "近江鉄道", "name_en": "Ohmi Railway", "category_id": 3 },
-    "152": { "id": 152, "name": "近畿日本鉄道", "name_en": "Kintetsu Railway", "category_id": 2 },
-    "153": { "id": 153, "name": "道南いさりび鉄道", "name_en": "South Hokkaido Railway", "category_id": 4 },
-    "154": { "id": 154, "name": "遠州鉄道", "name_en": "Enshu Railway", "category_id": 3 },
-    "155": { "id": 155, "name": "野岩鉄道", "name_en": "Yagan Railway", "category_id": 4 },
-    "156": { "id": 156, "name": "銚子電気鉄道", "name_en": "Choshi Electric Railway", "category_id": 3 },
-    "157": { "id": 157, "name": "錦川鉄道", "name_en": "Nishikigawa Railway", "category_id": 4 },
-    "158": { "id": 158, "name": "長崎電気軌道", "name_en": "Nagasaki Electric Tramway", "category_id": 3 },
-    "159": { "id": 159, "name": "長良川鉄道", "name_en": "Nagaragawa Railway", "category_id": 4 },
-    "160": { "id": 160, "name": "長野電鉄", "name_en": "Nagano Electric Railway", "category_id": 3 },
-    "161": { "id": 161, "name": "関東鉄道", "name_en": "Kanto Railway", "category_id": 3 },
-    "162": { "id": 162, "name": "阪堺電気軌道", "name_en": "Hankai Tramway", "category_id": 3 },
-    "163": { "id": 163, "name": "阪急電鉄", "name_en": "Hankyu Corporation", "category_id": 2 },
-    "164": { "id": 164, "name": "阪神電気鉄道", "name_en": "Hanshin Electric Railway", "category_id": 2 },
-    "165": { "id": 165, "name": "阿佐海岸鉄道", "name_en": "Asa Kaigan Railway", "category_id": 4 },
-    "166": { "id": 166, "name": "阿武隈急行", "name_en": "Abukuma Express", "category_id": 4 },
-    "167": { "id": 167, "name": "青い森鉄道", "name_en": "Aoimori Railway", "category_id": 4 },
-    "168": { "id": 168, "name": "静岡鉄道", "name_en": "Shizuoka Railway", "category_id": 3 },
-    "169": { "id": 169, "name": "鞍馬寺", "name_en": "Kurama-dera Temple (Kurama-dera Cable)", "category_id": 6 },
-    "170": { "id": 170, "name": "養老鉄道", "name_en": "Yoro Railway", "category_id": 3 },
-    "171": { "id": 171, "name": "首都圏新都市鉄道", "name_en": "Metropolitan Intercity Railway (Tsukuba Express)", "category_id": 4 },
-    "172": { "id": 172, "name": "高尾登山電鉄", "name_en": "Takao Tozan Railway", "category_id": 6 },
-    "173": { "id": 173, "name": "高松琴平電気鉄道", "name_en": "Takamatsu Kotohira Electric Railroad (Kotoden)", "category_id": 3 },
-    "174": { "id": 174, "name": "鹿児島市", "name_en": "Kagoshima City Tram", "category_id": 5 },
-    "175": { "id": 175, "name": "鹿島臨海鉄道", "name_en": "Kashima Rinkai Railway", "category_id": 4 },
-    "176": { "id": 176, "name": "黒部峡谷鉄道", "name_en": "Kurobe Kyoku Railway", "category_id": 3 }
+  "0": {
+    "id": 0,
+    "name": "IRいしかわ鉄道",
+    "name_en": "IR Ishikawa Railway",
+    "category_id": 4,
+    "color": "#00529a"
+  },
+  "1": {
+    "id": 1,
+    "name": "WILLER TRAINS",
+    "name_en": "WILLER TRAINS (Kyoto Tango Railway)",
+    "category_id": 3
+  },
+  "2": {
+    "id": 2,
+    "name": "あいの風とやま鉄道",
+    "name_en": "Ainokaze Toyama Railway",
+    "category_id": 4,
+    "color": "#00a0e9"
+  },
+  "3": {
+    "id": 3,
+    "name": "いすみ鉄道",
+    "name_en": "Isumi Railway",
+    "category_id": 4
+  },
+  "4": {
+    "id": 4,
+    "name": "えちごトキめき鉄道",
+    "name_en": "Echigo Tokimeki Railway",
+    "category_id": 4
+  },
+  "5": {
+    "id": 5,
+    "name": "えちぜん鉄道",
+    "name_en": "Echizen Railway",
+    "category_id": 4
+  },
+  "6": {
+    "id": 6,
+    "name": "くま川鉄道",
+    "name_en": "Kumagawa Railroad",
+    "category_id": 4
+  },
+  "7": {
+    "id": 7,
+    "name": "しなの鉄道",
+    "name_en": "Shinano Railway",
+    "category_id": 4,
+    "color": "#e60012"
+  },
+  "8": {
+    "id": 8,
+    "name": "とさでん交通",
+    "name_en": "Tosaden Kotsu",
+    "category_id": 3
+  },
+  "9": {
+    "id": 9,
+    "name": "のと鉄道",
+    "name_en": "Noto Railway",
+    "category_id": 4
+  },
+  "10": {
+    "id": 10,
+    "name": "ひたちなか海浜鉄道",
+    "name_en": "Hitachinaka Kaihin Railway",
+    "category_id": 4
+  },
+  "11": {
+    "id": 11,
+    "name": "ゆりかもめ",
+    "name_en": "Yurikamome",
+    "category_id": 6
+  },
+  "12": {
+    "id": 12,
+    "name": "わたらせ渓谷鐵道",
+    "name_en": "Watarase Keikoku Railway",
+    "category_id": 4
+  },
+  "13": {
+    "id": 13,
+    "name": "アイジーアールいわて銀河鉄道",
+    "name_en": "IGR Iwate Ginga Railway",
+    "category_id": 4,
+    "color": "#00529a"
+  },
+  "14": {
+    "id": 14,
+    "name": "アルピコ交通",
+    "name_en": "Alpico Kotsu",
+    "category_id": 3
+  },
+  "15": {
+    "id": 15,
+    "name": "スカイレールサービス",
+    "name_en": "Sky Rail Service",
+    "category_id": 6
+  },
+  "16": {
+    "id": 16,
+    "name": "ラクテンチ",
+    "name_en": "Rakutenchi (Beppu Rakutenchi Cable Car)",
+    "category_id": 6
+  },
+  "17": {
+    "id": 17,
+    "name": "一畑電車",
+    "name_en": "Ichibata Electric Railway",
+    "category_id": 3
+  },
+  "18": {
+    "id": 18,
+    "name": "一般社団法人札幌市交通事業振興公社",
+    "name_en": "Sapporo City Transportation Business Promotion Corporation",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "19": {
+    "id": 19,
+    "name": "一般社団法人神戸住環境整備公社",
+    "name_en": "Kobe Housing & Urban Development Corporation",
+    "category_id": 6
+  },
+  "20": {
+    "id": 20,
+    "name": "一般財団法人青函トンネル記念館",
+    "name_en": "Seikan Tunnel Museum (Seikan Tunnel Tappi Shako Line)",
+    "category_id": 6
+  },
+  "21": {
+    "id": 21,
+    "name": "万葉線",
+    "name_en": "Manyosen",
+    "category_id": 4
+  },
+  "22": {
+    "id": 22,
+    "name": "三岐鉄道",
+    "name_en": "Sangi Railway",
+    "category_id": 3
+  },
+  "23": {
+    "id": 23,
+    "name": "三陸鉄道",
+    "name_en": "Sanriku Railway",
+    "category_id": 4
+  },
+  "24": {
+    "id": 24,
+    "name": "上信電鉄",
+    "name_en": "Joshin Electric Railway",
+    "category_id": 3
+  },
+  "25": {
+    "id": 25,
+    "name": "上毛電気鉄道",
+    "name_en": "Jomo Electric Railway",
+    "category_id": 3
+  },
+  "26": {
+    "id": 26,
+    "name": "上田電鉄",
+    "name_en": "Ueda Railway",
+    "category_id": 3
+  },
+  "27": {
+    "id": 27,
+    "name": "丹後海陸交通",
+    "name_en": "Tango Kairiku Kotsu (Amanohashidate Cable Car)",
+    "category_id": 6
+  },
+  "28": {
+    "id": 28,
+    "name": "九州旅客鉄道",
+    "name_en": "JR Kyushu (Kyushu Railway Company)",
+    "category_id": 1,
+    "color": "#e60012"
+  },
+  "29": {
+    "id": 29,
+    "name": "井原鉄道",
+    "name_en": "Ibara Railway",
+    "category_id": 4
+  },
+  "30": {
+    "id": 30,
+    "name": "京成電鉄",
+    "name_en": "Keisei Electric Railway",
+    "category_id": 2,
+    "color": "#004892"
+  },
+  "31": {
+    "id": 31,
+    "name": "京浜急行電鉄",
+    "name_en": "Keikyu Electric Railway",
+    "category_id": 2
+  },
+  "32": {
+    "id": 32,
+    "name": "京王電鉄",
+    "name_en": "Keio Corporation",
+    "category_id": 2,
+    "color": "#dd0077"
+  },
+  "33": {
+    "id": 33,
+    "name": "京福電気鉄道",
+    "name_en": "Keifuku Electric Railway (Randen)",
+    "category_id": 3
+  },
+  "34": {
+    "id": 34,
+    "name": "京都市",
+    "name_en": "Kyoto City Transportation Bureau",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "35": {
+    "id": 35,
+    "name": "京阪電気鉄道",
+    "name_en": "Keihan Electric Railway",
+    "category_id": 2,
+    "color": "#00542a"
+  },
+  "36": {
+    "id": 36,
+    "name": "仙台市",
+    "name_en": "Sendai City Transportation Bureau",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "37": {
+    "id": 37,
+    "name": "仙台空港鉄道",
+    "name_en": "Sendai Airport Transit",
+    "category_id": 4
+  },
+  "38": {
+    "id": 38,
+    "name": "伊予鉄道",
+    "name_en": "Iyotetsu",
+    "category_id": 3,
+    "color": "#f39700"
+  },
+  "39": {
+    "id": 39,
+    "name": "伊勢鉄道",
+    "name_en": "Ise Railway",
+    "category_id": 4
+  },
+  "40": {
+    "id": 40,
+    "name": "伊豆急行",
+    "name_en": "Izukyu Corporation",
+    "category_id": 3
+  },
+  "41": {
+    "id": 41,
+    "name": "伊豆箱根鉄道",
+    "name_en": "Izuhakone Railway",
+    "category_id": 3
+  },
+  "42": {
+    "id": 42,
+    "name": "伊賀鉄道",
+    "name_en": "Iga Railway",
+    "category_id": 3
+  },
+  "43": {
+    "id": 43,
+    "name": "会津鉄道",
+    "name_en": "Aizu Railway",
+    "category_id": 4
+  },
+  "44": {
+    "id": 44,
+    "name": "信楽高原鐵道",
+    "name_en": "Shigaraki Kohan Railway",
+    "category_id": 4
+  },
+  "45": {
+    "id": 45,
+    "name": "六甲山観光",
+    "name_en": "Rokkosan Kanko (Rokko Cable Car)",
+    "category_id": 6
+  },
+  "46": {
+    "id": 46,
+    "name": "函館市",
+    "name_en": "Hakodate City Tram",
+    "category_id": 5
+  },
+  "47": {
+    "id": 47,
+    "name": "北九州高速鉄道",
+    "name_en": "Kitakyushu Monorail",
+    "category_id": 4
+  },
+  "48": {
+    "id": 48,
+    "name": "北大阪急行電鉄",
+    "name_en": "Kita-Osaka Kyuko Railway",
+    "category_id": 3
+  },
+  "49": {
+    "id": 49,
+    "name": "北条鉄道",
+    "name_en": "Hojo Railway",
+    "category_id": 4
+  },
+  "50": {
+    "id": 50,
+    "name": "北海道旅客鉄道",
+    "name_en": "JR Hokkaido (Hokkaido Railway Company)",
+    "category_id": 1,
+    "color": "#0098D8"
+  },
+  "51": {
+    "id": 51,
+    "name": "北総鉄道",
+    "name_en": "Hokuso Railway",
+    "category_id": 3
+  },
+  "52": {
+    "id": 52,
+    "name": "北越急行",
+    "name_en": "Hokuetsu Express",
+    "category_id": 4
+  },
+  "53": {
+    "id": 53,
+    "name": "北陸鉄道",
+    "name_en": "Hokuriku Railroad",
+    "category_id": 3
+  },
+  "54": {
+    "id": 54,
+    "name": "十국峠",
+    "name_en": "Jukkoku Pass Cable Car",
+    "category_id": 6
+  },
+  "55": {
+    "id": 55,
+    "name": "千葉都市モノレール",
+    "name_en": "Chiba Urban Monorail",
+    "category_id": 4
+  },
+  "56": {
+    "id": 56,
+    "name": "南海電気鉄道",
+    "name_en": "Nankai Electric Railway",
+    "category_id": 2,
+    "color": "#004e98"
+  },
+  "57": {
+    "id": 57,
+    "name": "南阿蘇鉄道",
+    "name_en": "Minamiaso Railway",
+    "category_id": 4
+  },
+  "58": {
+    "id": 58,
+    "name": "叡山電鉄",
+    "name_en": "Eizan Electric Railway",
+    "category_id": 3
+  },
+  "59": {
+    "id": 59,
+    "name": "名古屋ガイドウェイバス",
+    "name_en": "Nagoya Guideway Bus (Yutorito Line)",
+    "category_id": 6
+  },
+  "60": {
+    "id": 60,
+    "name": "名古屋市",
+    "name_en": "Nagoya City Transportation Bureau",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "61": {
+    "id": 61,
+    "name": "名古屋臨海高速鉄道",
+    "name_en": "Nagoya Rinkai Rapid Railway (Aonami Line)",
+    "category_id": 4
+  },
+  "62": {
+    "id": 62,
+    "name": "名古屋鉄道",
+    "name_en": "Nagoya Railroad (Meitetsu)",
+    "category_id": 2,
+    "color": "#cc0022"
+  },
+  "63": {
+    "id": 63,
+    "name": "和歌山電鐵",
+    "name_en": "Wakayama Electric Railway",
+    "category_id": 3
+  },
+  "64": {
+    "id": 64,
+    "name": "四国ケーブル",
+    "name_en": "Shikoku Cable",
+    "category_id": 6
+  },
+  "65": {
+    "id": 65,
+    "name": "四국旅客鉄道",
+    "name_en": "JR Shikoku (Shikoku Railway Company)",
+    "category_id": 1,
+    "color": "#00a0dc"
+  },
+  "66": {
+    "id": 66,
+    "name": "四日市あすなろう鉄道",
+    "name_en": "Yokkaichi Asunarou Railway",
+    "category_id": 3
+  },
+  "67": {
+    "id": 67,
+    "name": "土佐くろしお鉄道",
+    "name_en": "Tosa Kuroshio Railway",
+    "category_id": 4
+  },
+  "68": {
+    "id": 68,
+    "name": "埼玉新都市交通",
+    "name_en": "Saitama New Urban Transit (New Shuttle)",
+    "category_id": 4
+  },
+  "69": {
+    "id": 69,
+    "name": "埼玉高速鉄道",
+    "name_en": "Saitama Railway",
+    "category_id": 4
+  },
+  "70": {
+    "id": 70,
+    "name": "多摩都市モノレール",
+    "name_en": "Tama Toshin Monorail",
+    "category_id": 4
+  },
+  "71": {
+    "id": 71,
+    "name": "大井川鐵道",
+    "name_en": "Oigawa Railway",
+    "category_id": 3
+  },
+  "72": {
+    "id": 72,
+    "name": "大山観光電鉄",
+    "name_en": "Oyama Kanko Railway",
+    "category_id": 6
+  },
+  "73": {
+    "id": 73,
+    "name": "大阪モノレール",
+    "name_en": "Osaka Monorail",
+    "category_id": 4
+  },
+  "74": {
+    "id": 74,
+    "name": "大阪市高速電気軌道",
+    "name_en": "Osaka Metro",
+    "category_id": 3,
+    "color": "#005691"
+  },
+  "75": {
+    "id": 75,
+    "name": "天竜浜名湖鉄道",
+    "name_en": "Tenryu Hamanako Railroad",
+    "category_id": 4
+  },
+  "76": {
+    "id": 76,
+    "name": "富士山麓電気鉄道",
+    "name_en": "Fujikyu Railway",
+    "category_id": 3
+  },
+  "77": {
+    "id": 77,
+    "name": "富山地方鉄道",
+    "name_en": "Toyama Chihou Railway",
+    "category_id": 3,
+    "color": "#0033ff"
+  },
+  "78": {
+    "id": 78,
+    "name": "小湊鐵道",
+    "name_en": "Kominato Railway",
+    "category_id": 3
+  },
+  "79": {
+    "id": 79,
+    "name": "小田急電鉄",
+    "name_en": "Odakyu Electric Railway",
+    "category_id": 2,
+    "color": "#008cc3"
+  },
+  "80": {
+    "id": 80,
+    "name": "山万",
+    "name_en": "Yamaman (Yukarigaoka Line)",
+    "category_id": 3
+  },
+  "81": {
+    "id": 81,
+    "name": "山形鉄道",
+    "name_en": "Yamagata Railway",
+    "category_id": 4
+  },
+  "82": {
+    "id": 82,
+    "name": "山陽電気鉄道",
+    "name_en": "Sanyo Electric Railway",
+    "category_id": 3
+  },
+  "83": {
+    "id": 83,
+    "name": "岡山電気軌道",
+    "name_en": "Okayama Electric Tramway",
+    "category_id": 3
+  },
+  "84": {
+    "id": 84,
+    "name": "岳南電車",
+    "name_en": "Gakunan Electric Train",
+    "category_id": 3
+  },
+  "85": {
+    "id": 85,
+    "name": "島原鉄道",
+    "name_en": "Shimabara Railway",
+    "category_id": 3
+  },
+  "86": {
+    "id": 86,
+    "name": "嵯峨野観光鉄道",
+    "name_en": "Sagano Scenic Railway",
+    "category_id": 3
+  },
+  "87": {
+    "id": 87,
+    "name": "平成筑豊鉄道",
+    "name_en": "Heisei Chikuho Railway",
+    "category_id": 4
+  },
+  "88": {
+    "id": 88,
+    "name": "広島電鉄",
+    "name_en": "Hiroshima Electric Railway (Hiroden)",
+    "category_id": 3,
+    "color": "#008000"
+  },
+  "89": {
+    "id": 89,
+    "name": "広島高速交通",
+    "name_en": "Hiroshima Rapid Transit (Astram Line)",
+    "category_id": 4
+  },
+  "90": {
+    "id": 90,
+    "name": "弘南鉄道",
+    "name_en": "Konan Railway",
+    "category_id": 3
+  },
+  "91": {
+    "id": 91,
+    "name": "御岳登山鉄道",
+    "name_en": "Mitake Tozan Railway",
+    "category_id": 6
+  },
+  "92": {
+    "id": 92,
+    "name": "愛知環状鉄道",
+    "name_en": "Aichi Loop Railway",
+    "category_id": 4
+  },
+  "93": {
+    "id": 93,
+    "name": "愛知高速交通",
+    "name_en": "Aichi Rapid Transit (Linimo)",
+    "category_id": 4
+  },
+  "94": {
+    "id": 94,
+    "name": "新京成電鉄",
+    "name_en": "Shin-Keisei Electric Railway",
+    "category_id": 3,
+    "color": "#004892"
+  },
+  "95": {
+    "id": 95,
+    "name": "明知鉄道",
+    "name_en": "Akechi Railway",
+    "category_id": 4
+  },
+  "96": {
+    "id": 96,
+    "name": "智頭急行",
+    "name_en": "Chizu Express",
+    "category_id": 4
+  },
+  "97": {
+    "id": 97,
+    "name": "札幌市",
+    "name_en": "Sapporo City Transportation Bureau",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "98": {
+    "id": 98,
+    "name": "東京モノレール",
+    "name_en": "Tokyo Monorail",
+    "category_id": 3
+  },
+  "99": {
+    "id": 99,
+    "name": "東京地下鉄",
+    "name_en": "Tokyo Metro",
+    "category_id": 2,
+    "color": "#005691"
+  },
+  "100": {
+    "id": 100,
+    "name": "東京臨海高速鉄道",
+    "name_en": "Tokyo Waterfront Area Rapid Transit (Rinkai Line)",
+    "category_id": 4
+  },
+  "101": {
+    "id": 101,
+    "name": "東京都",
+    "name_en": "Toei Transportation (Tokyo Metropolitan Bureau of Transportation)",
+    "category_id": 5,
+    "color": "#008a4c"
+  },
+  "102": {
+    "id": 102,
+    "name": "東急電鉄",
+    "name_en": "Tokyu Railways",
+    "category_id": 2,
+    "color": "#da003d"
+  },
+  "103": {
+    "id": 103,
+    "name": "東日本旅客鉄道",
+    "name_en": "JR East (East Japan Railway Company)",
+    "category_id": 1,
+    "color": "#22ac38"
+  },
+  "104": {
+    "id": 104,
+    "name": "東武鉄道",
+    "name_en": "Tobu Railway",
+    "category_id": 2,
+    "color": "#005aaa"
+  },
+  "105": {
+    "id": 105,
+    "name": "東海交通事業",
+    "name_en": "Tokai Transport Service (TKJ)",
+    "category_id": 3
+  },
+  "106": {
+    "id": 106,
+    "name": "東海旅客鉄道",
+    "name_en": "JR Central (Central Japan Railway Company)",
+    "category_id": 1,
+    "color": "#f68b1e"
+  },
+  "107": {
+    "id": 107,
+    "name": "東葉高速鉄道",
+    "name_en": "Toyo Rapid Railway",
+    "category_id": 4
+  },
+  "108": {
+    "id": 108,
+    "name": "松浦鉄道",
+    "name_en": "Matsuura Railway",
+    "category_id": 4
+  },
+  "109": {
+    "id": 109,
+    "name": "横浜シーサイドライン",
+    "name_en": "Yokohama Seaside Line",
+    "category_id": 4
+  },
+  "110": {
+    "id": 110,
+    "name": "横浜市",
+    "name_en": "Yokohama City Transportation Bureau",
+    "category_id": 5,
+    "color": "#00529b"
+  },
+  "111": {
+    "id": 111,
+    "name": "横浜高速鉄道",
+    "name_en": "Yokohama Minatomirai Railway",
+    "category_id": 4
+  },
+  "112": {
+    "id": 112,
+    "name": "樽見鉄道",
+    "name_en": "Tarumi Railway",
+    "category_id": 4
+  },
+  "113": {
+    "id": 113,
+    "name": "比叡山鉄道",
+    "name_en": "Hieizan Railway",
+    "category_id": 6
+  },
+  "114": {
+    "id": 114,
+    "name": "水島臨海鉄道",
+    "name_en": "Mizushima Rinkai Railway",
+    "category_id": 4
+  },
+  "115": {
+    "id": 115,
+    "name": "水間鉄道",
+    "name_en": "Mizuma Railway",
+    "category_id": 3
+  },
+  "116": {
+    "id": 116,
+    "name": "江ノ島電鉄",
+    "name_en": "Enoshima Electric Railway (Enoden)",
+    "category_id": 3
+  },
+  "117": {
+    "id": 117,
+    "name": "沖縄都市モノレール",
+    "name_en": "Okinawa Monorail (Yui Rail)",
+    "category_id": 4
+  },
+  "118": {
+    "id": 118,
+    "name": "泉北高速鉄道",
+    "name_en": "Semboku Rapid Railway",
+    "category_id": 3
+  },
+  "119": {
+    "id": 119,
+    "name": "津軽鉄道",
+    "name_en": "Tsugaru Railway",
+    "category_id": 3
+  },
+  "120": {
+    "id": 120,
+    "name": "流鉄",
+    "name_en": "Ryutetsu",
+    "category_id": 3
+  },
+  "121": {
+    "id": 121,
+    "name": "湘南モノレール",
+    "name_en": "Shonan Monorail",
+    "category_id": 3
+  },
+  "122": {
+    "id": 122,
+    "name": "熊本市",
+    "name_en": "Kumamoto City Tram",
+    "category_id": 5,
+    "color": "#008000"
+  },
+  "123": {
+    "id": 123,
+    "name": "熊本電気鉄道",
+    "name_en": "Kumamoto Electric Railway",
+    "category_id": 3
+  },
+  "124": {
+    "id": 124,
+    "name": "甘木鉄道",
+    "name_en": "Amagi Railway",
+    "category_id": 4
+  },
+  "125": {
+    "id": 125,
+    "name": "由利高原鉄道",
+    "name_en": "Yuri Kogen Railway",
+    "category_id": 4
+  },
+  "126": {
+    "id": 126,
+    "name": "皿倉登山鉄道",
+    "name_en": "Sarakurayama Railway",
+    "category_id": 6
+  },
+  "127": {
+    "id": 127,
+    "name": "相模鉄道",
+    "name_en": "Sagami Railway (Sotetsu)",
+    "category_id": 2,
+    "color": "#003265"
+  },
+  "128": {
+    "id": 128,
+    "name": "真岡鐵道",
+    "name_en": "Mooka Railway",
+    "category_id": 4
+  },
+  "129": {
+    "id": 129,
+    "name": "神戸市",
+    "name_en": "Kobe City Transportation Bureau",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "130": {
+    "id": 130,
+    "name": "神戸新交通",
+    "name_en": "Kobe New Transit",
+    "category_id": 4
+  },
+  "131": {
+    "id": 131,
+    "name": "神戸電鉄",
+    "name_en": "Kobe Electric Railway (Shintetsu)",
+    "category_id": 3
+  },
+  "132": {
+    "id": 132,
+    "name": "福井鉄道",
+    "name_en": "Fukui Railway",
+    "category_id": 3
+  },
+  "133": {
+    "id": 133,
+    "name": "福岡市",
+    "name_en": "Fukuoka City Transportation Bureau",
+    "category_id": 5,
+    "color": "#555555"
+  },
+  "134": {
+    "id": 134,
+    "name": "福島交通",
+    "name_en": "Fukushima Kotsu",
+    "category_id": 3
+  },
+  "135": {
+    "id": 135,
+    "name": "秋田内陸縦貫鉄道",
+    "name_en": "Akita Nairiku Jukan Railway",
+    "category_id": 4
+  },
+  "136": {
+    "id": 136,
+    "name": "秩父鉄道",
+    "name_en": "Chichibu Railway",
+    "category_id": 3
+  },
+  "137": {
+    "id": 137,
+    "name": "立山黒部貫光",
+    "name_en": "Tateyama Kurobe Kanko",
+    "category_id": 6
+  },
+  "138": {
+    "id": 138,
+    "name": "筑波観光鉄道",
+    "name_en": "Tsukuba Kanko Railway",
+    "category_id": 6
+  },
+  "139": {
+    "id": 139,
+    "name": "筑豊電気鉄道",
+    "name_en": "Chikuho Electric Railroad",
+    "category_id": 3
+  },
+  "140": {
+    "id": 140,
+    "name": "箱根登山鉄道",
+    "name_en": "Hakone Tozan Railway",
+    "category_id": 3
+  },
+  "141": {
+    "id": 141,
+    "name": "紀州鉄道",
+    "name_en": "Kishu Railway",
+    "category_id": 3
+  },
+  "142": {
+    "id": 142,
+    "name": "肥薩おれんじ鉄道",
+    "name_en": "Hisatsu Orange Railway",
+    "category_id": 4
+  },
+  "143": {
+    "id": 143,
+    "name": "能勢電鉄",
+    "name_en": "Nose Electric Railway",
+    "category_id": 3
+  },
+  "144": {
+    "id": 144,
+    "name": "舞浜リゾートライン",
+    "name_en": "Maihama Resort Line (Disney Resort Line)",
+    "category_id": 6
+  },
+  "145": {
+    "id": 145,
+    "name": "芝山鉄道",
+    "name_en": "Shibayama Railway",
+    "category_id": 4
+  },
+  "146": {
+    "id": 146,
+    "name": "若桜鉄道",
+    "name_en": "Wakasa Railway",
+    "category_id": 4
+  },
+  "147": {
+    "id": 147,
+    "name": "西日本旅客鉄道",
+    "name_en": "JR West (West Japan Railway Company)",
+    "category_id": 1,
+    "color": "#0072bc"
+  },
+  "148": {
+    "id": 148,
+    "name": "西日本鉄道",
+    "name_en": "Nishitetsu Railway",
+    "category_id": 2,
+    "color": "#f39800"
+  },
+  "149": {
+    "id": 149,
+    "name": "西武鉄道",
+    "name_en": "Seibu Railway",
+    "category_id": 2,
+    "color": "#00a6bf"
+  },
+  "150": {
+    "id": 150,
+    "name": "豊橋鉄道",
+    "name_en": "Toyohashi Railroad",
+    "category_id": 3
+  },
+  "151": {
+    "id": 151,
+    "name": "近江鉄道",
+    "name_en": "Ohmi Railway",
+    "category_id": 3
+  },
+  "152": {
+    "id": 152,
+    "name": "近畿日本鉄道",
+    "name_en": "Kintetsu Railway",
+    "category_id": 2,
+    "color": "#cc0022"
+  },
+  "153": {
+    "id": 153,
+    "name": "道南いさりび鉄道",
+    "name_en": "South Hokkaido Railway",
+    "category_id": 4
+  },
+  "154": {
+    "id": 154,
+    "name": "遠州鉄道",
+    "name_en": "Enshu Railway",
+    "category_id": 3
+  },
+  "155": {
+    "id": 155,
+    "name": "野岩鉄道",
+    "name_en": "Yagan Railway",
+    "category_id": 4
+  },
+  "156": {
+    "id": 156,
+    "name": "銚子電気鉄道",
+    "name_en": "Choshi Electric Railway",
+    "category_id": 3
+  },
+  "157": {
+    "id": 157,
+    "name": "錦川鉄道",
+    "name_en": "Nishikigawa Railway",
+    "category_id": 4
+  },
+  "158": {
+    "id": 158,
+    "name": "長崎電気軌道",
+    "name_en": "Nagasaki Electric Tramway",
+    "category_id": 3,
+    "color": "#008000"
+  },
+  "159": {
+    "id": 159,
+    "name": "長良川鉄道",
+    "name_en": "Nagaragawa Railway",
+    "category_id": 4
+  },
+  "160": {
+    "id": 160,
+    "name": "長野電鉄",
+    "name_en": "Nagano Electric Railway",
+    "category_id": 3
+  },
+  "161": {
+    "id": 161,
+    "name": "関東鉄道",
+    "name_en": "Kanto Railway",
+    "category_id": 3
+  },
+  "162": {
+    "id": 162,
+    "name": "阪堺電気軌道",
+    "name_en": "Hankai Tramway",
+    "category_id": 3
+  },
+  "163": {
+    "id": 163,
+    "name": "阪急電鉄",
+    "name_en": "Hankyu Corporation",
+    "category_id": 2,
+    "color": "#880022"
+  },
+  "164": {
+    "id": 164,
+    "name": "阪神電気鉄道",
+    "name_en": "Hanshin Electric Railway",
+    "category_id": 2,
+    "color": "#003b83"
+  },
+  "165": {
+    "id": 165,
+    "name": "阿佐海岸鉄道",
+    "name_en": "Asa Kaigan Railway",
+    "category_id": 4
+  },
+  "166": {
+    "id": 166,
+    "name": "阿武隈急行",
+    "name_en": "Abukuma Express",
+    "category_id": 4
+  },
+  "167": {
+    "id": 167,
+    "name": "青い森鉄道",
+    "name_en": "Aoimori Railway",
+    "category_id": 4,
+    "color": "#00a0e9"
+  },
+  "168": {
+    "id": 168,
+    "name": "静岡鉄道",
+    "name_en": "Shizuoka Railway",
+    "category_id": 3
+  },
+  "169": {
+    "id": 169,
+    "name": "鞍馬寺",
+    "name_en": "Kurama-dera Temple (Kurama-dera Cable)",
+    "category_id": 6
+  },
+  "170": {
+    "id": 170,
+    "name": "養老鉄道",
+    "name_en": "Yoro Railway",
+    "category_id": 3
+  },
+  "171": {
+    "id": 171,
+    "name": "首都圏新都市鉄道",
+    "name_en": "Metropolitan Intercity Railway (Tsukuba Express)",
+    "category_id": 4,
+    "color": "#ec1c24"
+  },
+  "172": {
+    "id": 172,
+    "name": "高尾登山電鉄",
+    "name_en": "Takao Tozan Railway",
+    "category_id": 6
+  },
+  "173": {
+    "id": 173,
+    "name": "高松琴平電気鉄道",
+    "name_en": "Takamatsu Kotohira Electric Railroad (Kotoden)",
+    "category_id": 3
+  },
+  "174": {
+    "id": 174,
+    "name": "鹿児島市",
+    "name_en": "Kagoshima City Tram",
+    "category_id": 5,
+    "color": "#008000"
+  },
+  "175": {
+    "id": 175,
+    "name": "鹿島臨海鉄道",
+    "name_en": "Kashima Rinkai Railway",
+    "category_id": 4
+  },
+  "176": {
+    "id": 176,
+    "name": "黒部峡谷鉄道",
+    "name_en": "Kurobe Kyoku Railway",
+    "category_id": 3
   }
-  
+}

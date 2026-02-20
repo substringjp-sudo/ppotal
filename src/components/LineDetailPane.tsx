@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
-import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
 import { useLineTopology } from '../hooks/useLineTopology';
-import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
 import { Trip } from '../types/trip';
-import { getOfficialColor } from '../lib/lineColors';
+import { getLineColor } from '../lib/lineColors';
+import { RailData } from '../types/railData';
 
-interface LineDetailPaneProps {
+export interface LineDetailPaneProps {
     lineId: string;
     segments: LineSegment[];
     nodes: Map<string, StationNode>;
@@ -23,14 +22,25 @@ interface LineDetailPaneProps {
     onClose: () => void;
     language: Language;
     onToggleLine?: (lineId: string) => void;
+    railData: RailData | null;
 }
 
 const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     lineId, segments, nodes, visitedEdges, selectedLines, onClose, onStationClick, language, onToggleLine,
-    getShortestPath, onRecordTrip
+    getShortestPath, onRecordTrip, railData
 }) => {
     const [company, lineName] = lineId.split('::');
-    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
+    const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
+
+    const companyData = useMemo(() => {
+        if (!railData || !company) return null;
+        return railData.companies[company] || null;
+    }, [railData, company]);
+
+    const lineData = useMemo(() => {
+        if (!railData || !lineName) return null;
+        return railData.lines[lineName] || null;
+    }, [railData, lineName]);
 
     // --- Stats Calculation ---
     const stats = useMemo(() => {
@@ -53,16 +63,24 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             });
         }
 
+        const totalDist = total > 0 ? total : (lineData?.total_length ? lineData.total_length / 1000 : 0);
+
         return {
-            total: Math.round(total * 10) / 10,
+            total: Math.round(totalDist * 10) / 10,
             visited: Math.round(visited * 10) / 10,
-            percent: total > 0 ? Math.round((visited / total) * 100) : 0,
+            percent: totalDist > 0 ? Math.round((visited / totalDist) * 100) : 0,
             visitedStations: visitedStationsSet
         };
-    }, [segments, visitedEdges]);
+    }, [segments, visitedEdges, lineData]);
 
     // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
+
+    const cNamePrimary = language === 'en' ? (companyData?.name_en || company) : (companyData?.name || company);
+    const lNamePrimary = language === 'en' ? (lineData?.name_en || lineName) : (lineData?.name || lineName);
+
+    const cNameSecondary = language === 'en' ? (companyData?.name || "") : (companyData?.name_en || "");
+    const lNameSecondary = language === 'en' ? (lineData?.name || "") : (lineData?.name_en || "");
 
     return (
         <div style={{
@@ -90,10 +108,9 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 gap: '24px'
             }}>
                 <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    {/* Toggle Button */}
                     <button
                         onClick={() => {
-                            onToggleLine && onToggleLine(lineId);
+                            if (onToggleLine) onToggleLine(lineId);
                         }}
                         style={{
                             width: '40px',
@@ -115,14 +132,22 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         {selectedLines.includes(lineId) ? '✓' : '+'}
                     </button>
 
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-                            <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>{company}</span>
-                            <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>{lineName}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                            <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
+                                {cNamePrimary}
+                            </span>
+                            <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
+                                {lNamePrimary}
+                            </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', opacity: 0.6 }}>
-                            <span style={{ fontSize: '11px', fontWeight: '500' }}>{COMPANY_EN_NAMES[company] || company}</span>
-                            <span style={{ fontSize: '13px', fontWeight: '500' }}>{LINE_EN_NAMES[lineName] || lineName}</span>
+                            <span style={{ fontSize: '11px', fontWeight: '500' }}>
+                                {cNameSecondary}
+                            </span>
+                            <span style={{ fontSize: '13px', fontWeight: '500' }}>
+                                {lNameSecondary}
+                            </span>
                         </div>
                     </div>
 
@@ -168,13 +193,12 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 </button>
             </div>
 
-            <div
-                style={{
-                    flex: 1,
-                    minHeight: '400px',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}>
+            <div style={{
+                flex: 1,
+                minHeight: '400px',
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
                 <TubeMap
                     nodes={topology.nodes}
                     edges={topology.edges}

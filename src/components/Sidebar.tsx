@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
-import { normalizeKey } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
@@ -32,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         if (groupedHierarchy) {
             const initialExpansion: Record<string, boolean> = {};
             Object.keys(groupedHierarchy).forEach((categoryId, index) => {
-                initialExpansion[categoryId] = index < 3; // Expand top 3 categories by default
+                initialExpansion[categoryId] = index < 4; // Expand top 4 categories by default (Shinkansen, JR, Major, Local)
             });
             setExpandedGroups(initialExpansion);
         }
@@ -53,11 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
             for (const categoryId of Object.keys(groupedHierarchy)) {
                 for (const companyId of Object.keys(groupedHierarchy[categoryId])) {
-                    const cName = getCompanyName(companyId);
-                    if (Object.keys(groupedHierarchy[categoryId][companyId]).some(lineId => {
-                        const lName = getLineName(lineId);
-                        return normalizeKey(`${cName}::${lName}`) === normalizeKey(activeLine);
-                    })) {
+                    if (Object.keys(groupedHierarchy[categoryId][companyId]).some(lineId => `${companyId}::${lineId}` === activeLine)) {
                         foundGroup = categoryId;
                         foundCompany = companyId;
                         break;
@@ -75,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 }, 100);
             }
         }
-    }, [activeLine, groupedHierarchy, getCompanyName, getLineName]);
+    }, [activeLine, groupedHierarchy]);
 
     const toggleCompany = useCallback((company: string) => {
         setExpandedCompanies(prev => {
@@ -100,10 +95,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
         const allKeys: string[] = [];
         Object.entries(companies).forEach(([compId, lines]) => {
-            const cName = getCompanyName(compId);
             Object.keys(lines).forEach(lineId => {
-                const lName = getLineName(lineId);
-                allKeys.push(`${cName}::${lName}`);
+                allKeys.push(`${compId}::${lineId}`);
             });
         });
 
@@ -117,15 +110,11 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         }
 
         onSetSelectedLines(newSelected);
-    }, [groupedHierarchy, selectedLines, onSetSelectedLines, getCompanyName, getLineName]);
+    }, [groupedHierarchy, selectedLines, onSetSelectedLines]);
 
     const handleCompanyToggle = useCallback((companyId: string, lines: Record<string, any>) => {
-        const cName = getCompanyName(companyId);
         const lineIds = Object.keys(lines);
-        const compositeKeys = lineIds.map(lineId => {
-            const lName = getLineName(lineId);
-            return `${cName}::${lName}`;
-        });
+        const compositeKeys = lineIds.map(lineId => `${companyId}::${lineId}`);
 
         const allSelected = compositeKeys.every(key => selectedLines.includes(key));
         let newSelected = allSelected
@@ -136,23 +125,21 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             newSelected = newSelected.filter(l => l !== "__NONE__");
         }
         onSetSelectedLines(newSelected);
-    }, [selectedLines, onSetSelectedLines, getCompanyName, getLineName]);
+    }, [selectedLines, onSetSelectedLines]);
 
     const handleSelectAll = useCallback(() => {
         if (!groupedHierarchy) return;
         const allKeys: string[] = [];
         Object.values(groupedHierarchy).forEach(companies => {
             Object.entries(companies).forEach(([compId, lines]) => {
-                const cName = getCompanyName(compId);
                 Object.keys(lines).forEach(lineId => {
-                    const lName = getLineName(lineId);
-                    allKeys.push(`${cName}::${lName}`);
+                    allKeys.push(`${compId}::${lineId}`);
                 });
             });
         });
         onSetSelectedLines(allKeys);
         trackEvent('select_all', 'interaction', 'all_lines');
-    }, [groupedHierarchy, onSetSelectedLines, getCompanyName, getLineName]);
+    }, [groupedHierarchy, onSetSelectedLines]);
 
     const handleDeselectAll = useCallback(() => {
         onSetSelectedLines(["__NONE__"]);

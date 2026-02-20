@@ -1,6 +1,6 @@
 import React from 'react';
-import { translateName } from '../../lib/lineUtils';
 import { Language } from '../../lib/translations';
+import { RailData } from '../../types/railData';
 
 interface RouteCreationPanelProps {
     isDragging: boolean;
@@ -11,6 +11,7 @@ interface RouteCreationPanelProps {
     onFinish: () => void;
     language: Language;
     onHeightChange?: (height: number) => void;
+    railData: RailData | null;
 }
 
 const RouteCreationPanel: React.FC<RouteCreationPanelProps> = ({
@@ -21,7 +22,8 @@ const RouteCreationPanel: React.FC<RouteCreationPanelProps> = ({
     onDiscard,
     onFinish,
     language,
-    onHeightChange
+    onHeightChange,
+    railData
 }) => {
     // Determine which path to show
     const displayPath = isDragging ? tempPath : (draftTrip ? draftTrip.waypoints : []);
@@ -62,34 +64,41 @@ const RouteCreationPanel: React.FC<RouteCreationPanelProps> = ({
                 <div style={{
                     display: 'flex',
                     overflowX: 'auto',
-                    gap: '5px',
-                    padding: '5px 0',
+                    gap: '10px',
+                    padding: '8px 5px',
                     borderTop: '1px solid #eee',
                     borderBottom: '1px solid #eee',
                     minHeight: '40px',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    alignItems: 'center'
                 }}>
                     {displayPath.length === 0 ? (
                         <span style={{ color: '#555', fontSize: '14px', margin: 'auto', fontWeight: 'bold' }}>
                             {language === 'ko' ? '역을 누른 채 옆으로 드래그하여 경로를 추가하세요' : 'Press and drag a station to record your route'}
                         </span>
                     ) : (
-                        displayPath.map((station: string, idx: number) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center' }}>
-                                <span style={{
-                                    padding: '4px 8px',
-                                    backgroundColor: '#ecf0f1',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    color: '#333'
-                                }}>
-                                    {translateName(station, language, 'station')}
-                                </span>
-                                {idx < displayPath.length - 1 && (
-                                    <span style={{ margin: '0 5px', color: '#ccc' }}>→</span>
-                                )}
-                            </div>
-                        ))
+                        displayPath.map((stationId: string, idx: number) => {
+                            const station = railData?.stations[stationId];
+                            const displayName = (language === 'en' && station?.name_en) ? station.name_en : (station?.name || stationId);
+
+                            return (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <span style={{
+                                        padding: '4px 8px',
+                                        backgroundColor: '#ecf0f1',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        color: '#333',
+                                        fontWeight: '700'
+                                    }}>
+                                        {displayName}
+                                    </span>
+                                    {idx < displayPath.length - 1 && (
+                                        <span style={{ color: '#ccc', fontWeight: 'bold' }}>→</span>
+                                    )}
+                                </div>
+                            );
+                        })
                     )}
                 </div>
 
@@ -127,10 +136,6 @@ const RouteCreationPanel: React.FC<RouteCreationPanelProps> = ({
                     </div>
                 )}
             </div>
-
-            {/* Top Ruler (attached to bottom of panel) */}
-            {/* Top Ruler (attached to bottom of panel) */}
-            {/* Top Ruler removed: handled by global RulerOverlay */}
         </div>
     );
 };

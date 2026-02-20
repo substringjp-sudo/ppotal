@@ -18,6 +18,10 @@ export class RoutingGraph {
     lineLengths: Record<string, number> = {};
     stationsByName: Record<string, string[]> = {};
 
+    // Name to ID mappings for granular data
+    companyNameToId: Map<string, string> = new Map();
+    lineNameToId: Map<string, string> = new Map();
+
     constructor(data?: RailData) {
         if (data) {
             this.loadGranularData(data);
@@ -31,26 +35,38 @@ export class RoutingGraph {
         this.lineLengths = {};
         this.stationsByName = {};
         this.lineIdMap.clear();
+        this.companyNameToId.clear();
+        this.lineNameToId.clear();
 
         if (!data.stations || !data.railroadGraph || !data.lines || !data.companies || !data.sections) return;
 
         const companyNameMap = new Map<number, string>();
-        Object.values(data.companies).forEach(c => companyNameMap.set(c.id, c.name));
-        const lineNameMap = new Map<number, { name: string, companyId: number }>();
-        Object.values(data.lines).forEach(l => lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+        Object.values(data.companies).forEach(c => {
+            companyNameMap.set(c.id, c.name);
+            this.companyNameToId.set(c.name, String(c.id));
+        });
 
+        const lineNameMap = new Map<number, { name: string, companyId: number }>();
+        Object.values(data.lines).forEach(l => {
+            lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id });
+            this.lineNameToId.set(l.name, String(l.id));
+        });
+
+        // 1. Process Stations
         Object.values(data.stations).forEach((station: any) => {
             let companyName = "Unknown";
             let lineName = "Unknown";
             let fullLineName = "Unknown::Unknown";
 
+            let pid = "";
             if (station.platform_ids && station.platform_ids.length > 0) {
-                const platform = data.platforms[station.platform_ids[0]];
+                pid = station.platform_ids[0];
+                const platform = data.platforms[pid];
                 if (platform) {
                     const lineInfo = lineNameMap.get(platform.line);
                     companyName = companyNameMap.get(platform.company) || "Unknown";
                     lineName = lineInfo ? lineInfo.name : "Unknown";
-                    fullLineName = `${companyName}::${lineName}`;
+                    fullLineName = `${platform.company}::${platform.line}`;
                 }
             }
 
@@ -59,7 +75,9 @@ export class RoutingGraph {
                 name: station.name,
                 company: companyName,
                 line: lineName,
-                fullLineName,
+                companyId: pid ? (data.platforms[pid]?.company || 0) : 0,
+                lineId: pid ? (data.platforms[pid]?.line || 0) : 0,
+                fullLineId: fullLineName,
                 coords: [station.lon, station.lat]
             };
 
@@ -74,57 +92,64 @@ export class RoutingGraph {
                 this.stationsByName[station.name] = [];
             }
             this.stationsByName[station.name].push(station.id);
+
+            // Map platform IDs to the same node
+            if (station.platform_ids) {
+                station.platform_ids.forEach((pid: string) => {
+                    if (pid !== station.id) {
+                        this.nodes.set(pid, node);
+                    }
+                });
+            }
         });
-        
-        if (data.hierarchy) {
-             Object.entries(data.hierarchy).forEach(([comp, lines]) => {
-                Object.keys(lines as object).forEach(line => {
-                    const lineKey = `${comp}::${line}`;
-                    this.lineIdMap.set(lineKey, lineKey);
+
+        // 2. Load Line IDs and populate lineLengths
+        const sectionMap = new Map<number, any>();
+        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
+
+        if (data.railroadGraph) {
+            Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
+                Object.entries(targets as Record<string, any>).forEach(([targetId, sectionIds]) => {
+                    let totalDistance = 0;
+                    let combinedGeometry: [number, number][] = [];
+                    let lineId = "";
+                    let currentPos = sourceId;
+
+                    (sectionIds as number[]).forEach((secId: number) => {
+                        const section = sectionMap.get(secId);
+                        if (!section) return;
+
+                        // Use numeric IDs for internal lineId
+                        const thisLineId = `${section.company_id}::${section.line_id}`;
+                        if (!lineId) lineId = thisLineId;
+
+                        totalDistance += section.length / 1000;
+                        const geom = section.geometry;
+                        if (section.start === currentPos) {
+                            combinedGeometry.push(...geom);
+                            currentPos = section.end;
+                        } else {
+                            combinedGeometry.push(...[...geom].reverse());
+                            currentPos = section.start;
+                        }
+                    });
+
+                    const edge: RouteEdge = { from: sourceId, to: targetId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry };
+                    if (!this.adj.has(sourceId)) this.adj.set(sourceId, []);
+                    this.adj.get(sourceId)?.push(edge);
+
+                    const revEdge: RouteEdge = { from: targetId, to: sourceId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry ? [...combinedGeometry].reverse() : undefined };
+                    if (!this.adj.has(targetId)) this.adj.set(targetId, []);
+                    this.adj.get(targetId)?.push(revEdge);
+
+                    if (lineId) {
+                        this.lineLengths[lineId] = (this.lineLengths[lineId] || 0) + totalDistance;
+                    }
                 });
             });
         }
 
-        const sectionMap = new Map<number, any>();
-        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
-        Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
-            Object.entries(targets as Record<string, any>).forEach(([targetId, sectionIds]) => {
-                let totalDistance = 0;
-                let combinedGeometry: [number, number][] = [];
-                let lineId = "";
-                let currentPos = sourceId;
-
-                (sectionIds as number[]).forEach((secId: number) => {
-                    const section = sectionMap.get(secId);
-                    if (!section) return;
-                    const lInfo = lineNameMap.get(section.line_id);
-                    const cName = companyNameMap.get(section.company_id) || "";
-                    const lName = lInfo ? lInfo.name : "";
-                    const thisLineId = `${cName}::${lName}`;
-                    if (!lineId) lineId = thisLineId;
-                    totalDistance += section.length / 1000;
-                    const geom = section.geometry;
-                    if (section.start === currentPos) {
-                        combinedGeometry.push(...geom);
-                        currentPos = section.end;
-                    } else {
-                        combinedGeometry.push(...[...geom].reverse());
-                        currentPos = section.start;
-                    }
-                });
-
-                const edge: RouteEdge = { from: sourceId, to: targetId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry };
-                this.adj.get(sourceId)?.push(edge);
-                
-                const revEdge: RouteEdge = { from: targetId, to: sourceId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry ? [...combinedGeometry].reverse() : undefined };
-                this.adj.get(targetId)?.push(revEdge);
-                
-                if (lineId) {
-                     this.lineLengths[lineId] = (this.lineLengths[lineId] || 0) + totalDistance;
-                }
-            });
-        });
-
+        // 3. Transfers
         for (const ids of this.stationToNodes.values()) {
             if (ids.length < 2) continue;
             for (let i = 0; i < ids.length; i++) {
@@ -153,33 +178,56 @@ export class RoutingGraph {
     getLineSegments = (lineId: string, hierarchy: any): LineSegment[] => {
         const segments: LineSegment[] = [];
         if (!hierarchy || !this.nodes.size) return [];
-        const [company, lineName] = lineId.split('::');
-        const lineStations = hierarchy[company]?.[lineName];
-        if (!lineStations) return [];
-        
-        for (let i = 0; i < lineStations.length - 1; i++) {
-            const startStationInfo = lineStations[i];
-            const endStationInfo = lineStations[i + 1];
 
-            const startNodeCandidates = this.getNodesByName(startStationInfo.name).filter(n => n.fullLineName === lineId);
-            const endNodeCandidates = this.getNodesByName(endStationInfo.name).filter(n => n.fullLineName === lineId);
+        const [companyId, lineNumericId] = lineId.split('::');
 
-            if (startNodeCandidates.length > 0 && endNodeCandidates.length > 0) {
-                 for(const startNode of startNodeCandidates) {
-                    for (const endNode of endNodeCandidates) {
-                        const edge = this.getEdge(startNode.id, endNode.id);
-                        if (edge) {
-                             segments.push({
-                                stations: [startNode.id, endNode.id],
-                                edges: [{from: startNode.id, to: endNode.id, distance: edge.distance}],
-                                geometry: edge.geometry || [startNode.coords, endNode.coords]
-                            });
-                             break;
+        // Direct lookup in companies and lines
+        const compEntry = hierarchy.companies?.[companyId];
+        if (!compEntry) return [];
+
+        const lineEntry = compEntry.lines?.[lineNumericId];
+        if (!lineEntry) return [];
+
+        if (lineEntry.platforms && lineEntry.platforms.length > 0) {
+            for (let i = 0; i < lineEntry.platforms.length - 1; i++) {
+                const startId = lineEntry.platforms[i].station_id;
+                const endId = lineEntry.platforms[i + 1].station_id;
+
+                // Try direct edge first
+                const directEdge = this.getEdge(startId, endId);
+                if (directEdge) {
+                    segments.push({
+                        stations: [startId, endId],
+                        edges: [{ from: startId, to: endId, distance: directEdge.distance }],
+                        geometry: directEdge.geometry || []
+                    });
+                } else {
+                    // Fallback to shortest path (handles joints/intermediate nodes)
+                    const pathData = this.getShortestPath(startId, endId, [lineId]);
+                    if (pathData) {
+                        const segmentEdges: { from: string, to: string, distance: number }[] = [];
+                        for (let j = 0; j < pathData.path.length - 1; j++) {
+                            const u = pathData.path[j];
+                            const v = pathData.path[j + 1];
+                            const edge = this.getEdge(u, v);
+                            if (edge) {
+                                segmentEdges.push({ from: u, to: v, distance: edge.distance });
+                            }
                         }
+                        segments.push({
+                            stations: pathData.path,
+                            edges: segmentEdges,
+                            geometry: pathData.geometries.flat()
+                        });
                     }
-                 }
+                }
             }
         }
+        else if (lineEntry.sections) {
+            // Fallback to sections if platforms are not direct StationNodes
+            // But usually stations are better for topology.
+        }
+
         return segments;
     }
 
@@ -221,16 +269,16 @@ export class RoutingGraph {
             }
         }
 
-        if (dists.get(endId) === Infinity) return null;
+        if (!dists.has(endId) || dists.get(endId) === Infinity) return null;
 
         const S: string[] = [];
         const G: [number, number][][] = [];
         let u = endId;
-        while(prev.get(u)){
+        while (prev.get(u)) {
             S.unshift(u);
             const p = prev.get(u)!;
             const edge = p.edge;
-             if (edge.geometry) {
+            if (edge.geometry) {
                 if (edge.to === u) {
                     G.unshift(edge.geometry);
                 } else {

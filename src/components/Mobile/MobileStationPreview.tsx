@@ -1,21 +1,23 @@
 import React from 'react';
-import { translateName } from '../../lib/lineUtils';
-import { Language } from '../../lib/translations';
-import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../../lib/railwayData';
-import { getOfficialColor } from '../../lib/lineColors';
 
-interface MobileStationPreviewProps {
+import { Language } from '../../lib/translations';
+import { getLineColor } from '../../lib/lineColors';
+import { RailData } from '../../types/railData';
+
+export interface MobileStationPreviewProps {
     stationName: string;
     lines: string[]; // List of line IDs (Company::LineName)
     onLineClick?: (lineId: string) => void;
     language: Language;
+    railData: RailData | null;
 }
 
 const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     stationName,
     lines,
     onLineClick,
-    language
+    language,
+    railData
 }) => {
     return (
         <div style={{
@@ -28,17 +30,23 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
         }}>
             <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '12px' }}>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>
-                    {translateName(stationName, language, 'station')}
-                </div>
-                <div style={{ fontSize: '12px', color: '#888', fontWeight: '400', marginTop: '-2px' }}>
-                    {translateName(stationName, 'en', 'station')}
+                    {stationName}
                 </div>
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {lines.map(lineId => {
                     const [company, line] = lineId.split('::');
-                    const color = getOfficialColor(lineId) || '#999';
+                    const color = getLineColor(lineId, railData) || '#999';
+
+                    const corpInfo = railData?.companies[company];
+                    const lineInfo = railData?.lines[line];
+
+                    const corpDisplayName = language === 'en' ? (corpInfo?.name_en || company) : (corpInfo?.name || company);
+                    const lineDisplayName = language === 'en' ? (lineInfo?.name_en || line) : (lineInfo?.name || line);
+
+                    const corpSecondaryName = language === 'en' ? (corpInfo?.name || "") : (corpInfo?.name_en || "");
+                    const lineSecondaryName = language === 'en' ? (lineInfo?.name || "") : (lineInfo?.name_en || "");
 
                     return (
                         <div
@@ -60,19 +68,23 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                         >
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                                 <span style={{ fontSize: '10px', color: '#666', fontWeight: 'bold' }}>
-                                    {translateName(company, language, 'company')}
+                                    {corpDisplayName}
                                 </span>
                                 <span style={{ fontSize: '12px', color: '#333', fontWeight: 'bold' }}>
-                                    {translateName(line, language, 'line')}
+                                    {lineDisplayName}
                                 </span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '-2px' }}>
-                                <span style={{ fontSize: '9px', color: '#999', fontWeight: '300' }}>
-                                    {COMPANY_EN_NAMES[company] || company}
-                                </span>
-                                <span style={{ fontSize: '10px', color: '#888', fontWeight: '300' }}>
-                                    {LINE_EN_NAMES[line] || line}
-                                </span>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {corpSecondaryName && (
+                                    <span style={{ fontSize: '9px', color: '#999', fontWeight: '300' }}>
+                                        {corpSecondaryName}
+                                    </span>
+                                )}
+                                {lineSecondaryName && (
+                                    <span style={{ fontSize: '9px', color: '#888', fontWeight: '300' }}>
+                                        {lineSecondaryName}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     );

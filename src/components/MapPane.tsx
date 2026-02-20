@@ -11,20 +11,19 @@ import Stations from './Stations';
 import RailroadLayer from './RailroadLayer';
 import TripLayer from './TripLayer';
 import { StationNode, LineSegment } from '../lib/graphUtils';
-import { getOfficialColor } from '../lib/lineColors';
+import { getLineColor } from '../lib/lineColors';
 import { MapStyleSettings } from '../app/page';
 import { trackEvent } from '../lib/gtag';
 import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
 
-import { useMapData } from '../hooks/useMapData';
-import { normalizeKey } from '../lib/lineUtils';
 import { useRailData } from '../hooks/useRailData';
 import { RoutingGraph } from '../lib/RoutingGraph';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
 import RulerOverlay from './RulerOverlay';
 import { Trip } from '../types/trip';
+import { useMapData } from '../hooks/useMapData';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -136,8 +135,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 const node1 = graph.getNode(node1Id);
                 const edge = graph.getEdge(node1Id, node2Id);
 
-                if (node1 && edge && node1.fullLineName) {
-                    const lineId = node1.fullLineName;
+                if (node1 && edge && node1.fullLineId) {
+                    const lineId = node1.fullLineId;
                     newVisitedLineLengths[lineId] = (newVisitedLineLengths[lineId] || 0) + edge.distance;
                 }
             }
@@ -247,7 +246,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (trip.path) {
                 trip.path.forEach((sid: string) => {
                     const node = graph.getNode(sid);
-                    if (node && normalizeKey(node.fullLineName) === normalizeKey(activeLine)) {
+                    if (node && node.fullLineId === activeLine) {
                         visitedStationNames.add(node.name);
                     }
                 });
@@ -268,7 +267,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         });
     }, [activeLine, graph, railData, recordedTrips, onLineDetailData]);
 
-    const getColor = useCallback((lineKey: string) => getOfficialColor(lineKey) || '#666', []);
+    const getColor = useCallback((lineKey: string) => getLineColor(lineKey, railData) || '#666', [railData]);
 
     const handleRailroadClick = useCallback((line: string) => {
         if (onRailroadClick) onRailroadClick(line);
@@ -360,6 +359,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 zoomLevel={zoomLevel}
                 isMobile={isMobile}
                 isMoving={isMoving}
+                language={language}
             />}
 
             <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
@@ -397,7 +397,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             </Pane>
 
             <Pane name="station-interact" style={PANE_STYLES.stationInteract}>
-                {visibleStations &&
+                {visibleStations && railData &&
                     <Stations
                         processedStations={visibleStations}
                         highlightedStations={[]}
@@ -408,7 +408,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         activeLine={activeLine}
                         hoveredLine={hoveredLine}
                         onStationMouseDown={handleStationMouseDown}
-                        onStationMouseUp={() => {}}
+                        onStationMouseUp={() => { }}
                         dragStartStation={dragStartStation}
                         onLineMappingCreated={onLineMappingCreated}
                         visitedStations={visitedStations}
@@ -418,6 +418,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         selectedStation={selectedStation}
                         isEditMode={isEditMode}
                         isMoving={isMoving}
+                        railData={railData}
                     />
                 }
             </Pane>

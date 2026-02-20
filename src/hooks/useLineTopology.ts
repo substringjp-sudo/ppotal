@@ -4,6 +4,7 @@ import { StationNode, LineSegment } from '../lib/graphUtils';
 export interface TopologyNode {
     id: string;
     name: string;
+    name_en?: string;
     x: number;
     y: number;
     isJoint: boolean;
@@ -70,6 +71,7 @@ export function useLineTopology(
             topoNodes.set(id, {
                 id,
                 name: nodeData?.name || id,
+                name_en: nodeData?.name_en,
                 x,
                 y,
                 isJoint,
@@ -101,6 +103,7 @@ export function useLineTopology(
                     topoNodes.set(curr.id, {
                         id: curr.id,
                         name: nodeData?.name || curr.id,
+                        name_en: nodeData?.name_en,
                         x: curr.x,
                         y: curr.y,
                         isJoint,

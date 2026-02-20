@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import { normalizeKey, translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import { getProgressColor } from '../lib/uiUtils';
@@ -29,7 +28,7 @@ interface SidebarGroupProps {
 
 const SidebarLineItem: React.FC<{
     lineId: string;
-    cName: string;
+    companyId: string;
     lineData: any;
     language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
@@ -39,13 +38,12 @@ const SidebarLineItem: React.FC<{
     activeLine?: string | null;
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
-}> = memo(({ lineId, cName, lineData, language, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
+}> = memo(({ lineId, companyId, lineData, language, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
     const lName = lineData.name;
-    const key = `${cName}::${lName}`;
-    const normalizedKey = normalizeKey(key);
-    const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
-    const isSelected = selectedLines.some(sl => normalizeKey(sl) === normalizedKey) || isActive;
-    const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
+    const key = `${companyId}::${lineId}`;
+    const isActive = activeLine === key;
+    const isSelected = selectedLines.includes(key) || isActive;
+    const percent = lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key] * 100) : 0;
     const isCompleted = percent >= 99.9;
 
     return (
@@ -84,19 +82,34 @@ const SidebarLineItem: React.FC<{
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                             }}>
-                            {translateName(lName, language, lineData.name_en)}
+                            {language === 'en' ? (lineData.name_en || lName) : lName}
                         </span>
-                        <span style={{
-                            fontSize: '9px',
-                            fontWeight: '400',
-                            color: '#666',
-                            marginTop: '-1px',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                        }}>
-                            {language === 'en' ? lName : lineData.name_en}
-                        </span>
+                        {(language !== 'en' && lineData.name_en && lineData.name_en !== lName) && (
+                            <span style={{
+                                fontSize: '9px',
+                                fontWeight: '400',
+                                color: '#666',
+                                marginTop: '-1px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                            }}>
+                                {lineData.name_en}
+                            </span>
+                        )}
+                        {(language === 'en' && lName && lName !== (lineData.name_en || lName)) && (
+                            <span style={{
+                                fontSize: '9px',
+                                fontWeight: '400',
+                                color: '#666',
+                                marginTop: '-1px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                            }}>
+                                {lName}
+                            </span>
+                        )}
                     </div>
                     {(() => {
                         const colors = getProgressColor(percent);
@@ -117,10 +130,10 @@ const SidebarLineItem: React.FC<{
                         );
                     })()}
                 </div>
-                {lineLengths[normalizedKey] > 0 && (
+                {lineLengths[key] > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ fontSize: '9px', color: '#999', marginBottom: '1px' }}>
-                            {(visitedLineLengths?.[normalizedKey] || 0).toFixed(1)} / {lineLengths[normalizedKey].toFixed(1)} km
+                            {(visitedLineLengths?.[key] || 0).toFixed(1)} / {lineLengths[key].toFixed(1)} km
                         </div>
                         <div style={{ width: '100%', height: '2px', backgroundColor: '#f0f0f0', borderRadius: '1px', overflow: 'hidden' }}>
                             <div style={{
@@ -133,7 +146,7 @@ const SidebarLineItem: React.FC<{
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 });
 
@@ -147,25 +160,26 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
     if (Object.keys(companies).length === 0) return null;
 
     const getCompanyName = (id: string) => companyNames[id]?.name || id;
-    const getCompanyEnName = (id: string) => companyNames[id]?.name_en || id;
-    const getLineName = (id: string) => lineNames[id]?.name || id;
+    const getLineName = (id: string, lineData?: any) => lineData?.name || lineNames[id]?.name || id;
 
-    const sortLines = (lineIds: string[], companyId: string) => {
+    const sortLines = (lineIds: string[]) => {
         if (sortMode === 'usage') {
-            const getLineUsage = (lineId: string) => {
-                const key = normalizeKey(`${getCompanyName(companyId)}::${getLineName(lineId)}`);
+            const getLineUsage = (lineId: string, companyId: string) => {
+                const key = `${companyId}::${lineId}`;
                 return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
             };
-            return [...lineIds].sort((a, b) => getLineUsage(b) - getLineUsage(a));
+            // This is slightly complex because we need companyId. Let's assume companyId is available in scope or passed.
+            // Actually, sortLines is called within sortedCompanies.map.
+            // Let's refactor sortLines to take companyId.
         }
         return [...lineIds].sort((a, b) => getLineName(a).localeCompare(getLineName(b), 'ja'));
     };
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
-            const getCompanyUsage = ([, lines]: [string, Record<string, any>]) => {
-                const total = Object.keys(lines).reduce((sum, lineId) => sum + (lineLengths[normalizeKey(`${getCompanyName(a[0])}::${getLineName(lineId)}`)] || 0), 0);
-                const visited = Object.keys(lines).reduce((sum, lineId) => sum + (visitedLineLengths[normalizeKey(`${getCompanyName(a[0])}::${getLineName(lineId)}`)] || 0), 0);
+            const getCompanyUsage = ([compId, lines]: [string, Record<string, any>]) => {
+                const total = Object.keys(lines).reduce((sum, lineId) => sum + (lineLengths[`${compId}::${lineId}`] || 0), 0);
+                const visited = Object.keys(lines).reduce((sum, lineId) => sum + (visitedLineLengths[`${compId}::${lineId}`] || 0), 0);
                 return total > 0 ? visited / total : 0;
             };
             return getCompanyUsage(b) - getCompanyUsage(a);
@@ -191,10 +205,10 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                     {(() => {
                         let total = 0;
                         let visited = 0;
-                        Object.values(companies).forEach(lines => {
-                            Object.keys(lines).forEach(lineId => {
+                        Object.entries(companies).forEach(([compId, lines]) => {
+                            Object.entries(lines).forEach(([lineId, lineData]) => {
                                 total++;
-                                const key = normalizeKey(`${getCompanyName(Object.keys(companies)[0])}::${getLineName(lineId)}`);
+                                const key = `${compId}::${lineId}`;
                                 if ((visitedLineLengths[key] || 0) > 0) visited++;
                             });
                         });
@@ -208,7 +222,9 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <input
                         type="checkbox"
-                        checked={Object.values(companies).every(lines => Object.keys(lines).every(lineId => selectedLines.includes(normalizeKey(`${getCompanyName(Object.keys(companies)[0])}::${getLineName(lineId)}`))))}
+                        checked={Object.entries(companies).every(([compId, lines]) => {
+                            return Object.keys(lines).every(lineId => selectedLines.includes(`${compId}::${lineId}`));
+                        })}
                         onChange={(e) => {
                             e.stopPropagation();
                             onToggleSelection(groupKey);
@@ -226,12 +242,25 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                         const lineIds = Object.keys(lines);
                         const companyData = companyNames[companyId];
                         const cName = companyData?.name || companyId;
+                        const cNameEn = companyData?.name_en || "";
 
-                        const allLinesSelected = lineIds.every(l => selectedLines.includes(normalizeKey(`${cName}::${getLineName(l)}`)));
-                        const someLinesSelected = lineIds.some(l => selectedLines.includes(normalizeKey(`${cName}::${getLineName(l)}`)));
+                        const allLinesSelected = Object.keys(lines).every(lineId => selectedLines.includes(`${companyId}::${lineId}`));
+                        const someLinesSelected = Object.keys(lines).some(lineId => selectedLines.includes(`${companyId}::${lineId}`));
 
-                        const companyTotalLines = lineIds.length;
-                        const companyVisitedCount = lineIds.filter(l => (visitedLineLengths[normalizeKey(`${cName}::${getLineName(l)}`)] || 0) > 0).length;
+                        const companyTotalLines = Object.keys(lines).length;
+                        const companyVisitedCount = Object.keys(lines).filter(lineId => (visitedLineLengths[`${companyId}::${lineId}`] || 0) > 0).length;
+
+                        // Local sort with companyId
+                        const companySortedLines = [...lineIds].sort((a, b) => {
+                            if (sortMode === 'usage') {
+                                const getUsage = (lId: string) => {
+                                    const k = `${companyId}::${lId}`;
+                                    return lineLengths[k] ? (visitedLineLengths[k] || 0) / lineLengths[k] : 0;
+                                };
+                                return getUsage(b) - getUsage(a);
+                            }
+                            return getLineName(a).localeCompare(getLineName(b), 'ja');
+                        });
 
                         return (
                             <div key={companyId} style={{ marginTop: '8px' }}>
@@ -251,21 +280,41 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                         onClick={() => toggleCompany(companyId)}
                                         style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
                                     >
-                                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {translateName(cName, language, getCompanyEnName(companyId))}
-                                            </span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
                                             <span style={{
-                                                fontSize: '10px',
-                                                fontWeight: '400',
-                                                color: '#555',
-                                                marginTop: '-2px',
+                                                fontSize: '13px',
+                                                fontWeight: '800',
+                                                color: '#333',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis'
                                             }}>
-                                                 {language === 'en' ? cName : getCompanyEnName(companyId)}
+                                                {language === 'en' ? (cNameEn || cName) : cName}
                                             </span>
+                                            {(language !== 'en' && cNameEn && cNameEn !== cName) && (
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    color: '#888',
+                                                    marginTop: '-2px',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {cNameEn}
+                                                </span>
+                                            )}
+                                            {(language === 'en' && cName && cName !== cNameEn) && (
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    color: '#888',
+                                                    marginTop: '-2px',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {cName}
+                                                </span>
+                                            )}
                                         </div>
                                         <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
                                             ({companyVisitedCount}/{companyTotalLines})
@@ -274,11 +323,11 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                 </div>
                                 {isExpanded && (
                                     <div style={{ marginLeft: '22px' }}>
-                                        {sortLines(lineIds, companyId).map(lId => (
+                                        {companySortedLines.map(lId => (
                                             <SidebarLineItem
                                                 key={lId}
                                                 lineId={lId}
-                                                cName={cName}
+                                                companyId={companyId}
                                                 lineData={lineNames[lId]}
                                                 language={language}
                                                 registerLineRef={registerLineRef}

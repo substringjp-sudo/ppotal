@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
+import { RailData } from '../types/railData';
 
 interface MyLinesPaneProps {
     visitedLineLengths: Record<string, number>;
@@ -14,6 +14,7 @@ interface MyLinesPaneProps {
     language: Language;
     recordedTrips?: any[];
     onDeleteTrip?: (id: string) => void;
+    railData: RailData | null;
 }
 
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
@@ -24,7 +25,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     activeLine,
     language,
     recordedTrips = [],
-    onDeleteTrip
+    onDeleteTrip,
+    railData
 }) => {
     // Reverse recorded trips to show newest first
     const displayTrips = useMemo(() => {
@@ -59,48 +61,56 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             'No trips recorded yet.\nDrag between stations to record!'}
                     </div>
                 ) : (
-                    displayTrips.map(trip => (
-                        <div
-                            key={trip.id}
-                            style={{
-                                padding: '12px',
-                                marginBottom: '10px',
-                                border: '1px solid #eee',
-                                borderRadius: '8px',
-                                backgroundColor: '#fff',
-                                transition: 'all 0.2s',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                            }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                                <div style={{ fontSize: '10px', color: '#999' }}>{formatTime(trip.id)}</div>
-                                <button
-                                    onClick={() => {
-                                        onDeleteTrip && onDeleteTrip(trip.id);
-                                        trackEvent('delete_trip_item', 'engagement', trip.id);
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#e74c3c',
-                                        cursor: 'pointer',
-                                        padding: '4px',
-                                        fontSize: '12px'
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                {trip.start} <span style={{ color: '#27ae60' }}>➝</span> {trip.end}
-                            </div>
-                            {trip.distance > 0 && (
-                                <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
-                                    {Math.round(trip.distance * 10) / 10} km
+                    displayTrips.map(trip => {
+                        const startStation = railData?.stations[trip.startId] || railData?.stations[trip.start];
+                        const endStation = railData?.stations[trip.endId] || railData?.stations[trip.end];
+
+                        const startName = (language === 'en' && startStation?.name_en) ? startStation.name_en : (startStation?.name || trip.start);
+                        const endName = (language === 'en' && endStation?.name_en) ? endStation.name_en : (endStation?.name || trip.end);
+
+                        return (
+                            <div
+                                key={trip.id}
+                                style={{
+                                    padding: '12px',
+                                    marginBottom: '10px',
+                                    border: '1px solid #eee',
+                                    borderRadius: '8px',
+                                    backgroundColor: '#fff',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                                    <div style={{ fontSize: '10px', color: '#999' }}>{formatTime(trip.id)}</div>
+                                    <button
+                                        onClick={() => {
+                                            onDeleteTrip && onDeleteTrip(trip.id);
+                                            trackEvent('delete_trip_item', 'engagement', trip.id);
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#e74c3c',
+                                            cursor: 'pointer',
+                                            padding: '4px',
+                                            fontSize: '12px'
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
-                            )}
-                        </div>
-                    ))
+                                <div style={{ fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {startName} <span style={{ color: '#27ae60' }}>➝</span> {endName}
+                                </div>
+                                {trip.distance > 0 && (
+                                    <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                                        {Math.round(trip.distance * 10) / 10} km
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>

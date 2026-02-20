@@ -2,9 +2,10 @@
 
 import React, { useMemo, useState } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
-import { translateName } from '../lib/lineUtils';
+
 import { Language } from '../lib/translations';
-import { getOfficialColor } from '../lib/lineColors';
+import { getLineColor } from '../lib/lineColors';
+import { RailData } from '../types/railData';
 
 // --- PROPS INTERFACE ---
 interface LineTopologyGraphProps {
@@ -15,6 +16,7 @@ interface LineTopologyGraphProps {
     visitedEdges: Set<string>;
     onStationClick?: (stationName: string) => void;
     language: Language;
+    railData: RailData | null;
 }
 
 // --- LAYOUT CONSTANTS ---
@@ -35,9 +37,15 @@ const createCurvePath = (
 ): string => {
     const [start, end] = p1.x < p2.x ? [p1, p2] : [p2, p1];
     const midX = (start.x + end.x) / 2;
+    const xDist = Math.abs(end.x - start.x);
+
+    // Handle vertical or near-vertical lines
+    if (xDist < 1) {
+        return `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+    }
 
     if (isLongDistance) {
-        const arcHeight = Math.abs(end.x - start.x) / 3;
+        const arcHeight = xDist / 3;
         const direction = (start.y >= 0 && end.y >= 0) ? -1 : 1;
         const controlY = Math.min(start.y, end.y) + arcHeight * direction;
         return `M ${start.x} ${start.y} Q ${midX} ${controlY}, ${end.x} ${end.y}`;
@@ -98,28 +106,28 @@ const useSubwayLayout = (segments: LineSegment[], nodes: Map<string, StationNode
                     edgeObjects.push({ from: path[0], to: path[path.length - 1] });
                 }
             } else {
-                 // For complex graphs with no endpoints, start from the most connected node
+                // For complex graphs with no endpoints, start from the most connected node
                 endpoints = [Array.from(adj.keys()).sort((a, b) => (adj.get(b)?.length ?? 0) - (adj.get(a)?.length ?? 0))[0]];
             }
         }
 
         if (longestPath.length === 0) {
             endpoints.forEach(startNode => {
-                 const stack: { node: string; path: string[] }[] = [{ node: startNode, path: [startNode] }];
-                 const visited = new Set([startNode]);
-                 while (stack.length > 0) {
-                     const { node, path } = stack.pop()!;
-                     if (path.length > longestPath.length) longestPath = path;
-                     (adj.get(node) || []).forEach(neighbor => {
-                         if (!visited.has(neighbor)) {
-                             visited.add(neighbor);
-                             stack.push({ node: neighbor, path: [...path, neighbor] });
-                         }
-                     });
-                 }
-             });
+                const stack: { node: string; path: string[] }[] = [{ node: startNode, path: [startNode] }];
+                const visited = new Set([startNode]);
+                while (stack.length > 0) {
+                    const { node, path } = stack.pop()!;
+                    if (path.length > longestPath.length) longestPath = path;
+                    (adj.get(node) || []).forEach(neighbor => {
+                        if (!visited.has(neighbor)) {
+                            visited.add(neighbor);
+                            stack.push({ node: neighbor, path: [...path, neighbor] });
+                        }
+                    });
+                }
+            });
         }
-        
+
         const nodePositions = new Map<string, { x: number; y: number }>();
         const occupiedCoords = new Set<string>();
 
@@ -169,10 +177,10 @@ const useSubwayLayout = (segments: LineSegment[], nodes: Map<string, StationNode
                 }
             });
         }
-        
+
         // Calculate bounding box
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        for(const pos of nodePositions.values()){
+        for (const pos of nodePositions.values()) {
             minX = Math.min(minX, pos.x); minY = Math.min(minY, pos.y);
             maxX = Math.max(maxX, pos.x); maxY = Math.max(maxY, pos.y);
         }
@@ -186,12 +194,12 @@ const useSubwayLayout = (segments: LineSegment[], nodes: Map<string, StationNode
 
 // --- MAIN COMPONENT ---
 const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
-    lineId, segments, nodes, visitedStations, visitedEdges, onStationClick, language
+    lineId, segments, nodes, visitedStations, visitedEdges, onStationClick, language, railData
 }) => {
     const { nodePositions, edges, boundingBox } = useSubwayLayout(segments, nodes);
     const [hoveredStation, setHoveredStation] = useState<string | null>(null);
 
-    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
+    const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
     const visitedColor = '#2ecc71';
 
     const width = boundingBox.maxX - boundingBox.minX;
@@ -206,7 +214,7 @@ const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
                         const p1 = nodePositions.get(from);
                         const p2 = nodePositions.get(to);
                         if (!p1 || !p2) return null;
-                        
+
                         const edgeKey = [from, to].sort().join('<->');
                         const isVisited = visitedEdges.has(edgeKey);
                         const isJointEdge = from.startsWith('J_') || to.startsWith('J_');
@@ -239,7 +247,7 @@ const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
 
                         const isVisited = visitedStations.has(nodeData.name);
                         const isHovered = hoveredStation === id;
-                        const stationName = translateName(nodeData.name, language, 'station');
+                        const stationName = language === 'en' && nodeData.name_en ? nodeData.name_en : nodeData.name;
 
                         return (
                             <g key={id} transform={`translate(${pos.x}, ${pos.y})`} onClick={() => onStationClick?.(nodeData.name)} onMouseEnter={() => setHoveredStation(id)} onMouseLeave={() => setHoveredStation(null)} style={{ cursor: 'pointer' }}>

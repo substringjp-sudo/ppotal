@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { translateName } from '../lib/lineUtils';
+
 import { Language, UI_TRANSLATIONS } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
@@ -16,9 +16,15 @@ const MapWithNoSSR = dynamic(() => import('../components/Map'), {
 const MapPaneWithNoSSR = dynamic(() => import('../components/MapPane'), { ssr: false });
 const SidebarWithNoSSR = dynamic(() => import('../components/Sidebar'), { ssr: false });
 const MyLinesPaneWithNoSSR = dynamic(() => import('../components/MyLinesPane'), { ssr: false });
-const MobileLinePreviewWithNoSSR = dynamic(() => import('../components/Mobile/MobileLinePreview'), { ssr: false });
-const MobileStationPreviewWithNoSSR = dynamic(() => import('../components/Mobile/MobileStationPreview'), { ssr: false });
-const LineDetailPaneWithNoSSR = dynamic(() => import('../components/LineDetailPane'), { ssr: false });
+
+import type { MobileLinePreviewProps } from '../components/Mobile/MobileLinePreview';
+const MobileLinePreviewWithNoSSR = dynamic<MobileLinePreviewProps>(() => import('../components/Mobile/MobileLinePreview'), { ssr: false });
+
+import type { MobileStationPreviewProps } from '../components/Mobile/MobileStationPreview';
+const MobileStationPreviewWithNoSSR = dynamic<MobileStationPreviewProps>(() => import('../components/Mobile/MobileStationPreview'), { ssr: false });
+
+import type { LineDetailPaneProps } from '../components/LineDetailPane';
+const LineDetailPaneWithNoSSR = dynamic<LineDetailPaneProps>(() => import('../components/LineDetailPane'), { ssr: false });
 
 
 
@@ -126,8 +132,10 @@ const Page = () => {
     React.useEffect(() => {
         if (railData && railData.hierarchy) {
             const allKeys: string[] = [];
-            Object.entries(railData.hierarchy).forEach(([comp, lines]: [string, any]) => {
-                Object.keys(lines).forEach(line => allKeys.push(`${comp}::${line}`));
+            const hierarchyData = railData.hierarchy.companies || railData.hierarchy;
+            Object.entries(hierarchyData).forEach(([companyId, companyObj]: [string, any]) => {
+                const lines = companyObj.lines || companyObj;
+                Object.keys(lines).forEach(lineId => allKeys.push(`${companyId}::${lineId}`));
             });
             setSelectedLines(allKeys);
         }
@@ -490,6 +498,7 @@ const Page = () => {
                                 }}
                                 language={language}
                                 onHeightChange={setEditPanelHeight}
+                                railData={railData}
                             />
                             {/* Grid Overlay: Rulers for Edges removed in favor of dynamic RulerOverlay */}
                         </div>
@@ -506,7 +515,7 @@ const Page = () => {
                             borderBottom: '1px solid #ddd',
                             boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
                         }}>
-                            {selectedStation ? (
+                            {selectedStation && railData ? (
                                 <div style={{ padding: '10px' }}>
                                     <MobileStationPreviewWithNoSSR
                                         stationName={selectedStation.name}
@@ -516,9 +525,10 @@ const Page = () => {
                                             handleRailroadClick(lineId);
                                             // Optional: Scroll to line preview or just set active
                                         }}
+                                        railData={railData}
                                     />
                                 </div>
-                            ) : activeLine && lineDetailData ? (
+                            ) : activeLine && lineDetailData && railData ? (
                                 <div style={{ padding: '0', maxHeight: '30vh', overflow: 'hidden' }}>
                                     <MobileLinePreviewWithNoSSR
                                         lineId={activeLine}
@@ -529,6 +539,7 @@ const Page = () => {
                                         language={language}
                                         selectedLines={selectedLines}
                                         onToggleLine={toggleLine}
+                                        railData={railData}
                                     />
                                 </div>
                             ) : null}
@@ -576,7 +587,7 @@ const Page = () => {
                             </MapWithNoSSR>
                         </div>
                         {/* Desktop Bottom Pane */}
-                        {!isMobile && lineDetailData && activeLine && (
+                        {!isMobile && lineDetailData && activeLine && railData && (
                             <div style={{ position: 'relative', zIndex: 1100 }}>
                                 <LineDetailPaneWithNoSSR
                                     lineId={activeLine}
@@ -590,6 +601,7 @@ const Page = () => {
                                     onClose={() => setActiveLine(null)}
                                     language={language}
                                     onToggleLine={toggleLine}
+                                    railData={railData}
                                 />
                             </div>
                         )}
@@ -598,7 +610,7 @@ const Page = () => {
                     {/* Desktop Right Sidebar */}
                     {!isMobile && (
                         <div style={{ width: '300px', height: '100%', borderLeft: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, overflowY: 'auto' }}>
-                            <MyLinesPaneWithNoSSR visitedLineLengths={visitedLineLengths} lineLengths={lineLengths} onLineClick={handleLineClick} onDeleteLineHistory={handleDeleteLineHistory} activeLine={activeLine} language={language} recordedTrips={recordedTrips} onDeleteTrip={handleDeleteTrip} />
+                            <MyLinesPaneWithNoSSR visitedLineLengths={visitedLineLengths} lineLengths={lineLengths} onLineClick={handleLineClick} onDeleteLineHistory={handleDeleteLineHistory} activeLine={activeLine} language={language} recordedTrips={recordedTrips} onDeleteTrip={handleDeleteTrip} railData={railData} />
                         </div>
                     )}
                 </div>
@@ -659,6 +671,7 @@ const Page = () => {
                                         language={language}
                                         recordedTrips={recordedTrips}
                                         onDeleteTrip={handleDeleteTrip}
+                                        railData={railData}
                                     />
                                 )
                             }
@@ -676,8 +689,9 @@ const Page = () => {
                             visitedEdges={lineDetailData.visitedEdges}
                             visitedStations={lineDetailData.visitedStations}
                             onPathCreate={handleStationPathCreate}
-                            onClose={() => setActiveLine(null)}
+                            onClose={() => setIsEditMode(false)}
                             language={language}
+                            railData={railData}
                         />
                     </div>
                 )}

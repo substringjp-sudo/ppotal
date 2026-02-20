@@ -3,8 +3,7 @@
 import React, { useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
-import { getOfficialColor } from '../lib/lineColors';
-import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
+import { getLineColor } from '../lib/lineColors';
 import { RailData, Section } from '../types/railData';
 
 interface RailroadLayerProps {
@@ -17,6 +16,7 @@ interface RailroadLayerProps {
     zoomLevel: number;
     isMobile: boolean;
     isMoving?: boolean;
+    language: any;
 }
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
@@ -28,7 +28,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     onRailroadHover,
     zoomLevel,
     isMobile,
-    isMoving = false
+    isMoving = false,
+    language
 }) => {
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
@@ -52,11 +53,16 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // Check for Granular Data (RailData)
         if (railroadNetwork.stations && railroadNetwork.sections && railroadNetwork.lines) {
             const data = railroadNetwork as RailData;
-            const companyNameMap = new Map<number, string>();
-            Object.values(data.companies).forEach((c) => companyNameMap.set(c.id, c.name));
+            const companyMap = new Map<number, { name: string, name_en: string }>();
+            Object.values(data.companies).forEach((c) => companyMap.set(c.id, { name: c.name, name_en: c.name_en }));
 
-            const lineInfoMap = new Map<number, { name: string, companyId: number, color?: string }>();
-            Object.values(data.lines).forEach((l) => lineInfoMap.set(l.id, { name: l.name, companyId: l.corp_id, color: l.color }));
+            const lineInfoMap = new Map<number, { name: string, name_en: string, companyId: number, color?: string }>();
+            Object.values(data.lines).forEach((l) => lineInfoMap.set(l.id, {
+                name: l.name,
+                name_en: l.name_en,
+                companyId: l.corp_id,
+                color: l.color
+            }));
 
             // Group sections by line_id (MultiLineString per line)
             const lineSections = new Map<number, any[]>();
@@ -71,16 +77,19 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             lineSections.forEach((geoms, lineId) => {
                 const info = lineInfoMap.get(lineId);
                 if (!info) return;
-                const companyName = companyNameMap.get(info.companyId) || String(info.companyId);
-                const fullId = `${companyName}::${info.name}`;
+                const companyInfo = companyMap.get(info.companyId);
+                const companyName = companyInfo?.name || String(info.companyId);
+                const fullId = `${info.companyId}::${lineId}`;
 
                 features.push({
                     type: 'Feature',
                     properties: {
                         id: fullId,
                         name: info.name,
+                        name_en: info.name_en,
                         company: companyName,
-                        color: getOfficialColor(fullId) || info.color || '#999',
+                        company_en: companyInfo?.name_en || '',
+                        color: getLineColor(fullId, data) || '#999',
                         endpoints: '' // Granular data doesn't provide pre-calculated endpoints
                     },
                     geometry: { type: 'MultiLineString', coordinates: geoms }
@@ -99,7 +108,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         id: route.id,
                         name: route.line || route.name || '',
                         company: route.company,
-                        color: getOfficialColor(route.id) || route.color || '#999',
+                        color: getLineColor(route.id, railroadNetwork) || route.color || '#999',
                         endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : ''
                     },
                     geometry: { type: 'MultiLineString', coordinates }
@@ -178,18 +187,25 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     };
 
     const onEachFeature = (feature: any, layer: L.Layer) => {
-        const { name, company, endpoints } = feature.properties;
+        const { name, name_en, company, company_en, endpoints } = feature.properties;
+
+        const primaryLine = language === 'en' ? (name_en || name) : name;
+        const secondaryLine = language === 'en' ? (name !== name_en ? name : '') : (name_en && name_en !== name ? name_en : '');
+
+        const primaryCorp = language === 'en' ? (company_en || company) : company;
+        const secondaryCorp = language === 'en' ? (company !== company_en ? company : '') : (company_en && company_en !== company ? company_en : '');
+
         const tooltipContent = `
-            <div style="text-align: center; font-family: sans-serif;">
+            <div style="text-align: center; font-family: sans-serif; padding: 4px;">
                 <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <div style="font-weight: bold; font-size: 1.1em;">${name}</div>
-                    <div style="font-size: 0.8em; font-weight: 400; color: #555; margin-top: -2px;">${LINE_EN_NAMES[name] || name}</div>
+                    <div style="font-weight: bold; font-size: 1.1em; color: #000;">${primaryLine}</div>
+                    ${secondaryLine ? `<div style="font-size: 0.85em; font-weight: 400; color: #666; margin-top: -2px;">${secondaryLine}</div>` : ''}
                 </div>
-                <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 0px;">
-                    <div style="font-size: 0.85em; color: #444; font-weight: 500;">${company}</div>
-                    <div style="font-size: 0.7em; font-weight: 400; color: #666; margin-top: -1px;">${COMPANY_EN_NAMES[company] || company}</div>
+                <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 0px; border-top: 1px solid #eee; padding-top: 4px;">
+                    <div style="font-size: 0.9em; color: #444; font-weight: 600;">${primaryCorp}</div>
+                    ${secondaryCorp ? `<div style="font-size: 0.75em; font-weight: 400; color: #888; margin-top: -1px;">${secondaryCorp}</div>` : ''}
                 </div>
-                ${endpoints ? `<div style="font-size: 0.7em; color: #aaa; margin-top: 4px; border-top: 1px solid #eee; padding-top: 2px;">(${endpoints})</div>` : ''}
+                ${endpoints ? `<div style="font-size: 0.7em; color: #aaa; margin-top: 4px; border-top: 1px dotted #eee; padding-top: 2px;">(${endpoints})</div>` : ''}
             </div>
         `;
 

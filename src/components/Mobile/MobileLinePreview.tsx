@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { StationNode, LineSegment } from '../../lib/graphUtils';
-import { translateName } from '../../lib/lineUtils';
+
 import { Language } from '../../lib/translations';
-import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../../lib/railwayData';
 import TubeMap from '../TubeMap';
 import { useLineTopology } from '../../hooks/useLineTopology';
-import { getOfficialColor } from '../../lib/lineColors';
+import { getLineColor } from '../../lib/lineColors';
+import { RailData } from '../../types/railData';
 
-interface MobileLinePreviewProps {
+export interface MobileLinePreviewProps {
     lineId: string;
     segments: LineSegment[];
     nodes: Map<string, StationNode>;
@@ -16,6 +16,7 @@ interface MobileLinePreviewProps {
     selectedLines: string[];
     onToggleLine: (lineId: string) => void;
     language: Language;
+    railData: RailData | null;
 }
 
 const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
@@ -26,10 +27,11 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     visitedStations,
     selectedLines,
     onToggleLine,
-    language
+    language,
+    railData
 }) => {
     const isSelected = selectedLines.includes(lineId);
-    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
+    const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
     // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
@@ -49,13 +51,22 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
         });
 
         return {
-            total: (totalDistance / 1000).toFixed(1),
-            visited: (visitedDistance / 1000).toFixed(1),
+            total: totalDistance.toFixed(1),
+            visited: visitedDistance.toFixed(1),
             percent: totalDistance > 0 ? Math.round((visitedDistance / totalDistance) * 100) : 0
         };
     }, [segments, visitedEdges]);
 
     const [company, lineName] = lineId.split('::');
+
+    const companyData = railData?.companies[company];
+    const lineData = railData?.lines[lineName];
+
+    const cNamePrimary = language === 'en' ? (companyData?.name_en || company) : (companyData?.name || company);
+    const lNamePrimary = language === 'en' ? (lineData?.name_en || lineName) : (lineData?.name || lineName);
+
+    const cNameSecondary = language === 'en' ? (companyData?.name || "") : (companyData?.name_en || "");
+    const lNameSecondary = language === 'en' ? (lineData?.name || "") : (lineData?.name_en || "");
 
     return (
         <div style={{
@@ -69,12 +80,22 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '12px', color: '#666', fontWeight: 'bold' }}>
-                        {translateName(company, language, 'company')}
-                    </span>
-                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: lineColor }}>
-                        {translateName(lineName, language, 'line')}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                        <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
+                            {cNamePrimary}
+                        </span>
+                        <span style={{ fontSize: '20px', fontWeight: '900', color: '#1a1a1a' }}>
+                            {lNamePrimary}
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', opacity: 0.6 }}>
+                        <span style={{ fontSize: '11px', fontWeight: '500' }}>
+                            {cNameSecondary}
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: '500' }}>
+                            {lNameSecondary}
+                        </span>
+                    </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>{stats.percent}%</div>

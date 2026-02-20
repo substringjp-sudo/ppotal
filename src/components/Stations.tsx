@@ -1,11 +1,11 @@
 "use client";
 
 import React, { memo } from 'react';
-import { normalizeKey } from '../lib/lineUtils';
 import { MapStyleSettings } from '../app/page';
 import { Language } from '../lib/translations';
 import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
+import { RailData } from '../types/railData';
 
 interface StationsProps {
     processedStations: Record<string, ProcessedStation> | null;
@@ -27,6 +27,7 @@ interface StationsProps {
     selectedStation?: string;
     isEditMode?: boolean;
     isMoving?: boolean;
+    railData: RailData;
 }
 
 const Stations: React.FC<StationsProps> = ({
@@ -47,7 +48,8 @@ const Stations: React.FC<StationsProps> = ({
     isMobile,
     selectedStation,
     isEditMode,
-    isMoving = false
+    isMoving = false,
+    railData
 }) => {
     if (!processedStations) return null;
 
@@ -56,9 +58,9 @@ const Stations: React.FC<StationsProps> = ({
         // Or should we show ALL stations in edit mode?
         // Usually we only show selected lines to avoid clutter. Consistent behavior is safer.
         const isSelected = data.lines.some(l =>
-            selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l)) ||
-            (activeLine && normalizeKey(activeLine) === normalizeKey(l)) ||
-            (hoveredLine && normalizeKey(hoveredLine) === normalizeKey(l))
+            selectedLines.includes(l) ||
+            (activeLine === l) ||
+            (hoveredLine === l)
         );
 
         if (!isSelected) return false;
@@ -91,6 +93,7 @@ const Stations: React.FC<StationsProps> = ({
                     selectedStation={selectedStation}
                     isEditMode={isEditMode}
                     isMoving={isMoving}
+                    railData={railData}
                 />
             ))}
         </>

@@ -2,11 +2,11 @@ import React, { memo } from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
-import { normalizeKey, translateName } from '../lib/lineUtils';
 import { MapStyleSettings } from '../app/page';
 import { Language } from '../lib/translations';
 import { convexHull } from '../lib/geoUtils';
 import { ProcessedStation } from '../types/mapTypes';
+import { RailData } from '../types/railData';
 
 interface StationMarkerProps {
     name: string;
@@ -28,6 +28,7 @@ interface StationMarkerProps {
     selectedStation?: string;
     isEditMode?: boolean;
     isMoving?: boolean;
+    railData: RailData;
 }
 
 const StationMarker: React.FC<StationMarkerProps> = ({
@@ -49,14 +50,15 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     isMobile,
     selectedStation,
     isEditMode = false,
-    isMoving = false
+    isMoving = false,
+    railData
 }) => {
     const isHighlighted = highlightedStations.includes(name);
     const isVisited = visitedStations.has(name);
     const isSelected = station.lines.some(l =>
-        selectedLines.some(sl => normalizeKey(sl) === normalizeKey(l)) ||
-        (activeLine && normalizeKey(activeLine) === normalizeKey(l)) ||
-        (hoveredLine && normalizeKey(hoveredLine) === normalizeKey(l))
+        selectedLines.includes(l) ||
+        (activeLine === l) ||
+        (hoveredLine === l)
     );
     const lines = station.lines;
     const isLowZoom = zoom <= 13;
@@ -252,7 +254,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                     position: absolute;
                                     top: 0;
                                     pointer-events: none;
-                                ">${translateName(name, language, 'station')}</div>
+                                ">${language === 'en' ? (station.name_en || name) : name}</div>
                             </div>
                         `,
                         iconSize: [0, 0],
@@ -353,27 +355,37 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                             <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={showTooltip ? (isDragging ? 0 : (isSelected ? 1 : 0.7)) : 0}>
                                                 <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
                                                     <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                                        {translateName(name, language, 'station')}
+                                                        {language === 'en' ? (station.name_en || name) : name}
                                                     </div>
                                                     <div style={{ fontSize: '12px', color: '#333' }}>
                                                         <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                             Available Lines
                                                         </div>
-                                                        {formattedLines.map((fl, fidx) => (
-                                                            <div key={fidx} style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'center',
-                                                                gap: '12px',
-                                                                padding: '3px 0',
-                                                                borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                                color: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '#2980b9' : '#555',
-                                                                fontWeight: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '800' : '500'
-                                                            }}>
-                                                                <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
-                                                                <span>{translateName(fl.line, language, 'line')}</span>
-                                                            </div>
-                                                        ))}
+                                                        {formattedLines.map((fl, fidx) => {
+                                                            const corp = (railData.companies as any)[fl.company];
+                                                            const line = (railData.lines as any)[fl.line];
+
+                                                            const displayedCorp = language === 'en' ? (corp?.name_en || corp?.name || fl.company) : (corp?.name || fl.company);
+                                                            const displayedLine = language === 'en' ? (line?.name_en || line?.name || fl.line) : (line?.name || fl.line);
+
+                                                            return (
+                                                                <div key={fidx} style={{
+                                                                    display: 'flex',
+                                                                    justifyContent: 'space-between',
+                                                                    alignItems: 'center',
+                                                                    gap: '12px',
+                                                                    padding: '3px 0',
+                                                                    borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
+                                                                    color: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '#2980b9' : '#555',
+                                                                    fontWeight: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '800' : '500'
+                                                                }}>
+                                                                    <span style={{ fontSize: '10px', opacity: 0.8 }}>
+                                                                        {displayedCorp}
+                                                                    </span>
+                                                                    <span>{displayedLine}</span>
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                     {isNodeVisited && (
                                                         <div style={{

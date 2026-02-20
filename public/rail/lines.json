@@ -2,308 +2,326 @@
   "0": {
     "id": 0,
     "name": "IRいしかわ鉄道線",
-    "name_en": "IRいしかわ鉄道 Line",
+    "name_en": "IR Ishikawa Railway Line",
     "corp_id": 0,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00529a"
   },
   "1": {
     "id": 1,
     "name": "宮津線",
-    "name_en": "宮津 Line",
+    "name_en": "Miyazu Line",
     "corp_id": 1,
     "total_length": 0
   },
   "2": {
     "id": 2,
     "name": "宮福線",
-    "name_en": "宮福 Line",
+    "name_en": "Miyafuku Line",
     "corp_id": 1,
     "total_length": 0
   },
   "3": {
     "id": 3,
     "name": "あいの風とやま鉄道線",
-    "name_en": "あいの風とやま鉄道 Line",
+    "name_en": "Ainokaze Toyama Railway Line",
     "corp_id": 2,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0e9"
   },
   "4": {
     "id": 4,
     "name": "いすみ線",
-    "name_en": "いすみ Line",
+    "name_en": "Isumi Line",
     "corp_id": 3,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "5": {
     "id": 5,
     "name": "妙高はねうまライン",
-    "name_en": "妙高はねうまライン",
+    "name_en": "Myoko Haneuma Line",
     "corp_id": 4,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#35c98e"
   },
   "6": {
     "id": 6,
     "name": "日本海ひすいライン",
-    "name_en": "日本海ひすいライン",
+    "name_en": "Nihonkai Hisui Line",
     "corp_id": 4,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#3782bd"
   },
   "7": {
     "id": 7,
     "name": "三国芦原線",
-    "name_en": "三国芦原 Line",
+    "name_en": "Mikuni Awara Line",
     "corp_id": 5,
     "total_length": 0
   },
   "8": {
     "id": 8,
     "name": "勝山永平寺線",
-    "name_en": "勝山永平寺 Line",
+    "name_en": "Katsuyama Eiheiji Line",
     "corp_id": 5,
     "total_length": 0
   },
   "9": {
     "id": 9,
     "name": "湯前線",
-    "name_en": "湯前 Line",
+    "name_en": "Yunomae Line",
     "corp_id": 6,
     "total_length": 0
   },
   "10": {
     "id": 10,
     "name": "しなの鉄道線",
-    "name_en": "しなの鉄道 Line",
+    "name_en": "Shinano Railway Line",
     "corp_id": 7,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e60012"
   },
   "11": {
     "id": 11,
     "name": "北しなの線",
-    "name_en": "北しなの Line",
+    "name_en": "Kita-Shinano Line",
     "corp_id": 7,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#999966"
   },
   "12": {
     "id": 12,
     "name": "伊野線",
-    "name_en": "伊野 Line",
+    "name_en": "Ino Line",
     "corp_id": 8,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ff0000"
   },
   "13": {
     "id": 13,
     "name": "後免線",
-    "name_en": "後免 Line",
+    "name_en": "Gomen Line",
     "corp_id": 8,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ff0000"
   },
   "14": {
     "id": 14,
     "name": "桟橋線",
-    "name_en": "桟橋 Line",
+    "name_en": "Sambashi Line",
     "corp_id": 8,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0000ff"
   },
   "15": {
     "id": 15,
     "name": "駅前線",
-    "name_en": "駅前 Line",
+    "name_en": "Ekimae Line",
     "corp_id": 8,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0000ff"
   },
   "16": {
     "id": 16,
     "name": "七尾線",
-    "name_en": "七尾 Line",
+    "name_en": "Nanao Line",
     "corp_id": 9,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "17": {
     "id": 17,
     "name": "湊線",
-    "name_en": "湊 Line",
+    "name_en": "Minato Line",
     "corp_id": 10,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "18": {
     "id": 18,
     "name": "東京臨海新交通臨海線",
-    "name_en": "東京臨海新交通臨海 Line",
+    "name_en": "Yurikamome Rinkai Line",
     "corp_id": 11,
     "total_length": 0
   },
   "19": {
     "id": 19,
     "name": "わたらせ渓谷線",
-    "name_en": "わたらせ渓谷 Line",
+    "name_en": "Watarase Keikoku Line",
     "corp_id": 12,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#800000"
   },
   "20": {
     "id": 20,
     "name": "いわて銀河鉄道線",
-    "name_en": "いわて銀河鉄道 Line",
+    "name_en": "Iwate Ginga Railway Line",
     "corp_id": 13,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00529a"
   },
   "21": {
     "id": 21,
     "name": "上高地線",
-    "name_en": "上高地 Line",
+    "name_en": "Kamikochi Line",
     "corp_id": 14,
     "total_length": 0
   },
   "22": {
     "id": 22,
     "name": "広島短距離交通瀬野線",
-    "name_en": "広島短距離交通瀬野 Line",
+    "name_en": "Skyrail Midorizaka Line",
     "corp_id": 15,
     "total_length": 0
   },
   "23": {
     "id": 23,
     "name": "別府ラクテンチケーブル線",
-    "name_en": "別府ラクテンチケーブル Line",
+    "name_en": "Beppu Rakutenchi Cable Line",
     "corp_id": 16,
     "total_length": 0
   },
   "24": {
     "id": 24,
     "name": "北松江線",
-    "name_en": "北松江 Line",
+    "name_en": "Kita-Matsue Line",
     "corp_id": 17,
     "total_length": 0
   },
   "25": {
     "id": 25,
     "name": "大社線",
-    "name_en": "大社 Line",
+    "name_en": "Taisha Line",
     "corp_id": 17,
     "total_length": 0
   },
   "26": {
     "id": 26,
     "name": "1条線",
-    "name_en": "1条 Line",
+    "name_en": "Ichijo Line",
     "corp_id": 18,
     "total_length": 0
   },
   "27": {
     "id": 27,
     "name": "山鼻線",
-    "name_en": "山鼻 Line",
+    "name_en": "Yamahana Line",
     "corp_id": 18,
     "total_length": 0
   },
   "28": {
     "id": 28,
     "name": "山鼻西線",
-    "name_en": "山鼻西 Line",
+    "name_en": "Yamahana-nishi Line",
     "corp_id": 18,
     "total_length": 0
   },
   "29": {
     "id": 29,
     "name": "都心線",
-    "name_en": "都心 Line",
+    "name_en": "Toshin Line",
     "corp_id": 18,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9c5e31"
   },
   "30": {
     "id": 30,
     "name": "摩耶ケーブル線",
-    "name_en": "摩耶ケーブル Line",
+    "name_en": "Maya Cable Line",
     "corp_id": 19,
     "total_length": 0
   },
   "31": {
     "id": 31,
     "name": "青函トンネル竜飛斜坑線",
-    "name_en": "青函トンネル竜飛斜坑 Line",
+    "name_en": "Seikan Tunnel Tappi Shako Line",
     "corp_id": 20,
     "total_length": 0
   },
   "32": {
     "id": 32,
     "name": "新湊港線",
-    "name_en": "新湊港 Line",
+    "name_en": "Shin-minatoko Line",
     "corp_id": 21,
     "total_length": 0
   },
   "33": {
     "id": 33,
     "name": "高岡軌道線",
-    "name_en": "高岡軌道 Line",
+    "name_en": "Takaoka Kidō Line",
     "corp_id": 21,
     "total_length": 0
   },
   "34": {
     "id": 34,
     "name": "三岐線",
-    "name_en": "三岐 Line",
+    "name_en": "Sangi Line",
     "corp_id": 22,
     "total_length": 0
   },
   "35": {
     "id": 35,
     "name": "北勢線",
-    "name_en": "北勢 Line",
+    "name_en": "Hokusei Line",
     "corp_id": 22,
     "total_length": 0
   },
   "36": {
     "id": 36,
     "name": "近鉄連絡線",
-    "name_en": "近鉄連絡 Line",
+    "name_en": "Kintetsu Liaison Line",
     "corp_id": 22,
     "total_length": 0
   },
   "37": {
     "id": 37,
     "name": "リアス線",
-    "name_en": "リアス Line",
+    "name_en": "Rias Line",
     "corp_id": 23,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#d4002a"
   },
   "38": {
     "id": 38,
     "name": "上信線",
-    "name_en": "上信 Line",
+    "name_en": "Joshin Line",
     "corp_id": 24,
     "total_length": 0
   },
   "39": {
     "id": 39,
     "name": "上毛線",
-    "name_en": "上毛 Line",
+    "name_en": "Jomo Line",
     "corp_id": 25,
     "total_length": 0
   },
   "40": {
     "id": 40,
     "name": "別所線",
-    "name_en": "別所 Line",
+    "name_en": "Bessho Line",
     "corp_id": 26,
     "total_length": 0
   },
   "41": {
     "id": 41,
     "name": "天橋立鋼索鉄道",
-    "name_en": "天橋立鋼索鉄道",
+    "name_en": "Amanohashidate Cable Railway",
     "corp_id": 27,
     "total_length": 0
   },
   "42": {
     "id": 42,
     "name": "三角線",
-    "name_en": "三角 Line",
+    "name_en": "Misumi Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "43": {
     "id": 43,
     "name": "久大線",
-    "name_en": "久大 Line",
+    "name_en": "Kyudai Line",
     "corp_id": 28,
     "total_length": 0
   },
@@ -312,334 +330,355 @@
     "name": "九州新幹線",
     "name_en": "Kyushu Shinkansen",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e60012"
   },
   "45": {
     "id": 45,
     "name": "佐世保線",
-    "name_en": "佐世保 Line",
+    "name_en": "Sasebo Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "46": {
     "id": 46,
     "name": "吉都線",
-    "name_en": "吉都 Line",
+    "name_en": "Kitto Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "47": {
     "id": 47,
     "name": "唐津線",
-    "name_en": "唐津 Line",
+    "name_en": "Karatsu Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "48": {
     "id": 48,
     "name": "大村線",
-    "name_en": "大村 Line",
+    "name_en": "Omura Line",
     "corp_id": 28,
     "total_length": 0
   },
   "49": {
     "id": 49,
     "name": "宮崎空港線",
-    "name_en": "宮崎空港 Line",
+    "name_en": "Miyazaki-kūko Line",
     "corp_id": 28,
     "total_length": 0
   },
   "50": {
     "id": 50,
     "name": "山陽線",
-    "name_en": "山陽 Line",
+    "name_en": "Sanyo Line",
     "corp_id": 28,
     "total_length": 0
   },
   "51": {
     "id": 51,
     "name": "後藤寺線",
-    "name_en": "後藤寺 Line",
+    "name_en": "Gotoji Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "52": {
     "id": 52,
     "name": "指宿枕崎線",
-    "name_en": "指宿枕崎 Line",
+    "name_en": "Ibusuki Makurazaki Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffa500"
   },
   "53": {
     "id": 53,
     "name": "日南線",
-    "name_en": "日南 Line",
+    "name_en": "Nichinan Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b261"
   },
   "54": {
     "id": 54,
     "name": "日田彦山線",
-    "name_en": "日田彦山 Line",
+    "name_en": "Hitahikosan Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "55": {
     "id": 55,
     "name": "日豊線",
-    "name_en": "日豊 Line",
+    "name_en": "Nippo Line",
     "corp_id": 28,
     "total_length": 0
   },
   "56": {
     "id": 56,
     "name": "筑肥線",
-    "name_en": "筑肥 Line",
+    "name_en": "Chikuhi Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "57": {
     "id": 57,
     "name": "筑豊線",
-    "name_en": "筑豊 Line",
+    "name_en": "Chikuho Line",
     "corp_id": 28,
     "total_length": 0
   },
   "58": {
     "id": 58,
     "name": "篠栗線",
-    "name_en": "篠栗 Line",
+    "name_en": "Sasaguri Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "59": {
     "id": 59,
     "name": "肥薩線",
-    "name_en": "肥薩 Line",
+    "name_en": "Hisatsu Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#773c97"
   },
   "60": {
     "id": 60,
     "name": "西九州新幹線",
-    "name_en": "Nishi Kyushu Shinkansen",
+    "name_en": "Nishi-Kyushu Shinkansen",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e60012"
   },
   "61": {
     "id": 61,
     "name": "豊肥線",
-    "name_en": "豊肥 Line",
+    "name_en": "Hohi Line",
     "corp_id": 28,
     "total_length": 0
   },
   "62": {
     "id": 62,
     "name": "長崎線",
-    "name_en": "長崎 Line",
+    "name_en": "Nagasaki Line",
     "corp_id": 28,
     "total_length": 0
   },
   "63": {
     "id": 63,
     "name": "香椎線",
-    "name_en": "香椎 Line",
+    "name_en": "Kashii Line",
     "corp_id": 28,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "64": {
     "id": 64,
     "name": "鹿児島線",
-    "name_en": "鹿児島 Line",
+    "name_en": "Kagoshima Line",
     "corp_id": 28,
     "total_length": 0
   },
   "65": {
     "id": 65,
     "name": "井原線",
-    "name_en": "井原 Line",
+    "name_en": "Ibara Line",
     "corp_id": 29,
     "total_length": 0
   },
   "66": {
     "id": 66,
     "name": "千原線",
-    "name_en": "千原 Line",
+    "name_en": "Chihara Line",
     "corp_id": 30,
     "total_length": 0
   },
   "67": {
     "id": 67,
     "name": "千葉線",
-    "name_en": "千葉 Line",
+    "name_en": "Chiba Line",
     "corp_id": 30,
     "total_length": 0
   },
   "68": {
     "id": 68,
     "name": "成田空港線",
-    "name_en": "成田空港 Line",
+    "name_en": "Narita-kūko Line",
     "corp_id": 30,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "69": {
     "id": 69,
     "name": "押上線",
-    "name_en": "押上 Line",
+    "name_en": "Oshiage Line",
     "corp_id": 30,
     "total_length": 0
   },
   "70": {
     "id": 70,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Keisei)",
     "corp_id": 30,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "71": {
     "id": 71,
     "name": "東成田線",
-    "name_en": "東成田 Line",
+    "name_en": "Higashi-Narita Line",
     "corp_id": 30,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#007b43"
   },
   "72": {
     "id": 72,
     "name": "金町線",
-    "name_en": "金町 Line",
+    "name_en": "Kanamachi Line",
     "corp_id": 30,
     "total_length": 0
   },
   "73": {
     "id": 73,
     "name": "久里浜線",
-    "name_en": "久里浜 Line",
+    "name_en": "Kurihama Line",
     "corp_id": 31,
     "total_length": 0
   },
   "74": {
     "id": 74,
     "name": "大師線",
-    "name_en": "大師 Line",
+    "name_en": "Daishi Line",
     "corp_id": 31,
     "total_length": 0
   },
   "75": {
     "id": 75,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Keikyu)",
     "corp_id": 31,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "76": {
     "id": 76,
     "name": "空港線",
-    "name_en": "空港 Line",
+    "name_en": "Airport Line (Keikyu)",
     "corp_id": 31,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "77": {
     "id": 77,
     "name": "逗子線",
-    "name_en": "逗子 Line",
+    "name_en": "Zushi Line",
     "corp_id": 31,
     "total_length": 0
   },
   "78": {
     "id": 78,
     "name": "井の頭線",
-    "name_en": "井の頭 Line",
+    "name_en": "Inokashira Line",
     "corp_id": 32,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#1a407b"
   },
   "79": {
     "id": 79,
     "name": "京王線",
     "name_en": "Keio Line",
     "corp_id": 32,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e3379f"
   },
   "80": {
     "id": 80,
     "name": "動物園線",
-    "name_en": "動物園 Line",
+    "name_en": "Dobutsuen Line",
     "corp_id": 32,
     "total_length": 0
   },
   "81": {
     "id": 81,
     "name": "相模原線",
-    "name_en": "相模原 Line",
+    "name_en": "Sagamihara Line",
     "corp_id": 32,
     "total_length": 0
   },
   "82": {
     "id": 82,
     "name": "競馬場線",
-    "name_en": "競馬場 Line",
+    "name_en": "Keibajo Line",
     "corp_id": 32,
     "total_length": 0
   },
   "83": {
     "id": 83,
     "name": "高尾線",
-    "name_en": "高尾 Line",
+    "name_en": "Takao Line",
     "corp_id": 32,
     "total_length": 0
   },
   "84": {
     "id": 84,
     "name": "北野線",
-    "name_en": "北野 Line",
+    "name_en": "Kitano Line",
     "corp_id": 33,
     "total_length": 0
   },
   "85": {
     "id": 85,
     "name": "嵐山本線",
-    "name_en": "嵐山本 Line",
+    "name_en": "Arashiyama Main Line",
     "corp_id": 33,
     "total_length": 0
   },
   "86": {
     "id": 86,
     "name": "鋼索線",
-    "name_en": "鋼索 Line",
+    "name_en": "Cable Line (Keifuku)",
     "corp_id": 33,
     "total_length": 0
   },
   "87": {
     "id": 87,
     "name": "東西線",
-    "name_en": "Tozai Line",
+    "name_en": "Tozai Line (Kyoto Subway)",
     "corp_id": 34,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#009bda"
   },
   "88": {
     "id": 88,
     "name": "烏丸線",
-    "name_en": "烏丸 Line",
+    "name_en": "Karasuma Line",
     "corp_id": 34,
     "total_length": 0
   },
   "89": {
     "id": 89,
     "name": "中之島線",
-    "name_en": "中之島 Line",
+    "name_en": "Nakanoshima Line",
     "corp_id": 35,
     "total_length": 0
   },
   "90": {
     "id": 90,
     "name": "交野線",
-    "name_en": "交野 Line",
+    "name_en": "Katano Line",
     "corp_id": 35,
     "total_length": 0
   },
   "91": {
     "id": 91,
     "name": "京津線",
-    "name_en": "京津 Line",
+    "name_en": "Keishin Line",
     "corp_id": 35,
     "total_length": 0
   },
@@ -648,229 +687,235 @@
     "name": "京阪本線",
     "name_en": "Keihan Main Line",
     "corp_id": 35,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00542a"
   },
   "93": {
     "id": 93,
     "name": "宇治線",
-    "name_en": "宇治 Line",
+    "name_en": "Uji Line",
     "corp_id": 35,
     "total_length": 0
   },
   "94": {
     "id": 94,
     "name": "石山坂本線",
-    "name_en": "石山坂本 Line",
+    "name_en": "Ishiyama Sakamoto Line",
     "corp_id": 35,
     "total_length": 0
   },
   "95": {
     "id": 95,
     "name": "鋼索線",
-    "name_en": "鋼索 Line",
+    "name_en": "Cable Line (Keihan)",
     "corp_id": 35,
     "total_length": 0
   },
   "96": {
     "id": 96,
     "name": "鴨東線",
-    "name_en": "鴨東 Line",
+    "name_en": "Oto Line",
     "corp_id": 35,
     "total_length": 0
   },
   "97": {
     "id": 97,
     "name": "南北線",
-    "name_en": "Namboku Line",
+    "name_en": "Namboku Line (Sendai)",
     "corp_id": 36,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9b"
   },
   "98": {
     "id": 98,
     "name": "東西線",
-    "name_en": "Tozai Line",
+    "name_en": "Tozai Line (Sendai)",
     "corp_id": 36,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#009bda"
   },
   "99": {
     "id": 99,
     "name": "仙台空港線",
-    "name_en": "仙台空港 Line",
+    "name_en": "Sendai Airport Line",
     "corp_id": 37,
     "total_length": 0
   },
   "100": {
     "id": 100,
     "name": "城北線",
-    "name_en": "城北 Line",
+    "name_en": "Johoku Line",
     "corp_id": 38,
     "total_length": 0
   },
   "101": {
     "id": 101,
     "name": "城南線",
-    "name_en": "城南 Line",
+    "name_en": "Jonan Line",
     "corp_id": 38,
     "total_length": 0
   },
   "102": {
     "id": 102,
     "name": "大手町線",
-    "name_en": "大手町 Line",
+    "name_en": "Otemachi Line",
     "corp_id": 38,
     "total_length": 0
   },
   "103": {
     "id": 103,
     "name": "本町線",
-    "name_en": "本町 Line",
+    "name_en": "Honmachi Line",
     "corp_id": 38,
     "total_length": 0
   },
   "104": {
     "id": 104,
     "name": "横河原線",
-    "name_en": "横河原 Line",
+    "name_en": "Yokogawara Line",
     "corp_id": 38,
     "total_length": 0
   },
   "105": {
     "id": 105,
     "name": "花園線",
-    "name_en": "花園 Line",
+    "name_en": "Hanazono Line",
     "corp_id": 38,
     "total_length": 0
   },
   "106": {
     "id": 106,
     "name": "連絡線",
-    "name_en": "連絡 Line",
+    "name_en": "Liaison Line (Iyotetsu)",
     "corp_id": 38,
     "total_length": 0
   },
   "107": {
     "id": 107,
     "name": "郡中線",
-    "name_en": "郡中 Line",
+    "name_en": "Gunchu Line",
     "corp_id": 38,
     "total_length": 0
   },
   "108": {
     "id": 108,
     "name": "高浜線",
-    "name_en": "高浜 Line",
+    "name_en": "Takahama Line",
     "corp_id": 38,
     "total_length": 0
   },
   "109": {
     "id": 109,
     "name": "伊勢線",
-    "name_en": "伊勢 Line",
+    "name_en": "Ise Line",
     "corp_id": 39,
     "total_length": 0
   },
   "110": {
     "id": 110,
     "name": "伊豆急行線",
-    "name_en": "伊豆急行 Line",
+    "name_en": "Izukyu Line",
     "corp_id": 40,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00bfff"
   },
   "111": {
     "id": 111,
     "name": "大雄山線",
-    "name_en": "大雄山 Line",
+    "name_en": "Daiyuzan Line",
     "corp_id": 41,
     "total_length": 0
   },
   "112": {
     "id": 112,
     "name": "駿豆線",
-    "name_en": "駿豆 Line",
+    "name_en": "Sunzu Line",
     "corp_id": 41,
     "total_length": 0
   },
   "113": {
     "id": 113,
     "name": "伊賀線",
-    "name_en": "伊賀 Line",
+    "name_en": "Iga Line",
     "corp_id": 42,
     "total_length": 0
   },
   "114": {
     "id": 114,
     "name": "会津線",
-    "name_en": "会津 Line",
+    "name_en": "Aizu Line",
     "corp_id": 43,
     "total_length": 0
   },
   "115": {
     "id": 115,
     "name": "信楽線",
-    "name_en": "信楽 Line",
+    "name_en": "Shigaraki Line",
     "corp_id": 44,
     "total_length": 0
   },
   "116": {
     "id": 116,
     "name": "六甲ケーブル線",
-    "name_en": "六甲ケーブル Line",
+    "name_en": "Rokko Cable Line",
     "corp_id": 45,
     "total_length": 0
   },
   "117": {
     "id": 117,
     "name": "大森線",
-    "name_en": "大森 Line",
+    "name_en": "Omori Line",
     "corp_id": 46,
     "total_length": 0
   },
   "118": {
     "id": 118,
     "name": "宝来・谷地頭線",
-    "name_en": "宝来・谷地頭 Line",
+    "name_en": "Horai / Yachigashira Line",
     "corp_id": 46,
     "total_length": 0
   },
   "119": {
     "id": 119,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Hakodate Tram)",
     "corp_id": 46,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "120": {
     "id": 120,
     "name": "湯の川線",
-    "name_en": "湯の川 Line",
+    "name_en": "Yunokawa Line",
     "corp_id": 46,
     "total_length": 0
   },
   "121": {
     "id": 121,
     "name": "小倉線",
-    "name_en": "小倉 Line",
+    "name_en": "Kokura Line",
     "corp_id": 47,
     "total_length": 0
   },
   "122": {
     "id": 122,
     "name": "南北線",
-    "name_en": "Namboku Line",
+    "name_en": "Namboku Line (Sapporo)",
     "corp_id": 48,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9b"
   },
   "123": {
     "id": 123,
     "name": "北条線",
-    "name_en": "北条 Line",
+    "name_en": "Hojo Line",
     "corp_id": 49,
     "total_length": 0
   },
   "124": {
     "id": 124,
     "name": "函館線",
-    "name_en": "函館 Line",
+    "name_en": "Hakodate Line",
     "corp_id": 50,
     "total_length": 0
   },
@@ -879,145 +924,150 @@
     "name": "北海道新幹線",
     "name_en": "Hokkaido Shinkansen",
     "corp_id": 50,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0098d8"
   },
   "126": {
     "id": 126,
     "name": "千歳線",
-    "name_en": "千歳 Line",
+    "name_en": "Chitose Line",
     "corp_id": 50,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0072bc"
   },
   "127": {
     "id": 127,
     "name": "宗谷線",
-    "name_en": "宗谷 Line",
+    "name_en": "Soya Line",
     "corp_id": 50,
     "total_length": 0
   },
   "128": {
     "id": 128,
     "name": "室蘭線",
-    "name_en": "室蘭 Line",
+    "name_en": "Muroran Line",
     "corp_id": 50,
     "total_length": 0
   },
   "129": {
     "id": 129,
     "name": "富良野線",
-    "name_en": "富良野 Line",
+    "name_en": "Furano Line",
     "corp_id": 50,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#8f76d6"
   },
   "130": {
     "id": 130,
     "name": "日高線",
-    "name_en": "日高 Line",
+    "name_en": "Hidaka Line",
     "corp_id": 50,
     "total_length": 0
   },
   "131": {
     "id": 131,
     "name": "札沼線",
-    "name_en": "札沼 Line",
+    "name_en": "Sasshō Line",
     "corp_id": 50,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "132": {
     "id": 132,
     "name": "根室線",
-    "name_en": "根室 Line",
+    "name_en": "Nemuro Line",
     "corp_id": 50,
     "total_length": 0
   },
   "133": {
     "id": 133,
     "name": "海峡線",
-    "name_en": "海峡 Line",
+    "name_en": "Kaikyo Line",
     "corp_id": 50,
     "total_length": 0
   },
   "134": {
     "id": 134,
     "name": "留萌線",
-    "name_en": "留萌 Line",
+    "name_en": "Rumoi Line",
     "corp_id": 50,
     "total_length": 0
   },
   "135": {
     "id": 135,
     "name": "石勝線",
-    "name_en": "石勝 Line",
+    "name_en": "Sekisho Line",
     "corp_id": 50,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "136": {
     "id": 136,
     "name": "石北線",
-    "name_en": "石北 Line",
+    "name_en": "Sekihoku Line",
     "corp_id": 50,
     "total_length": 0
   },
   "137": {
     "id": 137,
     "name": "釧網線",
-    "name_en": "釧網 Line",
+    "name_en": "Senmo Line",
     "corp_id": 50,
     "total_length": 0
   },
   "138": {
     "id": 138,
     "name": "北総線",
-    "name_en": "北総 Line",
+    "name_en": "Hokuso Line",
     "corp_id": 51,
     "total_length": 0
   },
   "139": {
     "id": 139,
     "name": "ほくほく線",
-    "name_en": "ほくほく Line",
+    "name_en": "Hokuhoku Line",
     "corp_id": 52,
     "total_length": 0
   },
   "140": {
     "id": 140,
     "name": "浅野川線",
-    "name_en": "浅野川 Line",
+    "name_en": "Asanogawa Line",
     "corp_id": 53,
     "total_length": 0
   },
   "141": {
     "id": 141,
     "name": "石川線",
-    "name_en": "石川 Line",
+    "name_en": "Ishikawa Line",
     "corp_id": 53,
     "total_length": 0
   },
   "142": {
     "id": 142,
     "name": "十国鋼索線",
-    "name_en": "十国鋼索 Line",
+    "name_en": "Jukkoku Cable Line",
     "corp_id": 54,
     "total_length": 0
   },
   "143": {
     "id": 143,
     "name": "1号線",
-    "name_en": "1号 Line",
+    "name_en": "Line 1 (Chiba Monorail)",
     "corp_id": 55,
     "total_length": 0
   },
   "144": {
     "id": 144,
     "name": "2号線",
-    "name_en": "2号 Line",
+    "name_en": "Line 2 (Chiba Monorail)",
     "corp_id": 55,
     "total_length": 0
   },
   "145": {
     "id": 145,
     "name": "加太線",
-    "name_en": "加太 Line",
+    "name_en": "Kada Line",
     "corp_id": 56,
     "total_length": 0
   },
@@ -1026,1104 +1076,1176 @@
     "name": "南海本線",
     "name_en": "Nankai Main Line",
     "corp_id": 56,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#004e98"
   },
   "147": {
     "id": 147,
     "name": "和歌山港線",
-    "name_en": "和歌山港 Line",
+    "name_en": "Wakayamako Line",
     "corp_id": 56,
     "total_length": 0
   },
   "148": {
     "id": 148,
     "name": "多奈川線",
-    "name_en": "多奈川 Line",
+    "name_en": "Tanagawa Line",
     "corp_id": 56,
     "total_length": 0
   },
   "149": {
     "id": 149,
     "name": "空港線",
-    "name_en": "空港 Line",
+    "name_en": "Airport Line (Nankai)",
     "corp_id": 56,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "150": {
     "id": 150,
     "name": "鋼索線",
-    "name_en": "鋼索 Line",
+    "name_en": "Cable Line (Nankai)",
     "corp_id": 56,
     "total_length": 0
   },
   "151": {
     "id": 151,
     "name": "高師浜線",
-    "name_en": "高師浜 Line",
+    "name_en": "Takashihama Line",
     "corp_id": 56,
     "total_length": 0
   },
   "152": {
     "id": 152,
     "name": "高野線",
-    "name_en": "高野 Line",
+    "name_en": "Koya Line",
     "corp_id": 56,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "153": {
     "id": 153,
     "name": "高森線",
-    "name_en": "高森 Line",
+    "name_en": "Takamori Line",
     "corp_id": 57,
     "total_length": 0
   },
   "154": {
     "id": 154,
     "name": "叡山本線",
-    "name_en": "叡山本 Line",
+    "name_en": "Eizan Main Line",
     "corp_id": 58,
     "total_length": 0
   },
   "155": {
     "id": 155,
     "name": "鞍馬線",
-    "name_en": "鞍馬 Line",
+    "name_en": "Kurama Line",
     "corp_id": 58,
     "total_length": 0
   },
   "156": {
     "id": 156,
     "name": "ガイドウェイバス志段味線",
-    "name_en": "ガイドウェイバス志段味 Line",
+    "name_en": "Guideway Bus Shidami Line",
     "corp_id": 59,
     "total_length": 0
   },
   "157": {
     "id": 157,
     "name": "1号線東山線",
-    "name_en": "1号線東山 Line",
+    "name_en": "Higashiyama Line (Line 1)",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffdb00"
   },
   "158": {
     "id": 158,
     "name": "2号線名城線",
-    "name_en": "2号線名城 Line",
+    "name_en": "Meijo Line (Line 2)",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9b26b6"
   },
   "159": {
     "id": 159,
     "name": "2号線名港線",
-    "name_en": "2号線名港 Line",
+    "name_en": "Meiko Line (Line 2)",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#b065b0"
   },
   "160": {
     "id": 160,
     "name": "3号線鶴舞線",
-    "name_en": "3号線鶴舞 Line",
+    "name_en": "Tsurumai Line (Line 3)",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0de"
   },
   "161": {
     "id": 161,
     "name": "4号線名城線",
-    "name_en": "4号線名城 Line",
+    "name_en": "Meijo Line (Line 4)",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9b26b6"
   },
   "162": {
     "id": 162,
     "name": "6号線桜通線",
-    "name_en": "6号線桜通 Line",
+    "name_en": "Sakuradori Line (Line 6)",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e5171f"
   },
   "163": {
     "id": 163,
     "name": "上飯田線",
-    "name_en": "上飯田 Line",
+    "name_en": "Kamiiida Line",
     "corp_id": 60,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f397c1"
   },
   "164": {
     "id": 164,
     "name": "西名古屋港線",
-    "name_en": "西名古屋港 Line",
+    "name_en": "Nishi-Nagoyako Line (Aonami Line)",
     "corp_id": 61,
     "total_length": 0
   },
   "165": {
     "id": 165,
     "name": "三河線",
-    "name_en": "三河 Line",
+    "name_en": "Mikawa Line",
     "corp_id": 62,
     "total_length": 0
   },
   "166": {
     "id": 166,
     "name": "各務原線",
-    "name_en": "各務原 Line",
+    "name_en": "Kakamigahara Line",
     "corp_id": 62,
     "total_length": 0
   },
   "167": {
     "id": 167,
     "name": "名古屋本線",
-    "name_en": "名古屋本 Line",
+    "name_en": "Nagoya Main Line",
     "corp_id": 62,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#cc0022"
   },
   "168": {
     "id": 168,
     "name": "小牧線",
-    "name_en": "小牧 Line",
+    "name_en": "Komaki Line",
     "corp_id": 62,
     "total_length": 0
   },
   "169": {
     "id": 169,
     "name": "尾西線",
-    "name_en": "尾西 Line",
+    "name_en": "Bisai Line",
     "corp_id": 62,
     "total_length": 0
   },
   "170": {
     "id": 170,
     "name": "常滑線",
-    "name_en": "常滑 Line",
+    "name_en": "Tokoname Line",
     "corp_id": 62,
     "total_length": 0
   },
   "171": {
     "id": 171,
     "name": "広見線",
-    "name_en": "広見 Line",
+    "name_en": "Hiromi Line",
     "corp_id": 62,
     "total_length": 0
   },
   "172": {
     "id": 172,
     "name": "河和線",
-    "name_en": "河和 Line",
+    "name_en": "Kowa Line",
     "corp_id": 62,
     "total_length": 0
   },
   "173": {
     "id": 173,
     "name": "津島線",
-    "name_en": "津島 Line",
+    "name_en": "Tsushima Line",
     "corp_id": 62,
     "total_length": 0
   },
   "174": {
     "id": 174,
     "name": "瀬戸線",
-    "name_en": "瀬戸 Line",
+    "name_en": "Seto Line",
     "corp_id": 62,
     "total_length": 0
   },
   "175": {
     "id": 175,
     "name": "犬山線",
-    "name_en": "犬山 Line",
+    "name_en": "Inuyama Line",
     "corp_id": 62,
     "total_length": 0
   },
   "176": {
     "id": 176,
     "name": "知多新線",
-    "name_en": "知多新 Line",
+    "name_en": "Chita New Line",
     "corp_id": 62,
     "total_length": 0
   },
   "177": {
     "id": 177,
     "name": "空港線",
-    "name_en": "空港 Line",
+    "name_en": "Airport Line (Meitetsu)",
     "corp_id": 62,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "178": {
     "id": 178,
     "name": "竹鼻線",
-    "name_en": "竹鼻 Line",
+    "name_en": "Takehana Line",
     "corp_id": 62,
     "total_length": 0
   },
   "179": {
     "id": 179,
     "name": "築港線",
-    "name_en": "築港 Line",
+    "name_en": "Chikko Line",
     "corp_id": 62,
     "total_length": 0
   },
   "180": {
     "id": 180,
     "name": "羽島線",
-    "name_en": "羽島 Line",
+    "name_en": "Hashima Line",
     "corp_id": 62,
     "total_length": 0
   },
   "181": {
     "id": 181,
     "name": "蒲郡線",
-    "name_en": "蒲郡 Line",
+    "name_en": "Gamagori Line",
     "corp_id": 62,
     "total_length": 0
   },
   "182": {
     "id": 182,
     "name": "西尾線",
-    "name_en": "西尾 Line",
+    "name_en": "Nishio Line",
     "corp_id": 62,
     "total_length": 0
   },
   "183": {
     "id": 183,
     "name": "豊川線",
-    "name_en": "豊川 Line",
+    "name_en": "Toyokawa Line",
     "corp_id": 62,
     "total_length": 0
   },
   "184": {
     "id": 184,
     "name": "豊田線",
-    "name_en": "豊田 Line",
+    "name_en": "Toyota Line",
     "corp_id": 62,
     "total_length": 0
   },
   "185": {
     "id": 185,
     "name": "貴志川線",
-    "name_en": "貴志川 Line",
+    "name_en": "Kishigawa Line",
     "corp_id": 63,
     "total_length": 0
   },
   "186": {
     "id": 186,
     "name": "八栗ケーブル",
-    "name_en": "八栗ケーブル",
+    "name_en": "Yakuri Cable",
     "corp_id": 64,
     "total_length": 0
   },
   "187": {
     "id": 187,
     "name": "予土線",
-    "name_en": "予土 Line",
+    "name_en": "Yodo Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "188": {
     "id": 188,
     "name": "予讃線",
-    "name_en": "予讃 Line",
+    "name_en": "Yosan Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0dc"
   },
   "189": {
     "id": 189,
     "name": "内子線",
-    "name_en": "内子 Line",
+    "name_en": "Uchiko Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0dc"
   },
   "190": {
     "id": 190,
     "name": "土讃線",
-    "name_en": "土讃 Line",
+    "name_en": "Dosan Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "191": {
     "id": 191,
     "name": "徳島線",
-    "name_en": "徳島 Line",
+    "name_en": "Tokushima Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "192": {
     "id": 192,
     "name": "本四備讃線",
-    "name_en": "本四備讃 Line",
+    "name_en": "Honshi-Bisan Line (Seto-Ohashi Line)",
     "corp_id": 65,
     "total_length": 0
   },
   "193": {
     "id": 193,
     "name": "牟岐線",
-    "name_en": "牟岐 Line",
+    "name_en": "Mugi Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "194": {
     "id": 194,
     "name": "高徳線",
-    "name_en": "高徳 Line",
+    "name_en": "Kotoku Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "195": {
     "id": 195,
     "name": "鳴門線",
-    "name_en": "鳴門 Line",
+    "name_en": "Naruto Line",
     "corp_id": 65,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffa500"
   },
   "196": {
     "id": 196,
     "name": "八王子線",
-    "name_en": "八王子 Line",
+    "name_en": "Hachioji Line",
     "corp_id": 66,
     "total_length": 0
   },
   "197": {
     "id": 197,
     "name": "内部線",
-    "name_en": "内部 Line",
+    "name_en": "Utsube Line",
     "corp_id": 66,
     "total_length": 0
   },
   "198": {
     "id": 198,
     "name": "中村線",
-    "name_en": "中村 Line",
+    "name_en": "Nakamura Line",
     "corp_id": 67,
     "total_length": 0
   },
   "199": {
     "id": 199,
     "name": "宿毛線",
-    "name_en": "宿毛 Line",
+    "name_en": "Sukumo Line",
     "corp_id": 67,
     "total_length": 0
   },
   "200": {
     "id": 200,
     "name": "阿佐線",
-    "name_en": "阿佐 Line",
+    "name_en": "Asa Line (Gomen-Nahari Line)",
     "corp_id": 67,
     "total_length": 0
   },
   "201": {
     "id": 201,
     "name": "伊奈線",
-    "name_en": "伊奈 Line",
+    "name_en": "Ina Line (New Shuttle)",
     "corp_id": 68,
     "total_length": 0
   },
   "202": {
     "id": 202,
     "name": "埼玉高速鉄道線",
-    "name_en": "埼玉高速鉄道 Line",
+    "name_en": "Saitama Railway Line",
     "corp_id": 69,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "203": {
     "id": 203,
     "name": "多摩都市モノレール線",
-    "name_en": "多摩都市モノレール Line",
+    "name_en": "Tama Toshin Monorail Line",
     "corp_id": 70,
     "total_length": 0
   },
   "204": {
     "id": 204,
     "name": "井川線",
-    "name_en": "井川 Line",
+    "name_en": "Ikawa Line",
     "corp_id": 71,
     "total_length": 0
   },
   "205": {
     "id": 205,
     "name": "大井川本線",
-    "name_en": "大井川本 Line",
+    "name_en": "Oigawa Main Line",
     "corp_id": 71,
     "total_length": 0
   },
   "206": {
     "id": 206,
     "name": "大山鋼索線",
-    "name_en": "大山鋼索 Line",
+    "name_en": "Oyama Cable Line",
     "corp_id": 72,
     "total_length": 0
   },
   "207": {
     "id": 207,
     "name": "国際文化公園都市モノレール線（彩都線）",
-    "name_en": "国際文化公園都市モノレール線（彩都線）",
+    "name_en": "Saito Line",
     "corp_id": 73,
     "total_length": 0
   },
   "208": {
     "id": 208,
     "name": "大阪モノレール線",
-    "name_en": "大阪モノレール Line",
+    "name_en": "Osaka Monorail Line",
     "corp_id": 73,
     "total_length": 0
   },
   "209": {
     "id": 209,
     "name": "1号線(御堂筋線)",
-    "name_en": "1号線(御堂筋線)",
+    "name_en": "Midosuji Line (Line 1)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e5171f"
   },
   "210": {
     "id": 210,
     "name": "2号線(谷町線)",
-    "name_en": "2号線(谷町線)",
+    "name_en": "Tanimachi Line (Line 2)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9b509e"
   },
   "211": {
     "id": 211,
     "name": "3号線(四つ橋線)",
-    "name_en": "3号線(四つ橋線)",
+    "name_en": "Yotsubashi Line (Line 3)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0078ba"
   },
   "212": {
     "id": 212,
     "name": "4号線(中央線)",
-    "name_en": "4号線(中央線)",
+    "name_en": "Chuo Line (Line 4)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "213": {
     "id": 213,
     "name": "5号線(千日前線)",
-    "name_en": "5号線(千日前線)",
+    "name_en": "Sennichimae Line (Line 5)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e44d93"
   },
   "214": {
     "id": 214,
     "name": "6号線(堺筋線)",
-    "name_en": "6号線(堺筋線)",
+    "name_en": "Sakaisuji Line (Line 6)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#814721"
   },
   "215": {
     "id": 215,
     "name": "7号線(長堀鶴見緑地線)",
-    "name_en": "7号線(長堀鶴見緑地線)",
+    "name_en": "Nagahori Tsurumi-ryokuchi Line (Line 7)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#a9cc51"
   },
   "216": {
     "id": 216,
     "name": "8号線（今里筋線）",
-    "name_en": "8号線（今里筋線）",
+    "name_en": "Imazatosuji Line (Line 8)",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ee7b1a"
   },
   "217": {
     "id": 217,
     "name": "南港ポートタウン線",
     "name_en": "Nanko Port Town Line",
     "corp_id": 74,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0e9"
   },
   "218": {
     "id": 218,
     "name": "天竜浜名湖線",
-    "name_en": "天竜浜名湖 Line",
+    "name_en": "Tenryu Hamanako Line",
     "corp_id": 75,
     "total_length": 0
   },
   "219": {
     "id": 219,
     "name": "大月線",
-    "name_en": "大月 Line",
+    "name_en": "Otsuki Line",
     "corp_id": 76,
     "total_length": 0
   },
   "220": {
     "id": 220,
     "name": "河口湖線",
-    "name_en": "河口湖 Line",
+    "name_en": "Kawaguchiko Line",
     "corp_id": 76,
     "total_length": 0
   },
   "221": {
     "id": 221,
     "name": "上滝線",
-    "name_en": "上滝 Line",
+    "name_en": "Kamidaki Line",
     "corp_id": 77,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f77321"
   },
   "222": {
     "id": 222,
     "name": "不二越線",
-    "name_en": "不二越 Line",
+    "name_en": "Fujikoshi Line",
     "corp_id": 77,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f77321"
   },
   "223": {
     "id": 223,
     "name": "呉羽線",
-    "name_en": "呉羽 Line",
+    "name_en": "Kureha Line",
     "corp_id": 77,
     "total_length": 0
   },
   "224": {
     "id": 224,
     "name": "安野屋線",
-    "name_en": "安野屋 Line",
+    "name_en": "Yasunoya Line",
     "corp_id": 77,
     "total_length": 0
   },
   "225": {
     "id": 225,
     "name": "富山港線",
-    "name_en": "富山港 Line",
+    "name_en": "Toyamako Line",
     "corp_id": 77,
     "total_length": 0
   },
   "226": {
     "id": 226,
     "name": "富山都心線",
-    "name_en": "富山都心 Line",
+    "name_en": "Toyama Toshin Line",
     "corp_id": 77,
     "total_length": 0
   },
   "227": {
     "id": 227,
     "name": "富山駅南北接続線",
-    "name_en": "富山駅南北接続 Line",
+    "name_en": "Toyama-eki Namboku Connection Line",
     "corp_id": 77,
     "total_length": 0
   },
   "228": {
     "id": 228,
     "name": "支線",
-    "name_en": "支 Line",
+    "name_en": "Branch Line (Toyama Chiho Railway)",
     "corp_id": 77,
     "total_length": 0
   },
   "229": {
     "id": 229,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Toyama Chiho Railway)",
     "corp_id": 77,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "230": {
     "id": 230,
     "name": "立山線",
-    "name_en": "立山 Line",
+    "name_en": "Tateyama Line",
     "corp_id": 77,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#009933"
   },
   "231": {
     "id": 231,
     "name": "小湊鐵道線",
-    "name_en": "小湊鐵道 Line",
+    "name_en": "Kominato Line",
     "corp_id": 78,
     "total_length": 0
   },
   "232": {
     "id": 232,
     "name": "多摩線",
-    "name_en": "多摩 Line",
+    "name_en": "Tama Line (Odakyu)",
     "corp_id": 79,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#2683ce"
   },
   "233": {
     "id": 233,
     "name": "小田原線",
-    "name_en": "小田原 Line",
+    "name_en": "Odawara Line",
     "corp_id": 79,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#2683ce"
   },
   "234": {
     "id": 234,
     "name": "江ノ島線",
-    "name_en": "江ノ島 Line",
+    "name_en": "Enoshima Line (Odakyu)",
     "corp_id": 79,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#2683ce"
   },
   "235": {
     "id": 235,
     "name": "ユーカリが丘線",
-    "name_en": "ユーカリが丘 Line",
+    "name_en": "Yukarigaoka Line",
     "corp_id": 80,
     "total_length": 0
   },
   "236": {
     "id": 236,
     "name": "フラワー長井線",
-    "name_en": "フラワー長井 Line",
+    "name_en": "Flower Nagai Line",
     "corp_id": 81,
     "total_length": 0
   },
   "237": {
     "id": 237,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Sanyo Electric)",
     "corp_id": 82,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "238": {
     "id": 238,
     "name": "網干線",
-    "name_en": "網干 Line",
+    "name_en": "Aboshi Line",
     "corp_id": 82,
     "total_length": 0
   },
   "239": {
     "id": 239,
     "name": "東山本線",
-    "name_en": "東山本 Line",
+    "name_en": "Higashiyama Main Line",
     "corp_id": 83,
     "total_length": 0
   },
   "240": {
     "id": 240,
     "name": "清輝橋線",
-    "name_en": "清輝橋 Line",
+    "name_en": "Seikibashi Line",
     "corp_id": 83,
     "total_length": 0
   },
   "241": {
     "id": 241,
     "name": "岳南線",
-    "name_en": "岳南 Line",
+    "name_en": "Gakunan Line",
     "corp_id": 84,
     "total_length": 0
   },
   "242": {
     "id": 242,
     "name": "島原鉄道線",
-    "name_en": "島原鉄道 Line",
+    "name_en": "Shimabara Railway Line",
     "corp_id": 85,
     "total_length": 0
   },
   "243": {
     "id": 243,
     "name": "嵯峨野観光線",
-    "name_en": "嵯峨野観光 Line",
+    "name_en": "Sagano Scenic Line",
     "corp_id": 86,
     "total_length": 0
   },
   "244": {
     "id": 244,
     "name": "伊田線",
-    "name_en": "伊田 Line",
+    "name_en": "Ita Line",
     "corp_id": 87,
     "total_length": 0
   },
   "245": {
     "id": 245,
     "name": "田川線",
-    "name_en": "田川 Line",
+    "name_en": "Tagawa Line",
     "corp_id": 87,
     "total_length": 0
   },
   "246": {
     "id": 246,
     "name": "糸田線",
-    "name_en": "糸田 Line",
+    "name_en": "Itoda Line",
     "corp_id": 87,
     "total_length": 0
   },
   "247": {
     "id": 247,
     "name": "門司港レトロ観光線",
-    "name_en": "門司港レトロ観光 Line",
+    "name_en": "Mojiko Retro Kanko Line",
     "corp_id": 87,
     "total_length": 0
   },
   "248": {
     "id": 248,
     "name": "宇品線",
-    "name_en": "宇品 Line",
+    "name_en": "Ujina Line",
     "corp_id": 88,
     "total_length": 0
   },
   "249": {
     "id": 249,
     "name": "宮島線",
-    "name_en": "宮島 Line",
+    "name_en": "Miyajima Line",
     "corp_id": 88,
     "total_length": 0
   },
   "250": {
     "id": 250,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Hiroden)",
     "corp_id": 88,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "251": {
     "id": 251,
     "name": "横川線",
-    "name_en": "横川 Line",
+    "name_en": "Yokogawa Line",
     "corp_id": 88,
     "total_length": 0
   },
   "252": {
     "id": 252,
     "name": "江波線",
-    "name_en": "江波 Line",
+    "name_en": "Eba Line",
     "corp_id": 88,
     "total_length": 0
   },
   "253": {
     "id": 253,
     "name": "白島線",
-    "name_en": "白島 Line",
+    "name_en": "Hakushima Line",
     "corp_id": 88,
     "total_length": 0
   },
   "254": {
     "id": 254,
     "name": "皆実線",
-    "name_en": "皆実 Line",
+    "name_en": "Minami Line",
     "corp_id": 88,
     "total_length": 0
   },
   "255": {
     "id": 255,
     "name": "広島新交通1号線",
-    "name_en": "広島新交通1号 Line",
+    "name_en": "Astram Line (Hiroshima New Transit Line 1)",
     "corp_id": 89,
     "total_length": 0
   },
   "256": {
     "id": 256,
     "name": "大鰐線",
-    "name_en": "大鰐 Line",
+    "name_en": "Owani Line",
     "corp_id": 90,
     "total_length": 0
   },
   "257": {
     "id": 257,
     "name": "弘南線",
-    "name_en": "弘南 Line",
+    "name_en": "Konan Line",
     "corp_id": 90,
     "total_length": 0
   },
   "258": {
     "id": 258,
     "name": "ケーブルカー",
-    "name_en": "ケーブルカー",
+    "name_en": "Cable Car (Mitake Tozan Railway)",
     "corp_id": 91,
     "total_length": 0
   },
   "259": {
     "id": 259,
     "name": "愛知環状鉄道線",
-    "name_en": "愛知環状鉄道 Line",
+    "name_en": "Aichi Loop Line",
     "corp_id": 92,
     "total_length": 0
   },
   "260": {
     "id": 260,
     "name": "東部丘陵線",
-    "name_en": "東部丘陵 Line",
+    "name_en": "Tobu Kyuryo Line (Linimo)",
     "corp_id": 93,
     "total_length": 0
   },
   "261": {
     "id": 261,
     "name": "新京成線",
-    "name_en": "新京成 Line",
+    "name_en": "Shin-Keisei Line",
     "corp_id": 94,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e51171"
   },
   "262": {
     "id": 262,
     "name": "明知線",
-    "name_en": "明知 Line",
+    "name_en": "Akechi Line",
     "corp_id": 95,
     "total_length": 0
   },
   "263": {
     "id": 263,
     "name": "智頭線",
-    "name_en": "智頭 Line",
+    "name_en": "Chizu Line",
     "corp_id": 96,
     "total_length": 0
   },
   "264": {
     "id": 264,
     "name": "南北線",
-    "name_en": "Namboku Line",
+    "name_en": "Namboku Line (Sapporo Subway)",
     "corp_id": 97,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9b"
   },
   "265": {
     "id": 265,
     "name": "東西線",
-    "name_en": "Tozai Line",
+    "name_en": "Tozai Line (Sapporo Subway)",
     "corp_id": 97,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#009bda"
   },
   "266": {
     "id": 266,
     "name": "東豊線",
-    "name_en": "東豊 Line",
+    "name_en": "Toho Line",
     "corp_id": 97,
     "total_length": 0
   },
   "267": {
     "id": 267,
     "name": "東京モノレール羽田線",
-    "name_en": "東京モノレール羽田 Line",
+    "name_en": "Tokyo Monorail Haneda Airport Line",
     "corp_id": 98,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0dc"
   },
   "268": {
     "id": 268,
     "name": "11号線半蔵門線",
-    "name_en": "11号線半蔵門 Line",
+    "name_en": "Hanzomon Line (Line 11)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#8f76d6"
   },
   "269": {
     "id": 269,
     "name": "13号線副都心線",
-    "name_en": "13号線副都心 Line",
+    "name_en": "Fukutoshin Line (Line 13)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9c5e31"
   },
   "270": {
     "id": 270,
     "name": "2号線日比谷線",
-    "name_en": "2号線日比谷 Line",
+    "name_en": "Hibiya Line (Line 2)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#b5b5ac"
   },
   "271": {
     "id": 271,
     "name": "3号線銀座線",
-    "name_en": "3号線銀座 Line",
+    "name_en": "Ginza Line (Line 3)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ff9500"
   },
   "272": {
     "id": 272,
     "name": "4号線丸ノ内線",
-    "name_en": "4号線丸ノ内 Line",
+    "name_en": "Marunouchi Line (Line 4)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f62e36"
   },
   "273": {
     "id": 273,
     "name": "4号線丸ノ内線分岐線",
-    "name_en": "4号線丸ノ内線分岐 Line",
+    "name_en": "Marunouchi Branch Line",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f62e36"
   },
   "274": {
     "id": 274,
     "name": "5号線東西線",
-    "name_en": "5号線東西 Line",
+    "name_en": "Tozai Line (Line 5 - Tokyo Metro)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#009bda"
   },
   "275": {
     "id": 275,
     "name": "7号線南北線",
-    "name_en": "7号線南北 Line",
+    "name_en": "Namboku Line (Line 7 - Tokyo Metro)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9b"
   },
   "276": {
     "id": 276,
     "name": "8号線有楽町線",
-    "name_en": "8号線有楽町 Line",
+    "name_en": "Yurakucho Line (Line 8)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#c1a470"
   },
   "277": {
     "id": 277,
     "name": "9号線千代田線",
-    "name_en": "9号線千代田 Line",
+    "name_en": "Chiyoda Line (Line 9)",
     "corp_id": 99,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00bb85"
   },
   "278": {
     "id": 278,
     "name": "りんかい線",
-    "name_en": "りんかい Line",
+    "name_en": "Rinkai Line",
     "corp_id": 100,
     "total_length": 0
   },
   "279": {
     "id": 279,
     "name": "10号線新宿線",
-    "name_en": "10号線新宿 Line",
+    "name_en": "Shinjuku Line (Line 10 - Toei)",
     "corp_id": 101,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#a7ba48"
   },
   "280": {
     "id": 280,
     "name": "12号線大江戸線",
-    "name_en": "12号線大江戸 Line",
+    "name_en": "Oedo Line (Line 12)",
     "corp_id": 101,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#b60081"
   },
   "281": {
     "id": 281,
     "name": "1号線浅草線",
-    "name_en": "1号線浅草 Line",
+    "name_en": "Asakusa Line (Line 1)",
     "corp_id": 101,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e85298"
   },
   "282": {
     "id": 282,
     "name": "6号線三田線",
-    "name_en": "6号線三田 Line",
+    "name_en": "Mita Line (Line 6)",
     "corp_id": 101,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0079c2"
   },
   "283": {
     "id": 283,
     "name": "上野懸垂線",
-    "name_en": "上野懸垂 Line",
+    "name_en": "Ueno Zoo Monorail",
     "corp_id": 101,
     "total_length": 0
   },
   "284": {
     "id": 284,
     "name": "日暮里・舎人ライナー",
-    "name_en": "日暮里・舎人ライナー",
+    "name_en": "Nippori-Toneri Liner",
     "corp_id": 101,
     "total_length": 0
   },
   "285": {
     "id": 285,
     "name": "荒川線",
-    "name_en": "荒川 Line",
+    "name_en": "Toden Arakawa Line (Tokyo Sakura Tram)",
     "corp_id": 101,
     "total_length": 0
   },
   "286": {
     "id": 286,
     "name": "こどもの国線",
-    "name_en": "こどもの国 Line",
+    "name_en": "Kodomonokuni Line",
     "corp_id": 102,
     "total_length": 0
   },
   "287": {
     "id": 287,
     "name": "世田谷線",
-    "name_en": "世田谷 Line",
+    "name_en": "Setagaya Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "288": {
     "id": 288,
     "name": "大井町線",
-    "name_en": "大井町 Line",
+    "name_en": "Oimachi Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f18c43"
   },
   "289": {
     "id": 289,
     "name": "東急多摩川線",
     "name_en": "Tokyu Tamagawa Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#c1a470"
   },
   "290": {
     "id": 290,
     "name": "東横線",
-    "name_en": "東横 Line",
+    "name_en": "Toyoko Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#da003d"
   },
   "291": {
     "id": 291,
     "name": "池上線",
-    "name_en": "池上 Line",
+    "name_en": "Ikegami Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f397c1"
   },
   "292": {
     "id": 292,
     "name": "田園都市線",
-    "name_en": "田園都市 Line",
+    "name_en": "Den-en-toshi Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#20a288"
   },
   "293": {
     "id": 293,
     "name": "目黒線",
-    "name_en": "目黒 Line",
+    "name_en": "Meguro Line",
     "corp_id": 102,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#009cd2"
   },
   "294": {
     "id": 294,
     "name": "上越新幹線",
     "name_en": "Joetsu Shinkansen",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ff4500"
   },
   "295": {
     "id": 295,
     "name": "上越線",
-    "name_en": "上越 Line",
+    "name_en": "Joetsu Line",
     "corp_id": 103,
     "total_length": 0
   },
   "296": {
     "id": 296,
     "name": "両毛線",
-    "name_en": "両毛 Line",
+    "name_en": "Ryomo Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "297": {
     "id": 297,
     "name": "中央線",
-    "name_en": "Chuo Line",
+    "name_en": "Chuo Line (JR East)",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "298": {
     "id": 298,
     "name": "久留里線",
-    "name_en": "久留里 Line",
+    "name_en": "Kururi Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "299": {
     "id": 299,
     "name": "五日市線",
     "name_en": "Itsukaichi Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "300": {
     "id": 300,
     "name": "五能線",
-    "name_en": "五能 Line",
+    "name_en": "Gono Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "301": {
     "id": 301,
     "name": "京葉線",
     "name_en": "Keiyo Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#c9242f"
   },
   "302": {
     "id": 302,
     "name": "仙山線",
-    "name_en": "仙山 Line",
+    "name_en": "Senzan Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#80c241"
   },
   "303": {
     "id": 303,
     "name": "仙石線",
-    "name_en": "仙石 Line",
+    "name_en": "Senseki Line",
     "corp_id": 103,
     "total_length": 0
   },
@@ -2137,133 +2259,148 @@
   "305": {
     "id": 305,
     "name": "信越線",
-    "name_en": "信越 Line",
+    "name_en": "Shin-etsu Line",
     "corp_id": 103,
     "total_length": 0
   },
   "306": {
     "id": 306,
     "name": "八戸線",
-    "name_en": "八戸 Line",
+    "name_en": "Hachinohe Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e60012"
   },
   "307": {
     "id": 307,
     "name": "八高線",
     "name_en": "Hachiko Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#808080"
   },
   "308": {
     "id": 308,
     "name": "内房線",
-    "name_en": "内房 Line",
+    "name_en": "Uchibo Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "309": {
     "id": 309,
     "name": "北上線",
-    "name_en": "北上 Line",
+    "name_en": "Kitakami Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#773c97"
   },
   "310": {
     "id": 310,
     "name": "北陸新幹線",
     "name_en": "Hokuriku Shinkansen",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#800080"
   },
   "311": {
     "id": 311,
     "name": "南武線",
     "name_en": "Nambu Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "312": {
     "id": 312,
     "name": "只見線",
-    "name_en": "只見 Line",
+    "name_en": "Tadami Line",
     "corp_id": 103,
     "total_length": 0
   },
   "313": {
     "id": 313,
     "name": "吾妻線",
-    "name_en": "吾妻 Line",
+    "name_en": "Agatsuma Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a896"
   },
   "314": {
     "id": 314,
     "name": "外房線",
-    "name_en": "外房 Line",
+    "name_en": "Sotobo Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "315": {
     "id": 315,
     "name": "大湊線",
-    "name_en": "大湊 Line",
+    "name_en": "Ominato Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "316": {
     "id": 316,
     "name": "大糸線",
-    "name_en": "大糸 Line",
+    "name_en": "Oito Line (JR East)",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9370db"
   },
   "317": {
     "id": 317,
     "name": "大船渡線",
-    "name_en": "大船渡 Line",
+    "name_en": "Ofunato Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "318": {
     "id": 318,
     "name": "奥羽線",
-    "name_en": "奥羽 Line",
+    "name_en": "Ou Line",
     "corp_id": 103,
     "total_length": 0
   },
   "319": {
     "id": 319,
     "name": "小海線",
-    "name_en": "小海 Line",
+    "name_en": "Koumi Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "320": {
     "id": 320,
     "name": "山手線",
     "name_en": "Yamanote Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9acd32"
   },
   "321": {
     "id": 321,
     "name": "山田線",
-    "name_en": "山田 Line",
+    "name_en": "Yamada Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffa500"
   },
   "322": {
     "id": 322,
     "name": "川越線",
-    "name_en": "川越 Line",
+    "name_en": "Kawagoe Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "323": {
     "id": 323,
     "name": "左沢線",
-    "name_en": "左沢 Line",
+    "name_en": "Aterazawa Line",
     "corp_id": 103,
     "total_length": 0
   },
@@ -2272,89 +2409,101 @@
     "name": "常磐線",
     "name_en": "Joban Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#007b43"
   },
   "325": {
     "id": 325,
     "name": "弥彦線",
-    "name_en": "弥彦 Line",
+    "name_en": "Yahiko Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#808080"
   },
   "326": {
     "id": 326,
     "name": "成田線",
-    "name_en": "成田 Line",
+    "name_en": "Narita Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#007b43"
   },
   "327": {
     "id": 327,
     "name": "日光線",
-    "name_en": "Nikko Line",
+    "name_en": "Nikko Line (JR East)",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#800000"
   },
   "328": {
     "id": 328,
     "name": "東北新幹線",
     "name_en": "Tohoku Shinkansen",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "329": {
     "id": 329,
     "name": "東北線",
-    "name_en": "東北 Line",
+    "name_en": "Tohoku Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "330": {
     "id": 330,
     "name": "東海道線",
-    "name_en": "Tokaido Line",
+    "name_en": "Tokaido Line (JR East)",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f68b1e"
   },
   "331": {
     "id": 331,
     "name": "東金線",
-    "name_en": "東金 Line",
+    "name_en": "Togane Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "332": {
     "id": 332,
     "name": "根岸線",
-    "name_en": "根岸 Line",
+    "name_en": "Negishi Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "333": {
     "id": 333,
     "name": "横浜線",
     "name_en": "Yokohama Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9acd32"
   },
   "334": {
     "id": 334,
     "name": "横須賀線",
     "name_en": "Yokosuka Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#007bc3"
   },
   "335": {
     "id": 335,
     "name": "武蔵野線",
     "name_en": "Musashino Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "336": {
     "id": 336,
     "name": "気仙沼線",
-    "name_en": "気仙沼 Line",
+    "name_en": "Kesennuma Line",
     "corp_id": 103,
     "total_length": 0
   },
@@ -2363,145 +2512,159 @@
     "name": "水戸線",
     "name_en": "Mito Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "338": {
     "id": 338,
     "name": "水郡線",
-    "name_en": "水郡 Line",
+    "name_en": "Suigun Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f68b1e"
   },
   "339": {
     "id": 339,
     "name": "津軽線",
-    "name_en": "津軽 Line",
+    "name_en": "Tsugaru Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "340": {
     "id": 340,
     "name": "烏山線",
-    "name_en": "烏山 Line",
+    "name_en": "Karasuyama Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "341": {
     "id": 341,
     "name": "田沢湖線",
-    "name_en": "田沢湖 Line",
+    "name_en": "Tazawako Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#8f76d6"
   },
   "342": {
     "id": 342,
     "name": "男鹿線",
-    "name_en": "男鹿 Line",
+    "name_en": "Oga Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "343": {
     "id": 343,
     "name": "白新線",
-    "name_en": "白新 Line",
+    "name_en": "Hakushin Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "344": {
     "id": 344,
     "name": "相模線",
     "name_en": "Sagami Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a896"
   },
   "345": {
     "id": 345,
     "name": "石巻線",
-    "name_en": "石巻 Line",
+    "name_en": "Ishinomaki Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "346": {
     "id": 346,
     "name": "磐越東線",
-    "name_en": "磐越東 Line",
+    "name_en": "Ban-etsu-to Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#6fa3d7"
   },
   "347": {
     "id": 347,
     "name": "磐越西線",
-    "name_en": "磐越西 Line",
+    "name_en": "Ban-etsu-sai Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "348": {
     "id": 348,
     "name": "篠ノ井線",
-    "name_en": "篠ノ井 Line",
+    "name_en": "Shinonoi Line",
     "corp_id": 103,
     "total_length": 0
   },
   "349": {
     "id": 349,
     "name": "米坂線",
-    "name_en": "米坂 Line",
+    "name_en": "Yonesaka Line",
     "corp_id": 103,
     "total_length": 0
   },
   "350": {
     "id": 350,
     "name": "総武線",
-    "name_en": "総武 Line",
+    "name_en": "Sobu Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "351": {
     "id": 351,
     "name": "羽越線",
-    "name_en": "羽越 Line",
+    "name_en": "Uetsu Line",
     "corp_id": 103,
     "total_length": 0
   },
   "352": {
     "id": 352,
     "name": "花輪線",
-    "name_en": "花輪 Line",
+    "name_en": "Hanawa Line",
     "corp_id": 103,
     "total_length": 0
   },
   "353": {
     "id": 353,
     "name": "赤羽線",
-    "name_en": "赤羽 Line",
+    "name_en": "Akabane Line (Saikyo Line)",
     "corp_id": 103,
     "total_length": 0
   },
   "354": {
     "id": 354,
     "name": "越後線",
-    "name_en": "越後 Line",
+    "name_en": "Echigo Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "355": {
     "id": 355,
     "name": "釜石線",
-    "name_en": "釜石 Line",
+    "name_en": "Kamaishi Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "356": {
     "id": 356,
     "name": "陸羽東線",
-    "name_en": "陸羽東 Line",
+    "name_en": "Rikuu-to Line",
     "corp_id": 103,
     "total_length": 0
   },
   "357": {
     "id": 357,
     "name": "陸羽西線",
-    "name_en": "陸羽西 Line",
+    "name_en": "Rikuu-sai Line",
     "corp_id": 103,
     "total_length": 0
   },
@@ -2510,838 +2673,885 @@
     "name": "青梅線",
     "name_en": "Ome Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "359": {
     "id": 359,
     "name": "飯山線",
-    "name_en": "飯山 Line",
+    "name_en": "Iiyama Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "360": {
     "id": 360,
     "name": "高崎線",
     "name_en": "Takasaki Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f68b1e"
   },
   "361": {
     "id": 361,
     "name": "鶴見線",
     "name_en": "Tsurumi Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "362": {
     "id": 362,
     "name": "鹿島線",
-    "name_en": "鹿島 Line",
+    "name_en": "Kashima Line",
     "corp_id": 103,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#773c97"
   },
   "363": {
     "id": 363,
     "name": "亀戸線",
-    "name_en": "亀戸 Line",
+    "name_en": "Kameido Line",
     "corp_id": 104,
     "total_length": 0
   },
   "364": {
     "id": 364,
     "name": "伊勢崎線",
-    "name_en": "伊勢崎 Line",
+    "name_en": "Isesaki Line",
     "corp_id": 104,
     "total_length": 0
   },
   "365": {
     "id": 365,
     "name": "佐野線",
-    "name_en": "佐野 Line",
+    "name_en": "Sano Line",
     "corp_id": 104,
     "total_length": 0
   },
   "366": {
     "id": 366,
     "name": "大師線",
-    "name_en": "大師 Line",
+    "name_en": "Daishi Line (Tobu)",
     "corp_id": 104,
     "total_length": 0
   },
   "367": {
     "id": 367,
     "name": "宇都宮線",
-    "name_en": "Utsunomiya Line",
+    "name_en": "Utsunomiya Line (Tobu)",
     "corp_id": 104,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f68b1e"
   },
   "368": {
     "id": 368,
     "name": "小泉線",
-    "name_en": "小泉 Line",
+    "name_en": "Koizumi Line",
     "corp_id": 104,
     "total_length": 0
   },
   "369": {
     "id": 369,
     "name": "日光線",
-    "name_en": "Nikko Line",
+    "name_en": "Nikko Line (Tobu)",
     "corp_id": 104,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#800000"
   },
   "370": {
     "id": 370,
     "name": "東上本線",
-    "name_en": "東上本 Line",
+    "name_en": "Tojo Main Line",
     "corp_id": 104,
     "total_length": 0
   },
   "371": {
     "id": 371,
     "name": "桐生線",
-    "name_en": "桐生 Line",
+    "name_en": "Kiryu Line",
     "corp_id": 104,
     "total_length": 0
   },
   "372": {
     "id": 372,
     "name": "越生線",
-    "name_en": "越生 Line",
+    "name_en": "Ogose Line",
     "corp_id": 104,
     "total_length": 0
   },
   "373": {
     "id": 373,
     "name": "野田線",
-    "name_en": "野田 Line",
+    "name_en": "Noda Line (Tobu Urban Park Line)",
     "corp_id": 104,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "374": {
     "id": 374,
     "name": "鬼怒川線",
-    "name_en": "鬼怒川 Line",
+    "name_en": "Kinugawa Line",
     "corp_id": 104,
     "total_length": 0
   },
   "375": {
     "id": 375,
     "name": "城北線",
-    "name_en": "城北 Line",
+    "name_en": "Johoku Line (TKJ)",
     "corp_id": 105,
     "total_length": 0
   },
   "376": {
     "id": 376,
     "name": "中央線",
-    "name_en": "Chuo Line",
+    "name_en": "Chuo Line (JR Central)",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "377": {
     "id": 377,
     "name": "参宮線",
-    "name_en": "参宮 Line",
+    "name_en": "Sangu Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e60012"
   },
   "378": {
     "id": 378,
     "name": "名松線",
-    "name_en": "名松 Line",
+    "name_en": "Meisho Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "379": {
     "id": 379,
     "name": "太多線",
-    "name_en": "太多 Line",
+    "name_en": "Taita Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "380": {
     "id": 380,
     "name": "御殿場線",
-    "name_en": "御殿場 Line",
+    "name_en": "Gotemba Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#477543"
   },
   "381": {
     "id": 381,
     "name": "東海道新幹線",
     "name_en": "Tokaido Shinkansen",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#000080"
   },
   "382": {
     "id": 382,
     "name": "東海道線",
-    "name_en": "Tokaido Line",
+    "name_en": "Tokaido Line (JR Central)",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f68b1e"
   },
   "383": {
     "id": 383,
     "name": "武豊線",
-    "name_en": "武豊 Line",
+    "name_en": "Taketoyo Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#800080"
   },
   "384": {
     "id": 384,
     "name": "紀勢線",
-    "name_en": "紀勢 Line",
+    "name_en": "Kisei Line (JR Central)",
     "corp_id": 106,
     "total_length": 0
   },
   "385": {
     "id": 385,
     "name": "身延線",
-    "name_en": "身延 Line",
+    "name_en": "Minobu Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#773C97"
   },
   "386": {
     "id": 386,
     "name": "関西線",
-    "name_en": "関西 Line",
+    "name_en": "Kansai Line (JR Central)",
     "corp_id": 106,
     "total_length": 0
   },
   "387": {
     "id": 387,
     "name": "飯田線",
-    "name_en": "飯田 Line",
+    "name_en": "Iida Line",
     "corp_id": 106,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#6FA3D7"
   },
   "388": {
     "id": 388,
     "name": "高山線",
-    "name_en": "高山 Line",
+    "name_en": "Takayama Line (JR Central)",
     "corp_id": 106,
     "total_length": 0
   },
   "389": {
     "id": 389,
     "name": "東葉高速線",
-    "name_en": "東葉高速 Line",
+    "name_en": "Toyo Rapid Line",
     "corp_id": 107,
     "total_length": 0
   },
   "390": {
     "id": 390,
     "name": "西九州線",
-    "name_en": "西九州 Line",
+    "name_en": "Nishi-Kyushu Line",
     "corp_id": 108,
     "total_length": 0
   },
   "391": {
     "id": 391,
     "name": "金沢シーサイドライン",
-    "name_en": "金沢シーサイドライン",
+    "name_en": "Kanazawa Seaside Line",
     "corp_id": 109,
     "total_length": 0
   },
   "392": {
     "id": 392,
     "name": "1号線",
-    "name_en": "1号 Line",
+    "name_en": "Blue Line (Line 1 - Yokohama)",
     "corp_id": 110,
     "total_length": 0
   },
   "393": {
     "id": 393,
     "name": "3号線",
-    "name_en": "3号 Line",
+    "name_en": "Blue Line (Line 3 - Yokohama)",
     "corp_id": 110,
     "total_length": 0
   },
   "394": {
     "id": 394,
     "name": "4号線",
-    "name_en": "4号 Line",
+    "name_en": "Green Line (Line 4)",
     "corp_id": 110,
     "total_length": 0
   },
   "395": {
     "id": 395,
     "name": "みなとみらい21線",
-    "name_en": "みなとみらい21 Line",
+    "name_en": "Minatomirai Line",
     "corp_id": 111,
     "total_length": 0
   },
   "396": {
     "id": 396,
     "name": "樽見線",
-    "name_en": "樽見 Line",
+    "name_en": "Tarumi Line",
     "corp_id": 112,
     "total_length": 0
   },
   "397": {
     "id": 397,
     "name": "比叡山鉄道線",
-    "name_en": "比叡山鉄道 Line",
+    "name_en": "Hieizan Railway Line",
     "corp_id": 113,
     "total_length": 0
   },
   "398": {
     "id": 398,
     "name": "水島本線",
-    "name_en": "水島本 Line",
+    "name_en": "Mizushima Main Line",
     "corp_id": 114,
     "total_length": 0
   },
   "399": {
     "id": 399,
     "name": "水間線",
-    "name_en": "水間 Line",
+    "name_en": "Mizuma Line",
     "corp_id": 115,
     "total_length": 0
   },
   "400": {
     "id": 400,
     "name": "江ノ島電鉄線",
-    "name_en": "江ノ島電鉄 Line",
+    "name_en": "Enoshima Electric Railway Line (Enoden)",
     "corp_id": 116,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#005d42"
   },
   "401": {
     "id": 401,
     "name": "沖縄都市モノレール線",
-    "name_en": "沖縄都市モノレール Line",
+    "name_en": "Okinawa Monorail Line (Yui Rail)",
     "corp_id": 117,
     "total_length": 0
   },
   "402": {
     "id": 402,
     "name": "泉北高速鉄道線",
-    "name_en": "泉北高速鉄道 Line",
+    "name_en": "Semboku Rapid Railway Line",
     "corp_id": 118,
     "total_length": 0
   },
   "403": {
     "id": 403,
     "name": "津軽鉄道線",
-    "name_en": "津軽鉄道 Line",
+    "name_en": "Tsugaru Railway Line",
     "corp_id": 119,
     "total_length": 0
   },
   "404": {
     "id": 404,
     "name": "流山線",
-    "name_en": "流山 Line",
+    "name_en": "Nagareyama Line",
     "corp_id": 120,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffa500"
   },
   "405": {
     "id": 405,
     "name": "江の島線",
-    "name_en": "江の島 Line",
+    "name_en": "Enoshima Line (Shonan Monorail)",
     "corp_id": 121,
     "total_length": 0
   },
   "406": {
     "id": 406,
     "name": "上熊本線",
-    "name_en": "上熊本 Line",
+    "name_en": "Kami-Kumamoto Line",
     "corp_id": 122,
     "total_length": 0
   },
   "407": {
     "id": 407,
     "name": "健軍線",
-    "name_en": "健軍 Line",
+    "name_en": "Kengun Line",
     "corp_id": 122,
     "total_length": 0
   },
   "408": {
     "id": 408,
     "name": "幹線",
-    "name_en": "幹 Line",
+    "name_en": "Main Line (Kumamoto Tram)",
     "corp_id": 122,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#000080"
   },
   "409": {
     "id": 409,
     "name": "水前寺線",
-    "name_en": "水前寺 Line",
+    "name_en": "Suizenji Line",
     "corp_id": 122,
     "total_length": 0
   },
   "410": {
     "id": 410,
     "name": "田崎線",
-    "name_en": "田崎 Line",
+    "name_en": "Tasaki Line",
     "corp_id": 122,
     "total_length": 0
   },
   "411": {
     "id": 411,
     "name": "菊池線",
-    "name_en": "菊池 Line",
+    "name_en": "Kikuchi Line",
     "corp_id": 123,
     "total_length": 0
   },
   "412": {
     "id": 412,
     "name": "藤崎線",
-    "name_en": "藤崎 Line",
+    "name_en": "Fujisaki Line",
     "corp_id": 123,
     "total_length": 0
   },
   "413": {
     "id": 413,
     "name": "甘木線",
-    "name_en": "甘木 Line",
+    "name_en": "Amagi Line (Amagi Railway)",
     "corp_id": 124,
     "total_length": 0
   },
   "414": {
     "id": 414,
     "name": "鳥海山ろく線",
-    "name_en": "鳥海山ろく Line",
+    "name_en": "Chokai Sanroku Line",
     "corp_id": 125,
     "total_length": 0
   },
   "415": {
     "id": 415,
     "name": "帆柱ケーブル線",
-    "name_en": "帆柱ケーブル Line",
+    "name_en": "Hobashira Cable Line",
     "corp_id": 126,
     "total_length": 0
   },
   "416": {
     "id": 416,
     "name": "いずみ野線",
-    "name_en": "いずみ野 Line",
+    "name_en": "Izumino Line",
     "corp_id": 127,
     "total_length": 0
   },
   "417": {
     "id": 417,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Sotetsu)",
     "corp_id": 127,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "418": {
     "id": 418,
     "name": "相鉄新横浜線",
-    "name_en": "相鉄新横浜 Line",
+    "name_en": "Sotetsu Shin-Yokohama Line",
     "corp_id": 127,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9acd32"
   },
   "419": {
     "id": 419,
     "name": "真岡線",
-    "name_en": "真岡 Line",
+    "name_en": "Mooka Line",
     "corp_id": 128,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "420": {
     "id": 420,
     "name": "北神線",
-    "name_en": "北神 Line",
+    "name_en": "Hokushin Line",
     "corp_id": 129,
     "total_length": 0
   },
   "421": {
     "id": 421,
     "name": "山手線",
-    "name_en": "Yamanote Line",
+    "name_en": "Seishin-Yamate Line (Sapporo/Kobe) *Context: Kobe Subway*",
     "corp_id": 129,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9acd32"
   },
   "422": {
     "id": 422,
     "name": "海岸線",
-    "name_en": "海岸 Line",
+    "name_en": "Kaigan Line",
     "corp_id": 129,
     "total_length": 0
   },
   "423": {
     "id": 423,
     "name": "西神延伸線",
-    "name_en": "西神延伸 Line",
+    "name_en": "Seishin Extension Line",
     "corp_id": 129,
     "total_length": 0
   },
   "424": {
     "id": 424,
     "name": "西神線",
-    "name_en": "西神 Line",
+    "name_en": "Seishin Line",
     "corp_id": 129,
     "total_length": 0
   },
   "425": {
     "id": 425,
     "name": "ポートアイランド線",
-    "name_en": "ポートアイランド Line",
+    "name_en": "Port Island Line (Port Liner)",
     "corp_id": 130,
     "total_length": 0
   },
   "426": {
     "id": 426,
     "name": "六甲アイランド線",
-    "name_en": "六甲アイランド Line",
+    "name_en": "Rokko Island Line (Rokko Liner)",
     "corp_id": 130,
     "total_length": 0
   },
   "427": {
     "id": 427,
     "name": "三田線",
-    "name_en": "Mita Line",
+    "name_en": "Mita Line (Shintetsu)",
     "corp_id": 131,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0079c2"
   },
   "428": {
     "id": 428,
     "name": "公園都市線",
-    "name_en": "公園都市 Line",
+    "name_en": "Koen-Toshi Line",
     "corp_id": 131,
     "total_length": 0
   },
   "429": {
     "id": 429,
     "name": "有馬線",
-    "name_en": "有馬 Line",
+    "name_en": "Arima Line",
     "corp_id": 131,
     "total_length": 0
   },
   "430": {
     "id": 430,
     "name": "神戸高速線",
-    "name_en": "神戸高速 Line",
+    "name_en": "Kobe Kosoku Line (Shintetsu)",
     "corp_id": 131,
     "total_length": 0
   },
   "431": {
     "id": 431,
     "name": "粟生線",
-    "name_en": "粟生 Line",
+    "name_en": "Ao Line",
     "corp_id": 131,
     "total_length": 0
   },
   "432": {
     "id": 432,
     "name": "福武線",
-    "name_en": "福武 Line",
+    "name_en": "Fukubu Line",
     "corp_id": 132,
     "total_length": 0
   },
   "433": {
     "id": 433,
     "name": "1号線(空港線)",
-    "name_en": "1号線(空港線)",
+    "name_en": "Airport Line (Fukuoka Subway Line 1)",
     "corp_id": 133,
     "total_length": 0
   },
   "434": {
     "id": 434,
     "name": "2号線(箱崎線)",
-    "name_en": "2号線(箱崎線)",
+    "name_en": "Hakozaki Line (Line 2)",
     "corp_id": 133,
     "total_length": 0
   },
   "435": {
     "id": 435,
     "name": "3号線(七隈線)",
-    "name_en": "3号線(七隈線)",
+    "name_en": "Nanakuma Line (Line 3)",
     "corp_id": 133,
     "total_length": 0
   },
   "436": {
     "id": 436,
     "name": "飯坂線",
-    "name_en": "飯坂 Line",
+    "name_en": "Iizaka Line",
     "corp_id": 134,
     "total_length": 0
   },
   "437": {
     "id": 437,
     "name": "秋田内陸線",
-    "name_en": "秋田内陸 Line",
+    "name_en": "Akita Nairiku Line",
     "corp_id": 135,
     "total_length": 0
   },
   "438": {
     "id": 438,
     "name": "秩父本線",
-    "name_en": "秩父本 Line",
+    "name_en": "Chichibu Main Line",
     "corp_id": 136,
     "total_length": 0
   },
   "439": {
     "id": 439,
     "name": "無軌条電車線",
-    "name_en": "無軌条電車 Line",
+    "name_en": "Tateyama Tunnel Trolleybus Line",
     "corp_id": 137,
     "total_length": 0
   },
   "440": {
     "id": 440,
     "name": "鋼索線",
-    "name_en": "鋼索 Line",
+    "name_en": "Tateyama Cable Car Line",
     "corp_id": 137,
     "total_length": 0
   },
   "441": {
     "id": 441,
     "name": "筑波山鋼索鉄道線",
-    "name_en": "筑波山鋼索鉄道 Line",
+    "name_en": "Tsukubasan Cable Car Line",
     "corp_id": 138,
     "total_length": 0
   },
   "442": {
     "id": 442,
     "name": "筑豊電気鉄道線",
-    "name_en": "筑豊電気鉄道 Line",
+    "name_en": "Chikuho Electric Railroad Line",
     "corp_id": 139,
     "total_length": 0
   },
   "443": {
     "id": 443,
     "name": "鉄道線",
-    "name_en": "鉄道 Line",
+    "name_en": "Railway Line (Hakone Tozan)",
     "corp_id": 140,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0e9"
   },
   "444": {
     "id": 444,
     "name": "鋼索線",
-    "name_en": "鋼索 Line",
+    "name_en": "Cable Line (Hakone Tozan)",
     "corp_id": 140,
     "total_length": 0
   },
   "445": {
     "id": 445,
     "name": "紀州鉄道線",
-    "name_en": "紀州鉄道 Line",
+    "name_en": "Kishu Railway Line",
     "corp_id": 141,
     "total_length": 0
   },
   "446": {
     "id": 446,
     "name": "肥薩おれんじ鉄道線",
-    "name_en": "肥薩おれんじ鉄道 Line",
+    "name_en": "Hisatsu Orange Railway Line",
     "corp_id": 142,
     "total_length": 0
   },
   "447": {
     "id": 447,
     "name": "妙見線",
-    "name_en": "妙見 Line",
+    "name_en": "Myoken Line",
     "corp_id": 143,
     "total_length": 0
   },
   "448": {
     "id": 448,
     "name": "日生線",
-    "name_en": "日生 Line",
+    "name_en": "Nissei Line",
     "corp_id": 143,
     "total_length": 0
   },
   "449": {
     "id": 449,
     "name": "鋼索線",
-    "name_en": "鋼索 Line",
+    "name_en": "Cable Line (Nose Railway)",
     "corp_id": 143,
     "total_length": 0
   },
   "450": {
     "id": 450,
     "name": "ディズニーリゾートライン",
-    "name_en": "ディズニーリゾートライン",
+    "name_en": "Disney Resort Line",
     "corp_id": 144,
     "total_length": 0
   },
   "451": {
     "id": 451,
     "name": "芝山鉄道線",
-    "name_en": "芝山鉄道 Line",
+    "name_en": "Shibayama Railway Line",
     "corp_id": 145,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00529a"
   },
   "452": {
     "id": 452,
     "name": "若桜線",
-    "name_en": "若桜 Line",
+    "name_en": "Wakasa Line",
     "corp_id": 146,
     "total_length": 0
   },
   "453": {
     "id": 453,
     "name": "JR東西線",
-    "name_en": "JR東西 Line",
+    "name_en": "JR Tozai Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffc20e"
   },
   "454": {
     "id": 454,
     "name": "おおさか東線",
     "name_en": "Osaka Higashi Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "455": {
     "id": 455,
     "name": "七尾線",
-    "name_en": "七尾 Line",
+    "name_en": "Nanao Line (JR West)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "456": {
     "id": 456,
     "name": "伯備線",
-    "name_en": "伯備 Line",
+    "name_en": "Hakubi Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "457": {
     "id": 457,
     "name": "加古川線",
-    "name_en": "加古川 Line",
+    "name_en": "Kakogawa Line",
     "corp_id": 147,
     "total_length": 0
   },
   "458": {
     "id": 458,
     "name": "北陸新幹線",
-    "name_en": "Hokuriku Shinkansen",
+    "name_en": "Hokuriku Shinkansen (JR West)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#800080"
   },
   "459": {
     "id": 459,
     "name": "北陸線",
-    "name_en": "北陸 Line",
+    "name_en": "Hokuriku Line",
     "corp_id": 147,
     "total_length": 0
   },
   "460": {
     "id": 460,
     "name": "博多南線",
-    "name_en": "博多南 Line",
+    "name_en": "Hakata-minami Line",
     "corp_id": 147,
     "total_length": 0
   },
   "461": {
     "id": 461,
     "name": "可部線",
-    "name_en": "可部 Line",
+    "name_en": "Kabe Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "462": {
     "id": 462,
     "name": "吉備線",
-    "name_en": "吉備 Line",
+    "name_en": "Kibi Line (Momotaro Line)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "463": {
     "id": 463,
     "name": "呉線",
-    "name_en": "呉 Line",
+    "name_en": "Kure Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "464": {
     "id": 464,
     "name": "和歌山線",
     "name_en": "Wakayama Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "465": {
     "id": 465,
     "name": "因美線",
-    "name_en": "因美 Line",
+    "name_en": "Imbi Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#008000"
   },
   "466": {
     "id": 466,
     "name": "城端線",
-    "name_en": "城端 Line",
+    "name_en": "Johana Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffa500"
   },
   "467": {
     "id": 467,
     "name": "境線",
-    "name_en": "境 Line",
+    "name_en": "Sakai Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "468": {
     "id": 468,
     "name": "大糸線",
-    "name_en": "大糸 Line",
+    "name_en": "Oito Line (JR West)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#9370db"
   },
   "469": {
     "id": 469,
     "name": "大阪環状線",
     "name_en": "Osaka Loop Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "470": {
     "id": 470,
     "name": "奈良線",
-    "name_en": "Nara Line",
+    "name_en": "Nara Line (JR West)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#80c241"
   },
   "471": {
     "id": 471,
     "name": "姫新線",
-    "name_en": "姫新 Line",
+    "name_en": "Kishin Line",
     "corp_id": 147,
     "total_length": 0
   },
   "472": {
     "id": 472,
     "name": "宇部線",
-    "name_en": "宇部 Line",
+    "name_en": "Ube Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#8f76d6"
   },
   "473": {
     "id": 473,
     "name": "宇野線",
-    "name_en": "宇野 Line",
+    "name_en": "Uno Line",
     "corp_id": 147,
     "total_length": 0
   },
   "474": {
     "id": 474,
     "name": "小浜線",
-    "name_en": "小浜 Line",
+    "name_en": "Obama Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00ac9a"
   },
   "475": {
     "id": 475,
     "name": "小野田線",
-    "name_en": "小野田 Line",
+    "name_en": "Onoda Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffd400"
   },
   "476": {
     "id": 476,
     "name": "山口線",
-    "name_en": "山口 Line",
+    "name_en": "Yamaguchi Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "477": {
     "id": 477,
     "name": "山陰線",
-    "name_en": "山陰 Line",
+    "name_en": "San-in Line",
     "corp_id": 147,
     "total_length": 0
   },
@@ -3350,166 +3560,182 @@
     "name": "山陽新幹線",
     "name_en": "Sanyo Shinkansen",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#000080"
   },
   "479": {
     "id": 479,
     "name": "山陽線",
-    "name_en": "山陽 Line",
+    "name_en": "Sanyo Line (JR West)",
     "corp_id": 147,
     "total_length": 0
   },
   "480": {
     "id": 480,
     "name": "岩徳線",
-    "name_en": "岩徳 Line",
+    "name_en": "Gantoku Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "481": {
     "id": 481,
     "name": "播但線",
-    "name_en": "播但 Line",
+    "name_en": "Bantan Line",
     "corp_id": 147,
     "total_length": 0
   },
   "482": {
     "id": 482,
     "name": "木次線",
-    "name_en": "木次 Line",
+    "name_en": "Kisuki Line",
     "corp_id": 147,
     "total_length": 0
   },
   "483": {
     "id": 483,
     "name": "本四備讃線",
-    "name_en": "本四備讃 Line",
+    "name_en": "Honshi-Bisan Line (JR West)",
     "corp_id": 147,
     "total_length": 0
   },
   "484": {
     "id": 484,
     "name": "東海道線",
-    "name_en": "Tokaido Line",
+    "name_en": "Tokaido Line (JR West)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f68b1e"
   },
   "485": {
     "id": 485,
     "name": "桜井線",
-    "name_en": "桜井 Line",
+    "name_en": "Sakurai Line (Manyo-Mahoroba Line)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#e60012"
   },
   "486": {
     "id": 486,
     "name": "桜島線",
-    "name_en": "桜島 Line",
+    "name_en": "Sakurajima Line (JR Yumesaki Line)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "487": {
     "id": 487,
     "name": "氷見線",
-    "name_en": "氷見 Line",
+    "name_en": "Himi Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#80c241"
   },
   "488": {
     "id": 488,
     "name": "津山線",
-    "name_en": "津山 Line",
+    "name_en": "Tsuyama Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "489": {
     "id": 489,
     "name": "湖西線",
     "name_en": "Kosei Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0072bc"
   },
   "490": {
     "id": 490,
     "name": "片町線",
-    "name_en": "片町 Line",
+    "name_en": "Katamachi Line (Gakken-Toshi Line)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "491": {
     "id": 491,
     "name": "福塩線",
-    "name_en": "福塩 Line",
+    "name_en": "Fukuen Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "492": {
     "id": 492,
     "name": "福知山線",
-    "name_en": "福知山 Line",
+    "name_en": "Fukuchiyama Line (JR Takarazuka Line)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffc20e"
   },
   "493": {
     "id": 493,
     "name": "紀勢線",
-    "name_en": "紀勢 Line",
+    "name_en": "Kisei Line (JR West)",
     "corp_id": 147,
     "total_length": 0
   },
   "494": {
     "id": 494,
     "name": "美祢線",
-    "name_en": "美祢 Line",
+    "name_en": "Mine Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "495": {
     "id": 495,
     "name": "舞鶴線",
-    "name_en": "舞鶴 Line",
+    "name_en": "Maizuru Line",
     "corp_id": 147,
     "total_length": 0
   },
   "496": {
     "id": 496,
     "name": "芸備線",
-    "name_en": "芸備 Line",
+    "name_en": "Geibi Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#8f76d6"
   },
   "497": {
     "id": 497,
     "name": "草津線",
-    "name_en": "草津 Line",
+    "name_en": "Kusatsu Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "498": {
     "id": 498,
     "name": "赤穂線",
-    "name_en": "赤穂 Line",
+    "name_en": "Ako Line",
     "corp_id": 147,
     "total_length": 0
   },
   "499": {
     "id": 499,
     "name": "越美北線",
-    "name_en": "越美北 Line",
+    "name_en": "Etsumi-hoku Line (Kuzuryu Line)",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "500": {
     "id": 500,
     "name": "関西空港線",
     "name_en": "Kansai Airport Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "501": {
     "id": 501,
     "name": "関西線",
-    "name_en": "関西 Line",
+    "name_en": "Kansai Line (JR West)",
     "corp_id": 147,
     "total_length": 0
   },
@@ -3518,650 +3744,671 @@
     "name": "阪和線",
     "name_en": "Hanwa Line",
     "corp_id": 147,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00b2e5"
   },
   "503": {
     "id": 503,
     "name": "高山線",
-    "name_en": "高山 Line",
+    "name_en": "Takayama Line (JR West)",
     "corp_id": 147,
     "total_length": 0
   },
   "504": {
     "id": 504,
     "name": "天神大牟田線",
-    "name_en": "天神大牟田 Line",
+    "name_en": "Tenjin Omuta Line",
     "corp_id": 148,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39800"
   },
   "505": {
     "id": 505,
     "name": "太宰府線",
-    "name_en": "太宰府 Line",
+    "name_en": "Dazaifu Line",
     "corp_id": 148,
     "total_length": 0
   },
   "506": {
     "id": 506,
     "name": "甘木線",
-    "name_en": "甘木 Line",
+    "name_en": "Amagi Line (Nishitetsu)",
     "corp_id": 148,
     "total_length": 0
   },
   "507": {
     "id": 507,
     "name": "貝塚線",
-    "name_en": "貝塚 Line",
+    "name_en": "Kaizuka Line",
     "corp_id": 148,
     "total_length": 0
   },
   "508": {
     "id": 508,
     "name": "国分寺線",
-    "name_en": "国分寺 Line",
+    "name_en": "Kokubunji Line",
     "corp_id": 149,
     "total_length": 0
   },
   "509": {
     "id": 509,
     "name": "多摩川線",
-    "name_en": "多摩川 Line",
+    "name_en": "Tamagawa Line (Seibu)",
     "corp_id": 149,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#c1a470"
   },
   "510": {
     "id": 510,
     "name": "多摩湖線",
-    "name_en": "多摩湖 Line",
+    "name_en": "Tamako Line",
     "corp_id": 149,
     "total_length": 0
   },
   "511": {
     "id": 511,
     "name": "山口線",
-    "name_en": "山口 Line",
+    "name_en": "Yamaguchi Line (Seibu Leo Liner)",
     "corp_id": 149,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f39700"
   },
   "512": {
     "id": 512,
     "name": "拝島線",
-    "name_en": "拝島 Line",
+    "name_en": "Haijima Line",
     "corp_id": 149,
     "total_length": 0
   },
   "513": {
     "id": 513,
     "name": "新宿線",
-    "name_en": "Shinjuku Line",
+    "name_en": "Shinjuku Line (Seibu)",
     "corp_id": 149,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#a7ba48"
   },
   "514": {
     "id": 514,
     "name": "池袋線",
-    "name_en": "池袋 Line",
+    "name_en": "Ikebukuro Line",
     "corp_id": 149,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ed772d"
   },
   "515": {
     "id": 515,
     "name": "狭山線",
-    "name_en": "狭山 Line",
+    "name_en": "Sayama Line",
     "corp_id": 149,
     "total_length": 0
   },
   "516": {
     "id": 516,
     "name": "西武園線",
-    "name_en": "西武園 Line",
+    "name_en": "Seibuen Line",
     "corp_id": 149,
     "total_length": 0
   },
   "517": {
     "id": 517,
     "name": "西武有楽町線",
-    "name_en": "西武有楽町 Line",
+    "name_en": "Seibu Yurakucho Line",
     "corp_id": 149,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#c1a470"
   },
   "518": {
     "id": 518,
     "name": "西武秩父線",
-    "name_en": "西武秩父 Line",
+    "name_en": "Seibu Chichibu Line",
     "corp_id": 149,
     "total_length": 0
   },
   "519": {
     "id": 519,
     "name": "豊島線",
-    "name_en": "豊島 Line",
+    "name_en": "Toshima Line",
     "corp_id": 149,
     "total_length": 0
   },
   "520": {
     "id": 520,
     "name": "東田本線",
-    "name_en": "東田本 Line",
+    "name_en": "Azumada Main Line",
     "corp_id": 150,
     "total_length": 0
   },
   "521": {
     "id": 521,
     "name": "渥美線",
-    "name_en": "渥美 Line",
+    "name_en": "Atsumi Line",
     "corp_id": 150,
     "total_length": 0
   },
   "522": {
     "id": 522,
     "name": "八日市線",
-    "name_en": "八日市 Line",
+    "name_en": "Yokaichi Line",
     "corp_id": 151,
     "total_length": 0
   },
   "523": {
     "id": 523,
     "name": "多賀線",
-    "name_en": "多賀 Line",
+    "name_en": "Taga Line",
     "corp_id": 151,
     "total_length": 0
   },
   "524": {
     "id": 524,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Ohmi Railway)",
     "corp_id": 151,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "525": {
     "id": 525,
     "name": "けいはんな線",
-    "name_en": "けいはんな Line",
+    "name_en": "Keihanna Line",
     "corp_id": 152,
     "total_length": 0
   },
   "526": {
     "id": 526,
     "name": "京都線",
-    "name_en": "京都 Line",
+    "name_en": "Kyoto Line (Kintetsu)",
     "corp_id": 152,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0072bc"
   },
   "527": {
     "id": 527,
     "name": "信貴線",
-    "name_en": "信貴 Line",
+    "name_en": "Shigi Line",
     "corp_id": 152,
     "total_length": 0
   },
   "528": {
     "id": 528,
     "name": "南大阪線",
-    "name_en": "南大阪 Line",
+    "name_en": "Minami-Osaka Line",
     "corp_id": 152,
     "total_length": 0
   },
   "529": {
     "id": 529,
     "name": "吉野線",
-    "name_en": "吉野 Line",
+    "name_en": "Yoshino Line",
     "corp_id": 152,
     "total_length": 0
   },
   "530": {
     "id": 530,
     "name": "名古屋線",
-    "name_en": "名古屋 Line",
+    "name_en": "Nagoya Line (Kintetsu)",
     "corp_id": 152,
     "total_length": 0
   },
   "531": {
     "id": 531,
     "name": "大阪線",
-    "name_en": "大阪 Line",
+    "name_en": "Osaka Line (Kintetsu)",
     "corp_id": 152,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#cc0022"
   },
   "532": {
     "id": 532,
     "name": "天理線",
-    "name_en": "天理 Line",
+    "name_en": "Tenri Line",
     "corp_id": 152,
     "total_length": 0
   },
   "533": {
     "id": 533,
     "name": "奈良線",
-    "name_en": "Nara Line",
+    "name_en": "Nara Line (Kintetsu)",
     "corp_id": 152,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#80c241"
   },
   "534": {
     "id": 534,
     "name": "山田線",
-    "name_en": "山田 Line",
+    "name_en": "Yamada Line (Kintetsu)",
     "corp_id": 152,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffa500"
   },
   "535": {
     "id": 535,
     "name": "御所線",
-    "name_en": "御所 Line",
+    "name_en": "Gose Line",
     "corp_id": 152,
     "total_length": 0
   },
   "536": {
     "id": 536,
     "name": "志摩線",
-    "name_en": "志摩 Line",
+    "name_en": "Shima Line",
     "corp_id": 152,
     "total_length": 0
   },
   "537": {
     "id": 537,
     "name": "橿原線",
-    "name_en": "橿原 Line",
+    "name_en": "Kashihara Line",
     "corp_id": 152,
     "total_length": 0
   },
   "538": {
     "id": 538,
     "name": "湯の山線",
-    "name_en": "湯の山 Line",
+    "name_en": "Yunoyama Line",
     "corp_id": 152,
     "total_length": 0
   },
   "539": {
     "id": 539,
     "name": "生駒線",
-    "name_en": "生駒 Line",
+    "name_en": "Ikoma Line",
     "corp_id": 152,
     "total_length": 0
   },
   "540": {
     "id": 540,
     "name": "生駒鋼索線",
-    "name_en": "生駒鋼索 Line",
+    "name_en": "Ikoma Cable Line",
     "corp_id": 152,
     "total_length": 0
   },
   "541": {
     "id": 541,
     "name": "田原本線",
-    "name_en": "田原本 Line",
+    "name_en": "Tawaramoto Line",
     "corp_id": 152,
     "total_length": 0
   },
   "542": {
     "id": 542,
     "name": "西信貴鋼索線",
-    "name_en": "西信貴鋼索 Line",
+    "name_en": "Nishi-Shigi Cable Line",
     "corp_id": 152,
     "total_length": 0
   },
   "543": {
     "id": 543,
     "name": "道明寺線",
-    "name_en": "道明寺 Line",
+    "name_en": "Domyoji Line",
     "corp_id": 152,
     "total_length": 0
   },
   "544": {
     "id": 544,
     "name": "鈴鹿線",
-    "name_en": "鈴鹿 Line",
+    "name_en": "Suzuka Line",
     "corp_id": 152,
     "total_length": 0
   },
   "545": {
     "id": 545,
     "name": "長野線",
-    "name_en": "長野 Line",
+    "name_en": "Nagano Line (Kintetsu)",
     "corp_id": 152,
     "total_length": 0
   },
   "546": {
     "id": 546,
     "name": "難波線",
-    "name_en": "難波 Line",
+    "name_en": "Namba Line (Kintetsu)",
     "corp_id": 152,
     "total_length": 0
   },
   "547": {
     "id": 547,
     "name": "鳥羽線",
-    "name_en": "鳥羽 Line",
+    "name_en": "Toba Line",
     "corp_id": 152,
     "total_length": 0
   },
   "548": {
     "id": 548,
     "name": "道南いさりび鉄道線",
-    "name_en": "道南いさりび鉄道 Line",
+    "name_en": "Donan Isaribi Railway Line",
     "corp_id": 153,
     "total_length": 0
   },
   "549": {
     "id": 549,
     "name": "鉄道線",
-    "name_en": "鉄道 Line",
+    "name_en": "Railway Line (Enshu Railway)",
     "corp_id": 154,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0e9"
   },
   "550": {
     "id": 550,
     "name": "会津鬼怒川線",
-    "name_en": "会津鬼怒川 Line",
+    "name_en": "Aizu Kinugawa Line",
     "corp_id": 155,
     "total_length": 0
   },
   "551": {
     "id": 551,
     "name": "銚子電気鉄道線",
-    "name_en": "銚子電気鉄道 Line",
+    "name_en": "Choshi Electric Railway Line",
     "corp_id": 156,
     "total_length": 0
   },
   "552": {
     "id": 552,
     "name": "錦川清流線",
-    "name_en": "錦川清流 Line",
+    "name_en": "Nishikigawa Seiryu Line",
     "corp_id": 157,
     "total_length": 0
   },
   "553": {
     "id": 553,
     "name": "大浦支線",
-    "name_en": "大浦支 Line",
+    "name_en": "Oura Branch Line",
     "corp_id": 158,
     "total_length": 0
   },
   "554": {
     "id": 554,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Nagasaki Tram)",
     "corp_id": 158,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "555": {
     "id": 555,
     "name": "桜町支線",
-    "name_en": "桜町支 Line",
+    "name_en": "Sakuramachi Branch Line",
     "corp_id": 158,
     "total_length": 0
   },
   "556": {
     "id": 556,
     "name": "蛍茶屋支線",
-    "name_en": "蛍茶屋支 Line",
+    "name_en": "Hotarujaya Branch Line",
     "corp_id": 158,
     "total_length": 0
   },
   "557": {
     "id": 557,
     "name": "赤迫支線",
-    "name_en": "赤迫支 Line",
+    "name_en": "Akasako Branch Line",
     "corp_id": 158,
     "total_length": 0
   },
   "558": {
     "id": 558,
     "name": "越美南線",
-    "name_en": "越美南 Line",
+    "name_en": "Etsumi-nan Line (Nagaragawa Railway)",
     "corp_id": 159,
     "total_length": 0
   },
   "559": {
     "id": 559,
     "name": "長野線",
-    "name_en": "長野 Line",
+    "name_en": "Nagano Line (Nagano Electric Railway)",
     "corp_id": 160,
     "total_length": 0
   },
   "560": {
     "id": 560,
     "name": "常総線",
-    "name_en": "常総 Line",
+    "name_en": "Joso Line",
     "corp_id": 161,
     "total_length": 0
   },
   "561": {
     "id": 561,
     "name": "竜ヶ崎線",
-    "name_en": "竜ヶ崎 Line",
+    "name_en": "Ryugasaki Line",
     "corp_id": 161,
     "total_length": 0
   },
   "562": {
     "id": 562,
     "name": "上町線",
-    "name_en": "上町 Line",
+    "name_en": "Uemachi Line",
     "corp_id": 162,
     "total_length": 0
   },
   "563": {
     "id": 563,
     "name": "阪堺線",
-    "name_en": "阪堺 Line",
+    "name_en": "Hankai Line",
     "corp_id": 162,
     "total_length": 0
   },
   "564": {
     "id": 564,
     "name": "京都線",
-    "name_en": "京都 Line",
+    "name_en": "Kyoto Line (Hankyu)",
     "corp_id": 163,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0072bc"
   },
   "565": {
     "id": 565,
     "name": "今津線",
-    "name_en": "今津 Line",
+    "name_en": "Imazu Line",
     "corp_id": 163,
     "total_length": 0
   },
   "566": {
     "id": 566,
     "name": "伊丹線",
-    "name_en": "伊丹 Line",
+    "name_en": "Itami Line",
     "corp_id": 163,
     "total_length": 0
   },
   "567": {
     "id": 567,
     "name": "千里線",
-    "name_en": "千里 Line",
+    "name_en": "Senri Line",
     "corp_id": 163,
     "total_length": 0
   },
   "568": {
     "id": 568,
     "name": "宝塚線",
-    "name_en": "宝塚 Line",
+    "name_en": "Takarazuka Line (Hankyu)",
     "corp_id": 163,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#ffc20e"
   },
   "569": {
     "id": 569,
     "name": "嵐山線",
-    "name_en": "嵐山 Line",
+    "name_en": "Arashiyama Line (Hankyu)",
     "corp_id": 163,
     "total_length": 0
   },
   "570": {
     "id": 570,
     "name": "甲陽線",
-    "name_en": "甲陽 Line",
+    "name_en": "Koyo Line",
     "corp_id": 163,
     "total_length": 0
   },
   "571": {
     "id": 571,
     "name": "神戸線",
-    "name_en": "神戸 Line",
+    "name_en": "Kobe Line (Hankyu)",
     "corp_id": 163,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#0072bc"
   },
   "572": {
     "id": 572,
     "name": "神戸高速線",
-    "name_en": "神戸高速 Line",
+    "name_en": "Kobe Kosoku Line (Hankyu)",
     "corp_id": 163,
     "total_length": 0
   },
   "573": {
     "id": 573,
     "name": "箕面線",
-    "name_en": "箕面 Line",
+    "name_en": "Minoo Line",
     "corp_id": 163,
     "total_length": 0
   },
   "574": {
     "id": 574,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Hanshin)",
     "corp_id": 164,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   },
   "575": {
     "id": 575,
     "name": "武庫川線",
-    "name_en": "武庫川 Line",
+    "name_en": "Mukogawa Line",
     "corp_id": 164,
     "total_length": 0
   },
   "576": {
     "id": 576,
     "name": "神戸高速線",
-    "name_en": "神戸高速 Line",
+    "name_en": "Kobe Kosoku Line (Hanshin)",
     "corp_id": 164,
     "total_length": 0
   },
   "577": {
     "id": 577,
     "name": "阪神なんば線",
-    "name_en": "阪神なんば Line",
+    "name_en": "Hanshin Namba Line",
     "corp_id": 164,
     "total_length": 0
   },
   "578": {
     "id": 578,
     "name": "阿佐東線",
-    "name_en": "阿佐東 Line",
+    "name_en": "Asatō Line",
     "corp_id": 165,
     "total_length": 0
   },
   "579": {
     "id": 579,
     "name": "阿武隈急行線",
-    "name_en": "阿武隈急行 Line",
+    "name_en": "Abukuma Express Line",
     "corp_id": 166,
     "total_length": 0
   },
   "580": {
     "id": 580,
     "name": "青い森鉄道線",
-    "name_en": "青い森鉄道 Line",
+    "name_en": "Aoimori Railway Line",
     "corp_id": 167,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#00a0e9"
   },
   "581": {
     "id": 581,
     "name": "静岡清水線",
-    "name_en": "静岡清水 Line",
+    "name_en": "Shizuoka Shimizu Line",
     "corp_id": 168,
     "total_length": 0
   },
   "582": {
     "id": 582,
     "name": "鞍馬山鋼索鉄道",
-    "name_en": "鞍馬山鋼索鉄道",
+    "name_en": "Kuramayama Cable Railway",
     "corp_id": 169,
     "total_length": 0
   },
   "583": {
     "id": 583,
     "name": "養老線",
-    "name_en": "養老 Line",
+    "name_en": "Yoro Line",
     "corp_id": 170,
     "total_length": 0
   },
   "584": {
     "id": 584,
     "name": "常磐新線",
-    "name_en": "常磐新 Line",
+    "name_en": "Tsukuba Express (Joban New Line)",
     "corp_id": 171,
     "total_length": 0
   },
   "585": {
     "id": 585,
     "name": "高尾鋼索線",
-    "name_en": "高尾鋼索 Line",
+    "name_en": "Takao Cable Line",
     "corp_id": 172,
     "total_length": 0
   },
   "586": {
     "id": 586,
     "name": "志度線",
-    "name_en": "志度 Line",
+    "name_en": "Shido Line",
     "corp_id": 173,
     "total_length": 0
   },
   "587": {
     "id": 587,
     "name": "琴平線",
-    "name_en": "琴平 Line",
+    "name_en": "Kotohira Line",
     "corp_id": 173,
     "total_length": 0
   },
   "588": {
     "id": 588,
     "name": "長尾線",
-    "name_en": "長尾 Line",
+    "name_en": "Nagao Line",
     "corp_id": 173,
     "total_length": 0
   },
   "589": {
     "id": 589,
     "name": "唐湊線",
-    "name_en": "唐湊 Line",
+    "name_en": "Korimoto Line",
     "corp_id": 174,
     "total_length": 0
   },
   "590": {
     "id": 590,
     "name": "第一期線",
-    "name_en": "第一期 Line",
+    "name_en": "Dai-ichi-ki Line",
     "corp_id": 174,
     "total_length": 0
   },
   "591": {
     "id": 591,
     "name": "第二期線",
-    "name_en": "第二期 Line",
+    "name_en": "Dai-ni-ki Line",
     "corp_id": 174,
     "total_length": 0
   },
   "592": {
     "id": 592,
     "name": "谷山線",
-    "name_en": "谷山 Line",
+    "name_en": "Taniyama Line",
     "corp_id": 174,
     "total_length": 0
   },
   "593": {
     "id": 593,
     "name": "大洗鹿島線",
-    "name_en": "大洗鹿島 Line",
+    "name_en": "Oarai Kashima Line",
     "corp_id": 175,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#773c97"
   },
   "594": {
     "id": 594,
     "name": "本線",
-    "name_en": "本 Line",
+    "name_en": "Main Line (Kurobe Kyoku Railway)",
     "corp_id": 176,
-    "total_length": 0
+    "total_length": 0,
+    "color": "#f15a22"
   }
 }

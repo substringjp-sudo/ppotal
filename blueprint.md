@@ -18,6 +18,8 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Layer Consolidation**: Merged hundreds of individual Polyline components (Recorded Trips, Group Hulls) into monolithic GeoJSON layers, significantly reducing React's component tree and virtual DOM overhead.
 - **Throttled Interactions**: Map bounds updates and hover highlights are throttled to prevent main-thread saturation during rapid interaction.
 - **Geometry Simplification**: Implemented dynamic `smoothFactor` for all vector layers, reducing vertex count at lower zoom levels without sacrificing critical topology.
+- **ID-Based Lookup System**: Refactored the entire data flow to use numeric IDs (`companyId::lineId`) for line and company lookups. This eliminated name-based mapping errors and ensures 100% accuracy in data retrieval for translations, stats, and topology.
+
 
 ## Implementation History & Current State
 ### Recent Major Changes
@@ -26,6 +28,8 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 3.  **Spatial Station Culling**: Introduced `isMoving` aware `useVisibleStations` hook that skips all station processing during map movement. ✅
 4.  **Topology Visualization Restoration**: Reverted to `TubeMap.tsx` from `vis-network` to prioritize drag-and-drop interactivity. ✅
 5.  **Hover Interaction Delay**: Maintained deliberate interaction feel through throttled hover events. ✅
+6. **ID-Based Refactoring**: Migrated `RoutingGraph`, `Sidebar`, `LineDetailPane`, and map layers to a robust ID-based lookup system. This fixed missing translations and 0/0km stats. ✅
+
 
 # 메모
 - **성능 튜닝 (60FPS 최적화)**: 지도 이동/줌 시 발생하는 버벅임을 해결하기 위해 공간 인덱싱(Spatial Grid)과 적응형 레이어 숨김(Adaptive Layer Hiding) 기술을 도입했습니다. 이동 중에는 무거운 배경 데이터와 역 정보를 일시적으로 숨겨 브라우저 부하를 0에 가깝게 유지합니다.

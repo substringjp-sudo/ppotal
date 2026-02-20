@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { TopologyNode, TopologyEdge } from '../hooks/useLineTopology';
 import { Language } from '../lib/translations';
-import { translateName } from '../lib/lineUtils';
+
 
 interface TubeMapProps {
     nodes: TopologyNode[];
@@ -267,7 +267,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                     strokeLinejoin: 'round'
                                 }}
                             >
-                                {translateName(node.name, language, 'station')}
+                                {language === 'en' && node.name_en ? node.name_en : node.name}
                             </text>
                         </g>
                     );

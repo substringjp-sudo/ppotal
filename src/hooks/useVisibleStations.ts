@@ -98,7 +98,7 @@ export const useVisibleStations = ({
                                 const companyName = companyNameMap.get(cId) || String(cId);
                                 const lInfo = lineInfoMap.get(lId);
                                 const lineName = lInfo ? lInfo.name : String(lId);
-                                stationLines.add(`${companyName}::${lineName}`);
+                                stationLines.add(`${cId}::${lId}`);
                             }
                         });
                     }
@@ -121,13 +121,19 @@ export const useVisibleStations = ({
                     };
 
                     if (!data[name]) {
-                        data[name] = { nodes: [node], centroid: [s.lat, s.lon], lines: Array.from(stationLines) };
+                        data[name] = {
+                            nodes: [node],
+                            centroid: [s.lat, s.lon],
+                            lines: Array.from(stationLines),
+                            name_en: s.name_en
+                        };
                     } else {
                         data[name].nodes.push(node);
                         stationLines.forEach(l => { if (!data[name].lines.includes(l)) data[name].lines.push(l); });
                         const n = data[name].nodes.length;
                         data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + s.lat) / n;
                         data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + s.lon) / n;
+                        if (!data[name].name_en && s.name_en) data[name].name_en = s.name_en;
                     }
                 });
 
@@ -143,7 +149,7 @@ export const useVisibleStations = ({
                             const lInfo = lineInfoMap.get(lid);
                             if (lInfo) {
                                 const cName = companyNameMap.get(lInfo.companyId) || String(lInfo.companyId);
-                                jointLines.push(`${cName}::${lInfo.name}`);
+                                jointLines.push(`${lInfo.companyId}::${lid}`);
                             }
                         });
                     }

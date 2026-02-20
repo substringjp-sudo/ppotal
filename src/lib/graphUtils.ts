@@ -1,12 +1,14 @@
 import { Company, Line, Station, Section, RailData } from '../types/railData';
-import { normalizeKey, normalizeCompanyName } from './lineUtils';
 
 export interface StationNode {
     id: string; // station_id (from stations.json)
     name: string;
+    name_en?: string;
     company: string; // company NAME (looked up)
     line: string; // line NAME (looked up)
-    fullLineName: string; // keeping "Company::Line" format for compatibility
+    companyId: number;
+    lineId: number;
+    fullLineId: string; // "CompanyID::LineID" format
     coords: [number, number]; // [lon, lat]
 }
 
@@ -171,7 +173,7 @@ export class RailroadGraph {
                 if (allowedLines) {
                     const targetNode = this.nodes.get(neighbor.to);
                     if (targetNode) {
-                        const lineKey = targetNode.fullLineName;
+                        const lineKey = targetNode.fullLineId;
                         if (!allowedLines.includes(lineKey)) {
                             continue;
                         }
@@ -251,7 +253,7 @@ export class RailroadGraph {
                         // Check if target node belongs to allowed lines
                         // Note: normalizeKey might be needed if allowedLines formats differ, 
                         // but assuming exact match for now as per MapPane usage.
-                        if (!allowedLines.includes(targetNode.fullLineName)) {
+                        if (!allowedLines.includes(targetNode.fullLineId)) {
                             continue;
                         }
                     }
@@ -292,14 +294,16 @@ export class RailroadGraph {
             const company = parts[0];
             const line = parts[1];
             const simplifiedLineKey = `${company}::${line}`;
-            const fullLineName = this.lineIdMap.get(simplifiedLineKey) || simplifiedLineKey;
+            const fullLineId = this.lineIdMap.get(simplifiedLineKey) || simplifiedLineKey;
 
             const node: StationNode = {
                 id,
                 name: station.name,
                 company,
                 line,
-                fullLineName,
+                companyId: 0, // Not available in this format
+                lineId: 0, // Not available in this format
+                fullLineId: fullLineId,
                 coords: station.coords
             };
             this.addNode(node);
@@ -347,7 +351,7 @@ export class RailroadGraph {
      * Uses bidirectional adjacency for complete graph traversal.
      */
     getLineSegments(inputId: string): LineSegment[] {
-        const fullLineId = this.lineIdMap.get(inputId) || this.lineIdMap.get(normalizeKey(inputId)) || inputId;
+        const fullLineId = this.lineIdMap.get(inputId) || inputId;
         const lineEdges: { from: string, to: string, distance: number, geometry: [number, number][] }[] = [];
 
         for (const [u, edges] of this.adj.entries()) {
@@ -459,102 +463,6 @@ export class RailroadGraph {
         return segments;
     }
 
-    getLineSegmentsFromHierarchy(inputId: string, data: RailData): LineSegment[] {
-        const fullLineId = this.lineIdMap.get(inputId) || this.lineIdMap.get(normalizeKey(inputId)) || inputId;
-        const [companyName, lineName] = fullLineId.split('::');
-
-        let hierarchyLine: any = null;
-        if (data.hierarchy && data.hierarchy.companies) {
-            for (const companyId in data.hierarchy.companies) {
-                const comp = data.hierarchy.companies[companyId];
-                const companyObj = (data.companies as any)[comp.id];
-                if (companyObj && normalizeCompanyName(companyObj.name) === normalizeCompanyName(companyName)) {
-                    for (const lineIdKey in comp.lines) {
-                        const line = comp.lines[lineIdKey];
-                        // Hierarchy lines might not have 'name' directly, check data.lines
-                        // Check after normalizing line names as well
-                        const lineInfo = data.lines[line.id];
-                        if (lineInfo && (lineInfo.name === lineName || normalizeKey(`${companyName}::${lineInfo.name}`) === normalizeKey(fullLineId))) {
-                            hierarchyLine = line;
-                            break;
-                        }
-                    }
-                }
-                if (hierarchyLine) break;
-            }
-        }
-
-        if (!hierarchyLine || !hierarchyLine.sections) return [];
-
-        const sectionIds = hierarchyLine.sections as number[];
-        const sectionMap = new Map<number, any>();
-        data.sections.sections.forEach((s: any) => sectionMap.set(s.id, s));
-
-        const biAdj = new Map<string, Map<string, { distance: number, geometry: [number, number][] }>>();
-
-        sectionIds.forEach(id => {
-            const s = sectionMap.get(id);
-            if (!s) return;
-            if (!biAdj.has(s.start)) biAdj.set(s.start, new Map());
-            if (!biAdj.has(s.end)) biAdj.set(s.end, new Map());
-            biAdj.get(s.start)!.set(s.end, { distance: s.length / 1000, geometry: s.geometry });
-            biAdj.get(s.end)!.set(s.start, { distance: s.length / 1000, geometry: [...s.geometry].reverse() });
-        });
-
-        const segments: LineSegment[] = [];
-        const visitedEdgeKeys = new Set<string>();
-        const getEdgeKey = (u: string, v: string) => [u, v].sort().join('<->');
-
-        const traceSegment = (startNode: string, firstNeighbor: string) => {
-            const nodes = [startNode];
-            const edges: { from: string, to: string, distance: number }[] = [];
-            const geometry: [number, number][] = [];
-
-            const firstEdgeData = biAdj.get(startNode)!.get(firstNeighbor)!;
-            const firstKey = getEdgeKey(startNode, firstNeighbor);
-            if (visitedEdgeKeys.has(firstKey)) return null;
-            visitedEdgeKeys.add(firstKey);
-
-            nodes.push(firstNeighbor);
-            edges.push({ from: startNode, to: firstNeighbor, distance: firstEdgeData.distance });
-            geometry.push(...firstEdgeData.geometry);
-
-            let curr = firstNeighbor;
-            while (curr) {
-                const neighbors = biAdj.get(curr);
-                if (!neighbors) break;
-                const nextCandidates = Array.from(neighbors.keys()).filter(n => !visitedEdgeKeys.has(getEdgeKey(curr, n)));
-                if (nextCandidates.length === 1) {
-                    const next = nextCandidates[0];
-                    const edgeData = neighbors.get(next)!;
-                    visitedEdgeKeys.add(getEdgeKey(curr, next));
-                    nodes.push(next);
-                    edges.push({ from: curr, to: next, distance: edgeData.distance });
-                    geometry.push(...edgeData.geometry.slice(1));
-                    curr = next;
-                } else {
-                    break;
-                }
-            }
-            return { stations: nodes, edges, geometry };
-        };
-
-        const allNodes = Array.from(biAdj.keys());
-        const startNodes = allNodes.filter(n => (biAdj.get(n)?.size || 0) !== 2);
-        const rootNodes = startNodes.length > 0 ? startNodes : [allNodes[0]];
-
-        rootNodes.forEach(startNode => {
-            const neighbors = biAdj.get(startNode);
-            if (!neighbors) return;
-            neighbors.forEach((_, neighbor) => {
-                const seg = traceSegment(startNode, neighbor);
-                if (seg) segments.push(seg);
-            });
-        });
-
-        return segments;
-    }
-
     loadFromGranularData(data: RailData) {
         this.nodes.clear();
         this.adj.clear();
@@ -573,25 +481,32 @@ export class RailroadGraph {
         Object.values(data.stations).forEach((station: Station) => {
             let companyName = "Unknown";
             let lineName = "Unknown";
-            let fullLineName = "Unknown::Unknown";
+            let companyId = 0;
+            let lineId = 0;
+            let fullLineId = "0::0";
 
             if (station.platform_ids && station.platform_ids.length > 0) {
                 const firstPlatformId = station.platform_ids[0];
                 const platform = data.platforms[firstPlatformId];
                 if (platform) {
+                    companyId = platform.company;
                     companyName = companyNameMap.get(platform.company) || String(platform.company);
                     const lineInfo = lineNameMap.get(platform.line);
+                    lineId = platform.line;
                     lineName = lineInfo ? lineInfo.name : String(platform.line);
-                    fullLineName = `${companyName}::${lineName}`;
+                    fullLineId = `${companyId}::${lineId}`;
                 }
             }
 
             const node: StationNode = {
                 id: station.id,
                 name: station.name,
+                name_en: (station as any).name_en,
                 company: companyName,
                 line: lineName,
-                fullLineName: fullLineName,
+                companyId: companyId,
+                lineId: lineId,
+                fullLineId: fullLineId,
                 coords: [station.lon, station.lat]
             };
             this.addNode(node);
@@ -624,7 +539,9 @@ export class RailroadGraph {
                                     name: "", // Joints are unnamed
                                     company: "",
                                     line: "",
-                                    fullLineName: "",
+                                    companyId: 0,
+                                    lineId: 0,
+                                    fullLineId: "",
                                     coords: jointInfo ? jointInfo.coordinates : [0, 0]
                                 });
                             }
@@ -634,49 +551,64 @@ export class RailroadGraph {
             });
         }
 
-        // 2. Load Edges from railroad_graph.json
+        // 2. Load Edges from railroad_graph.json (with fallback to sections)
         const sectionMap = new Map<number, Section>();
         data.sections.sections.forEach((s: Section) => sectionMap.set(s.id, s));
 
-        Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
-            Object.entries(targets).forEach(([targetId, sectionIds]) => {
-                let totalDistance = 0;
-                let combinedGeometry: [number, number][] = [];
-                let lineId = "";
+        if (data.railroadGraph) {
+            Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
+                Object.entries(targets).forEach(([targetId, sectionIds]) => {
+                    let totalDistance = 0;
+                    let combinedGeometry: [number, number][] = [];
+                    let lineId = "";
 
-                let currentPos = sourceId;
+                    let currentPos = sourceId;
 
-                (sectionIds as number[]).forEach((secId: number) => {
-                    const section = sectionMap.get(secId);
-                    if (!section) return;
+                    (sectionIds as number[]).forEach((secId: number) => {
+                        const section = sectionMap.get(secId);
+                        if (!section) return;
 
-                    const lInfo = lineNameMap.get(section.line_id);
-                    const cName = companyNameMap.get(section.company_id) || "";
-                    const lName = lInfo ? lInfo.name : "";
-                    const thisLineId = `${cName}::${lName}`;
-                    if (!lineId) lineId = thisLineId;
+                        const lInfo = lineNameMap.get(section.line_id);
+                        const cName = companyNameMap.get(section.company_id) || "";
+                        const lName = lInfo ? lInfo.name : "";
+                        const thisLineId = `${section.company_id}::${section.line_id}`;
+                        if (!lineId) lineId = thisLineId;
 
-                    totalDistance += section.length / 1000;
+                        totalDistance += section.length / 1000;
 
-                    const geom = section.geometry;
+                        const geom = section.geometry;
 
-                    if (section.start === currentPos) {
-                        combinedGeometry.push(...geom);
-                        currentPos = section.end;
-                    } else if (section.end === currentPos) {
-                        combinedGeometry.push(...[...geom].reverse());
-                        currentPos = section.start;
-                    } else {
-                        combinedGeometry.push(...geom);
+                        if (section.start === currentPos) {
+                            combinedGeometry.push(...geom);
+                            currentPos = section.end;
+                        } else if (section.end === currentPos) {
+                            combinedGeometry.push(...[...geom].reverse());
+                            currentPos = section.start;
+                        } else {
+                            combinedGeometry.push(...geom);
+                        }
+                    });
+
+                    const existsForward = this.adj.get(sourceId)?.some(e => e.to === targetId);
+                    if (!existsForward) {
+                        this.addEdge(sourceId, targetId, totalDistance, combinedGeometry, lineId);
                     }
                 });
-
-                const existsForward = this.adj.get(sourceId)?.some(e => e.to === targetId);
-                if (!existsForward) {
-                    this.addEdge(sourceId, targetId, totalDistance, combinedGeometry, lineId);
-                }
             });
-        });
+        } else {
+            // Fallback: build directly from sections
+            data.sections.sections.forEach((section: Section) => {
+                const lineId = `${section.company_id}::${section.line_id}`;
+
+                this.addEdge(
+                    section.start,
+                    section.end,
+                    section.length / 1000,
+                    section.geometry,
+                    lineId
+                );
+            });
+        }
 
         // 3. Hierarchy / Line Mapping
         Object.values(data.lines).forEach((l: Line) => {
@@ -694,20 +626,7 @@ export class RailroadGraph {
                 exactList.push(simplifiedKey);
             }
 
-            // Register normalized match for robustness
-            const normalizedKey = normalizeKey(simplifiedKey);
-            if (normalizedKey !== simplifiedKey) {
-                // Ensure map points to fullId
-                this.lineIdMap.set(normalizedKey, fullId);
 
-                if (!this.reverseLineIdMap.has(normalizedKey)) {
-                    this.reverseLineIdMap.set(normalizedKey, []);
-                }
-                const normList = this.reverseLineIdMap.get(normalizedKey)!;
-                if (!normList.includes(simplifiedKey)) {
-                    normList.push(simplifiedKey);
-                }
-            }
         });
 
         // 4. Add Transfer Edges (Same station name)
@@ -772,7 +691,16 @@ export const buildGraph = (stationsGeoJson: any, sectionGeoJson: any, hierarchy:
             (coords[0][1] + coords[coords.length - 1][1]) / 2
         ];
 
-        const node: StationNode = { id, name, company, line, fullLineName: lineKey, coords: midpoint };
+        const node: StationNode = {
+            id,
+            name,
+            company,
+            line,
+            companyId: 0,
+            lineId: 0,
+            fullLineId: lineKey,
+            coords: midpoint
+        };
         graph.addNode(node);
 
         if (!stationMap[lineKey]) stationMap[lineKey] = [];

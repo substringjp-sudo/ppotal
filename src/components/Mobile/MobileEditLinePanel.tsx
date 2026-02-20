@@ -2,10 +2,10 @@ import React, { useMemo } from 'react';
 import { StationNode, LineSegment } from '../../lib/graphUtils';
 import TubeMap from '../TubeMap';
 import { useLineTopology } from '../../hooks/useLineTopology';
-import { translateName } from '../../lib/lineUtils';
+
 import { Language } from '../../lib/translations';
-import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../../lib/railwayData';
-import { getOfficialColor } from '../../lib/lineColors';
+import { getLineColor } from '../../lib/lineColors';
+import { RailData } from '../../types/railData';
 
 interface MobileEditLinePanelProps {
     lineId: string;
@@ -17,6 +17,7 @@ interface MobileEditLinePanelProps {
     onDragUpdate?: (waypoints: string[]) => void;
     onClose: () => void;
     language: Language;
+    railData: RailData | null;
 }
 
 const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
@@ -29,12 +30,22 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
     onDragUpdate,
     onClose,
     language,
+    railData,
 }) => {
     const [company, lineName] = lineId.split('::');
-    const lineColor = useMemo(() => getOfficialColor(lineId) || '#3498db', [lineId]);
+    const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
     // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
+
+    const companyData = railData?.companies[company];
+    const lineData = railData?.lines[lineName];
+
+    const cNamePrimary = language === 'en' ? (companyData?.name_en || company) : (companyData?.name || company);
+    const lNamePrimary = language === 'en' ? (lineData?.name_en || lineName) : (lineData?.name || lineName);
+
+    const cNameSecondary = language === 'en' ? (companyData?.name || "") : (companyData?.name_en || "");
+    const lNameSecondary = language === 'en' ? (lineData?.name || "") : (lineData?.name_en || "");
 
     return (
         <div style={{
@@ -56,15 +67,22 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '12px', color: '#666', fontWeight: 'bold' }}>
-                        {translateName(company, language, 'company')}
-                    </span>
-                    <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                        {translateName(lineName, language, 'line')}
-                    </span>
-                    <span style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>
-                        두 역을 순서대로 선택하여 이동 경로를 기록하세요.
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                        <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
+                            {language === 'en' ? (railData?.companies[company]?.name_en || company) : (railData?.companies[company]?.name || company)}
+                        </span>
+                        <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
+                            {language === 'en' ? (railData?.lines[lineName]?.name_en || lineName) : (railData?.lines[lineName]?.name || lineName)}
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', opacity: 0.6 }}>
+                        <span style={{ fontSize: '11px', fontWeight: '500' }}>
+                            {railData?.companies[company]?.name_en || ""}
+                        </span>
+                        <span style={{ fontSize: '13px', fontWeight: '500' }}>
+                            {railData?.lines[lineName]?.name_en || ""}
+                        </span>
+                    </div>
                 </div>
                 <button
                     onClick={onClose}
@@ -116,7 +134,7 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                     fontWeight: 'bold'
                 }}>!</div>
                 <span style={{ fontSize: '13px', color: '#444' }}>
-                    노선도에서 역을 탭하여 시작점과 도착점을 지정할 수 있습니다.
+                    {language === 'en' ? "Tap stations on the map to specify start and end points." : "노선도에서 역을 탭하여 시작점과 도착점을 지정할 수 있습니다."}
                 </span>
             </div>
         </div>

@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 
 // 카테고리 정의 (신칸센은 별도 카테고리 '0'으로 관리)
 export const CATEGORY_MAP: Record<number, { name: string; name_en: string }> = {
-    0: { name: '新幹線', name_en: 'Shinkansen' },
-    1: { name: 'JR 그룹', name_en: 'JR Group' },
-    2: { name: '주요 사철', name_en: 'Major Private Railways' },
-    3: { name: '지방/중소 사철', name_en: 'Local/Minor Private Railways' },
-    4: { name: '제3섹터 철도', name_en: 'Third-Sector Railways' },
-    5: { name: '공영/시영 교통', name_en: 'Public/Municipal Transport' },
-    6: { name: '특수/기타 운송', name_en: 'Specialized/Other Transport' },
+    0: { name: '신칸센', name_en: 'Shinkansen' },
+    1: { name: 'JR', name_en: 'JR' },
+    2: { name: '대형사철', name_en: 'Major Private' },
+    3: { name: '일반사철', name_en: 'Local Private' },
+    4: { name: '3섹터', name_en: 'Third-Sector' },
+    5: { name: '공영교통', name_en: 'Public/Municipal' },
+    6: { name: '기타철도', name_en: 'Specialized/Other' },
 };
 
 // 카테고리 ID를 키로 사용하는 동적 계층 구조 타입
@@ -33,30 +33,28 @@ export const useStationHierarchy = (railData: any | null) => {
         const lengths: Record<string, number> = {};
         if (railData.lines) {
             Object.values(railData.lines).forEach((line: any) => {
-                const company = railData.companies[line.corp_id];
-                const companyName = company ? company.name : line.corp_id;
-                const lineName = line.name;
-                if (companyName && lineName) {
-                    const normalizedLineName = lineName.replace(/(線| Line| 선)$/, "").trim();
-                    lengths[`${companyName}::${normalizedLineName}`] = line.total_length || 0;
-                }
+                lengths[`${line.corp_id}::${line.id}`] = line.total_length || 0;
             });
         }
         setLineLengths(lengths);
 
         const groups: GroupedHierarchy = {};
 
-        Object.entries(data).forEach(([companyId, lines]: [string, any]) => {
+        const hierarchyData = data.companies || data;
+
+        Object.entries(hierarchyData).forEach(([companyId, companyObj]: [string, any]) => {
             const companyInfo = railData.companies?.[companyId];
-            
-            // 회사 정보가 없는 경우 '지방/중소 사철' (3)을 기본값으로 사용
             const companyCategoryId = companyInfo?.category_id ?? 3;
+
+            // Handle nested 'lines' if it exists, otherwise use companyObj directly
+            const lines = companyObj.lines || companyObj;
 
             Object.entries(lines).forEach(([lineId, stations]) => {
                 const lineInfo = railData.lines?.[lineId];
                 const lineName = lineInfo?.name || "";
+                const lineNameEn = lineInfo?.name_en || "";
 
-                // 신칸센 노선은 별도 최상위 그룹으로 분류
+                // 신칸센 노선 판별 (이름에 '新幹線' 포함 여부)
                 const isShinkansen = lineName.includes('新幹線');
                 const targetCategoryId = isShinkansen ? '0' : String(companyCategoryId);
 
@@ -66,7 +64,13 @@ export const useStationHierarchy = (railData: any | null) => {
                 if (!groups[targetCategoryId][companyId]) {
                     groups[targetCategoryId][companyId] = {};
                 }
-                groups[targetCategoryId][companyId][lineId] = stations;
+
+                // 번역을 위해 단순 배열이 아닌 객체로 저장
+                groups[targetCategoryId][companyId][lineId] = {
+                    stations,
+                    name: lineName,
+                    name_en: lineNameEn
+                };
             });
         });
 

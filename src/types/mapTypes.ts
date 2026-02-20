@@ -10,5 +10,6 @@ export interface ProcessedStation {
     nodes: StaticNode[];
     centroid: [number, number];
     lines: string[];
+    name_en?: string;
     isJoint?: boolean;
 }

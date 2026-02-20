@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import React from 'react';
-import { translateName } from '../lib/lineUtils';
+
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import HowToModal from '../components/HowToModal';
@@ -498,6 +498,7 @@ const AppClient = () => {
                                 onClose={() => setActiveLine(null)}
                                 language={language}
                                 onToggleLine={toggleLine}
+                                railData={railData}
                             />
                         </div>
                     )}
@@ -521,6 +522,7 @@ const AppClient = () => {
                         language={language}
                         recordedTrips={recordedTrips}
                         onDeleteTrip={handleDeleteTrip}
+                        railData={railData}
                     />
                 </div>
             </div>
