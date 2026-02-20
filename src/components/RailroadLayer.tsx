@@ -17,6 +17,7 @@ interface RailroadLayerProps {
     isMobile: boolean;
     isMoving?: boolean;
     language: any;
+    usedSectionIds?: Set<number>;
 }
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
@@ -29,7 +30,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     zoomLevel,
     isMobile,
     isMoving = false,
-    language
+    language,
+    usedSectionIds = new Set()
 }) => {
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
@@ -40,12 +42,46 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return true;
     }, [selectionSet, isNoneExplicitlySelected, activeLine]);
 
-    const dynamicSmoothFactor = useMemo(() => {
-        if (zoomLevel <= 8) return 2.0;
-        return 1.0;
+    // Unified discrete zoom level for stable styles
+    const zoomGroup = useMemo(() => {
+        if (zoomLevel <= 7) return 1;
+        if (zoomLevel <= 11) return 2;
+        if (zoomLevel <= 13) return 3;
+        return 4;
     }, [zoomLevel]);
 
-    const geoJsonData = useMemo(() => {
+    const dynamicSmoothFactor = useMemo(() => {
+        if (zoomGroup <= 2) return 2.0;
+        return 1.0;
+    }, [zoomGroup]);
+
+    const styleConfig = useMemo(() => {
+        // Stages: 1 (5-7), 2 (8-11), 3 (12-13), 4 (14+)
+        let weightFactor = 1.0;
+        if (zoomGroup === 1) weightFactor = 0.5;
+        else if (zoomGroup === 2) weightFactor = 0.8;
+
+        // Discrete weights per stage
+        const baseVisibilityWeight = (zoomGroup >= 3 ? 5 : (zoomGroup === 2 ? 2.5 : 1)) * weightFactor;
+        const baseInvisibilityWeight = (zoomGroup >= 3 ? 3 : 1) * weightFactor;
+        const usedWeight = (zoomGroup >= 3 ? 8 : (zoomGroup === 2 ? 4 : 2)) * weightFactor;
+        const usedGlowWeight = (zoomGroup >= 3 ? 12 : (zoomGroup === 2 ? 7 : 4)) * weightFactor;
+        const casingWeight = baseVisibilityWeight + (zoomGroup >= 3 ? 1.5 : 1);
+        const highlightWeight = 12 * weightFactor;
+
+        return {
+            weightFactor,
+            baseVisibilityWeight,
+            baseInvisibilityWeight,
+            usedWeight,
+            usedGlowWeight,
+            casingWeight,
+            highlightWeight,
+            smoothFactor: dynamicSmoothFactor
+        };
+    }, [zoomGroup, dynamicSmoothFactor]);
+
+    const mergedGeoJsonData = useMemo(() => {
         if (!railroadNetwork) return null;
 
         const features: any[] = [];
@@ -64,17 +100,22 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 color: l.color
             }));
 
-            // Group sections by line_id (MultiLineString per line)
-            const lineSections = new Map<number, any[]>();
-            // sections is { sections: Section[] }
+            // Group sections by (line_id, isUsed) (MultiLineString per line/usage state)
+            const groupedSections = new Map<string, any[]>();
             if (data.sections && Array.isArray(data.sections.sections)) {
                 data.sections.sections.forEach((s: Section) => {
-                    if (!lineSections.has(s.line_id)) lineSections.set(s.line_id, []);
-                    lineSections.get(s.line_id)!.push(s.geometry);
+                    const isUsed = usedSectionIds.has(s.id);
+                    const key = `${s.line_id}_${isUsed}`;
+                    if (!groupedSections.has(key)) groupedSections.set(key, []);
+                    groupedSections.get(key)!.push(s.geometry);
                 });
             }
 
-            lineSections.forEach((geoms, lineId) => {
+            groupedSections.forEach((geoms, key) => {
+                const [lineIdStr, isUsedStr] = key.split('_');
+                const lineId = parseInt(lineIdStr);
+                const isUsed = isUsedStr === 'true';
+
                 const info = lineInfoMap.get(lineId);
                 if (!info) return;
                 const companyInfo = companyMap.get(info.companyId);
@@ -90,14 +131,14 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         company: companyName,
                         company_en: companyInfo?.name_en || '',
                         color: getLineColor(fullId, data) || '#999',
-                        endpoints: '' // Granular data doesn't provide pre-calculated endpoints
+                        isUsed: isUsed
                     },
                     geometry: { type: 'MultiLineString', coordinates: geoms }
                 });
             });
 
         } else if (railroadNetwork.routes) {
-            // Systematic Data (Original Logic)
+            // Systematic Data
             railroadNetwork.routes.forEach((route: any) => {
                 if (!route) return;
                 let coordinates = route.routeGeometry || route.edges?.map((e: any) => e.geometry) || [];
@@ -109,7 +150,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         name: route.line || route.name || '',
                         company: route.company,
                         color: getLineColor(route.id, railroadNetwork) || route.color || '#999',
-                        endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : ''
+                        endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : '',
+                        isUsed: false // Fallback logic for trips if needed
                     },
                     geometry: { type: 'MultiLineString', coordinates }
                 });
@@ -117,72 +159,78 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         }
 
         return { type: 'FeatureCollection', features };
-    }, [railroadNetwork]);
+    }, [railroadNetwork, usedSectionIds, activeLine, hoveredLine, isFilterActive, selectionSet]);
 
-    const highlightData = useMemo(() => {
-        if (!geoJsonData) return null;
-        const highlighted = geoJsonData.features.filter(f => f.properties.id === activeLine || f.properties.id === hoveredLine);
-        return highlighted.length > 0 ? { type: 'FeatureCollection', features: highlighted } : null;
-    }, [geoJsonData, activeLine, hoveredLine]);
-
-    // Visually-only Styles (Non-interactive)
-    const baseStyle = (feature: any) => {
+    // Unified Style Function: Decides all visuals in one pass
+    const unifiedStyle = (feature: any) => {
         const id = feature.properties.id;
+        const isUsed = feature.properties.isUsed;
+        const isHovered = hoveredLine === id;
+        const isClicked = activeLine === id;
         const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
-        const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
 
-        let color = isVisible ? feature.properties.color : '#999999';
-        let weight = (isVisible ? (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) : (zoomLevel >= 12 ? 3 : 1)) * weightFactor;
+        // 1. Determine Color
+        let color = feature.properties.color;
+        if (isHovered) color = '#FFD700';
+        else if (isClicked) color = '#007AFF';
+        else if (isUsed) color = '#FFD700';
+        else if (!isVisible) color = '#999999';
+
+        // 2. Determine Weight
+        let weight = isVisible ? styleConfig.baseVisibilityWeight : styleConfig.baseInvisibilityWeight;
+        if (isUsed) weight = styleConfig.usedWeight;
+        if (isHovered || isClicked) weight = styleConfig.highlightWeight;
+
+        // 3. Determine Opacity
         let opacity = isVisible ? 0.8 : 0.4;
-        let dashArray = isVisible ? undefined : '4, 8';
+        if (isUsed) opacity = 0.9;
+        if (isHovered || isClicked) opacity = 1.0;
 
-        return { color, weight, opacity, dashArray, lineCap: 'round', lineJoin: 'round', smoothFactor: dynamicSmoothFactor, interactive: false } as L.PathOptions;
+        return {
+            color,
+            weight,
+            opacity,
+            dashArray: isVisible ? undefined : '4, 8',
+            lineCap: 'round',
+            lineJoin: 'round',
+            smoothFactor: styleConfig.smoothFactor,
+            interactive: true, // This is now the interaction layer
+        } as L.PathOptions;
     };
 
     const casingStyle = (feature: any) => {
         const id = feature.properties.id;
         const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
-        if (!isVisible && zoomLevel < 10) return { opacity: 0, interactive: false }; // Hide casing for invisible lines at low zoom
 
-        const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
-        let baseWeight = (isVisible ? (zoomLevel >= 12 ? 5 : (zoomLevel >= 10 ? 3 : 1)) : (zoomLevel >= 12 ? 3 : 1)) * weightFactor;
+        // Casing is only for visibility and aesthetics, hide if moving or too far out
+        if (!isVisible) return { opacity: 0, interactive: false };
 
         return {
             color: '#000000',
-            weight: baseWeight + (zoomLevel >= 12 ? 1.5 : 1), // Slightly thicker
-            opacity: isVisible ? 0.6 : 0.2,
+            weight: styleConfig.casingWeight,
+            opacity: 0.5,
             lineCap: 'round',
             lineJoin: 'round',
-            smoothFactor: dynamicSmoothFactor,
+            smoothFactor: styleConfig.smoothFactor,
             interactive: false
         } as L.PathOptions;
     };
 
-    const highlightStyle = (feature: any) => {
+    const glowStyle = (feature: any) => {
+        const isUsed = feature.properties.isUsed;
         const id = feature.properties.id;
         const isHovered = hoveredLine === id;
-        const isClicked = activeLine === id;
-        const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
+
+        if (!isUsed && !isHovered) return { opacity: 0, interactive: false };
 
         return {
-            color: isHovered ? '#FFD700' : (isClicked ? '#007AFF' : 'transparent'),
-            weight: 12 * weightFactor,
-            opacity: 0.7,
+            color: '#FFD700',
+            weight: isHovered ? styleConfig.highlightWeight + 4 : styleConfig.usedGlowWeight,
+            opacity: isHovered ? 0.4 : 0.3,
             lineCap: 'round',
             lineJoin: 'round',
-            smoothFactor: dynamicSmoothFactor,
+            smoothFactor: styleConfig.smoothFactor,
             interactive: false
-        } as L.PathOptions;
-    };
-
-    // Invisible Hit Area Style (Topmost, handles mouse events)
-    const hitAreaStyle = () => {
-        return {
-            color: 'transparent', // Invisible
-            weight: 20,           // Very generous hit box
-            opacity: 0,
-            interactive: true,
-            pane: 'station-interact' // Topmost shared interaction pane
         } as L.PathOptions;
     };
 
@@ -250,51 +298,44 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         });
     };
 
-    if (!geoJsonData) return null;
+    if (!mergedGeoJsonData) return null;
+
+    // Unified key to force re-render on important data changes
+    const layerKey = useMemo(() => {
+        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}_${activeLine || 'none'}_${hoveredLine || 'none'}`;
+    }, [zoomGroup, usedSectionIds.size, selectionSet.size, activeLine, hoveredLine]);
 
     return (
         <>
-            {/* 1. Visual Highlight (Bottom) - Hide during move for performance */}
-            {highlightData && !isMoving && (
+            {/* 1. Under-layers: Glows and Outlines (Non-interactive) */}
+            {mergedGeoJsonData && (
                 <GeoJSON
-                    key={`vis-highlight-${activeLine}-${hoveredLine}`}
-                    data={highlightData as any}
-                    style={highlightStyle}
+                    key={`rail-under-${layerKey}`}
+                    data={mergedGeoJsonData as any}
+                    style={glowStyle}
                     interactive={false}
                     pane="railroad-glow"
                 />
             )}
 
-            {/* 2. Line Casing (Outlines) - Only show at zoom 10+ and NOT moving */}
-            {zoomLevel >= 10 && !isMoving && (
+            {zoomGroup >= 3 && mergedGeoJsonData && (
                 <GeoJSON
-                    key="vis-casing"
-                    data={geoJsonData as any}
+                    key={`rail-casing-${layerKey}`}
+                    data={mergedGeoJsonData as any}
                     style={casingStyle}
                     interactive={false}
                     pane="railroad-casing"
                 />
             )}
 
-            {/* 3. Visual Main Line */}
-            <GeoJSON
-                key="vis-base"
-                data={geoJsonData as any}
-                style={baseStyle}
-                interactive={false}
-                pane="railroad-lines"
-                {...({ smoothFactor: dynamicSmoothFactor } as any)}
-            />
-
-            {/* 4. Invisible Interaction Hit Area - ONLY active when not moving */}
-            {!isMoving && (
+            {/* 2. Main Interactive Line Layer (Unified visuals and interaction) */}
+            {mergedGeoJsonData && (
                 <GeoJSON
-                    key="hit-area"
-                    data={geoJsonData as any}
-                    style={hitAreaStyle}
+                    key={`rail-main-${layerKey}`}
+                    data={mergedGeoJsonData as any}
+                    style={unifiedStyle}
                     onEachFeature={onEachFeature}
-                    pane="station-interact"
-                    {...({ smoothFactor: dynamicSmoothFactor } as any)}
+                    pane="railroad-lines"
                 />
             )}
         </>

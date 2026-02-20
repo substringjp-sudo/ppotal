@@ -19,6 +19,7 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Throttled Interactions**: Map bounds updates and hover highlights are throttled to prevent main-thread saturation during rapid interaction.
 - **Geometry Simplification**: Implemented dynamic `smoothFactor` for all vector layers, reducing vertex count at lower zoom levels without sacrificing critical topology.
 - **ID-Based Lookup System**: Refactored the entire data flow to use numeric IDs (`companyId::lineId`) for line and company lookups. This eliminated name-based mapping errors and ensures 100% accuracy in data retrieval for translations, stats, and topology.
+- **Granular Trip Recording (ID-Based)**: Refactored the trip recording engine to capture exact station, section, and joint IDs. This transition from coordinate-based guessing to precise graph tracking allows for perfect reconstruction of journeys and zero-latency path highlighting.
 
 
 ## Implementation History & Current State
@@ -29,6 +30,8 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 4.  **Topology Visualization Restoration**: Reverted to `TubeMap.tsx` from `vis-network` to prioritize drag-and-drop interactivity. ✅
 5.  **Hover Interaction Delay**: Maintained deliberate interaction feel through throttled hover events. ✅
 6. **ID-Based Refactoring**: Migrated `RoutingGraph`, `Sidebar`, `LineDetailPane`, and map layers to a robust ID-based lookup system. This fixed missing translations and 0/0km stats. ✅
+7. **Integrated Record Highlighting**: Merged `TripLayer` into `RailroadLayer`. Recorded trips are now rendered as high-fidelity railroad sections with gold glow and borders, rather than simplified overlay lines. ✅
+8. **Precision Trip Logic**: Updated `useTripRecorder` and `graphUtils` to store and retrieve specific `sectionIds` and `nodeIds`. ✅
 
 
 # 메모

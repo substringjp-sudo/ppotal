@@ -1557,7 +1557,40 @@
         "16": {
           "id": 16,
           "corp_id": 9,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "001649",
+              "platform_id": "001650"
+            },
+            {
+              "station_id": "001669",
+              "platform_id": "001670"
+            },
+            {
+              "station_id": "001648",
+              "platform_id": "001648"
+            },
+            {
+              "station_id": "001656",
+              "platform_id": "001656"
+            },
+            {
+              "station_id": "001614",
+              "platform_id": "001614"
+            },
+            {
+              "station_id": "001577",
+              "platform_id": "001577"
+            },
+            {
+              "station_id": "001633",
+              "platform_id": "001633"
+            },
+            {
+              "station_id": "001596",
+              "platform_id": "001596"
+            }
+          ],
           "sections": [
             244,
             245,
@@ -4123,7 +4156,16 @@
         "50": {
           "id": 50,
           "corp_id": 28,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "008660",
+              "platform_id": "008660"
+            },
+            {
+              "station_id": "008630",
+              "platform_id": "008630"
+            }
+          ],
           "sections": [
             2800
           ],
@@ -7273,7 +7315,176 @@
         "70": {
           "id": 70,
           "corp_id": 30,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "003280",
+              "platform_id": "003281"
+            },
+            {
+              "station_id": "003248",
+              "platform_id": "003250"
+            },
+            {
+              "station_id": "003747",
+              "platform_id": "003749"
+            },
+            {
+              "station_id": "003166",
+              "platform_id": "003167"
+            },
+            {
+              "station_id": "003203",
+              "platform_id": "003205"
+            },
+            {
+              "station_id": "003173",
+              "platform_id": "003175"
+            },
+            {
+              "station_id": "003511",
+              "platform_id": "003511"
+            },
+            {
+              "station_id": "003482",
+              "platform_id": "003482"
+            },
+            {
+              "station_id": "003516",
+              "platform_id": "003516"
+            },
+            {
+              "station_id": "003438",
+              "platform_id": "003438"
+            },
+            {
+              "station_id": "003664",
+              "platform_id": "003664"
+            },
+            {
+              "station_id": "003445",
+              "platform_id": "003445"
+            },
+            {
+              "station_id": "003725",
+              "platform_id": "003725"
+            },
+            {
+              "station_id": "003718",
+              "platform_id": "003718"
+            },
+            {
+              "station_id": "003731",
+              "platform_id": "003731"
+            },
+            {
+              "station_id": "003452",
+              "platform_id": "003458"
+            },
+            {
+              "station_id": "003699",
+              "platform_id": "003699"
+            },
+            {
+              "station_id": "003492",
+              "platform_id": "003492"
+            },
+            {
+              "station_id": "003240",
+              "platform_id": "003240"
+            },
+            {
+              "station_id": "003219",
+              "platform_id": "003219"
+            },
+            {
+              "station_id": "003567",
+              "platform_id": "003567"
+            },
+            {
+              "station_id": "003496",
+              "platform_id": "003496"
+            },
+            {
+              "station_id": "003472",
+              "platform_id": "003472"
+            },
+            {
+              "station_id": "003597",
+              "platform_id": "003597"
+            },
+            {
+              "station_id": "003485",
+              "platform_id": "003485"
+            },
+            {
+              "station_id": "003392",
+              "platform_id": "003392"
+            },
+            {
+              "station_id": "003394",
+              "platform_id": "003394"
+            },
+            {
+              "station_id": "003609",
+              "platform_id": "003609"
+            },
+            {
+              "station_id": "003342",
+              "platform_id": "003342"
+            },
+            {
+              "station_id": "003290",
+              "platform_id": "003290"
+            },
+            {
+              "station_id": "003273",
+              "platform_id": "003273"
+            },
+            {
+              "station_id": "003412",
+              "platform_id": "003412"
+            },
+            {
+              "station_id": "003301",
+              "platform_id": "003301"
+            },
+            {
+              "station_id": "003521",
+              "platform_id": "003521"
+            },
+            {
+              "station_id": "003331",
+              "platform_id": "003331"
+            },
+            {
+              "station_id": "003417",
+              "platform_id": "003414"
+            },
+            {
+              "station_id": "003339",
+              "platform_id": "003339"
+            },
+            {
+              "station_id": "003346",
+              "platform_id": "003346"
+            },
+            {
+              "station_id": "003302",
+              "platform_id": "003302"
+            },
+            {
+              "station_id": "003303",
+              "platform_id": "003303"
+            },
+            {
+              "station_id": "003380",
+              "platform_id": "003380"
+            },
+            {
+              "station_id": "003274",
+              "platform_id": "003274"
+            }
+          ],
           "sections": [
             1514,
             1517,
@@ -7445,7 +7656,36 @@
         "74": {
           "id": 74,
           "corp_id": 31,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "004424",
+              "platform_id": "004424"
+            },
+            {
+              "station_id": "004415",
+              "platform_id": "004415"
+            },
+            {
+              "station_id": "004418",
+              "platform_id": "004418"
+            },
+            {
+              "station_id": "004408",
+              "platform_id": "004408"
+            },
+            {
+              "station_id": "004417",
+              "platform_id": "004417"
+            },
+            {
+              "station_id": "004407",
+              "platform_id": "004407"
+            },
+            {
+              "station_id": "004413",
+              "platform_id": "004413"
+            }
+          ],
           "sections": [
             1700,
             1702,
@@ -7459,7 +7699,208 @@
         "75": {
           "id": 75,
           "corp_id": 31,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "004633",
+              "platform_id": "004631"
+            },
+            {
+              "station_id": "004790",
+              "platform_id": "004790"
+            },
+            {
+              "station_id": "005020",
+              "platform_id": "005021"
+            },
+            {
+              "station_id": "005199",
+              "platform_id": "005200"
+            },
+            {
+              "station_id": "004331",
+              "platform_id": "004332"
+            },
+            {
+              "station_id": "004424",
+              "platform_id": "004425"
+            },
+            {
+              "station_id": "004268",
+              "platform_id": "004268"
+            },
+            {
+              "station_id": "004244",
+              "platform_id": "004244"
+            },
+            {
+              "station_id": "004184",
+              "platform_id": "004184"
+            },
+            {
+              "station_id": "004125",
+              "platform_id": "004125"
+            },
+            {
+              "station_id": "004095",
+              "platform_id": "004101"
+            },
+            {
+              "station_id": "004153",
+              "platform_id": "004153"
+            },
+            {
+              "station_id": "004220",
+              "platform_id": "004220"
+            },
+            {
+              "station_id": "004042",
+              "platform_id": "004043"
+            },
+            {
+              "station_id": "005144",
+              "platform_id": "005144"
+            },
+            {
+              "station_id": "004506",
+              "platform_id": "004506"
+            },
+            {
+              "station_id": "004877",
+              "platform_id": "004877"
+            },
+            {
+              "station_id": "004719",
+              "platform_id": "004719"
+            },
+            {
+              "station_id": "005161",
+              "platform_id": "005161"
+            },
+            {
+              "station_id": "005159",
+              "platform_id": "005159"
+            },
+            {
+              "station_id": "004307",
+              "platform_id": "004307"
+            },
+            {
+              "station_id": "004560",
+              "platform_id": "004560"
+            },
+            {
+              "station_id": "004448",
+              "platform_id": "004449"
+            },
+            {
+              "station_id": "005066",
+              "platform_id": "005066"
+            },
+            {
+              "station_id": "004367",
+              "platform_id": "004367"
+            },
+            {
+              "station_id": "004538",
+              "platform_id": "004538"
+            },
+            {
+              "station_id": "004756",
+              "platform_id": "004756"
+            },
+            {
+              "station_id": "004520",
+              "platform_id": "004520"
+            },
+            {
+              "station_id": "005163",
+              "platform_id": "005163"
+            },
+            {
+              "station_id": "004944",
+              "platform_id": "004944"
+            },
+            {
+              "station_id": "004986",
+              "platform_id": "004986"
+            },
+            {
+              "station_id": "005206",
+              "platform_id": "005206"
+            },
+            {
+              "station_id": "004612",
+              "platform_id": "004612"
+            },
+            {
+              "station_id": "005227",
+              "platform_id": "005227"
+            },
+            {
+              "station_id": "004712",
+              "platform_id": "004712"
+            },
+            {
+              "station_id": "004660",
+              "platform_id": "004660"
+            },
+            {
+              "station_id": "004724",
+              "platform_id": "004724"
+            },
+            {
+              "station_id": "004598",
+              "platform_id": "004598"
+            },
+            {
+              "station_id": "004852",
+              "platform_id": "004852"
+            },
+            {
+              "station_id": "004465",
+              "platform_id": "004465"
+            },
+            {
+              "station_id": "004927",
+              "platform_id": "004927"
+            },
+            {
+              "station_id": "004569",
+              "platform_id": "004569"
+            },
+            {
+              "station_id": "005181",
+              "platform_id": "005181"
+            },
+            {
+              "station_id": "005113",
+              "platform_id": "005113"
+            },
+            {
+              "station_id": "004579",
+              "platform_id": "004579"
+            },
+            {
+              "station_id": "005202",
+              "platform_id": "005202"
+            },
+            {
+              "station_id": "004319",
+              "platform_id": "004319"
+            },
+            {
+              "station_id": "004399",
+              "platform_id": "004399"
+            },
+            {
+              "station_id": "004696",
+              "platform_id": "004696"
+            },
+            {
+              "station_id": "004294",
+              "platform_id": "004294"
+            }
+          ],
           "sections": [
             1712,
             1716,
@@ -7523,7 +7964,36 @@
         "76": {
           "id": 76,
           "corp_id": 31,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "004331",
+              "platform_id": "004331"
+            },
+            {
+              "station_id": "004364",
+              "platform_id": "004364"
+            },
+            {
+              "station_id": "004349",
+              "platform_id": "004349"
+            },
+            {
+              "station_id": "004356",
+              "platform_id": "004356"
+            },
+            {
+              "station_id": "004373",
+              "platform_id": "004374"
+            },
+            {
+              "station_id": "004368",
+              "platform_id": "004368"
+            },
+            {
+              "station_id": "004382",
+              "platform_id": "004382"
+            }
+          ],
           "sections": [
             1682,
             1683,
@@ -8157,7 +8627,16 @@
         "86": {
           "id": 86,
           "corp_id": 33,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "005788",
+              "platform_id": "005788"
+            },
+            {
+              "station_id": "005778",
+              "platform_id": "005778"
+            }
+          ],
           "sections": [
             1813
           ],
@@ -8171,7 +8650,76 @@
         "87": {
           "id": 87,
           "corp_id": 34,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006026",
+              "platform_id": "006026"
+            },
+            {
+              "station_id": "005962",
+              "platform_id": "005962"
+            },
+            {
+              "station_id": "006043",
+              "platform_id": "006050"
+            },
+            {
+              "station_id": "006091",
+              "platform_id": "006091"
+            },
+            {
+              "station_id": "005978",
+              "platform_id": "005978"
+            },
+            {
+              "station_id": "005950",
+              "platform_id": "005950"
+            },
+            {
+              "station_id": "005960",
+              "platform_id": "005960"
+            },
+            {
+              "station_id": "005949",
+              "platform_id": "005949"
+            },
+            {
+              "station_id": "005969",
+              "platform_id": "005969"
+            },
+            {
+              "station_id": "005970",
+              "platform_id": "005970"
+            },
+            {
+              "station_id": "006162",
+              "platform_id": "006162"
+            },
+            {
+              "station_id": "006224",
+              "platform_id": "006224"
+            },
+            {
+              "station_id": "006125",
+              "platform_id": "006125"
+            },
+            {
+              "station_id": "006212",
+              "platform_id": "006212"
+            },
+            {
+              "station_id": "006192",
+              "platform_id": "006192"
+            },
+            {
+              "station_id": "005959",
+              "platform_id": "005959"
+            },
+            {
+              "station_id": "005957",
+              "platform_id": "005957"
+            }
+          ],
           "sections": [
             1633,
             1637,
@@ -8807,7 +9355,16 @@
         "95": {
           "id": 95,
           "corp_id": 35,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006358",
+              "platform_id": "006358"
+            },
+            {
+              "station_id": "006352",
+              "platform_id": "006352"
+            }
+          ],
           "sections": [
             1413
           ],
@@ -8844,7 +9401,76 @@
         "97": {
           "id": 97,
           "corp_id": 36,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "001124",
+              "platform_id": "001124"
+            },
+            {
+              "station_id": "001151",
+              "platform_id": "001151"
+            },
+            {
+              "station_id": "001195",
+              "platform_id": "001195"
+            },
+            {
+              "station_id": "001173",
+              "platform_id": "001173"
+            },
+            {
+              "station_id": "001189",
+              "platform_id": "001189"
+            },
+            {
+              "station_id": "001199",
+              "platform_id": "001199"
+            },
+            {
+              "station_id": "001147",
+              "platform_id": "001147"
+            },
+            {
+              "station_id": "001205",
+              "platform_id": "001205"
+            },
+            {
+              "station_id": "001136",
+              "platform_id": "001136"
+            },
+            {
+              "station_id": "001200",
+              "platform_id": "001200"
+            },
+            {
+              "station_id": "001202",
+              "platform_id": "001202"
+            },
+            {
+              "station_id": "001198",
+              "platform_id": "001198"
+            },
+            {
+              "station_id": "001169",
+              "platform_id": "001169"
+            },
+            {
+              "station_id": "001166",
+              "platform_id": "001166"
+            },
+            {
+              "station_id": "001177",
+              "platform_id": "001183"
+            },
+            {
+              "station_id": "001144",
+              "platform_id": "001144"
+            },
+            {
+              "station_id": "001131",
+              "platform_id": "001131"
+            }
+          ],
           "sections": [
             10087,
             10088,
@@ -8868,7 +9494,60 @@
         "98": {
           "id": 98,
           "corp_id": 36,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "001177",
+              "platform_id": "001180"
+            },
+            {
+              "station_id": "001197",
+              "platform_id": "001197"
+            },
+            {
+              "station_id": "001188",
+              "platform_id": "001188"
+            },
+            {
+              "station_id": "001174",
+              "platform_id": "001174"
+            },
+            {
+              "station_id": "001178",
+              "platform_id": "001178"
+            },
+            {
+              "station_id": "001184",
+              "platform_id": "001184"
+            },
+            {
+              "station_id": "001185",
+              "platform_id": "001185"
+            },
+            {
+              "station_id": "001187",
+              "platform_id": "001187"
+            },
+            {
+              "station_id": "001191",
+              "platform_id": "001191"
+            },
+            {
+              "station_id": "001193",
+              "platform_id": "001193"
+            },
+            {
+              "station_id": "001190",
+              "platform_id": "001190"
+            },
+            {
+              "station_id": "001192",
+              "platform_id": "001192"
+            },
+            {
+              "station_id": "001196",
+              "platform_id": "001196"
+            }
+          ],
           "sections": [
             21708,
             21710,
@@ -8929,7 +9608,44 @@
         "100": {
           "id": 100,
           "corp_id": 38,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "008739",
+              "platform_id": "008740"
+            },
+            {
+              "station_id": "008736",
+              "platform_id": "008736"
+            },
+            {
+              "station_id": "008720",
+              "platform_id": "008720"
+            },
+            {
+              "station_id": "008733",
+              "platform_id": "008733"
+            },
+            {
+              "station_id": "008726",
+              "platform_id": "008726"
+            },
+            {
+              "station_id": "008725",
+              "platform_id": "008725"
+            },
+            {
+              "station_id": "008734",
+              "platform_id": "008734"
+            },
+            {
+              "station_id": "008730",
+              "platform_id": "008730"
+            },
+            {
+              "station_id": "008719",
+              "platform_id": "008719"
+            }
+          ],
           "sections": [
             622,
             624,
@@ -9977,7 +10693,36 @@
         "119": {
           "id": 119,
           "corp_id": 46,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "000458",
+              "platform_id": "000459"
+            },
+            {
+              "station_id": "000467",
+              "platform_id": "000468"
+            },
+            {
+              "station_id": "000466",
+              "platform_id": "000466"
+            },
+            {
+              "station_id": "000464",
+              "platform_id": "000464"
+            },
+            {
+              "station_id": "000457",
+              "platform_id": "000457"
+            },
+            {
+              "station_id": "000463",
+              "platform_id": "000463"
+            },
+            {
+              "station_id": "000462",
+              "platform_id": "000462"
+            }
+          ],
           "sections": [
             18315,
             18316,
@@ -10168,7 +10913,24 @@
         "122": {
           "id": 122,
           "corp_id": 48,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006800",
+              "platform_id": "006800"
+            },
+            {
+              "station_id": "006728",
+              "platform_id": "006728"
+            },
+            {
+              "station_id": "006664",
+              "platform_id": "006664"
+            },
+            {
+              "station_id": "006587",
+              "platform_id": "006587"
+            }
+          ],
           "sections": [
             20036,
             20037,
@@ -12949,7 +13711,32 @@
         "143": {
           "id": 143,
           "corp_id": 55,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "004173",
+              "platform_id": "004173"
+            },
+            {
+              "station_id": "004201",
+              "platform_id": "004201"
+            },
+            {
+              "station_id": "004187",
+              "platform_id": "004187"
+            },
+            {
+              "station_id": "004169",
+              "platform_id": "004169"
+            },
+            {
+              "station_id": "004203",
+              "platform_id": "004203"
+            },
+            {
+              "station_id": "004226",
+              "platform_id": "004226"
+            }
+          ],
           "sections": [
             10120,
             10121,
@@ -13378,7 +14165,20 @@
         "149": {
           "id": 149,
           "corp_id": 56,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "007958",
+              "platform_id": "007959"
+            },
+            {
+              "station_id": "007996",
+              "platform_id": "007997"
+            },
+            {
+              "station_id": "007992",
+              "platform_id": "007992"
+            }
+          ],
           "sections": [
             18037,
             18039,
@@ -13393,7 +14193,16 @@
         "150": {
           "id": 150,
           "corp_id": 56,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "008373",
+              "platform_id": "008373"
+            },
+            {
+              "station_id": "008362",
+              "platform_id": "008364"
+            }
+          ],
           "sections": [
             18042
           ],
@@ -17488,7 +18297,16 @@
         "192": {
           "id": 192,
           "corp_id": 65,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "008252",
+              "platform_id": "008252"
+            },
+            {
+              "station_id": "007919",
+              "platform_id": "007919"
+            }
+          ],
           "sections": [
             5513,
             5516,
@@ -20202,7 +21020,228 @@
         "229": {
           "id": 229,
           "corp_id": 77,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "001827",
+              "platform_id": "001829"
+            },
+            {
+              "station_id": "001929",
+              "platform_id": "001930"
+            },
+            {
+              "station_id": "001943",
+              "platform_id": "001943"
+            },
+            {
+              "station_id": "001878",
+              "platform_id": "001878"
+            },
+            {
+              "station_id": "001774",
+              "platform_id": "001774"
+            },
+            {
+              "station_id": "001984",
+              "platform_id": "001984"
+            },
+            {
+              "station_id": "001755",
+              "platform_id": "001755"
+            },
+            {
+              "station_id": "001939",
+              "platform_id": "001939"
+            },
+            {
+              "station_id": "001784",
+              "platform_id": "001784"
+            },
+            {
+              "station_id": "001978",
+              "platform_id": "001978"
+            },
+            {
+              "station_id": "001931",
+              "platform_id": "001931"
+            },
+            {
+              "station_id": "001937",
+              "platform_id": "001937"
+            },
+            {
+              "station_id": "001741",
+              "platform_id": "001741"
+            },
+            {
+              "station_id": "001816",
+              "platform_id": "001816"
+            },
+            {
+              "station_id": "001902",
+              "platform_id": "001902"
+            },
+            {
+              "station_id": "001782",
+              "platform_id": "001782"
+            },
+            {
+              "station_id": "001759",
+              "platform_id": "001759"
+            },
+            {
+              "station_id": "001942",
+              "platform_id": "001942"
+            },
+            {
+              "station_id": "001950",
+              "platform_id": "001950"
+            },
+            {
+              "station_id": "001912",
+              "platform_id": "001912"
+            },
+            {
+              "station_id": "001792",
+              "platform_id": "001792"
+            },
+            {
+              "station_id": "001928",
+              "platform_id": "001928"
+            },
+            {
+              "station_id": "001991",
+              "platform_id": "001991"
+            },
+            {
+              "station_id": "001749",
+              "platform_id": "001749"
+            },
+            {
+              "station_id": "001754",
+              "platform_id": "001754"
+            },
+            {
+              "station_id": "001973",
+              "platform_id": "001973"
+            },
+            {
+              "station_id": "001975",
+              "platform_id": "001975"
+            },
+            {
+              "station_id": "001760",
+              "platform_id": "001760"
+            },
+            {
+              "station_id": "001801",
+              "platform_id": "001801"
+            },
+            {
+              "station_id": "001938",
+              "platform_id": "001938"
+            },
+            {
+              "station_id": "001971",
+              "platform_id": "001971"
+            },
+            {
+              "station_id": "001985",
+              "platform_id": "001985"
+            },
+            {
+              "station_id": "001934",
+              "platform_id": "001934"
+            },
+            {
+              "station_id": "001844",
+              "platform_id": "001844"
+            },
+            {
+              "station_id": "001836",
+              "platform_id": "001836"
+            },
+            {
+              "station_id": "001808",
+              "platform_id": "001808"
+            },
+            {
+              "station_id": "001914",
+              "platform_id": "001914"
+            },
+            {
+              "station_id": "001743",
+              "platform_id": "001743"
+            },
+            {
+              "station_id": "001740",
+              "platform_id": "001740"
+            },
+            {
+              "station_id": "001964",
+              "platform_id": "001965"
+            },
+            {
+              "station_id": "001960",
+              "platform_id": "001960"
+            },
+            {
+              "station_id": "001765",
+              "platform_id": "001765"
+            },
+            {
+              "station_id": "001752",
+              "platform_id": "001752"
+            },
+            {
+              "station_id": "001922",
+              "platform_id": "001922"
+            },
+            {
+              "station_id": "001748",
+              "platform_id": "001748"
+            },
+            {
+              "station_id": "001744",
+              "platform_id": "001744"
+            },
+            {
+              "station_id": "001767",
+              "platform_id": "001767"
+            },
+            {
+              "station_id": "001919",
+              "platform_id": "001919"
+            },
+            {
+              "station_id": "001863",
+              "platform_id": "001863"
+            },
+            {
+              "station_id": "001757",
+              "platform_id": "001757"
+            },
+            {
+              "station_id": "001777",
+              "platform_id": "001777"
+            },
+            {
+              "station_id": "001941",
+              "platform_id": "001941"
+            },
+            {
+              "station_id": "001962",
+              "platform_id": "001962"
+            },
+            {
+              "station_id": "001920",
+              "platform_id": "001920"
+            },
+            {
+              "station_id": "001745",
+              "platform_id": "001745"
+            }
+          ],
           "sections": [
             18476,
             18479,
@@ -21031,7 +22070,180 @@
         "237": {
           "id": 237,
           "corp_id": 82,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "007361",
+              "platform_id": "007362"
+            },
+            {
+              "station_id": "006715",
+              "platform_id": "006715"
+            },
+            {
+              "station_id": "006929",
+              "platform_id": "006929"
+            },
+            {
+              "station_id": "007155",
+              "platform_id": "007155"
+            },
+            {
+              "station_id": "006840",
+              "platform_id": "006840"
+            },
+            {
+              "station_id": "006759",
+              "platform_id": "006759"
+            },
+            {
+              "station_id": "006631",
+              "platform_id": "006631"
+            },
+            {
+              "station_id": "006825",
+              "platform_id": "006825"
+            },
+            {
+              "station_id": "006712",
+              "platform_id": "006712"
+            },
+            {
+              "station_id": "007352",
+              "platform_id": "007352"
+            },
+            {
+              "station_id": "007372",
+              "platform_id": "007372"
+            },
+            {
+              "station_id": "006725",
+              "platform_id": "006725"
+            },
+            {
+              "station_id": "006995",
+              "platform_id": "006995"
+            },
+            {
+              "station_id": "007171",
+              "platform_id": "007171"
+            },
+            {
+              "station_id": "006693",
+              "platform_id": "006693"
+            },
+            {
+              "station_id": "007038",
+              "platform_id": "007038"
+            },
+            {
+              "station_id": "006669",
+              "platform_id": "006669"
+            },
+            {
+              "station_id": "007281",
+              "platform_id": "007281"
+            },
+            {
+              "station_id": "006871",
+              "platform_id": "006871"
+            },
+            {
+              "station_id": "007227",
+              "platform_id": "007227"
+            },
+            {
+              "station_id": "006701",
+              "platform_id": "006701"
+            },
+            {
+              "station_id": "007076",
+              "platform_id": "007076"
+            },
+            {
+              "station_id": "006583",
+              "platform_id": "006583"
+            },
+            {
+              "station_id": "006497",
+              "platform_id": "006497"
+            },
+            {
+              "station_id": "006806",
+              "platform_id": "006806"
+            },
+            {
+              "station_id": "006541",
+              "platform_id": "006541"
+            },
+            {
+              "station_id": "007426",
+              "platform_id": "007426"
+            },
+            {
+              "station_id": "007480",
+              "platform_id": "007480"
+            },
+            {
+              "station_id": "007420",
+              "platform_id": "007420"
+            },
+            {
+              "station_id": "007512",
+              "platform_id": "007512"
+            },
+            {
+              "station_id": "007444",
+              "platform_id": "007444"
+            },
+            {
+              "station_id": "007437",
+              "platform_id": "007437"
+            },
+            {
+              "station_id": "007492",
+              "platform_id": "007492"
+            },
+            {
+              "station_id": "007504",
+              "platform_id": "007504"
+            },
+            {
+              "station_id": "007400",
+              "platform_id": "007400"
+            },
+            {
+              "station_id": "007429",
+              "platform_id": "007429"
+            },
+            {
+              "station_id": "007449",
+              "platform_id": "007449"
+            },
+            {
+              "station_id": "007508",
+              "platform_id": "007508"
+            },
+            {
+              "station_id": "007457",
+              "platform_id": "007457"
+            },
+            {
+              "station_id": "007511",
+              "platform_id": "007511"
+            },
+            {
+              "station_id": "007415",
+              "platform_id": "007415"
+            },
+            {
+              "station_id": "007496",
+              "platform_id": "007496"
+            },
+            {
+              "station_id": "007474",
+              "platform_id": "007474"
+            }
+          ],
           "sections": [
             5171,
             5172,
@@ -21987,7 +23199,88 @@
         "250": {
           "id": 250,
           "corp_id": 88,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "008048",
+              "platform_id": "008049"
+            },
+            {
+              "station_id": "008043",
+              "platform_id": "008044"
+            },
+            {
+              "station_id": "008030",
+              "platform_id": "008030"
+            },
+            {
+              "station_id": "008063",
+              "platform_id": "008063"
+            },
+            {
+              "station_id": "008035",
+              "platform_id": "008036"
+            },
+            {
+              "station_id": "008052",
+              "platform_id": "008053"
+            },
+            {
+              "station_id": "008047",
+              "platform_id": "008058"
+            },
+            {
+              "station_id": "008057",
+              "platform_id": "008057"
+            },
+            {
+              "station_id": "008054",
+              "platform_id": "008054"
+            },
+            {
+              "station_id": "008062",
+              "platform_id": "008062"
+            },
+            {
+              "station_id": "008046",
+              "platform_id": "008046"
+            },
+            {
+              "station_id": "008034",
+              "platform_id": "008034"
+            },
+            {
+              "station_id": "008050",
+              "platform_id": "008050"
+            },
+            {
+              "station_id": "008041",
+              "platform_id": "008041"
+            },
+            {
+              "station_id": "008064",
+              "platform_id": "008064"
+            },
+            {
+              "station_id": "008039",
+              "platform_id": "008039"
+            },
+            {
+              "station_id": "008038",
+              "platform_id": "008038"
+            },
+            {
+              "station_id": "008045",
+              "platform_id": "008045"
+            },
+            {
+              "station_id": "008066",
+              "platform_id": "008066"
+            },
+            {
+              "station_id": "008055",
+              "platform_id": "008055"
+            }
+          ],
           "sections": [
             4192,
             4193,
@@ -26366,7 +27659,292 @@
         "297": {
           "id": 297,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "003584",
+              "platform_id": "003584"
+            },
+            {
+              "station_id": "003700",
+              "platform_id": "003693"
+            },
+            {
+              "station_id": "004029",
+              "platform_id": "004029"
+            },
+            {
+              "station_id": "003606",
+              "platform_id": "003606"
+            },
+            {
+              "station_id": "003590",
+              "platform_id": "003590"
+            },
+            {
+              "station_id": "003867",
+              "platform_id": "003867"
+            },
+            {
+              "station_id": "002776",
+              "platform_id": "002776"
+            },
+            {
+              "station_id": "003677",
+              "platform_id": "003677"
+            },
+            {
+              "station_id": "003615",
+              "platform_id": "003616"
+            },
+            {
+              "station_id": "003575",
+              "platform_id": "003575"
+            },
+            {
+              "station_id": "003728",
+              "platform_id": "003728"
+            },
+            {
+              "station_id": "003595",
+              "platform_id": "003608"
+            },
+            {
+              "station_id": "003568",
+              "platform_id": "003568"
+            },
+            {
+              "station_id": "003671",
+              "platform_id": "003685"
+            },
+            {
+              "station_id": "003580",
+              "platform_id": "003591"
+            },
+            {
+              "station_id": "003549",
+              "platform_id": "003563"
+            },
+            {
+              "station_id": "003743",
+              "platform_id": "003744"
+            },
+            {
+              "station_id": "003947",
+              "platform_id": "003947"
+            },
+            {
+              "station_id": "002981",
+              "platform_id": "002982"
+            },
+            {
+              "station_id": "003634",
+              "platform_id": "003634"
+            },
+            {
+              "station_id": "003579",
+              "platform_id": "003579"
+            },
+            {
+              "station_id": "003574",
+              "platform_id": "003574"
+            },
+            {
+              "station_id": "003573",
+              "platform_id": "003573"
+            },
+            {
+              "station_id": "003604",
+              "platform_id": "003604"
+            },
+            {
+              "station_id": "003774",
+              "platform_id": "003774"
+            },
+            {
+              "station_id": "003767",
+              "platform_id": "003767"
+            },
+            {
+              "station_id": "004255",
+              "platform_id": "004255"
+            },
+            {
+              "station_id": "002719",
+              "platform_id": "002719"
+            },
+            {
+              "station_id": "002897",
+              "platform_id": "002897"
+            },
+            {
+              "station_id": "002863",
+              "platform_id": "002863"
+            },
+            {
+              "station_id": "003611",
+              "platform_id": "003614"
+            },
+            {
+              "station_id": "003594",
+              "platform_id": "003594"
+            },
+            {
+              "station_id": "002843",
+              "platform_id": "002843"
+            },
+            {
+              "station_id": "003808",
+              "platform_id": "003808"
+            },
+            {
+              "station_id": "004192",
+              "platform_id": "004192"
+            },
+            {
+              "station_id": "002696",
+              "platform_id": "002696"
+            },
+            {
+              "station_id": "002636",
+              "platform_id": "002636"
+            },
+            {
+              "station_id": "003533",
+              "platform_id": "003533"
+            },
+            {
+              "station_id": "002705",
+              "platform_id": "002705"
+            },
+            {
+              "station_id": "004224",
+              "platform_id": "004224"
+            },
+            {
+              "station_id": "003600",
+              "platform_id": "003600"
+            },
+            {
+              "station_id": "003108",
+              "platform_id": "003108"
+            },
+            {
+              "station_id": "003663",
+              "platform_id": "003663"
+            },
+            {
+              "station_id": "003918",
+              "platform_id": "003918"
+            },
+            {
+              "station_id": "002946",
+              "platform_id": "002946"
+            },
+            {
+              "station_id": "004140",
+              "platform_id": "004140"
+            },
+            {
+              "station_id": "004166",
+              "platform_id": "004166"
+            },
+            {
+              "station_id": "003714",
+              "platform_id": "003714"
+            },
+            {
+              "station_id": "003344",
+              "platform_id": "003344"
+            },
+            {
+              "station_id": "004156",
+              "platform_id": "004156"
+            },
+            {
+              "station_id": "003572",
+              "platform_id": "003572"
+            },
+            {
+              "station_id": "003942",
+              "platform_id": "003942"
+            },
+            {
+              "station_id": "003042",
+              "platform_id": "003042"
+            },
+            {
+              "station_id": "003622",
+              "platform_id": "003622"
+            },
+            {
+              "station_id": "002706",
+              "platform_id": "002706"
+            },
+            {
+              "station_id": "004040",
+              "platform_id": "004040"
+            },
+            {
+              "station_id": "004162",
+              "platform_id": "004162"
+            },
+            {
+              "station_id": "003921",
+              "platform_id": "003921"
+            },
+            {
+              "station_id": "003247",
+              "platform_id": "003247"
+            },
+            {
+              "station_id": "002744",
+              "platform_id": "002744"
+            },
+            {
+              "station_id": "003935",
+              "platform_id": "003935"
+            },
+            {
+              "station_id": "003852",
+              "platform_id": "003852"
+            },
+            {
+              "station_id": "004213",
+              "platform_id": "004213"
+            },
+            {
+              "station_id": "004148",
+              "platform_id": "004148"
+            },
+            {
+              "station_id": "002676",
+              "platform_id": "002676"
+            },
+            {
+              "station_id": "004170",
+              "platform_id": "004170"
+            },
+            {
+              "station_id": "002764",
+              "platform_id": "002764"
+            },
+            {
+              "station_id": "003816",
+              "platform_id": "003816"
+            },
+            {
+              "station_id": "003734",
+              "platform_id": "003734"
+            },
+            {
+              "station_id": "003587",
+              "platform_id": "003587"
+            },
+            {
+              "station_id": "003779",
+              "platform_id": "003779"
+            }
+          ],
           "sections": [
             15874,
             15875,
@@ -28219,7 +29797,40 @@
         "310": {
           "id": 310,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "002361",
+              "platform_id": "002362"
+            },
+            {
+              "station_id": "002275",
+              "platform_id": "002273"
+            },
+            {
+              "station_id": "002389",
+              "platform_id": "002387"
+            },
+            {
+              "station_id": "002031",
+              "platform_id": "002034"
+            },
+            {
+              "station_id": "002451",
+              "platform_id": "002451"
+            },
+            {
+              "station_id": "001643",
+              "platform_id": "001644"
+            },
+            {
+              "station_id": "001769",
+              "platform_id": "001770"
+            },
+            {
+              "station_id": "002328",
+              "platform_id": "002328"
+            }
+          ],
           "sections": [
             17392,
             17393,
@@ -28923,7 +30534,136 @@
         "316": {
           "id": 316,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "002506",
+              "platform_id": "002507"
+            },
+            {
+              "station_id": "002470",
+              "platform_id": "002470"
+            },
+            {
+              "station_id": "002492",
+              "platform_id": "002492"
+            },
+            {
+              "station_id": "002456",
+              "platform_id": "002456"
+            },
+            {
+              "station_id": "002496",
+              "platform_id": "002496"
+            },
+            {
+              "station_id": "001835",
+              "platform_id": "001835"
+            },
+            {
+              "station_id": "002442",
+              "platform_id": "002442"
+            },
+            {
+              "station_id": "002501",
+              "platform_id": "002501"
+            },
+            {
+              "station_id": "002487",
+              "platform_id": "002487"
+            },
+            {
+              "station_id": "002428",
+              "platform_id": "002428"
+            },
+            {
+              "station_id": "002272",
+              "platform_id": "002272"
+            },
+            {
+              "station_id": "002204",
+              "platform_id": "002204"
+            },
+            {
+              "station_id": "002120",
+              "platform_id": "002120"
+            },
+            {
+              "station_id": "002148",
+              "platform_id": "002148"
+            },
+            {
+              "station_id": "002167",
+              "platform_id": "002167"
+            },
+            {
+              "station_id": "002221",
+              "platform_id": "002221"
+            },
+            {
+              "station_id": "001992",
+              "platform_id": "001992"
+            },
+            {
+              "station_id": "002009",
+              "platform_id": "002009"
+            },
+            {
+              "station_id": "002038",
+              "platform_id": "002038"
+            },
+            {
+              "station_id": "001875",
+              "platform_id": "001875"
+            },
+            {
+              "station_id": "002234",
+              "platform_id": "002234"
+            },
+            {
+              "station_id": "002314",
+              "platform_id": "002314"
+            },
+            {
+              "station_id": "002264",
+              "platform_id": "002264"
+            },
+            {
+              "station_id": "001946",
+              "platform_id": "001946"
+            },
+            {
+              "station_id": "002109",
+              "platform_id": "002109"
+            },
+            {
+              "station_id": "002366",
+              "platform_id": "002366"
+            },
+            {
+              "station_id": "002179",
+              "platform_id": "002179"
+            },
+            {
+              "station_id": "002388",
+              "platform_id": "002388"
+            },
+            {
+              "station_id": "002187",
+              "platform_id": "002187"
+            },
+            {
+              "station_id": "001910",
+              "platform_id": "001910"
+            },
+            {
+              "station_id": "002075",
+              "platform_id": "002075"
+            },
+            {
+              "station_id": "002332",
+              "platform_id": "002332"
+            }
+          ],
           "sections": [
             15667,
             15668,
@@ -29855,7 +31595,76 @@
         "320": {
           "id": 320,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "003922",
+              "platform_id": "003932"
+            },
+            {
+              "station_id": "003700",
+              "platform_id": "003701"
+            },
+            {
+              "station_id": "004095",
+              "platform_id": "004097"
+            },
+            {
+              "station_id": "003508",
+              "platform_id": "003508"
+            },
+            {
+              "station_id": "003390",
+              "platform_id": "003390"
+            },
+            {
+              "station_id": "004110",
+              "platform_id": "004110"
+            },
+            {
+              "station_id": "004072",
+              "platform_id": "004071"
+            },
+            {
+              "station_id": "003991",
+              "platform_id": "003992"
+            },
+            {
+              "station_id": "003343",
+              "platform_id": "003343"
+            },
+            {
+              "station_id": "003354",
+              "platform_id": "003356"
+            },
+            {
+              "station_id": "003743",
+              "platform_id": "003743"
+            },
+            {
+              "station_id": "004135",
+              "platform_id": "004135"
+            },
+            {
+              "station_id": "003335",
+              "platform_id": "003335"
+            },
+            {
+              "station_id": "003470",
+              "platform_id": "003470"
+            },
+            {
+              "station_id": "003601",
+              "platform_id": "003601"
+            },
+            {
+              "station_id": "003375",
+              "platform_id": "003375"
+            },
+            {
+              "station_id": "003828",
+              "platform_id": "003828"
+            }
+          ],
           "sections": [
             14418,
             14419,
@@ -29904,7 +31713,72 @@
         "321": {
           "id": 321,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "000792",
+              "platform_id": "000792"
+            },
+            {
+              "station_id": "000814",
+              "platform_id": "000814"
+            },
+            {
+              "station_id": "000785",
+              "platform_id": "000785"
+            },
+            {
+              "station_id": "000817",
+              "platform_id": "000817"
+            },
+            {
+              "station_id": "000828",
+              "platform_id": "000828"
+            },
+            {
+              "station_id": "000824",
+              "platform_id": "000824"
+            },
+            {
+              "station_id": "000809",
+              "platform_id": "000809"
+            },
+            {
+              "station_id": "000816",
+              "platform_id": "000816"
+            },
+            {
+              "station_id": "000777",
+              "platform_id": "000777"
+            },
+            {
+              "station_id": "000787",
+              "platform_id": "000787"
+            },
+            {
+              "station_id": "000822",
+              "platform_id": "000822"
+            },
+            {
+              "station_id": "000818",
+              "platform_id": "000818"
+            },
+            {
+              "station_id": "000813",
+              "platform_id": "000813"
+            },
+            {
+              "station_id": "000820",
+              "platform_id": "000820"
+            },
+            {
+              "station_id": "000832",
+              "platform_id": "000832"
+            },
+            {
+              "station_id": "000831",
+              "platform_id": "000831"
+            }
+          ],
           "sections": [
             14468,
             14470,
@@ -30738,7 +32612,36 @@
         "327": {
           "id": 327,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "002113",
+              "platform_id": "002114"
+            },
+            {
+              "station_id": "002142",
+              "platform_id": "002142"
+            },
+            {
+              "station_id": "002037",
+              "platform_id": "002037"
+            },
+            {
+              "station_id": "002104",
+              "platform_id": "002104"
+            },
+            {
+              "station_id": "001970",
+              "platform_id": "001970"
+            },
+            {
+              "station_id": "001862",
+              "platform_id": "001862"
+            },
+            {
+              "station_id": "001897",
+              "platform_id": "001897"
+            }
+          ],
           "sections": [
             16936,
             16938,
@@ -31801,7 +33704,152 @@
         "330": {
           "id": 330,
           "corp_id": 103,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "003872",
+              "platform_id": "003872"
+            },
+            {
+              "station_id": "005215",
+              "platform_id": "005218"
+            },
+            {
+              "station_id": "004633",
+              "platform_id": "004634"
+            },
+            {
+              "station_id": "004818",
+              "platform_id": "004824"
+            },
+            {
+              "station_id": "004095",
+              "platform_id": "004095"
+            },
+            {
+              "station_id": "004997",
+              "platform_id": "004996"
+            },
+            {
+              "station_id": "004961",
+              "platform_id": "004959"
+            },
+            {
+              "station_id": "005157",
+              "platform_id": "005158"
+            },
+            {
+              "station_id": "003766",
+              "platform_id": "003770"
+            },
+            {
+              "station_id": "004197",
+              "platform_id": "004207"
+            },
+            {
+              "station_id": "004330",
+              "platform_id": "004328"
+            },
+            {
+              "station_id": "003795",
+              "platform_id": "003798"
+            },
+            {
+              "station_id": "004596",
+              "platform_id": "004597"
+            },
+            {
+              "station_id": "005023",
+              "platform_id": "005024"
+            },
+            {
+              "station_id": "004496",
+              "platform_id": "004496"
+            },
+            {
+              "station_id": "004264",
+              "platform_id": "004264"
+            },
+            {
+              "station_id": "003949",
+              "platform_id": "003949"
+            },
+            {
+              "station_id": "004000",
+              "platform_id": "004000"
+            },
+            {
+              "station_id": "004235",
+              "platform_id": "004235"
+            },
+            {
+              "station_id": "004432",
+              "platform_id": "004432"
+            },
+            {
+              "station_id": "004358",
+              "platform_id": "004358"
+            },
+            {
+              "station_id": "004562",
+              "platform_id": "004562"
+            },
+            {
+              "station_id": "004685",
+              "platform_id": "004685"
+            },
+            {
+              "station_id": "005034",
+              "platform_id": "005034"
+            },
+            {
+              "station_id": "005085",
+              "platform_id": "005085"
+            },
+            {
+              "station_id": "005261",
+              "platform_id": "005261"
+            },
+            {
+              "station_id": "005004",
+              "platform_id": "005004"
+            },
+            {
+              "station_id": "004741",
+              "platform_id": "004741"
+            },
+            {
+              "station_id": "005120",
+              "platform_id": "005120"
+            },
+            {
+              "station_id": "005342",
+              "platform_id": "005342"
+            },
+            {
+              "station_id": "005170",
+              "platform_id": "005170"
+            },
+            {
+              "station_id": "005541",
+              "platform_id": "005541"
+            },
+            {
+              "station_id": "005510",
+              "platform_id": "005510"
+            },
+            {
+              "station_id": "004301",
+              "platform_id": "004301"
+            },
+            {
+              "station_id": "004581",
+              "platform_id": "004581"
+            },
+            {
+              "station_id": "004061",
+              "platform_id": "004061"
+            }
+          ],
           "sections": [
             16192,
             16194,
@@ -37774,7 +39822,348 @@
         "382": {
           "id": 382,
           "corp_id": 106,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006251",
+              "platform_id": "006251"
+            },
+            {
+              "station_id": "005601",
+              "platform_id": "005601"
+            },
+            {
+              "station_id": "005543",
+              "platform_id": "005544"
+            },
+            {
+              "station_id": "006002",
+              "platform_id": "006002"
+            },
+            {
+              "station_id": "006547",
+              "platform_id": "006547"
+            },
+            {
+              "station_id": "004923",
+              "platform_id": "004923"
+            },
+            {
+              "station_id": "006746",
+              "platform_id": "006746"
+            },
+            {
+              "station_id": "006960",
+              "platform_id": "006960"
+            },
+            {
+              "station_id": "005349",
+              "platform_id": "005349"
+            },
+            {
+              "station_id": "005451",
+              "platform_id": "005448"
+            },
+            {
+              "station_id": "005689",
+              "platform_id": "005689"
+            },
+            {
+              "station_id": "004788",
+              "platform_id": "004789"
+            },
+            {
+              "station_id": "005522",
+              "platform_id": "005523"
+            },
+            {
+              "station_id": "005551",
+              "platform_id": "005552"
+            },
+            {
+              "station_id": "005685",
+              "platform_id": "005685"
+            },
+            {
+              "station_id": "006128",
+              "platform_id": "006128"
+            },
+            {
+              "station_id": "006133",
+              "platform_id": "006133"
+            },
+            {
+              "station_id": "007059",
+              "platform_id": "007059"
+            },
+            {
+              "station_id": "006786",
+              "platform_id": "006786"
+            },
+            {
+              "station_id": "005668",
+              "platform_id": "005668"
+            },
+            {
+              "station_id": "006410",
+              "platform_id": "006410"
+            },
+            {
+              "station_id": "006471",
+              "platform_id": "006471"
+            },
+            {
+              "station_id": "005609",
+              "platform_id": "005609"
+            },
+            {
+              "station_id": "005635",
+              "platform_id": "005635"
+            },
+            {
+              "station_id": "006441",
+              "platform_id": "006441"
+            },
+            {
+              "station_id": "005898",
+              "platform_id": "005898"
+            },
+            {
+              "station_id": "006382",
+              "platform_id": "006382"
+            },
+            {
+              "station_id": "005560",
+              "platform_id": "005560"
+            },
+            {
+              "station_id": "005654",
+              "platform_id": "005654"
+            },
+            {
+              "station_id": "006790",
+              "platform_id": "006790"
+            },
+            {
+              "station_id": "005707",
+              "platform_id": "005707"
+            },
+            {
+              "station_id": "006211",
+              "platform_id": "006211"
+            },
+            {
+              "station_id": "006085",
+              "platform_id": "006085"
+            },
+            {
+              "station_id": "006867",
+              "platform_id": "006867"
+            },
+            {
+              "station_id": "006259",
+              "platform_id": "006259"
+            },
+            {
+              "station_id": "005825",
+              "platform_id": "005825"
+            },
+            {
+              "station_id": "006489",
+              "platform_id": "006489"
+            },
+            {
+              "station_id": "006823",
+              "platform_id": "006823"
+            },
+            {
+              "station_id": "005630",
+              "platform_id": "005630"
+            },
+            {
+              "station_id": "005570",
+              "platform_id": "005570"
+            },
+            {
+              "station_id": "005974",
+              "platform_id": "005974"
+            },
+            {
+              "station_id": "006052",
+              "platform_id": "006052"
+            },
+            {
+              "station_id": "006111",
+              "platform_id": "006111"
+            },
+            {
+              "station_id": "005867",
+              "platform_id": "005867"
+            },
+            {
+              "station_id": "006015",
+              "platform_id": "006015"
+            },
+            {
+              "station_id": "004801",
+              "platform_id": "004801"
+            },
+            {
+              "station_id": "004907",
+              "platform_id": "004907"
+            },
+            {
+              "station_id": "004982",
+              "platform_id": "004982"
+            },
+            {
+              "station_id": "004873",
+              "platform_id": "004873"
+            },
+            {
+              "station_id": "005033",
+              "platform_id": "005033"
+            },
+            {
+              "station_id": "004914",
+              "platform_id": "004914"
+            },
+            {
+              "station_id": "004974",
+              "platform_id": "004974"
+            },
+            {
+              "station_id": "004934",
+              "platform_id": "004934"
+            },
+            {
+              "station_id": "004950",
+              "platform_id": "004950"
+            },
+            {
+              "station_id": "005111",
+              "platform_id": "005111"
+            },
+            {
+              "station_id": "004841",
+              "platform_id": "004841"
+            },
+            {
+              "station_id": "005226",
+              "platform_id": "005226"
+            },
+            {
+              "station_id": "005712",
+              "platform_id": "005712"
+            },
+            {
+              "station_id": "005587",
+              "platform_id": "005587"
+            },
+            {
+              "station_id": "005770",
+              "platform_id": "005770"
+            },
+            {
+              "station_id": "005290",
+              "platform_id": "005290"
+            },
+            {
+              "station_id": "005539",
+              "platform_id": "005539"
+            },
+            {
+              "station_id": "007015",
+              "platform_id": "007015"
+            },
+            {
+              "station_id": "006576",
+              "platform_id": "006576"
+            },
+            {
+              "station_id": "007150",
+              "platform_id": "007150"
+            },
+            {
+              "station_id": "006521",
+              "platform_id": "006521"
+            },
+            {
+              "station_id": "006202",
+              "platform_id": "006202"
+            },
+            {
+              "station_id": "006549",
+              "platform_id": "006549"
+            },
+            {
+              "station_id": "006472",
+              "platform_id": "006472"
+            },
+            {
+              "station_id": "007111",
+              "platform_id": "007111"
+            },
+            {
+              "station_id": "007025",
+              "platform_id": "007025"
+            },
+            {
+              "station_id": "006566",
+              "platform_id": "006566"
+            },
+            {
+              "station_id": "007147",
+              "platform_id": "007147"
+            },
+            {
+              "station_id": "007172",
+              "platform_id": "007172"
+            },
+            {
+              "station_id": "006166",
+              "platform_id": "006166"
+            },
+            {
+              "station_id": "006649",
+              "platform_id": "006649"
+            },
+            {
+              "station_id": "006411",
+              "platform_id": "006411"
+            },
+            {
+              "station_id": "006528",
+              "platform_id": "006529"
+            },
+            {
+              "station_id": "006990",
+              "platform_id": "006990"
+            },
+            {
+              "station_id": "006947",
+              "platform_id": "006947"
+            },
+            {
+              "station_id": "006993",
+              "platform_id": "006993"
+            },
+            {
+              "station_id": "006086",
+              "platform_id": "006086"
+            },
+            {
+              "station_id": "005822",
+              "platform_id": "005822"
+            },
+            {
+              "station_id": "006342",
+              "platform_id": "006342"
+            },
+            {
+              "station_id": "006979",
+              "platform_id": "006979"
+            }
+          ],
           "sections": [
             11994,
             11995,
@@ -38032,7 +40421,168 @@
         "384": {
           "id": 384,
           "corp_id": 106,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006905",
+              "platform_id": "006905"
+            },
+            {
+              "station_id": "007664",
+              "platform_id": "007664"
+            },
+            {
+              "station_id": "006437",
+              "platform_id": "006439"
+            },
+            {
+              "station_id": "008584",
+              "platform_id": "008584"
+            },
+            {
+              "station_id": "008394",
+              "platform_id": "008394"
+            },
+            {
+              "station_id": "008566",
+              "platform_id": "008566"
+            },
+            {
+              "station_id": "008495",
+              "platform_id": "008495"
+            },
+            {
+              "station_id": "007837",
+              "platform_id": "007837"
+            },
+            {
+              "station_id": "008211",
+              "platform_id": "008211"
+            },
+            {
+              "station_id": "006784",
+              "platform_id": "006784"
+            },
+            {
+              "station_id": "008663",
+              "platform_id": "008663"
+            },
+            {
+              "station_id": "008656",
+              "platform_id": "008656"
+            },
+            {
+              "station_id": "008264",
+              "platform_id": "008264"
+            },
+            {
+              "station_id": "007984",
+              "platform_id": "007984"
+            },
+            {
+              "station_id": "008766",
+              "platform_id": "008766"
+            },
+            {
+              "station_id": "007944",
+              "platform_id": "007944"
+            },
+            {
+              "station_id": "008642",
+              "platform_id": "008642"
+            },
+            {
+              "station_id": "008467",
+              "platform_id": "008467"
+            },
+            {
+              "station_id": "007806",
+              "platform_id": "007806"
+            },
+            {
+              "station_id": "008646",
+              "platform_id": "008646"
+            },
+            {
+              "station_id": "008674",
+              "platform_id": "008674"
+            },
+            {
+              "station_id": "006570",
+              "platform_id": "006570"
+            },
+            {
+              "station_id": "008783",
+              "platform_id": "008783"
+            },
+            {
+              "station_id": "008426",
+              "platform_id": "008426"
+            },
+            {
+              "station_id": "008512",
+              "platform_id": "008512"
+            },
+            {
+              "station_id": "008051",
+              "platform_id": "008051"
+            },
+            {
+              "station_id": "008320",
+              "platform_id": "008320"
+            },
+            {
+              "station_id": "008692",
+              "platform_id": "008692"
+            },
+            {
+              "station_id": "007721",
+              "platform_id": "007721"
+            },
+            {
+              "station_id": "007066",
+              "platform_id": "007066"
+            },
+            {
+              "station_id": "007304",
+              "platform_id": "007304"
+            },
+            {
+              "station_id": "008451",
+              "platform_id": "008451"
+            },
+            {
+              "station_id": "007889",
+              "platform_id": "007889"
+            },
+            {
+              "station_id": "008144",
+              "platform_id": "008144"
+            },
+            {
+              "station_id": "008293",
+              "platform_id": "008293"
+            },
+            {
+              "station_id": "007558",
+              "platform_id": "007558"
+            },
+            {
+              "station_id": "008601",
+              "platform_id": "008601"
+            },
+            {
+              "station_id": "008865",
+              "platform_id": "008865"
+            },
+            {
+              "station_id": "008852",
+              "platform_id": "008852"
+            },
+            {
+              "station_id": "008810",
+              "platform_id": "008810"
+            }
+          ],
           "sections": [
             11491,
             11493,
@@ -38307,7 +40857,76 @@
         "386": {
           "id": 386,
           "corp_id": 106,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006285",
+              "platform_id": "006286"
+            },
+            {
+              "station_id": "005776",
+              "platform_id": "005779"
+            },
+            {
+              "station_id": "005451",
+              "platform_id": "005449"
+            },
+            {
+              "station_id": "005533",
+              "platform_id": "005533"
+            },
+            {
+              "station_id": "005871",
+              "platform_id": "005871"
+            },
+            {
+              "station_id": "006022",
+              "platform_id": "006022"
+            },
+            {
+              "station_id": "005977",
+              "platform_id": "005977"
+            },
+            {
+              "station_id": "005556",
+              "platform_id": "005556"
+            },
+            {
+              "station_id": "005655",
+              "platform_id": "005655"
+            },
+            {
+              "station_id": "005578",
+              "platform_id": "005578"
+            },
+            {
+              "station_id": "005704",
+              "platform_id": "005704"
+            },
+            {
+              "station_id": "005550",
+              "platform_id": "005550"
+            },
+            {
+              "station_id": "006207",
+              "platform_id": "006207"
+            },
+            {
+              "station_id": "006335",
+              "platform_id": "006335"
+            },
+            {
+              "station_id": "006159",
+              "platform_id": "006159"
+            },
+            {
+              "station_id": "006312",
+              "platform_id": "006312"
+            },
+            {
+              "station_id": "006392",
+              "platform_id": "006392"
+            }
+          ],
           "sections": [
             11441,
             11442,
@@ -38847,7 +41466,148 @@
         "388": {
           "id": 388,
           "corp_id": 106,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "004693",
+              "platform_id": "004693"
+            },
+            {
+              "station_id": "002488",
+              "platform_id": "002488"
+            },
+            {
+              "station_id": "002294",
+              "platform_id": "002294"
+            },
+            {
+              "station_id": "002502",
+              "platform_id": "002502"
+            },
+            {
+              "station_id": "002754",
+              "platform_id": "002754"
+            },
+            {
+              "station_id": "002559",
+              "platform_id": "002559"
+            },
+            {
+              "station_id": "002646",
+              "platform_id": "002646"
+            },
+            {
+              "station_id": "002699",
+              "platform_id": "002699"
+            },
+            {
+              "station_id": "002246",
+              "platform_id": "002246"
+            },
+            {
+              "station_id": "002534",
+              "platform_id": "002534"
+            },
+            {
+              "station_id": "002587",
+              "platform_id": "002587"
+            },
+            {
+              "station_id": "002466",
+              "platform_id": "002466"
+            },
+            {
+              "station_id": "002379",
+              "platform_id": "002379"
+            },
+            {
+              "station_id": "002429",
+              "platform_id": "002429"
+            },
+            {
+              "station_id": "004753",
+              "platform_id": "004753"
+            },
+            {
+              "station_id": "003003",
+              "platform_id": "003003"
+            },
+            {
+              "station_id": "003075",
+              "platform_id": "003075"
+            },
+            {
+              "station_id": "004398",
+              "platform_id": "004398"
+            },
+            {
+              "station_id": "002870",
+              "platform_id": "002870"
+            },
+            {
+              "station_id": "004561",
+              "platform_id": "004561"
+            },
+            {
+              "station_id": "002962",
+              "platform_id": "002962"
+            },
+            {
+              "station_id": "004293",
+              "platform_id": "004293"
+            },
+            {
+              "station_id": "004657",
+              "platform_id": "004657"
+            },
+            {
+              "station_id": "003902",
+              "platform_id": "003902"
+            },
+            {
+              "station_id": "004472",
+              "platform_id": "004472"
+            },
+            {
+              "station_id": "002831",
+              "platform_id": "002831"
+            },
+            {
+              "station_id": "003435",
+              "platform_id": "003435"
+            },
+            {
+              "station_id": "002899",
+              "platform_id": "002899"
+            },
+            {
+              "station_id": "004068",
+              "platform_id": "004068"
+            },
+            {
+              "station_id": "004836",
+              "platform_id": "004836"
+            },
+            {
+              "station_id": "004823",
+              "platform_id": "004823"
+            },
+            {
+              "station_id": "004807",
+              "platform_id": "004807"
+            },
+            {
+              "station_id": "004804",
+              "platform_id": "004804"
+            },
+            {
+              "station_id": "004812",
+              "platform_id": "004812"
+            },
+            {
+              "station_id": "004788",
+              "platform_id": "004788"
+            }
+          ],
           "sections": [
             11622,
             11625,
@@ -40707,7 +43467,52 @@
         "413": {
           "id": 413,
           "corp_id": 124,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "009293",
+              "platform_id": "009294"
+            },
+            {
+              "station_id": "009310",
+              "platform_id": "009310"
+            },
+            {
+              "station_id": "009312",
+              "platform_id": "009312"
+            },
+            {
+              "station_id": "009298",
+              "platform_id": "009298"
+            },
+            {
+              "station_id": "009313",
+              "platform_id": "009313"
+            },
+            {
+              "station_id": "009301",
+              "platform_id": "009301"
+            },
+            {
+              "station_id": "009308",
+              "platform_id": "009308"
+            },
+            {
+              "station_id": "009305",
+              "platform_id": "009305"
+            },
+            {
+              "station_id": "009299",
+              "platform_id": "009299"
+            },
+            {
+              "station_id": "009296",
+              "platform_id": "009296"
+            },
+            {
+              "station_id": "009300",
+              "platform_id": "009300"
+            }
+          ],
           "sections": [
             1042,
             1044,
@@ -40936,10 +43741,6 @@
               "platform_id": "004595"
             },
             {
-              "station_id": "004594",
-              "platform_id": "004594"
-            },
-            {
               "station_id": "004615",
               "platform_id": "004615"
             },
@@ -40950,6 +43751,10 @@
             {
               "station_id": "004652",
               "platform_id": "004652"
+            },
+            {
+              "station_id": "004611",
+              "platform_id": "004611"
             }
           ],
           "sections": [
@@ -41602,7 +44407,12 @@
         "430": {
           "id": 430,
           "corp_id": 131,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "007220",
+              "platform_id": "007220"
+            }
+          ],
           "sections": [
             6748
           ],
@@ -42540,7 +45350,24 @@
         "440": {
           "id": 440,
           "corp_id": 137,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "002085",
+              "platform_id": "002085"
+            },
+            {
+              "station_id": "002107",
+              "platform_id": "002107"
+            },
+            {
+              "station_id": "002108",
+              "platform_id": "002108"
+            },
+            {
+              "station_id": "002084",
+              "platform_id": "002084"
+            }
+          ],
           "sections": [
             21048,
             21050
@@ -42696,7 +45523,52 @@
         "443": {
           "id": 443,
           "corp_id": 140,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "005215",
+              "platform_id": "005216"
+            },
+            {
+              "station_id": "005231",
+              "platform_id": "005231"
+            },
+            {
+              "station_id": "005254",
+              "platform_id": "005254"
+            },
+            {
+              "station_id": "005271",
+              "platform_id": "005271"
+            },
+            {
+              "station_id": "005260",
+              "platform_id": "005260"
+            },
+            {
+              "station_id": "005246",
+              "platform_id": "005246"
+            },
+            {
+              "station_id": "005269",
+              "platform_id": "005269"
+            },
+            {
+              "station_id": "005256",
+              "platform_id": "005256"
+            },
+            {
+              "station_id": "005258",
+              "platform_id": "005258"
+            },
+            {
+              "station_id": "005250",
+              "platform_id": "005250"
+            },
+            {
+              "station_id": "005248",
+              "platform_id": "005248"
+            }
+          ],
           "sections": [
             18339,
             18342,
@@ -42725,7 +45597,32 @@
         "444": {
           "id": 444,
           "corp_id": 140,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "005240",
+              "platform_id": "005240"
+            },
+            {
+              "station_id": "005231",
+              "platform_id": "005232"
+            },
+            {
+              "station_id": "005237",
+              "platform_id": "005237"
+            },
+            {
+              "station_id": "005242",
+              "platform_id": "005242"
+            },
+            {
+              "station_id": "005247",
+              "platform_id": "005247"
+            },
+            {
+              "station_id": "005245",
+              "platform_id": "005245"
+            }
+          ],
           "sections": [
             18328,
             18330,
@@ -45005,7 +47902,84 @@
         "470": {
           "id": 470,
           "corp_id": 147,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006276",
+              "platform_id": "006280"
+            },
+            {
+              "station_id": "006093",
+              "platform_id": "006095"
+            },
+            {
+              "station_id": "006079",
+              "platform_id": "006079"
+            },
+            {
+              "station_id": "006224",
+              "platform_id": "006227"
+            },
+            {
+              "station_id": "006896",
+              "platform_id": "006897"
+            },
+            {
+              "station_id": "006379",
+              "platform_id": "006379"
+            },
+            {
+              "station_id": "006254",
+              "platform_id": "006254"
+            },
+            {
+              "station_id": "006625",
+              "platform_id": "006625"
+            },
+            {
+              "station_id": "006339",
+              "platform_id": "006339"
+            },
+            {
+              "station_id": "006199",
+              "platform_id": "006199"
+            },
+            {
+              "station_id": "006831",
+              "platform_id": "006831"
+            },
+            {
+              "station_id": "006729",
+              "platform_id": "006729"
+            },
+            {
+              "station_id": "006334",
+              "platform_id": "006334"
+            },
+            {
+              "station_id": "006556",
+              "platform_id": "006556"
+            },
+            {
+              "station_id": "006423",
+              "platform_id": "006423"
+            },
+            {
+              "station_id": "006229",
+              "platform_id": "006229"
+            },
+            {
+              "station_id": "006145",
+              "platform_id": "006145"
+            },
+            {
+              "station_id": "006460",
+              "platform_id": "006460"
+            },
+            {
+              "station_id": "006500",
+              "platform_id": "006500"
+            }
+          ],
           "sections": [
             9021,
             9024,
@@ -45629,7 +48603,120 @@
         "476": {
           "id": 476,
           "corp_id": 147,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "008476",
+              "platform_id": "008477"
+            },
+            {
+              "station_id": "007236",
+              "platform_id": "007237"
+            },
+            {
+              "station_id": "007981",
+              "platform_id": "007981"
+            },
+            {
+              "station_id": "007884",
+              "platform_id": "007884"
+            },
+            {
+              "station_id": "007555",
+              "platform_id": "007555"
+            },
+            {
+              "station_id": "008021",
+              "platform_id": "008021"
+            },
+            {
+              "station_id": "007769",
+              "platform_id": "007769"
+            },
+            {
+              "station_id": "007705",
+              "platform_id": "007705"
+            },
+            {
+              "station_id": "007414",
+              "platform_id": "007414"
+            },
+            {
+              "station_id": "007902",
+              "platform_id": "007902"
+            },
+            {
+              "station_id": "007643",
+              "platform_id": "007643"
+            },
+            {
+              "station_id": "008256",
+              "platform_id": "008256"
+            },
+            {
+              "station_id": "008471",
+              "platform_id": "008471"
+            },
+            {
+              "station_id": "008413",
+              "platform_id": "008413"
+            },
+            {
+              "station_id": "008457",
+              "platform_id": "008457"
+            },
+            {
+              "station_id": "008104",
+              "platform_id": "008104"
+            },
+            {
+              "station_id": "008139",
+              "platform_id": "008139"
+            },
+            {
+              "station_id": "008156",
+              "platform_id": "008156"
+            },
+            {
+              "station_id": "008445",
+              "platform_id": "008445"
+            },
+            {
+              "station_id": "008436",
+              "platform_id": "008436"
+            },
+            {
+              "station_id": "008418",
+              "platform_id": "008418"
+            },
+            {
+              "station_id": "008447",
+              "platform_id": "008447"
+            },
+            {
+              "station_id": "008464",
+              "platform_id": "008464"
+            },
+            {
+              "station_id": "008409",
+              "platform_id": "008409"
+            },
+            {
+              "station_id": "008223",
+              "platform_id": "008223"
+            },
+            {
+              "station_id": "008176",
+              "platform_id": "008176"
+            },
+            {
+              "station_id": "008383",
+              "platform_id": "008383"
+            },
+            {
+              "station_id": "008291",
+              "platform_id": "008291"
+            }
+          ],
           "sections": [
             8183,
             8184,
@@ -51709,7 +54796,108 @@
         "524": {
           "id": 524,
           "corp_id": 151,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "005263",
+              "platform_id": "005265"
+            },
+            {
+              "station_id": "005652",
+              "platform_id": "005653"
+            },
+            {
+              "station_id": "005316",
+              "platform_id": "005316"
+            },
+            {
+              "station_id": "005710",
+              "platform_id": "005710"
+            },
+            {
+              "station_id": "006097",
+              "platform_id": "006097"
+            },
+            {
+              "station_id": "005787",
+              "platform_id": "005787"
+            },
+            {
+              "station_id": "005572",
+              "platform_id": "005572"
+            },
+            {
+              "station_id": "005875",
+              "platform_id": "005875"
+            },
+            {
+              "station_id": "005357",
+              "platform_id": "005357"
+            },
+            {
+              "station_id": "005176",
+              "platform_id": "005177"
+            },
+            {
+              "station_id": "005830",
+              "platform_id": "005830"
+            },
+            {
+              "station_id": "005221",
+              "platform_id": "005221"
+            },
+            {
+              "station_id": "005075",
+              "platform_id": "005079"
+            },
+            {
+              "station_id": "005754",
+              "platform_id": "005754"
+            },
+            {
+              "station_id": "005147",
+              "platform_id": "005147"
+            },
+            {
+              "station_id": "005948",
+              "platform_id": "005948"
+            },
+            {
+              "station_id": "005428",
+              "platform_id": "005428"
+            },
+            {
+              "station_id": "005514",
+              "platform_id": "005514"
+            },
+            {
+              "station_id": "005731",
+              "platform_id": "005731"
+            },
+            {
+              "station_id": "006119",
+              "platform_id": "006119"
+            },
+            {
+              "station_id": "006134",
+              "platform_id": "006134"
+            },
+            {
+              "station_id": "006188",
+              "platform_id": "006183"
+            },
+            {
+              "station_id": "006140",
+              "platform_id": "006140"
+            },
+            {
+              "station_id": "005131",
+              "platform_id": "005131"
+            },
+            {
+              "station_id": "005201",
+              "platform_id": "005201"
+            }
+          ],
           "sections": [
             2537,
             2539,
@@ -51806,7 +54994,112 @@
         "526": {
           "id": 526,
           "corp_id": 152,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006079",
+              "platform_id": "006084"
+            },
+            {
+              "station_id": "006172",
+              "platform_id": "006173"
+            },
+            {
+              "station_id": "007117",
+              "platform_id": "007118"
+            },
+            {
+              "station_id": "006099",
+              "platform_id": "006099"
+            },
+            {
+              "station_id": "006355",
+              "platform_id": "006355"
+            },
+            {
+              "station_id": "006888",
+              "platform_id": "006888"
+            },
+            {
+              "station_id": "006378",
+              "platform_id": "006378"
+            },
+            {
+              "station_id": "006464",
+              "platform_id": "006464"
+            },
+            {
+              "station_id": "006711",
+              "platform_id": "006711"
+            },
+            {
+              "station_id": "006848",
+              "platform_id": "006848"
+            },
+            {
+              "station_id": "006634",
+              "platform_id": "006634"
+            },
+            {
+              "station_id": "006275",
+              "platform_id": "006275"
+            },
+            {
+              "station_id": "006225",
+              "platform_id": "006225"
+            },
+            {
+              "station_id": "006219",
+              "platform_id": "006219"
+            },
+            {
+              "station_id": "006538",
+              "platform_id": "006538"
+            },
+            {
+              "station_id": "006149",
+              "platform_id": "006149"
+            },
+            {
+              "station_id": "006324",
+              "platform_id": "006324"
+            },
+            {
+              "station_id": "006203",
+              "platform_id": "006203"
+            },
+            {
+              "station_id": "006120",
+              "platform_id": "006120"
+            },
+            {
+              "station_id": "006400",
+              "platform_id": "006400"
+            },
+            {
+              "station_id": "006671",
+              "platform_id": "006671"
+            },
+            {
+              "station_id": "006955",
+              "platform_id": "006955"
+            },
+            {
+              "station_id": "006795",
+              "platform_id": "006795"
+            },
+            {
+              "station_id": "007072",
+              "platform_id": "007072"
+            },
+            {
+              "station_id": "006593",
+              "platform_id": "006593"
+            },
+            {
+              "station_id": "006431",
+              "platform_id": "006431"
+            }
+          ],
           "sections": [
             1954,
             1957,
@@ -53359,7 +56652,40 @@
         "545": {
           "id": 545,
           "corp_id": 152,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "007856",
+              "platform_id": "007856"
+            },
+            {
+              "station_id": "007790",
+              "platform_id": "007790"
+            },
+            {
+              "station_id": "007882",
+              "platform_id": "007882"
+            },
+            {
+              "station_id": "007934",
+              "platform_id": "007935"
+            },
+            {
+              "station_id": "007912",
+              "platform_id": "007912"
+            },
+            {
+              "station_id": "007832",
+              "platform_id": "007832"
+            },
+            {
+              "station_id": "007718",
+              "platform_id": "007718"
+            },
+            {
+              "station_id": "007840",
+              "platform_id": "007840"
+            }
+          ],
           "sections": [
             2225,
             2226,
@@ -53862,7 +57188,108 @@
         "554": {
           "id": 554,
           "corp_id": 158,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "009819",
+              "platform_id": "009820"
+            },
+            {
+              "station_id": "009773",
+              "platform_id": "009774"
+            },
+            {
+              "station_id": "009839",
+              "platform_id": "009840"
+            },
+            {
+              "station_id": "009812",
+              "platform_id": "009812"
+            },
+            {
+              "station_id": "009832",
+              "platform_id": "009832"
+            },
+            {
+              "station_id": "009842",
+              "platform_id": "009842"
+            },
+            {
+              "station_id": "009829",
+              "platform_id": "009829"
+            },
+            {
+              "station_id": "009789",
+              "platform_id": "009789"
+            },
+            {
+              "station_id": "009809",
+              "platform_id": "009809"
+            },
+            {
+              "station_id": "009787",
+              "platform_id": "009787"
+            },
+            {
+              "station_id": "009803",
+              "platform_id": "009803"
+            },
+            {
+              "station_id": "009816",
+              "platform_id": "009816"
+            },
+            {
+              "station_id": "009794",
+              "platform_id": "009794"
+            },
+            {
+              "station_id": "009808",
+              "platform_id": "009808"
+            },
+            {
+              "station_id": "009799",
+              "platform_id": "009799"
+            },
+            {
+              "station_id": "009817",
+              "platform_id": "009817"
+            },
+            {
+              "station_id": "009810",
+              "platform_id": "009810"
+            },
+            {
+              "station_id": "009838",
+              "platform_id": "009838"
+            },
+            {
+              "station_id": "009835",
+              "platform_id": "009836"
+            },
+            {
+              "station_id": "009778",
+              "platform_id": "009778"
+            },
+            {
+              "station_id": "009806",
+              "platform_id": "009806"
+            },
+            {
+              "station_id": "009814",
+              "platform_id": "009814"
+            },
+            {
+              "station_id": "009841",
+              "platform_id": "009841"
+            },
+            {
+              "station_id": "009834",
+              "platform_id": "009834"
+            },
+            {
+              "station_id": "009818",
+              "platform_id": "009818"
+            }
+          ],
           "sections": [
             10867,
             10868,
@@ -55316,7 +58743,24 @@
         "572": {
           "id": 572,
           "corp_id": 163,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "007120",
+              "platform_id": "007120"
+            },
+            {
+              "station_id": "007241",
+              "platform_id": "007241"
+            },
+            {
+              "station_id": "007166",
+              "platform_id": "007166"
+            },
+            {
+              "station_id": "007216",
+              "platform_id": "007216"
+            }
+          ],
           "sections": [
             4536,
             4537,
@@ -55363,7 +58807,140 @@
         "574": {
           "id": 574,
           "corp_id": 164,
-          "platforms": [],
+          "platforms": [
+            {
+              "station_id": "006917",
+              "platform_id": "006925"
+            },
+            {
+              "station_id": "007120",
+              "platform_id": "007116"
+            },
+            {
+              "station_id": "007160",
+              "platform_id": "007161"
+            },
+            {
+              "station_id": "006981",
+              "platform_id": "006982"
+            },
+            {
+              "station_id": "006996",
+              "platform_id": "006996"
+            },
+            {
+              "station_id": "006980",
+              "platform_id": "006980"
+            },
+            {
+              "station_id": "007071",
+              "platform_id": "007071"
+            },
+            {
+              "station_id": "007097",
+              "platform_id": "007097"
+            },
+            {
+              "station_id": "007091",
+              "platform_id": "007098"
+            },
+            {
+              "station_id": "007109",
+              "platform_id": "007109"
+            },
+            {
+              "station_id": "007057",
+              "platform_id": "007057"
+            },
+            {
+              "station_id": "006921",
+              "platform_id": "006921"
+            },
+            {
+              "station_id": "006954",
+              "platform_id": "006954"
+            },
+            {
+              "station_id": "007005",
+              "platform_id": "007012"
+            },
+            {
+              "station_id": "006894",
+              "platform_id": "006894"
+            },
+            {
+              "station_id": "007007",
+              "platform_id": "007007"
+            },
+            {
+              "station_id": "006936",
+              "platform_id": "006936"
+            },
+            {
+              "station_id": "006907",
+              "platform_id": "006907"
+            },
+            {
+              "station_id": "006963",
+              "platform_id": "006963"
+            },
+            {
+              "station_id": "006991",
+              "platform_id": "006991"
+            },
+            {
+              "station_id": "006987",
+              "platform_id": "006987"
+            },
+            {
+              "station_id": "006988",
+              "platform_id": "006988"
+            },
+            {
+              "station_id": "006986",
+              "platform_id": "006986"
+            },
+            {
+              "station_id": "007014",
+              "platform_id": "007014"
+            },
+            {
+              "station_id": "006939",
+              "platform_id": "006939"
+            },
+            {
+              "station_id": "006975",
+              "platform_id": "006975"
+            },
+            {
+              "station_id": "007047",
+              "platform_id": "007047"
+            },
+            {
+              "station_id": "007006",
+              "platform_id": "007006"
+            },
+            {
+              "station_id": "007058",
+              "platform_id": "007058"
+            },
+            {
+              "station_id": "007034",
+              "platform_id": "007034"
+            },
+            {
+              "station_id": "007003",
+              "platform_id": "007003"
+            },
+            {
+              "station_id": "007078",
+              "platform_id": "007078"
+            },
+            {
+              "station_id": "007020",
+              "platform_id": "007020"
+            }
+          ],
           "sections": [
             4767,
             4770,

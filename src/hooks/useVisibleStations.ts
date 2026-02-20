@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { LatLngBounds } from 'leaflet';
 import { ProcessedStation, StaticNode } from '../types/mapTypes';
 import { RailData } from '../types/railData';
@@ -9,6 +9,7 @@ interface VisibleStationsProps {
     zoomLevel: number;
     lineIdMap: Map<string, string>;
     isMoving?: boolean;
+    usedStationIds: Set<string>;
 }
 
 // Spatial Grid Constants
@@ -19,8 +20,10 @@ export const useVisibleStations = ({
     mapBounds,
     zoomLevel,
     lineIdMap,
-    isMoving = false
+    isMoving = false,
+    usedStationIds
 }: VisibleStationsProps) => {
+    const lastResultRef = useRef<Record<string, ProcessedStation> | null>(null);
 
     // 1. Build Spatial Index Once
     const spatialIndex = useMemo(() => {
@@ -53,123 +56,84 @@ export const useVisibleStations = ({
     }, [railroadNetwork]);
 
     // 2. Perform Visible Filtering using Spatial Index
+    const effectiveZoom = useMemo(() => {
+        if (zoomLevel >= 14) return 14;
+        if (zoomLevel >= 12) return 12;
+        if (zoomLevel >= 8) return 8;
+        return 0;
+    }, [zoomLevel]);
+
     const visibleStations = useMemo(() => {
-        // CRITICAL OPTIMIZATION: Skip calculation while moving
-        if (!railroadNetwork || !mapBounds || zoomLevel <= 8 || isMoving || !spatialIndex) return null;
+        if (!railroadNetwork || effectiveZoom === 0 || !spatialIndex) return null;
 
         const data: Record<string, ProcessedStation> = {};
-        const bounds = {
-            s: mapBounds.getSouth(),
-            n: mapBounds.getNorth(),
-            w: mapBounds.getWest(),
-            e: mapBounds.getEast()
-        };
-
         const railData = railroadNetwork as RailData;
-        const companyNameMap = new Map<number, string>();
-        Object.values(railData.companies).forEach((c: any) => companyNameMap.set(c.id, c.name));
 
-        const lineInfoMap = new Map<number, { name: string, companyId: number }>();
-        Object.values(railData.lines).forEach((l: any) => lineInfoMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+        // Global Pre-bake: Process ALL stations in the network
+        // We iterate through all grid cells to collect every station.
+        // This makes panning and zooming perfectly smooth as the data set is constant per zoom stage.
+        for (const cell of spatialIndex.values()) {
+            cell.stations.forEach((s: any) => {
+                const stationLines = new Set<string>();
+                if (s.platform_ids) {
+                    s.platform_ids.forEach((pid: string) => {
+                        const p = railData.platforms[pid];
+                        if (p) stationLines.add(`${p.company}::${p.line}`);
+                    });
+                }
 
-        // Identify relevant grid cells
-        const minLat = Math.floor(bounds.s / GRID_SIZE);
-        const maxLat = Math.floor(bounds.n / GRID_SIZE);
-        const minLon = Math.floor(bounds.w / GRID_SIZE);
-        const maxLon = Math.floor(bounds.e / GRID_SIZE);
+                const platforms: any[] = [];
+                if (s.platform_ids) {
+                    s.platform_ids.forEach((pid: string) => {
+                        const p = railData.platforms[pid];
+                        if (p && p.geometries) platforms.push(...p.geometries);
+                    });
+                }
 
-        for (let lat = minLat; lat <= maxLat; lat++) {
-            for (let lon = minLon; lon <= maxLon; lon++) {
-                const key = `${lat}_${lon}`;
-                const cell = spatialIndex.get(key);
-                if (!cell) continue;
+                const node: StaticNode = {
+                    id: s.id,
+                    coord: [s.lat, s.lon],
+                    lineKey: Array.from(stationLines)[0] || "",
+                    platforms: platforms.length > 0 ? platforms : undefined,
+                    isUsed: usedStationIds.has(s.id)
+                };
 
-                // Process Stations in Cell
-                cell.stations.forEach((s: any) => {
-                    if (s.lat < bounds.s || s.lat > bounds.n || s.lon < bounds.w || s.lon > bounds.e) return;
-
-                    const stationLines = new Set<string>();
-                    if (s.platform_ids) {
-                        s.platform_ids.forEach((pid: string) => {
-                            const p = railData.platforms[pid];
-                            if (p) {
-                                const cId = p.company;
-                                const lId = p.line;
-                                const companyName = companyNameMap.get(cId) || String(cId);
-                                const lInfo = lineInfoMap.get(lId);
-                                const lineName = lInfo ? lInfo.name : String(lId);
-                                stationLines.add(`${cId}::${lId}`);
-                            }
-                        });
-                    }
-
-                    const firstLine = Array.from(stationLines)[0] || "Unknown::Unknown";
-                    const platforms: any[] = [];
-                    if (s.platform_ids) {
-                        s.platform_ids.forEach((pid: string) => {
-                            const p = railData.platforms[pid];
-                            if (p && p.geometries && Array.isArray(p.geometries)) platforms.push(...p.geometries);
-                        });
-                    }
-
-                    const id = s.id;
-                    const node: StaticNode = {
+                if (!data[s.id]) {
+                    data[s.id] = {
                         id: s.id,
-                        coord: [s.lat, s.lon],
-                        lineKey: firstLine,
-                        platforms: platforms.length > 0 ? platforms : undefined
+                        nodes: [node],
+                        centroid: [s.lat, s.lon],
+                        lines: Array.from(stationLines),
+                        name: s.name,
+                        name_en: s.name_en,
+                        isUsed: usedStationIds.has(s.id)
                     };
+                } else {
+                    data[s.id].nodes.push(node);
+                    stationLines.forEach(l => {
+                        if (!data[s.id].lines.includes(l)) data[s.id].lines.push(l);
+                    });
+                }
+            });
 
-                    if (!data[id]) {
-                        data[id] = {
-                            id: id,
-                            nodes: [node],
-                            centroid: [s.lat, s.lon],
-                            lines: Array.from(stationLines),
-                            name_en: s.name_en,
-                            name: s.name
-                        };
-                    } else {
-                        data[id].nodes.push(node);
-                        stationLines.forEach(l => { if (!data[id].lines.includes(l)) data[id].lines.push(l); });
-                        const n = data[id].nodes.length;
-                        data[id].centroid[0] = (data[id].centroid[0] * (n - 1) + s.lat) / n;
-                        data[id].centroid[1] = (data[id].centroid[1] * (n - 1) + s.lon) / n;
-                        if (!data[id].name_en && s.name_en) data[id].name_en = s.name_en;
-                    }
-                });
-
-                // Process Joints in Cell
+            if (effectiveZoom >= 12) {
                 cell.joints.forEach((j: any) => {
                     const [jLon, jLat] = j.coordinates;
-                    if (jLat < bounds.s || jLat > bounds.n || jLon < bounds.w || jLon > bounds.e) return;
-
-                    const id = j.id;
-                    const jointLines: string[] = [];
-                    if (j.line_ids) {
-                        j.line_ids.forEach((lid: number) => {
-                            const lInfo = lineInfoMap.get(lid);
-                            if (lInfo) {
-                                const cName = companyNameMap.get(lInfo.companyId) || String(lInfo.companyId);
-                                jointLines.push(`${lInfo.companyId}::${lid}`);
-                            }
-                        });
-                    }
-
-                    data[id] = {
-                        id: id,
+                    data[j.id] = {
+                        id: j.id,
                         name: "",
-                        nodes: [{ id: id, coord: [jLat, jLon], lineKey: jointLines[0] || "" }],
+                        nodes: [{ id: j.id, coord: [jLat, jLon], lineKey: "" }],
                         centroid: [jLat, jLon],
-                        lines: jointLines,
+                        lines: [],
                         isJoint: true
                     };
                 });
             }
         }
 
+        lastResultRef.current = data;
         return data;
-    }, [railroadNetwork, mapBounds, zoomLevel, isMoving, spatialIndex]);
+    }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds]);
 
-    return { visibleStations };
+    return { visibleStations, effectiveZoom };
 };

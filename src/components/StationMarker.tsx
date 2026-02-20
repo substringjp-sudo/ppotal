@@ -1,4 +1,5 @@
-import React, { memo } from 'react';
+"use client";
+import React, { memo, useMemo, useCallback, useRef, useState } from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
@@ -16,6 +17,7 @@ interface StationMarkerProps {
     activeLine: string | null;
     hoveredLine: string | null;
     zoom: number;
+    zoomConfig: { baseRadius: number, weightValue: number, zoomCategory: number };
     getColor: (lineKey: string) => string;
     handleStationClick: (id: string, lines?: string[]) => void;
     onStationMouseDown: (id: string, coords: [number, number]) => void;
@@ -29,7 +31,236 @@ interface StationMarkerProps {
     isEditMode?: boolean;
     isMoving?: boolean;
     railData: RailData;
+    onlyLabels?: boolean;
 }
+
+/**
+ * Optimized Station Node Item
+ * Handles individual node and platform rendering with deep memoization.
+ */
+const StationNodeItem: React.FC<{
+    node: any;
+    id: string;
+    radius: number;
+    isSelected: boolean;
+    isHighlighted: boolean;
+    isDragging: boolean;
+    isMobile: boolean;
+    isEditMode: boolean;
+    isMoving: boolean;
+    zoom: number;
+    weightValue: number;
+    getColor: (lineKey: string) => string;
+    handleStationClick: (id: string, lines?: string[]) => void;
+    handleMouseOver: () => void;
+    handleMouseOut: () => void;
+    onStationMouseDown: (id: string, coords: [number, number]) => void;
+    onStationMouseUp: (id: string) => void;
+    station: ProcessedStation;
+    formattedLines: any[];
+    showTooltip: boolean;
+    railData: RailData;
+    selectedLines: string[];
+    activeLine: string | null;
+    selectedStation?: string;
+    language: Language;
+    zoomConfig: { baseRadius: number, weightValue: number, zoomCategory: number };
+}> = memo(({
+    node, id, radius, isSelected, isHighlighted, isDragging, isMobile,
+    isEditMode, isMoving, zoom, weightValue, getColor, handleStationClick,
+    handleMouseOver, handleMouseOut, onStationMouseDown, onStationMouseUp,
+    station, formattedLines, showTooltip, railData, selectedLines, activeLine,
+    selectedStation, language, zoomConfig
+}) => {
+    const isNodeUsed = node.isUsed;
+    const isNodeSelected = isSelected;
+    const zoomCategory = zoomConfig.zoomCategory;
+    const isLowZoom = zoomCategory <= 2; // stage 1, 2
+
+    // 1. Memoize Station Style
+    const stationStyle = useMemo(() => {
+        const baseColor = getColor(node.lineKey) || '#666';
+        const lightenedColor = lightenColor(baseColor, 60);
+
+        const style: any = {
+            fill: !isLowZoom || isNodeSelected,
+            fillColor: isNodeUsed ? '#2ecc71' : (isDragging ? '#2ecc71' : lightenedColor),
+            fillOpacity: (isNodeSelected || isNodeUsed) ? 1 : 0.8,
+            stroke: true,
+            color: '#000000',
+            weight: weightValue,
+            opacity: (isNodeSelected || isNodeUsed) ? 0.8 : 0.3,
+            className: isNodeUsed ? 'visited-station-glow' : ''
+        };
+
+        if (isNodeSelected && isMobile && (selectedStation === id)) {
+            style.color = '#e74c3c';
+            style.weight = 8;
+            style.opacity = 1;
+            style.fillOpacity = 1;
+        }
+        return style;
+    }, [getColor, node.lineKey, isLowZoom, isNodeSelected, isNodeUsed, isDragging, isMobile, selectedStation, id, weightValue]);
+
+    // 2. Memoize Handlers for the node
+    const handlers = useMemo(() => ({
+        click: (e: any) => {
+            L.DomEvent.stopPropagation(e);
+            if (!isEditMode) handleStationClick(id, station.lines);
+        },
+        mouseover: handleMouseOver,
+        mouseout: handleMouseOut,
+        mousedown: (e: any) => {
+            L.DomEvent.stopPropagation(e);
+            if (isEditMode || !isMobile) onStationMouseDown(id, node.coord);
+        },
+        mouseup: (e: any) => {
+            L.DomEvent.stopPropagation(e);
+            onStationMouseUp(id);
+        }
+    }), [id, station.lines, isEditMode, handleStationClick, handleMouseOver, handleMouseOut, isMobile, onStationMouseDown, node.coord, onStationMouseUp]);
+
+    const hasPlatforms = zoomCategory >= 4 && node.platforms && node.platforms.length > 0;
+    const isMultiLine = station.lines.length > 1;
+
+    // 3. Memoize Platform Geometries
+    const platformGeometries = useMemo(() => {
+        if (!hasPlatforms) return [];
+        return node.platforms!.map((plat: any) => {
+            const positions = plat.filter((pt: any) => pt && pt.length >= 2).map((pt: any) => [pt[1], pt[0]] as [number, number]);
+            return positions.length >= 2 ? positions : null;
+        }).filter(Boolean);
+    }, [hasPlatforms, node.platforms]);
+
+    return (
+        <React.Fragment>
+            {/* Platforms */}
+            {platformGeometries.map((positions: [number, number][] | null, pidx: number) => (
+                <React.Fragment key={`plat-group-${pidx}`}>
+                    <Polyline
+                        positions={positions!}
+                        pathOptions={{
+                            color: '#333',
+                            weight: isHighlighted ? 8 : 5,
+                            opacity: 1,
+                            lineCap: 'butt',
+                            interactive: false,
+                            pane: 'ui-elements'
+                        }}
+                    />
+                    <Polyline
+                        positions={positions!}
+                        pathOptions={{
+                            stroke: true,
+                            color: '#000',
+                            weight: 20,
+                            opacity: 0.0,
+                            lineCap: 'butt',
+                            pane: 'station-interact',
+                            interactive: true
+                        }}
+                        eventHandlers={handlers}
+                    />
+                </React.Fragment>
+            ))}
+
+            {/* Station Circle / Node */}
+            {zoomCategory >= 2 && (!hasPlatforms || isDragging) && (
+                <React.Fragment>
+                    <CircleMarker
+                        center={node.coord}
+                        pathOptions={{ ...stationStyle, pane: 'ui-elements', interactive: false }}
+                        radius={isMultiLine ? radius * 1.3 : radius}
+                    />
+                    {isMultiLine && (
+                        <CircleMarker
+                            center={node.coord}
+                            pathOptions={{
+                                fill: true,
+                                fillColor: '#333',
+                                fillOpacity: 0.8,
+                                stroke: false,
+                                pane: 'ui-elements',
+                                interactive: false
+                            }}
+                            radius={radius * 0.4}
+                        />
+                    )}
+                    {!isMoving && (
+                        <CircleMarker
+                            center={node.coord}
+                            pathOptions={{
+                                stroke: false,
+                                fill: true,
+                                fillColor: '#000',
+                                fillOpacity: 0.0,
+                                pane: 'station-interact',
+                                interactive: true
+                            }}
+                            radius={radius + 8}
+                            eventHandlers={handlers}
+                        >
+                            {!isMobile && !isEditMode && (
+                                <Tooltip
+                                    sticky
+                                    permanent
+                                    pane="top-tooltips"
+                                    offset={[20, -20]}
+                                    direction="top"
+                                    opacity={showTooltip ? (isDragging ? 0 : 1) : 0}
+                                >
+                                    <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
+                                        <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
+                                            {language === 'en' ? (station.name_en || station.name) : station.name}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#333' }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                Available Lines
+                                            </div>
+                                            {formattedLines.map((fl, fidx) => {
+                                                const corp = (railData.companies as any)[fl.company];
+                                                const line = (railData.lines as any)[fl.line];
+                                                const displayedCorp = language === 'en' ? (corp?.name_en || corp?.name || fl.company) : (corp?.name || fl.company);
+                                                const displayedLine = language === 'en' ? (line?.name_en || line?.name || fl.line) : (line?.name || fl.line);
+                                                return (
+                                                    <div key={fidx} style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        gap: '12px',
+                                                        padding: '3px 0',
+                                                        borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
+                                                        color: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '#2980b9' : '#555',
+                                                        fontWeight: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '800' : '500'
+                                                    }}>
+                                                        <span style={{ fontSize: '10px', opacity: 0.8 }}>{displayedCorp}</span>
+                                                        <span>{displayedLine}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        {isNodeUsed && (
+                                            <div style={{
+                                                marginTop: '8px',
+                                                padding: '4px 8px',
+                                                backgroundColor: '#2ecc71',
+                                                color: '#fff',
+                                                fontSize: '10px',
+                                                fontWeight: 'bold',
+                                                borderRadius: '4px',
+                                                display: 'inline-block'
+                                            }}>✓ VISITED</div>
+                                        )}
+                                    </div>
+                                </Tooltip>
+                            )}
+                        </CircleMarker>
+                    )}
+                </React.Fragment>
+            )}
+        </React.Fragment>
+    );
+});
 
 const StationMarker: React.FC<StationMarkerProps> = ({
     id,
@@ -51,178 +282,101 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     selectedStation,
     isEditMode = false,
     isMoving = false,
-    railData
+    railData,
+    zoomConfig,
+    onlyLabels = false
 }) => {
     const isHighlighted = highlightedStations.includes(id);
-    const isVisited = visitedStations.has(id);
-    const isSelected = station.lines.some(l =>
-        selectedLines.includes(l) ||
-        (activeLine === l) ||
-        (hoveredLine === l)
-    );
-    const lines = station.lines;
-    const isLowZoom = zoom <= 13;
+    const isUsed = station.isUsed;
+    const isSelected = useMemo(() => station.lines.some(l =>
+        selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
+    ), [station.lines, selectedLines, activeLine, hoveredLine]);
 
-    // Smoothly interpolate radius based on zoom level
-    let radius = 3;
-    if (zoom > 13) {
-        // Linear interpolation between zoom 13 (radius 3) and zoom 15 (radius 8)
-        const factor = Math.min(1, (zoom - 13) / 2);
-        radius = 3 + factor * 5;
-    }
-
-    if (isMobile) {
-        radius *= 1.5; // Make dots larger on mobile
-    }
-
-    if (isHighlighted || (isMobile && selectedStation === id)) {
-        radius = Math.max(radius, 10);
-    }
-
-    // Apply user style size multipliers
-    if (isVisited) {
-        radius *= settings.visited.stationSize;
-    } else if (isSelected) {
-        radius *= settings.unvisited.stationSize;
-    }
+    const radius = useMemo(() => {
+        let r = zoomConfig.baseRadius;
+        if (isMobile) r *= 1.5;
+        if (isHighlighted || (isMobile && selectedStation === id)) r = Math.max(r, 10);
+        if (isUsed) r *= settings.visited.stationSize;
+        else if (isSelected) r *= settings.unvisited.stationSize;
+        return r;
+    }, [zoomConfig.baseRadius, isMobile, isHighlighted, selectedStation, id, isUsed, isSelected, settings]);
 
     const isDragging = dragStartStation === id;
-    const isStationSelected = isMobile && (selectedStation === id);
-    const weight = zoom <= 12 ? 0 : (isHighlighted || (isMobile && isStationSelected) ? 6 : 4);
+    const weightValue = zoomConfig.weightValue;
 
-    const [showTooltip, setShowTooltip] = React.useState(false);
-    const tooltipTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const [showTooltip, setShowTooltip] = useState(false);
+    const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const handleMouseOver = () => {
+    const handleMouseOver = useCallback(() => {
         if (isMobile || isEditMode) return;
-
         if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
-
         tooltipTimeoutRef.current = setTimeout(() => {
             setShowTooltip(true);
             tooltipTimeoutRef.current = null;
-        }, 1000); // 1-second delay
-    };
+        }, 200);
+    }, [isMobile, isEditMode]);
 
-    const handleMouseOut = () => {
+    const handleMouseOut = useCallback(() => {
         if (tooltipTimeoutRef.current) {
             clearTimeout(tooltipTimeoutRef.current);
             tooltipTimeoutRef.current = null;
         }
         setShowTooltip(false);
-    };
+    }, []);
 
-    const createEventHandlers = (nodeCoord: [number, number]) => ({
-        click: (e: any) => {
-            L.DomEvent.stopPropagation(e);
-            if (!isEditMode) {
-                handleStationClick(id, lines);
-            }
-        },
-        mouseover: (e: any) => {
-            handleMouseOver();
-        },
-        mouseout: (e: any) => {
-            handleMouseOut();
-        },
-        mousedown: (e: any) => {
-            // Mouse down logic for desktop or emulated touch
-            L.DomEvent.stopPropagation(e);
-            if (isEditMode || !isMobile) {
-                // Prevent default drag initiation if needed, but allow bubbling?
-                // Actually, stopping propagation is good to avoid map drag.
-                onStationMouseDown(id, nodeCoord);
-            }
-        },
-        mouseup: (e: any) => {
-            L.DomEvent.stopPropagation(e);
-            onStationMouseUp(id);
-        },
-        touchstart: (e: any) => {
-            if (isEditMode) {
-                // Prevent browser scrolling/zoom to allow immediate draw interaction
-                L.DomEvent.preventDefault(e);
-                L.DomEvent.stopPropagation(e);
-
-                let lat = nodeCoord[0];
-                let lng = nodeCoord[1];
-                if (e.latlng) {
-                    lat = e.latlng.lat;
-                    lng = e.latlng.lng;
-                }
-                onStationMouseDown(id, [lat, lng]);
-            }
-        }
-    });
-
-    if (station.isJoint) {
-        // Find the node coordinate (joints only have one node)
-        const nodeCoord = station.nodes[0]?.coord || station.centroid;
-        const handlers = createEventHandlers(nodeCoord);
-
-        return (
-            <CircleMarker
-                center={nodeCoord}
-                pathOptions={{
-                    stroke: false,
-                    fill: true,
-                    fillColor: '#000',
-                    fillOpacity: 0.0,
-                    pane: 'station-interact',
-                    interactive: true
-                }}
-                radius={radius + 8}
-                eventHandlers={handlers}
-            />
-        );
-    }
-
-    // Format line names for tooltip
-    const formattedLines = lines.map(l => {
+    // Memoize formatted lines for tooltip
+    const formattedLines = useMemo(() => station.lines.map(l => {
         if (l.includes('::')) {
             const [company, line] = l.split('::');
             return { company, line, key: l };
         }
         return { company: 'Unknown', line: l, key: l };
-    });
+    }), [station.lines]);
 
-    // Calculate Convex Hull for the station GROUP if zoom is high
-    let hullPoints: [number, number][] | null = null;
-    if (zoom >= 14) {
+    const hullPoints = useMemo(() => {
+        if (zoomConfig.zoomCategory < 4) return null;
         const allPoints: [number, number][] = [];
-        // Collect points from platform geometries
         station.nodes.forEach(node => {
             if (node.platforms) {
                 node.platforms.forEach(plat => {
                     if (Array.isArray(plat)) {
                         plat.forEach(p => {
                             if (Array.isArray(p) && p.length >= 2) {
-                                allPoints.push([p[1], p[0]]); // p is [lon, lat], we want [lat, lon]
+                                allPoints.push([p[1], p[0]]); // [lat, lon]
                             }
                         });
                     }
                 });
             }
-            // Also include node center
-            if (node.coord && node.coord.length >= 2) {
-                allPoints.push(node.coord);
-            }
+            if (node.coord && node.coord.length >= 2) allPoints.push(node.coord);
         });
+        return allPoints.length > 2 ? convexHull(allPoints) : null;
+    }, [station, zoomConfig.zoomCategory]);
 
-        if (allPoints.length > 2) {
-            hullPoints = convexHull(allPoints);
-        }
+    if (station.isJoint) {
+        const nodeCoord = station.nodes[0]?.coord || station.centroid;
+        return (
+            <CircleMarker
+                center={nodeCoord}
+                pathOptions={{ stroke: false, fill: true, fillColor: '#000', fillOpacity: 0.0, pane: 'station-interact', interactive: true }}
+                radius={radius + 8}
+                eventHandlers={{
+                    click: (e) => { L.DomEvent.stopPropagation(e); if (!isEditMode) handleStationClick(id, station.lines); },
+                    mousedown: (e) => { L.DomEvent.stopPropagation(e); if (isEditMode || !isMobile) onStationMouseDown(id, nodeCoord); },
+                    mouseup: (e) => { L.DomEvent.stopPropagation(e); onStationMouseUp(id); }
+                }}
+            />
+        );
     }
-
 
     return (
         <React.Fragment>
-            {/* Group Border (Convex Hull) - ONLY when not moving */}
-            {zoom >= 14 && hullPoints && hullPoints.length > 2 && !isMoving && (
+            {/* Convex Hull (Skip if only labels) */}
+            {!onlyLabels && zoom >= 14 && hullPoints && (
                 <Polyline
                     positions={hullPoints}
                     pathOptions={{
-                        color: (isHighlighted || isStationSelected) ? '#ff0000' : '#666',
+                        color: (isHighlighted || isSelected) ? '#ff0000' : '#666',
                         weight: 1,
                         opacity: 0.5,
                         dashArray: '4, 4',
@@ -235,8 +389,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                 />
             )}
 
-            {/* Labels - Only when not moving to prevent floating text lag */}
-            {zoom >= 14 && !isMoving && (
+            {/* Labels (Always Render if requested) */}
+            {zoomConfig.zoomCategory >= 4 && (
                 <Marker
                     position={station.centroid}
                     icon={L.divIcon({
@@ -245,15 +399,9 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                             <div style="position: relative; display: flex; flex-direction: column; align-items: center; z-index: 500;">
                                 <div style="
                                     margin-top: ${(isHighlighted ? 12 : 10) / 2 + 4}px;
-                                    font-size: 12px;
-                                    font-weight: 800;
-                                    color: #000;
+                                    font-size: 12px; font-weight: 800; color: #000;
                                     text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
-                                    white-space: nowrap;
-                                    transform: translateX(-50%);
-                                    position: absolute;
-                                    top: 0;
-                                    pointer-events: none;
+                                    white-space: nowrap; transform: translateX(-50%); position: absolute; top: 0; pointer-events: none;
                                 ">${language === 'en' ? (station.name_en || station.name) : station.name}</div>
                             </div>
                         `,
@@ -263,154 +411,38 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                 />
             )}
 
-            {station.nodes.map((node, idx) => {
-                const isNodeVisited = visitedStations.has(node.id);
-                const isNodeSelected = isSelected;
-
-                const baseColor = getColor(node.lineKey) || '#666';
-                const lightenedColor = lightenColor(baseColor, 60);
-
-                const stationStyle = {
-                    fill: !isLowZoom || isNodeSelected,
-                    fillColor: isNodeVisited ? '#2ecc71' : (isDragging ? '#2ecc71' : lightenedColor),
-                    fillOpacity: (isNodeSelected || isNodeVisited) ? 1 : 0.8,
-                    stroke: zoom >= 10,
-                    color: '#000000',
-                    weight: (isLowZoom ? 0.5 : 1.2) * (isMobile ? 1.2 : 1),
-                    opacity: (isNodeSelected || isNodeVisited) ? 0.8 : 0.3,
-                    className: isNodeVisited ? 'visited-station-glow' : ''
-                };
-
-                if (isStationSelected && isMobile) {
-                    stationStyle.stroke = true;
-                    stationStyle.color = '#e74c3c';
-                    stationStyle.weight = 8;
-                    stationStyle.opacity = 1;
-                    stationStyle.fillOpacity = 1;
-                }
-
-                const hasPlatforms = zoom >= 13 && node.platforms && node.platforms.length > 0 && !isMoving;
-                const handlers = createEventHandlers(node.coord);
-
-                return (
-                    <React.Fragment key={`${node.id}-${idx}`}>
-                        {/* Platform Rendering Logic - Skip when moving */}
-                        {hasPlatforms && node.platforms!.map((plat, pidx) => {
-                            const positions = plat.filter(pt => pt && pt.length >= 2).map(pt => [pt[1], pt[0]] as [number, number]);
-                            if (positions.length < 2) return null;
-
-                            return (
-                                <React.Fragment key={`plat-group-${pidx}`}>
-                                    <Polyline
-                                        positions={positions}
-                                        pathOptions={{
-                                            color: '#333',
-                                            weight: isHighlighted ? 8 : 5,
-                                            opacity: 1,
-                                            lineCap: 'butt',
-                                            interactive: false,
-                                            pane: 'ui-elements'
-                                        }}
-                                    />
-                                    <Polyline
-                                        positions={positions}
-                                        pathOptions={{
-                                            stroke: true,
-                                            color: '#000',
-                                            weight: 20,
-                                            opacity: 0.0,
-                                            lineCap: 'butt',
-                                            pane: 'station-interact',
-                                            interactive: !isMoving
-                                        }}
-                                        eventHandlers={!isMoving ? handlers : undefined}
-                                    />
-                                </React.Fragment>
-                            );
-                        })}
-
-                        {/* Dot Rendering */}
-                        {zoom >= 11 && (!hasPlatforms || isDragging) && (
-                            <React.Fragment>
-                                <CircleMarker
-                                    center={node.coord}
-                                    pathOptions={{ ...stationStyle, pane: 'ui-elements', interactive: false }}
-                                    radius={radius}
-                                />
-                                {!isMoving && (
-                                    <CircleMarker
-                                        center={node.coord}
-                                        pathOptions={{
-                                            stroke: false,
-                                            fill: true,
-                                            fillColor: '#000',
-                                            fillOpacity: 0.0,
-                                            pane: 'station-interact',
-                                            interactive: true
-                                        }}
-                                        radius={radius + 8}
-                                        eventHandlers={handlers}
-                                    >
-                                        {!isMobile && !isEditMode && (
-                                            <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={showTooltip ? (isDragging ? 0 : (isSelected ? 1 : 0.7)) : 0}>
-                                                <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
-                                                    <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                                        {language === 'en' ? (station.name_en || station.name) : station.name}
-                                                    </div>
-                                                    <div style={{ fontSize: '12px', color: '#333' }}>
-                                                        <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                            Available Lines
-                                                        </div>
-                                                        {formattedLines.map((fl, fidx) => {
-                                                            const corp = (railData.companies as any)[fl.company];
-                                                            const line = (railData.lines as any)[fl.line];
-
-                                                            const displayedCorp = language === 'en' ? (corp?.name_en || corp?.name || fl.company) : (corp?.name || fl.company);
-                                                            const displayedLine = language === 'en' ? (line?.name_en || line?.name || fl.line) : (line?.name || fl.line);
-
-                                                            return (
-                                                                <div key={fidx} style={{
-                                                                    display: 'flex',
-                                                                    justifyContent: 'space-between',
-                                                                    alignItems: 'center',
-                                                                    gap: '12px',
-                                                                    padding: '3px 0',
-                                                                    borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                                    color: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '#2980b9' : '#555',
-                                                                    fontWeight: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '800' : '500'
-                                                                }}>
-                                                                    <span style={{ fontSize: '10px', opacity: 0.8 }}>
-                                                                        {displayedCorp}
-                                                                    </span>
-                                                                    <span>{displayedLine}</span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                    {isNodeVisited && (
-                                                        <div style={{
-                                                            marginTop: '8px',
-                                                            padding: '4px 8px',
-                                                            backgroundColor: '#2ecc71',
-                                                            color: '#fff',
-                                                            fontSize: '10px',
-                                                            fontWeight: 'bold',
-                                                            borderRadius: '4px',
-                                                            display: 'inline-block'
-                                                        }}>
-                                                            ✓ VISITED
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Tooltip>
-                                        )}
-                                    </CircleMarker>
-                                )}
-                            </React.Fragment>
-                        )}
-                    </React.Fragment>
-                );
-            })}
+            {/* Individual Nodes (Skip if only labels) */}
+            {!onlyLabels && station.nodes.map((node, idx) => (
+                <StationNodeItem
+                    key={`${node.id}-${idx}`}
+                    node={node}
+                    id={id}
+                    radius={radius}
+                    isSelected={isSelected}
+                    isHighlighted={isHighlighted}
+                    isDragging={isDragging}
+                    isMobile={isMobile}
+                    isEditMode={isEditMode}
+                    isMoving={isMoving}
+                    zoom={zoom}
+                    weightValue={weightValue}
+                    getColor={getColor}
+                    handleStationClick={handleStationClick}
+                    handleMouseOver={handleMouseOver}
+                    handleMouseOut={handleMouseOut}
+                    onStationMouseDown={onStationMouseDown}
+                    onStationMouseUp={onStationMouseUp}
+                    station={station}
+                    formattedLines={formattedLines}
+                    showTooltip={showTooltip}
+                    railData={railData}
+                    selectedLines={selectedLines}
+                    activeLine={activeLine}
+                    selectedStation={selectedStation}
+                    language={language}
+                    zoomConfig={zoomConfig}
+                />
+            ))}
         </React.Fragment>
     );
 };

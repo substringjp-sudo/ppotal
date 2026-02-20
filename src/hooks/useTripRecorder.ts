@@ -38,7 +38,7 @@ export const useTripRecorder = ({
     // Drag State for Snake Logic
     const dragState = useRef<{
         waypoints: string[];
-        segments: { path: string[], geometries: [number, number][][], distance: number }[];
+        segments: { path: string[], geometries: [number, number][][], distance: number, sectionIds: number[] }[];
     }>({ waypoints: [], segments: [] });
 
     useEffect(() => {
@@ -154,7 +154,8 @@ export const useTripRecorder = ({
                             segments.push({
                                 path: pathData.path,
                                 geometries: pathData.geometries,
-                                distance: pathData.distance
+                                distance: pathData.distance,
+                                sectionIds: pathData.sectionIds
                             });
                             changed = true;
                         }
@@ -242,12 +243,14 @@ export const useTripRecorder = ({
                 if (segments.length > 0) {
                     const fullPath: string[] = [];
                     const fullGeoms: [number, number][][] = [];
+                    const fullSectionIds: number[] = [];
                     let totalDist = 0;
 
                     segments.forEach((seg, idx) => {
                         if (idx === 0) fullPath.push(...seg.path);
                         else fullPath.push(...seg.path.slice(1));
                         fullGeoms.push(...seg.geometries);
+                        fullSectionIds.push(...(seg.sectionIds || []));
                         totalDist += seg.distance;
                     });
 
@@ -258,7 +261,8 @@ export const useTripRecorder = ({
                         path: fullPath,
                         distance: totalDist,
                         geometries: fullGeoms,
-                        waypoints: waypoints
+                        waypoints: waypoints,
+                        sectionIds: Array.from(new Set(fullSectionIds)) // Uniquify
                     };
 
                     if (isEditMode && onDraftComplete) {

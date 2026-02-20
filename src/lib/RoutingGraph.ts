@@ -8,6 +8,7 @@ export interface RouteEdge {
     lineId: string;
     type: 'RAIL' | 'TRANSFER';
     geometry?: [number, number][];
+    sectionIds?: number[];
 }
 
 export class RoutingGraph {
@@ -147,11 +148,11 @@ export class RoutingGraph {
                         }
                     });
 
-                    const edge: RouteEdge = { from: sourceId, to: targetId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry };
+                    const edge: RouteEdge = { from: sourceId, to: targetId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry, sectionIds: (sectionIds as number[]) };
                     if (!this.adj.has(sourceId)) this.adj.set(sourceId, []);
                     this.adj.get(sourceId)?.push(edge);
 
-                    const revEdge: RouteEdge = { from: targetId, to: sourceId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry ? [...combinedGeometry].reverse() : undefined };
+                    const revEdge: RouteEdge = { from: targetId, to: sourceId, distance: totalDistance, lineId, type: 'RAIL', geometry: combinedGeometry ? [...combinedGeometry].reverse() : undefined, sectionIds: (sectionIds as number[]) };
                     if (!this.adj.has(targetId)) this.adj.set(targetId, []);
                     this.adj.get(targetId)?.push(revEdge);
 
@@ -170,7 +171,8 @@ export class RoutingGraph {
                     distance: section.length / 1000,
                     lineId,
                     type: 'RAIL',
-                    geometry: section.geometry
+                    geometry: section.geometry,
+                    sectionIds: [section.id]
                 };
 
                 if (!this.adj.has(section.start)) this.adj.set(section.start, []);
@@ -182,7 +184,8 @@ export class RoutingGraph {
                     distance: section.length / 1000,
                     lineId,
                     type: 'RAIL',
-                    geometry: [...section.geometry].reverse()
+                    geometry: [...section.geometry].reverse(),
+                    sectionIds: [section.id]
                 };
 
                 if (!this.adj.has(section.end)) this.adj.set(section.end, []);
@@ -285,7 +288,7 @@ export class RoutingGraph {
         return segments;
     }
 
-    getShortestPath = (startId: string, endId: string, allowedLines?: string[]): { path: string[], distance: number, geometries: [number, number][][] } | null => {
+    getShortestPath = (startId: string, endId: string, allowedLines?: string[]): { path: string[], sectionIds: number[], distance: number, geometries: [number, number][][] } | null => {
         const dists = new Map<string, number>();
         const prev = new Map<string, { node: string, edge: RouteEdge } | null>();
         const pq = new Set<string>();
@@ -332,6 +335,7 @@ export class RoutingGraph {
     private reconstructPath(endId: string, prev: Map<string, { node: string, edge: RouteEdge } | null>) {
         const S: string[] = [];
         const G: [number, number][][] = [];
+        const SID: number[] = [];
         let u = endId;
         let currentTotalDistance = 0;
 
@@ -347,12 +351,16 @@ export class RoutingGraph {
                     G.unshift([...edge.geometry].reverse());
                 }
             }
+            if (edge.sectionIds) {
+                SID.unshift(...edge.sectionIds);
+            }
             u = p.node;
         }
         S.unshift(u);
 
         return {
             path: S,
+            sectionIds: SID,
             distance: currentTotalDistance,
             geometries: G
         };

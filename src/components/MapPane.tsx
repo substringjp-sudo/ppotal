@@ -9,7 +9,6 @@ import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
 import Stations from './Stations';
 import RailroadLayer from './RailroadLayer';
-import TripLayer from './TripLayer';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { getLineColor } from '../lib/lineColors';
 import { MapStyleSettings } from '../app/page';
@@ -39,7 +38,7 @@ interface MapPaneProps {
         visitedEdges: Set<string>,
         visitedStations: Set<string>,
         nodes: Map<string, StationNode>,
-        getShortestPath: (start: string, end: string, allowedLines?: string[]) => { path: string[], distance: number, geometries: [number, number][][] } | null
+        getShortestPath: (start: string, end: string, allowedLines?: string[]) => { path: string[], sectionIds: number[], distance: number, geometries: [number, number][][] } | null
     } | null) => void;
     zoomTarget?: { type: 'line' | 'station', id: string } | null;
     onZoomComplete?: () => void;
@@ -153,13 +152,34 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [graph, recordedTrips]);
 
 
+    const { visitedStations, visitedSectionIds } = useMemo(() => {
+        const stationSet = new Set<string>();
+        const sectionSet = new Set<number>();
+        if (!graph) return { visitedStations: stationSet, visitedSectionIds: sectionSet };
+
+        recordedTrips.forEach(trip => {
+            if (trip.path) {
+                trip.path.forEach((nodeId: string) => {
+                    const node = graph.getNode(nodeId);
+                    if (node && node.name) stationSet.add(node.name);
+                    else stationSet.add(nodeId);
+                });
+            }
+            if (trip.sectionIds) {
+                trip.sectionIds.forEach(sid => sectionSet.add(sid));
+            }
+        });
+        return { visitedStations: stationSet, visitedSectionIds: sectionSet };
+    }, [recordedTrips, graph]);
+
     // 3. Visible Stations (Spatial Culling)
-    const { visibleStations } = useVisibleStations({
+    const { visibleStations, effectiveZoom } = useVisibleStations({
         railroadNetwork: railData,
         mapBounds,
         zoomLevel,
         lineIdMap,
-        isMoving
+        isMoving,
+        usedStationIds: visitedStations
     });
 
     // 4. Interactions (Trip Recording / Dragging)
@@ -212,10 +232,6 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (onMapClick) onMapClick();
         },
         zoomstart: () => setIsMoving(true),
-        zoom: (e) => {
-            const z = e.target.getZoom();
-            if (Math.abs(z - zoomLevel) > 0.1) setZoomLevel(z);
-        },
         zoomend: (e) => {
             setZoomLevel(e.target.getZoom());
             setIsMoving(false);
@@ -225,7 +241,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
             moveEndTimeoutRef.current = setTimeout(() => {
                 setMapBounds(e.target.getBounds());
-            }, 150);
+            }, 200); // Update bounds every 200ms during long pans
         },
         moveend: (e) => {
             setMapBounds(e.target.getBounds());
@@ -299,20 +315,6 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
     }, [onStationClick, visibleStations, onSetSelectedLines, selectedLines, isMobile]);
 
-    const visitedStations = useMemo(() => {
-        const set = new Set<string>();
-        if (!graph) return set;
-        recordedTrips.forEach(trip => {
-            if (trip.path) {
-                trip.path.forEach((nodeId: string) => {
-                    const node = graph.getNode(nodeId);
-                    if (node && node.name) set.add(node.name);
-                    else set.add(nodeId);
-                });
-            }
-        });
-        return set;
-    }, [recordedTrips, graph]);
 
     // Zoom Handling
     useEffect(() => {
@@ -348,8 +350,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
             <Pane name="background" style={PANE_STYLES.background}>
                 <JapanMap prefectures={prefectures} getColor={getColor} interactive={zoomLevel <= 8 && !isMoving} zoom={zoomLevel} />
-                {zoomLevel > 8 && municipalities && !isMoving && <MunicipalMap municipalities={municipalities} getColor={getColor} zoom={zoomLevel} />}
-                {zoomLevel > 8 && prefectures && !isMoving && <JapanMap prefectures={prefectures} getColor={getColor} outlineOnly={true} interactive={false} zoom={zoomLevel} />}
+                {zoomLevel > 8 && municipalities && <MunicipalMap municipalities={municipalities} getColor={getColor} zoom={zoomLevel} />}
+                {zoomLevel > 8 && prefectures && <JapanMap prefectures={prefectures} getColor={getColor} outlineOnly={true} interactive={false} zoom={zoomLevel} />}
             </Pane>
 
             <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
@@ -367,10 +369,10 @@ const MapPane: React.FC<MapPaneProps> = ({
                 isMobile={isMobile}
                 isMoving={isMoving}
                 language={language}
+                usedSectionIds={visitedSectionIds}
             />}
 
             <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
-                <TripLayer recordedTrips={recordedTrips} zoomLevel={zoomLevel} isMoving={isMoving} />
                 {dragPath && dragPath.length > 0 && (
                     <Polyline
                         positions={dragPath.map(segment => segment.map(c => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
@@ -407,25 +409,19 @@ const MapPane: React.FC<MapPaneProps> = ({
                 {visibleStations && railData &&
                     <Stations
                         processedStations={visibleStations}
-                        highlightedStations={[]}
-                        handleStationClick={handleStationClick}
-                        zoom={zoomLevel}
+                        effectiveZoom={effectiveZoom}
+                        realZoom={zoomLevel}
                         getColor={getColor}
                         selectedLines={selectedLines}
                         activeLine={activeLine}
                         hoveredLine={hoveredLine}
-                        onStationMouseDown={handleStationMouseDown}
-                        onStationMouseUp={() => { }}
-                        dragStartStation={dragStartStation}
-                        onLineMappingCreated={onLineMappingCreated}
                         visitedStations={visitedStations}
                         settings={styleSettings}
                         language={language}
                         isMobile={isMobile}
-                        selectedStation={selectedStation}
-                        isEditMode={isEditMode}
-                        isMoving={isMoving}
                         railData={railData}
+                        handleStationClick={handleStationClick}
+                        handleStationMouseDown={handleStationMouseDown}
                     />
                 }
             </Pane>

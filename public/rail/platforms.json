@@ -326,7 +326,7 @@
     "name": "新橋",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.66639,
     "lon": 139.7582,
     "geometries": [
@@ -1446,7 +1446,7 @@
     "name": "盛岡",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.701195,
     "lon": 141.136375,
     "geometries": [
@@ -3856,7 +3856,7 @@
     "name": "軽井沢",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.3425975,
     "lon": 138.6349175,
     "geometries": [
@@ -3982,7 +3982,7 @@
     "name": "上田",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.39614,
     "lon": 138.25023,
     "geometries": [
@@ -4420,7 +4420,7 @@
     "name": "和倉温泉",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.0747,
     "lon": 136.92583333333334,
     "geometries": [
@@ -4460,7 +4460,7 @@
     "name": "七尾",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.04178,
     "lon": 136.96422,
     "geometries": [
@@ -4492,7 +4492,7 @@
     "name": "笠師保",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.079505,
     "lon": 136.85775,
     "geometries": [
@@ -4514,7 +4514,7 @@
     "name": "田鶴浜",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.065740000000005,
     "lon": 136.89147,
     "geometries": [
@@ -4536,7 +4536,7 @@
     "name": "西岸",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.147665,
     "lon": 136.87416000000002,
     "geometries": [
@@ -4558,7 +4558,7 @@
     "name": "穴水",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.228035000000006,
     "lon": 136.904585,
     "geometries": [
@@ -4580,7 +4580,7 @@
     "name": "能登中島",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.109255,
     "lon": 136.853615,
     "geometries": [
@@ -4602,7 +4602,7 @@
     "name": "能登鹿島",
     "isMatched": true,
     "company": 9,
-    "line": 455,
+    "line": 16,
     "lat": 37.17979,
     "lon": 136.897855,
     "geometries": [
@@ -6436,7 +6436,7 @@
     "name": "岡崎",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.925783333333335,
     "lon": 137.15723333333332,
     "geometries": [
@@ -6924,7 +6924,7 @@
     "name": "河原田",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.911235000000005,
     "lon": 136.599275,
     "geometries": [
@@ -7026,7 +7026,7 @@
     "name": "津",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.73437333333333,
     "lon": 136.51072333333335,
     "geometries": [
@@ -7572,7 +7572,7 @@
     "name": "三島",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.12615333333333,
     "lon": 138.91060333333334,
     "geometries": [
@@ -7962,7 +7962,7 @@
     "name": "小田原",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.256105,
     "lon": 139.1557675,
     "geometries": [
@@ -7992,7 +7992,7 @@
     "name": "小田原",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.256355,
     "lon": 139.15543,
     "geometries": [
@@ -8928,7 +8928,7 @@
     "name": "古町",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.84697,
     "lon": 132.75500499999998,
     "geometries": [
@@ -9390,7 +9390,7 @@
     "name": "平和通一丁目",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.847715,
     "lon": 132.77445,
     "geometries": [
@@ -9456,7 +9456,7 @@
     "name": "木屋町",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.853425,
     "lon": 132.76098000000002,
     "geometries": [
@@ -9478,7 +9478,7 @@
     "name": "鉄砲町",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.848285000000004,
     "lon": 132.768915,
     "geometries": [
@@ -9500,7 +9500,7 @@
     "name": "高砂町",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.851749999999996,
     "lon": 132.762395,
     "geometries": [
@@ -9522,7 +9522,7 @@
     "name": "萱町六丁目",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.85178,
     "lon": 132.75621999999998,
     "geometries": [
@@ -9544,7 +9544,7 @@
     "name": "赤十字病院前",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.848115,
     "lon": 132.77238,
     "geometries": [
@@ -9566,7 +9566,7 @@
     "name": "清水町",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.84924,
     "lon": 132.76425999999998,
     "geometries": [
@@ -9588,7 +9588,7 @@
     "name": "本町六丁目",
     "isMatched": true,
     "company": 38,
-    "line": 375,
+    "line": 100,
     "lat": 33.85346,
     "lon": 132.75823,
     "geometries": [
@@ -11890,7 +11890,7 @@
     "name": "横浜",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.46625,
     "lon": 139.62312500000002,
     "geometries": [
@@ -11978,7 +11978,7 @@
     "name": "横浜",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.465407500000005,
     "lon": 139.6222525,
     "geometries": [
@@ -12148,7 +12148,7 @@
     "name": "上大岡",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.409345,
     "lon": 139.59661,
     "geometries": [
@@ -12528,7 +12528,7 @@
     "name": "戸塚",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.40009857142857,
     "lon": 139.53441285714285,
     "geometries": [
@@ -13262,7 +13262,7 @@
     "name": "金沢八景",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.33113,
     "lon": 139.620125,
     "geometries": [
@@ -14776,7 +14776,7 @@
     "name": "吉原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.143885,
     "lon": 138.70264,
     "geometries": [
@@ -14886,7 +14886,7 @@
     "name": "基山",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.421282000000005,
     "lon": 130.532294,
     "geometries": [
@@ -14954,7 +14954,7 @@
     "name": "松崎",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.399735,
     "lon": 130.582105,
     "geometries": [
@@ -14976,7 +14976,7 @@
     "name": "大板井",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.3985,
     "lon": 130.561085,
     "geometries": [
@@ -14998,7 +14998,7 @@
     "name": "高田",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.414204999999995,
     "lon": 130.63402000000002,
     "geometries": [
@@ -15020,7 +15020,7 @@
     "name": "小郡",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.39748,
     "lon": 130.55316499999998,
     "geometries": [
@@ -15042,7 +15042,7 @@
     "name": "立野",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.41255,
     "lon": 130.53928333333332,
     "geometries": [
@@ -15068,7 +15068,7 @@
     "name": "今隈",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.404145,
     "lon": 130.594275,
     "geometries": [
@@ -15090,7 +15090,7 @@
     "name": "西太刀洗",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.407846666666664,
     "lon": 130.59924333333333,
     "geometries": [
@@ -15116,7 +15116,7 @@
     "name": "山隈",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.414055000000005,
     "lon": 130.61007,
     "geometries": [
@@ -15138,7 +15138,7 @@
     "name": "甘木",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.418943333333324,
     "lon": 130.65284,
     "geometries": [
@@ -15174,7 +15174,7 @@
     "name": "太刀洗",
     "isMatched": true,
     "company": 124,
-    "line": 506,
+    "line": 413,
     "lat": 33.413925,
     "lon": 130.618875,
     "geometries": [
@@ -16080,7 +16080,7 @@
     "name": "吉祥寺",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70314666666667,
     "lon": 139.57998999999998,
     "geometries": [
@@ -16354,7 +16354,7 @@
     "name": "渋谷",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.658082,
     "lon": 139.70172399999998,
     "geometries": [
@@ -16970,7 +16970,7 @@
     "name": "新宿",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.690465,
     "lon": 139.70014,
     "geometries": [
@@ -17046,7 +17046,7 @@
     "name": "新宿",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.690110000000004,
     "lon": 139.70061,
     "geometries": [
@@ -17900,7 +17900,7 @@
     "name": "高尾",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.642375,
     "lon": 139.282635,
     "geometries": [
@@ -18674,7 +18674,7 @@
     "name": "黄檗",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.912795,
     "lon": 135.803685,
     "geometries": [
@@ -18900,7 +18900,7 @@
     "name": "東福寺",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.981406666666665,
     "lon": 135.76970666666668,
     "geometries": [
@@ -20192,7 +20192,7 @@
     "name": "御陵",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.99598,
     "lon": 135.801885,
     "geometries": [
@@ -20368,7 +20368,7 @@
     "name": "ケーブル八幡宮山上",
     "isMatched": true,
     "company": 35,
-    "line": 449,
+    "line": 95,
     "lat": 34.88093234,
     "lon": 135.699868725,
     "geometries": [
@@ -20390,7 +20390,7 @@
     "name": "ケーブル八幡宮口",
     "isMatched": true,
     "company": 35,
-    "line": 449,
+    "line": 95,
     "lat": 34.8842453975,
     "lon": 135.699364735,
     "geometries": [
@@ -20886,7 +20886,7 @@
     "name": "青砥",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.74587,
     "lon": 139.85627,
     "geometries": [
@@ -21142,7 +21142,7 @@
     "name": "京成高砂",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.75087,
     "lon": 139.86659,
     "geometries": [
@@ -21456,7 +21456,7 @@
     "name": "京成津田沼",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.68364,
     "lon": 140.024845,
     "geometries": [
@@ -21706,7 +21706,7 @@
     "name": "京成成田",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.77627,
     "lon": 140.31546500000002,
     "geometries": [
@@ -21772,7 +21772,7 @@
     "name": "成田空港",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.765725,
     "lon": 140.386305,
     "geometries": [
@@ -21838,7 +21838,7 @@
     "name": "空港第2ビル",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.77296,
     "lon": 140.38761,
     "geometries": [
@@ -21904,7 +21904,7 @@
     "name": "京成大和田",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.712360000000004,
     "lon": 140.10863,
     "geometries": [
@@ -21926,7 +21926,7 @@
     "name": "志津",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.717405,
     "lon": 140.14493,
     "geometries": [
@@ -21948,7 +21948,7 @@
     "name": "京成西船",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.711690000000004,
     "lon": 139.958845,
     "geometries": [
@@ -21970,7 +21970,7 @@
     "name": "京成佐倉",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.725205,
     "lon": 140.229865,
     "geometries": [
@@ -21992,7 +21992,7 @@
     "name": "大神宮下",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.69396666666666,
     "lon": 139.99137,
     "geometries": [
@@ -22018,7 +22018,7 @@
     "name": "京成八幡",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.72386,
     "lon": 139.92817,
     "geometries": [
@@ -22040,7 +22040,7 @@
     "name": "京成大久保",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.685925,
     "lon": 140.048605,
     "geometries": [
@@ -22062,7 +22062,7 @@
     "name": "実籾",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.68685,
     "lon": 140.06808,
     "geometries": [
@@ -22084,7 +22084,7 @@
     "name": "谷津",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.685286,
     "lon": 140.00764799999996,
     "geometries": [
@@ -22118,7 +22118,7 @@
     "name": "ユーカリが丘",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.72183,
     "lon": 140.156385,
     "geometries": [
@@ -22174,7 +22174,7 @@
     "name": "船橋競馬場",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.6896425,
     "lon": 139.997955,
     "geometries": [
@@ -22204,7 +22204,7 @@
     "name": "勝田台",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.71539,
     "lon": 140.12604499999998,
     "geometries": [
@@ -22226,7 +22226,7 @@
     "name": "宗吾参道",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.75235,
     "lon": 140.280705,
     "geometries": [
@@ -22248,7 +22248,7 @@
     "name": "公津の杜",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.76021,
     "lon": 140.294445,
     "geometries": [
@@ -22270,7 +22270,7 @@
     "name": "海神",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.70592499999999,
     "lon": 139.971785,
     "geometries": [
@@ -22292,7 +22292,7 @@
     "name": "東中山",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.714420000000004,
     "lon": 139.952635,
     "geometries": [
@@ -22314,7 +22314,7 @@
     "name": "鬼越",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.719764999999995,
     "lon": 139.937865,
     "geometries": [
@@ -22336,7 +22336,7 @@
     "name": "八千代台",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.701355,
     "lon": 140.09077000000002,
     "geometries": [
@@ -22358,7 +22358,7 @@
     "name": "京成中山",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.71695,
     "lon": 139.94438,
     "geometries": [
@@ -22380,7 +22380,7 @@
     "name": "京成臼井",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.730025,
     "lon": 140.180805,
     "geometries": [
@@ -22402,7 +22402,7 @@
     "name": "大佐倉",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.729929999999996,
     "lon": 140.25072,
     "geometries": [
@@ -22424,7 +22424,7 @@
     "name": "京成船橋",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.699963333333336,
     "lon": 139.98493666666664,
     "geometries": [
@@ -22462,7 +22462,7 @@
     "name": "京成酒々井",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.736914999999996,
     "lon": 140.270175,
     "geometries": [
@@ -22484,7 +22484,7 @@
     "name": "京成関屋",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.743965,
     "lon": 139.81185,
     "geometries": [
@@ -22506,7 +22506,7 @@
     "name": "堀切菖蒲園",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.74765,
     "lon": 139.82754,
     "geometries": [
@@ -22528,7 +22528,7 @@
     "name": "菅野",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.728275,
     "lon": 139.919395,
     "geometries": [
@@ -22550,7 +22550,7 @@
     "name": "千住大橋",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.74241,
     "lon": 139.79705,
     "geometries": [
@@ -22572,7 +22572,7 @@
     "name": "京成上野",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.71131,
     "lon": 139.77351,
     "geometries": [
@@ -22594,7 +22594,7 @@
     "name": "江戸川",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.737835,
     "lon": 139.8958725,
     "geometries": [
@@ -22624,7 +22624,7 @@
     "name": "日暮里",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.728123333333336,
     "lon": 139.77136666666664,
     "geometries": [
@@ -22754,7 +22754,7 @@
     "name": "新三河島",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.7373425,
     "lon": 139.7741675,
     "geometries": [
@@ -22784,7 +22784,7 @@
     "name": "国府台",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.73631,
     "lon": 139.90354,
     "geometries": [
@@ -22806,7 +22806,7 @@
     "name": "町屋",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.742340000000006,
     "lon": 139.78157,
     "geometries": [
@@ -22866,7 +22866,7 @@
     "name": "京成小岩",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.742215,
     "lon": 139.883615,
     "geometries": [
@@ -22888,7 +22888,7 @@
     "name": "市川真間",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.7312675,
     "lon": 139.91178,
     "geometries": [
@@ -22918,7 +22918,7 @@
     "name": "お花茶屋",
     "isMatched": true,
     "company": 30,
-    "line": 594,
+    "line": 70,
     "lat": 35.747614999999996,
     "lon": 139.83988499999998,
     "geometries": [
@@ -22996,7 +22996,7 @@
     "name": "烏丸御池",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.01079843,
     "lon": 135.75962338,
     "geometries": [
@@ -23202,7 +23202,7 @@
     "name": "京都",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.98461333333333,
     "lon": 135.75834333333333,
     "geometries": [
@@ -23280,7 +23280,7 @@
     "name": "京都",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.98517,
     "lon": 135.75932,
     "geometries": [
@@ -23462,7 +23462,7 @@
     "name": "竹田",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.95599,
     "lon": 135.75616000000002,
     "geometries": [
@@ -23536,7 +23536,7 @@
     "name": "山科",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.991330000000005,
     "lon": 135.81735500000002,
     "geometries": [
@@ -23602,7 +23602,7 @@
     "name": "東野",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.982400000000005,
     "lon": 135.81682,
     "geometries": [
@@ -23628,7 +23628,7 @@
     "name": "蹴上",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.00800666666667,
     "lon": 135.79039666666668,
     "geometries": [
@@ -23654,7 +23654,7 @@
     "name": "二条城前",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.01191333333333,
     "lon": 135.75042,
     "geometries": [
@@ -23680,7 +23680,7 @@
     "name": "京都市役所前",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.010909999999996,
     "lon": 135.76895000000002,
     "geometries": [
@@ -23702,7 +23702,7 @@
     "name": "二条",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.01202,
     "lon": 135.74177,
     "geometries": [
@@ -23746,7 +23746,7 @@
     "name": "東山",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.009440000000005,
     "lon": 135.77982,
     "geometries": [
@@ -23772,7 +23772,7 @@
     "name": "三条京阪",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.0092175,
     "lon": 135.7736925,
     "geometries": [
@@ -23802,7 +23802,7 @@
     "name": "小野",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.96123333333333,
     "lon": 135.81272333333334,
     "geometries": [
@@ -23828,7 +23828,7 @@
     "name": "六地蔵",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.9337,
     "lon": 135.796442,
     "geometries": [
@@ -23862,7 +23862,7 @@
     "name": "六地蔵",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.932883333333336,
     "lon": 135.79732333333334,
     "geometries": [
@@ -23888,7 +23888,7 @@
     "name": "椥辻",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.97268,
     "lon": 135.8149125,
     "geometries": [
@@ -23918,7 +23918,7 @@
     "name": "石田",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.94055,
     "lon": 135.803875,
     "geometries": [
@@ -23940,7 +23940,7 @@
     "name": "醍醐",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 34.95032333333334,
     "lon": 135.81055666666666,
     "geometries": [
@@ -24170,7 +24170,7 @@
     "name": "堀ノ内",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.263149999999996,
     "lon": 139.687035,
     "geometries": [
@@ -24214,7 +24214,7 @@
     "name": "京急蒲田",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.561699466,
     "lon": 139.724329318,
     "geometries": [
@@ -24248,7 +24248,7 @@
     "name": "京急蒲田",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.561699466,
     "lon": 139.724329318,
     "geometries": [
@@ -24282,7 +24282,7 @@
     "name": "穴守稲荷",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.550333333333334,
     "lon": 139.74671666666669,
     "geometries": [
@@ -24308,7 +24308,7 @@
     "name": "糀谷",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.55445,
     "lon": 139.72959,
     "geometries": [
@@ -24330,7 +24330,7 @@
     "name": "大鳥居",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.552319999999995,
     "lon": 139.740225,
     "geometries": [
@@ -24352,7 +24352,7 @@
     "name": "天空橋",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.54815333333334,
     "lon": 139.75462000000002,
     "geometries": [
@@ -24400,7 +24400,7 @@
     "name": "羽田空港第1・第2ターミナル",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.5498,
     "lon": 139.786025,
     "geometries": [
@@ -24528,7 +24528,7 @@
     "name": "京急川崎",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.533010000000004,
     "lon": 139.70094,
     "geometries": [
@@ -24550,7 +24550,7 @@
     "name": "京急川崎",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.533010000000004,
     "lon": 139.70094,
     "geometries": [
@@ -24572,7 +24572,7 @@
     "name": "鈴木町",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.53538,
     "lon": 139.72065500000002,
     "geometries": [
@@ -24594,7 +24594,7 @@
     "name": "小島新田",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.534639999999996,
     "lon": 139.747555,
     "geometries": [
@@ -24616,7 +24616,7 @@
     "name": "東門前",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.53659,
     "lon": 139.734325,
     "geometries": [
@@ -24638,7 +24638,7 @@
     "name": "港町",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.535065,
     "lon": 139.71262000000002,
     "geometries": [
@@ -24660,7 +24660,7 @@
     "name": "大師橋",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.536605,
     "lon": 139.740445,
     "geometries": [
@@ -24682,7 +24682,7 @@
     "name": "川崎大師",
     "isMatched": true,
     "company": 31,
-    "line": 366,
+    "line": 74,
     "lat": 35.53577,
     "lon": 139.725995,
     "geometries": [
@@ -24704,7 +24704,7 @@
     "name": "大森海岸",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.58741,
     "lon": 139.7353075,
     "geometries": [
@@ -24734,7 +24734,7 @@
     "name": "立会川",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.598505,
     "lon": 139.738945,
     "geometries": [
@@ -24756,7 +24756,7 @@
     "name": "青物横丁",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.60919,
     "lon": 139.743135,
     "geometries": [
@@ -24778,7 +24778,7 @@
     "name": "北品川",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.622426000000004,
     "lon": 139.73931,
     "geometries": [
@@ -24812,7 +24812,7 @@
     "name": "品川",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.627714000000005,
     "lon": 139.738094,
     "geometries": [
@@ -24892,7 +24892,7 @@
     "name": "品川",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.628135,
     "lon": 139.738535,
     "geometries": [
@@ -24914,7 +24914,7 @@
     "name": "品川",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.628135,
     "lon": 139.738535,
     "geometries": [
@@ -24976,7 +24976,7 @@
     "name": "新馬場",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.616662,
     "lon": 139.741498,
     "geometries": [
@@ -25010,7 +25010,7 @@
     "name": "鮫洲",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.60507,
     "lon": 139.742445,
     "geometries": [
@@ -25032,7 +25032,7 @@
     "name": "泉岳寺",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.638130000000004,
     "lon": 139.73973,
     "geometries": [
@@ -25076,7 +25076,7 @@
     "name": "安針塚",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.286682,
     "lon": 139.64282199999997,
     "geometries": [
@@ -25110,7 +25110,7 @@
     "name": "京急鶴見",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.506665,
     "lon": 139.67758750000002,
     "geometries": [
@@ -25140,7 +25140,7 @@
     "name": "杉田",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.383905,
     "lon": 139.61561,
     "geometries": [
@@ -25162,7 +25162,7 @@
     "name": "南太田",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.436890000000005,
     "lon": 139.613635,
     "geometries": [
@@ -25184,7 +25184,7 @@
     "name": "汐入",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.280315,
     "lon": 139.66251499999998,
     "geometries": [
@@ -25206,7 +25206,7 @@
     "name": "逸見",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.28062250000001,
     "lon": 139.6526075,
     "geometries": [
@@ -25236,7 +25236,7 @@
     "name": "大森町",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.5725,
     "lon": 139.73201,
     "geometries": [
@@ -25258,7 +25258,7 @@
     "name": "京急新子安",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.48721999999999,
     "lon": 139.65585,
     "geometries": [
@@ -25280,7 +25280,7 @@
     "name": "八丁畷",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.523025000000004,
     "lon": 139.69145,
     "geometries": [
@@ -25324,7 +25324,7 @@
     "name": "追浜",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.315691666666666,
     "lon": 139.62488333333334,
     "geometries": [
@@ -25362,7 +25362,7 @@
     "name": "雑色",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.549775,
     "lon": 139.715035,
     "geometries": [
@@ -25384,7 +25384,7 @@
     "name": "生麦",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.495599999999996,
     "lon": 139.66733499999998,
     "geometries": [
@@ -25406,7 +25406,7 @@
     "name": "弘明寺",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.424099999999996,
     "lon": 139.59690999999998,
     "geometries": [
@@ -25428,7 +25428,7 @@
     "name": "花月総持寺",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.500325000000004,
     "lon": 139.67286000000001,
     "geometries": [
@@ -25450,7 +25450,7 @@
     "name": "横須賀中央",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.27883714285714,
     "lon": 139.66978857142857,
     "geometries": [
@@ -25492,7 +25492,7 @@
     "name": "能見台",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.3605575,
     "lon": 139.62923,
     "geometries": [
@@ -25522,7 +25522,7 @@
     "name": "金沢文庫",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.34326333333333,
     "lon": 139.62177666666668,
     "geometries": [
@@ -25548,7 +25548,7 @@
     "name": "馬堀海岸",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.25956,
     "lon": 139.707915,
     "geometries": [
@@ -25570,7 +25570,7 @@
     "name": "神奈川",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.47125,
     "lon": 139.627415,
     "geometries": [
@@ -25592,7 +25592,7 @@
     "name": "浦賀",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.251876,
     "lon": 139.71504,
     "geometries": [
@@ -25626,7 +25626,7 @@
     "name": "黄金町",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.439705000000004,
     "lon": 139.62256000000002,
     "geometries": [
@@ -25648,7 +25648,7 @@
     "name": "戸部",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.45666,
     "lon": 139.61956,
     "geometries": [
@@ -25670,7 +25670,7 @@
     "name": "井土ヶ谷",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.433875,
     "lon": 139.600525,
     "geometries": [
@@ -25692,7 +25692,7 @@
     "name": "京急東神奈川",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.477554999999995,
     "lon": 139.634925,
     "geometries": [
@@ -25714,7 +25714,7 @@
     "name": "屏風浦",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.394130000000004,
     "lon": 139.61043999999998,
     "geometries": [
@@ -25736,7 +25736,7 @@
     "name": "鶴見市場",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.51759,
     "lon": 139.68649,
     "geometries": [
@@ -25758,7 +25758,7 @@
     "name": "京急富岡",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.36671,
     "lon": 139.62976,
     "geometries": [
@@ -25780,7 +25780,7 @@
     "name": "子安",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.484575,
     "lon": 139.64504,
     "geometries": [
@@ -25818,7 +25818,7 @@
     "name": "県立大学",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.269816666666664,
     "lon": 139.67696999999998,
     "geometries": [
@@ -25856,7 +25856,7 @@
     "name": "京急田浦",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.30099666666666,
     "lon": 139.62521333333333,
     "geometries": [
@@ -25882,7 +25882,7 @@
     "name": "神奈川新町",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.481515,
     "lon": 139.64017,
     "geometries": [
@@ -25904,7 +25904,7 @@
     "name": "京急大津",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.261005,
     "lon": 139.69537000000003,
     "geometries": [
@@ -25926,7 +25926,7 @@
     "name": "梅屋敷",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.566784999999996,
     "lon": 139.72816999999998,
     "geometries": [
@@ -25948,7 +25948,7 @@
     "name": "六郷土手",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.540530000000004,
     "lon": 139.707565,
     "geometries": [
@@ -25970,7 +25970,7 @@
     "name": "日ノ出町",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.44563,
     "lon": 139.62666,
     "geometries": [
@@ -26000,7 +26000,7 @@
     "name": "平和島",
     "isMatched": true,
     "company": 31,
-    "line": 594,
+    "line": 75,
     "lat": 35.578654,
     "lon": 139.734934,
     "geometries": [
@@ -26034,7 +26034,7 @@
     "name": "ケーブル比叡",
     "isMatched": true,
     "company": 33,
-    "line": 449,
+    "line": 86,
     "lat": 35.064265,
     "lon": 135.822165,
     "geometries": [
@@ -26056,7 +26056,7 @@
     "name": "ケーブル八瀬",
     "isMatched": true,
     "company": 33,
-    "line": 449,
+    "line": 86,
     "lat": 35.066925,
     "lon": 135.80890499999998,
     "geometries": [
@@ -26890,7 +26890,7 @@
     "name": "大和西大寺",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.693650000000005,
     "lon": 135.78307,
     "geometries": [
@@ -27758,7 +27758,7 @@
     "name": "東寺",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.979985,
     "lon": 135.75259499999999,
     "geometries": [
@@ -27780,7 +27780,7 @@
     "name": "伊勢田",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.88216,
     "lon": 135.778995,
     "geometries": [
@@ -27802,7 +27802,7 @@
     "name": "山田川",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.73779,
     "lon": 135.79388,
     "geometries": [
@@ -27828,7 +27828,7 @@
     "name": "大久保",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.874629999999996,
     "lon": 135.77706,
     "geometries": [
@@ -27850,7 +27850,7 @@
     "name": "富野荘",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.84016,
     "lon": 135.772915,
     "geometries": [
@@ -27872,7 +27872,7 @@
     "name": "狛田",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.78044,
     "lon": 135.78951999999998,
     "geometries": [
@@ -27894,7 +27894,7 @@
     "name": "木津川台",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.746696,
     "lon": 135.79605399999997,
     "geometries": [
@@ -27928,7 +27928,7 @@
     "name": "三山木",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.798640000000006,
     "lon": 135.78609,
     "geometries": [
@@ -27950,7 +27950,7 @@
     "name": "向島",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.914725000000004,
     "lon": 135.76977,
     "geometries": [
@@ -27972,7 +27972,7 @@
     "name": "桃山御陵前",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.93333,
     "lon": 135.76555,
     "geometries": [
@@ -27994,7 +27994,7 @@
     "name": "近鉄丹波橋",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.938105,
     "lon": 135.76642500000003,
     "geometries": [
@@ -28016,7 +28016,7 @@
     "name": "新田辺",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.82071800000001,
     "lon": 135.77282200000002,
     "geometries": [
@@ -28050,7 +28050,7 @@
     "name": "上鳥羽口",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.965015,
     "lon": 135.75272999999999,
     "geometries": [
@@ -28072,7 +28072,7 @@
     "name": "小倉",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.893005,
     "lon": 135.78188,
     "geometries": [
@@ -28094,7 +28094,7 @@
     "name": "伏見",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.946020000000004,
     "lon": 135.76149,
     "geometries": [
@@ -28116,7 +28116,7 @@
     "name": "十条",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.973995,
     "lon": 135.75245999999999,
     "geometries": [
@@ -28138,7 +28138,7 @@
     "name": "久津川",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.864954999999995,
     "lon": 135.774785,
     "geometries": [
@@ -28160,7 +28160,7 @@
     "name": "近鉄宮津",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.791619999999995,
     "lon": 135.78751499999998,
     "geometries": [
@@ -28182,7 +28182,7 @@
     "name": "高の原",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.72371,
     "lon": 135.79185999999999,
     "geometries": [
@@ -28204,7 +28204,7 @@
     "name": "新祝園",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.760326666666664,
     "lon": 135.79277333333334,
     "geometries": [
@@ -28230,7 +28230,7 @@
     "name": "平城",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.701465,
     "lon": 135.78465,
     "geometries": [
@@ -28252,7 +28252,7 @@
     "name": "興戸",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.80832,
     "lon": 135.77868,
     "geometries": [
@@ -28274,7 +28274,7 @@
     "name": "寺田",
     "isMatched": true,
     "company": 152,
-    "line": 564,
+    "line": 526,
     "lat": 34.85327,
     "lon": 135.772085,
     "geometries": [
@@ -28770,7 +28770,7 @@
     "name": "松阪",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.57685,
     "lon": 136.53579,
     "geometries": [
@@ -30970,7 +30970,7 @@
     "name": "川西",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.49196499999999,
     "lon": 135.59066,
     "geometries": [
@@ -30992,7 +30992,7 @@
     "name": "喜志",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.522645,
     "lon": 135.607245,
     "geometries": [
@@ -31014,7 +31014,7 @@
     "name": "滝谷不動",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.481390000000005,
     "lon": 135.586685,
     "geometries": [
@@ -31036,7 +31036,7 @@
     "name": "河内長野",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.451105,
     "lon": 135.57315499999999,
     "geometries": [
@@ -31080,7 +31080,7 @@
     "name": "汐ノ宮",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.46701,
     "lon": 135.57911000000001,
     "geometries": [
@@ -31102,7 +31102,7 @@
     "name": "富田林",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.504335,
     "lon": 135.60074,
     "geometries": [
@@ -31124,7 +31124,7 @@
     "name": "古市",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.554047499999996,
     "lon": 135.6091225,
     "geometries": [
@@ -31184,7 +31184,7 @@
     "name": "富田林西口",
     "isMatched": true,
     "company": 152,
-    "line": 559,
+    "line": 545,
     "lat": 34.500275,
     "lon": 135.59628,
     "geometries": [
@@ -33614,7 +33614,7 @@
     "name": "桑名",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.06667,
     "lon": 136.68374,
     "geometries": [
@@ -34384,7 +34384,7 @@
     "name": "高宮",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.236215,
     "lon": 136.260605,
     "geometries": [
@@ -34428,7 +34428,7 @@
     "name": "八日市",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.114175,
     "lon": 136.19454000000002,
     "geometries": [
@@ -34604,7 +34604,7 @@
     "name": "尼子",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.214025,
     "lon": 136.24617999999998,
     "geometries": [
@@ -34626,7 +34626,7 @@
     "name": "長谷野",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.09558,
     "lon": 136.18757,
     "geometries": [
@@ -34648,7 +34648,7 @@
     "name": "水口松尾",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 34.980225000000004,
     "lon": 136.18644,
     "geometries": [
@@ -34670,7 +34670,7 @@
     "name": "桜川",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.064945,
     "lon": 136.18758,
     "geometries": [
@@ -34692,7 +34692,7 @@
     "name": "河辺の森",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.135325,
     "lon": 136.196225,
     "geometries": [
@@ -34714,7 +34714,7 @@
     "name": "朝日野",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.03154,
     "lon": 136.20572666666666,
     "geometries": [
@@ -34740,7 +34740,7 @@
     "name": "豊郷",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.197905,
     "lon": 136.230985,
     "geometries": [
@@ -34762,7 +34762,7 @@
     "name": "彦根",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.272175,
     "lon": 136.26369499999998,
     "geometries": [
@@ -34806,7 +34806,7 @@
     "name": "朝日大塚",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.05099,
     "lon": 136.19358,
     "geometries": [
@@ -34828,7 +34828,7 @@
     "name": "彦根口",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.25519,
     "lon": 136.25859,
     "geometries": [
@@ -34850,7 +34850,7 @@
     "name": "米原",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.3139805,
     "lon": 136.290247,
     "geometries": [
@@ -34982,7 +34982,7 @@
     "name": "京セラ前",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.074839999999995,
     "lon": 136.180405,
     "geometries": [
@@ -35004,7 +35004,7 @@
     "name": "鳥居本",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.284774999999996,
     "lon": 136.28303499999998,
     "geometries": [
@@ -35026,7 +35026,7 @@
     "name": "日野",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.012249999999995,
     "lon": 136.21946,
     "geometries": [
@@ -35048,7 +35048,7 @@
     "name": "愛知川",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.17616,
     "lon": 136.21341999999999,
     "geometries": [
@@ -35070,7 +35070,7 @@
     "name": "五箇荘",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.15484,
     "lon": 136.19725,
     "geometries": [
@@ -35092,7 +35092,7 @@
     "name": "大学前",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.087779999999995,
     "lon": 136.184675,
     "geometries": [
@@ -35114,7 +35114,7 @@
     "name": "水口",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 34.97425,
     "lon": 136.17683,
     "geometries": [
@@ -35136,7 +35136,7 @@
     "name": "水口石橋",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 34.97001,
     "lon": 136.17161,
     "geometries": [
@@ -35158,7 +35158,7 @@
     "name": "貴生川",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 34.952635,
     "lon": 136.153215,
     "geometries": [
@@ -35224,7 +35224,7 @@
     "name": "水口城南",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 34.96813,
     "lon": 136.16559999999998,
     "geometries": [
@@ -35246,7 +35246,7 @@
     "name": "フジテック前",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.29425,
     "lon": 136.28538500000002,
     "geometries": [
@@ -38308,7 +38308,7 @@
     "name": "門司",
     "isMatched": true,
     "company": 28,
-    "line": 479,
+    "line": 50,
     "lat": 33.90434666666667,
     "lon": 130.93240666666668,
     "geometries": [
@@ -38374,7 +38374,7 @@
     "name": "下関",
     "isMatched": true,
     "company": 28,
-    "line": 479,
+    "line": 50,
     "lat": 33.949149999999996,
     "lon": 130.92160666666666,
     "geometries": [
@@ -51960,7 +51960,7 @@
     "name": "紙屋町東",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.394975,
     "lon": 132.458305,
     "geometries": [
@@ -52004,7 +52004,7 @@
     "name": "紙屋町西",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39532,
     "lon": 132.45692,
     "geometries": [
@@ -52136,7 +52136,7 @@
     "name": "十日市町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.396865,
     "lon": 132.44693,
     "geometries": [
@@ -52238,7 +52238,7 @@
     "name": "的場町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39322,
     "lon": 132.47463,
     "geometries": [
@@ -52396,7 +52396,7 @@
     "name": "広電西広島（己斐）",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.3967365,
     "lon": 132.427773,
     "geometries": [
@@ -53014,7 +53014,7 @@
     "name": "土橋",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39451,
     "lon": 132.446335,
     "geometries": [
@@ -53112,7 +53112,7 @@
     "name": "八丁堀",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.393815000000004,
     "lon": 132.4631,
     "geometries": [
@@ -53178,7 +53178,7 @@
     "name": "西観音町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39394,
     "lon": 132.43686,
     "geometries": [
@@ -53200,7 +53200,7 @@
     "name": "小網町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.394454999999994,
     "lon": 132.44449500000002,
     "geometries": [
@@ -53222,7 +53222,7 @@
     "name": "胡町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.393296666666664,
     "lon": 132.46519999999998,
     "geometries": [
@@ -53248,7 +53248,7 @@
     "name": "天満町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39515,
     "lon": 132.44104,
     "geometries": [
@@ -53270,7 +53270,7 @@
     "name": "本川町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.396785,
     "lon": 132.450495,
     "geometries": [
@@ -53292,7 +53292,7 @@
     "name": "福島町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39483,
     "lon": 132.43406,
     "geometries": [
@@ -53314,7 +53314,7 @@
     "name": "観音町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.395545,
     "lon": 132.43871000000001,
     "geometries": [
@@ -53336,7 +53336,7 @@
     "name": "銀山町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.393163333333334,
     "lon": 132.46723333333333,
     "geometries": [
@@ -53362,7 +53362,7 @@
     "name": "原爆ドーム前",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.39608,
     "lon": 132.453845,
     "geometries": [
@@ -53384,7 +53384,7 @@
     "name": "広島駅",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.396330000000006,
     "lon": 132.475435,
     "geometries": [
@@ -53406,7 +53406,7 @@
     "name": "猿猴橋町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.395255,
     "lon": 132.47596,
     "geometries": [
@@ -53428,7 +53428,7 @@
     "name": "稲荷町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.392625,
     "lon": 132.47113000000002,
     "geometries": [
@@ -53450,7 +53450,7 @@
     "name": "立町",
     "isMatched": true,
     "company": 88,
-    "line": 594,
+    "line": 250,
     "lat": 34.394324999999995,
     "lon": 132.460975,
     "geometries": [
@@ -54460,7 +54460,7 @@
     "name": "藤沢",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.3388425,
     "lon": 139.48667,
     "geometries": [
@@ -57158,7 +57158,7 @@
     "name": "今津",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.73089,
     "lon": 135.35173500000002,
     "geometries": [
@@ -57414,7 +57414,7 @@
     "name": "神戸三宮",
     "isMatched": true,
     "company": 163,
-    "line": 576,
+    "line": 572,
     "lat": 34.693145,
     "lon": 135.192855,
     "geometries": [
@@ -57458,7 +57458,7 @@
     "name": "神戸三宮",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.69382,
     "lon": 135.19523333333333,
     "geometries": [
@@ -57484,7 +57484,7 @@
     "name": "新開地",
     "isMatched": true,
     "company": 163,
-    "line": 576,
+    "line": 572,
     "lat": 34.676455000000004,
     "lon": 135.16993000000002,
     "geometries": [
@@ -57526,7 +57526,7 @@
     "name": "花隈",
     "isMatched": true,
     "company": 163,
-    "line": 576,
+    "line": 572,
     "lat": 34.686465,
     "lon": 135.181245,
     "geometries": [
@@ -57548,7 +57548,7 @@
     "name": "高速神戸",
     "isMatched": true,
     "company": 163,
-    "line": 576,
+    "line": 572,
     "lat": 34.6799,
     "lon": 135.175465,
     "geometries": [
@@ -59940,7 +59940,7 @@
     "name": "西代",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.662400000000005,
     "lon": 135.14399,
     "geometries": [
@@ -59984,7 +59984,7 @@
     "name": "元町",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.688895,
     "lon": 135.18694,
     "geometries": [
@@ -60168,7 +60168,7 @@
     "name": "尼崎",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.718509999999995,
     "lon": 135.417315,
     "geometries": [
@@ -60256,7 +60256,7 @@
     "name": "大物",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71665,
     "lon": 135.42601000000002,
     "geometries": [
@@ -60322,7 +60322,7 @@
     "name": "武庫川",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.718486,
     "lon": 135.38287400000002,
     "geometries": [
@@ -60422,7 +60422,7 @@
     "name": "大阪梅田",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.701503333333335,
     "lon": 135.49725333333333,
     "geometries": [
@@ -60448,7 +60448,7 @@
     "name": "淀川",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.696195,
     "lon": 135.465205,
     "geometries": [
@@ -60470,7 +60470,7 @@
     "name": "福島",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.69607,
     "lon": 135.488275,
     "geometries": [
@@ -60514,7 +60514,7 @@
     "name": "野田",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.6944,
     "lon": 135.47606000000002,
     "geometries": [
@@ -60536,7 +60536,7 @@
     "name": "姫島",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.704350000000005,
     "lon": 135.45819,
     "geometries": [
@@ -60558,7 +60558,7 @@
     "name": "打出",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.731605,
     "lon": 135.315565,
     "geometries": [
@@ -60580,7 +60580,7 @@
     "name": "甲子園",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.723960000000005,
     "lon": 135.363275,
     "geometries": [
@@ -60602,7 +60602,7 @@
     "name": "魚崎",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71268,
     "lon": 135.26968499999998,
     "geometries": [
@@ -60646,7 +60646,7 @@
     "name": "西宮",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.73668,
     "lon": 135.33950499999997,
     "geometries": [
@@ -60668,7 +60668,7 @@
     "name": "住吉",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.713055,
     "lon": 135.26126499999998,
     "geometries": [
@@ -60690,7 +60690,7 @@
     "name": "芦屋",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.72777,
     "lon": 135.30355,
     "geometries": [
@@ -60712,7 +60712,7 @@
     "name": "香櫨園",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.734314999999995,
     "lon": 135.32889,
     "geometries": [
@@ -60734,7 +60734,7 @@
     "name": "深江",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.722570000000005,
     "lon": 135.29145,
     "geometries": [
@@ -60756,7 +60756,7 @@
     "name": "青木",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71698,
     "lon": 135.28064999999998,
     "geometries": [
@@ -60778,7 +60778,7 @@
     "name": "出屋敷",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71826,
     "lon": 135.40461,
     "geometries": [
@@ -60800,7 +60800,7 @@
     "name": "尼崎センタープール前",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71787333333333,
     "lon": 135.39525333333333,
     "geometries": [
@@ -60826,7 +60826,7 @@
     "name": "杭瀬",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71831,
     "lon": 135.43868,
     "geometries": [
@@ -60848,7 +60848,7 @@
     "name": "千船",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.712255,
     "lon": 135.44535000000002,
     "geometries": [
@@ -60870,7 +60870,7 @@
     "name": "久寿川",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.727019999999996,
     "lon": 135.35689000000002,
     "geometries": [
@@ -60892,7 +60892,7 @@
     "name": "鳴尾・武庫川女子大前",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.71968333333333,
     "lon": 135.3703866666667,
     "geometries": [
@@ -60918,7 +60918,7 @@
     "name": "西灘",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.705725,
     "lon": 135.224335,
     "geometries": [
@@ -60940,7 +60940,7 @@
     "name": "石屋川",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.713319999999996,
     "lon": 135.249415,
     "geometries": [
@@ -60962,7 +60962,7 @@
     "name": "岩屋",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.7042,
     "lon": 135.21848999999997,
     "geometries": [
@@ -60984,7 +60984,7 @@
     "name": "大石",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.707705000000004,
     "lon": 135.23107,
     "geometries": [
@@ -61006,7 +61006,7 @@
     "name": "御影",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.714915,
     "lon": 135.25550833333332,
     "geometries": [
@@ -61044,7 +61044,7 @@
     "name": "春日野道",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.699619999999996,
     "lon": 135.208165,
     "geometries": [
@@ -61066,7 +61066,7 @@
     "name": "新在家",
     "isMatched": true,
     "company": 164,
-    "line": 594,
+    "line": 574,
     "lat": 34.710605,
     "lon": 135.24057,
     "geometries": [
@@ -64554,7 +64554,7 @@
     "name": "宮古",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.639894999999996,
     "lon": 141.947365,
     "geometries": [
@@ -65258,7 +65258,7 @@
     "name": "大塩",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.779376,
     "lon": 134.75755999999998,
     "geometries": [
@@ -65292,7 +65292,7 @@
     "name": "別府",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.730245,
     "lon": 134.85069,
     "geometries": [
@@ -65314,7 +65314,7 @@
     "name": "山陽魚住",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.68928,
     "lon": 134.902025,
     "geometries": [
@@ -65336,7 +65336,7 @@
     "name": "尾上の松",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.74859,
     "lon": 134.82093,
     "geometries": [
@@ -65358,7 +65358,7 @@
     "name": "伊保",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.76719,
     "lon": 134.78702,
     "geometries": [
@@ -65384,7 +65384,7 @@
     "name": "飾磨",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.799710000000005,
     "lon": 134.675465,
     "geometries": [
@@ -65428,7 +65428,7 @@
     "name": "高砂",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.751979999999996,
     "lon": 134.80236,
     "geometries": [
@@ -65454,7 +65454,7 @@
     "name": "的形",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.78006499999999,
     "lon": 134.741585,
     "geometries": [
@@ -65476,7 +65476,7 @@
     "name": "藤江",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.663395,
     "lon": 134.947595,
     "geometries": [
@@ -65498,7 +65498,7 @@
     "name": "板宿",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.66014166666667,
     "lon": 135.13330333333332,
     "geometries": [
@@ -65558,7 +65558,7 @@
     "name": "山陽曽根",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.775507499999996,
     "lon": 134.77317250000002,
     "geometries": [
@@ -65588,7 +65588,7 @@
     "name": "播磨町",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.716674999999995,
     "lon": 134.86813,
     "geometries": [
@@ -65610,7 +65610,7 @@
     "name": "西江井ヶ島",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.68573000000001,
     "lon": 134.90816999999998,
     "geometries": [
@@ -65632,7 +65632,7 @@
     "name": "白浜の宮",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.786855,
     "lon": 134.70713999999998,
     "geometries": [
@@ -65654,7 +65654,7 @@
     "name": "西二見",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.707184999999996,
     "lon": 134.87706500000002,
     "geometries": [
@@ -65676,7 +65676,7 @@
     "name": "妻鹿",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.792096666666666,
     "lon": 134.69346333333334,
     "geometries": [
@@ -65702,7 +65702,7 @@
     "name": "中八木",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.6708,
     "lon": 134.93616,
     "geometries": [
@@ -65724,7 +65724,7 @@
     "name": "浜の宮",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.740835000000004,
     "lon": 134.833975,
     "geometries": [
@@ -65746,7 +65746,7 @@
     "name": "江井ヶ島",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.679019999999994,
     "lon": 134.919925,
     "geometries": [
@@ -65768,7 +65768,7 @@
     "name": "八家",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.784035,
     "lon": 134.72259,
     "geometries": [
@@ -65790,7 +65790,7 @@
     "name": "東二見",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.70025,
     "lon": 134.888025,
     "geometries": [
@@ -65812,7 +65812,7 @@
     "name": "亀山",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.810655,
     "lon": 134.67675,
     "geometries": [
@@ -65834,7 +65834,7 @@
     "name": "山陽姫路",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.828784999999996,
     "lon": 134.689335,
     "geometries": [
@@ -65856,7 +65856,7 @@
     "name": "荒井",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.75790666666666,
     "lon": 134.7935633333333,
     "geometries": [
@@ -65882,7 +65882,7 @@
     "name": "手柄",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.819919999999996,
     "lon": 134.681395,
     "geometries": [
@@ -65904,7 +65904,7 @@
     "name": "西新町",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.649575,
     "lon": 134.980805,
     "geometries": [
@@ -65926,7 +65926,7 @@
     "name": "須磨浦公園",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.637935,
     "lon": 135.10021999999998,
     "geometries": [
@@ -65948,7 +65948,7 @@
     "name": "月見山",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.65021333333333,
     "lon": 135.12215333333333,
     "geometries": [
@@ -65974,7 +65974,7 @@
     "name": "山陽垂水",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.629335,
     "lon": 135.05374,
     "geometries": [
@@ -65996,7 +65996,7 @@
     "name": "大蔵谷",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.646585,
     "lon": 135.00840499999998,
     "geometries": [
@@ -66018,7 +66018,7 @@
     "name": "人丸前",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.647544999999994,
     "lon": 135.0026,
     "geometries": [
@@ -66040,7 +66040,7 @@
     "name": "舞子公園",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.634225,
     "lon": 135.033855,
     "geometries": [
@@ -66062,7 +66062,7 @@
     "name": "滝の茶屋",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.631235000000004,
     "lon": 135.07292,
     "geometries": [
@@ -66084,7 +66084,7 @@
     "name": "東須磨",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.655215,
     "lon": 135.12748499999998,
     "geometries": [
@@ -66106,7 +66106,7 @@
     "name": "山陽明石",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.64882333333333,
     "lon": 134.99271,
     "geometries": [
@@ -66132,7 +66132,7 @@
     "name": "須磨寺",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.646024999999995,
     "lon": 135.11624,
     "geometries": [
@@ -66154,7 +66154,7 @@
     "name": "霞ヶ丘",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.630325,
     "lon": 135.04271999999997,
     "geometries": [
@@ -66176,7 +66176,7 @@
     "name": "山陽須磨",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.643575,
     "lon": 135.11231500000002,
     "geometries": [
@@ -66198,7 +66198,7 @@
     "name": "東垂水",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.629374999999996,
     "lon": 135.06358999999998,
     "geometries": [
@@ -66220,7 +66220,7 @@
     "name": "林崎松江海岸",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.65228,
     "lon": 134.96508,
     "geometries": [
@@ -66242,7 +66242,7 @@
     "name": "山陽塩屋",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.633615,
     "lon": 135.08204,
     "geometries": [
@@ -66264,7 +66264,7 @@
     "name": "西舞子",
     "isMatched": true,
     "company": 82,
-    "line": 594,
+    "line": 237,
     "lat": 34.6387,
     "lon": 135.02812999999998,
     "geometries": [
@@ -69394,7 +69394,7 @@
     "name": "宇多津",
     "isMatched": true,
     "company": 65,
-    "line": 483,
+    "line": 192,
     "lat": 34.30632,
     "lon": 133.81375,
     "geometries": [
@@ -69438,7 +69438,7 @@
     "name": "児島",
     "isMatched": true,
     "company": 65,
-    "line": 483,
+    "line": 192,
     "lat": 34.462815,
     "lon": 133.80768999999998,
     "geometries": [
@@ -79322,7 +79322,7 @@
     "name": "松本",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.230270000000004,
     "lon": 137.964625,
     "geometries": [
@@ -79662,7 +79662,7 @@
     "name": "大船",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.35414333333333,
     "lon": 139.53116,
     "geometries": [
@@ -80322,7 +80322,7 @@
     "name": "高崎",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.322644000000004,
     "lon": 139.013024,
     "geometries": [
@@ -84132,7 +84132,7 @@
     "name": "湊川",
     "isMatched": true,
     "company": 131,
-    "line": 576,
+    "line": 430,
     "lat": 34.67928,
     "lon": 135.166115,
     "geometries": [
@@ -87538,7 +87538,7 @@
     "name": "新山口",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.09397799999999,
     "lon": 131.39620600000003,
     "geometries": [
@@ -89754,7 +89754,7 @@
     "name": "関西空港",
     "isMatched": true,
     "company": 56,
-    "line": 177,
+    "line": 149,
     "lat": 34.435897272727274,
     "lon": 135.2431990909091,
     "geometries": [
@@ -89834,7 +89834,7 @@
     "name": "りんくうタウン",
     "isMatched": true,
     "company": 56,
-    "line": 177,
+    "line": 149,
     "lat": 34.410965000000004,
     "lon": 135.29944999999998,
     "geometries": [
@@ -90138,7 +90138,7 @@
     "name": "亀山",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.849935,
     "lon": 136.45049999999998,
     "geometries": [
@@ -90352,7 +90352,7 @@
     "name": "木津",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.735595,
     "lon": 135.824775,
     "geometries": [
@@ -99588,7 +99588,7 @@
     "name": "益田",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.678275,
     "lon": 131.83895,
     "geometries": [
@@ -101278,7 +101278,7 @@
     "name": "船平山",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.421375,
     "lon": 131.73413,
     "geometries": [
@@ -101300,7 +101300,7 @@
     "name": "青野山",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.480935,
     "lon": 131.803225,
     "geometries": [
@@ -101322,7 +101322,7 @@
     "name": "石見横田",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.618044999999995,
     "lon": 131.804555,
     "geometries": [
@@ -101344,7 +101344,7 @@
     "name": "徳佐",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.39971,
     "lon": 131.72019999999998,
     "geometries": [
@@ -101366,7 +101366,7 @@
     "name": "日原",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.532665,
     "lon": 131.83186,
     "geometries": [
@@ -101388,7 +101388,7 @@
     "name": "青原",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.56045,
     "lon": 131.80065,
     "geometries": [
@@ -101410,7 +101410,7 @@
     "name": "本俣賀",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.65262,
     "lon": 131.82692,
     "geometries": [
@@ -101432,7 +101432,7 @@
     "name": "津和野",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.472539999999995,
     "lon": 131.77375999999998,
     "geometries": [
@@ -101454,7 +101454,7 @@
     "name": "東青原",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.585045,
     "lon": 131.79745,
     "geometries": [
@@ -101476,7 +101476,7 @@
     "name": "長門峡",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.30452,
     "lon": 131.578745,
     "geometries": [
@@ -101498,7 +101498,7 @@
     "name": "周防下郷",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.10114,
     "lon": 131.40179,
     "geometries": [
@@ -101520,7 +101520,7 @@
     "name": "上山口",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.18258,
     "lon": 131.48487,
     "geometries": [
@@ -101542,7 +101542,7 @@
     "name": "仁保津",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.12899,
     "lon": 131.415615,
     "geometries": [
@@ -101564,7 +101564,7 @@
     "name": "鍋倉",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.378245,
     "lon": 131.69407,
     "geometries": [
@@ -101586,7 +101586,7 @@
     "name": "地福",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.362755,
     "lon": 131.674205,
     "geometries": [
@@ -101608,7 +101608,7 @@
     "name": "名草",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.35369,
     "lon": 131.651185,
     "geometries": [
@@ -101630,7 +101630,7 @@
     "name": "矢原",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.150665000000004,
     "lon": 131.44626,
     "geometries": [
@@ -101652,7 +101652,7 @@
     "name": "湯田温泉",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.159864999999996,
     "lon": 131.460615,
     "geometries": [
@@ -101674,7 +101674,7 @@
     "name": "山口",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.172799999999995,
     "lon": 131.48106,
     "geometries": [
@@ -101696,7 +101696,7 @@
     "name": "大歳",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.146969999999996,
     "lon": 131.43265000000002,
     "geometries": [
@@ -101718,7 +101718,7 @@
     "name": "上郷",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.1160175,
     "lon": 131.4019,
     "geometries": [
@@ -101748,7 +101748,7 @@
     "name": "宮野",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.191445,
     "lon": 131.49874499999999,
     "geometries": [
@@ -101770,7 +101770,7 @@
     "name": "渡川",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.322935,
     "lon": 131.60407,
     "geometries": [
@@ -101792,7 +101792,7 @@
     "name": "三谷",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.341539999999995,
     "lon": 131.62434000000002,
     "geometries": [
@@ -101814,7 +101814,7 @@
     "name": "仁保",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.21628,
     "lon": 131.53625,
     "geometries": [
@@ -101836,7 +101836,7 @@
     "name": "篠目",
     "isMatched": true,
     "company": 147,
-    "line": 511,
+    "line": 476,
     "lat": 34.279129999999995,
     "lon": 131.56223,
     "geometries": [
@@ -109588,7 +109588,7 @@
     "name": "新田",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.874340000000004,
     "lon": 135.78073,
     "geometries": [
@@ -109610,7 +109610,7 @@
     "name": "木幡",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.924809999999994,
     "lon": 135.798925,
     "geometries": [
@@ -109632,7 +109632,7 @@
     "name": "玉水",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.8006775,
     "lon": 135.80697500000002,
     "geometries": [
@@ -109662,7 +109662,7 @@
     "name": "JR小倉",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.889084000000004,
     "lon": 135.786258,
     "geometries": [
@@ -109696,7 +109696,7 @@
     "name": "JR藤森",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.9479925,
     "lon": 135.77562,
     "geometries": [
@@ -109726,7 +109726,7 @@
     "name": "上狛",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.750474999999994,
     "lon": 135.8213,
     "geometries": [
@@ -109748,7 +109748,7 @@
     "name": "棚倉",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.774635,
     "lon": 135.81601999999998,
     "geometries": [
@@ -109770,7 +109770,7 @@
     "name": "宇治",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.89038,
     "lon": 135.80081,
     "geometries": [
@@ -109792,7 +109792,7 @@
     "name": "山城多賀",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.817595,
     "lon": 135.80626,
     "geometries": [
@@ -109814,7 +109814,7 @@
     "name": "城陽",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.85558,
     "lon": 135.78106,
     "geometries": [
@@ -109836,7 +109836,7 @@
     "name": "桃山",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.93255666666667,
     "lon": 135.77192666666664,
     "geometries": [
@@ -109862,7 +109862,7 @@
     "name": "稲荷",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.966746666666666,
     "lon": 135.77074000000002,
     "geometries": [
@@ -109888,7 +109888,7 @@
     "name": "長池",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.84239,
     "lon": 135.789775,
     "geometries": [
@@ -109910,7 +109910,7 @@
     "name": "山城青谷",
     "isMatched": true,
     "company": 147,
-    "line": 533,
+    "line": 470,
     "lat": 34.82814,
     "lon": 135.80015500000002,
     "geometries": [
@@ -114298,7 +114298,7 @@
     "name": "滑川",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.76909,
     "lon": 137.348815,
     "geometries": [
@@ -117194,7 +117194,7 @@
     "name": "国分寺",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.700131999999996,
     "lon": 139.480558,
     "geometries": [
@@ -117416,7 +117416,7 @@
     "name": "高田馬場",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.7133125,
     "lon": 139.70396499999998,
     "geometries": [
@@ -118628,7 +118628,7 @@
     "name": "武蔵境",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70209,
     "lon": 139.543555,
     "geometries": [
@@ -118826,7 +118826,7 @@
     "name": "池袋",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.730275000000006,
     "lon": 139.711085,
     "geometries": [
@@ -120374,7 +120374,7 @@
     "name": "草薙",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.002293333333334,
     "lon": 138.44102333333333,
     "geometries": [
@@ -120400,7 +120400,7 @@
     "name": "泉中央",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.322964999999996,
     "lon": 140.88066500000002,
     "geometries": [
@@ -120422,7 +120422,7 @@
     "name": "北仙台",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.28244,
     "lon": 140.86883,
     "geometries": [
@@ -120466,7 +120466,7 @@
     "name": "愛宕橋",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.247440000000005,
     "lon": 140.88140666666666,
     "geometries": [
@@ -120492,7 +120492,7 @@
     "name": "広瀬通",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.262835,
     "lon": 140.8754175,
     "geometries": [
@@ -120522,7 +120522,7 @@
     "name": "五橋",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.251876,
     "lon": 140.881114,
     "geometries": [
@@ -120556,7 +120556,7 @@
     "name": "長町一丁目",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.23431333333334,
     "lon": 140.88752,
     "geometries": [
@@ -120582,7 +120582,7 @@
     "name": "台原",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.288178,
     "lon": 140.878172,
     "geometries": [
@@ -120616,7 +120616,7 @@
     "name": "富沢",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.214145,
     "lon": 140.87060000000002,
     "geometries": [
@@ -120638,7 +120638,7 @@
     "name": "黒松",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.30314666666666,
     "lon": 140.88627666666667,
     "geometries": [
@@ -120664,7 +120664,7 @@
     "name": "長町",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.22862,
     "lon": 140.88478,
     "geometries": [
@@ -120716,7 +120716,7 @@
     "name": "長町南",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.224715,
     "lon": 140.87699,
     "geometries": [
@@ -120738,7 +120738,7 @@
     "name": "河原町",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.2405725,
     "lon": 140.8878175,
     "geometries": [
@@ -120768,7 +120768,7 @@
     "name": "勾当台公園",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.26673,
     "lon": 140.8712,
     "geometries": [
@@ -120790,7 +120790,7 @@
     "name": "北四番丁",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.272099999999995,
     "lon": 140.86910999999998,
     "geometries": [
@@ -120812,7 +120812,7 @@
     "name": "仙台",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.259705,
     "lon": 140.87992500000001,
     "geometries": [
@@ -120962,7 +120962,7 @@
     "name": "仙台",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.25976414,
     "lon": 140.88018791500002,
     "geometries": [
@@ -120984,7 +120984,7 @@
     "name": "旭ヶ丘",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.295723333333335,
     "lon": 140.8837,
     "geometries": [
@@ -121010,7 +121010,7 @@
     "name": "八乙女",
     "isMatched": true,
     "company": 36,
-    "line": 264,
+    "line": 97,
     "lat": 38.313035,
     "lon": 140.884015,
     "geometries": [
@@ -121040,7 +121040,7 @@
     "name": "千葉",
     "isMatched": true,
     "company": 55,
-    "line": 392,
+    "line": 143,
     "lat": 35.61208250000001,
     "lon": 140.1140225,
     "geometries": [
@@ -121164,7 +121164,7 @@
     "name": "千葉みなと",
     "isMatched": true,
     "company": 55,
-    "line": 392,
+    "line": 143,
     "lat": 35.607095,
     "lon": 140.10278,
     "geometries": [
@@ -121208,7 +121208,7 @@
     "name": "葭川公園",
     "isMatched": true,
     "company": 55,
-    "line": 392,
+    "line": 143,
     "lat": 35.608865,
     "lon": 140.12007499999999,
     "geometries": [
@@ -121230,7 +121230,7 @@
     "name": "栄町",
     "isMatched": true,
     "company": 55,
-    "line": 392,
+    "line": 143,
     "lat": 35.612965,
     "lon": 140.11867,
     "geometries": [
@@ -121252,7 +121252,7 @@
     "name": "市役所前",
     "isMatched": true,
     "company": 55,
-    "line": 392,
+    "line": 143,
     "lat": 35.606973333333336,
     "lon": 140.10759,
     "geometries": [
@@ -121278,7 +121278,7 @@
     "name": "県庁前",
     "isMatched": true,
     "company": 55,
-    "line": 392,
+    "line": 143,
     "lat": 35.6038,
     "lon": 140.12215,
     "geometries": [
@@ -123004,7 +123004,7 @@
     "name": "金谷",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.819235000000006,
     "lon": 138.12582500000002,
     "geometries": [
@@ -123736,7 +123736,7 @@
     "name": "江坂",
     "isMatched": true,
     "company": 48,
-    "line": 264,
+    "line": 122,
     "lat": 34.758750000000006,
     "lon": 135.497095,
     "geometries": [
@@ -126910,7 +126910,7 @@
     "name": "大垣",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.367105,
     "lon": 136.617965,
     "geometries": [
@@ -129294,7 +129294,7 @@
     "name": "長崎駅前",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.752555,
     "lon": 129.87182,
     "geometries": [
@@ -129360,7 +129360,7 @@
     "name": "住吉",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.79199,
     "lon": 129.85987999999998,
     "geometries": [
@@ -129426,7 +129426,7 @@
     "name": "新地中華街",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.742835,
     "lon": 129.87493999999998,
     "geometries": [
@@ -129540,7 +129540,7 @@
     "name": "浦上駅前",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.765474999999995,
     "lon": 129.86414,
     "geometries": [
@@ -129562,7 +129562,7 @@
     "name": "大波止",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.745639999999995,
     "lon": 129.87206,
     "geometries": [
@@ -129584,7 +129584,7 @@
     "name": "崇福寺",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.741119999999995,
     "lon": 129.882585,
     "geometries": [
@@ -129606,7 +129606,7 @@
     "name": "五島町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.749266666666664,
     "lon": 129.87222333333332,
     "geometries": [
@@ -129632,7 +129632,7 @@
     "name": "若葉町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.7875385,
     "lon": 129.86174599999998,
     "geometries": [
@@ -129654,7 +129654,7 @@
     "name": "原爆資料館",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.77056,
     "lon": 129.86356,
     "geometries": [
@@ -129676,7 +129676,7 @@
     "name": "千歳町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.789255,
     "lon": 129.86118499999998,
     "geometries": [
@@ -129698,7 +129698,7 @@
     "name": "浦上車庫",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.779542500000005,
     "lon": 129.8614225,
     "geometries": [
@@ -129728,7 +129728,7 @@
     "name": "銭座町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.761325,
     "lon": 129.865705,
     "geometries": [
@@ -129750,7 +129750,7 @@
     "name": "長崎大学",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.784935000000004,
     "lon": 129.86245,
     "geometries": [
@@ -129772,7 +129772,7 @@
     "name": "平和公園",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.77449,
     "lon": 129.86201,
     "geometries": [
@@ -129794,7 +129794,7 @@
     "name": "岩屋橋",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.782340000000005,
     "lon": 129.86238500000002,
     "geometries": [
@@ -129816,7 +129816,7 @@
     "name": "宝町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.758105,
     "lon": 129.86862,
     "geometries": [
@@ -129838,7 +129838,7 @@
     "name": "大学病院",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.769130000000004,
     "lon": 129.864085,
     "geometries": [
@@ -129860,7 +129860,7 @@
     "name": "観光通",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.743415,
     "lon": 129.87778500000002,
     "geometries": [
@@ -129882,7 +129882,7 @@
     "name": "西浜町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.743719999999996,
     "lon": 129.87604,
     "geometries": [
@@ -129926,7 +129926,7 @@
     "name": "昭和町通",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.790535000000006,
     "lon": 129.860705,
     "geometries": [
@@ -129948,7 +129948,7 @@
     "name": "大橋",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.777564999999996,
     "lon": 129.861515,
     "geometries": [
@@ -129970,7 +129970,7 @@
     "name": "茂里町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.763980000000004,
     "lon": 129.86449,
     "geometries": [
@@ -129992,7 +129992,7 @@
     "name": "思案橋",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.742675,
     "lon": 129.88034,
     "geometries": [
@@ -130014,7 +130014,7 @@
     "name": "出島",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.743902500000004,
     "lon": 129.87180750000002,
     "geometries": [
@@ -130044,7 +130044,7 @@
     "name": "八千代町",
     "isMatched": true,
     "company": 158,
-    "line": 594,
+    "line": 554,
     "lat": 32.754605,
     "lon": 129.87042,
     "geometries": [
@@ -130176,7 +130176,7 @@
     "name": "長野",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.642815,
     "lon": 138.18887,
     "geometries": [
@@ -130794,7 +130794,7 @@
     "name": "美濃太田",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.445613333333334,
     "lon": 137.01953500000002,
     "geometries": [
@@ -132168,7 +132168,7 @@
     "name": "掛川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.76940333333334,
     "lon": 138.01454333333334,
     "geometries": [
@@ -132456,7 +132456,7 @@
     "name": "新所原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.723259999999996,
     "lon": 137.484455,
     "geometries": [
@@ -136100,7 +136100,7 @@
     "name": "枇杷島",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.19953,
     "lon": 136.86146333333332,
     "geometries": [
@@ -136242,7 +136242,7 @@
     "name": "名古屋",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.171008799999996,
     "lon": 136.8813738,
     "geometries": [
@@ -136336,7 +136336,7 @@
     "name": "名古屋",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.1714025,
     "lon": 136.8816625,
     "geometries": [
@@ -136472,7 +136472,7 @@
     "name": "八田",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.14878666666667,
     "lon": 136.85218333333333,
     "geometries": [
@@ -136528,7 +136528,7 @@
     "name": "朝日",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.03373499999999,
     "lon": 136.65800000000002,
     "geometries": [
@@ -136550,7 +136550,7 @@
     "name": "富田浜",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.99656,
     "lon": 136.650095,
     "geometries": [
@@ -136572,7 +136572,7 @@
     "name": "富田",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.008160000000004,
     "lon": 136.65316,
     "geometries": [
@@ -136594,7 +136594,7 @@
     "name": "蟹江",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.14198,
     "lon": 136.793475,
     "geometries": [
@@ -136616,7 +136616,7 @@
     "name": "弥富",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.114065,
     "lon": 136.725845,
     "geometries": [
@@ -136660,7 +136660,7 @@
     "name": "永和",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.13284,
     "lon": 136.76441,
     "geometries": [
@@ -136682,7 +136682,7 @@
     "name": "長島",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.098169999999996,
     "lon": 136.695655,
     "geometries": [
@@ -136704,7 +136704,7 @@
     "name": "春田",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 35.14315,
     "lon": 136.81338499999998,
     "geometries": [
@@ -136726,7 +136726,7 @@
     "name": "南四日市",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.94143666666667,
     "lon": 136.60958666666667,
     "geometries": [
@@ -136752,7 +136752,7 @@
     "name": "加佐登",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.89032,
     "lon": 136.52999,
     "geometries": [
@@ -136774,7 +136774,7 @@
     "name": "四日市",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.96210333333334,
     "lon": 136.62987666666666,
     "geometries": [
@@ -136800,7 +136800,7 @@
     "name": "河曲",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.897885,
     "lon": 136.568035,
     "geometries": [
@@ -136822,7 +136822,7 @@
     "name": "井田川",
     "isMatched": true,
     "company": 106,
-    "line": 501,
+    "line": 386,
     "lat": 34.868265,
     "lon": 136.492585,
     "geometries": [
@@ -136844,7 +136844,7 @@
     "name": "三木里",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.001475,
     "lon": 136.20254999999997,
     "geometries": [
@@ -136866,7 +136866,7 @@
     "name": "紀伊長島",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.20933,
     "lon": 136.339935,
     "geometries": [
@@ -136888,7 +136888,7 @@
     "name": "九鬼",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.01603,
     "lon": 136.242665,
     "geometries": [
@@ -136918,7 +136918,7 @@
     "name": "尾鷲",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.07433,
     "lon": 136.190155,
     "geometries": [
@@ -136940,7 +136940,7 @@
     "name": "相可",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.50311,
     "lon": 136.54595666666668,
     "geometries": [
@@ -136966,7 +136966,7 @@
     "name": "阿曽",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.331295,
     "lon": 136.41111999999998,
     "geometries": [
@@ -136988,7 +136988,7 @@
     "name": "一身田",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.762775,
     "lon": 136.49939,
     "geometries": [
@@ -137010,7 +137010,7 @@
     "name": "大泊",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.902240000000006,
     "lon": 136.11807,
     "geometries": [
@@ -137032,7 +137032,7 @@
     "name": "波田須",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.910115000000005,
     "lon": 136.1381,
     "geometries": [
@@ -137054,7 +137054,7 @@
     "name": "伊勢柏崎",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.299556,
     "lon": 136.39572400000003,
     "geometries": [
@@ -137088,7 +137088,7 @@
     "name": "川添",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.41988,
     "lon": 136.47365,
     "geometries": [
@@ -137114,7 +137114,7 @@
     "name": "神志山",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.83977,
     "lon": 136.06235,
     "geometries": [
@@ -137136,7 +137136,7 @@
     "name": "栃原",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.444554999999994,
     "lon": 136.50934,
     "geometries": [
@@ -137158,7 +137158,7 @@
     "name": "二木島",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.939405,
     "lon": 136.18083000000001,
     "geometries": [
@@ -137180,7 +137180,7 @@
     "name": "相賀",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.11193,
     "lon": 136.22712666666666,
     "geometries": [
@@ -137206,7 +137206,7 @@
     "name": "多気",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.515905000000004,
     "lon": 136.57310999999999,
     "geometries": [
@@ -137250,7 +137250,7 @@
     "name": "新鹿",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.927933333333335,
     "lon": 136.14419,
     "geometries": [
@@ -137276,7 +137276,7 @@
     "name": "熊野市",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.889645,
     "lon": 136.098775,
     "geometries": [
@@ -137298,7 +137298,7 @@
     "name": "下庄",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.814258,
     "lon": 136.47961,
     "geometries": [
@@ -137332,7 +137332,7 @@
     "name": "紀伊市木",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.82801,
     "lon": 136.05543,
     "geometries": [
@@ -137354,7 +137354,7 @@
     "name": "三野瀬",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.16769,
     "lon": 136.28238499999998,
     "geometries": [
@@ -137376,7 +137376,7 @@
     "name": "大曽根浦",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.06190333333333,
     "lon": 136.22301333333334,
     "geometries": [
@@ -137402,7 +137402,7 @@
     "name": "三瀬谷",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.39475,
     "lon": 136.40904,
     "geometries": [
@@ -137424,7 +137424,7 @@
     "name": "梅ヶ谷",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.258033999999995,
     "lon": 136.356564,
     "geometries": [
@@ -137458,7 +137458,7 @@
     "name": "有井",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.876185,
     "lon": 136.085595,
     "geometries": [
@@ -137480,7 +137480,7 @@
     "name": "徳和",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.55403,
     "lon": 136.55354999999997,
     "geometries": [
@@ -137502,7 +137502,7 @@
     "name": "阿漕",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.703105,
     "lon": 136.50451,
     "geometries": [
@@ -137524,7 +137524,7 @@
     "name": "高茶屋",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.66728,
     "lon": 136.51262,
     "geometries": [
@@ -137546,7 +137546,7 @@
     "name": "船津",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.14217333333333,
     "lon": 136.22871666666666,
     "geometries": [
@@ -137572,7 +137572,7 @@
     "name": "佐奈",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.478465,
     "lon": 136.53904,
     "geometries": [
@@ -137594,7 +137594,7 @@
     "name": "滝原",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.36016333333333,
     "lon": 136.41204333333334,
     "geometries": [
@@ -137620,7 +137620,7 @@
     "name": "大内山",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.278135,
     "lon": 136.35924,
     "geometries": [
@@ -137642,7 +137642,7 @@
     "name": "六軒",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 34.617625000000004,
     "lon": 136.50759,
     "geometries": [
@@ -137664,7 +137664,7 @@
     "name": "賀田",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.97165,
     "lon": 136.18974,
     "geometries": [
@@ -137686,7 +137686,7 @@
     "name": "鵜殿",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.736725,
     "lon": 136.015515,
     "geometries": [
@@ -137708,7 +137708,7 @@
     "name": "紀伊井田",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.75996,
     "lon": 136.023955,
     "geometries": [
@@ -137730,7 +137730,7 @@
     "name": "阿田和",
     "isMatched": true,
     "company": 106,
-    "line": 493,
+    "line": 384,
     "lat": 33.80474,
     "lon": 136.04241000000002,
     "geometries": [
@@ -137774,7 +137774,7 @@
     "name": "国府津",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.281395,
     "lon": 139.21495499999997,
     "geometries": [
@@ -138290,7 +138290,7 @@
     "name": "沼津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.10304,
     "lon": 138.8604766666667,
     "geometries": [
@@ -138316,7 +138316,7 @@
     "name": "杉崎",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.249894999999995,
     "lon": 137.16899,
     "geometries": [
@@ -138338,7 +138338,7 @@
     "name": "打保",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.383935,
     "lon": 137.181995,
     "geometries": [
@@ -138360,7 +138360,7 @@
     "name": "飛騨古川",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.236625,
     "lon": 137.18998499999998,
     "geometries": [
@@ -138382,7 +138382,7 @@
     "name": "渚",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.001455,
     "lon": 137.287945,
     "geometries": [
@@ -138404,7 +138404,7 @@
     "name": "上枝",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.18098500000001,
     "lon": 137.245835,
     "geometries": [
@@ -138426,7 +138426,7 @@
     "name": "飛騨一ノ宮",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.08840333333333,
     "lon": 137.24776,
     "geometries": [
@@ -138452,7 +138452,7 @@
     "name": "久々野",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.05234,
     "lon": 137.276825,
     "geometries": [
@@ -138474,7 +138474,7 @@
     "name": "杉原",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.415855,
     "lon": 137.19247000000001,
     "geometries": [
@@ -138496,7 +138496,7 @@
     "name": "飛騨国府",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.21112,
     "lon": 137.21577000000002,
     "geometries": [
@@ -138518,7 +138518,7 @@
     "name": "高山",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.14069,
     "lon": 137.2514,
     "geometries": [
@@ -138540,7 +138540,7 @@
     "name": "飛騨細江",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.261125,
     "lon": 137.14562999999998,
     "geometries": [
@@ -138562,7 +138562,7 @@
     "name": "坂上",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.32753333333333,
     "lon": 137.14091,
     "geometries": [
@@ -138588,7 +138588,7 @@
     "name": "角川",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 36.299905,
     "lon": 137.113355,
     "geometries": [
@@ -138610,7 +138610,7 @@
     "name": "坂祝",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.426395,
     "lon": 136.97681,
     "geometries": [
@@ -138632,7 +138632,7 @@
     "name": "禅昌寺",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.849136666666666,
     "lon": 137.22521333333333,
     "geometries": [
@@ -138658,7 +138658,7 @@
     "name": "下呂",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.80609714285715,
     "lon": 137.23938571428573,
     "geometries": [
@@ -138700,7 +138700,7 @@
     "name": "上麻生",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.5413025,
     "lon": 137.118785,
     "geometries": [
@@ -138730,7 +138730,7 @@
     "name": "飛騨宮田",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.92844333333333,
     "lon": 137.2355533333333,
     "geometries": [
@@ -138756,7 +138756,7 @@
     "name": "中川辺",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.48708,
     "lon": 137.06512666666666,
     "geometries": [
@@ -138782,7 +138782,7 @@
     "name": "飛騨萩原",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.874407500000004,
     "lon": 137.21397000000002,
     "geometries": [
@@ -138812,7 +138812,7 @@
     "name": "白川口",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.579375,
     "lon": 137.18484,
     "geometries": [
@@ -138834,7 +138834,7 @@
     "name": "古井",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.457432499999996,
     "lon": 137.04765749999999,
     "geometries": [
@@ -138864,7 +138864,7 @@
     "name": "飛騨金山",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.662485000000004,
     "lon": 137.164385,
     "geometries": [
@@ -138886,7 +138886,7 @@
     "name": "下麻生",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.514923333333336,
     "lon": 137.08710666666664,
     "geometries": [
@@ -138912,7 +138912,7 @@
     "name": "飛騨小坂",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.950784999999996,
     "lon": 137.25686,
     "geometries": [
@@ -138934,7 +138934,7 @@
     "name": "焼石",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.725625,
     "lon": 137.20060999999998,
     "geometries": [
@@ -138956,7 +138956,7 @@
     "name": "上呂",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.91091333333333,
     "lon": 137.20467333333332,
     "geometries": [
@@ -138982,7 +138982,7 @@
     "name": "下油井",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.633269999999996,
     "lon": 137.183115,
     "geometries": [
@@ -139004,7 +139004,7 @@
     "name": "鵜沼",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.39756,
     "lon": 136.94605,
     "geometries": [
@@ -139026,7 +139026,7 @@
     "name": "那加",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.400535000000005,
     "lon": 136.835575,
     "geometries": [
@@ -139048,7 +139048,7 @@
     "name": "蘇原",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.40327333333334,
     "lon": 136.87176666666667,
     "geometries": [
@@ -139074,7 +139074,7 @@
     "name": "各務ケ原",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.40388,
     "lon": 136.90106333333333,
     "geometries": [
@@ -139100,7 +139100,7 @@
     "name": "長森",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.402085,
     "lon": 136.802855,
     "geometries": [
@@ -139122,7 +139122,7 @@
     "name": "岐阜",
     "isMatched": true,
     "company": 106,
-    "line": 503,
+    "line": 388,
     "lat": 35.4095325,
     "lon": 136.75656,
     "geometries": [
@@ -139152,7 +139152,7 @@
     "name": "岐阜",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.4095325,
     "lon": 136.75656,
     "geometries": [
@@ -139684,7 +139684,7 @@
     "name": "甲府",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.667125,
     "lon": 138.56876,
     "geometries": [
@@ -140034,7 +140034,7 @@
     "name": "富士",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.15127,
     "lon": 138.651848,
     "geometries": [
@@ -141576,7 +141576,7 @@
     "name": "金山",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.14277333333333,
     "lon": 136.90089666666665,
     "geometries": [
@@ -141842,7 +141842,7 @@
     "name": "東京",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.68117,
     "lon": 139.76755333333332,
     "geometries": [
@@ -142012,7 +142012,7 @@
     "name": "熱海",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.103790000000004,
     "lon": 139.077805,
     "geometries": [
@@ -142146,7 +142146,7 @@
     "name": "静岡",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.97178666666667,
     "lon": 138.3889166666667,
     "geometries": [
@@ -142266,7 +142266,7 @@
     "name": "三河安城",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.970475,
     "lon": 137.06095000000002,
     "geometries": [
@@ -142334,7 +142334,7 @@
     "name": "浜松",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.70406,
     "lon": 137.7351175,
     "geometries": [
@@ -142402,7 +142402,7 @@
     "name": "豊橋",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.762069999999994,
     "lon": 137.38267333333332,
     "geometries": [
@@ -142480,7 +142480,7 @@
     "name": "函南",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.108716,
     "lon": 138.970984,
     "geometries": [
@@ -142514,7 +142514,7 @@
     "name": "西焼津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.859804999999994,
     "lon": 138.285595,
     "geometries": [
@@ -142536,7 +142536,7 @@
     "name": "六合",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.83648333333334,
     "lon": 138.20384333333334,
     "geometries": [
@@ -142562,7 +142562,7 @@
     "name": "原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.124935,
     "lon": 138.793345,
     "geometries": [
@@ -142584,7 +142584,7 @@
     "name": "片浜",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.11837,
     "lon": 138.81867333333332,
     "geometries": [
@@ -142610,7 +142610,7 @@
     "name": "藤枝",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.84957,
     "lon": 138.25286999999997,
     "geometries": [
@@ -142632,7 +142632,7 @@
     "name": "清水",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.023399999999995,
     "lon": 138.4891,
     "geometries": [
@@ -142654,7 +142654,7 @@
     "name": "焼津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.872285000000005,
     "lon": 138.31848,
     "geometries": [
@@ -142676,7 +142676,7 @@
     "name": "富士川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.14113,
     "lon": 138.61871,
     "geometries": [
@@ -142698,7 +142698,7 @@
     "name": "蒲原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.114036666666664,
     "lon": 138.58283,
     "geometries": [
@@ -142724,7 +142724,7 @@
     "name": "菊川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.761666000000005,
     "lon": 138.085388,
     "geometries": [
@@ -142758,7 +142758,7 @@
     "name": "由比",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.097125,
     "lon": 138.55282,
     "geometries": [
@@ -142780,7 +142780,7 @@
     "name": "安倍川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.94121,
     "lon": 138.36409999999998,
     "geometries": [
@@ -142806,7 +142806,7 @@
     "name": "東静岡",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.98407666666666,
     "lon": 138.41291999999999,
     "geometries": [
@@ -142832,7 +142832,7 @@
     "name": "袋井",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.741434999999996,
     "lon": 137.925995,
     "geometries": [
@@ -142854,7 +142854,7 @@
     "name": "用宗",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.921875,
     "lon": 138.35932000000003,
     "geometries": [
@@ -142876,7 +142876,7 @@
     "name": "興津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.052515,
     "lon": 138.521905,
     "geometries": [
@@ -142898,7 +142898,7 @@
     "name": "島田",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.83015,
     "lon": 138.173425,
     "geometries": [
@@ -142920,7 +142920,7 @@
     "name": "愛野",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.752455,
     "lon": 137.96184499999998,
     "geometries": [
@@ -142942,7 +142942,7 @@
     "name": "新蒲原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.119414,
     "lon": 138.608102,
     "geometries": [
@@ -142976,7 +142976,7 @@
     "name": "東田子の浦",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.136269999999996,
     "lon": 138.745485,
     "geometries": [
@@ -142998,7 +142998,7 @@
     "name": "大府",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.008695,
     "lon": 136.961805,
     "geometries": [
@@ -143042,7 +143042,7 @@
     "name": "刈谷",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.990804999999995,
     "lon": 137.00970999999998,
     "geometries": [
@@ -143086,7 +143086,7 @@
     "name": "東刈谷",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.977355,
     "lon": 137.043635,
     "geometries": [
@@ -143108,7 +143108,7 @@
     "name": "共和",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.035365,
     "lon": 136.95458,
     "geometries": [
@@ -143130,7 +143130,7 @@
     "name": "逢妻",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.998235,
     "lon": 136.99054,
     "geometries": [
@@ -143152,7 +143152,7 @@
     "name": "西岐阜",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.404525,
     "lon": 136.72325999999998,
     "geometries": [
@@ -143174,7 +143174,7 @@
     "name": "荒尾",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.37343333333333,
     "lon": 136.5833933333333,
     "geometries": [
@@ -143200,7 +143200,7 @@
     "name": "柏原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.344595,
     "lon": 136.40232500000002,
     "geometries": [
@@ -143222,7 +143222,7 @@
     "name": "美濃赤坂",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.386605,
     "lon": 136.582195,
     "geometries": [
@@ -143244,7 +143244,7 @@
     "name": "醒ヶ井",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.327705,
     "lon": 136.34519,
     "geometries": [
@@ -143266,7 +143266,7 @@
     "name": "垂井",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.3695425,
     "lon": 136.530825,
     "geometries": [
@@ -143296,7 +143296,7 @@
     "name": "木曽川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.347992500000004,
     "lon": 136.7811625,
     "geometries": [
@@ -143326,7 +143326,7 @@
     "name": "関ヶ原",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.363719999999994,
     "lon": 136.47013666666666,
     "geometries": [
@@ -143352,7 +143352,7 @@
     "name": "近江長岡",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.35907666666667,
     "lon": 136.37401833333334,
     "geometries": [
@@ -143390,7 +143390,7 @@
     "name": "尾張一宮",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.302,
     "lon": 136.79737999999998,
     "geometries": [
@@ -143412,7 +143412,7 @@
     "name": "穂積",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.396265,
     "lon": 136.693635,
     "geometries": [
@@ -143434,7 +143434,7 @@
     "name": "稲沢",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.253096666666664,
     "lon": 136.82093,
     "geometries": [
@@ -143460,7 +143460,7 @@
     "name": "笠寺",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.09531666666666,
     "lon": 136.92622666666668,
     "geometries": [
@@ -143486,7 +143486,7 @@
     "name": "熱田",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.129802500000004,
     "lon": 136.910675,
     "geometries": [
@@ -143516,7 +143516,7 @@
     "name": "大高",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.0691,
     "lon": 136.94028,
     "geometries": [
@@ -143538,7 +143538,7 @@
     "name": "清洲",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.22547666666667,
     "lon": 136.83451000000002,
     "geometries": [
@@ -143564,7 +143564,7 @@
     "name": "尾頭橋",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.14704833333333,
     "lon": 136.89101666666667,
     "geometries": [
@@ -143602,7 +143602,7 @@
     "name": "豊田町",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.712085,
     "lon": 137.8198,
     "geometries": [
@@ -143624,7 +143624,7 @@
     "name": "愛知御津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.812585,
     "lon": 137.31658499999998,
     "geometries": [
@@ -143646,7 +143646,7 @@
     "name": "弁天島",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.690012,
     "lon": 137.60341400000001,
     "geometries": [
@@ -143680,7 +143680,7 @@
     "name": "三河塩津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.825426666666665,
     "lon": 137.20150333333333,
     "geometries": [
@@ -143706,7 +143706,7 @@
     "name": "西岡崎",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.946619999999996,
     "lon": 137.123155,
     "geometries": [
@@ -143728,7 +143728,7 @@
     "name": "三河三谷",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.81856833333334,
     "lon": 137.24775333333332,
     "geometries": [
@@ -143766,7 +143766,7 @@
     "name": "三ヶ根",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.8364325,
     "lon": 137.1765475,
     "geometries": [
@@ -143796,7 +143796,7 @@
     "name": "新居町",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.694275000000005,
     "lon": 137.5688225,
     "geometries": [
@@ -143826,7 +143826,7 @@
     "name": "磐田",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.710215,
     "lon": 137.85227,
     "geometries": [
@@ -143848,7 +143848,7 @@
     "name": "三河大塚",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.815772,
     "lon": 137.282956,
     "geometries": [
@@ -143882,7 +143882,7 @@
     "name": "高塚",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.690425000000005,
     "lon": 137.68134500000002,
     "geometries": [
@@ -143904,7 +143904,7 @@
     "name": "舞阪",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.68569,
     "lon": 137.62633,
     "geometries": [
@@ -143926,7 +143926,7 @@
     "name": "安城",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.96044,
     "lon": 137.08642,
     "geometries": [
@@ -143960,7 +143960,7 @@
     "name": "西小坂井",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.7970125,
     "lon": 137.35273,
     "geometries": [
@@ -143990,7 +143990,7 @@
     "name": "幸田",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.859653333333334,
     "lon": 137.16446333333332,
     "geometries": [
@@ -144016,7 +144016,7 @@
     "name": "蒲郡",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.822736,
     "lon": 137.227378,
     "geometries": [
@@ -144076,7 +144076,7 @@
     "name": "天竜川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.717065,
     "lon": 137.779405,
     "geometries": [
@@ -144098,7 +144098,7 @@
     "name": "二川",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.725795000000005,
     "lon": 137.43887,
     "geometries": [
@@ -144120,7 +144120,7 @@
     "name": "鷲津",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.71677,
     "lon": 137.54619,
     "geometries": [
@@ -144168,7 +144168,7 @@
     "name": "辰野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.98451666666667,
     "lon": 137.9971833333333,
     "geometries": [
@@ -147566,7 +147566,7 @@
     "name": "大井町",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.60707,
     "lon": 139.73501333333334,
     "geometries": [
@@ -148164,7 +148164,7 @@
     "name": "五反田",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.62606,
     "lon": 139.723696,
     "geometries": [
@@ -148478,7 +148478,7 @@
     "name": "蒲田",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.562484999999995,
     "lon": 139.71603,
     "geometries": [
@@ -149872,7 +149872,7 @@
     "name": "目黒",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.633405714285715,
     "lon": 139.71572714285713,
     "geometries": [
@@ -150938,7 +150938,7 @@
     "name": "恵比寿",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.64668,
     "lon": 139.710125,
     "geometries": [
@@ -151442,7 +151442,7 @@
     "name": "神田",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.69177,
     "lon": 139.770875,
     "geometries": [
@@ -151784,7 +151784,7 @@
     "name": "御茶ノ水",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.699605000000005,
     "lon": 139.76503000000002,
     "geometries": [
@@ -151928,7 +151928,7 @@
     "name": "荻窪",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70443,
     "lon": 139.620245,
     "geometries": [
@@ -152288,7 +152288,7 @@
     "name": "四ツ谷",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.685731999999994,
     "lon": 139.73056200000002,
     "geometries": [
@@ -152828,7 +152828,7 @@
     "name": "飯田橋",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70016666666666,
     "lon": 139.74364666666665,
     "geometries": [
@@ -152876,7 +152876,7 @@
     "name": "中野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70574,
     "lon": 139.665605,
     "geometries": [
@@ -153684,7 +153684,7 @@
     "name": "駒込",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.73702666666667,
     "lon": 139.7484,
     "geometries": [
@@ -154092,7 +154092,7 @@
     "name": "市ヶ谷",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.691154999999995,
     "lon": 139.73532,
     "geometries": [
@@ -154574,7 +154574,7 @@
     "name": "有楽町",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.67504,
     "lon": 139.76326,
     "geometries": [
@@ -156034,7 +156034,7 @@
     "name": "水道橋",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.702,
     "lon": 139.753745,
     "geometries": [
@@ -156186,7 +156186,7 @@
     "name": "巣鴨",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.73372,
     "lon": 139.74035,
     "geometries": [
@@ -157328,7 +157328,7 @@
     "name": "東中野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70625,
     "lon": 139.68508,
     "geometries": [
@@ -157590,7 +157590,7 @@
     "name": "代々木",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.683795,
     "lon": 139.70221,
     "geometries": [
@@ -157612,7 +157612,7 @@
     "name": "代々木",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.683795,
     "lon": 139.70221,
     "geometries": [
@@ -158420,7 +158420,7 @@
     "name": "大崎",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.619945,
     "lon": 139.72824500000002,
     "geometries": [
@@ -164110,7 +164110,7 @@
     "name": "東神奈川",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.477875,
     "lon": 139.633165,
     "geometries": [
@@ -164518,7 +164518,7 @@
     "name": "八王子",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.65549333333334,
     "lon": 139.33888,
     "geometries": [
@@ -169584,7 +169584,7 @@
     "name": "田端",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.737475,
     "lon": 139.761575,
     "geometries": [
@@ -169628,7 +169628,7 @@
     "name": "目白",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.720389999999995,
     "lon": 139.70628,
     "geometries": [
@@ -169650,7 +169650,7 @@
     "name": "新大久保",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.70093,
     "lon": 139.700255,
     "geometries": [
@@ -169672,7 +169672,7 @@
     "name": "大塚",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.731785,
     "lon": 139.72794,
     "geometries": [
@@ -169694,7 +169694,7 @@
     "name": "原宿",
     "isMatched": true,
     "company": 103,
-    "line": 421,
+    "line": 320,
     "lat": 35.67132,
     "lon": 139.7027125,
     "geometries": [
@@ -169724,7 +169724,7 @@
     "name": "山岸",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.716094999999996,
     "lon": 141.17145,
     "geometries": [
@@ -169746,7 +169746,7 @@
     "name": "千徳",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.63225,
     "lon": 141.91196,
     "geometries": [
@@ -169768,7 +169768,7 @@
     "name": "箱石",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.61711,
     "lon": 141.62581,
     "geometries": [
@@ -169812,7 +169812,7 @@
     "name": "茂市",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.620595,
     "lon": 141.7993,
     "geometries": [
@@ -169834,7 +169834,7 @@
     "name": "区界",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.651735,
     "lon": 141.351425,
     "geometries": [
@@ -169856,7 +169856,7 @@
     "name": "松草",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.635855,
     "lon": 141.43744500000003,
     "geometries": [
@@ -169878,7 +169878,7 @@
     "name": "上米内",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.74391,
     "lon": 141.20381,
     "geometries": [
@@ -169900,7 +169900,7 @@
     "name": "上盛岡",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.711479999999995,
     "lon": 141.148,
     "geometries": [
@@ -169922,7 +169922,7 @@
     "name": "平津戸",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.62337,
     "lon": 141.511275,
     "geometries": [
@@ -169944,7 +169944,7 @@
     "name": "花原市",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.630415,
     "lon": 141.86142,
     "geometries": [
@@ -169966,7 +169966,7 @@
     "name": "川内",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.640765,
     "lon": 141.59761,
     "geometries": [
@@ -169988,7 +169988,7 @@
     "name": "蟇目",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.629295,
     "lon": 141.838845,
     "geometries": [
@@ -170054,7 +170054,7 @@
     "name": "陸中川井",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.597335,
     "lon": 141.68150500000002,
     "geometries": [
@@ -170076,7 +170076,7 @@
     "name": "腹帯",
     "isMatched": true,
     "company": 103,
-    "line": 534,
+    "line": 321,
     "lat": 39.60452,
     "lon": 141.767425,
     "geometries": [
@@ -170808,7 +170808,7 @@
     "name": "佐久平",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.278200000000005,
     "lon": 138.46475999999998,
     "geometries": [
@@ -170970,7 +170970,7 @@
     "name": "小淵沢",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.863733333333336,
     "lon": 138.3167533333333,
     "geometries": [
@@ -174790,7 +174790,7 @@
     "name": "上越妙高",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 37.081367150000005,
     "lon": 138.24847131500002,
     "geometries": [
@@ -178270,7 +178270,7 @@
     "name": "立川",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.697765000000004,
     "lon": 139.413785,
     "geometries": [
@@ -180958,7 +180958,7 @@
     "name": "茅ヶ崎",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.330420000000004,
     "lon": 139.40738249999998,
     "geometries": [
@@ -182018,7 +182018,7 @@
     "name": "一日市場",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.260085000000004,
     "lon": 137.90398,
     "geometries": [
@@ -182040,7 +182040,7 @@
     "name": "島内",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.24690666666667,
     "lon": 137.94476333333333,
     "geometries": [
@@ -182066,7 +182066,7 @@
     "name": "中萱",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.273885,
     "lon": 137.9033,
     "geometries": [
@@ -182088,7 +182088,7 @@
     "name": "島高松",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.24633,
     "lon": 137.93161999999998,
     "geometries": [
@@ -182114,7 +182114,7 @@
     "name": "千国",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.763239999999996,
     "lon": 137.90085,
     "geometries": [
@@ -182136,7 +182136,7 @@
     "name": "南豊科",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.29099,
     "lon": 137.90349,
     "geometries": [
@@ -182162,7 +182162,7 @@
     "name": "北松本",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.236898,
     "lon": 137.96110000000002,
     "geometries": [
@@ -182196,7 +182196,7 @@
     "name": "梓橋",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.25018333333333,
     "lon": 137.91808,
     "geometries": [
@@ -182222,7 +182222,7 @@
     "name": "豊科",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.30002,
     "lon": 137.90094,
     "geometries": [
@@ -182244,7 +182244,7 @@
     "name": "細野",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.39707,
     "lon": 137.86578500000002,
     "geometries": [
@@ -182266,7 +182266,7 @@
     "name": "信濃常盤",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.46737,
     "lon": 137.84716,
     "geometries": [
@@ -182288,7 +182288,7 @@
     "name": "稲尾",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.55411,
     "lon": 137.84261500000002,
     "geometries": [
@@ -182310,7 +182310,7 @@
     "name": "信濃木崎",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.53564,
     "lon": 137.84625,
     "geometries": [
@@ -182332,7 +182332,7 @@
     "name": "北大町",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.517605,
     "lon": 137.858065,
     "geometries": [
@@ -182354,7 +182354,7 @@
     "name": "安曇沓掛",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.447805,
     "lon": 137.854765,
     "geometries": [
@@ -182376,7 +182376,7 @@
     "name": "飯森",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.670605,
     "lon": 137.85016000000002,
     "geometries": [
@@ -182398,7 +182398,7 @@
     "name": "神城",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.65822,
     "lon": 137.84661,
     "geometries": [
@@ -182424,7 +182424,7 @@
     "name": "南神城",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.63717666666667,
     "lon": 137.84163,
     "geometries": [
@@ -182450,7 +182450,7 @@
     "name": "白馬大池",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.739954999999995,
     "lon": 137.88554,
     "geometries": [
@@ -182472,7 +182472,7 @@
     "name": "信濃松川",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.424475,
     "lon": 137.858575,
     "geometries": [
@@ -182494,7 +182494,7 @@
     "name": "安曇追分",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.371865,
     "lon": 137.872775,
     "geometries": [
@@ -182516,7 +182516,7 @@
     "name": "北細野",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.40644,
     "lon": 137.86273,
     "geometries": [
@@ -182538,7 +182538,7 @@
     "name": "白馬",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.69601,
     "lon": 137.863895,
     "geometries": [
@@ -182560,7 +182560,7 @@
     "name": "海ノ口",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.56568,
     "lon": 137.841845,
     "geometries": [
@@ -182582,7 +182582,7 @@
     "name": "穂高",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.339056,
     "lon": 137.88194199999998,
     "geometries": [
@@ -182616,7 +182616,7 @@
     "name": "信濃大町",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.50022249999999,
     "lon": 137.86168750000002,
     "geometries": [
@@ -182646,7 +182646,7 @@
     "name": "柏矢町",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.322475,
     "lon": 137.88836,
     "geometries": [
@@ -182668,7 +182668,7 @@
     "name": "南大町",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.491535,
     "lon": 137.85627,
     "geometries": [
@@ -182690,7 +182690,7 @@
     "name": "信濃森上",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.71098,
     "lon": 137.871835,
     "geometries": [
@@ -182720,7 +182720,7 @@
     "name": "簗場",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.59491333333333,
     "lon": 137.84483,
     "geometries": [
@@ -182746,7 +182746,7 @@
     "name": "有明",
     "isMatched": true,
     "company": 103,
-    "line": 468,
+    "line": 316,
     "lat": 36.360009999999996,
     "lon": 137.87824666666668,
     "geometries": [
@@ -184406,7 +184406,7 @@
     "name": "西荻窪",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70379750000001,
     "lon": 139.59970499999997,
     "geometries": [
@@ -184436,7 +184436,7 @@
     "name": "阿佐ヶ谷",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.7048875,
     "lon": 139.6362575,
     "geometries": [
@@ -184466,7 +184466,7 @@
     "name": "高円寺",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.705324999999995,
     "lon": 139.6497175,
     "geometries": [
@@ -184496,7 +184496,7 @@
     "name": "大久保",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.700635,
     "lon": 139.69744500000002,
     "geometries": [
@@ -184518,7 +184518,7 @@
     "name": "信濃町",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.679937499999994,
     "lon": 139.7212925,
     "geometries": [
@@ -184548,7 +184548,7 @@
     "name": "千駄ヶ谷",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.68120666666667,
     "lon": 139.71145333333334,
     "geometries": [
@@ -184574,7 +184574,7 @@
     "name": "初狩",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.59435285714285,
     "lon": 138.88371,
     "geometries": [
@@ -184616,7 +184616,7 @@
     "name": "川岸",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.032983333333334,
     "lon": 138.02196,
     "geometries": [
@@ -184642,7 +184642,7 @@
     "name": "富士見",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.912265,
     "lon": 138.237865,
     "geometries": [
@@ -184664,7 +184664,7 @@
     "name": "すずらんの里",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.93045857142858,
     "lon": 138.21179142857142,
     "geometries": [
@@ -184706,7 +184706,7 @@
     "name": "西国分寺",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.6997225,
     "lon": 139.46577,
     "geometries": [
@@ -184758,7 +184758,7 @@
     "name": "東小金井",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70156,
     "lon": 139.52375999999998,
     "geometries": [
@@ -184780,7 +184780,7 @@
     "name": "青柳",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.942710000000005,
     "lon": 138.19752666666668,
     "geometries": [
@@ -184806,7 +184806,7 @@
     "name": "春日居町",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.673465,
     "lon": 138.65897999999999,
     "geometries": [
@@ -184828,7 +184828,7 @@
     "name": "鳥沢",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.60804,
     "lon": 139.003485,
     "geometries": [
@@ -184850,7 +184850,7 @@
     "name": "岡谷",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.05676,
     "lon": 138.045115,
     "geometries": [
@@ -184872,7 +184872,7 @@
     "name": "みどり湖",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.09426,
     "lon": 137.98197,
     "geometries": [
@@ -184894,7 +184894,7 @@
     "name": "韮崎",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70968636363636,
     "lon": 138.45135000000002,
     "geometries": [
@@ -184952,7 +184952,7 @@
     "name": "小野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.046875,
     "lon": 137.970795,
     "geometries": [
@@ -184974,7 +184974,7 @@
     "name": "笹子",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.60395666666666,
     "lon": 138.825255,
     "geometries": [
@@ -185012,7 +185012,7 @@
     "name": "武蔵小金井",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.701035,
     "lon": 139.50592999999998,
     "geometries": [
@@ -185034,7 +185034,7 @@
     "name": "日野春",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.790727499999996,
     "lon": 138.39427750000002,
     "geometries": [
@@ -185064,7 +185064,7 @@
     "name": "東山梨",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.69434,
     "lon": 138.703055,
     "geometries": [
@@ -185086,7 +185086,7 @@
     "name": "酒折",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.65954222222222,
     "lon": 138.5995222222222,
     "geometries": [
@@ -185136,7 +185136,7 @@
     "name": "信濃境",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.8849,
     "lon": 138.27553,
     "geometries": [
@@ -185166,7 +185166,7 @@
     "name": "上野原",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.618444999999994,
     "lon": 139.115405,
     "geometries": [
@@ -185188,7 +185188,7 @@
     "name": "大月",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.61308333333333,
     "lon": 138.94215333333332,
     "geometries": [
@@ -185236,7 +185236,7 @@
     "name": "塩崎",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.68779,
     "lon": 138.487756,
     "geometries": [
@@ -185270,7 +185270,7 @@
     "name": "新府",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.73691,
     "lon": 138.4331775,
     "geometries": [
@@ -185300,7 +185300,7 @@
     "name": "藤野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.615995,
     "lon": 139.15133,
     "geometries": [
@@ -185322,7 +185322,7 @@
     "name": "塩山",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.70538333333334,
     "lon": 138.73455666666666,
     "geometries": [
@@ -185348,7 +185348,7 @@
     "name": "西八王子",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.656275,
     "lon": 139.312005,
     "geometries": [
@@ -185370,7 +185370,7 @@
     "name": "長坂",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.82743000000001,
     "lon": 138.36665,
     "geometries": [
@@ -185404,7 +185404,7 @@
     "name": "国立",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.699195,
     "lon": 139.446415,
     "geometries": [
@@ -185426,7 +185426,7 @@
     "name": "上諏訪",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.046760000000006,
     "lon": 138.116265,
     "geometries": [
@@ -185448,7 +185448,7 @@
     "name": "甲斐大和",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.639424,
     "lon": 138.781452,
     "geometries": [
@@ -185482,7 +185482,7 @@
     "name": "四方津",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.614133333333335,
     "lon": 139.07357,
     "geometries": [
@@ -185508,7 +185508,7 @@
     "name": "豊田",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.6594725,
     "lon": 139.3814875,
     "geometries": [
@@ -185538,7 +185538,7 @@
     "name": "穴山",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.7510275,
     "lon": 138.4138875,
     "geometries": [
@@ -185568,7 +185568,7 @@
     "name": "信濃川島",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.0136775,
     "lon": 137.97188250000002,
     "geometries": [
@@ -185598,7 +185598,7 @@
     "name": "石和温泉",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.657525,
     "lon": 138.63448499999998,
     "geometries": [
@@ -185620,7 +185620,7 @@
     "name": "竜王",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.668675,
     "lon": 138.51935,
     "geometries": [
@@ -185642,7 +185642,7 @@
     "name": "梁川",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.606265,
     "lon": 139.0373,
     "geometries": [
@@ -185664,7 +185664,7 @@
     "name": "相模湖",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.617315,
     "lon": 139.188525,
     "geometries": [
@@ -185686,7 +185686,7 @@
     "name": "下諏訪",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 36.071952499999995,
     "lon": 138.085625,
     "geometries": [
@@ -185716,7 +185716,7 @@
     "name": "猿橋",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.61272333333333,
     "lon": 138.96792333333332,
     "geometries": [
@@ -185742,7 +185742,7 @@
     "name": "茅野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.9947625,
     "lon": 138.15195,
     "geometries": [
@@ -185772,7 +185772,7 @@
     "name": "勝沼ぶどう郷",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.67295571428571,
     "lon": 138.7432557142857,
     "geometries": [
@@ -185814,7 +185814,7 @@
     "name": "山梨市",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.685033999999995,
     "lon": 138.682836,
     "geometries": [
@@ -185848,7 +185848,7 @@
     "name": "三鷹",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.702693999999994,
     "lon": 139.560708,
     "geometries": [
@@ -185882,7 +185882,7 @@
     "name": "日野",
     "isMatched": true,
     "company": 103,
-    "line": 376,
+    "line": 297,
     "lat": 35.678675,
     "lon": 139.39349750000002,
     "geometries": [
@@ -186334,7 +186334,7 @@
     "name": "鶴見",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.508539999999996,
     "lon": 139.6762575,
     "geometries": [
@@ -186992,7 +186992,7 @@
     "name": "大森",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.58885,
     "lon": 139.72810666666666,
     "geometries": [
@@ -187018,7 +187018,7 @@
     "name": "浜松町",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.65541,
     "lon": 139.757125,
     "geometries": [
@@ -187040,7 +187040,7 @@
     "name": "田町",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.64574,
     "lon": 139.74760500000002,
     "geometries": [
@@ -187062,7 +187062,7 @@
     "name": "西大井",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.60176571428572,
     "lon": 139.7216357142857,
     "geometries": [
@@ -187104,7 +187104,7 @@
     "name": "川崎",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.531364999999994,
     "lon": 139.69681,
     "geometries": [
@@ -187148,7 +187148,7 @@
     "name": "新川崎",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.551587999999995,
     "lon": 139.671604,
     "geometries": [
@@ -187182,7 +187182,7 @@
     "name": "新子安",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.486826666666666,
     "lon": 139.65409,
     "geometries": [
@@ -187220,7 +187220,7 @@
     "name": "保土ヶ谷",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.44722,
     "lon": 139.60037,
     "geometries": [
@@ -187242,7 +187242,7 @@
     "name": "平塚",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.32774333333333,
     "lon": 139.34945666666667,
     "geometries": [
@@ -187282,7 +187282,7 @@
     "name": "大磯",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.3115,
     "lon": 139.31334,
     "geometries": [
@@ -187308,7 +187308,7 @@
     "name": "早川",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.238797999999996,
     "lon": 139.14504,
     "geometries": [
@@ -187342,7 +187342,7 @@
     "name": "辻堂",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.336845,
     "lon": 139.445895,
     "geometries": [
@@ -187364,7 +187364,7 @@
     "name": "東戸塚",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.430008,
     "lon": 139.556504,
     "geometries": [
@@ -187398,7 +187398,7 @@
     "name": "二宮",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.29867,
     "lon": 139.25675,
     "geometries": [
@@ -187420,7 +187420,7 @@
     "name": "根府川",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.202554,
     "lon": 139.138622,
     "geometries": [
@@ -187454,7 +187454,7 @@
     "name": "鴨宮",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.275686666666665,
     "lon": 139.1799133333333,
     "geometries": [
@@ -187480,7 +187480,7 @@
     "name": "湯河原",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.146125,
     "lon": 139.10219999999998,
     "geometries": [
@@ -187502,7 +187502,7 @@
     "name": "真鶴",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.15675374999999,
     "lon": 139.13213249999998,
     "geometries": [
@@ -188094,7 +188094,7 @@
     "name": "宇都宮",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.55980666666667,
     "lon": 139.89874333333333,
     "geometries": [
@@ -192686,7 +192686,7 @@
     "name": "鶴田",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.53828,
     "lon": 139.8588,
     "geometries": [
@@ -192708,7 +192708,7 @@
     "name": "文挟",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.63759666666667,
     "lon": 139.72788666666668,
     "geometries": [
@@ -192734,7 +192734,7 @@
     "name": "鹿沼",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.57119,
     "lon": 139.762995,
     "geometries": [
@@ -192756,7 +192756,7 @@
     "name": "下野大沢",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.686440000000005,
     "lon": 139.73239999999998,
     "geometries": [
@@ -192778,7 +192778,7 @@
     "name": "日光",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.747395,
     "lon": 139.622195,
     "geometries": [
@@ -192800,7 +192800,7 @@
     "name": "今市",
     "isMatched": true,
     "company": 103,
-    "line": 369,
+    "line": 327,
     "lat": 36.720375000000004,
     "lon": 139.687365,
     "geometries": [
@@ -194666,7 +194666,7 @@
     "name": "飯山",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.845143199999995,
     "lon": 138.35901085,
     "geometries": [
@@ -197136,7 +197136,7 @@
     "name": "安中榛名",
     "isMatched": true,
     "company": 103,
-    "line": 458,
+    "line": 310,
     "lat": 36.362543333333335,
     "lon": 138.84959333333333,
     "geometries": [
@@ -203524,7 +203524,7 @@
     "name": "泉佐野",
     "isMatched": true,
     "company": 56,
-    "line": 177,
+    "line": 149,
     "lat": 34.411064999999994,
     "lon": 135.317375,
     "geometries": [
@@ -203568,7 +203568,7 @@
     "name": "高野山",
     "isMatched": true,
     "company": 56,
-    "line": 449,
+    "line": 150,
     "lat": 34.227745,
     "lon": 135.57754,
     "geometries": [
@@ -203590,7 +203590,7 @@
     "name": "極楽橋",
     "isMatched": true,
     "company": 56,
-    "line": 449,
+    "line": 150,
     "lat": 34.23362,
     "lon": 135.581885,
     "geometries": [
@@ -205992,7 +205992,7 @@
     "name": "函館駅前",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.772315,
     "lon": 140.72797,
     "geometries": [
@@ -206432,7 +206432,7 @@
     "name": "十字街",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.76408,
     "lon": 140.718685,
     "geometries": [
@@ -206454,7 +206454,7 @@
     "name": "魚市場通",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.766495,
     "lon": 140.72283,
     "geometries": [
@@ -206476,7 +206476,7 @@
     "name": "末広町",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.766655,
     "lon": 140.71242,
     "geometries": [
@@ -206498,7 +206498,7 @@
     "name": "函館どつく前",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.772729999999996,
     "lon": 140.705005,
     "geometries": [
@@ -206520,7 +206520,7 @@
     "name": "市役所前",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.769185,
     "lon": 140.72551499999997,
     "geometries": [
@@ -206542,7 +206542,7 @@
     "name": "大町",
     "isMatched": true,
     "company": 46,
-    "line": 594,
+    "line": 119,
     "lat": 41.770185,
     "lon": 140.70914,
     "geometries": [
@@ -206564,7 +206564,7 @@
     "name": "公園上",
     "isMatched": true,
     "company": 140,
-    "line": 449,
+    "line": 444,
     "lat": 35.24912333333334,
     "lon": 139.0432966666667,
     "geometries": [
@@ -206590,7 +206590,7 @@
     "name": "強羅",
     "isMatched": true,
     "company": 140,
-    "line": 449,
+    "line": 444,
     "lat": 35.250735,
     "lon": 139.04793999999998,
     "geometries": [
@@ -206612,7 +206612,7 @@
     "name": "強羅",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.25089333333333,
     "lon": 139.04825666666667,
     "geometries": [
@@ -206638,7 +206638,7 @@
     "name": "公園下",
     "isMatched": true,
     "company": 140,
-    "line": 449,
+    "line": 444,
     "lat": 35.250075,
     "lon": 139.04603500000002,
     "geometries": [
@@ -206660,7 +206660,7 @@
     "name": "中強羅",
     "isMatched": true,
     "company": 140,
-    "line": 449,
+    "line": 444,
     "lat": 35.24808,
     "lon": 139.04032,
     "geometries": [
@@ -206682,7 +206682,7 @@
     "name": "早雲山",
     "isMatched": true,
     "company": 140,
-    "line": 449,
+    "line": 444,
     "lat": 35.24646,
     "lon": 139.035825,
     "geometries": [
@@ -206704,7 +206704,7 @@
     "name": "上強羅",
     "isMatched": true,
     "company": 140,
-    "line": 449,
+    "line": 444,
     "lat": 35.24714,
     "lon": 139.037725,
     "geometries": [
@@ -206726,7 +206726,7 @@
     "name": "宮ノ下",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.24199,
     "lon": 139.06302499999998,
     "geometries": [
@@ -206748,7 +206748,7 @@
     "name": "箱根湯本",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.23354,
     "lon": 139.10395,
     "geometries": [
@@ -206770,7 +206770,7 @@
     "name": "大平台",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.239065,
     "lon": 139.07386,
     "geometries": [
@@ -206792,7 +206792,7 @@
     "name": "彫刻の森",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.24665,
     "lon": 139.05076,
     "geometries": [
@@ -206814,7 +206814,7 @@
     "name": "塔ノ沢",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.23446,
     "lon": 139.094025,
     "geometries": [
@@ -206836,7 +206836,7 @@
     "name": "入生田",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.24078,
     "lon": 139.12106,
     "geometries": [
@@ -206858,7 +206858,7 @@
     "name": "小涌谷",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.240345000000005,
     "lon": 139.05318499999998,
     "geometries": [
@@ -206880,7 +206880,7 @@
     "name": "箱根板橋",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.245155,
     "lon": 139.145185,
     "geometries": [
@@ -206902,7 +206902,7 @@
     "name": "風祭",
     "isMatched": true,
     "company": 140,
-    "line": 549,
+    "line": 443,
     "lat": 35.24624,
     "lon": 139.12916,
     "geometries": [
@@ -207794,7 +207794,7 @@
     "name": "電鉄富山駅・エスタ前",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.699905,
     "lon": 137.214065,
     "geometries": [
@@ -208174,7 +208174,7 @@
     "name": "稲荷町",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.696960000000004,
     "lon": 137.231695,
     "geometries": [
@@ -208218,7 +208218,7 @@
     "name": "中加積",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.73534,
     "lon": 137.35097000000002,
     "geometries": [
@@ -208240,7 +208240,7 @@
     "name": "音沢",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.84074,
     "lon": 137.55992,
     "geometries": [
@@ -208262,7 +208262,7 @@
     "name": "堀川小泉",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.67546,
     "lon": 137.219375,
     "geometries": [
@@ -208284,7 +208284,7 @@
     "name": "浦山",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.863415,
     "lon": 137.519515,
     "geometries": [
@@ -208306,7 +208306,7 @@
     "name": "地鉄ビル前",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.6986,
     "lon": 137.216115,
     "geometries": [
@@ -208328,7 +208328,7 @@
     "name": "電鉄魚津",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.81531,
     "lon": 137.40034500000002,
     "geometries": [
@@ -208350,7 +208350,7 @@
     "name": "小泉町",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.67852,
     "lon": 137.21781,
     "geometries": [
@@ -208372,7 +208372,7 @@
     "name": "越中泉",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.699889999999996,
     "lon": 137.32728500000002,
     "geometries": [
@@ -208394,7 +208394,7 @@
     "name": "寺田",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.698840000000004,
     "lon": 137.31909000000002,
     "geometries": [
@@ -208438,7 +208438,7 @@
     "name": "東三日市",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.874674999999996,
     "lon": 137.45091000000002,
     "geometries": [
@@ -208460,7 +208460,7 @@
     "name": "浜加積",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.777654999999996,
     "lon": 137.36194,
     "geometries": [
@@ -208482,7 +208482,7 @@
     "name": "新宮川",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.71731,
     "lon": 137.351095,
     "geometries": [
@@ -208504,7 +208504,7 @@
     "name": "宇奈月温泉",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.815855,
     "lon": 137.583585,
     "geometries": [
@@ -208526,7 +208526,7 @@
     "name": "下立",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.857730000000004,
     "lon": 137.54143,
     "geometries": [
@@ -208548,7 +208548,7 @@
     "name": "電気ビル前",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.697464999999994,
     "lon": 137.21606500000001,
     "geometries": [
@@ -208570,7 +208570,7 @@
     "name": "桜橋",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.694575,
     "lon": 137.215935,
     "geometries": [
@@ -208592,7 +208592,7 @@
     "name": "越中舟橋",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.70553,
     "lon": 137.30654666666666,
     "geometries": [
@@ -208618,7 +208618,7 @@
     "name": "西魚津",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.80377,
     "lon": 137.39462,
     "geometries": [
@@ -208640,7 +208640,7 @@
     "name": "電鉄富山",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.70052,
     "lon": 137.21474,
     "geometries": [
@@ -208662,7 +208662,7 @@
     "name": "南富山駅前",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.67062,
     "lon": 137.22041000000002,
     "geometries": [
@@ -208684,7 +208684,7 @@
     "name": "若栗",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.871145,
     "lon": 137.49322,
     "geometries": [
@@ -208706,7 +208706,7 @@
     "name": "電鉄石田",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.865865,
     "lon": 137.423195,
     "geometries": [
@@ -208728,7 +208728,7 @@
     "name": "広貫堂前",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.683645,
     "lon": 137.21587,
     "geometries": [
@@ -208750,7 +208750,7 @@
     "name": "西中野",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.68086,
     "lon": 137.21665,
     "geometries": [
@@ -208772,7 +208772,7 @@
     "name": "愛本",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.855774999999994,
     "lon": 137.55361,
     "geometries": [
@@ -208794,7 +208794,7 @@
     "name": "越中中村",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.79069,
     "lon": 137.38259,
     "geometries": [
@@ -208816,7 +208816,7 @@
     "name": "東新庄",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.698702000000004,
     "lon": 137.252984,
     "geometries": [
@@ -208850,7 +208850,7 @@
     "name": "上本町",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.68639,
     "lon": 137.215755,
     "geometries": [
@@ -208872,7 +208872,7 @@
     "name": "大町",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.67306000000001,
     "lon": 137.220675,
     "geometries": [
@@ -208894,7 +208894,7 @@
     "name": "越中荏原",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.698965,
     "lon": 137.266215,
     "geometries": [
@@ -208916,7 +208916,7 @@
     "name": "西滑川",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.755520000000004,
     "lon": 137.334605,
     "geometries": [
@@ -208938,7 +208938,7 @@
     "name": "中滑川",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.76191,
     "lon": 137.339925,
     "geometries": [
@@ -208960,7 +208960,7 @@
     "name": "早月加積",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.783725000000004,
     "lon": 137.3716,
     "geometries": [
@@ -208982,7 +208982,7 @@
     "name": "上市",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.704475,
     "lon": 137.35708,
     "geometries": [
@@ -209004,7 +209004,7 @@
     "name": "電鉄黒部",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.874055,
     "lon": 137.444165,
     "geometries": [
@@ -209026,7 +209026,7 @@
     "name": "荻生",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.875029999999995,
     "lon": 137.45926,
     "geometries": [
@@ -209048,7 +209048,7 @@
     "name": "西町",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.689195,
     "lon": 137.21567499999998,
     "geometries": [
@@ -209092,7 +209092,7 @@
     "name": "荒町",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.69149,
     "lon": 137.215775,
     "geometries": [
@@ -209114,7 +209114,7 @@
     "name": "経田",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.84883000000001,
     "lon": 137.41619,
     "geometries": [
@@ -209136,7 +209136,7 @@
     "name": "栃屋",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.869775000000004,
     "lon": 137.505965,
     "geometries": [
@@ -209158,7 +209158,7 @@
     "name": "相ノ木",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.701980000000006,
     "lon": 137.33548,
     "geometries": [
@@ -209180,7 +209180,7 @@
     "name": "舌山",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.872015000000005,
     "lon": 137.48584499999998,
     "geometries": [
@@ -209202,7 +209202,7 @@
     "name": "長屋",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.873525,
     "lon": 137.47075,
     "geometries": [
@@ -209224,7 +209224,7 @@
     "name": "内山",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.84682,
     "lon": 137.556755,
     "geometries": [
@@ -209246,7 +209246,7 @@
     "name": "越中三郷",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.70335333333333,
     "lon": 137.29078333333334,
     "geometries": [
@@ -209272,7 +209272,7 @@
     "name": "西加積",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.746340000000004,
     "lon": 137.340215,
     "geometries": [
@@ -209294,7 +209294,7 @@
     "name": "下立口",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.85961,
     "lon": 137.532985,
     "geometries": [
@@ -209316,7 +209316,7 @@
     "name": "新魚津",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.826665,
     "lon": 137.40526999999997,
     "geometries": [
@@ -209526,7 +209526,7 @@
     "name": "立山",
     "isMatched": true,
     "company": 137,
-    "line": 449,
+    "line": 440,
     "lat": 36.583299999999994,
     "lon": 137.445995,
     "geometries": [
@@ -223318,7 +223318,7 @@
     "name": "緑地公園",
     "isMatched": true,
     "company": 48,
-    "line": 264,
+    "line": 122,
     "lat": 34.774815000000004,
     "lon": 135.495275,
     "geometries": [
@@ -223348,7 +223348,7 @@
     "name": "桃山台",
     "isMatched": true,
     "company": 48,
-    "line": 264,
+    "line": 122,
     "lat": 34.793290000000006,
     "lon": 135.49719000000002,
     "geometries": [
@@ -223374,7 +223374,7 @@
     "name": "千里中央",
     "isMatched": true,
     "company": 48,
-    "line": 264,
+    "line": 122,
     "lat": 34.810320000000004,
     "lon": 135.49517500000002,
     "geometries": [
@@ -234278,7 +234278,7 @@
     "name": "黒部平",
     "isMatched": true,
     "company": 137,
-    "line": 449,
+    "line": 440,
     "lat": 36.567049999999995,
     "lon": 137.65058000000002,
     "geometries": [
@@ -234304,7 +234304,7 @@
     "name": "黒部湖",
     "isMatched": true,
     "company": 137,
-    "line": 449,
+    "line": 440,
     "lat": 36.56653,
     "lon": 137.65842,
     "geometries": [
@@ -234330,7 +234330,7 @@
     "name": "美女平",
     "isMatched": true,
     "company": 137,
-    "line": 449,
+    "line": 440,
     "lat": 36.58334,
     "lon": 137.45877000000002,
     "geometries": [
@@ -234876,7 +234876,7 @@
     "name": "野田新町",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.9835,
     "lon": 137.02817666666667,
     "geometries": [
@@ -235566,7 +235566,7 @@
     "name": "太秦天神川",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.01094,
     "lon": 135.716055,
     "geometries": [
@@ -235588,7 +235588,7 @@
     "name": "西大路御池",
     "isMatched": true,
     "company": 34,
-    "line": 265,
+    "line": 87,
     "lat": 35.010961,
     "lon": 135.7306175,
     "geometries": [
@@ -236062,7 +236062,7 @@
     "name": "南大高",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 35.054448,
     "lon": 136.94872,
     "geometries": [
@@ -237008,7 +237008,7 @@
     "name": "ひこね芹川",
     "isMatched": true,
     "company": 151,
-    "line": 594,
+    "line": 524,
     "lat": 35.262148499999995,
     "lon": 136.2611795,
     "geometries": [
@@ -237030,7 +237030,7 @@
     "name": "武蔵小杉",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.574874873000006,
     "lon": 139.663382224,
     "geometries": [
@@ -238554,7 +238554,7 @@
     "name": "羽田空港第3ターミナル",
     "isMatched": true,
     "company": 31,
-    "line": 177,
+    "line": 76,
     "lat": 35.544979999999995,
     "lon": 139.7670665,
     "geometries": [
@@ -238830,7 +238830,7 @@
     "name": "相見",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.8880425,
     "lon": 137.160271,
     "geometries": [
@@ -238962,7 +238962,7 @@
     "name": "新庄田中",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.697917,
     "lon": 137.2410805,
     "geometries": [
@@ -238984,7 +238984,7 @@
     "name": "中町（西町北）",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.6897895,
     "lon": 137.21568000000002,
     "geometries": [
@@ -239028,7 +239028,7 @@
     "name": "新相ノ木",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.7031605,
     "lon": 137.3423235,
     "geometries": [
@@ -239278,7 +239278,7 @@
     "name": "新黒部",
     "isMatched": true,
     "company": 77,
-    "line": 594,
+    "line": 229,
     "lat": 36.873048915,
     "lon": 137.481214285,
     "geometries": [
@@ -239522,7 +239522,7 @@
     "name": "八木山動物公園",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.243328930000004,
     "lon": 140.844017815,
     "geometries": [
@@ -239544,7 +239544,7 @@
     "name": "青葉山",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.255154255,
     "lon": 140.835336945,
     "geometries": [
@@ -239566,7 +239566,7 @@
     "name": "川内",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.260828675,
     "lon": 140.85036758500001,
     "geometries": [
@@ -239588,7 +239588,7 @@
     "name": "国際センター",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.260199905,
     "lon": 140.856834365,
     "geometries": [
@@ -239610,7 +239610,7 @@
     "name": "青葉通一番町",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.259671819999994,
     "lon": 140.872061525,
     "geometries": [
@@ -239632,7 +239632,7 @@
     "name": "大町西公園",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.25892967,
     "lon": 140.86458585000003,
     "geometries": [
@@ -239654,7 +239654,7 @@
     "name": "宮城野通",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.25804796,
     "lon": 140.88582016499998,
     "geometries": [
@@ -239676,7 +239676,7 @@
     "name": "連坊",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.251138005,
     "lon": 140.89323551500001,
     "geometries": [
@@ -239698,7 +239698,7 @@
     "name": "薬師堂",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.249574695,
     "lon": 140.90606176,
     "geometries": [
@@ -239720,7 +239720,7 @@
     "name": "卸町",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.25155203,
     "lon": 140.92090817500002,
     "geometries": [
@@ -239742,7 +239742,7 @@
     "name": "六丁の目",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.25092861,
     "lon": 140.935684145,
     "geometries": [
@@ -239764,7 +239764,7 @@
     "name": "荒井",
     "isMatched": true,
     "company": 36,
-    "line": 265,
+    "line": 98,
     "lat": 38.244894295,
     "lon": 140.948406175,
     "geometries": [
@@ -240818,7 +240818,7 @@
     "name": "羽沢横浜国大",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.481229240000005,
     "lon": 139.58613474999999,
     "geometries": [
@@ -240862,7 +240862,7 @@
     "name": "高輪ゲートウェイ",
     "isMatched": true,
     "company": 103,
-    "line": 484,
+    "line": 330,
     "lat": 35.635378720000006,
     "lon": 139.740644455,
     "geometries": [
@@ -240884,7 +240884,7 @@
     "name": "御厨",
     "isMatched": true,
     "company": 106,
-    "line": 484,
+    "line": 382,
     "lat": 34.71865917,
     "lon": 137.88563162,
     "geometries": [

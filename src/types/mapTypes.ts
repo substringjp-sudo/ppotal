@@ -4,6 +4,7 @@ export interface StaticNode {
     lineKey: string;
     platforms?: [number, number][][];
     group?: string;
+    isUsed?: boolean;
 }
 
 export interface ProcessedStation {
@@ -14,4 +15,5 @@ export interface ProcessedStation {
     lines: string[];
     name_en?: string;
     isJoint?: boolean;
+    isUsed?: boolean;
 }

@@ -17,6 +17,7 @@ export interface Edge {
     distance: number;
     geometry: [number, number][];
     lineId?: string; // Add lineId for coloring edges correctly
+    sectionIds?: number[]
 }
 
 export interface LineSegment {
@@ -54,21 +55,27 @@ export class RailroadGraph {
         }
     }
 
-    addEdge(u: string, v: string, distance: number, geometry: [number, number][], lineId?: string) {
+    addEdge(u: string, v: string, distance: number, geometry: [number, number][], lineId?: string, sectionIds?: number[]) {
         if (!this.adj.has(u)) this.adj.set(u, []);
         if (!this.adj.has(v)) this.adj.set(v, []);
 
-        this.adj.get(u)?.push({ to: v, distance, geometry, lineId });
+        this.adj.get(u)?.push({ to: v, distance, geometry, lineId, sectionIds });
         // Assuming undirected for now, but need to check if geometry needs reversing
-        this.adj.get(v)?.push({ to: u, distance, geometry: [...geometry].reverse(), lineId });
+        this.adj.get(v)?.push({ to: u, distance, geometry: [...geometry].reverse(), lineId, sectionIds });
     }
 
-    getShortestPath(startId: string, endId: string, allowedLines: string[] | null = null): { path: string[], distance: number, geometries: [number, number][][] } | null {
+    getShortestPath(startId: string, endId: string, allowedLines: string[] | null = null): {
+        path: string[],
+        sectionIds: number[],
+        distance: number,
+        geometries: [number, number][][]
+    } | null {
         if (!this.nodes.has(startId) || !this.nodes.has(endId)) return null;
 
         const distances: Record<string, number> = {};
         const previous: Record<string, string | null> = {};
         const geometries: Record<string, [number, number][][]> = {};
+        const sectionIdsRecord: Record<string, number[]> = {};
         const nodes = new Set<string>();
 
         // Initialize
@@ -76,6 +83,7 @@ export class RailroadGraph {
             distances[nodeId] = Infinity;
             previous[nodeId] = null;
             geometries[nodeId] = [];
+            sectionIdsRecord[nodeId] = [];
             nodes.add(nodeId);
         }
 
@@ -106,6 +114,7 @@ export class RailroadGraph {
 
                 return {
                     path,
+                    sectionIds: sectionIdsRecord[endId],
                     distance: distances[endId],
                     geometries: geometries[endId]
                 };
@@ -135,6 +144,7 @@ export class RailroadGraph {
                     distances[neighbor.to] = alt;
                     previous[neighbor.to] = closestNode;
                     geometries[neighbor.to] = [...geometries[closestNode], neighbor.geometry];
+                    sectionIdsRecord[neighbor.to] = [...sectionIdsRecord[closestNode], ...(neighbor.sectionIds || [])];
                 }
             }
         }
@@ -461,7 +471,7 @@ export class RailroadGraph {
 
                     const existsForward = this.adj.get(sourceId)?.some(e => e.to === targetId);
                     if (!existsForward) {
-                        this.addEdge(sourceId, targetId, totalDistance, combinedGeometry, lineId);
+                        this.addEdge(sourceId, targetId, totalDistance, combinedGeometry, lineId, sectionIds as number[]);
                     }
                 });
             });

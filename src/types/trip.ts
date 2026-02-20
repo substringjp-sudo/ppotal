@@ -6,4 +6,5 @@ export interface Trip {
     path: string[];
     waypoints: string[];
     geometries: number[][][]; // Array of segments, each segment is array of points [lon, lat]
+    sectionIds: number[];
 }
