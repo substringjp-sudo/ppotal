@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
 import { normalizeKey } from '../lib/lineUtils';
-import { Language, UI_TRANSLATIONS } from '../lib/translations';
+import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
-import { useStationHierarchy, GroupedHierarchy } from '../hooks/useStationHierarchy';
+import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
 import SidebarGroup from './SidebarGroup';
 
@@ -17,24 +17,27 @@ interface SidebarProps {
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
     language: Language;
-    onLanguageChange?: (lang: Language) => void; // Added to match usage in AppClient
+    onLanguageChange?: (lang: Language) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onLineClick, language }) => {
     const { railData } = useRailData();
-    const { hierarchy, groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths } = useStationHierarchy(railData);
+    const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
     const [sortMode, setSortMode] = useState<'ja' | 'usage'>('ja');
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
-    const [expandedGroups, setExpandedGroups] = useState<Record<keyof GroupedHierarchy, boolean>>({
-        shinkansen: true,
-        jr: true,
-        majorPrivate: true,
-        otherPrivate: false,
-        nonRail: false,
-    });
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
     const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    // Helper functions for name resolution
+    useEffect(() => {
+        if (groupedHierarchy) {
+            const initialExpansion: Record<string, boolean> = {};
+            Object.keys(groupedHierarchy).forEach((categoryId, index) => {
+                initialExpansion[categoryId] = index < 3; // Expand top 3 categories by default
+            });
+            setExpandedGroups(initialExpansion);
+        }
+    }, [groupedHierarchy]);
+
     const getCompanyName = useCallback((id: string) => {
         return companyNames[id]?.name || id;
     }, [companyNames]);
@@ -43,24 +46,19 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         return lineNames[id]?.name || id;
     }, [lineNames]);
 
-    // Scroll active line into view and expand company if needed
     useEffect(() => {
         if (activeLine && groupedHierarchy) {
-            let foundGroup: keyof GroupedHierarchy | null = null;
+            let foundGroup: string | null = null;
             let foundCompany: string | null = null;
 
-            // Search for the active line in groups
-            // activeLine is Name-based: "CompanyName::LineName"
-            // groupedHierarchy structure is ID-based: group -> companyId -> lineId
-            for (const group of Object.keys(groupedHierarchy) as (keyof GroupedHierarchy)[]) {
-                for (const companyId of Object.keys(groupedHierarchy[group])) {
+            for (const categoryId of Object.keys(groupedHierarchy)) {
+                for (const companyId of Object.keys(groupedHierarchy[categoryId])) {
                     const cName = getCompanyName(companyId);
-                    if (Object.keys(groupedHierarchy[group][companyId]).some(lineId => {
+                    if (Object.keys(groupedHierarchy[categoryId][companyId]).some(lineId => {
                         const lName = getLineName(lineId);
-                        // Compare normalized keys to be safe
                         return normalizeKey(`${cName}::${lName}`) === normalizeKey(activeLine);
                     })) {
-                        foundGroup = group;
+                        foundGroup = categoryId;
                         foundCompany = companyId;
                         break;
                     }
@@ -71,9 +69,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             if (foundGroup && foundCompany) {
                 setExpandedGroups(prev => ({ ...prev, [foundGroup!]: true }));
                 setExpandedCompanies(prev => ({ ...prev, [foundCompany!]: true }));
-                // Scroll logic is tricky because ref keys must match.
-                // SidebarGroup registers refs using Name-based keys calling registerLineRef.
-                // So activeLine (Name-based) should match the key in lineRefs.
                 setTimeout(() => {
                     const el = lineRefs.current[activeLine];
                     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -90,19 +85,19 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         });
     }, []);
 
-    const toggleGroup = useCallback((group: string) => { // keyof GroupedHierarchy but passed as string from Child
+    const toggleGroup = useCallback((group: string) => {
         setExpandedGroups(prev => {
-            const g = group as keyof GroupedHierarchy;
-            const newState = !prev[g];
+            const newState = !prev[group];
             trackEvent('group_toggle', 'ui_interaction', group, newState ? 1 : 0);
-            return { ...prev, [g]: newState };
+            return { ...prev, [group]: newState };
         });
     }, []);
 
     const handleGroupToggle = useCallback((groupKey: string) => {
         if (!groupedHierarchy) return;
-        const key = groupKey as keyof GroupedHierarchy;
-        const companies = groupedHierarchy[key];
+        const companies = groupedHierarchy[groupKey];
+        if (!companies) return;
+
         const allKeys: string[] = [];
         Object.entries(companies).forEach(([compId, lines]) => {
             const cName = getCompanyName(compId);
@@ -112,9 +107,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             });
         });
 
-        // Use strict check or normalized for selection?
-        // selectedLines usually contains original strings, but sometimes normalization is used for comparison.
-        // onSetSelectedLines expects IDs (which are now Name-based).
         const allSelected = allKeys.every(k => selectedLines.includes(k));
         let newSelected = allSelected
             ? selectedLines.filter(l => !allKeys.includes(l))
@@ -122,8 +114,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
         if (newSelected.length > 1 && newSelected.includes("__NONE__")) {
             newSelected = newSelected.filter(l => l !== "__NONE__");
-        } else if (newSelected.length === 0) {
-            // Keep empty
         }
 
         onSetSelectedLines(newSelected);
@@ -149,18 +139,20 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     }, [selectedLines, onSetSelectedLines, getCompanyName, getLineName]);
 
     const handleSelectAll = useCallback(() => {
-        if (!hierarchy) return;
+        if (!groupedHierarchy) return;
         const allKeys: string[] = [];
-        Object.entries(hierarchy).forEach(([compId, lines]) => {
-            const cName = getCompanyName(compId);
-            Object.keys(lines).forEach(lineId => {
-                const lName = getLineName(lineId);
-                allKeys.push(`${cName}::${lName}`);
+        Object.values(groupedHierarchy).forEach(companies => {
+            Object.entries(companies).forEach(([compId, lines]) => {
+                const cName = getCompanyName(compId);
+                Object.keys(lines).forEach(lineId => {
+                    const lName = getLineName(lineId);
+                    allKeys.push(`${cName}::${lName}`);
+                });
             });
         });
         onSetSelectedLines(allKeys);
         trackEvent('select_all', 'interaction', 'all_lines');
-    }, [hierarchy, onSetSelectedLines, getCompanyName, getLineName]);
+    }, [groupedHierarchy, onSetSelectedLines, getCompanyName, getLineName]);
 
     const handleDeselectAll = useCallback(() => {
         onSetSelectedLines(["__NONE__"]);
@@ -168,25 +160,23 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     }, [onSetSelectedLines]);
 
     const handleToggleAllGroups = useCallback((expand: boolean) => {
-        setExpandedGroups({
-            shinkansen: expand,
-            jr: expand,
-            majorPrivate: expand,
-            otherPrivate: expand,
-            nonRail: expand,
-        });
-        if (hierarchy) {
-            const allCompanies: Record<string, boolean> = {};
-            Object.keys(hierarchy).forEach(c => allCompanies[c] = expand);
-            setExpandedCompanies(allCompanies);
-        }
-    }, [hierarchy]);
+        if (!groupedHierarchy) return;
+        const allGroups: Record<string, boolean> = {};
+        Object.keys(groupedHierarchy).forEach(g => allGroups[g] = expand);
+        setExpandedGroups(allGroups);
+
+        const allCompanies: Record<string, boolean> = {};
+        Object.keys(companyNames).forEach(c => allCompanies[c] = expand);
+        setExpandedCompanies(allCompanies);
+    }, [groupedHierarchy, companyNames]);
 
     const registerLineRef = useCallback((key: string, el: HTMLDivElement | null) => {
         lineRefs.current[key] = el;
     }, []);
 
-    if (!groupedHierarchy) return <div>Loading...</div>;
+    if (!groupedHierarchy || !CATEGORY_MAP || !companyNames || !lineNames) return <div>Loading...</div>;
+
+    const sortedCategoryIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
 
     return (
         <div className="sidebar-content" style={{ padding: '20px', fontFamily: 'Pretendard, sans-serif', display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -254,116 +244,36 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
-                <SidebarGroup
-                    title="新幹線"
-                    groupKey="shinkansen"
-                    companies={groupedHierarchy.shinkansen}
-                    expanded={expandedGroups.shinkansen}
-                    onToggleExpanded={toggleGroup}
-                    onToggleSelection={handleGroupToggle}
-                    selectedLines={selectedLines}
-                    onToggleLine={onToggleLine}
-                    onToggleCompany={handleCompanyToggle}
-                    expandedCompanies={expandedCompanies}
-                    toggleCompany={toggleCompany}
-                    lineLengths={hookLineLengths}
-                    visitedLineLengths={visitedLineLengths}
-                    sortMode={sortMode}
-                    activeLine={activeLine}
-                    onLineClick={onLineClick}
-                    language={language}
-                    registerLineRef={registerLineRef}
-                    companyNames={companyNames}
-                    lineNames={lineNames}
-                />
-                <SidebarGroup
-                    title="JR線"
-                    groupKey="jr"
-                    companies={groupedHierarchy.jr}
-                    expanded={expandedGroups.jr}
-                    onToggleExpanded={toggleGroup}
-                    onToggleSelection={handleGroupToggle}
-                    selectedLines={selectedLines}
-                    onToggleLine={onToggleLine}
-                    onToggleCompany={handleCompanyToggle}
-                    expandedCompanies={expandedCompanies}
-                    toggleCompany={toggleCompany}
-                    lineLengths={hookLineLengths}
-                    visitedLineLengths={visitedLineLengths}
-                    sortMode={sortMode}
-                    activeLine={activeLine}
-                    onLineClick={onLineClick}
-                    language={language}
-                    registerLineRef={registerLineRef}
-                    companyNames={companyNames}
-                    lineNames={lineNames}
-                />
-                <SidebarGroup
-                    title="大手私鉄 (16社)"
-                    groupKey="majorPrivate"
-                    companies={groupedHierarchy.majorPrivate}
-                    expanded={expandedGroups.majorPrivate}
-                    onToggleExpanded={toggleGroup}
-                    onToggleSelection={handleGroupToggle}
-                    selectedLines={selectedLines}
-                    onToggleLine={onToggleLine}
-                    onToggleCompany={handleCompanyToggle}
-                    expandedCompanies={expandedCompanies}
-                    toggleCompany={toggleCompany}
-                    lineLengths={hookLineLengths}
-                    visitedLineLengths={visitedLineLengths}
-                    sortMode={sortMode}
-                    activeLine={activeLine}
-                    onLineClick={onLineClick}
-                    language={language}
-                    registerLineRef={registerLineRef}
-                    companyNames={companyNames}
-                    lineNames={lineNames}
-                />
-                <SidebarGroup
-                    title="その他私鉄"
-                    groupKey="otherPrivate"
-                    companies={groupedHierarchy.otherPrivate}
-                    expanded={expandedGroups.otherPrivate}
-                    onToggleExpanded={toggleGroup}
-                    onToggleSelection={handleGroupToggle}
-                    selectedLines={selectedLines}
-                    onToggleLine={onToggleLine}
-                    onToggleCompany={handleCompanyToggle}
-                    expandedCompanies={expandedCompanies}
-                    toggleCompany={toggleCompany}
-                    lineLengths={hookLineLengths}
-                    visitedLineLengths={visitedLineLengths}
-                    sortMode={sortMode}
-                    activeLine={activeLine}
-                    onLineClick={onLineClick}
-                    language={language}
-                    registerLineRef={registerLineRef}
-                    companyNames={companyNames}
-                    lineNames={lineNames}
-                />
-                <SidebarGroup
-                    title="その他 (鋼索線・索道等)"
-                    groupKey="nonRail"
-                    companies={groupedHierarchy.nonRail}
-                    expanded={expandedGroups.nonRail}
-                    onToggleExpanded={toggleGroup}
-                    onToggleSelection={handleGroupToggle}
-                    selectedLines={selectedLines}
-                    onToggleLine={onToggleLine}
-                    onToggleCompany={handleCompanyToggle}
-                    expandedCompanies={expandedCompanies}
-                    toggleCompany={toggleCompany}
-                    lineLengths={hookLineLengths}
-                    visitedLineLengths={visitedLineLengths}
-                    sortMode={sortMode}
-                    activeLine={activeLine}
-                    onLineClick={onLineClick}
-                    language={language}
-                    registerLineRef={registerLineRef}
-                    companyNames={companyNames}
-                    lineNames={lineNames}
-                />
+                {sortedCategoryIds.map(categoryId => {
+                    const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
+                    if (!categoryInfo) return null;
+                    const title = language === 'ko' ? categoryInfo.name : (language === 'en' ? categoryInfo.name_en : categoryInfo.name);
+                    return (
+                        <SidebarGroup
+                            key={categoryId}
+                            title={title}
+                            groupKey={categoryId}
+                            companies={groupedHierarchy[categoryId]}
+                            expanded={expandedGroups[categoryId] ?? false}
+                            onToggleExpanded={toggleGroup}
+                            onToggleSelection={handleGroupToggle}
+                            selectedLines={selectedLines}
+                            onToggleLine={onToggleLine}
+                            onToggleCompany={handleCompanyToggle}
+                            expandedCompanies={expandedCompanies}
+                            toggleCompany={toggleCompany}
+                            lineLengths={hookLineLengths}
+                            visitedLineLengths={visitedLineLengths}
+                            sortMode={sortMode}
+                            activeLine={activeLine}
+                            onLineClick={onLineClick}
+                            language={language}
+                            registerLineRef={registerLineRef}
+                            companyNames={companyNames}
+                            lineNames={lineNames}
+                        />
+                    );
+                })}
             </div>
 
         </div>

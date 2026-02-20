@@ -3,7 +3,6 @@ import { normalizeKey, translateName } from '../lib/lineUtils';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import { getProgressColor } from '../lib/uiUtils';
-import { COMPANY_EN_NAMES, LINE_EN_NAMES } from '../lib/railwayData';
 
 interface SidebarGroupProps {
     title: string;
@@ -24,15 +23,15 @@ interface SidebarGroupProps {
     onLineClick?: (line: string) => void;
     language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
-    companyNames?: Record<string, any>;
-    lineNames?: Record<string, any>;
+    companyNames: Record<string, any>;
+    lineNames: Record<string, any>;
 }
 
 const SidebarLineItem: React.FC<{
     lineId: string;
     cName: string;
-    getLineName: (id: string | any) => string;
-    getLineEnName: (id: string | any) => string;
+    lineData: any;
+    language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
     onLineClick?: (line: string) => void;
     onToggleLine: (lineKey: string) => void;
@@ -40,8 +39,8 @@ const SidebarLineItem: React.FC<{
     activeLine?: string | null;
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
-}> = ({ lineId, cName, getLineName, getLineEnName, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
-    const lName = getLineName(lineId);
+}> = memo(({ lineId, cName, lineData, language, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
+    const lName = lineData.name;
     const key = `${cName}::${lName}`;
     const normalizedKey = normalizeKey(key);
     const isActive = activeLine ? normalizeKey(activeLine) === normalizedKey : false;
@@ -49,28 +48,15 @@ const SidebarLineItem: React.FC<{
     const percent = lineLengths[normalizedKey] ? ((visitedLineLengths?.[normalizedKey] || 0) / lineLengths[normalizedKey] * 100) : 0;
     const isCompleted = percent >= 99.9;
 
-    const [itemHovered, setItemHovered] = React.useState(false);
-    const itemHoverTimeout = React.useRef<NodeJS.Timeout | null>(null);
-
     return (
         <div
             ref={el => registerLineRef(key, el)}
             onClick={() => onLineClick?.(key)}
-            onMouseEnter={() => {
-                if (itemHoverTimeout.current) clearTimeout(itemHoverTimeout.current);
-                itemHoverTimeout.current = setTimeout(() => {
-                    setItemHovered(true);
-                }, 1000);
-            }}
-            onMouseLeave={() => {
-                if (itemHoverTimeout.current) clearTimeout(itemHoverTimeout.current);
-                setItemHovered(false);
-            }}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 padding: '4px 0',
-                backgroundColor: isActive ? '#e6f7ff' : (itemHovered ? '#f5f5f5' : 'transparent'),
+                backgroundColor: isActive ? '#e6f7ff' : 'transparent',
                 borderRadius: '4px',
                 borderBottom: '1px solid #f9f9f9',
                 cursor: 'pointer'
@@ -97,9 +83,8 @@ const SidebarLineItem: React.FC<{
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                cursor: 'pointer'
                             }}>
-                            {lName}
+                            {translateName(lName, language, lineData.name_en)}
                         </span>
                         <span style={{
                             fontSize: '9px',
@@ -110,7 +95,7 @@ const SidebarLineItem: React.FC<{
                             overflow: 'hidden',
                             textOverflow: 'ellipsis'
                         }}>
-                            {getLineEnName(lineId)}
+                            {language === 'en' ? lName : lineData.name_en}
                         </span>
                     </div>
                     {(() => {
@@ -150,40 +135,25 @@ const SidebarLineItem: React.FC<{
             </div>
         </div>
     );
-};
+});
 
 const SidebarGroup: React.FC<SidebarGroupProps> = ({
     title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
     selectedLines, onToggleLine, onToggleCompany, expandedCompanies,
     toggleCompany, lineLengths, visitedLineLengths, sortMode,
     activeLine, onLineClick, language, registerLineRef,
-    companyNames = {}, lineNames = {}
+    companyNames, lineNames
 }) => {
-    const isEmpty = Object.keys(companies).length === 0;
-    if (isEmpty) return null;
+    if (Object.keys(companies).length === 0) return null;
 
-    const getCompanyName = (id: string) => {
-        const name = companyNames[id]?.name || id;
-        return name;
-    }
-
-    const getCompanyEnName = (id: string) => {
-        return companyNames[id]?.name_en || COMPANY_EN_NAMES[companyNames[id]?.name] || id;
-    }
-
-    const getLineName = (id: string) => {
-        const name = lineNames[id]?.name || id;
-        return name;
-    }
-
-    const getLineEnName = (id: string) => {
-        return lineNames[id]?.name_en || LINE_EN_NAMES[lineNames[id]?.name] || id;
-    }
+    const getCompanyName = (id: string) => companyNames[id]?.name || id;
+    const getCompanyEnName = (id: string) => companyNames[id]?.name_en || id;
+    const getLineName = (id: string) => lineNames[id]?.name || id;
 
     const sortLines = (lineIds: string[], companyId: string) => {
         if (sortMode === 'usage') {
             const getLineUsage = (lineId: string) => {
-                const key = normalizeKey(`${companyId}::${lineId}`);
+                const key = normalizeKey(`${getCompanyName(companyId)}::${getLineName(lineId)}`);
                 return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
             };
             return [...lineIds].sort((a, b) => getLineUsage(b) - getLineUsage(a));
@@ -191,18 +161,17 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
         return [...lineIds].sort((a, b) => getLineName(a).localeCompare(getLineName(b), 'ja'));
     };
 
-    const sortCompaniesForRender = (companyEntries: [string, Record<string, any>][]) => {
+    const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
-            const getCompanyUsage = (comp: string, lines: Record<string, any>) => {
-                const names = Object.keys(lines);
-                const total = names.reduce((sum, l) => sum + (lineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
-                const visited = names.reduce((sum, l) => sum + (visitedLineLengths[normalizeKey(`${comp}::${l}`)] || 0), 0);
-                return total > 0 ? (visited / total) : 0;
+            const getCompanyUsage = ([, lines]: [string, Record<string, any>]) => {
+                const total = Object.keys(lines).reduce((sum, lineId) => sum + (lineLengths[normalizeKey(`${getCompanyName(a[0])}::${getLineName(lineId)}`)] || 0), 0);
+                const visited = Object.keys(lines).reduce((sum, lineId) => sum + (visitedLineLengths[normalizeKey(`${getCompanyName(a[0])}::${getLineName(lineId)}`)] || 0), 0);
+                return total > 0 ? visited / total : 0;
             };
-            return [...companyEntries].sort((a, b) => getCompanyUsage(b[0], b[1]) - getCompanyUsage(a[0], a[1]));
+            return getCompanyUsage(b) - getCompanyUsage(a);
         }
-        return [...companyEntries].sort((a, b) => getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'ja'));
-    };
+        return getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'ja');
+    });
 
     return (
         <div style={{ marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
@@ -212,20 +181,20 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                     background: '#f0f0f0',
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    cursor: 'pointer'
                 }}
+                onClick={() => onToggleExpanded(groupKey)}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => onToggleExpanded(groupKey)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>{title}</span>
                     {(() => {
                         let total = 0;
                         let visited = 0;
-                        Object.entries(companies).forEach(([compId, lines]) => {
+                        Object.values(companies).forEach(lines => {
                             Object.keys(lines).forEach(lineId => {
                                 total++;
-                                const cName = getCompanyName(compId);
-                                const lName = getLineName(lineId);
-                                const key = normalizeKey(`${cName}::${lName}`);
+                                const key = normalizeKey(`${getCompanyName(Object.keys(companies)[0])}::${getLineName(lineId)}`);
                                 if ((visitedLineLengths[key] || 0) > 0) visited++;
                             });
                         });
@@ -239,17 +208,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <input
                         type="checkbox"
-                        checked={(() => {
-                            let all = true;
-                            Object.entries(companies).forEach(([c, ls]) => {
-                                const cName = getCompanyName(c);
-                                if (!Object.keys(ls).every(l => {
-                                    const lName = getLineName(l);
-                                    return selectedLines.includes(`${cName}::${lName}`);
-                                })) all = false;
-                            });
-                            return all;
-                        })()}
+                        checked={Object.values(companies).every(lines => Object.keys(lines).every(lineId => selectedLines.includes(normalizeKey(`${getCompanyName(Object.keys(companies)[0])}::${getLineName(lineId)}`))))}
                         onChange={(e) => {
                             e.stopPropagation();
                             onToggleSelection(groupKey);
@@ -257,161 +216,85 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                         title="Toggle Category"
                         style={{ cursor: 'pointer' }}
                     />
-                    <span onClick={() => onToggleExpanded(groupKey)} style={{ cursor: 'pointer' }}>{expanded ? '▼' : '▶'}</span>
+                    <span>{expanded ? '▼' : '▶'}</span>
                 </div>
             </div>
             {expanded && (
                 <div style={{ padding: '0 10px 10px 10px' }}>
-                    {groupKey === 'shinkansen' ? (
-                        // Special handling for Shinkansen: Flatten companies and just show lines
-                        (() => {
-                            // Flatten all Shinkansen lines
-                            const allShinkansenLines: { id: string, companyId: string }[] = [];
-                            Object.entries(companies).forEach(([companyId, lines]) => {
-                                Object.keys(lines).forEach(lineId => {
-                                    allShinkansenLines.push({ id: lineId, companyId });
-                                });
-                            });
+                    {sortedCompanies.map(([companyId, lines]) => {
+                        const isExpanded = expandedCompanies[companyId];
+                        const lineIds = Object.keys(lines);
+                        const companyData = companyNames[companyId];
+                        const cName = companyData?.name || companyId;
 
-                            // Sort lines
-                            const sortedLines = sortMode === 'usage'
-                                ? allShinkansenLines.sort((a, b) => {
-                                    const getUsage = (l: { id: string, companyId: string }) => {
-                                        const key = normalizeKey(`${getCompanyName(l.companyId)}::${getLineName(l.id)}`);
-                                        return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
-                                    };
-                                    return getUsage(b) - getUsage(a);
-                                })
-                                : allShinkansenLines.sort((a, b) => getLineName(a.id).localeCompare(getLineName(b.id), 'ja'));
+                        const allLinesSelected = lineIds.every(l => selectedLines.includes(normalizeKey(`${cName}::${getLineName(l)}`)));
+                        const someLinesSelected = lineIds.some(l => selectedLines.includes(normalizeKey(`${cName}::${getLineName(l)}`)));
 
-                            return (
-                                <div style={{ marginTop: '8px', marginLeft: '4px' }}>
-                                    {sortedLines.map(l => (
-                                        <SidebarLineItem
-                                            key={`${l.companyId}-${l.id}`}
-                                            lineId={l.id}
-                                            cName={getCompanyName(l.companyId)}
-                                            getLineName={getLineName}
-                                            getLineEnName={getLineEnName}
-                                            registerLineRef={registerLineRef}
-                                            onLineClick={onLineClick}
-                                            onToggleLine={onToggleLine}
-                                            selectedLines={selectedLines}
-                                            activeLine={activeLine}
-                                            lineLengths={lineLengths}
-                                            visitedLineLengths={visitedLineLengths}
-                                        />
-                                    ))}
-                                </div>
-                            );
-                        })()
-                    ) : (
-                        sortCompaniesForRender(Object.entries(companies)).map(([companyId, lines]) => {
-                            const isExpanded = expandedCompanies[companyId];
-                            const lineIds = Object.keys(lines);
-                            const cName = getCompanyName(companyId);
-                            const compositeKeys = lineIds.map(l => `${cName}::${getLineName(l)}`);
-                            const allLinesSelected = compositeKeys.every(k => selectedLines.includes(k));
-                            const someLinesSelected = compositeKeys.some(k => selectedLines.includes(k));
+                        const companyTotalLines = lineIds.length;
+                        const companyVisitedCount = lineIds.filter(l => (visitedLineLengths[normalizeKey(`${cName}::${getLineName(l)}`)] || 0) > 0).length;
 
-                            const companyTotalLines = lineIds.length;
-                            const companyVisitedCount = lineIds.filter(l => {
-                                const key = normalizeKey(`${cName}::${getLineName(l)}`);
-                                return (visitedLineLengths[key] || 0) > 0;
-                            }).length;
-
-                            return (
-                                <div key={companyId} style={{ marginTop: '8px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={allLinesSelected}
-                                            ref={input => {
-                                                if (input) {
-                                                    input.indeterminate = someLinesSelected && !allLinesSelected;
-                                                }
-                                            }}
-                                            onChange={() => onToggleCompany(companyId, lines)}
-                                            style={{ marginRight: '8px', cursor: 'pointer' }}
-                                        />
-                                        <span
-                                            onClick={() => toggleCompany(companyId)}
-                                            style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
-                                        >
-                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                    {getCompanyName(companyId)}
-                                                </span>
-                                                <span style={{
-                                                    fontSize: '10px',
-                                                    fontWeight: '400',
-                                                    color: '#555',
-                                                    marginTop: '-2px',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
-                                                }}>
-                                                    {getCompanyEnName(companyId)}
-                                                </span>
-                                            </div>
-                                            <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
-                                                ({companyVisitedCount}/{companyTotalLines})
+                        return (
+                            <div key={companyId} style={{ marginTop: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={allLinesSelected}
+                                        ref={input => {
+                                            if (input) {
+                                                input.indeterminate = someLinesSelected && !allLinesSelected;
+                                            }
+                                        }}
+                                        onChange={() => onToggleCompany(companyId, lines)}
+                                        style={{ marginRight: '8px', cursor: 'pointer' }}
+                                    />
+                                    <span
+                                        onClick={() => toggleCompany(companyId)}
+                                        style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
+                                    >
+                                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {translateName(cName, language, getCompanyEnName(companyId))}
                                             </span>
-                                            <span style={{ flexShrink: 0, fontSize: '10px' }}>
-                                                {isExpanded ? '▼' : '▶'}
+                                            <span style={{
+                                                fontSize: '10px',
+                                                fontWeight: '400',
+                                                color: '#555',
+                                                marginTop: '-2px',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                 {language === 'en' ? cName : getCompanyEnName(companyId)}
                                             </span>
-                                            {(() => {
-                                                const totalLen = lineIds.reduce((sum, l) => {
-                                                    const key = normalizeKey(`${cName}::${getLineName(l)}`);
-                                                    return sum + (lineLengths[key] || 0);
-                                                }, 0);
-                                                const visitedLen = lineIds.reduce((sum, l) => {
-                                                    const key = normalizeKey(`${cName}::${getLineName(l)}`);
-                                                    return sum + (visitedLineLengths[key] || 0);
-                                                }, 0);
-                                                const companyPercent = totalLen > 0 ? (visitedLen / totalLen) * 100 : 0;
-                                                const colors = getProgressColor(companyPercent);
-                                                return (
-                                                    <span style={{
-                                                        fontSize: '10px',
-                                                        color: colors.text,
-                                                        flexShrink: 0,
-                                                        backgroundColor: colors.bg,
-                                                        padding: '1px 6px',
-                                                        borderRadius: '8px',
-                                                        fontWeight: '800',
-                                                        transition: 'all 0.3s ease'
-                                                    }}>
-                                                        {companyPercent.toFixed(1)}%
-                                                    </span>
-                                                );
-                                            })()}
-                                        </span>
-                                    </div>
-                                    {isExpanded && (
-                                        <div style={{ marginLeft: '22px' }}>
-                                            {sortLines(lineIds, companyId).map(lId => (
-                                                <SidebarLineItem
-                                                    key={lId}
-                                                    lineId={lId}
-                                                    cName={cName}
-                                                    getLineName={getLineName}
-                                                    getLineEnName={getLineEnName}
-                                                    registerLineRef={registerLineRef}
-                                                    onLineClick={onLineClick}
-                                                    onToggleLine={onToggleLine}
-                                                    selectedLines={selectedLines}
-                                                    activeLine={activeLine}
-                                                    lineLengths={lineLengths}
-                                                    visitedLineLengths={visitedLineLengths}
-                                                />
-                                            ))}
                                         </div>
-                                    )}
+                                        <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
+                                            ({companyVisitedCount}/{companyTotalLines})
+                                        </span>
+                                    </span>
                                 </div>
-                            );
-                        })
-                    )}
+                                {isExpanded && (
+                                    <div style={{ marginLeft: '22px' }}>
+                                        {sortLines(lineIds, companyId).map(lId => (
+                                            <SidebarLineItem
+                                                key={lId}
+                                                lineId={lId}
+                                                cName={cName}
+                                                lineData={lineNames[lId]}
+                                                language={language}
+                                                registerLineRef={registerLineRef}
+                                                onLineClick={onLineClick}
+                                                onToggleLine={onToggleLine}
+                                                selectedLines={selectedLines}
+                                                activeLine={activeLine}
+                                                lineLengths={lineLengths}
+                                                visitedLineLengths={visitedLineLengths}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
