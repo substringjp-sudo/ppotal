@@ -24,6 +24,7 @@ interface StationsProps {
     railData: RailData;
     handleStationClick: (id: string, lines?: string[]) => void;
     handleStationMouseDown: (id: string, coords: [number, number]) => void;
+    onStationHover?: (id: string | null) => void;
 }
 
 const Stations: React.FC<StationsProps> = ({
@@ -39,7 +40,8 @@ const Stations: React.FC<StationsProps> = ({
     isMobile,
     railData,
     handleStationClick,
-    handleStationMouseDown
+    handleStationMouseDown,
+    onStationHover
 }) => {
     if (!processedStations || effectiveZoom === 0) return null;
 
@@ -67,7 +69,12 @@ const Stations: React.FC<StationsProps> = ({
                 type: 'Feature',
                 id: `node-${id}`,
                 geometry: { type: 'Point', coordinates: [data.centroid[1], data.centroid[0]] },
-                properties: { type: 'node', stationId: id, isUsed: data.isUsed }
+                properties: {
+                    type: 'node',
+                    stationId: id,
+                    isUsed: data.isUsed,
+                    isTransfer: data.lines.length > 1
+                }
             });
 
             // Platforms (Zoom 14+)
@@ -90,16 +97,17 @@ const Stations: React.FC<StationsProps> = ({
     // 3. Constant styles for the Stage
     const nodeStyle = (feature: any) => {
         const isUsed = feature.properties.isUsed;
+        const isTransfer = feature.properties.isTransfer;
         let radius = 3;
         if (effectiveZoom === 12) radius = 5;
         if (effectiveZoom >= 14) radius = 7;
 
+        if (isTransfer) radius *= 1.3;
+
         return {
             radius: radius,
-            fillColor: isUsed ? '#ff9800' : '#ffffff',
-            color: '#333333',
-            weight: 2,
-            opacity: 1,
+            fillColor: isUsed ? '#ff9800' : '#1a1a1a', // Extremely dark grey
+            stroke: false, // Clean borderless look
             fillOpacity: 1,
             pane: 'station-interact'
         };
@@ -109,12 +117,70 @@ const Stations: React.FC<StationsProps> = ({
         color: '#666666',
         weight: 4,
         opacity: 0.8,
-        pane: 'station-interact'
+        pane: 'station-interact',
+        interactive: false // Platforms shouldn't block node hover
     };
 
     const combinedStyle = (feature: any) => {
         if (feature.properties.type === 'platform') return platformStyle;
         return nodeStyle(feature);
+    };
+
+    const onEachStation = (feature: any, layer: L.Layer) => {
+        if (feature.properties.type !== 'node') return;
+
+        const id = feature.properties.stationId;
+        const station = processedStations![id];
+        if (!station) return;
+
+        const primaryName = language === 'en' ? (station.name_en || station.name) : station.name;
+
+        // Build formatted lines for tooltip
+        const lineList = station.lines.map(l => {
+            const [company, line] = l.includes('::') ? l.split('::') : ['Unknown', l];
+            const corp = (railData.companies as any)[company];
+            const lineData = (railData.lines as any)[line];
+            const dispCorp = language === 'en' ? (corp?.name_en || corp?.name || company) : (corp?.name || company);
+            const dispLine = language === 'en' ? (lineData?.name_en || lineData?.name || line) : (lineData?.name || line);
+            return `<div style="display:flex; justify-content:space-between; gap:10px; font-size:11px; border-bottom:1px solid #eee; padding:2px 0;">
+                        <span style="opacity:0.7;">${dispCorp}</span>
+                        <span style="font-weight:600;">${dispLine}</span>
+                    </div>`;
+        }).join('');
+
+        const tooltipContent = `
+            <div style="padding:4px; min-width:140px;">
+                <div style="font-weight:bold; font-size:14px; border-bottom:2px solid #333; margin-bottom:4px; padding-bottom:2px;">${primaryName}</div>
+                <div>${lineList}</div>
+            </div>
+        `;
+
+        if (!isMobile) {
+            layer.bindTooltip(tooltipContent, {
+                sticky: true,
+                direction: 'top',
+                offset: [0, -10],
+                opacity: 0.9,
+                pane: 'top-tooltips'
+            });
+        }
+
+        layer.on({
+            click: (e) => {
+                L.DomEvent.stopPropagation(e);
+                handleStationClick(id);
+            },
+            mousedown: (e) => {
+                L.DomEvent.stopPropagation(e);
+                handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
+            },
+            mouseover: () => {
+                if (onStationHover) onStationHover(id);
+            },
+            mouseout: () => {
+                if (onStationHover) onStationHover(null);
+            }
+        });
     };
 
     // 4. Force re-render key for data changes
@@ -131,24 +197,25 @@ const Stations: React.FC<StationsProps> = ({
                 style={combinedStyle as any}
                 pointToLayer={(feature, latlng) => {
                     if (feature.properties.type === 'node') {
-                        return L.circleMarker(latlng, nodeStyle(feature));
+                        const style = nodeStyle(feature);
+                        const mainMarker = L.circleMarker(latlng, style);
+
+                        if (feature.properties.isTransfer) {
+                            const innerDot = L.circleMarker(latlng, {
+                                radius: style.radius * 0.35,
+                                fillColor: '#ffffff', // Clean white dot for transfer hubs
+                                stroke: false,
+                                fillOpacity: 1.0,
+                                interactive: false,
+                                pane: 'station-interact'
+                            });
+                            return L.layerGroup([mainMarker, innerDot]);
+                        }
+                        return mainMarker;
                     }
                     return (L as any).layerGroup();
                 }}
-                eventHandlers={{
-                    click: (e) => {
-                        const feature = (e as any).propagatedFrom.feature;
-                        if (feature && feature.properties.stationId) {
-                            handleStationClick(feature.properties.stationId);
-                        }
-                    },
-                    mousedown: (e) => {
-                        const feature = (e as any).propagatedFrom.feature;
-                        if (feature && feature.properties.stationId) {
-                            handleStationMouseDown(feature.properties.stationId, [e.latlng.lat, e.latlng.lng]);
-                        }
-                    }
-                }}
+                onEachFeature={onEachStation}
             />
 
             {/* DOM Layer: Interaction & Labels (Only high zoom) */}

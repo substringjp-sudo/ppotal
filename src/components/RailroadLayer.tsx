@@ -282,7 +282,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         onRailroadHover(feature.properties.id);
                         layer.openTooltip();
                         tooltipTimeout = null;
-                    }, 1000);
+                    }, 50);
                 }
             },
             mouseout: () => {
