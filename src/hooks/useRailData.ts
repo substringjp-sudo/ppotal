@@ -16,7 +16,6 @@ export const useRailData = () => {
                     platformsRes,
                     stationsRes,
                     sectionsRes,
-                    graphRes,
                     hierarchyRes,
                     jointsRes
                 ] = await Promise.all([
@@ -25,12 +24,11 @@ export const useRailData = () => {
                     fetch('/rail/platforms.json'),
                     fetch('/rail/stations.json'),
                     fetch('/rail/sections.json'),
-                    fetch('/rail/railroad_graph.json'),
                     fetch('/rail/railroad_hierarchy.json'),
                     fetch('/rail/joints.json')
                 ]);
 
-                if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok || !sectionsRes.ok || !graphRes.ok || !hierarchyRes.ok || !jointsRes.ok) {
+                if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok || !sectionsRes.ok || !hierarchyRes.ok || !jointsRes.ok) {
                     throw new Error('Failed to fetch one or more rail data files');
                 }
 
@@ -39,7 +37,6 @@ export const useRailData = () => {
                 const platforms = await platformsRes.json();
                 const stations = await stationsRes.json();
                 const sections = await sectionsRes.json();
-                const railroadGraph = await graphRes.json();
                 const hierarchy = await hierarchyRes.json();
                 const joints = await jointsRes.json();
 
@@ -49,7 +46,6 @@ export const useRailData = () => {
                     platforms,
                     stations,
                     sections,
-                    railroadGraph,
                     hierarchy,
                     joints
                 });

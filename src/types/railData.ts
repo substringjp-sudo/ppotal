@@ -43,14 +43,6 @@ export interface Section {
     length: number; // In integer meters
 }
 
-export interface RailroadGraphEdge {
-    [targetStationId: string]: number[]; // Array of Section IDs
-}
-
-export interface RailroadGraphData {
-    [sourceStationId: string]: RailroadGraphEdge;
-}
-
 export interface Joint {
     id: string;
     coordinates: [number, number];
@@ -63,7 +55,6 @@ export interface RailData {
     platforms: Record<string, Platform>;
     stations: Record<string, Station>;
     sections: { sections: Section[] };
-    railroadGraph: RailroadGraphData;
     hierarchy: any; // Keep hierarchy flexible for now or define strictly if needed
     joints: { joints: Joint[] };
 }
