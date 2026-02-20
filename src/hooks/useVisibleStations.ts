@@ -8,19 +8,56 @@ interface VisibleStationsProps {
     mapBounds: LatLngBounds | null;
     zoomLevel: number;
     lineIdMap: Map<string, string>;
+    isMoving?: boolean;
 }
+
+// Spatial Grid Constants
+const GRID_SIZE = 0.5; // 0.5 degree grid
 
 export const useVisibleStations = ({
     railroadNetwork,
     mapBounds,
     zoomLevel,
-    lineIdMap
+    lineIdMap,
+    isMoving = false
 }: VisibleStationsProps) => {
 
-    const visibleStations = useMemo(() => {
-        if (!railroadNetwork || !mapBounds || zoomLevel <= 8) return null;
-        const data: Record<string, ProcessedStation> = {};
+    // 1. Build Spatial Index Once
+    const spatialIndex = useMemo(() => {
+        if (!railroadNetwork || !railroadNetwork.stations) return null;
 
+        const grid = new Map<string, { stations: any[], joints: any[] }>();
+        const railData = railroadNetwork as RailData;
+
+        const getGridKey = (lat: number, lon: number) =>
+            `${Math.floor(lat / GRID_SIZE)}_${Math.floor(lon / GRID_SIZE)}`;
+
+        // Index Stations
+        Object.values(railData.stations).forEach((s: any) => {
+            const key = getGridKey(s.lat, s.lon);
+            if (!grid.has(key)) grid.set(key, { stations: [], joints: [] });
+            grid.get(key)!.stations.push(s);
+        });
+
+        // Index Joints
+        if (railData.joints && railData.joints.joints) {
+            railData.joints.joints.forEach((j: any) => {
+                const [lon, lat] = j.coordinates;
+                const key = getGridKey(lat, lon);
+                if (!grid.has(key)) grid.set(key, { stations: [], joints: [] });
+                grid.get(key)!.joints.push(j);
+            });
+        }
+
+        return grid;
+    }, [railroadNetwork]);
+
+    // 2. Perform Visible Filtering using Spatial Index
+    const visibleStations = useMemo(() => {
+        // CRITICAL OPTIMIZATION: Skip calculation while moving
+        if (!railroadNetwork || !mapBounds || zoomLevel <= 8 || isMoving || !spatialIndex) return null;
+
+        const data: Record<string, ProcessedStation> = {};
         const bounds = {
             s: mapBounds.getSouth(),
             n: mapBounds.getNorth(),
@@ -28,80 +65,76 @@ export const useVisibleStations = ({
             e: mapBounds.getEast()
         };
 
-        if (railroadNetwork.stations && railroadNetwork.platforms) {
-            // Granular Data (RailData)
-            const railData = railroadNetwork as RailData;
-            const companyNameMap = new Map<number, string>();
-            Object.values(railData.companies).forEach((c: any) => companyNameMap.set(c.id, c.name));
+        const railData = railroadNetwork as RailData;
+        const companyNameMap = new Map<number, string>();
+        Object.values(railData.companies).forEach((c: any) => companyNameMap.set(c.id, c.name));
 
-            const lineInfoMap = new Map<number, { name: string, companyId: number }>();
-            Object.values(railData.lines).forEach((l: any) => lineInfoMap.set(l.id, { name: l.name, companyId: l.corp_id }));
+        const lineInfoMap = new Map<number, { name: string, companyId: number }>();
+        Object.values(railData.lines).forEach((l: any) => lineInfoMap.set(l.id, { name: l.name, companyId: l.corp_id }));
 
-            Object.values(railData.stations).forEach((s: any) => {
-                if (s.lat < bounds.s || s.lat > bounds.n || s.lon < bounds.w || s.lon > bounds.e) return;
+        // Identify relevant grid cells
+        const minLat = Math.floor(bounds.s / GRID_SIZE);
+        const maxLat = Math.floor(bounds.n / GRID_SIZE);
+        const minLon = Math.floor(bounds.w / GRID_SIZE);
+        const maxLon = Math.floor(bounds.e / GRID_SIZE);
 
-                const stationLines = new Set<string>();
-                if (s.platform_ids) {
-                    s.platform_ids.forEach((pid: string) => {
-                        const p = railData.platforms[pid];
-                        if (p) {
-                            const cId = p.company;
-                            const lId = p.line;
-                            const companyName = companyNameMap.get(cId) || String(cId);
-                            const lInfo = lineInfoMap.get(lId);
-                            const lineName = lInfo ? lInfo.name : String(lId);
-                            stationLines.add(`${companyName}::${lineName}`);
-                        }
-                    });
-                }
+        for (let lat = minLat; lat <= maxLat; lat++) {
+            for (let lon = minLon; lon <= maxLon; lon++) {
+                const key = `${lat}_${lon}`;
+                const cell = spatialIndex.get(key);
+                if (!cell) continue;
 
-                const firstLine = Array.from(stationLines)[0] || "Unknown::Unknown";
+                // Process Stations in Cell
+                cell.stations.forEach((s: any) => {
+                    if (s.lat < bounds.s || s.lat > bounds.n || s.lon < bounds.w || s.lon > bounds.e) return;
 
-                // Collect Platforms (Geometries)
-                const platforms: any[] = [];
-                if (s.platform_ids) {
-                    s.platform_ids.forEach((pid: string) => {
-                        const p = railData.platforms[pid];
-                        if (p && p.geometries) {
-                            if (Array.isArray(p.geometries)) {
-                                platforms.push(...p.geometries);
+                    const stationLines = new Set<string>();
+                    if (s.platform_ids) {
+                        s.platform_ids.forEach((pid: string) => {
+                            const p = railData.platforms[pid];
+                            if (p) {
+                                const cId = p.company;
+                                const lId = p.line;
+                                const companyName = companyNameMap.get(cId) || String(cId);
+                                const lInfo = lineInfoMap.get(lId);
+                                const lineName = lInfo ? lInfo.name : String(lId);
+                                stationLines.add(`${companyName}::${lineName}`);
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
-                const name = s.name;
-                const node: StaticNode = {
-                    id: s.id,
-                    coord: [s.lat, s.lon],
-                    lineKey: firstLine,
-                    platforms: platforms.length > 0 ? platforms : undefined,
-                    group: undefined
-                };
+                    const firstLine = Array.from(stationLines)[0] || "Unknown::Unknown";
+                    const platforms: any[] = [];
+                    if (s.platform_ids) {
+                        s.platform_ids.forEach((pid: string) => {
+                            const p = railData.platforms[pid];
+                            if (p && p.geometries && Array.isArray(p.geometries)) platforms.push(...p.geometries);
+                        });
+                    }
 
-                if (!data[name]) {
-                    data[name] = {
-                        nodes: [node],
-                        centroid: [s.lat, s.lon],
-                        lines: Array.from(stationLines)
+                    const name = s.name;
+                    const node: StaticNode = {
+                        id: s.id,
+                        coord: [s.lat, s.lon],
+                        lineKey: firstLine,
+                        platforms: platforms.length > 0 ? platforms : undefined
                     };
-                } else {
-                    data[name].nodes.push(node);
-                    stationLines.forEach(l => {
-                        if (!data[name].lines.includes(l)) data[name].lines.push(l);
-                    });
 
-                    const n = data[name].nodes.length;
-                    data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + s.lat) / n;
-                    data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + s.lon) / n;
-                }
-            });
+                    if (!data[name]) {
+                        data[name] = { nodes: [node], centroid: [s.lat, s.lon], lines: Array.from(stationLines) };
+                    } else {
+                        data[name].nodes.push(node);
+                        stationLines.forEach(l => { if (!data[name].lines.includes(l)) data[name].lines.push(l); });
+                        const n = data[name].nodes.length;
+                        data[name].centroid[0] = (data[name].centroid[0] * (n - 1) + s.lat) / n;
+                        data[name].centroid[1] = (data[name].centroid[1] * (n - 1) + s.lon) / n;
+                    }
+                });
 
-            // 2b. Load Joints
-            if (railData.joints && railData.joints.joints) {
-                railData.joints.joints.forEach((j: any) => {
-                    const [lon, lat] = j.coordinates;
-                    if (lat < bounds.s || lat > bounds.n || lon < bounds.w || lon > bounds.e) return;
+                // Process Joints in Cell
+                cell.joints.forEach((j: any) => {
+                    const [jLon, jLat] = j.coordinates;
+                    if (jLat < bounds.s || jLat > bounds.n || jLon < bounds.w || jLon > bounds.e) return;
 
                     const id = j.id;
                     const jointLines: string[] = [];
@@ -115,14 +148,9 @@ export const useVisibleStations = ({
                         });
                     }
 
-                    // For joints, we don't have a name, so we use ID as key
                     data[id] = {
-                        nodes: [{
-                            id: id,
-                            coord: [lat, lon],
-                            lineKey: jointLines[0] || ""
-                        }],
-                        centroid: [lat, lon],
+                        nodes: [{ id: id, coord: [jLat, jLon], lineKey: jointLines[0] || "" }],
+                        centroid: [jLat, jLon],
                         lines: jointLines,
                         isJoint: true
                     };
@@ -131,7 +159,7 @@ export const useVisibleStations = ({
         }
 
         return data;
-    }, [railroadNetwork, mapBounds, zoomLevel, lineIdMap]);
+    }, [railroadNetwork, mapBounds, zoomLevel, isMoving, spatialIndex]);
 
     return { visibleStations };
 };

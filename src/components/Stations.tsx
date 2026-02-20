@@ -25,7 +25,8 @@ interface StationsProps {
     language: Language;
     isMobile: boolean;
     selectedStation?: string;
-    isEditMode?: boolean; // New prop
+    isEditMode?: boolean;
+    isMoving?: boolean;
 }
 
 const Stations: React.FC<StationsProps> = ({
@@ -45,7 +46,8 @@ const Stations: React.FC<StationsProps> = ({
     language,
     isMobile,
     selectedStation,
-    isEditMode
+    isEditMode,
+    isMoving = false
 }) => {
     if (!processedStations) return null;
 
@@ -88,6 +90,7 @@ const Stations: React.FC<StationsProps> = ({
                     isMobile={isMobile}
                     selectedStation={selectedStation}
                     isEditMode={isEditMode}
+                    isMoving={isMoving}
                 />
             ))}
         </>

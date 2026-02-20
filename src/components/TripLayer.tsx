@@ -1,62 +1,70 @@
 import React from 'react';
-import { Polyline, Tooltip } from 'react-leaflet';
+import { GeoJSON } from 'react-leaflet';
 import { Trip } from '../types/trip';
 
 interface TripLayerProps {
     recordedTrips: Trip[];
     zoomLevel: number;
+    isMoving?: boolean;
 }
 
-const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel }) => {
-    if (!recordedTrips || recordedTrips.length === 0) return null;
+const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel, isMoving = false }) => {
+    const geoJsonData = React.useMemo(() => {
+        if (!recordedTrips || recordedTrips.length === 0) return null;
+
+        return {
+            type: 'FeatureCollection',
+            features: recordedTrips.flatMap(trip => {
+                if (!trip.geometries) return [];
+                return trip.geometries.map((segment: any, idx: number) => ({
+                    type: 'Feature',
+                    properties: { id: trip.id, start: trip.start, end: trip.end },
+                    geometry: { type: 'LineString', coordinates: segment }
+                }));
+            })
+        };
+    }, [recordedTrips]);
+
+    if (!geoJsonData) return null;
 
     const weightFactor = zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0;
     const baseWeight = 6;
     const dynamicWeight = baseWeight * weightFactor;
 
+    const baseStyle = {
+        color: '#2ecc71',
+        weight: dynamicWeight,
+        opacity: 0.8,
+        lineCap: 'round',
+        lineJoin: 'round',
+        pane: 'ui-elements'
+    } as any;
+
+    const casingStyle = {
+        color: '#000000',
+        weight: dynamicWeight + 1.2,
+        opacity: 0.4,
+        lineCap: 'round',
+        lineJoin: 'round',
+        pane: 'ui-elements'
+    } as any;
+
     return (
         <>
-            {recordedTrips.map((trip) => (
-                <React.Fragment key={trip.id}>
-                    {trip.geometries && trip.geometries.map((segment: any, idx: number) => {
-                        const positions = segment.map((c: any) => [c[1], c[0]] as [number, number]);
-                        return (
-                            <React.Fragment key={`${trip.id}-${idx}`}>
-                                {/* Trip Casing - Only show at zoom 10+ */}
-                                {zoomLevel >= 10 && (
-                                    <Polyline
-                                        positions={positions}
-                                        pathOptions={{
-                                            color: '#000000',
-                                            weight: dynamicWeight + 1.2,
-                                            opacity: 0.4,
-                                            lineCap: 'round',
-                                            lineJoin: 'round',
-                                            pane: 'ui-elements'
-                                        }}
-                                        interactive={false}
-                                    />
-                                )}
-                                {/* Main Trip Line */}
-                                <Polyline
-                                    positions={positions}
-                                    pathOptions={{
-                                        color: '#2ecc71', // Green for used/visited
-                                        weight: dynamicWeight,
-                                        opacity: 0.8,
-                                        lineCap: 'round',
-                                        lineJoin: 'round',
-                                        pane: 'ui-elements'
-                                    }}
-                                    interactive={false}
-                                >
-                                    <Tooltip sticky>Trip: {trip.start} ↔ {trip.end}</Tooltip>
-                                </Polyline>
-                            </React.Fragment>
-                        );
-                    })}
-                </React.Fragment>
-            ))}
+            {zoomLevel >= 10 && !isMoving && (
+                <GeoJSON
+                    key={`trip-casing-${zoomLevel}`}
+                    data={geoJsonData as any}
+                    style={casingStyle}
+                    interactive={false}
+                />
+            )}
+            <GeoJSON
+                key={`trip-base-${zoomLevel}`}
+                data={geoJsonData as any}
+                style={baseStyle}
+                interactive={false}
+            />
         </>
     );
 };

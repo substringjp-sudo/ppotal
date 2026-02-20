@@ -116,6 +116,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
     const [highlightedStations, setHighlightedStations] = useState<string[]>([]);
     const [stationMapping, setStationMapping] = useState<Map<string, string>>(new Map());
+    const [isMoving, setIsMoving] = useState(false);
+    const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const { prefectures, municipalities } = useMapData();
     const { railData } = useRailData();
@@ -129,7 +131,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         railroadNetwork,
         mapBounds,
         zoomLevel,
-        lineIdMap
+        lineIdMap,
+        isMoving
     });
 
     // 4. Interactions (Trip Recording / Dragging)
@@ -166,14 +169,11 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
     }, [lineIdMap, onLineMappingCreated]);
 
-    // Initialize Map State
     useEffect(() => {
         if (map) {
             setMapReady(true);
             setZoomLevel(map.getZoom());
             setMapBounds(map.getBounds());
-
-            // Allow map to update size when container changes (e.g. mobile bar)
             map.invalidateSize();
         }
     }, [map]);
@@ -185,10 +185,31 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (onSetActiveLine) onSetActiveLine(null);
             if (onMapClick) onMapClick();
         },
-        zoom: (e) => setZoomLevel(e.target.getZoom()),
-        zoomend: (e) => setZoomLevel(e.target.getZoom()),
-        move: (e) => setMapBounds(e.target.getBounds()),
-        moveend: (e) => setMapBounds(e.target.getBounds())
+        zoomstart: () => setIsMoving(true),
+        zoom: (e) => {
+            // Only update zoom level to whole numbers or specific steps to reduce re-renders
+            const z = e.target.getZoom();
+            if (Math.abs(z - zoomLevel) > 0.1) {
+                setZoomLevel(z);
+            }
+        },
+        zoomend: (e) => {
+            setZoomLevel(e.target.getZoom());
+            setIsMoving(false);
+        },
+        movestart: () => setIsMoving(true),
+        move: (e) => {
+            // Throttled bounds update
+            if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
+            moveEndTimeoutRef.current = setTimeout(() => {
+                setMapBounds(e.target.getBounds());
+            }, 150); // Increased throttle for smoother panning
+        },
+        moveend: (e) => {
+            setMapBounds(e.target.getBounds());
+            setIsMoving(false);
+            if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
+        }
     });
 
     // Handle Active Line Detail Data
@@ -339,17 +360,17 @@ const MapPane: React.FC<MapPaneProps> = ({
                     prefectures={prefectures}
                     onPrefectureClick={() => { }}
                     getColor={getColor}
-                    interactive={zoomLevel <= 8}
+                    interactive={zoomLevel <= 8 && !isMoving}
                     zoom={zoomLevel}
                 />
-                {zoomLevel > 8 && municipalities && (
+                {zoomLevel > 8 && municipalities && !isMoving && (
                     <MunicipalMap
                         municipalities={municipalities}
                         getColor={getColor}
                         zoom={zoomLevel}
                     />
                 )}
-                {zoomLevel > 8 && prefectures &&
+                {zoomLevel > 8 && prefectures && !isMoving &&
                     <JapanMap
                         prefectures={prefectures}
                         getColor={getColor}
@@ -373,10 +394,11 @@ const MapPane: React.FC<MapPaneProps> = ({
                 onRailroadHover={handleRailroadHover}
                 zoomLevel={zoomLevel}
                 isMobile={isMobile}
+                isMoving={isMoving}
             />
 
             <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
-                <TripLayer recordedTrips={recordedTrips} zoomLevel={zoomLevel} />
+                <TripLayer recordedTrips={recordedTrips} zoomLevel={zoomLevel} isMoving={isMoving} />
                 {dragPath && dragPath.length > 0 && (
                     <React.Fragment>
                         {dragPath.map((segment, idx) => (
@@ -440,6 +462,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         isMobile={isMobile}
                         selectedStation={selectedStation}
                         isEditMode={isEditMode}
+                        isMoving={isMoving}
                     />
                 }
             </Pane>

@@ -16,6 +16,7 @@ interface RailroadLayerProps {
     onRailroadHover: (lineId: string | null) => void;
     zoomLevel: number;
     isMobile: boolean;
+    isMoving?: boolean;
 }
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
@@ -26,7 +27,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     onRailroadClick,
     onRailroadHover,
     zoomLevel,
-    isMobile
+    isMobile,
+    isMoving = false
 }) => {
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
@@ -236,8 +238,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     return (
         <>
-            {/* 1. Visual Highlight (Bottom) */}
-            {highlightData && (
+            {/* 1. Visual Highlight (Bottom) - Hide during move for performance */}
+            {highlightData && !isMoving && (
                 <GeoJSON
                     key={`vis-highlight-${activeLine}-${hoveredLine}`}
                     data={highlightData as any}
@@ -247,8 +249,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 />
             )}
 
-            {/* 2. Line Casing (Outlines) - Only show at zoom 10+ */}
-            {zoomLevel >= 10 && (
+            {/* 2. Line Casing (Outlines) - Only show at zoom 10+ and NOT moving */}
+            {zoomLevel >= 10 && !isMoving && (
                 <GeoJSON
                     key="vis-casing"
                     data={geoJsonData as any}
@@ -265,16 +267,20 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 style={baseStyle}
                 interactive={false}
                 pane="railroad-lines"
+                {...({ smoothFactor: dynamicSmoothFactor } as any)}
             />
 
-            {/* 3. Invisible Interaction Hit Area (TOPMOST SHARED) */}
-            <GeoJSON
-                key="hit-area"
-                data={geoJsonData as any}
-                style={hitAreaStyle}
-                onEachFeature={onEachFeature}
-                pane="station-interact"
-            />
+            {/* 4. Invisible Interaction Hit Area - ONLY active when not moving */}
+            {!isMoving && (
+                <GeoJSON
+                    key="hit-area"
+                    data={geoJsonData as any}
+                    style={hitAreaStyle}
+                    onEachFeature={onEachFeature}
+                    pane="station-interact"
+                    {...({ smoothFactor: dynamicSmoothFactor } as any)}
+                />
+            )}
         </>
     );
 };

@@ -24,8 +24,9 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
         // Removed simplification (smoothFactor) to avoid gaps between neighboring boundaries.
         if (outlineOnly) {
             let weight = 1.5;
-            if (zoom <= 7) weight = 0.5;
-            else if (zoom <= 9) weight = 1.0;
+            const z = Math.round(zoom); // Round zoom for stable styles
+            if (z <= 7) weight = 0.5;
+            else if (z <= 9) weight = 1.0;
 
             return {
                 weight: weight,
@@ -36,7 +37,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
         }
 
         let weight = 1.5;
-        if (zoom <= 7) weight = 1;
+        if (Math.round(zoom) <= 7) weight = 1;
 
         return {
             fillColor: '#ffffff',
@@ -45,7 +46,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
             opacity: 0.8,
             color: '#eeeeee',
         };
-    }, [getColor, outlineOnly, zoom]);
+    }, [outlineOnly, zoom]);
 
     if (!prefectures) {
         return null;
@@ -65,6 +66,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
             style={style}
             onEachFeature={onEachFeature}
             interactive={interactive}
+            {...({ smoothFactor: zoom <= 8 ? 2.5 : 1.0 } as any)}
         />
     );
 };

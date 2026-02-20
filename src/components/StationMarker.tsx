@@ -27,6 +27,7 @@ interface StationMarkerProps {
     isMobile: boolean;
     selectedStation?: string;
     isEditMode?: boolean;
+    isMoving?: boolean;
 }
 
 const StationMarker: React.FC<StationMarkerProps> = ({
@@ -47,7 +48,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     language,
     isMobile,
     selectedStation,
-    isEditMode = false
+    isEditMode = false,
+    isMoving = false
 }) => {
     const isHighlighted = highlightedStations.includes(name);
     const isVisited = visitedStations.has(name);
@@ -213,8 +215,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
 
     return (
         <React.Fragment>
-            {/* Group Border (Convex Hull) */}
-            {zoom >= 14 && hullPoints && hullPoints.length > 2 && (
+            {/* Group Border (Convex Hull) - ONLY when not moving */}
+            {zoom >= 14 && hullPoints && hullPoints.length > 2 && !isMoving && (
                 <Polyline
                     positions={hullPoints}
                     pathOptions={{
@@ -231,7 +233,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                 />
             )}
 
-            {zoom >= 12 && (
+            {/* Labels - Only when not moving to prevent floating text lag */}
+            {zoom >= 14 && !isMoving && (
                 <Marker
                     position={station.centroid}
                     icon={L.divIcon({
@@ -269,35 +272,33 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                     fill: !isLowZoom || isNodeSelected,
                     fillColor: isNodeVisited ? '#2ecc71' : (isDragging ? '#2ecc71' : lightenedColor),
                     fillOpacity: (isNodeSelected || isNodeVisited) ? 1 : 0.8,
-                    stroke: zoom >= 10, // Show border only at zoom 10+
-                    color: '#000000', // Black border
-                    weight: (isLowZoom ? 0.5 : 1.2) * (isMobile ? 1.2 : 1), // Very thin, slightly thicker on mobile
+                    stroke: zoom >= 10,
+                    color: '#000000',
+                    weight: (isLowZoom ? 0.5 : 1.2) * (isMobile ? 1.2 : 1),
                     opacity: (isNodeSelected || isNodeVisited) ? 0.8 : 0.3,
                     className: isNodeVisited ? 'visited-station-glow' : ''
                 };
 
-                // Highlight selected station logic (Mobile only)
                 if (isStationSelected && isMobile) {
                     stationStyle.stroke = true;
-                    stationStyle.color = '#e74c3c'; // Red highlight
+                    stationStyle.color = '#e74c3c';
                     stationStyle.weight = 8;
                     stationStyle.opacity = 1;
                     stationStyle.fillOpacity = 1;
                 }
 
-                const hasPlatforms = zoom >= 14 && node.platforms && node.platforms.length > 0;
+                const hasPlatforms = zoom >= 13 && node.platforms && node.platforms.length > 0 && !isMoving;
                 const handlers = createEventHandlers(node.coord);
 
                 return (
                     <React.Fragment key={`${node.id}-${idx}`}>
-                        {/* Platform Rendering Logic */}
+                        {/* Platform Rendering Logic - Skip when moving */}
                         {hasPlatforms && node.platforms!.map((plat, pidx) => {
                             const positions = plat.filter(pt => pt && pt.length >= 2).map(pt => [pt[1], pt[0]] as [number, number]);
                             if (positions.length < 2) return null;
 
                             return (
                                 <React.Fragment key={`plat-group-${pidx}`}>
-                                    {/* Visual Platform Line (Non-interactive) */}
                                     <Polyline
                                         positions={positions}
                                         pathOptions={{
@@ -309,18 +310,43 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                             pane: 'ui-elements'
                                         }}
                                     />
-                                    {/* Hit Box Line (Interactive, Higher Priority) */}
                                     <Polyline
                                         positions={positions}
                                         pathOptions={{
                                             stroke: true,
                                             color: '#000',
-                                            weight: 20, // Expanded hitbox for platforms
+                                            weight: 20,
                                             opacity: 0.0,
                                             lineCap: 'butt',
-                                            pane: 'station-interact', // Higher than railroad-lines
+                                            pane: 'station-interact',
+                                            interactive: !isMoving
+                                        }}
+                                        eventHandlers={!isMoving ? handlers : undefined}
+                                    />
+                                </React.Fragment>
+                            );
+                        })}
+
+                        {/* Dot Rendering */}
+                        {zoom >= 11 && (!hasPlatforms || isDragging) && (
+                            <React.Fragment>
+                                <CircleMarker
+                                    center={node.coord}
+                                    pathOptions={{ ...stationStyle, pane: 'ui-elements', interactive: false }}
+                                    radius={radius}
+                                />
+                                {!isMoving && (
+                                    <CircleMarker
+                                        center={node.coord}
+                                        pathOptions={{
+                                            stroke: false,
+                                            fill: true,
+                                            fillColor: '#000',
+                                            fillOpacity: 0.0,
+                                            pane: 'station-interact',
                                             interactive: true
                                         }}
+                                        radius={radius + 8}
                                         eventHandlers={handlers}
                                     >
                                         {!isMobile && !isEditMode && (
@@ -366,93 +392,8 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                                 </div>
                                             </Tooltip>
                                         )}
-                                    </Polyline>
-                                </React.Fragment>
-                            );
-                        })}
-
-                        {/* Hide dot if platforms are shown, unless dragging or anchor needed */}
-                        {(!hasPlatforms || isDragging) && (
-                            <React.Fragment>
-                                <CircleMarker
-                                    center={node.coord}
-                                    pathOptions={{ ...stationStyle, pane: 'ui-elements', interactive: false }}
-                                    radius={radius}
-                                />
-                                <CircleMarker
-                                    center={node.coord}
-                                    pathOptions={{
-                                        stroke: false,
-                                        fill: true,
-                                        fillColor: '#000',
-                                        fillOpacity: 0.0,
-                                        pane: 'station-interact',
-                                        interactive: true
-                                    }}
-                                    radius={radius + 8} // margin for hovering
-                                    eventHandlers={handlers}
-                                >
-                                    {!isMobile && !isEditMode && (
-                                        <Tooltip sticky pane="top-tooltips" offset={[20, -20]} direction="top" opacity={showTooltip ? (isDragging ? 0 : (isSelected ? 1 : 0.7)) : 0}>
-                                            <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
-                                                <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                                    {translateName(name, language, 'station')}
-                                                </div>
-                                                <div style={{ fontSize: '12px', color: '#333' }}>
-                                                    <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                        Available Lines
-                                                    </div>
-                                                    {formattedLines.map((fl, fidx) => (
-                                                        <div key={fidx} style={{
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            alignItems: 'center',
-                                                            gap: '12px',
-                                                            padding: '3px 0',
-                                                            borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                            color: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '#2980b9' : '#555',
-                                                            fontWeight: (selectedLines.some(sl => normalizeKey(sl) === normalizeKey(fl.key)) || (activeLine && normalizeKey(activeLine) === normalizeKey(fl.key))) ? '800' : '500'
-                                                        }}>
-                                                            <span style={{ fontSize: '10px', opacity: 0.8 }}>{fl.company}</span>
-                                                            <span>{translateName(fl.line, language, 'line')}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {isNodeVisited && (
-                                                    <div style={{
-                                                        marginTop: '8px',
-                                                        padding: '4px 8px',
-                                                        backgroundColor: '#2ecc71',
-                                                        color: '#fff',
-                                                        fontSize: '10px',
-                                                        fontWeight: 'bold',
-                                                        borderRadius: '4px',
-                                                        display: 'inline-block'
-                                                    }}>
-                                                        ✓ VISITED
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </Tooltip>
-                                    )}
-                                    {isMobile && isEditMode && isDragging && (
-                                        <Tooltip permanent direction="top" offset={[0, -32]} opacity={1}>
-                                            <div style={{
-                                                backgroundColor: '#2c3e50',
-                                                color: 'white',
-                                                padding: '4px 8px',
-                                                borderRadius: '4px',
-                                                fontSize: '12px',
-                                                fontWeight: 'bold',
-                                                whiteSpace: 'nowrap',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                                pointerEvents: 'none' // Ensure tooltip doesn't steal touches
-                                            }}>
-                                                Start: {translateName(name, language, 'station')}
-                                            </div>
-                                        </Tooltip>
-                                    )}
-                                </CircleMarker>
+                                    </CircleMarker>
+                                )}
                             </React.Fragment>
                         )}
                     </React.Fragment>

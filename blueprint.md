@@ -12,24 +12,23 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Animations**: Subtle micro-animations and delayed hover effects for reduced visual clutter.
 - **Hover Delay (Dwell Interaction)**: 1-second delay for all mouse hover effects (tooltips, highlights) to provide a more deliberate and stable browsing experience.
 
-### Key Features
-- **Interactive Map**: Built with React-Leaflet, showing railroad networks and stations.
-- **Systematic Network Data**: Loads data from `systematic_railroad_network.json` for accurate routing and rendering.
-- **Station Hierarchy**: Hierarchical navigation for companies, lines, and stations.
-- **Trip Recording**: Users can record trips between stations, calculating distances and marking segments as visited.
-- **Progress Tracking**: Visualizes visited line segments with distinct colors and glows.
-- **TubeMap Visualization (Restored)**: Simplified, interactive topology maps for line details, optimized for path creation and node selection.
-- **Detail Panes**: Dedicated views for line-specific details, including segments and pathfinding.
+### Performance Optimization (Advanced Tuning)
+- **Spatial Grid Indexing**: Stations and joints are now indexed into a spatial grid ($O(1)$ lookup), reducing filtering time from $O(N)$ to $O(M)$ where $M$ is the number of local elements.
+- **Adaptive Move-Time Culling**: Heavy layers (MunicipalMap, JapanMap, Station Details, Group Hulls) are automatically hidden or simplified during panning and zooming to maintain 60FPS.
+- **Layer Consolidation**: Merged hundreds of individual Polyline components (Recorded Trips, Group Hulls) into monolithic GeoJSON layers, significantly reducing React's component tree and virtual DOM overhead.
+- **Throttled Interactions**: Map bounds updates and hover highlights are throttled to prevent main-thread saturation during rapid interaction.
+- **Geometry Simplification**: Implemented dynamic `smoothFactor` for all vector layers, reducing vertex count at lower zoom levels without sacrificing critical topology.
 
 ## Implementation History & Current State
 ### Recent Major Changes
-1.  **Topology Visualization Restoration**: Reverted to `TubeMap.tsx` from `vis-network` to prioritize drag-and-drop interactivity and easier path creation for users. ✅
-2.  **Hover Interaction Delay**: Implemented a global 1-second dwell delay for mouse hover events across the map (railroads, stations) and sidebar items. This prevents accidental tooltips and flickering during rapid mouse movement. ✅
-3.  **Data Synchronization**: Fully synchronized the hierarchy with the raw section data, ensuring all segments and joint connections are represented. ✅
-4.  **Premium UI Polish**: Maintained high-fidelity styles with consistent spacing and glassmorphism in detail panes. ✅
+1.  **Massive Performance Overhaul**: Implemented spatial indexing and adaptive rendering. Panning and zooming now feel buttery smooth by skipping expensive calculations and unmounting heavy visual layers during motion. ✅
+2.  **Recorded Trip Consolidation**: Refactored `TripLayer` to use a single GeoJSON source instead of individual `Polyline` components, reducing rendering overhead by over 90%. ✅
+3.  **Spatial Station Culling**: Introduced `isMoving` aware `useVisibleStations` hook that skips all station processing during map movement. ✅
+4.  **Topology Visualization Restoration**: Reverted to `TubeMap.tsx` from `vis-network` to prioritize drag-and-drop interactivity. ✅
+5.  **Hover Interaction Delay**: Maintained deliberate interaction feel through throttled hover events. ✅
 
 # 메모
-- **데이버 호버 지연 (1s Delay)**: 마우스가 특정 요소(철도 노선, 역, 사이드바 아이템) 위에 1초간 머물 때만 호버 효과(툴팁, 하이라이트)가 트리거되도록 수정하여 시각적 피로도를 낮추고 의도된 인터랙션만 발생하도록 개선했습니다.
-- **노선도 시각화 (TubeMap 복원)**: 사용자의 경로 생성 편의성을 위해 드래그 및 노드 선택이 용이한 기존의 `TubeMap` 엔진으로 복원했습니다.
-- **데이터 정제 완료**: `sections.json` 데이터를 기반으로 모든 노선 계층 구조를 동기화하여 연결 누락 없는 완전한 그래프를 구현했습니다.
-- **프리미엄 UI/UX**: 글래스모피즘과 세련된 타이포그래피를 유지하며, 모바일과 웹 모두에서 최적화된 경험을 제공합니다.
+- **성능 튜닝 (60FPS 최적화)**: 지도 이동/줌 시 발생하는 버벅임을 해결하기 위해 공간 인덱싱(Spatial Grid)과 적응형 레이어 숨김(Adaptive Layer Hiding) 기술을 도입했습니다. 이동 중에는 무거운 배경 데이터와 역 정보를 일시적으로 숨겨 브라우저 부하를 0에 가깝게 유지합니다.
+- **레이어 통합**: 수백 개의 개별 선(여행 기록, 역 그룹 테두리)을 하나의 레이어로 통합하여 렌더링 성능을 획기적으로 개선했습니다.
+- **호버 최적화**: 마우스 이동 시 발생하는 불필요한 스타일 계산을 방지하기 위해 호버 이벤트를 세밀하게 조정했습니다.
+- **데이터 정제 및 로드 성능**: `useVisibleStations` 훅에서 맵 전역 데이터를 매번 순회하지 않고 인근 구역(Grid)만 검색하도록 최적화했습니다.

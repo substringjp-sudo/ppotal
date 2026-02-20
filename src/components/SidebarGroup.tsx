@@ -262,111 +262,156 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
             </div>
             {expanded && (
                 <div style={{ padding: '0 10px 10px 10px' }}>
-                    {sortCompaniesForRender(Object.entries(companies)).map(([companyId, lines]) => {
-                        const isExpanded = expandedCompanies[companyId];
-                        const lineIds = Object.keys(lines);
-                        const cName = getCompanyName(companyId);
-                        const compositeKeys = lineIds.map(l => `${cName}::${getLineName(l)}`);
-                        const allLinesSelected = compositeKeys.every(k => selectedLines.includes(k));
-                        const someLinesSelected = compositeKeys.some(k => selectedLines.includes(k));
+                    {groupKey === 'shinkansen' ? (
+                        // Special handling for Shinkansen: Flatten companies and just show lines
+                        (() => {
+                            // Flatten all Shinkansen lines
+                            const allShinkansenLines: { id: string, companyId: string }[] = [];
+                            Object.entries(companies).forEach(([companyId, lines]) => {
+                                Object.keys(lines).forEach(lineId => {
+                                    allShinkansenLines.push({ id: lineId, companyId });
+                                });
+                            });
 
-                        const companyTotalLines = lineIds.length;
-                        const companyVisitedCount = lineIds.filter(l => {
-                            const key = normalizeKey(`${cName}::${getLineName(l)}`);
-                            return (visitedLineLengths[key] || 0) > 0;
-                        }).length;
+                            // Sort lines
+                            const sortedLines = sortMode === 'usage'
+                                ? allShinkansenLines.sort((a, b) => {
+                                    const getUsage = (l: { id: string, companyId: string }) => {
+                                        const key = normalizeKey(`${getCompanyName(l.companyId)}::${getLineName(l.id)}`);
+                                        return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
+                                    };
+                                    return getUsage(b) - getUsage(a);
+                                })
+                                : allShinkansenLines.sort((a, b) => getLineName(a.id).localeCompare(getLineName(b.id), 'ja'));
 
-                        return (
-                            <div key={companyId} style={{ marginTop: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={allLinesSelected}
-                                        ref={input => {
-                                            if (input) {
-                                                input.indeterminate = someLinesSelected && !allLinesSelected;
-                                            }
-                                        }}
-                                        onChange={() => onToggleCompany(companyId, lines)}
-                                        style={{ marginRight: '8px', cursor: 'pointer' }}
-                                    />
-                                    <span
-                                        onClick={() => toggleCompany(companyId)}
-                                        style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
-                                    >
-                                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {getCompanyName(companyId)}
-                                            </span>
-                                            <span style={{
-                                                fontSize: '10px',
-                                                fontWeight: '400',
-                                                color: '#555',
-                                                marginTop: '-2px',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {getCompanyEnName(companyId)}
-                                            </span>
-                                        </div>
-                                        <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
-                                            ({companyVisitedCount}/{companyTotalLines})
-                                        </span>
-                                        <span style={{ flexShrink: 0, fontSize: '10px' }}>
-                                            {isExpanded ? '▼' : '▶'}
-                                        </span>
-                                        {(() => {
-                                            const totalLen = lineIds.reduce((sum, l) => {
-                                                const key = normalizeKey(`${cName}::${getLineName(l)}`);
-                                                return sum + (lineLengths[key] || 0);
-                                            }, 0);
-                                            const visitedLen = lineIds.reduce((sum, l) => {
-                                                const key = normalizeKey(`${cName}::${getLineName(l)}`);
-                                                return sum + (visitedLineLengths[key] || 0);
-                                            }, 0);
-                                            const companyPercent = totalLen > 0 ? (visitedLen / totalLen) * 100 : 0;
-                                            const colors = getProgressColor(companyPercent);
-                                            return (
+                            return (
+                                <div style={{ marginTop: '8px', marginLeft: '4px' }}>
+                                    {sortedLines.map(l => (
+                                        <SidebarLineItem
+                                            key={`${l.companyId}-${l.id}`}
+                                            lineId={l.id}
+                                            cName={getCompanyName(l.companyId)}
+                                            getLineName={getLineName}
+                                            getLineEnName={getLineEnName}
+                                            registerLineRef={registerLineRef}
+                                            onLineClick={onLineClick}
+                                            onToggleLine={onToggleLine}
+                                            selectedLines={selectedLines}
+                                            activeLine={activeLine}
+                                            lineLengths={lineLengths}
+                                            visitedLineLengths={visitedLineLengths}
+                                        />
+                                    ))}
+                                </div>
+                            );
+                        })()
+                    ) : (
+                        sortCompaniesForRender(Object.entries(companies)).map(([companyId, lines]) => {
+                            const isExpanded = expandedCompanies[companyId];
+                            const lineIds = Object.keys(lines);
+                            const cName = getCompanyName(companyId);
+                            const compositeKeys = lineIds.map(l => `${cName}::${getLineName(l)}`);
+                            const allLinesSelected = compositeKeys.every(k => selectedLines.includes(k));
+                            const someLinesSelected = compositeKeys.some(k => selectedLines.includes(k));
+
+                            const companyTotalLines = lineIds.length;
+                            const companyVisitedCount = lineIds.filter(l => {
+                                const key = normalizeKey(`${cName}::${getLineName(l)}`);
+                                return (visitedLineLengths[key] || 0) > 0;
+                            }).length;
+
+                            return (
+                                <div key={companyId} style={{ marginTop: '8px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allLinesSelected}
+                                            ref={input => {
+                                                if (input) {
+                                                    input.indeterminate = someLinesSelected && !allLinesSelected;
+                                                }
+                                            }}
+                                            onChange={() => onToggleCompany(companyId, lines)}
+                                            style={{ marginRight: '8px', cursor: 'pointer' }}
+                                        />
+                                        <span
+                                            onClick={() => toggleCompany(companyId)}
+                                            style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
+                                        >
+                                            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {getCompanyName(companyId)}
+                                                </span>
                                                 <span style={{
                                                     fontSize: '10px',
-                                                    color: colors.text,
-                                                    flexShrink: 0,
-                                                    backgroundColor: colors.bg,
-                                                    padding: '1px 6px',
-                                                    borderRadius: '8px',
-                                                    fontWeight: '800',
-                                                    transition: 'all 0.3s ease'
+                                                    fontWeight: '400',
+                                                    color: '#555',
+                                                    marginTop: '-2px',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
                                                 }}>
-                                                    {companyPercent.toFixed(1)}%
+                                                    {getCompanyEnName(companyId)}
                                                 </span>
-                                            );
-                                        })()}
-                                    </span>
-                                </div>
-                                {isExpanded && (
-                                    <div style={{ marginLeft: '22px' }}>
-                                        {sortLines(lineIds, companyId).map(lId => (
-                                            <SidebarLineItem
-                                                key={lId}
-                                                lineId={lId}
-                                                cName={cName}
-                                                getLineName={getLineName}
-                                                getLineEnName={getLineEnName}
-                                                registerLineRef={registerLineRef}
-                                                onLineClick={onLineClick}
-                                                onToggleLine={onToggleLine}
-                                                selectedLines={selectedLines}
-                                                activeLine={activeLine}
-                                                lineLengths={lineLengths}
-                                                visitedLineLengths={visitedLineLengths}
-                                            />
-                                        ))}
+                                            </div>
+                                            <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
+                                                ({companyVisitedCount}/{companyTotalLines})
+                                            </span>
+                                            <span style={{ flexShrink: 0, fontSize: '10px' }}>
+                                                {isExpanded ? '▼' : '▶'}
+                                            </span>
+                                            {(() => {
+                                                const totalLen = lineIds.reduce((sum, l) => {
+                                                    const key = normalizeKey(`${cName}::${getLineName(l)}`);
+                                                    return sum + (lineLengths[key] || 0);
+                                                }, 0);
+                                                const visitedLen = lineIds.reduce((sum, l) => {
+                                                    const key = normalizeKey(`${cName}::${getLineName(l)}`);
+                                                    return sum + (visitedLineLengths[key] || 0);
+                                                }, 0);
+                                                const companyPercent = totalLen > 0 ? (visitedLen / totalLen) * 100 : 0;
+                                                const colors = getProgressColor(companyPercent);
+                                                return (
+                                                    <span style={{
+                                                        fontSize: '10px',
+                                                        color: colors.text,
+                                                        flexShrink: 0,
+                                                        backgroundColor: colors.bg,
+                                                        padding: '1px 6px',
+                                                        borderRadius: '8px',
+                                                        fontWeight: '800',
+                                                        transition: 'all 0.3s ease'
+                                                    }}>
+                                                        {companyPercent.toFixed(1)}%
+                                                    </span>
+                                                );
+                                            })()}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                        );
-                    })}
+                                    {isExpanded && (
+                                        <div style={{ marginLeft: '22px' }}>
+                                            {sortLines(lineIds, companyId).map(lId => (
+                                                <SidebarLineItem
+                                                    key={lId}
+                                                    lineId={lId}
+                                                    cName={cName}
+                                                    getLineName={getLineName}
+                                                    getLineEnName={getLineEnName}
+                                                    registerLineRef={registerLineRef}
+                                                    onLineClick={onLineClick}
+                                                    onToggleLine={onToggleLine}
+                                                    selectedLines={selectedLines}
+                                                    activeLine={activeLine}
+                                                    lineLengths={lineLengths}
+                                                    visitedLineLengths={visitedLineLengths}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             )}
         </div>
