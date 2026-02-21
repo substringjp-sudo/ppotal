@@ -176,27 +176,30 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     </div>
                 </div>
 
-                <button
-                    onClick={() => {
-                        onClose();
-                        trackEvent('close_line_detail', 'ui_interaction', lineId);
-                    }}
-                    style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        backgroundColor: '#f1f2f6',
-                        border: 'none',
-                        fontSize: '20px',
-                        cursor: 'pointer',
-                        color: '#666',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    ×
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div id="tube-minimap-portal"></div>
+                    <button
+                        onClick={() => {
+                            onClose();
+                            trackEvent('close_line_detail', 'ui_interaction', lineId);
+                        }}
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            backgroundColor: '#f1f2f6',
+                            border: 'none',
+                            fontSize: '20px',
+                            cursor: 'pointer',
+                            color: '#666',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        ×
+                    </button>
+                </div>
             </div>
 
             <div style={{

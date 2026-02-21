@@ -215,8 +215,17 @@ const Stations: React.FC<StationsProps> = ({
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
         ) || (localHoveredStation === stationId);
 
-        // Standardized to black for a cleaner schematic look
-        const color = '#313131';
+        const isTransfer = lines.length > 1;
+
+        let color = '#313131'; // Standardized to black for schematic look (default)
+
+        // 8~11: Transfer stations = Black, Regular stations = Line Color
+        // 12+: All = Black
+        if (effectiveZoom >= 8 && effectiveZoom <= 11) {
+            if (!isTransfer) {
+                color = getColor(lineKey);
+            }
+        }
 
         // Match thickness with RailroadLayer: Stage-based
         let weight = 3.5;
@@ -264,10 +273,10 @@ const Stations: React.FC<StationsProps> = ({
     };
 
     const platformInteractionStyle = (feature: any) => {
-        // Broaden hit area for platforms more than nodes (user request)
+        // Reduced hit area for platforms based on user feedback
         return {
             color: 'transparent',
-            weight: isMobile ? 35 : 25,
+            weight: isMobile ? 22 : 12,
             opacity: 0,
             pane: 'railroad-lines', // Use same pane as railroad for event pass-through
             interactive: true,
