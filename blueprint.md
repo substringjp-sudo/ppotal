@@ -19,6 +19,9 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Throttled Interactions**: Map bounds updates and hover highlights are throttled to prevent main-thread saturation during rapid interaction.
 - **Geometry Simplification**: Implemented dynamic `smoothFactor` for all vector layers, reducing vertex count at lower zoom levels without sacrificing critical topology.
 - **ID-Based Lookup System**: Refactored the entire data flow to use numeric IDs (`companyId::lineId`) for line and company lookups. This eliminated name-based mapping errors and ensures 100% accuracy in data retrieval for translations, stats, and topology.
+- **Unified Interaction Layer**: Stations nodes and railroad lines are now co-located in a single interaction-capable Leaflet pane (`railroad-lines`). This eliminates "click-shadows" where transparent overlay containers used to block interactions with elements underneath.
+- **Stable Layer Rendering**: Interaction layers no longer unmount/remount on hover or selection change. Using `ref` and `setStyle` allows for high-frequency visual updates (highlights, glows) without losing event focus or causing browser jitters.
+- **Non-Blocking Overlay System**: All decorative and informational Leaflet panes (casing, glow, background, tooltips) are strictly configured with `pointer-events: none` to ensure 100% click pass-through to the core railroad network.
 - **Granular Trip Recording (ID-Based)**: Refactored the trip recording engine to capture exact station, section, and joint IDs. This transition from coordinate-based guessing to precise graph tracking allows for perfect reconstruction of journeys and zero-latency path highlighting.
 
 
@@ -32,10 +35,10 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 6. **ID-Based Refactoring**: Migrated `RoutingGraph`, `Sidebar`, `LineDetailPane`, and map layers to a robust ID-based lookup system. This fixed missing translations and 0/0km stats. ✅
 7. **Integrated Record Highlighting**: Merged `TripLayer` into `RailroadLayer`. Recorded trips are now rendered as high-fidelity railroad sections with gold glow and borders, rather than simplified overlay lines. ✅
 8. **Precision Trip Logic**: Updated `useTripRecorder` and `graphUtils` to store and retrieve specific `sectionIds` and `nodeIds`. ✅
-
+9. **Map Interaction Fixes**: Resolved the issue where lines and stations were unclickable due to pane overlap and frequent layer remounting. ✅
+10. **Trip Drawing Fix**: Corrected the coordinate order [lon, lat] for the trip recorder's visual tail. ✅
+11. **Enhanced Visual Data (Bilingual)**: Upgraded trip history and station tooltips to display full company (운영회사) and line names (노선명) in both Japanese and English. Tooltips now feature color-coded "line boxes" for better readability at transfer stations. ✅
+12. **Transfer Visuals & Interaction**: Improved transfer station markers with larger inner dots (50% radius) and fixed event bubbling to ensure tooltips appear even when hovering precisely over the inner dot. ✅
 
 # 메모
-- **성능 튜닝 (60FPS 최적화)**: 지도 이동/줌 시 발생하는 버벅임을 해결하기 위해 공간 인덱싱(Spatial Grid)과 적응형 레이어 숨김(Adaptive Layer Hiding) 기술을 도입했습니다. 이동 중에는 무거운 배경 데이터와 역 정보를 일시적으로 숨겨 브라우저 부하를 0에 가깝게 유지합니다.
-- **레이어 통합**: 수백 개의 개별 선(여행 기록, 역 그룹 테두리)을 하나의 레이어로 통합하여 렌더링 성능을 획기적으로 개선했습니다.
-- **호버 최적화**: 마우스 이동 시 발생하는 불필요한 스타일 계산을 방지하기 위해 호버 이벤트를 세밀하게 조정했습니다.
-- **데이터 정제 및 로드 성능**: `useVisibleStations` 훅에서 맵 전역 데이터를 매번 순회하지 않고 인근 구역(Grid)만 검색하도록 최적화했습니다.
+- **상호작용 최적화 (Interaction & Stability)**: 지도 위에서 노선이나 역이 클릭되지 않던 근본적인 원인들(레이어 중첩, 잦은 리렌더링 등)을 모두 해결했습니다. 이제 모든 인터랙티브 레이어는 `ref`와 `setStyle`을 통해 상태 변화 시 끊김 없이 시각적으로 업데이트되며, 마우스 클릭이 다른 투명 레이어에 의해 방해받지 않도록 CSS와 Pane 구조를 개선했습니다.

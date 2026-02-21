@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useRef, useEffect } from 'react';
 import L from 'leaflet';
 import { GeoJSON } from 'react-leaflet';
 import { MapStyleSettings } from '../app/page';
@@ -22,6 +22,7 @@ interface StationsProps {
     language: Language;
     isMobile: boolean;
     railData: RailData;
+    mapBounds: L.LatLngBounds | null;
     handleStationClick: (id: string, lines?: string[]) => void;
     handleStationMouseDown: (id: string, coords: [number, number]) => void;
     onStationHover?: (id: string | null) => void;
@@ -36,35 +37,58 @@ const Stations: React.FC<StationsProps> = ({
     activeLine,
     hoveredLine,
     visitedStations,
+    settings,
     language,
     isMobile,
     railData,
+    mapBounds,
     handleStationClick,
     handleStationMouseDown,
     onStationHover
 }) => {
-    if (!processedStations || effectiveZoom === 0) return null;
+    if (!processedStations) return null;
 
-    // 1. Filter stations once for this stage
-    const filteredEntries = useMemo<[string, ProcessedStation][]>(() => {
-        return Object.entries(processedStations).filter(([id, data]) => {
-            const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
-            const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
-            const isSelected = data.lines.some(l =>
-                selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
-            );
-            if (isFilterActive && !isSelected) return false;
-            if (effectiveZoom === 8 && data.lines.length < 2) return false; // Hide minor stations at zoom 8-11
-            if (data.isJoint) return false;
-            return true;
-        });
-    }, [processedStations, selectedLines, activeLine, hoveredLine, effectiveZoom]);
+    // 1. Process all entries (Raw data only - stable)
+    const allEntries = useMemo(() => {
+        return Object.entries(processedStations).map(([id, data]) => {
+            let isVisibleAtZoom = true;
+            if (effectiveZoom === 8 && data.lines.length < 2) isVisibleAtZoom = false;
+            if (effectiveZoom < 8) isVisibleAtZoom = false;
+            if (data.isJoint) isVisibleAtZoom = false;
 
-    // 2. Prepare GeoJSON for "Baked" visuals (Nodes and Platforms)
+            return { id, data, isVisibleAtZoom };
+        }).filter(item => item.isVisibleAtZoom);
+    }, [processedStations, effectiveZoom]);
+
+    // 2. Prepare GeoJSON for "Baked" visuals (STABLE during hover)
     const visualsGeoJson = useMemo(() => {
         const features: any[] = [];
-        filteredEntries.forEach(([id, data]) => {
-            // Node point
+        const platformGroups = new Map<string, { coords: number[][][], lineKey: string }>();
+
+        allEntries.forEach(({ id, data }) => {
+            if (data.nodes) {
+                const primaryLine = data.lines[0] || 'Unknown';
+                if (!platformGroups.has(primaryLine)) {
+                    platformGroups.set(primaryLine, { coords: [], lineKey: primaryLine });
+                }
+                data.nodes.forEach(node => {
+                    if (node.platforms) {
+                        platformGroups.get(primaryLine)!.coords.push(...node.platforms);
+                    }
+                });
+            }
+        });
+
+        platformGroups.forEach((group) => {
+            if (group.coords.length === 0) return;
+            features.push({
+                type: 'Feature',
+                geometry: { type: 'MultiLineString', coordinates: group.coords },
+                properties: { type: 'platform', lineKey: group.lineKey, lines: [group.lineKey] }
+            });
+        });
+
+        allEntries.forEach(({ id, data }) => {
             features.push({
                 type: 'Feature',
                 id: `node-${id}`,
@@ -73,56 +97,64 @@ const Stations: React.FC<StationsProps> = ({
                     type: 'node',
                     stationId: id,
                     isUsed: data.isUsed,
-                    isTransfer: data.lines.length > 1
+                    isTransfer: data.lines.length > 1,
+                    lines: data.lines
                 }
             });
-
-            // Platforms (Zoom 14+)
-            if (effectiveZoom >= 14 && data.nodes) {
-                data.nodes.forEach(node => {
-                    if (node.platforms) {
-                        features.push({
-                            type: 'Feature',
-                            id: `plat-${id}-${node.id}`,
-                            geometry: { type: 'MultiLineString', coordinates: node.platforms },
-                            properties: { type: 'platform', stationId: id }
-                        });
-                    }
-                });
-            }
         });
         return { type: 'FeatureCollection', features };
-    }, [filteredEntries, effectiveZoom]);
+    }, [allEntries]);
 
-    // 3. Constant styles for the Stage
+    // 3. Dynamic Styles (Access props directly)
     const nodeStyle = (feature: any) => {
-        const isUsed = feature.properties.isUsed;
-        const isTransfer = feature.properties.isTransfer;
+        const { isUsed, isTransfer, lines } = feature.properties;
+        const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
+        const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
+        const isSelected = lines.some((l: string) =>
+            selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
+        );
+
         let radius = 3;
         if (effectiveZoom === 12) radius = 5;
         if (effectiveZoom >= 14) radius = 7;
-
         if (isTransfer) radius *= 1.3;
+
+        const isDimmed = isFilterActive && !isSelected;
+        const color = isDimmed ? '#e0e0e0' : (isUsed ? '#ff9800' : '#1a1a1a');
 
         return {
             radius: radius,
-            fillColor: isUsed ? '#ff9800' : '#1a1a1a', // Extremely dark grey
-            stroke: false, // Clean borderless look
-            fillOpacity: 1,
-            pane: 'station-interact'
+            fillColor: color,
+            stroke: false,
+            fillOpacity: effectiveZoom >= 14 ? 0 : (isDimmed ? 0.6 : 1), // Brighter opacity for light grey
+            pane: 'railroad-lines' // Use the same interaction pane as lines
         };
     };
 
-    const platformStyle = {
-        color: '#666666',
-        weight: 4,
-        opacity: 0.8,
-        pane: 'station-interact',
-        interactive: false // Platforms shouldn't block node hover
+    const platformStyle = (feature: any) => {
+        const { lineKey, lines } = feature.properties;
+        const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
+        const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
+        const isSelected = lines.some((l: string) =>
+            selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
+        );
+
+        const color = getColor(lineKey);
+        const weight = isSelected ? (isMobile ? 18 : 14) : (isMobile ? 14 : 10);
+        const opacity = isSelected ? 0.9 : 0.4;
+        const isDimmed = isFilterActive && !isSelected;
+
+        return {
+            color: isDimmed ? '#dddddd' : color,
+            weight: weight,
+            opacity: isDimmed ? 0.15 : opacity,
+            pane: 'railroad-glow', // Move platforms below railroads
+            interactive: false
+        };
     };
 
     const combinedStyle = (feature: any) => {
-        if (feature.properties.type === 'platform') return platformStyle;
+        if (feature.properties.type === 'platform') return platformStyle(feature);
         return nodeStyle(feature);
     };
 
@@ -140,18 +172,43 @@ const Stations: React.FC<StationsProps> = ({
             const [company, line] = l.includes('::') ? l.split('::') : ['Unknown', l];
             const corp = (railData.companies as any)[company];
             const lineData = (railData.lines as any)[line];
-            const dispCorp = language === 'en' ? (corp?.name_en || corp?.name || company) : (corp?.name || company);
-            const dispLine = language === 'en' ? (lineData?.name_en || lineData?.name || line) : (lineData?.name || line);
-            return `<div style="display:flex; justify-content:space-between; gap:10px; font-size:11px; border-bottom:1px solid #eee; padding:2px 0;">
-                        <span style="opacity:0.7;">${dispCorp}</span>
-                        <span style="font-weight:600;">${dispLine}</span>
-                    </div>`;
+
+            const dispCorpJA = corp?.name || company;
+            const dispCorpEN = corp?.name_en || (corp?.name ? '' : company);
+            const dispLineJA = lineData?.name || line;
+            const dispLineEN = lineData?.name_en || (lineData?.name ? '' : line);
+
+            const color = getColor(l);
+
+            return `
+                <div style="
+                    display: flex; 
+                    flex-direction: column; 
+                    gap: 1px; 
+                    background: #f8f9fa; 
+                    border-left: 4px solid ${color}; 
+                    padding: 6px 10px; 
+                    margin-bottom: 6px; 
+                    border-radius: 6px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+                ">
+                    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                        <span style="font-size: 11px; color: #1a1a1a; font-weight: 800;">${dispLineJA}</span>
+                        ${dispLineEN ? `<span style="font-size: 9px; color: #718096; font-weight: 500; opacity: 0.9;">${dispLineEN}</span>` : ''}
+                    </div>
+                    <div style="display: flex; flex-direction: column; line-height: 1.2; margin-top: 4px; border-top: 1px solid #edf2f7; padding-top: 2px;">
+                        <span style="font-size: 9px; color: #718096; font-weight: 600;">${dispCorpJA}</span>
+                        ${dispCorpEN ? `<span style="font-size: 8px; color: #a0aec0; font-weight: 500; opacity: 0.8;">${dispCorpEN}</span>` : ''}
+                    </div>
+                </div>`;
         }).join('');
 
         const tooltipContent = `
-            <div style="padding:4px; min-width:140px;">
-                <div style="font-weight:bold; font-size:14px; border-bottom:2px solid #333; margin-bottom:4px; padding-bottom:2px;">${primaryName}</div>
-                <div>${lineList}</div>
+            <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif;">
+                <div style="font-weight: 900; font-size: 15px; color: #2c3e50; border-bottom: 2px solid #3498db; margin-bottom: 8px; padding-bottom: 4px;">
+                    ${primaryName}
+                </div>
+                <div style="display: flex; flex-direction: column;">${lineList}</div>
             </div>
         `;
 
@@ -183,15 +240,38 @@ const Stations: React.FC<StationsProps> = ({
         });
     };
 
-    // 4. Force re-render key for data changes
+    const geoJsonRef = useRef<L.GeoJSON>(null);
+
+    // Update styles without remounting
+    useEffect(() => {
+        if (geoJsonRef.current) {
+            geoJsonRef.current.setStyle(combinedStyle as any);
+        }
+    }, [activeLine, hoveredLine, selectedLines, combinedStyle]);
+
+    // 4. Force re-render key ONLY for structural changes
     const bakedKey = useMemo(() => {
-        return `${effectiveZoom}_${visitedStations.size}_${selectedLines.length}_${activeLine || ''}_${hoveredLine || ''}`;
-    }, [effectiveZoom, visitedStations.size, selectedLines.length, activeLine, hoveredLine]);
+        return `${effectiveZoom}_${allEntries.length}`;
+    }, [effectiveZoom, allEntries.length]);
+
+    // 5. Filter labels by viewport for performance (DOM is expensive)
+    const visibleLabels = useMemo(() => {
+        if (effectiveZoom < 14 || !mapBounds) return [];
+
+        // Add a small padding to bounds to prevent abrupt popping
+        const paddedBounds = mapBounds.pad(0.1);
+
+        return allEntries.filter(({ data }) => {
+            // Only render labels for what's actually visible or near visible
+            return paddedBounds.contains(data.centroid);
+        });
+    }, [allEntries, mapBounds, effectiveZoom]);
 
     return (
         <>
             {/* Baked Layer: High-performance canvas rendering for points/lines */}
             <GeoJSON
+                ref={geoJsonRef}
                 key={`stations-baked-${bakedKey}`}
                 data={visualsGeoJson as any}
                 style={combinedStyle as any}
@@ -201,15 +281,17 @@ const Stations: React.FC<StationsProps> = ({
                         const mainMarker = L.circleMarker(latlng, style);
 
                         if (feature.properties.isTransfer) {
+                            const isDimmed = feature.properties.isFilterActive && !feature.properties.isSelected;
                             const innerDot = L.circleMarker(latlng, {
-                                radius: style.radius * 0.35,
-                                fillColor: '#ffffff', // Clean white dot for transfer hubs
+                                radius: style.radius * 0.6, // Increased from 0.5 to 0.6
+                                fillColor: isDimmed ? '#f5f5f5' : '#ffffff',
                                 stroke: false,
-                                fillOpacity: 1.0,
-                                interactive: false,
-                                pane: 'station-interact'
+                                fillOpacity: effectiveZoom >= 14 ? 0 : (isDimmed ? 0.5 : 1.0), // Hide inner dot at 14+
+                                interactive: true,
+                                pane: 'railroad-lines'
                             });
-                            return L.layerGroup([mainMarker, innerDot]);
+                            // Use featureGroup for better event propagation
+                            return L.featureGroup([mainMarker, innerDot]);
                         }
                         return mainMarker;
                     }
@@ -218,12 +300,12 @@ const Stations: React.FC<StationsProps> = ({
                 onEachFeature={onEachStation}
             />
 
-            {/* DOM Layer: Interaction & Labels (Only high zoom) */}
-            {effectiveZoom >= 14 && filteredEntries.map(([id, station]) => (
+            {/* DOM Layer: Labels (Filtered by Viewport for performance) */}
+            {effectiveZoom >= 14 && visibleLabels.map(({ id, data }) => (
                 <StationMarker
                     key={`label-${id}`}
                     id={id}
-                    station={station}
+                    station={data}
                     highlightedStations={[]}
                     selectedLines={selectedLines}
                     activeLine={activeLine}
@@ -236,12 +318,13 @@ const Stations: React.FC<StationsProps> = ({
                     onStationMouseUp={() => { }}
                     dragStartStation={null}
                     visitedStations={visitedStations}
-                    settings={{} as any}
-                    language={language as any}
+                    settings={settings}
+                    language={language}
                     isMobile={isMobile}
                     isMoving={false}
                     railData={railData}
                     onlyLabels={true} // New prop for ultra-light rendering
+                    interactive={false} // Labels don't block interaction
                 />
             ))}
         </>

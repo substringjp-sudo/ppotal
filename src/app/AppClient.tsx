@@ -218,10 +218,13 @@ const AppClient = () => {
             if (trip.path) trip.path.forEach((sid: string) => stationSet.add(sid));
         });
 
+        const cumulativeDistance = Math.round(recordedTrips.reduce((sum, t) => sum + (t.distance || 0), 0) * 10) / 10;
+
         return {
             lines: lineCount,
             stations: stationSet.size,
-            distance: distanceCount,
+            uniqueDistance: distanceCount,
+            cumulativeDistance,
             companies: companySet.size
         };
     }, [visitedLineLengths, recordedTrips]);
@@ -295,8 +298,16 @@ const AppClient = () => {
                             <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.stations}</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>Distance</div>
-                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.distance}<span style={{ fontSize: '10px', marginLeft: '2px' }}>km</span></div>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>
+                                {language === 'ko' ? '총 이동 거리' : 'Total Distance'}
+                            </div>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#2c3e50' }}>{stats.cumulativeDistance}<span style={{ fontSize: '10px', marginLeft: '2px' }}>km</span></div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#27ae60', textTransform: 'uppercase' }}>
+                                {language === 'ko' ? '실제 주행 거리' : 'Unique Coverage'}
+                            </div>
+                            <div style={{ fontSize: '18px', fontWeight: '900', color: '#27ae60' }}>{stats.uniqueDistance}<span style={{ fontSize: '10px', marginLeft: '2px' }}>km</span></div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '10px', fontWeight: 'bold', color: '#999', textTransform: 'uppercase' }}>Companies</div>

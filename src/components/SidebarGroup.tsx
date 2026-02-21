@@ -75,39 +75,27 @@ const SidebarLineItem: React.FC<{
                     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
                         <span
                             style={{
-                                fontSize: '12px',
+                                fontSize: '13px',
                                 color: isCompleted ? '#186A3B' : '#333',
-                                fontWeight: (isSelected || isCompleted) ? 'bold' : 'normal',
+                                fontWeight: (isSelected || isCompleted) ? 'bold' : '800',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                             }}>
-                            {language === 'en' ? (lineData.name_en || lName) : lName}
+                            {lName}
                         </span>
-                        {(language !== 'en' && lineData.name_en && lineData.name_en !== lName) && (
+                        {lineData.name_en && lineData.name_en !== lName && (
                             <span style={{
-                                fontSize: '9px',
-                                fontWeight: '400',
-                                color: '#666',
+                                fontSize: '10px',
+                                fontWeight: '500',
+                                color: '#718096',
                                 marginTop: '-1px',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
-                                textOverflow: 'ellipsis'
+                                textOverflow: 'ellipsis',
+                                opacity: 0.8
                             }}>
                                 {lineData.name_en}
-                            </span>
-                        )}
-                        {(language === 'en' && lName && lName !== (lineData.name_en || lName)) && (
-                            <span style={{
-                                fontSize: '9px',
-                                fontWeight: '400',
-                                color: '#666',
-                                marginTop: '-1px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis'
-                            }}>
-                                {lName}
                             </span>
                         )}
                     </div>
@@ -289,30 +277,19 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis'
                                             }}>
-                                                {language === 'en' ? (cNameEn || cName) : cName}
+                                                {cName}
                                             </span>
-                                            {(language !== 'en' && cNameEn && cNameEn !== cName) && (
+                                            {cNameEn && cNameEn !== cName && (
                                                 <span style={{
                                                     fontSize: '10px',
-                                                    color: '#888',
+                                                    color: '#718096',
                                                     marginTop: '-2px',
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
+                                                    textOverflow: 'ellipsis',
+                                                    opacity: 0.8
                                                 }}>
                                                     {cNameEn}
-                                                </span>
-                                            )}
-                                            {(language === 'en' && cName && cName !== cNameEn) && (
-                                                <span style={{
-                                                    fontSize: '10px',
-                                                    color: '#888',
-                                                    marginTop: '-2px',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
-                                                }}>
-                                                    {cName}
                                                 </span>
                                             )}
                                         </div>

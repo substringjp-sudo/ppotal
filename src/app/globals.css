@@ -46,3 +46,34 @@ body {
     display: block !important;
   }
 }
+
+/* --- Leaflet Interaction Fixes --- */
+
+/* 
+  Leaflet custom panes are full-screen divs. 
+  We must disable pointer-events on background/helper panes so they don't block clicks.
+*/
+.leaflet-top-tooltips-pane,
+.leaflet-ui-elements-pane,
+.leaflet-railroad-casing-pane,
+.leaflet-railroad-glow-pane,
+.leaflet-background-pane {
+  pointer-events: none !important;
+}
+
+/* Ensure the main interaction layer receives events */
+.leaflet-railroad-lines-pane {
+  pointer-events: auto !important;
+}
+
+/* 
+  Station labels (DivIcons) can be numerous. 
+  Even if the Marker is non-interactive, the div can block. 
+*/
+.station-label-icon {
+  pointer-events: none !important;
+}
+
+.leaflet-marker-icon.station-label-icon {
+  pointer-events: none !important;
+}

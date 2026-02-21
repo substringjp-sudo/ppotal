@@ -66,12 +66,11 @@ interface MapPaneProps {
 }
 
 const PANE_STYLES = {
-    topTooltips: { zIndex: 1000 },
-    stationInteract: { zIndex: 900 },
-    uiElements: { zIndex: 850 },
-    railroadLines: { zIndex: 820 },
-    railroadCasing: { zIndex: 815 },
-    railroadGlow: { zIndex: 810 },
+    topTooltips: { zIndex: 1000, pointerEvents: 'none' as const },
+    uiElements: { zIndex: 850, pointerEvents: 'none' as const },
+    railroadLines: { zIndex: 820 },   // Main interaction pane
+    railroadCasing: { zIndex: 815, pointerEvents: 'none' as const },
+    railroadGlow: { zIndex: 810, pointerEvents: 'none' as const },
     background: { zIndex: 100 },
 };
 
@@ -120,27 +119,31 @@ const MapPane: React.FC<MapPaneProps> = ({
     const graph: RoutingGraph | null = useMemo(() => (railData ? new RoutingGraph(railData) : null), [railData]);
 
     const { lineIdMap, lineLengths, visitedLineLengths } = useMemo(() => {
-        if (!graph) {
+        if (!graph || !railData) {
             return {
                 lineIdMap: new Map<string, string>(),
                 lineLengths: {},
                 visitedLineLengths: {},
             };
         }
+
         const newVisitedLineLengths: Record<string, number> = {};
+
+        // 1. Get unique section IDs from all trips
+        const uniqueSectionIds = new Set<number>();
         recordedTrips.forEach(trip => {
-            if (!trip.path) return;
-            for (let i = 0; i < trip.path.length - 1; i++) {
-                const node1Id = trip.path[i];
-                const node2Id = trip.path[i + 1];
+            if (trip.sectionIds) {
+                trip.sectionIds.forEach(sid => uniqueSectionIds.add(sid));
+            }
+        });
 
-                const node1 = graph.getNode(node1Id);
-                const edge = graph.getEdge(node1Id, node2Id);
-
-                if (node1 && edge && node1.fullLineId) {
-                    const lineId = node1.fullLineId;
-                    newVisitedLineLengths[lineId] = (newVisitedLineLengths[lineId] || 0) + edge.distance;
-                }
+        // 2. Map unique sections to line IDs and sum their lengths
+        const rawSections = (railData as any).sections?.sections || [];
+        uniqueSectionIds.forEach(sid => {
+            const section = rawSections.find((s: any) => s.id === sid);
+            if (section) {
+                const lineId = `${section.company_id}::${section.line_id}`;
+                newVisitedLineLengths[lineId] = (newVisitedLineLengths[lineId] || 0) + (section.length / 1000);
             }
         });
 
@@ -372,6 +375,27 @@ const MapPane: React.FC<MapPaneProps> = ({
                 usedSectionIds={visitedSectionIds}
             />}
 
+            {visibleStations && railData &&
+                <Stations
+                    processedStations={visibleStations}
+                    effectiveZoom={effectiveZoom}
+                    realZoom={zoomLevel}
+                    getColor={getColor}
+                    selectedLines={selectedLines}
+                    activeLine={activeLine}
+                    hoveredLine={hoveredLine}
+                    visitedStations={visitedStations}
+                    settings={styleSettings}
+                    language={language}
+                    isMobile={isMobile}
+                    railData={railData}
+                    mapBounds={mapBounds}
+                    handleStationClick={handleStationClick}
+                    handleStationMouseDown={handleStationMouseDown}
+                    onStationHover={setHoveredLine} // Map station hover to line hover for context
+                />
+            }
+
             <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
                 {dragPath && dragPath.length > 0 && (
                     <Polyline
@@ -403,27 +427,6 @@ const MapPane: React.FC<MapPaneProps> = ({
                         interactive={false}
                     />
                 )}
-            </Pane>
-
-            <Pane name="station-interact" style={PANE_STYLES.stationInteract}>
-                {visibleStations && railData &&
-                    <Stations
-                        processedStations={visibleStations}
-                        effectiveZoom={effectiveZoom}
-                        realZoom={zoomLevel}
-                        getColor={getColor}
-                        selectedLines={selectedLines}
-                        activeLine={activeLine}
-                        hoveredLine={hoveredLine}
-                        visitedStations={visitedStations}
-                        settings={styleSettings}
-                        language={language}
-                        isMobile={isMobile}
-                        railData={railData}
-                        handleStationClick={handleStationClick}
-                        handleStationMouseDown={handleStationMouseDown}
-                    />
-                }
             </Pane>
 
             {isMobile && isEditMode && (

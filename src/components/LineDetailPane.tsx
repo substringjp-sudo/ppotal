@@ -133,21 +133,27 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     </button>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                            <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
-                                {cNamePrimary}
+                        {/* Primary Row: Line Name (JA followed by EN) */}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
+                            <span style={{ fontSize: '26px', fontWeight: '900', color: '#1a1a1a', lineHeight: '1' }}>
+                                {lineData?.name || lineName}
                             </span>
-                            <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
-                                {lNamePrimary}
-                            </span>
+                            {lineData?.name_en && (
+                                <span style={{ fontSize: '16px', fontWeight: '600', color: '#718096', opacity: 0.8 }}>
+                                    {lineData.name_en}
+                                </span>
+                            )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', opacity: 0.6 }}>
-                            <span style={{ fontSize: '11px', fontWeight: '500' }}>
-                                {cNameSecondary}
+                        {/* Secondary Row: Company Name (JA followed by EN) */}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
+                            <span style={{ fontSize: '13px', color: '#888', fontWeight: '700' }}>
+                                {companyData?.name || company}
                             </span>
-                            <span style={{ fontSize: '13px', fontWeight: '500' }}>
-                                {lNameSecondary}
-                            </span>
+                            {companyData?.name_en && (
+                                <span style={{ fontSize: '11px', color: '#a0aec0', fontWeight: '500' }}>
+                                    {companyData.name_en}
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -216,7 +222,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     start,
                                     end,
                                     ...pathData,
-                                    waypoints: [start, end]
+                                    waypoints: [start, end],
+                                    sectionIds: [] // Placeholder to satisfy Trip type requirements
                                 });
                             }
                         }

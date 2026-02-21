@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo } from 'react';
-import { GeoJSON } from 'react-leaflet';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
+import { GeoJSON, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { getLineColor } from '../lib/lineColors';
 import { RailData, Section } from '../types/railData';
@@ -298,18 +298,30 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         });
     };
 
+    const mainLayerRef = useRef<L.GeoJSON>(null);
+    const casingLayerRef = useRef<L.GeoJSON>(null);
+    const glowLayerRef = useRef<L.GeoJSON>(null);
+
+    // Dynamic Style Update without unmounting the layer
+    useEffect(() => {
+        if (mainLayerRef.current) mainLayerRef.current.setStyle(unifiedStyle);
+        if (casingLayerRef.current) casingLayerRef.current.setStyle(casingStyle);
+        if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
+    }, [activeLine, hoveredLine, isMoving, unifiedStyle, casingStyle, glowStyle]);
+
     if (!mergedGeoJsonData) return null;
 
-    // Unified key to force re-render on important data changes
+    // Stable key: only re-render on data or major zoom changes
     const layerKey = useMemo(() => {
-        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}_${activeLine || 'none'}_${hoveredLine || 'none'}`;
-    }, [zoomGroup, usedSectionIds.size, selectionSet.size, activeLine, hoveredLine]);
+        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}`;
+    }, [zoomGroup, usedSectionIds.size, selectionSet.size]);
 
     return (
         <>
             {/* 1. Under-layers: Glows and Outlines (Non-interactive) */}
             {mergedGeoJsonData && (
                 <GeoJSON
+                    ref={glowLayerRef}
                     key={`rail-under-${layerKey}`}
                     data={mergedGeoJsonData as any}
                     style={glowStyle}
@@ -320,6 +332,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
             {zoomGroup >= 3 && mergedGeoJsonData && (
                 <GeoJSON
+                    ref={casingLayerRef}
                     key={`rail-casing-${layerKey}`}
                     data={mergedGeoJsonData as any}
                     style={casingStyle}
@@ -331,6 +344,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             {/* 2. Main Interactive Line Layer (Unified visuals and interaction) */}
             {mergedGeoJsonData && (
                 <GeoJSON
+                    ref={mainLayerRef}
                     key={`rail-main-${layerKey}`}
                     data={mergedGeoJsonData as any}
                     style={unifiedStyle}

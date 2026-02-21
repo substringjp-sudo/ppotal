@@ -32,6 +32,7 @@ interface StationMarkerProps {
     isMoving?: boolean;
     railData: RailData;
     onlyLabels?: boolean;
+    interactive?: boolean;
 }
 
 /**
@@ -393,15 +394,19 @@ const StationMarker: React.FC<StationMarkerProps> = ({
             {zoomConfig.zoomCategory >= 4 && (
                 <Marker
                     position={station.centroid}
+                    interactive={false}
                     icon={L.divIcon({
                         className: 'station-label-icon',
                         html: `
                             <div style="position: relative; display: flex; flex-direction: column; align-items: center; z-index: 500;">
                                 <div style="
                                     margin-top: ${(isHighlighted ? 12 : 10) / 2 + 4}px;
-                                    font-size: 12px; font-weight: 800; color: #000;
+                                    font-size: 11px; 
+                                    font-weight: ${isSelected ? '800' : '600'}; 
+                                    color: ${isSelected ? '#000' : '#888'};
                                     text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
                                     white-space: nowrap; transform: translateX(-50%); position: absolute; top: 0; pointer-events: none;
+                                    opacity: ${isSelected ? 1 : 0.8};
                                 ">${language === 'en' ? (station.name_en || station.name) : station.name}</div>
                             </div>
                         `,

@@ -160,11 +160,11 @@ const TubeMap: React.FC<TubeMapProps> = ({
                             y1={fromNode.y}
                             x2={toNode.x}
                             y2={toNode.y}
-                            stroke={edge.isVisited ? 'url(#visitedGradient)' : lineColor}
+                            stroke={edge.isVisited ? '#FFD700' : lineColor}
                             strokeWidth={edge.isVisited ? 12 : 6}
                             strokeLinecap="round"
                             style={{
-                                opacity: edge.isVisited ? 1 : 0.3,
+                                opacity: edge.isVisited ? 1.0 : 0.3,
                                 transition: 'all 0.3s ease'
                             }}
                         />

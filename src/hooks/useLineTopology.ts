@@ -83,8 +83,12 @@ export function useLineTopology(
             // To keep it as straight as possible, the FIRST neighbor continues the same Y level
             // Subsequent neighbors (branches) get different Y offsets.
             neighbors.forEach((neighborId, idx) => {
+                const nextIsJoint = neighborId.startsWith('J_');
+                const currentIsJoint = id.startsWith('J_');
+                const effectiveSpacingX = (currentIsJoint || nextIsJoint) ? 60 : 120;
+
                 const nextY = idx === 0 ? y : y + (idx % 2 === 0 ? -(idx / 2) : Math.ceil(idx / 2)) * spacingY;
-                queue.push({ id: neighborId, x: x + spacingX, y: nextY });
+                queue.push({ id: neighborId, x: x + effectiveSpacingX, y: nextY });
             });
         }
 
@@ -107,12 +111,17 @@ export function useLineTopology(
                         x: curr.x,
                         y: curr.y,
                         isJoint,
-                        isVisited: !isJoint && nodeData ? visitedStations.has(nodeData.name) : false
+                        isVisited: !isJoint && nodeData ? visitedStations.has(curr.id) : false
                     });
 
                     const neighbors = Array.from(adj.get(curr.id) || []).filter(n => !processedNodes.has(n));
                     neighbors.forEach((nId, idx) => {
-                        q.push({ id: nId, x: curr.x + spacingX, y: idx === 0 ? curr.y : curr.y + spacingY });
+                        const nextIsJoint = nId.startsWith('J_');
+                        const currentIsJoint = curr.id.startsWith('J_');
+                        const effectiveSpacingX = (currentIsJoint || nextIsJoint) ? 60 : 120;
+
+                        const nextY = idx === 0 ? curr.y : curr.y + spacingY;
+                        q.push({ id: nId, x: curr.x + effectiveSpacingX, y: nextY });
                     });
                 }
             }

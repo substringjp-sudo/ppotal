@@ -60,11 +60,11 @@ export const useVisibleStations = ({
         if (zoomLevel >= 14) return 14;
         if (zoomLevel >= 12) return 12;
         if (zoomLevel >= 8) return 8;
-        return 0;
+        return 1; // Always process data for platforms
     }, [zoomLevel]);
 
     const visibleStations = useMemo(() => {
-        if (!railroadNetwork || effectiveZoom === 0 || !spatialIndex) return null;
+        if (!railroadNetwork || !spatialIndex) return null;
 
         const data: Record<string, ProcessedStation> = {};
         const railData = railroadNetwork as RailData;

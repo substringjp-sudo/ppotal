@@ -170,9 +170,11 @@ export const useTripRecorder = ({
             let allGeoms = segments.flatMap(s => s.geometries);
             const lastWaypoint = waypoints[waypoints.length - 1];
             if (stations[lastWaypoint]) {
-                const startCoords = stations[lastWaypoint].centroid;
+                const startCoords = stations[lastWaypoint].centroid; // [lat, lon]
                 const cursorCoords: [number, number] = [currentLatLng.lat, currentLatLng.lng];
-                allGeoms = [...allGeoms, [startCoords, cursorCoords]];
+
+                // Store as [lon, lat] to match graph geometries for MapPane.tsx polyline mapping
+                allGeoms = [...allGeoms, [[startCoords[1], startCoords[0]], [cursorCoords[1], cursorCoords[0]]]];
             }
 
             setDragPath(allGeoms);
@@ -239,8 +241,11 @@ export const useTripRecorder = ({
             const currentDragStation = dragStartStationRef.current;
             if (currentDragStation && graph) {
                 const { waypoints, segments } = dragState.current;
+                const lastWaypoint = waypoints[waypoints.length - 1];
+                const lastStData = visibleStationsRef.current?.[lastWaypoint];
+                const isEndingOnJoint = lastStData?.isJoint;
 
-                if (segments.length > 0) {
+                if (segments.length > 0 && !isEndingOnJoint) {
                     const fullPath: string[] = [];
                     const fullGeoms: [number, number][][] = [];
                     const fullSectionIds: number[] = [];
