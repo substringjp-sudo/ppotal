@@ -21,7 +21,11 @@ export const metadata: Metadata = {
     "오사카 지하철 노선도", "일본 철도 거리 계산", "철도 여행 기록", "노리테츠", "도리테츠",
     "JR East", "JR West", "JR Central", "JR Kyushu", "JR Hokkaido", "JR Shikoku",
     "Japan Railway Map", "JR Pass Route", "Japan Train Tracker", "Shinkansen Network",
-    "Interactive Japan Map", "Japan Rail Pass Planner", "日本鉄道地図", "乗りつぶし", "鉄道旅行"
+    "Interactive Japan Map", "Japan Rail Pass Planner", "日本鉄道地図", "乗りつぶし", "鉄道旅行",
+    "신칸센 노선도", "야마노테선", "도카이도 신칸센", "도쿄역", "신주쿠역", "오사카역", "교토역",
+    "山手線", "東海道新幹線", "東京駅", "新宿駅", "大阪駅", "京都駅", "博多駅", "札幌駅",
+    "Tokaido Shinkansen", "Yamanote Line", "Tokyo Station", "Shinjuku Station", "Osaka Station",
+    "Railway Route Map Japan", "Subway Map Tokyo", "Subway Map Osaka", "Train Route Finder Japan"
   ],
   openGraph: {
     title: "JapanRailNote - 일본 모든 철도의 시각화 및 여행 기록",

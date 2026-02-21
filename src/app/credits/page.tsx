@@ -1,5 +1,3 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
 
@@ -40,28 +38,38 @@ const CreditsPage = () => {
                     Japan Railway Network Visualization & Travel Log Service
                 </p>
 
-                <section style={{ marginBottom: '50px' }}>
-                    <p style={{ lineHeight: '1.8', fontSize: '16px', color: '#444', marginBottom: '30px' }}>
-                        JapanRailNote is an interactive map service that allows you to understand Japan's complex railway network at a glance and systematically record your rail travels. It is designed for JR Pass travelers, railway enthusiasts, and anyone planning a trip to Japan.
-                    </p>
+                <div style={{ display: 'grid', gap: '40px' }}>
+                    {/* English Section */}
+                    <section>
+                        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '15px', color: '#2c3e50' }}>About Project (English)</h2>
+                        <p style={{ lineHeight: '1.8', fontSize: '15px', color: '#444' }}>
+                            JapanRailNote is an interactive map service designed for JR Pass travelers and railway enthusiasts.
+                            It provides a comprehensive visualization of Japan's complex railway network and allows users to systematically record their journeys.
+                        </p>
+                    </section>
 
-                    <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px', color: '#2c3e50' }}>Key Features</h2>
-                    <ul style={{ paddingLeft: '20px', lineHeight: '1.8', color: '#555', marginBottom: '30px' }}>
-                        <li><strong>Railway Network Visualization:</strong> Provides an integrated map covering JR companies, city subways, various private railways, and Light Rail Transit (LRT).</li>
-                        <li><strong>Smart Travelog:</strong> Record the stations and lines you've actually traveled on with a single click, and update your personal Japan railway completion map in real-time.</li>
-                        <li><strong>Accurate Statistics:</strong> Automatically calculate cumulative travel distance (km) and the number of visited stations to help rail enthusiasts achieve their goals.</li>
-                        <li><strong>Route Discovery:</strong> Explore the shortest paths for key sections and provide basic information for travel planning.</li>
-                    </ul>
+                    {/* Korean Section */}
+                    <section>
+                        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '15px', color: '#2c3e50' }}>프로젝트 소개 (Korean)</h2>
+                        <p style={{ lineHeight: '1.8', fontSize: '15px', color: '#444' }}>
+                            JapanRailNote는 일본의 복잡한 철도망을 한눈에 파악하고, 자신의 탑승 기록을 체계적으로 관리할 수 있는 서비스입니다.
+                            JR 동일본, JR 서일본 등 6개 JR 그룹사와 도쿄/오사카 지하철, 주요 사철 노선도를 제공하며,
+                            거리 자동 계산 기능을 통해 나만의 철도 완주 지도를 만들 수 있습니다.
+                        </p>
+                    </section>
 
-                    <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px', color: '#2c3e50' }}>Recommended For</h2>
-                    <ul style={{ paddingLeft: '20px', lineHeight: '1.8', color: '#555', marginBottom: '30px' }}>
-                        <li><strong>JR Pass Users:</strong> Those who want to check valid pass sections and plan efficient travel itineraries.</li>
-                        <li><strong>Railway Enthusiasts:</strong> For "Noritetsu" (railway riders) who want to visualize their completion records for all lines.</li>
-                        <li><strong>Independent Travelers:</strong> Those who want to easily understand complex urban railway networks in Tokyo, Osaka, Fukuoka, etc.</li>
-                    </ul>
-                </section>
+                    {/* Japanese Section */}
+                    <section>
+                        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '15px', color: '#2c3e50' }}>プロジェクトについて (Japanese)</h2>
+                        <p style={{ lineHeight: '1.8', fontSize: '15px', color: '#444' }}>
+                            JapanRailNoteは、日本の複雑な鉄道網を可視化し、自身の乗차記録（乗りつぶし）を管理できるインタラクティブ地図サービスです。
+                            JR各社、地下鉄、私鉄、LRTなどの路線網を網羅し、移動距離の自動計算や路線の完乗記録をサポートします。
+                            鉄道ファンやJRパス利用者に最適なツールを目指しています。
+                        </p>
+                    </section>
+                </div>
 
-                <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '25px', color: '#2c3e50', borderTop: '2px solid #f0f0f0', paddingTop: '40px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: '900', marginTop: '40px', marginBottom: '25px', color: '#2c3e50', borderTop: '2px solid #f0f0f0', paddingTop: '40px' }}>
                     Data Sources & Attribution
                 </h2>
 
@@ -106,11 +114,10 @@ const CreditsPage = () => {
                     </div>
                 </section>
 
-                <p style={{ fontSize: '14px', color: '#777', lineHeight: '1.6', fontStyle: 'italic' }}>
-                    JapanRailNote is continuously updated based on reliable data from the Ministry of Land, Infrastructure, Transport and Tourism of Japan. We strive to provide more convenient and intuitive railway information services.
-                </p>
-
                 <footer style={{ marginTop: '60px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center', fontSize: '12px', color: '#999' }}>
+                    <div style={{ marginBottom: '10px' }}>
+                        <Link href="/privacy" style={{ color: '#999', textDecoration: 'underline', marginRight: '15px' }}>Privacy Policy</Link>
+                    </div>
                     &copy; 2026 JapanRailNote. All rights reserved.
                 </footer>
             </div>
