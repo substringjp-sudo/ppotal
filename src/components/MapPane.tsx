@@ -71,6 +71,7 @@ const PANE_STYLES = {
     railroadLines: { zIndex: 820 },   // Main interaction pane
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const },
     railroadGlow: { zIndex: 810, pointerEvents: 'none' as const },
+    stationLabels: { zIndex: 880, pointerEvents: 'none' as const },
     background: { zIndex: 100 },
 };
 
@@ -360,6 +361,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
             <Pane name="railroad-casing" style={PANE_STYLES.railroadCasing} />
             <Pane name="railroad-lines" style={PANE_STYLES.railroadLines} />
+            <Pane name="station-labels" style={PANE_STYLES.stationLabels} />
 
             {railData && <RailroadLayer
                 railroadNetwork={railData}

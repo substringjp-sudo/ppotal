@@ -88,7 +88,31 @@ const Stations: React.FC<StationsProps> = ({
             });
         });
 
-        allEntries.forEach(({ id, data }) => {
+        // 3. Node Features with Density Management
+        const nodeAcceptedEntries: typeof allEntries = [];
+        // Thresholds for dot density culling (in degrees)
+        const nodeCullDist = effectiveZoom === 8 ? 0.012 : (effectiveZoom === 12 ? 0.0015 : 0);
+
+        allEntries.forEach((entry) => {
+            const { id, data } = entry;
+
+            // At high zoom levels (14+), platforms are shown, dots are invisible.
+            // At mid zoom (8-12), we cull extremely close dots to avoid "blobbing"
+            if (nodeCullDist > 0) {
+                const isImportant = data.lines.length > 1 || data.isUsed;
+                const tooDense = nodeAcceptedEntries.some(acc => {
+                    const dLat = Math.abs(acc.data.centroid[0] - data.centroid[0]);
+                    const dLon = Math.abs(acc.data.centroid[1] - data.centroid[1]);
+                    return dLat < nodeCullDist && dLon < nodeCullDist;
+                });
+
+                // If too dense, only keep it if it's more important than existing one or we skip
+                if (tooDense && !isImportant) return;
+                // If the new one is important but old wasn't, we still keep the new one (as a node)
+            }
+
+            nodeAcceptedEntries.push(entry);
+
             features.push({
                 type: 'Feature',
                 id: `node-${id}`,
@@ -102,8 +126,9 @@ const Stations: React.FC<StationsProps> = ({
                 }
             });
         });
+
         return { type: 'FeatureCollection', features };
-    }, [allEntries]);
+    }, [allEntries, effectiveZoom]);
 
     // 3. Dynamic Styles (Access props directly)
     const nodeStyle = (feature: any) => {
@@ -254,18 +279,62 @@ const Stations: React.FC<StationsProps> = ({
         return `${effectiveZoom}_${allEntries.length}`;
     }, [effectiveZoom, allEntries.length]);
 
-    // 5. Filter labels by viewport for performance (DOM is expensive)
+    // 5. Intelligent Label Management (Collision Avoidance + Culling)
     const visibleLabels = useMemo(() => {
         if (effectiveZoom < 14 || !mapBounds) return [];
 
-        // Add a small padding to bounds to prevent abrupt popping
         const paddedBounds = mapBounds.pad(0.1);
+        const candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
 
-        return allEntries.filter(({ data }) => {
-            // Only render labels for what's actually visible or near visible
-            return paddedBounds.contains(data.centroid);
+        if (candidates.length === 0) return [];
+
+        // 1. Sort by priority: Selected/Active > Transfer > Visited > Default
+        const prioritized = [...candidates].sort((a, b) => {
+            const getPriority = (item: typeof a) => {
+                let p = 0;
+                const isSelected = item.data.lines.some(l =>
+                    selectedLines.includes(l) || activeLine === l || hoveredLine === l
+                );
+                if (isSelected) p += 1000;
+                if (item.data.lines.length > 1) p += 100;
+                if (item.data.isUsed) p += 50;
+                return p;
+            };
+            return getPriority(b) - getPriority(a);
         });
-    }, [allEntries, mapBounds, effectiveZoom]);
+
+        // 2. Greedy Collision Detection
+        // minDistance in degrees. 0.0025 at zoom 14 is roughly 30-40px.
+        const zoomFactor = Math.pow(2, 14 - realZoom);
+        const minDistanceLat = 0.0025 * zoomFactor;
+        const minDistanceLon = 0.0045 * zoomFactor; // Wider for horizontal text labels
+
+        const accepted: typeof prioritized = [];
+
+        prioritized.forEach(candidate => {
+            const isSelected = candidate.data.lines.some(l =>
+                selectedLines.includes(l) || activeLine === l || hoveredLine === l
+            );
+
+            // Always show selected/active labels
+            if (isSelected) {
+                accepted.push(candidate);
+                return;
+            }
+
+            const collision = accepted.some(acc => {
+                const dLat = Math.abs(acc.data.centroid[0] - candidate.data.centroid[0]);
+                const dLon = Math.abs(acc.data.centroid[1] - candidate.data.centroid[1]);
+                return dLat < minDistanceLat && dLon < minDistanceLon;
+            });
+
+            if (!collision) {
+                accepted.push(candidate);
+            }
+        });
+
+        return accepted;
+    }, [allEntries, mapBounds, effectiveZoom, realZoom, selectedLines, activeLine, hoveredLine]);
 
     return (
         <>

@@ -70,8 +70,9 @@ export const useVisibleStations = ({
         const railData = railroadNetwork as RailData;
 
         // Global Pre-bake: Process ALL stations in the network
-        // We iterate through all grid cells to collect every station.
-        // This makes panning and zooming perfectly smooth as the data set is constant per zoom stage.
+        // Use a logical grouping by Name + Proximity to merge separate company entries into one hub
+        const nameToId = new Map<string, string>(); // name -> firstId for grouping
+
         for (const cell of spatialIndex.values()) {
             cell.stations.forEach((s: any) => {
                 const stationLines = new Set<string>();
@@ -98,9 +99,28 @@ export const useVisibleStations = ({
                     isUsed: usedStationIds.has(s.id)
                 };
 
-                if (!data[s.id]) {
-                    data[s.id] = {
-                        id: s.id,
+                // Logical Hub Check: If a station with same name exists nearby, merge it
+                const hubKey = `${s.name}_${s.name_en}`;
+                let targetId = s.id;
+
+                // Simple heuristic: if same name exists in this cell, we group them
+                // This handles major hubs like Shinjuku where different companies have distinct IDs
+                if (nameToId.has(hubKey)) {
+                    const existingId = nameToId.get(hubKey)!;
+                    const existing = data[existingId];
+                    // Verify distance (must be within ~500m to be a hub, roughly 0.005 degrees)
+                    const dLat = Math.abs(existing.centroid[0] - s.lat);
+                    const dLon = Math.abs(existing.centroid[1] - s.lon);
+                    if (dLat < 0.005 && dLon < 0.005) {
+                        targetId = existingId;
+                    }
+                } else {
+                    nameToId.set(hubKey, s.id);
+                }
+
+                if (!data[targetId]) {
+                    data[targetId] = {
+                        id: targetId,
                         nodes: [node],
                         centroid: [s.lat, s.lon],
                         lines: Array.from(stationLines),
@@ -109,10 +129,16 @@ export const useVisibleStations = ({
                         isUsed: usedStationIds.has(s.id)
                     };
                 } else {
-                    data[s.id].nodes.push(node);
+                    data[targetId].nodes.push(node);
                     stationLines.forEach(l => {
-                        if (!data[s.id].lines.includes(l)) data[s.id].lines.push(l);
+                        if (!data[targetId].lines.includes(l)) data[targetId].lines.push(l);
                     });
+                    if (usedStationIds.has(s.id)) data[targetId].isUsed = true;
+                    // Update centroid to be the average of all nodes for a balanced hub label
+                    const totalNodes = data[targetId].nodes.length;
+                    const avgLat = data[targetId].nodes.reduce((acc, n) => acc + n.coord[0], 0) / totalNodes;
+                    const avgLon = data[targetId].nodes.reduce((acc, n) => acc + n.coord[1], 0) / totalNodes;
+                    data[targetId].centroid = [avgLat, avgLon];
                 }
             });
 

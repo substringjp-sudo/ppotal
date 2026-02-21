@@ -395,6 +395,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                 <Marker
                     position={station.centroid}
                     interactive={false}
+                    pane="station-labels"
                     icon={L.divIcon({
                         className: 'station-label-icon',
                         html: `
@@ -402,11 +403,21 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                 <div style="
                                     margin-top: ${(isHighlighted ? 12 : 10) / 2 + 4}px;
                                     font-size: 11px; 
-                                    font-weight: ${isSelected ? '800' : '600'}; 
-                                    color: ${isSelected ? '#000' : '#888'};
-                                    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
-                                    white-space: nowrap; transform: translateX(-50%); position: absolute; top: 0; pointer-events: none;
-                                    opacity: ${isSelected ? 1 : 0.8};
+                                    font-weight: ${isSelected ? '800' : '700'}; 
+                                    color: ${isSelected ? '#000' : '#4a5568'};
+                                    background: rgba(255, 255, 255, 0.75);
+                                    backdrop-filter: blur(2px);
+                                    padding: 1px 4px;
+                                    border-radius: 3px;
+                                    border: 1px solid rgba(255,255,255,0.8);
+                                    text-shadow: 0 0 2px #fff;
+                                    white-space: nowrap; 
+                                    transform: translateX(-50%); 
+                                    position: absolute; 
+                                    top: 0; 
+                                    pointer-events: none;
+                                    opacity: ${isSelected ? 1 : 0.9};
+                                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
                                 ">${language === 'en' ? (station.name_en || station.name) : station.name}</div>
                             </div>
                         `,
