@@ -149,8 +149,17 @@ export const useTripRecorder = ({
                             const crowDist = haversineDistance(lastStData.centroid, currStData.centroid);
                             const railDist = pathData.distance;
 
-                            if (railDist > 100) isValid = false;
-                            if (isValid && crowDist < 5 && railDist > 3.0 && (railDist / (crowDist + 0.05)) > 4.0) {
+                            // Stricter jumping constraints
+                            // 1. Never jump more than 25km in a single swipe segment
+                            if (railDist > 25) isValid = false;
+
+                            // 2. If the rail route is more than 3x the crow-flies distance, it's likely a bay-crossing or accidental jump
+                            if (isValid && crowDist < 5 && (railDist / (crowDist + 0.01)) > 3.0) {
+                                isValid = false;
+                            }
+
+                            // 3. Prevent extremely long "detour" jumps even for long crow distances
+                            if (isValid && railDist > crowDist * 2 + 5) {
                                 isValid = false;
                             }
                         }
@@ -238,6 +247,8 @@ export const useTripRecorder = ({
                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     start: waypoints[0],
                     end: waypoints[waypoints.length - 1],
+                    startId: waypoints[0],
+                    endId: waypoints[waypoints.length - 1],
                     path: fullPath,
                     distance: totalDist,
                     geometries: fullGeoms,

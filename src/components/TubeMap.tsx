@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { TopologyNode, TopologyEdge } from '../hooks/useLineTopology';
 import { Language } from '../lib/translations';
 
@@ -6,6 +6,9 @@ import { Language } from '../lib/translations';
 interface TubeMapProps {
     nodes: TopologyNode[];
     edges: TopologyEdge[];
+    adj?: Map<string, Set<string>>;
+    nodesById?: Map<string, TopologyNode>;
+    edgeInfos?: Map<string, { from: string, to: string, isVisited: boolean }>;
     visitedStations?: Set<string>;
     visitedEdges?: Set<string>;
     lineColor: string;
@@ -17,6 +20,9 @@ interface TubeMapProps {
 const TubeMap: React.FC<TubeMapProps> = ({
     nodes,
     edges,
+    adj,
+    nodesById,
+    edgeInfos,
     visitedStations,
     visitedEdges,
     lineColor,
@@ -27,6 +33,31 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [dragStartNode, setDragStartNode] = useState<string | null>(null);
     const [mousePos, setMousePos] = useState<{ x: number, y: number } | null>(null);
+    const [nearestNode, setNearestNode] = useState<string | null>(null);
+
+    // Shortest path calculation (BFS) within the local topology
+    const previewPath = useMemo(() => {
+        if (!dragStartNode || !nearestNode || !adj || dragStartNode === nearestNode) return [];
+
+        const queue: [string, string[]][] = [[dragStartNode, [dragStartNode]]];
+        const visited = new Set<string>([dragStartNode]);
+
+        while (queue.length > 0) {
+            const [curr, path] = queue.shift()!;
+            if (curr === nearestNode) return path;
+
+            const neighbors = adj.get(curr);
+            if (neighbors) {
+                for (const neighbor of neighbors) {
+                    if (!visited.has(neighbor)) {
+                        visited.add(neighbor);
+                        queue.push([neighbor, [...path, neighbor]]);
+                    }
+                }
+            }
+        }
+        return [];
+    }, [dragStartNode, nearestNode, adj]);
 
     // Calculate bounds with padding
     const xs = nodes.map(n => n.x);
@@ -37,7 +68,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const maxY = ys.length > 0 ? Math.max(...ys) + 100 : 350;
 
     const svgWidth = Math.max(maxX - minX, 800);
-    const svgHeight = Math.max(maxY - minY, 400);
+    const svgHeight = maxY - minY;
 
     const getSvgCoord = useCallback((e: any) => {
         if (!containerRef.current) return { x: 0, y: 0 };
@@ -71,7 +102,21 @@ const TubeMap: React.FC<TubeMapProps> = ({
 
     const handleMove = (e: any) => {
         if (dragStartNode) {
-            setMousePos(getSvgCoord(e));
+            const coord = getSvgCoord(e);
+            setMousePos(coord);
+
+            // Find nearest node within some distance
+            let minDist = 100; // Threshold for "snapping"
+            let found = null;
+            nodes.forEach(n => {
+                const d = Math.sqrt(Math.pow(n.x - coord.x, 2) + Math.pow(n.y - coord.y, 2));
+                if (d < minDist) {
+                    minDist = d;
+                    found = n.id;
+                }
+            });
+            setNearestNode(found);
+
             if (e.cancelable) e.preventDefault(); // Prevent scroll while dragging
         }
     };
@@ -89,11 +134,13 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
         setDragStartNode(null);
         setMousePos(null);
+        setNearestNode(null);
     };
 
     const handleGlobalEnd = () => {
         setDragStartNode(null);
         setMousePos(null);
+        setNearestNode(null);
     };
 
     useEffect(() => {
@@ -116,8 +163,9 @@ const TubeMap: React.FC<TubeMapProps> = ({
             onTouchMove={handleMove}
             style={{
                 width: '100%',
-                height: '400px',
-                overflow: 'auto',
+                height: 'auto',
+                overflowX: 'auto',
+                overflowY: 'hidden',
                 backgroundColor: '#ffffff',
                 borderRadius: '16px',
                 border: '1px solid #e0e0e0',
@@ -160,7 +208,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
                             y1={fromNode.y}
                             x2={toNode.x}
                             y2={toNode.y}
-                            stroke={edge.isVisited ? '#FFD700' : lineColor}
+                            stroke={edge.isVisited ? '#2ecc71' : lineColor}
                             strokeWidth={edge.isVisited ? 12 : 6}
                             strokeLinecap="round"
                             style={{
@@ -171,16 +219,53 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     );
                 })}
 
-                {/* 2. Drag feedback line */}
-                {dragStartNode && startNodeObj && mousePos && (
+                {/* 2. Drag feedback path */}
+                {dragStartNode && previewPath.length > 1 && nodesById && (
+                    <g style={{ pointerEvents: 'none' }}>
+                        {previewPath.map((nodeId: string, idx: number) => {
+                            if (idx === 0) return null;
+                            const from = nodesById.get(previewPath[idx - 1]);
+                            const to = nodesById.get(nodeId);
+                            if (!from || !to) return null;
+                            return (
+                                <line
+                                    key={`preview-${idx}`}
+                                    x1={from.x} y1={from.y}
+                                    x2={to.x} y2={to.y}
+                                    stroke="#007AFF"
+                                    strokeWidth={8}
+                                    strokeLinecap="round"
+                                />
+                            );
+                        })}
+                    </g>
+                )}
+
+                {/* 2.1 Fallback direct line if no path yet or just started */}
+                {dragStartNode && startNodeObj && mousePos && (!nearestNode || previewPath.length <= 1) && (
                     <line
                         x1={startNodeObj.x}
                         y1={startNodeObj.y}
                         x2={mousePos.x}
                         y2={mousePos.y}
-                        stroke="#FF5733"
-                        strokeWidth={4}
+                        stroke="#007AFF"
+                        strokeWidth={6}
                         strokeDasharray="8,4"
+                        strokeLinecap="round"
+                        style={{ pointerEvents: 'none' }}
+                    />
+                )}
+
+                {/* 2.2 Connector from nearest node to exact mouse pos */}
+                {dragStartNode && nearestNode && nodesById && mousePos && (
+                    <line
+                        x1={nodesById.get(nearestNode)!.x}
+                        y1={nodesById.get(nearestNode)!.y}
+                        x2={mousePos.x}
+                        y2={mousePos.y}
+                        stroke="#007AFF"
+                        strokeWidth={4}
+                        strokeDasharray="4,4"
                         strokeLinecap="round"
                         style={{ pointerEvents: 'none' }}
                     />
@@ -189,18 +274,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 {/* 3. Nodes */}
                 {nodes.map((node) => {
                     const isSelected = dragStartNode === node.id;
-                    if (node.isJoint) {
-                        return (
-                            <circle
-                                key={node.id}
-                                cx={node.x}
-                                cy={node.y}
-                                r={5}
-                                fill={lineColor}
-                                style={{ opacity: 0.5 }}
-                            />
-                        );
-                    }
+                    if (node.isJoint) return null;
 
                     return (
                         <g

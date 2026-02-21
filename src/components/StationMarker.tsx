@@ -166,76 +166,74 @@ const StationNodeItem: React.FC<{
             ))}
 
             {/* Invisible Station Node for Interaction */}
-            {!isMoving && (
-                <CircleMarker
-                    center={node.coord}
-                    pathOptions={{
-                        stroke: false,
-                        fill: true,
-                        fillColor: '#000',
-                        fillOpacity: 0.0,
-                        pane: 'railroad-lines',
-                        interactive: true
-                    }}
-                    radius={radius + 8}
-                    eventHandlers={handlers}
-                >
-                    {!isMobile && !isEditMode && (
-                        <Tooltip
-                            sticky
-                            permanent
-                            pane="top-tooltips"
-                            offset={[20, -20]}
-                            direction="top"
-                            opacity={showTooltip ? (isDragging ? 0 : 1) : 0}
-                        >
-                            <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
-                                <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                    {language === 'en' ? (station.name_en || station.name) : station.name}
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#333' }}>
-                                    <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                        Available Lines
-                                    </div>
-                                    {formattedLines.map((fl, fidx) => {
-                                        const corp = (railData.companies as any)[fl.company];
-                                        const line = (railData.lines as any)[fl.line];
-                                        const displayedCorp = language === 'en' ? (corp?.name_en || corp?.name || fl.company) : (corp?.name || fl.company);
-                                        const displayedLine = language === 'en' ? (line?.name_en || line?.name || fl.line) : (line?.name || fl.line);
-                                        return (
-                                            <div key={fidx} style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                gap: '12px',
-                                                padding: '3px 0',
-                                                borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
-                                                color: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '#2980b9' : '#555',
-                                                fontWeight: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '800' : '500'
-                                            }}>
-                                                <span style={{ fontSize: '10px', opacity: 0.8 }}>{displayedCorp}</span>
-                                                <span>{displayedLine}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                {isNodeUsed && (
-                                    <div style={{
-                                        marginTop: '8px',
-                                        padding: '4px 8px',
-                                        backgroundColor: '#2ecc71',
-                                        color: '#fff',
-                                        fontSize: '10px',
-                                        fontWeight: 'bold',
-                                        borderRadius: '4px',
-                                        display: 'inline-block'
-                                    }}>✓ VISITED</div>
-                                )}
+            <CircleMarker
+                center={node.coord}
+                pathOptions={{
+                    stroke: false,
+                    fill: true,
+                    fillColor: '#000',
+                    fillOpacity: 0.0,
+                    pane: 'railroad-lines',
+                    interactive: true
+                }}
+                radius={radius + 8}
+                eventHandlers={handlers}
+            >
+                {!isMobile && !isEditMode && (
+                    <Tooltip
+                        sticky
+                        permanent
+                        pane="top-tooltips"
+                        offset={[20, -20]}
+                        direction="top"
+                        opacity={showTooltip ? (isDragging ? 0 : 1) : 0}
+                    >
+                        <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
+                            <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
+                                {language === 'en' ? (station.name_en || station.name) : station.name}
                             </div>
-                        </Tooltip>
-                    )}
-                </CircleMarker>
-            )}
+                            <div style={{ fontSize: '12px', color: '#333' }}>
+                                <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Available Lines
+                                </div>
+                                {formattedLines.map((fl, fidx) => {
+                                    const corp = (railData.companies as any)[fl.company];
+                                    const line = (railData.lines as any)[fl.line];
+                                    const displayedCorp = language === 'en' ? (corp?.name_en || corp?.name || fl.company) : (corp?.name || fl.company);
+                                    const displayedLine = language === 'en' ? (line?.name_en || line?.name || fl.line) : (line?.name || fl.line);
+                                    return (
+                                        <div key={fidx} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            gap: '12px',
+                                            padding: '3px 0',
+                                            borderBottom: fidx === formattedLines.length - 1 ? 'none' : '1px solid #eee',
+                                            color: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '#2980b9' : '#555',
+                                            fontWeight: (selectedLines.includes(fl.key) || (activeLine === fl.key)) ? '800' : '500'
+                                        }}>
+                                            <span style={{ fontSize: '10px', opacity: 0.8 }}>{displayedCorp}</span>
+                                            <span>{displayedLine}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {isNodeUsed && (
+                                <div style={{
+                                    marginTop: '8px',
+                                    padding: '4px 8px',
+                                    backgroundColor: '#2ecc71',
+                                    color: '#fff',
+                                    fontSize: '10px',
+                                    fontWeight: 'bold',
+                                    borderRadius: '4px',
+                                    display: 'inline-block'
+                                }}>✓ VISITED</div>
+                            )}
+                        </div>
+                    </Tooltip>
+                )}
+            </CircleMarker>
         </React.Fragment>
     );
 });
@@ -286,7 +284,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleMouseOver = useCallback(() => {
-        if (isMobile || isEditMode) return;
+        if (isMobile || isEditMode || isMoving) return;
         if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
         tooltipTimeoutRef.current = setTimeout(() => {
             setShowTooltip(true);

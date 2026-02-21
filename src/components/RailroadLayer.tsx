@@ -66,7 +66,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const baseInvisibilityWeight = 1.5 * weightFactor;
         const usedWeight = 4.0 * weightFactor;
         const usedGlowWeight = 7.0 * weightFactor;
-        const casingWeight = baseVisibilityWeight + 1.2;
+        const casingWeight = baseVisibilityWeight + (1.2 * weightFactor);
         const highlightWeight = 10 * weightFactor;
 
         return {
@@ -165,8 +165,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const unifiedStyle = (feature: any) => {
         const id = feature.properties.id;
         const isUsed = feature.properties.isUsed;
-        const isHovered = !isMoving && hoveredLine === id;
-        const isClicked = !isMoving && activeLine === id;
+        const isHovered = hoveredLine === id;
+        const isClicked = activeLine === id;
         const isVisible = isNoneExplicitlySelected ? (isClicked || activeLine === id) : (!isFilterActive || selectionSet.has(id) || activeLine === id);
 
         // 1. Determine Color
@@ -201,8 +201,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const glowStyle = (feature: any) => {
         const isUsed = feature.properties.isUsed;
         const id = feature.properties.id;
-        const isHovered = !isMoving && hoveredLine === id;
-        const isClicked = !isMoving && activeLine === id;
+        const isHovered = hoveredLine === id;
+        const isClicked = activeLine === id;
 
         if (!isUsed && !isHovered && !isClicked) return { opacity: 0, interactive: false };
 
@@ -212,7 +212,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         return {
             color: color,
-            weight: (isHovered || isClicked || isUsed) ? styleConfig.highlightWeight + 6 : styleConfig.usedGlowWeight,
+            weight: (isHovered || isClicked || isUsed) ? styleConfig.highlightWeight + (6 * styleConfig.weightFactor) : styleConfig.usedGlowWeight,
             opacity: (isHovered || isClicked || isUsed) ? 0.6 : 0.3,
             lineCap: 'round',
             lineJoin: 'round',
@@ -224,11 +224,12 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const onEachFeature = (feature: any, layer: L.Layer) => {
         const { name, name_en, company, company_en, endpoints } = feature.properties;
 
-        const primaryLine = language === 'en' ? (name_en || name) : name;
-        const secondaryLine = language === 'en' ? (name !== name_en ? name : '') : (name_en && name_en !== name ? name_en : '');
+        // Japanese is always primary (larger), English is always secondary (smaller)
+        const primaryLine = name;
+        const secondaryLine = name_en && name_en !== name ? name_en : '';
 
-        const primaryCorp = language === 'en' ? (company_en || company) : company;
-        const secondaryCorp = language === 'en' ? (company !== company_en ? company : '') : (company_en && company_en !== company ? company_en : '');
+        const primaryCorp = company;
+        const secondaryCorp = company_en && company_en !== company ? company_en : '';
 
         const tooltipContent = `
             <div style="text-align: center; font-family: sans-serif; padding: 4px;">
@@ -263,7 +264,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 onRailroadClick(feature.properties.id);
             },
             mouseover: (e) => {
-                if (!isMobile) {
+                if (!isMobile && !isMoving) {
                     if (tooltipTimeout) clearTimeout(tooltipTimeout);
                     tooltipTimeout = setTimeout(() => {
                         onRailroadHover(feature.properties.id);

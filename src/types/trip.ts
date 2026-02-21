@@ -2,6 +2,8 @@ export interface Trip {
     id: string;
     start: string;
     end: string;
+    startId?: string;
+    endId?: string;
     distance: number;
     path: string[];
     waypoints: string[];

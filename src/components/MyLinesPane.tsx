@@ -33,16 +33,6 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
         return [...recordedTrips].reverse();
     }, [recordedTrips]);
 
-    const formatTime = (tripId: string) => {
-        try {
-            const parts = tripId.split('-');
-            const timestamp = parseInt(parts[parts.length - 1]);
-            if (!isNaN(timestamp)) {
-                return new Date(timestamp).toLocaleDateString() + ' ' + new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-        } catch (e) { }
-        return '';
-    };
 
     return (
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -94,7 +84,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 companyName: comp?.name || compId || 'Unknown',
                                 companyName_en: comp?.name_en || '',
                                 lineName: line?.name || lineId || 'Unknown',
-                                lineName_en: line?.name_en || ''
+                                lineName_en: line?.name_en || '',
+                                lineColor: line?.color || '#cbd5e0'
                             };
                         };
 
@@ -108,11 +99,77 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 const lData = (railData?.lines as any)?.[section.line_id];
                                 return JSON.stringify({
                                     name: lData?.name || section.line_id.toString(),
-                                    name_en: lData?.name_en || ''
+                                    name_en: lData?.name_en || '',
+                                    color: lData?.color || '#3498db'
                                 });
                             }
                             return null;
-                        }).filter(Boolean))).map(s => JSON.parse(s as string)) as { name: string, name_en: string }[];
+                        }).filter(Boolean))).map(s => JSON.parse(s as string)) as { name: string, name_en: string, color: string }[];
+
+                        const StationInfo = ({ info, isStart }: { info: any, isStart: boolean }) => (
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                {/* Line & Company Header */}
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '1px',
+                                    marginBottom: '6px',
+                                    borderLeft: `3px solid ${info.lineColor || '#edf2f7'}`,
+                                    paddingLeft: '8px'
+                                }}>
+                                    <div style={{
+                                        fontSize: '10px',
+                                        fontWeight: '800',
+                                        color: '#4a5568',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {info.lineName}
+                                        {info.lineName_en && <span style={{ fontSize: '9px', fontWeight: '500', color: '#718096', marginLeft: '4px' }}>{info.lineName_en}</span>}
+                                    </div>
+                                    <div style={{
+                                        fontSize: '9px',
+                                        fontWeight: 'bold',
+                                        color: '#a0aec0',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {info.companyName}
+                                        {info.companyName_en && <span style={{ fontWeight: '500', marginLeft: '4px' }}>{info.companyName_en}</span>}
+                                    </div>
+                                </div>
+
+                                {/* Station Name Area */}
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{
+                                        fontSize: '16px',
+                                        fontWeight: '900',
+                                        color: '#1a202c',
+                                        lineHeight: '1.1',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {info.name}
+                                    </div>
+                                    {info.name_en && (
+                                        <div style={{
+                                            fontSize: '10px',
+                                            color: '#718096',
+                                            fontWeight: '500',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            marginTop: '1px'
+                                        }}>
+                                            {info.name_en}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
 
                         return (
                             <div
@@ -127,8 +184,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
                                 }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid #f7fafc', paddingBottom: '8px' }}>
-                                    <div style={{ fontSize: '11px', color: '#a0aec0', fontWeight: '500' }}>{formatTime(trip.id)}</div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
                                     <button
                                         onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
                                         style={{ background: 'none', border: 'none', color: '#cbd5e0', cursor: 'pointer', padding: '4px', fontSize: '14px', transition: 'color 0.2s' }}
@@ -139,89 +195,73 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     </button>
                                 </div>
 
-                                {/* Start Station */}
-                                <div style={{ marginBottom: '10px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '4px' }}>
-                                        {/* Line Row (Primary) */}
-                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', fontSize: '11px', color: '#2d3748', fontWeight: '800' }}>
-                                            <span>{startInfo.lineName}</span>
-                                            {startInfo.lineName_en && (
-                                                <span style={{ fontSize: '10px', color: '#718096', fontWeight: '500', opacity: 0.8 }}>
-                                                    {startInfo.lineName_en}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {/* Company Row (Secondary) */}
-                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', fontSize: '9px', color: '#a0aec0', fontWeight: 'bold' }}>
-                                            <span>{startInfo.companyName}</span>
-                                            {startInfo.companyName_en && (
-                                                <span style={{ fontWeight: '500', opacity: 0.7 }}>
-                                                    {startInfo.companyName_en}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#2d3748', lineHeight: '1.2' }}>{startInfo.name}</div>
-                                    {startInfo.name_en && <div style={{ fontSize: '10px', color: '#a0aec0', marginTop: '-2px' }}>{startInfo.name_en}</div>}
-                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                                    <StationInfo info={startInfo} isStart={true} />
 
-                                <div style={{ margin: '2px 0 2px 12px', borderLeft: '2px dashed #cbd5e0', padding: '10px 0 10px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '10px', color: '#48bb78', fontWeight: 'bold' }}>↓</span>
+                                    <div style={{
+                                        margin: '8px 0 8px 10px',
+                                        padding: '2px 0 2px 18px',
+                                        borderLeft: '2px dotted #cbd5e0',
+                                        minHeight: '24px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}>
                                         {linesUsed.length > 0 && (
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ fontSize: '10px', color: '#718096', fontWeight: '600' }}>
-                                                    {language === 'ko' ? '경유:' : 'via'} {linesUsed.map(l => l.name).join(', ')}
-                                                </span>
-                                                {linesUsed.some(l => l.name_en) && (
-                                                    <span style={{ fontSize: '8px', color: '#a0aec0' }}>
-                                                        {linesUsed.map(l => l.name_en).filter(Boolean).join(', ')}
-                                                    </span>
-                                                )}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                                                <div style={{
+                                                    fontSize: '9px',
+                                                    fontWeight: '900',
+                                                    color: '#48bb78',
+                                                    backgroundColor: '#f0fff4',
+                                                    padding: '1px 4px',
+                                                    borderRadius: '3px',
+                                                    flexShrink: 0
+                                                }}>VIA</div>
+                                                <div style={{
+                                                    fontSize: '10px',
+                                                    color: '#718096',
+                                                    fontWeight: '600',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {linesUsed.map(l => l.name).join(', ')}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
+
+                                    <StationInfo info={endInfo} isStart={false} />
                                 </div>
 
-                                {/* End Station */}
-                                <div style={{ marginBottom: '12px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '4px' }}>
-                                        {/* Line Row (Primary) */}
-                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', fontSize: '11px', color: '#2d3748', fontWeight: '800' }}>
-                                            <span>{endInfo.lineName}</span>
-                                            {endInfo.lineName_en && (
-                                                <span style={{ fontSize: '10px', color: '#718096', fontWeight: '500', opacity: 0.8 }}>
-                                                    {endInfo.lineName_en}
-                                                </span>
-                                            )}
+                                <div style={{
+                                    marginTop: '16px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderTop: '1px solid #edf2f7',
+                                    paddingTop: '12px'
+                                }}>
+                                    {trip.distance > 0 && (
+                                        <div style={{
+                                            fontSize: '12px',
+                                            fontWeight: '800',
+                                            color: '#3182ce',
+                                            backgroundColor: '#ebf8ff',
+                                            padding: '3px 10px',
+                                            borderRadius: '6px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}>
+                                            <span style={{ fontSize: '10px', opacity: 0.7 }}>DIST</span>
+                                            {Math.round(trip.distance * 10) / 10} km
                                         </div>
-                                        {/* Company Row (Secondary) */}
-                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', fontSize: '9px', color: '#a0aec0', fontWeight: 'bold' }}>
-                                            <span>{endInfo.companyName}</span>
-                                            {endInfo.companyName_en && (
-                                                <span style={{ fontWeight: '500', opacity: 0.7 }}>
-                                                    {endInfo.companyName_en}
-                                                </span>
-                                            )}
-                                        </div>
+                                    )}
+                                    <div style={{ fontSize: '9px', color: '#a0aec0', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                                        {trip.sectionIds?.length || 0} SECTIONS
                                     </div>
-                                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#2d3748', lineHeight: '1.2' }}>{endInfo.name}</div>
-                                    {endInfo.name_en && <div style={{ fontSize: '10px', color: '#a0aec0', marginTop: '-2px' }}>{endInfo.name_en}</div>}
                                 </div>
-
-                                {trip.distance > 0 && (
-                                    <div style={{
-                                        display: 'inline-block',
-                                        fontSize: '11px',
-                                        fontWeight: '700',
-                                        color: '#3498db',
-                                        backgroundColor: '#ebf8ff',
-                                        padding: '2px 8px',
-                                        borderRadius: '20px'
-                                    }}>
-                                        {Math.round(trip.distance * 10) / 10} km
-                                    </div>
-                                )}
                             </div>
                         );
                     })

@@ -129,7 +129,10 @@ export function useLineTopology(
 
         return {
             nodes: Array.from(topoNodes.values()),
-            edges: Array.from(edgeInfos.values())
+            edges: Array.from(edgeInfos.values()),
+            adj,
+            nodesById: topoNodes,
+            edgeInfos
         };
     }, [segments, nodes, visitedStations, visitedEdges]);
 }

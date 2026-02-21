@@ -193,7 +193,7 @@ const Stations: React.FC<StationsProps> = ({
 
     const hullStyle = (feature: any) => {
         const { lines } = feature.properties;
-        const isSelected = !isMoving && lines.some((l: string) =>
+        const isSelected = lines.some((l: string) =>
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
         );
 
@@ -211,9 +211,9 @@ const Stations: React.FC<StationsProps> = ({
         const { lineKey, lines, stationId } = feature.properties;
         const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
         const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
-        const isSelected = !isMoving && (lines.some((l: string) =>
+        const isSelected = lines.some((l: string) =>
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
-        ) || (localHoveredStation === stationId));
+        ) || (localHoveredStation === stationId);
 
         // Standardized to black for a cleaner schematic look
         const color = '#313131';
@@ -243,7 +243,7 @@ const Stations: React.FC<StationsProps> = ({
         const isHovered = (hoveredLine === lineKey || localHoveredStation === stationId);
         const isClicked = (activeLine === lineKey);
 
-        if (isMoving || (!isHovered && !isClicked)) return { opacity: 0, interactive: false };
+        if (!isHovered && !isClicked) return { opacity: 0, interactive: false };
 
         const color = isHovered ? '#FFD700' : '#007AFF';
 
@@ -254,7 +254,7 @@ const Stations: React.FC<StationsProps> = ({
 
         return {
             color: color,
-            weight: (isMobile ? weight * 1.4 : weight) + 2.2,
+            weight: (isMobile ? weight * 1.4 : weight) + (2.2 * (weight / 3.5)),
             opacity: 1.0,
             pane: 'railroad-casing',
             interactive: false,

@@ -201,13 +201,14 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
 
             <div style={{
                 flex: 1,
-                minHeight: '400px',
                 position: 'relative',
-                overflow: 'hidden'
             }}>
                 <TubeMap
                     nodes={topology.nodes}
                     edges={topology.edges}
+                    adj={topology.adj}
+                    nodesById={topology.nodesById}
+                    edgeInfos={topology.edgeInfos}
                     visitedStations={stats.visitedStations}
                     visitedEdges={visitedEdges}
                     lineColor={lineColor}
@@ -219,11 +220,13 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                             if (pathData) {
                                 onRecordTrip({
                                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                    start,
-                                    end,
+                                    start: start,
+                                    end: end,
+                                    startId: start,
+                                    endId: end,
                                     ...pathData,
                                     waypoints: [start, end],
-                                    sectionIds: [] // Placeholder to satisfy Trip type requirements
+                                    sectionIds: (pathData as any).sectionIds || []
                                 });
                             }
                         }
