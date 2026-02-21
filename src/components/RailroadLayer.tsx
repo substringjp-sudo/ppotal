@@ -61,13 +61,13 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         if (zoomGroup === 1) weightFactor = 0.5;
         else if (zoomGroup === 2) weightFactor = 0.8;
 
-        // Discrete weights per stage
-        const baseVisibilityWeight = (zoomGroup >= 3 ? 5 : (zoomGroup === 2 ? 2.5 : 1)) * weightFactor;
-        const baseInvisibilityWeight = (zoomGroup >= 3 ? 3 : 1) * weightFactor;
-        const usedWeight = (zoomGroup >= 3 ? 8 : (zoomGroup === 2 ? 4 : 2)) * weightFactor;
-        const usedGlowWeight = (zoomGroup >= 3 ? 12 : (zoomGroup === 2 ? 7 : 4)) * weightFactor;
-        const casingWeight = baseVisibilityWeight + (zoomGroup >= 3 ? 1.5 : 1);
-        const highlightWeight = 12 * weightFactor;
+        // Discrete weights per stage - now consistent to avoid bloat at zoom 12+
+        const baseVisibilityWeight = 2.5 * weightFactor;
+        const baseInvisibilityWeight = 1.5 * weightFactor;
+        const usedWeight = 4.0 * weightFactor;
+        const usedGlowWeight = 7.0 * weightFactor;
+        const casingWeight = baseVisibilityWeight + 1.2;
+        const highlightWeight = 10 * weightFactor;
 
         return {
             weightFactor,
@@ -171,15 +171,14 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         // 1. Determine Color
         let color = feature.properties.color;
-        if (isHovered) color = '#FFD700';
-        else if (isClicked) color = '#007AFF';
-        else if (isUsed) color = '#FFD700';
-        else if (!isVisible) color = '#999999';
+        // Hover/Clicked no longer override main color to preserve line identity
+        if (!isVisible) color = '#999999';
 
         // 2. Determine Weight
         let weight = isVisible ? styleConfig.baseVisibilityWeight : styleConfig.baseInvisibilityWeight;
         if (isUsed) weight = styleConfig.usedWeight;
-        if (isHovered || isClicked) weight = styleConfig.highlightWeight;
+        // Hover/Clicked no longer override weight here to prevent "blooming"
+        // We handle emphasis in the glow/casing layers
 
         // 3. Determine Opacity
         let opacity = isVisible ? 0.8 : 0.4;
@@ -200,15 +199,22 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     const casingStyle = (feature: any) => {
         const id = feature.properties.id;
+        const isUsed = feature.properties.isUsed;
+        const isHovered = hoveredLine === id;
+        const isClicked = activeLine === id;
         const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
 
-        // Casing is only for visibility and aesthetics, hide if moving or too far out
-        if (!isVisible) return { opacity: 0, interactive: false };
+        if (!isVisible && !isHovered && !isClicked && !isUsed) return { opacity: 0, interactive: false };
+
+        let color = '#000000';
+        if (isHovered) color = '#FFD700';
+        else if (isClicked) color = '#007AFF';
+        else if (isUsed) color = '#2ecc71'; // Visited: Green Border
 
         return {
-            color: '#000000',
-            weight: styleConfig.casingWeight,
-            opacity: 0.5,
+            color: color,
+            weight: styleConfig.casingWeight + (isHovered || isClicked || isUsed ? 2 : 0),
+            opacity: (isHovered || isClicked || isUsed) ? 1.0 : 0.5,
             lineCap: 'round',
             lineJoin: 'round',
             smoothFactor: styleConfig.smoothFactor,
@@ -220,13 +226,18 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const isUsed = feature.properties.isUsed;
         const id = feature.properties.id;
         const isHovered = hoveredLine === id;
+        const isClicked = activeLine === id;
 
-        if (!isUsed && !isHovered) return { opacity: 0, interactive: false };
+        if (!isUsed && !isHovered && !isClicked) return { opacity: 0, interactive: false };
+
+        let color = '#FFD700';
+        if (isClicked) color = '#007AFF';
+        else if (isUsed) color = '#2ecc71'; // Visited: Green Glow
 
         return {
-            color: '#FFD700',
-            weight: isHovered ? styleConfig.highlightWeight + 4 : styleConfig.usedGlowWeight,
-            opacity: isHovered ? 0.4 : 0.3,
+            color: color,
+            weight: (isHovered || isClicked || isUsed) ? styleConfig.highlightWeight + 6 : styleConfig.usedGlowWeight,
+            opacity: (isHovered || isClicked || isUsed) ? 0.6 : 0.3,
             lineCap: 'round',
             lineJoin: 'round',
             smoothFactor: styleConfig.smoothFactor,

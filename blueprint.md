@@ -39,6 +39,14 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 10. **Trip Drawing Fix**: Corrected the coordinate order [lon, lat] for the trip recorder's visual tail. ✅
 11. **Enhanced Visual Data (Bilingual)**: Upgraded trip history and station tooltips to display full company (운영회사) and line names (노선명) in both Japanese and English. Tooltips now feature color-coded "line boxes" for better readability at transfer stations. ✅
 12. **Transfer Visuals & Interaction**: Improved transfer station markers with larger inner dots (50% radius) and fixed event bubbling to ensure tooltips appear even when hovering precisely over the inner dot. ✅
+13. **Unified Bilingual Naming hierarchy**: Standardized all components to prioritize local names (Japanese/Korean) over English, with clear visual weights. ✅
+143. **Intelligent Label Management**: Implemented greedy collision avoidance for station labels and logical hub merging to resolve clutter in dense urban centers like Tokyo. ✅
+44. **Standardized Platform Rendering**: Adjusted platform path thickness and visibility to match regular railroad lines (2.5px - 5px) across all zoom levels, ensuring a balanced visual hierarchy. ✅
+
+## Deployment Plan
+1. **Pre-deployment Check**: Run `npm run lint` and `npm run build` to ensure project stability.
+2. **Firebase Hosting**: Deploy the Next.js application to `jprail.web.app` using Firebase Hosting.
+3. **Verification**: Confirm SSR and client-side interactions on the live production environment.
 
 # 메모
 - **상호작용 최적화 (Interaction & Stability)**: 지도 위에서 노선이나 역이 클릭되지 않던 근본적인 원인들(레이어 중첩, 잦은 리렌더링 등)을 모두 해결했습니다. 이제 모든 인터랙티브 레이어는 `ref`와 `setStyle`을 통해 상태 변화 시 끊김 없이 시각적으로 업데이트되며, 마우스 클릭이 다른 투명 레이어에 의해 방해받지 않도록 CSS와 Pane 구조를 개선했습니다.

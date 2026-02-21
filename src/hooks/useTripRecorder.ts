@@ -206,6 +206,56 @@ export const useTripRecorder = ({
         };
     }, [map, dragStartStation]);
 
+    const handleEnd = useCallback(() => {
+        const currentDragStation = dragStartStationRef.current;
+        if (currentDragStation && graph) {
+            const { waypoints, segments } = dragState.current;
+            const lastWaypoint = waypoints[waypoints.length - 1];
+            const lastStData = visibleStationsRef.current?.[lastWaypoint];
+            const isEndingOnJoint = lastStData?.isJoint;
+
+            if (segments.length > 0 && !isEndingOnJoint) {
+                const fullPath: string[] = [];
+                const fullGeoms: [number, number][][] = [];
+                const fullSectionIds: number[] = [];
+                let totalDist = 0;
+
+                segments.forEach((seg, idx) => {
+                    if (idx === 0) fullPath.push(...seg.path);
+                    else fullPath.push(...seg.path.slice(1));
+                    fullGeoms.push(...seg.geometries);
+                    fullSectionIds.push(...(seg.sectionIds || []));
+                    totalDist += seg.distance;
+                });
+
+                const trip = {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    start: waypoints[0],
+                    end: waypoints[waypoints.length - 1],
+                    path: fullPath,
+                    distance: totalDist,
+                    geometries: fullGeoms,
+                    waypoints: waypoints,
+                    sectionIds: Array.from(new Set(fullSectionIds)) // Uniquify
+                };
+
+                if (isEditMode && onDraftComplete) {
+                    onDraftComplete(trip);
+                } else if (!isEditMode && onRecordTrip) {
+                    onRecordTrip(trip);
+                }
+            }
+        }
+
+        // Reset State
+        setDragStartStation(null);
+        setDragStartCoords(null);
+        setDragPath([]);
+        dragState.current = { waypoints: [], segments: [] };
+        lastLayerPointRef.current = null;
+        if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
+    }, [graph, isEditMode, onRecordTrip, onDraftComplete]);
+
     // Handle Global Mouse/Touch Move/Up
     useEffect(() => {
         if (!map) return;
@@ -235,59 +285,6 @@ export const useTripRecorder = ({
                 scrollVelocityRef.current = { x: 0, y: 0 };
                 lastLayerPointRef.current = layerPoint;
             }
-        };
-
-        const handleEnd = () => {
-            const currentDragStation = dragStartStationRef.current;
-            if (currentDragStation && graph) {
-                const { waypoints, segments } = dragState.current;
-                const lastWaypoint = waypoints[waypoints.length - 1];
-                const lastStData = visibleStationsRef.current?.[lastWaypoint];
-                const isEndingOnJoint = lastStData?.isJoint;
-
-                if (segments.length > 0 && !isEndingOnJoint) {
-                    const fullPath: string[] = [];
-                    const fullGeoms: [number, number][][] = [];
-                    const fullSectionIds: number[] = [];
-                    let totalDist = 0;
-
-                    segments.forEach((seg, idx) => {
-                        if (idx === 0) fullPath.push(...seg.path);
-                        else fullPath.push(...seg.path.slice(1));
-                        fullGeoms.push(...seg.geometries);
-                        fullSectionIds.push(...(seg.sectionIds || []));
-                        totalDist += seg.distance;
-                    });
-
-                    const trip = {
-                        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                        start: waypoints[0],
-                        end: waypoints[waypoints.length - 1],
-                        path: fullPath,
-                        distance: totalDist,
-                        geometries: fullGeoms,
-                        waypoints: waypoints,
-                        sectionIds: Array.from(new Set(fullSectionIds)) // Uniquify
-                    };
-
-                    if (isEditMode && onDraftComplete) {
-                        // In edit mode, we return the draft but don't clear path immediately if needed?
-                        // Actually, if we clear path, the 'draft' line disappears.
-                        // We probably want the hook to reset, and the parent to render the 'draft' line using the returned trip.
-                        onDraftComplete(trip);
-                    } else if (!isEditMode && onRecordTrip) {
-                        onRecordTrip(trip);
-                    }
-                }
-            }
-
-            // Reset State
-            setDragStartStation(null);
-            setDragStartCoords(null);
-            setDragPath([]);
-            dragState.current = { waypoints: [], segments: [] };
-            lastLayerPointRef.current = null;
-            if (map) map.dragging.enable();
         };
 
         const onMouseMove = (e: L.LeafletMouseEvent) => {
@@ -330,12 +327,13 @@ export const useTripRecorder = ({
             container.removeEventListener('touchmove', onTouchMove);
             container.removeEventListener('touchend', onTouchEnd);
         };
-    }, [map, graph, isEditMode, onRecordTrip, onDraftComplete]);
+    }, [map, graph, handleEnd]);
 
     return {
         dragStartStation,
         dragStartCoords,
         dragPath,
-        handleStationMouseDown
+        handleStationMouseDown,
+        handleStationMouseUp: handleEnd
     };
 };

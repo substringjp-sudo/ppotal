@@ -67,11 +67,11 @@ interface MapPaneProps {
 
 const PANE_STYLES = {
     topTooltips: { zIndex: 1000, pointerEvents: 'none' as const },
-    uiElements: { zIndex: 850, pointerEvents: 'none' as const },
     railroadLines: { zIndex: 820 },   // Main interaction pane
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const },
     railroadGlow: { zIndex: 810, pointerEvents: 'none' as const },
     stationLabels: { zIndex: 880, pointerEvents: 'none' as const },
+    uiElements: { zIndex: 818, pointerEvents: 'none' as const }, // Below lines to avoid hiding them
     background: { zIndex: 100 },
 };
 
@@ -190,7 +190,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     const {
         dragStartStation,
         dragPath,
-        handleStationMouseDown
+        handleStationMouseDown,
+        handleStationMouseUp
     } = useTripRecorder({
         graph: graph as any,
         visibleStations,
@@ -394,6 +395,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     mapBounds={mapBounds}
                     handleStationClick={handleStationClick}
                     handleStationMouseDown={handleStationMouseDown}
+                    handleStationMouseUp={handleStationMouseUp}
                     onStationHover={setHoveredLine} // Map station hover to line hover for context
                 />
             }
@@ -404,9 +406,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                         positions={dragPath.map(segment => segment.map(c => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
                         pathOptions={{
                             color: '#007AFF',
-                            weight: 6 * (zoomLevel <= 9 ? Math.max(0.4, zoomLevel / 10) : 1.0),
-                            opacity: 0.8,
-                            dashArray: '10, 10',
+                            weight: 12,
+                            opacity: 0.5,
                             lineCap: 'round',
                             lineJoin: 'round',
                             pane: 'ui-elements'
@@ -419,9 +420,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                         positions={draftTrip.geometries.map((segment: number[][]) => segment.map((c: number[]) => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
                         pathOptions={{
                             color: '#ff9800',
-                            weight: 6,
-                            opacity: 0.9,
-                            dashArray: '5, 10',
+                            weight: 12,
+                            opacity: 0.5,
                             lineCap: 'round',
                             lineJoin: 'round',
                             pane: 'ui-elements'

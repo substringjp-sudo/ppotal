@@ -25,6 +25,7 @@ interface StationsProps {
     mapBounds: L.LatLngBounds | null;
     handleStationClick: (id: string, lines?: string[]) => void;
     handleStationMouseDown: (id: string, coords: [number, number]) => void;
+    handleStationMouseUp?: (id: string) => void;
     onStationHover?: (id: string | null) => void;
 }
 
@@ -44,6 +45,7 @@ const Stations: React.FC<StationsProps> = ({
     mapBounds,
     handleStationClick,
     handleStationMouseDown,
+    handleStationMouseUp,
     onStationHover
 }) => {
     if (!processedStations) return null;
@@ -52,7 +54,9 @@ const Stations: React.FC<StationsProps> = ({
     const allEntries = useMemo(() => {
         return Object.entries(processedStations).map(([id, data]) => {
             let isVisibleAtZoom = true;
-            if (effectiveZoom === 8 && data.lines.length < 2) isVisibleAtZoom = false;
+            // Removed: if (effectiveZoom === 8 && data.lines.length < 2) isVisibleAtZoom = false;
+            // Now we keep all stations in allEntries so platforms can be rendered for all.
+            // We'll filter the dots (node features) later in visualsGeoJson for density.
             if (effectiveZoom < 8) isVisibleAtZoom = false;
             if (data.isJoint) isVisibleAtZoom = false;
 
@@ -96,7 +100,10 @@ const Stations: React.FC<StationsProps> = ({
         allEntries.forEach((entry) => {
             const { id, data } = entry;
 
-            // At high zoom levels (14+), platforms are shown, dots are invisible.
+            // At mid zoom (8-11), we only show dots for transfer stations or used stations
+            // to keep the map clean, but platforms (if any) are already processed above for all stations.
+            if (effectiveZoom === 8 && data.lines.length < 2 && !data.isUsed) return;
+
             // At mid zoom (8-12), we cull extremely close dots to avoid "blobbing"
             if (nodeCullDist > 0) {
                 const isImportant = data.lines.length > 1 || data.isUsed;
@@ -165,17 +172,25 @@ const Stations: React.FC<StationsProps> = ({
         );
 
         const color = getColor(lineKey);
-        const weight = isSelected ? (isMobile ? 18 : 14) : (isMobile ? 14 : 10);
+
+        // Match thickness with RailroadLayer: Standardized to 2.5px to avoid bloat
+        const weight = 2.5;
+
         const opacity = isSelected ? 0.9 : 0.4;
         const isDimmed = isFilterActive && !isSelected;
 
         return {
             color: isDimmed ? '#dddddd' : color,
-            weight: weight,
+            weight: isMobile ? weight * 1.4 : weight,
             opacity: isDimmed ? 0.15 : opacity,
             pane: 'railroad-glow', // Move platforms below railroads
-            interactive: false
-        };
+            interactive: false,
+            lineCap: 'round',
+            lineJoin: 'round',
+            // Use shadow/glow for selection focus instead of bloat
+            shadowColor: isSelected ? (activeLine === lineKey ? '#007AFF' : '#FFD700') : undefined,
+            shadowBlur: isSelected ? 10 : 0
+        } as L.PathOptions;
     };
 
     const combinedStyle = (feature: any) => {
@@ -261,6 +276,11 @@ const Stations: React.FC<StationsProps> = ({
             },
             mouseout: () => {
                 if (onStationHover) onStationHover(null);
+            },
+            mouseup: (e) => {
+                // Ensure drag ends if mouse released over node
+                L.DomEvent.stopPropagation(e);
+                if (handleStationMouseUp) handleStationMouseUp(id);
             }
         });
     };
@@ -383,8 +403,8 @@ const Stations: React.FC<StationsProps> = ({
                     zoomConfig={{ baseRadius: 7, weightValue: 4, zoomCategory: 4 }}
                     getColor={getColor}
                     handleStationClick={handleStationClick}
-                    onStationMouseDown={() => { }}
-                    onStationMouseUp={() => { }}
+                    onStationMouseDown={handleStationMouseDown}
+                    onStationMouseUp={handleStationMouseUp || (() => { })}
                     dragStartStation={null}
                     visitedStations={visitedStations}
                     settings={settings}
