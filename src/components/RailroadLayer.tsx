@@ -165,9 +165,9 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const unifiedStyle = (feature: any) => {
         const id = feature.properties.id;
         const isUsed = feature.properties.isUsed;
-        const isHovered = hoveredLine === id;
-        const isClicked = activeLine === id;
-        const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
+        const isHovered = !isMoving && hoveredLine === id;
+        const isClicked = !isMoving && activeLine === id;
+        const isVisible = isNoneExplicitlySelected ? (isClicked || activeLine === id) : (!isFilterActive || selectionSet.has(id) || activeLine === id);
 
         // 1. Determine Color
         let color = feature.properties.color;
@@ -197,36 +197,12 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         } as L.PathOptions;
     };
 
-    const casingStyle = (feature: any) => {
-        const id = feature.properties.id;
-        const isUsed = feature.properties.isUsed;
-        const isHovered = hoveredLine === id;
-        const isClicked = activeLine === id;
-        const isVisible = isNoneExplicitlySelected ? activeLine === id : (!isFilterActive || selectionSet.has(id) || activeLine === id);
-
-        if (!isVisible && !isHovered && !isClicked && !isUsed) return { opacity: 0, interactive: false };
-
-        let color = '#000000';
-        if (isHovered) color = '#FFD700';
-        else if (isClicked) color = '#007AFF';
-        else if (isUsed) color = '#2ecc71'; // Visited: Green Border
-
-        return {
-            color: color,
-            weight: styleConfig.casingWeight + (isHovered || isClicked || isUsed ? 2 : 0),
-            opacity: (isHovered || isClicked || isUsed) ? 1.0 : 0.5,
-            lineCap: 'round',
-            lineJoin: 'round',
-            smoothFactor: styleConfig.smoothFactor,
-            interactive: false
-        } as L.PathOptions;
-    };
 
     const glowStyle = (feature: any) => {
         const isUsed = feature.properties.isUsed;
         const id = feature.properties.id;
-        const isHovered = hoveredLine === id;
-        const isClicked = activeLine === id;
+        const isHovered = !isMoving && hoveredLine === id;
+        const isClicked = !isMoving && activeLine === id;
 
         if (!isUsed && !isHovered && !isClicked) return { opacity: 0, interactive: false };
 
@@ -309,16 +285,28 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         });
     };
 
+    const interactionStyle = (feature: any) => {
+        return {
+            color: 'transparent',
+            weight: styleConfig.baseVisibilityWeight + (isMobile ? 20 : 12),
+            opacity: 0,
+            lineCap: 'round',
+            lineJoin: 'round',
+            smoothFactor: styleConfig.smoothFactor,
+            interactive: true,
+        } as L.PathOptions;
+    };
+
     const mainLayerRef = useRef<L.GeoJSON>(null);
-    const casingLayerRef = useRef<L.GeoJSON>(null);
     const glowLayerRef = useRef<L.GeoJSON>(null);
+    const interactionLayerRef = useRef<L.GeoJSON>(null);
 
     // Dynamic Style Update without unmounting the layer
     useEffect(() => {
         if (mainLayerRef.current) mainLayerRef.current.setStyle(unifiedStyle);
-        if (casingLayerRef.current) casingLayerRef.current.setStyle(casingStyle);
         if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
-    }, [activeLine, hoveredLine, isMoving, unifiedStyle, casingStyle, glowStyle]);
+        if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+    }, [activeLine, hoveredLine, isMoving, unifiedStyle, glowStyle, interactionStyle]);
 
     if (!mergedGeoJsonData) return null;
 
@@ -341,24 +329,25 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 />
             )}
 
-            {zoomGroup >= 3 && mergedGeoJsonData && (
-                <GeoJSON
-                    ref={casingLayerRef}
-                    key={`rail-casing-${layerKey}`}
-                    data={mergedGeoJsonData as any}
-                    style={casingStyle}
-                    interactive={false}
-                    pane="railroad-casing"
-                />
-            )}
-
-            {/* 2. Main Interactive Line Layer (Unified visuals and interaction) */}
+            {/* 2. Main Visual Line Layer (Non-interactive now) */}
             {mergedGeoJsonData && (
                 <GeoJSON
                     ref={mainLayerRef}
                     key={`rail-main-${layerKey}`}
                     data={mergedGeoJsonData as any}
                     style={unifiedStyle}
+                    interactive={false}
+                    pane="railroad-lines"
+                />
+            )}
+
+            {/* 3. Interaction Layer (Transparent, Thick, handles events) */}
+            {mergedGeoJsonData && (
+                <GeoJSON
+                    ref={interactionLayerRef}
+                    key={`rail-interaction-${layerKey}`}
+                    data={mergedGeoJsonData as any}
+                    style={interactionStyle}
                     onEachFeature={onEachFeature}
                     pane="railroad-lines"
                 />

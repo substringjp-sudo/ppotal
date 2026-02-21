@@ -41,7 +41,9 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 12. **Transfer Visuals & Interaction**: Improved transfer station markers with larger inner dots (50% radius) and fixed event bubbling to ensure tooltips appear even when hovering precisely over the inner dot. ✅
 13. **Unified Bilingual Naming hierarchy**: Standardized all components to prioritize local names (Japanese/Korean) over English, with clear visual weights. ✅
 143. **Intelligent Label Management**: Implemented greedy collision avoidance for station labels and logical hub merging to resolve clutter in dense urban centers like Tokyo. ✅
-44. **Standardized Platform Rendering**: Adjusted platform path thickness and visibility to match regular railroad lines (2.5px - 5px) across all zoom levels, ensuring a balanced visual hierarchy. ✅
+44. **Advanced Platform Interaction**: Upgraded platforms to be fully interactive. They now support station tooltips, pathfinding start/end points, and visual hover highlights (yellow border). ✅
+45. **Dynamic Platform Scaling**: Implemented zoom-aware thickness for platforms to match the behavior of railroad lines. ✅
+46. **Expanded Interaction Range**: Broadened the hit area for both railroad lines and platforms (+12-25px) to improve usability, especially on mobile, without affecting the visual thinness. ✅
 
 ## Deployment Plan
 1. **Pre-deployment Check**: Run `npm run lint` and `npm run build` to ensure project stability.

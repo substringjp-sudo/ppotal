@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo, useRef, useEffect } from 'react';
+import React, { memo, useMemo, useRef, useEffect, useState } from 'react';
 import L from 'leaflet';
 import { GeoJSON } from 'react-leaflet';
 import { MapStyleSettings } from '../app/page';
@@ -8,6 +8,7 @@ import { Language } from '../lib/translations';
 import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker'; // Keep for labels and interaction
 import { RailData } from '../types/railData';
+import { convexHull } from '../lib/geoUtils';
 
 interface StationsProps {
     processedStations: Record<string, ProcessedStation> | null;
@@ -21,6 +22,7 @@ interface StationsProps {
     settings: MapStyleSettings;
     language: Language;
     isMobile: boolean;
+    isMoving?: boolean;
     railData: RailData;
     mapBounds: L.LatLngBounds | null;
     handleStationClick: (id: string, lines?: string[]) => void;
@@ -41,6 +43,7 @@ const Stations: React.FC<StationsProps> = ({
     settings,
     language,
     isMobile,
+    isMoving = false,
     railData,
     mapBounds,
     handleStationClick,
@@ -67,29 +70,30 @@ const Stations: React.FC<StationsProps> = ({
     // 2. Prepare GeoJSON for "Baked" visuals (STABLE during hover)
     const visualsGeoJson = useMemo(() => {
         const features: any[] = [];
-        const platformGroups = new Map<string, { coords: number[][][], lineKey: string }>();
 
+        // Platforms per station
         allEntries.forEach(({ id, data }) => {
             if (data.nodes) {
-                const primaryLine = data.lines[0] || 'Unknown';
-                if (!platformGroups.has(primaryLine)) {
-                    platformGroups.set(primaryLine, { coords: [], lineKey: primaryLine });
-                }
+                const platforms: number[][][] = [];
                 data.nodes.forEach(node => {
                     if (node.platforms) {
-                        platformGroups.get(primaryLine)!.coords.push(...node.platforms);
+                        platforms.push(...node.platforms);
                     }
                 });
-            }
-        });
 
-        platformGroups.forEach((group) => {
-            if (group.coords.length === 0) return;
-            features.push({
-                type: 'Feature',
-                geometry: { type: 'MultiLineString', coordinates: group.coords },
-                properties: { type: 'platform', lineKey: group.lineKey, lines: [group.lineKey] }
-            });
+                if (platforms.length > 0) {
+                    features.push({
+                        type: 'Feature',
+                        geometry: { type: 'MultiLineString', coordinates: platforms },
+                        properties: {
+                            type: 'platform',
+                            stationId: id,
+                            lineKey: data.lines[0] || 'Unknown',
+                            lines: data.lines
+                        }
+                    });
+                }
+            }
         });
 
         // 3. Node Features with Density Management
@@ -134,8 +138,35 @@ const Stations: React.FC<StationsProps> = ({
             });
         });
 
+        // 4. Hull Features for Transfer Stations (Background Shapes)
+        allEntries.forEach(({ id, data }) => {
+            if (data.lines.length > 1 && data.nodes) {
+                const points: [number, number][] = [];
+                data.nodes.forEach(n => {
+                    points.push(n.coord);
+                    if (n.platforms) {
+                        n.platforms.forEach(p => p.forEach(pt => points.push([pt[1], pt[0]])));
+                    }
+                });
+
+                if (points.length >= 3) {
+                    const hull = convexHull(points);
+                    if (hull.length >= 3) {
+                        features.push({
+                            type: 'Feature',
+                            geometry: { type: 'Polygon', coordinates: [hull.map(p => [p[1], p[0]])] },
+                            properties: { type: 'hull', stationId: id, lines: data.lines }
+                        });
+                    }
+                }
+            }
+        });
+
         return { type: 'FeatureCollection', features };
     }, [allEntries, effectiveZoom]);
+
+    // Track local hover for platforms to show yellow border without affecting general line hover
+    const [localHoveredStation, setLocalHoveredStation] = useState<string | null>(null);
 
     // 3. Dynamic Styles (Access props directly)
     const nodeStyle = (feature: any) => {
@@ -149,57 +180,112 @@ const Stations: React.FC<StationsProps> = ({
         let radius = 3;
         if (effectiveZoom === 12) radius = 5;
         if (effectiveZoom >= 14) radius = 7;
-        if (isTransfer) radius *= 1.3;
-
         const isDimmed = isFilterActive && !isSelected;
-        const color = isDimmed ? '#e0e0e0' : (isUsed ? '#ff9800' : '#1a1a1a');
 
         return {
             radius: radius,
-            fillColor: color,
+            fillColor: '#000',
             stroke: false,
-            fillOpacity: effectiveZoom >= 14 ? 0 : (isDimmed ? 0.6 : 1), // Brighter opacity for light grey
-            pane: 'railroad-lines' // Use the same interaction pane as lines
+            fillOpacity: 0, // Dots are now invisible interaction targets
+            pane: 'railroad-lines' // Use same pane as railroad for event pass-through
+        };
+    };
+
+    const hullStyle = (feature: any) => {
+        const { lines } = feature.properties;
+        const isSelected = !isMoving && lines.some((l: string) =>
+            selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
+        );
+
+        return {
+            fillColor: isSelected ? '#ffffff' : '#f8f9fa',
+            fillOpacity: 0.9,
+            color: '#333333',
+            weight: isSelected ? 2 : 1.2,
+            pane: 'railroad-glow', // Behind railroad lines and platforms
+            interactive: false
         };
     };
 
     const platformStyle = (feature: any) => {
-        const { lineKey, lines } = feature.properties;
+        const { lineKey, lines, stationId } = feature.properties;
         const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
         const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
-        const isSelected = lines.some((l: string) =>
+        const isSelected = !isMoving && (lines.some((l: string) =>
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
-        );
+        ) || (localHoveredStation === stationId));
 
-        const color = getColor(lineKey);
+        // Standardized to black for a cleaner schematic look
+        const color = '#313131';
 
-        // Match thickness with RailroadLayer: Standardized to 2.5px to avoid bloat
-        const weight = 2.5;
+        // Match thickness with RailroadLayer: Stage-based
+        let weight = 3.5;
+        if (effectiveZoom <= 7) weight = 1.5;
+        else if (effectiveZoom <= 11) weight = 2.5;
+        else if (effectiveZoom <= 13) weight = 3.0;
 
-        const opacity = isSelected ? 0.9 : 0.4;
+        const opacity = 1.0;
         const isDimmed = isFilterActive && !isSelected;
 
         return {
             color: isDimmed ? '#dddddd' : color,
             weight: isMobile ? weight * 1.4 : weight,
-            opacity: isDimmed ? 0.15 : opacity,
-            pane: 'railroad-glow', // Move platforms below railroads
-            interactive: false,
+            opacity: isDimmed ? 0.3 : opacity,
+            pane: 'railroad-lines', // Platforms act as part of the line network
+            interactive: false, // Interaction moved to interaction layer
             lineCap: 'round',
             lineJoin: 'round',
-            // Use shadow/glow for selection focus instead of bloat
-            shadowColor: isSelected ? (activeLine === lineKey ? '#007AFF' : '#FFD700') : undefined,
-            shadowBlur: isSelected ? 10 : 0
         } as L.PathOptions;
     };
 
+    const platformCasingStyle = (feature: any) => {
+        const { lineKey, stationId } = feature.properties;
+        const isHovered = (hoveredLine === lineKey || localHoveredStation === stationId);
+        const isClicked = (activeLine === lineKey);
+
+        if (isMoving || (!isHovered && !isClicked)) return { opacity: 0, interactive: false };
+
+        const color = isHovered ? '#FFD700' : '#007AFF';
+
+        let weight = 3.5;
+        if (effectiveZoom <= 7) weight = 1.5;
+        else if (effectiveZoom <= 11) weight = 2.5;
+        else if (effectiveZoom <= 13) weight = 3.0;
+
+        return {
+            color: color,
+            weight: (isMobile ? weight * 1.4 : weight) + 2.2,
+            opacity: 1.0,
+            pane: 'railroad-casing',
+            interactive: false,
+            lineCap: 'round',
+            lineJoin: 'round'
+        };
+    };
+
+    const platformInteractionStyle = (feature: any) => {
+        // Broaden hit area for platforms more than nodes (user request)
+        return {
+            color: 'transparent',
+            weight: isMobile ? 35 : 25,
+            opacity: 0,
+            pane: 'railroad-lines', // Use same pane as railroad for event pass-through
+            interactive: true,
+            lineCap: 'round',
+            lineJoin: 'round'
+        };
+    };
+
     const combinedStyle = (feature: any) => {
+        if (feature.properties.type === 'hull') return hullStyle(feature);
         if (feature.properties.type === 'platform') return platformStyle(feature);
         return nodeStyle(feature);
     };
 
     const onEachStation = (feature: any, layer: L.Layer) => {
-        if (feature.properties.type !== 'node') return;
+        const isNode = feature.properties.type === 'node';
+        const isPlatform = feature.properties.type === 'platform';
+        if (!isNode && !isPlatform) return;
 
         const id = feature.properties.stationId;
         const station = processedStations![id];
@@ -272,13 +358,15 @@ const Stations: React.FC<StationsProps> = ({
                 handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
             },
             mouseover: () => {
+                setLocalHoveredStation(id);
                 if (onStationHover) onStationHover(id);
             },
             mouseout: () => {
+                setLocalHoveredStation(null);
                 if (onStationHover) onStationHover(null);
             },
             mouseup: (e) => {
-                // Ensure drag ends if mouse released over node
+                // Ensure drag ends if mouse released over node/platform
                 L.DomEvent.stopPropagation(e);
                 if (handleStationMouseUp) handleStationMouseUp(id);
             }
@@ -286,13 +374,21 @@ const Stations: React.FC<StationsProps> = ({
     };
 
     const geoJsonRef = useRef<L.GeoJSON>(null);
+    const platformInteractionRef = useRef<L.GeoJSON>(null);
+    const platformCasingRef = useRef<L.GeoJSON>(null);
 
     // Update styles without remounting
     useEffect(() => {
         if (geoJsonRef.current) {
             geoJsonRef.current.setStyle(combinedStyle as any);
         }
-    }, [activeLine, hoveredLine, selectedLines, combinedStyle]);
+        if (platformInteractionRef.current) {
+            platformInteractionRef.current.setStyle(platformInteractionStyle as any);
+        }
+        if (platformCasingRef.current) {
+            platformCasingRef.current.setStyle(platformCasingStyle as any);
+        }
+    }, [activeLine, hoveredLine, selectedLines, combinedStyle, platformCasingStyle, localHoveredStation]);
 
     // 4. Force re-render key ONLY for structural changes
     const bakedKey = useMemo(() => {
@@ -358,6 +454,15 @@ const Stations: React.FC<StationsProps> = ({
 
     return (
         <>
+            {/* Platform Casing (Highlight) Layer */}
+            <GeoJSON
+                ref={platformCasingRef}
+                key={`platforms-casing-${bakedKey}`}
+                data={visualsGeoJson as any}
+                style={platformCasingStyle as any}
+                filter={(feature) => feature.properties.type === 'platform'}
+            />
+
             {/* Baked Layer: High-performance canvas rendering for points/lines */}
             <GeoJSON
                 ref={geoJsonRef}
@@ -366,26 +471,20 @@ const Stations: React.FC<StationsProps> = ({
                 style={combinedStyle as any}
                 pointToLayer={(feature, latlng) => {
                     if (feature.properties.type === 'node') {
-                        const style = nodeStyle(feature);
-                        const mainMarker = L.circleMarker(latlng, style);
-
-                        if (feature.properties.isTransfer) {
-                            const isDimmed = feature.properties.isFilterActive && !feature.properties.isSelected;
-                            const innerDot = L.circleMarker(latlng, {
-                                radius: style.radius * 0.6, // Increased from 0.5 to 0.6
-                                fillColor: isDimmed ? '#f5f5f5' : '#ffffff',
-                                stroke: false,
-                                fillOpacity: effectiveZoom >= 14 ? 0 : (isDimmed ? 0.5 : 1.0), // Hide inner dot at 14+
-                                interactive: true,
-                                pane: 'railroad-lines'
-                            });
-                            // Use featureGroup for better event propagation
-                            return L.featureGroup([mainMarker, innerDot]);
-                        }
-                        return mainMarker;
+                        return L.circleMarker(latlng, nodeStyle(feature));
                     }
                     return (L as any).layerGroup();
                 }}
+                onEachFeature={onEachStation}
+            />
+
+            {/* Interaction Layer: Expanded hit area for platforms */}
+            <GeoJSON
+                ref={platformInteractionRef}
+                key={`platforms-interaction-${bakedKey}`}
+                data={visualsGeoJson as any}
+                style={platformInteractionStyle as any}
+                filter={(feature) => feature.properties.type === 'platform'}
                 onEachFeature={onEachStation}
             />
 

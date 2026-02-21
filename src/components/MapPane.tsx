@@ -373,7 +373,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 onRailroadHover={handleRailroadHover}
                 zoomLevel={zoomLevel}
                 isMobile={isMobile}
-                isMoving={isMoving}
+                isMoving={isMoving || !!dragStartStation} // Pass combined dragging state
                 language={language}
                 usedSectionIds={visitedSectionIds}
             />}
@@ -391,6 +391,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     settings={styleSettings}
                     language={language}
                     isMobile={isMobile}
+                    isMoving={isMoving || !!dragStartStation} // Pass combined dragging state
                     railData={railData}
                     mapBounds={mapBounds}
                     handleStationClick={handleStationClick}
