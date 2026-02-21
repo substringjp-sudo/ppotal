@@ -123,9 +123,15 @@ export const useTripRecorder = ({
                 const lastWaypoint = waypoints[waypoints.length - 1];
                 if (c.id === lastWaypoint) return;
 
-                if (waypoints.length > 1 && c.id === waypoints[waypoints.length - 2]) {
-                    waypoints.pop();
-                    segments.pop();
+                const existingIndex = waypoints.indexOf(c.id);
+                if (existingIndex !== -1 && existingIndex < waypoints.length - 1) {
+                    // Backtracking: Scrub everything after the first occurrence of this station
+                    // This creates an "eraser" effect when moving the cursor back over the path
+                    const popCount = waypoints.length - 1 - existingIndex;
+                    for (let k = 0; k < popCount; k++) {
+                        waypoints.pop();
+                        segments.pop();
+                    }
                     changed = true;
                 } else {
                     const lastStData = stations[lastWaypoint];
