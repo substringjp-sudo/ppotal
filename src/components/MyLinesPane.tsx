@@ -184,16 +184,6 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
                                 }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
-                                    <button
-                                        onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
-                                        style={{ background: 'none', border: 'none', color: '#cbd5e0', cursor: 'pointer', padding: '4px', fontSize: '14px', transition: 'color 0.2s' }}
-                                        onMouseOver={(e) => (e.currentTarget.style.color = '#e53e3e')}
-                                        onMouseOut={(e) => (e.currentTarget.style.color = '#cbd5e0')}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                                     <StationInfo info={startInfo} isStart={true} />
@@ -226,6 +216,11 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                                     textOverflow: 'ellipsis'
                                                 }}>
                                                     {linesUsed.map(l => l.name).join(', ')}
+                                                    {trip.path.length > 2 && (
+                                                        <span style={{ marginLeft: '6px', color: '#a0aec0', fontWeight: 'bold' }}>
+                                                            ({trip.path.length - 2} stations)
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -258,9 +253,33 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                             {Math.round(trip.distance * 10) / 10} km
                                         </div>
                                     )}
-                                    <div style={{ fontSize: '9px', color: '#a0aec0', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                                        {trip.sectionIds?.length || 0} SECTIONS
-                                    </div>
+                                    <button
+                                        onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
+                                        style={{
+                                            background: '#fff5f5',
+                                            border: '1px solid #fed7d7',
+                                            color: '#e53e3e',
+                                            cursor: 'pointer',
+                                            width: '26px',
+                                            height: '26px',
+                                            borderRadius: '6px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '12px',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.background = '#e53e3e';
+                                            e.currentTarget.style.color = '#fff';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.background = '#fff5f5';
+                                            e.currentTarget.style.color = '#e53e3e';
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
                             </div>
                         );

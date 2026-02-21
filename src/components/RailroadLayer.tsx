@@ -58,7 +58,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const styleConfig = useMemo(() => {
         // Stages: 1 (5-7), 2 (8-11), 3 (12-13), 4 (14+)
         let weightFactor = 1.0;
-        if (zoomGroup === 1) weightFactor = 0.5;
+        if (zoomGroup === 1) weightFactor = Math.max(0.1, zoomLevel / 14);
         else if (zoomGroup === 2) weightFactor = 0.8;
 
         // Discrete weights per stage - now consistent to avoid bloat at zoom 12+

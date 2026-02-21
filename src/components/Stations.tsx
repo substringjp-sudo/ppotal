@@ -229,7 +229,7 @@ const Stations: React.FC<StationsProps> = ({
 
         // Match thickness with RailroadLayer: Stage-based
         let weight = 3.5;
-        if (effectiveZoom <= 7) weight = 1.5;
+        if (effectiveZoom <= 7) weight = Math.max(0.1, (effectiveZoom / 7) * 1.5);
         else if (effectiveZoom <= 11) weight = 2.5;
         else if (effectiveZoom <= 13) weight = 3.0;
 
@@ -257,7 +257,7 @@ const Stations: React.FC<StationsProps> = ({
         const color = isHovered ? '#FFD700' : '#007AFF';
 
         let weight = 3.5;
-        if (effectiveZoom <= 7) weight = 1.5;
+        if (effectiveZoom <= 7) weight = Math.max(0.1, (effectiveZoom / 7) * 1.5);
         else if (effectiveZoom <= 11) weight = 2.5;
         else if (effectiveZoom <= 13) weight = 3.0;
 
