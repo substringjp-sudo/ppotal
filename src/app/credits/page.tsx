@@ -44,7 +44,7 @@ const CreditsPage = () => {
                         <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '15px', color: '#2c3e50' }}>About Project (English)</h2>
                         <p style={{ lineHeight: '1.8', fontSize: '15px', color: '#444' }}>
                             JapanRailNote is an interactive map service designed for JR Pass travelers and railway enthusiasts.
-                            It provides a comprehensive visualization of Japan's complex railway network and allows users to systematically record their journeys.
+                            It provides a comprehensive visualization of Japan&apos;s complex railway network and allows users to systematically record their journeys.
                         </p>
                     </section>
 

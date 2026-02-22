@@ -11,7 +11,6 @@ interface RoutePaneProps {
     onSetEndStation: (id: string) => void;
     routeResult: any | null; // RouteResult from RoutingGraph
     onSwapStations: () => void;
-    language: Language;
     railData?: RailData | null;
 }
 
@@ -22,7 +21,6 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     onSetEndStation,
     routeResult,
     onSwapStations,
-    language,
     railData
 }) => {
     const [stationList, setStationList] = useState<{ id: string, name: string, primary_name: string }[]>([]);
@@ -35,17 +33,17 @@ const RoutePane: React.FC<RoutePaneProps> = ({
 
     useEffect(() => {
         if (startStation && railData?.stations?.[startStation]) {
-            setStartInput(railData.stations[startStation].name);
+            Promise.resolve().then(() => setStartInput(railData.stations[startStation].name));
         } else {
-            setStartInput('');
+            Promise.resolve().then(() => setStartInput(''));
         }
     }, [startStation, railData]);
 
     useEffect(() => {
         if (endStation && railData?.stations?.[endStation]) {
-            setEndInput(railData.stations[endStation].name);
+            Promise.resolve().then(() => setEndInput(railData.stations[endStation].name));
         } else {
-            setEndInput('');
+            Promise.resolve().then(() => setEndInput(''));
         }
     }, [endStation, railData]);
 
@@ -67,7 +65,12 @@ const RoutePane: React.FC<RoutePaneProps> = ({
             // Assuming station.name is the primary name we want to index
             if (!names.has(station.name)) {
                 names.add(station.name);
-                list.push({ name: station.name, id: station.id, primary_name: station.name });
+                list.push({
+                    name: station.name,
+                    id: station.id,
+                    primary_name: station.name,
+                    name_en: station.name_en
+                });
             }
         });
 
@@ -139,8 +142,9 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                     {startSuggestions.length > 0 && (
                         <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: '4px', zIndex: 1000, margin: 0, padding: 0, listStyle: 'none', maxHeight: '150px', overflowY: 'auto' }}>
                             {startSuggestions.map(s => (
-                                <li key={s.id} onClick={() => selectStart(s.id, s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}>
-                                    {s.name}
+                                <li key={s.id} onClick={() => selectStart(s.id, s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee', display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{s.name}</span>
+                                    {s.name_en && <span style={{ fontSize: '11px', color: '#888' }}>{s.name_en}</span>}
                                 </li>
                             ))}
                         </ul>
@@ -165,8 +169,9 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                     {endSuggestions.length > 0 && (
                         <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #ddd', borderRadius: '4px', zIndex: 1000, margin: 0, padding: 0, listStyle: 'none', maxHeight: '150px', overflowY: 'auto' }}>
                             {endSuggestions.map(s => (
-                                <li key={s.id} onClick={() => selectEnd(s.id, s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee' }}>
-                                    {s.name}
+                                <li key={s.id} onClick={() => selectEnd(s.id, s.name)} style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid #eee', display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{s.name}</span>
+                                    {s.name_en && <span style={{ fontSize: '11px', color: '#888' }}>{s.name_en}</span>}
                                 </li>
                             ))}
                         </ul>
@@ -187,7 +192,10 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                             <div key={idx} style={{ marginBottom: '0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>
-                                    <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{leg.fromStation.name}</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{leg.fromStation.name}</div>
+                                        {leg.fromStation.name_en && <div style={{ fontSize: '11px', color: '#888' }}>{leg.fromStation.name_en}</div>}
+                                    </div>
                                 </div>
 
                                 <div style={{
@@ -213,7 +221,10 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                                 {idx === routeResult.legs.length - 1 && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>
-                                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{leg.toStation.name}</div>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{leg.toStation.name}</div>
+                                            {leg.toStation.name_en && <div style={{ fontSize: '11px', color: '#888' }}>{leg.toStation.name_en}</div>}
+                                        </div>
                                     </div>
                                 )}
                             </div>

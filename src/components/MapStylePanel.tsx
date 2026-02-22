@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { MapStyleSettings } from '../app/page';
+import { MapStyleSettings } from './MainPageClient';
 
 interface MapStylePanelProps {
     settings: MapStyleSettings;

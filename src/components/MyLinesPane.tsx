@@ -3,7 +3,8 @@
 import React, { useMemo } from 'react';
 import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
-import { RailData } from '../types/railData';
+import { RailData, Station, Line, Section, Company } from '../types/railData';
+import { Trip } from '../types/trip';
 
 interface MyLinesPaneProps {
     visitedLineLengths: Record<string, number>;
@@ -12,7 +13,7 @@ interface MyLinesPaneProps {
     onDeleteLineHistory: (line: string) => void;
     activeLine: string | null;
     language: Language;
-    recordedTrips?: any[];
+    recordedTrips?: Trip[];
     onDeleteTrip?: (id: string) => void;
     railData: RailData | null;
 }
@@ -21,8 +22,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     visitedLineLengths,
     lineLengths,
     onLineClick,
-    onDeleteLineHistory,
-    activeLine,
+    // onDeleteLineHistory,
+    // activeLine,
     language,
     recordedTrips = [],
     onDeleteTrip,
@@ -30,7 +31,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 }) => {
     // Reverse recorded trips to show newest first
     const displayTrips = useMemo(() => {
-        return [...recordedTrips].reverse();
+        return [...(recordedTrips || [])].reverse();
     }, [recordedTrips]);
 
 
@@ -41,7 +42,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
             </h2>
 
             <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                {language === 'ko' ? '이동 내역' : 'TRIPS'} ({recordedTrips.length})
+                {language === 'ko' ? '이동 내역' : 'TRIPS'} ({recordedTrips?.length || 0})
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
@@ -52,11 +53,19 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     </div>
                 ) : (
                     displayTrips.map(trip => {
-                        const startStation = railData?.stations[trip.startId] || railData?.stations[trip.start];
-                        const endStation = railData?.stations[trip.endId] || railData?.stations[trip.end];
+                        const startStation = ((trip.startId && railData) ? railData.stations[trip.startId] : undefined) || (railData ? railData.stations[trip.start] : undefined);
+                        const endStation = ((trip.endId && railData) ? railData.stations[trip.endId] : undefined) || (railData ? railData.stations[trip.end] : undefined);
 
-                        const getStationFullInfo = (station: any, id: string) => {
-                            if (!station) return { name: id, name_en: '', lines: [] };
+                        const getStationFullInfo = (station: (Station & { lines?: string[] }) | undefined, id: string) => {
+                            if (!station) return {
+                                name: id,
+                                name_en: '',
+                                companyName: 'Unknown',
+                                companyName_en: '',
+                                lineName: 'Unknown',
+                                lineName_en: '',
+                                lineColor: '#cbd5e0'
+                            };
 
                             let compId = '';
                             let lineId = '';
@@ -75,8 +84,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 }
                             }
 
-                            const comp = compId ? (railData?.companies as any)?.[compId] : null;
-                            const line = lineId ? (railData?.lines as any)?.[lineId] : null;
+                            const comp = compId ? (railData?.companies as Record<string, Company>)?.[compId] : null;
+                            const line = lineId ? (railData?.lines as Record<string, Line>)?.[lineId] : null;
 
                             return {
                                 name: station.name,
@@ -94,9 +103,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
                         // Identify unique lines used in this trip with bilingual support
                         const linesUsed = Array.from(new Set(trip.sectionIds?.map((sid: number) => {
-                            const section = (railData as any)?.sections?.sections?.find((s: any) => s.id === sid);
+                            const section = railData?.sections?.sections?.find((s: Section) => s.id === sid);
                             if (section) {
-                                const lData = (railData?.lines as any)?.[section.line_id];
+                                const lData = railData?.lines[section.line_id];
                                 return JSON.stringify({
                                     name: lData?.name || section.line_id.toString(),
                                     name_en: lData?.name_en || '',
@@ -106,7 +115,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             return null;
                         }).filter(Boolean))).map(s => JSON.parse(s as string)) as { name: string, name_en: string, color: string }[];
 
-                        const StationInfo = ({ info, isStart }: { info: any, isStart: boolean }) => (
+                        const StationInfo = ({ info }: { info: { name: string; name_en: string; companyName: string; companyName_en: string; lineName: string; lineName_en: string; lineColor: string }, isStart: boolean }) => (
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 {/* Line & Company Header */}
                                 <div style={{
@@ -290,4 +299,5 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     );
 };
 
+MyLinesPane.displayName = 'MyLinesPane';
 export default React.memo(MyLinesPane);

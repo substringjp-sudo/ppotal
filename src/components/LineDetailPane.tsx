@@ -17,7 +17,7 @@ export interface LineDetailPaneProps {
     visitedEdges: Set<string>;
     selectedLines: string[];
     onRecordTrip?: (trip: Trip) => void;
-    getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][] } | null;
+    getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null;
     onStationClick?: (id: string) => void;
     onClose: () => void;
     language: Language;
@@ -76,11 +76,6 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
 
-    const cNamePrimary = language === 'en' ? (companyData?.name_en || company) : (companyData?.name || company);
-    const lNamePrimary = language === 'en' ? (lineData?.name_en || lineName) : (lineData?.name || lineName);
-
-    const cNameSecondary = language === 'en' ? (companyData?.name || "") : (companyData?.name_en || "");
-    const lNameSecondary = language === 'en' ? (lineData?.name || "") : (lineData?.name_en || "");
 
     return (
         <div style={{
@@ -229,7 +224,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     endId: end,
                                     ...pathData,
                                     waypoints: [start, end],
-                                    sectionIds: (pathData as any).sectionIds || []
+                                    sectionIds: pathData.sectionIds || []
                                 });
                             }
                         }
@@ -240,4 +235,5 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     );
 };
 
+LineDetailPane.displayName = 'LineDetailPane';
 export default LineDetailPane;

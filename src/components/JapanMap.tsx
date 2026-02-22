@@ -1,26 +1,25 @@
 "use client";
 
 import React, { useCallback } from 'react';
+import L from 'leaflet';
 import { GeoJSON } from 'react-leaflet';
 
 interface JapanMapProps {
-    prefectures: any;
+    prefectures: GeoJSON.FeatureCollection | GeoJSON.Feature;
     onPrefectureClick?: (prefName: string) => void;
-    getColor: (name: string) => string;
     outlineOnly?: boolean;
     interactive?: boolean;
-    className?: string;
     zoom: number;
 }
 
-const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, getColor, outlineOnly = false, interactive = true, className, zoom }) => {
-    const handleClick = useCallback((feature: any) => {
-        if (onPrefectureClick) {
+const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, outlineOnly = false, interactive = true, zoom }) => {
+    const handleClick = useCallback((feature: GeoJSON.Feature) => {
+        if (onPrefectureClick && feature.properties) {
             onPrefectureClick(feature.properties.shapeName);
         }
     }, [onPrefectureClick]);
 
-    const style = useCallback((feature: any) => {
+    const style = useCallback(() => {
         // Removed simplification (smoothFactor) to avoid gaps between neighboring boundaries.
         if (outlineOnly) {
             let weight = 1.5;
@@ -52,7 +51,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
         return null;
     }
 
-    const onEachFeature = (feature: any, layer: any) => {
+    const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
         if (interactive && onPrefectureClick) {
             layer.on({
                 click: () => handleClick(feature),
@@ -66,9 +65,10 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, get
             style={style}
             onEachFeature={onEachFeature}
             interactive={interactive}
-            {...({ smoothFactor: zoom <= 8 ? 2.5 : 1.0 } as any)}
         />
     );
 };
 
-export default React.memo(JapanMap);
+const MemoizedJapanMap = React.memo(JapanMap);
+MemoizedJapanMap.displayName = 'JapanMap';
+export default MemoizedJapanMap;

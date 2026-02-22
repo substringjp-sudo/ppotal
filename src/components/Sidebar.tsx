@@ -19,7 +19,7 @@ interface SidebarProps {
     onLanguageChange?: (lang: Language) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths = {}, visitedLineLengths = {}, activeLine, onLineClick, language }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, visitedLineLengths = {}, activeLine, onLineClick, language }) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
     const [sortMode, setSortMode] = useState<'ja' | 'usage'>('ja');
@@ -33,17 +33,17 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             Object.keys(groupedHierarchy).forEach((categoryId, index) => {
                 initialExpansion[categoryId] = index < 4; // Expand top 4 categories by default (Shinkansen, JR, Major, Local)
             });
-            setExpandedGroups(initialExpansion);
+            Promise.resolve().then(() => setExpandedGroups(initialExpansion));
         }
     }, [groupedHierarchy]);
 
-    const getCompanyName = useCallback((id: string) => {
-        return companyNames[id]?.name || id;
-    }, [companyNames]);
+    // const getCompanyName = useCallback((id: string) => {
+    //     return companyNames[id]?.name || id;
+    // }, [companyNames]);
 
-    const getLineName = useCallback((id: string) => {
-        return lineNames[id]?.name || id;
-    }, [lineNames]);
+    // const getLineName = useCallback((id: string) => {
+    //     return lineNames[id]?.name || id;
+    // }, [lineNames]);
 
     useEffect(() => {
         if (activeLine && groupedHierarchy) {
@@ -62,8 +62,12 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             }
 
             if (foundGroup && foundCompany) {
-                setExpandedGroups(prev => ({ ...prev, [foundGroup!]: true }));
-                setExpandedCompanies(prev => ({ ...prev, [foundCompany!]: true }));
+                const g = foundGroup;
+                const c = foundCompany;
+                Promise.resolve().then(() => {
+                    setExpandedGroups(prev => ({ ...prev, [g]: true }));
+                    setExpandedCompanies(prev => ({ ...prev, [c]: true }));
+                });
                 setTimeout(() => {
                     const el = lineRefs.current[activeLine];
                     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });

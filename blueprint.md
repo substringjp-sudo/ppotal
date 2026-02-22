@@ -43,7 +43,10 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 143. **Intelligent Label Management**: Implemented greedy collision avoidance for station labels and logical hub merging to resolve clutter in dense urban centers like Tokyo. ✅
 44. **Advanced Platform Interaction**: Upgraded platforms to be fully interactive. They now support station tooltips, pathfinding start/end points, and visual hover highlights (yellow border). ✅
 45. **Dynamic Platform Scaling**: Implemented zoom-aware thickness for platforms to match the behavior of railroad lines. ✅
-46. **Expanded Interaction Range**: Broadened the hit area for both railroad lines and platforms (+12-25px) to improve usability, especially on mobile, without affecting the visual thinness. ✅
+46. **Bilingual Station Naming**: All station labels, tooltips, and routing results now display both the primary name (Japanese/Korean) and the English name below it for better accessibility. ✅
+47. **Precision Interaction Targeting**: Restricted the hit area for both railroad lines and platforms to their actual visual thickness. Expanded transparent hit areas were removed to prevent accidental selection of nearby lines, ensuring that interaction only occurs when the cursor is precisely over the line itself. ✅
+48. **Selective Routing & Creation Limits**: Route generation is now strictly limited to lines currently selected in the sidebar. Path creation (drawing) logic enforces a 10-section limit between waypoints to encourage precise route building, and unreachable stations are automatically filtered out. ✅
+49. **Interaction Focus Mode**: Clicking or dragging a station now automatically clears all active line/station highlights. During dragging, yellow 'hover' glows for railroad lines are suppressed, and the target station is highlighted in blue to match the active path, ensuring a distraction-free route creation experience. ✅
 
 ## Deployment Plan
 1. **Pre-deployment Check**: Run `npm run lint` and `npm run build` to ensure project stability.

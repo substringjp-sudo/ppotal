@@ -11,13 +11,14 @@ import Stations from './Stations';
 import RailroadLayer from './RailroadLayer';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { getLineColor } from '../lib/lineColors';
-import { MapStyleSettings } from '../app/page';
+import { MapStyleSettings } from './MainPageClient';
 import { trackEvent } from '../lib/gtag';
 import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
 
 import { useRailData } from '../hooks/useRailData';
 import { RoutingGraph } from '../lib/RoutingGraph';
+import { RailData, Section } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
 import RulerOverlay from './RulerOverlay';
@@ -58,11 +59,6 @@ interface MapPaneProps {
     onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
     rulerTopOffset?: number;
-
-    // Routing Props
-    routeStart?: string | null;
-    routeEnd?: string | null;
-    onRouteResult?: (result: any) => void;
 }
 
 const PANE_STYLES = {
@@ -70,6 +66,7 @@ const PANE_STYLES = {
     railroadLines: { zIndex: 820 },   // Main interaction pane
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const },
     railroadGlow: { zIndex: 810, pointerEvents: 'none' as const },
+    stationInteractions: { zIndex: 850 }, // New: dedicated for station hover/click
     stationLabels: { zIndex: 880, pointerEvents: 'none' as const },
     uiElements: { zIndex: 818, pointerEvents: 'none' as const }, // Below lines to avoid hiding them
     background: { zIndex: 100 },
@@ -93,16 +90,12 @@ const MapPane: React.FC<MapPaneProps> = ({
     onSetSelectedLines,
     onSetActiveLine,
     isMobile,
-    selectedStation,
     onMapClick,
     isEditMode = false,
     draftTrip,
     onDraftComplete,
     onDragUpdate,
-    rulerTopOffset = 80,
-    routeStart,
-    routeEnd,
-    onRouteResult
+    rulerTopOffset = 80
 }) => {
     // 1. Map Data & State
     const map = useMap();
@@ -139,9 +132,9 @@ const MapPane: React.FC<MapPaneProps> = ({
         });
 
         // 2. Map unique sections to line IDs and sum their lengths
-        const rawSections = (railData as any).sections?.sections || [];
+        const rawSections = (railData as unknown as RailData).sections.sections || [];
         uniqueSectionIds.forEach(sid => {
-            const section = rawSections.find((s: any) => s.id === sid);
+            const section = rawSections.find((s: Section) => s.id === sid);
             if (section) {
                 const lineId = `${section.company_id}::${section.line_id}`;
                 newVisitedLineLengths[lineId] = (newVisitedLineLengths[lineId] || 0) + (section.length / 1000);
@@ -153,7 +146,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             lineLengths: graph.getLineLengths(),
             visitedLineLengths: newVisitedLineLengths,
         };
-    }, [graph, recordedTrips]);
+    }, [graph, recordedTrips, railData]);
 
 
     const { visitedStations, visitedSectionIds } = useMemo(() => {
@@ -190,16 +183,28 @@ const MapPane: React.FC<MapPaneProps> = ({
     const {
         dragStartStation,
         dragPath,
-        handleStationMouseDown,
+        handleStationMouseDown: rawHandleStationMouseDown,
         handleStationMouseUp
     } = useTripRecorder({
-        graph: graph as any,
+        graph: graph,
         visibleStations,
         onRecordTrip,
         isEditMode,
         onDraftComplete,
-        onDragUpdate
+        onDragUpdate,
+        selectedLines,
+        activeLine
     });
+
+    // Wrap handleStationMouseDown to clear other highlights (User requirement)
+    const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
+        // Clear active highlights immediately
+        if (onSetActiveLine) onSetActiveLine(null);
+        setHoveredLine(null);
+
+        // Call the original handler
+        rawHandleStationMouseDown(id, coords);
+    }, [rawHandleStationMouseDown, onSetActiveLine]);
 
     // Notify parent about calculations
     useEffect(() => {
@@ -222,10 +227,12 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     useEffect(() => {
         if (map) {
-            setMapReady(true);
-            setZoomLevel(map.getZoom());
-            setMapBounds(map.getBounds());
-            map.invalidateSize();
+            Promise.resolve().then(() => {
+                setMapReady(true);
+                setZoomLevel(map.getZoom());
+                setMapBounds(map.getBounds());
+                map.invalidateSize();
+            });
         }
     }, [map]);
 
@@ -293,17 +300,6 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     const getColor = useCallback((lineKey: string) => getLineColor(lineKey, railData) || '#666', [railData]);
 
-    const handleRailroadClick = useCallback((line: string) => {
-        if (onRailroadClick) onRailroadClick(line);
-        if (onSetActiveLine) onSetActiveLine(line);
-        trackEvent('line_click', 'interaction', line);
-    }, [onRailroadClick, onSetActiveLine]);
-
-    const handleRailroadHover = useCallback((lineId: string | null) => {
-        if (isMobile) return;
-        setHoveredLine(lineId);
-    }, [isMobile]);
-
     const handleStationClick = useCallback((id: string, lines?: string[]) => {
         if (onStationClick) onStationClick(id, lines);
         const st = visibleStations ? visibleStations[id] : null;
@@ -354,14 +350,15 @@ const MapPane: React.FC<MapPaneProps> = ({
             {!isMobile && <MapControls zoom={zoomLevel} />}
             <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
             <Pane name="background" style={PANE_STYLES.background}>
-                <JapanMap prefectures={prefectures} getColor={getColor} interactive={zoomLevel <= 8 && !isMoving} zoom={zoomLevel} />
-                {zoomLevel > 8 && municipalities && <MunicipalMap municipalities={municipalities} getColor={getColor} zoom={zoomLevel} />}
-                {zoomLevel > 8 && prefectures && <JapanMap prefectures={prefectures} getColor={getColor} outlineOnly={true} interactive={false} zoom={zoomLevel} />}
+                <JapanMap prefectures={prefectures} interactive={zoomLevel <= 8 && !isMoving} zoom={zoomLevel} />
+                {zoomLevel > 8 && municipalities && <MunicipalMap municipalities={municipalities} zoom={zoomLevel} />}
+                {zoomLevel > 8 && prefectures && <JapanMap prefectures={prefectures} outlineOnly={true} interactive={false} zoom={zoomLevel} />}
             </Pane>
 
             <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
             <Pane name="railroad-casing" style={PANE_STYLES.railroadCasing} />
             <Pane name="railroad-lines" style={PANE_STYLES.railroadLines} />
+            <Pane name="station-interactions" style={PANE_STYLES.stationInteractions} />
             <Pane name="station-labels" style={PANE_STYLES.stationLabels} />
 
             {railData && <RailroadLayer
@@ -369,12 +366,12 @@ const MapPane: React.FC<MapPaneProps> = ({
                 selectedLines={selectedLines}
                 hoveredLine={hoveredLine}
                 activeLine={activeLine}
-                onRailroadClick={handleRailroadClick}
-                onRailroadHover={handleRailroadHover}
+                onRailroadClick={onRailroadClick || (() => { })}
+                onRailroadHover={setHoveredLine}
                 zoomLevel={zoomLevel}
                 isMobile={isMobile}
-                isMoving={isMoving || !!dragStartStation} // Pass combined dragging state
-                language={language}
+                isMoving={isMoving || !!dragStartStation}
+                isDragging={!!dragStartStation}
                 usedSectionIds={visitedSectionIds}
             />}
 
@@ -397,7 +394,11 @@ const MapPane: React.FC<MapPaneProps> = ({
                     handleStationClick={handleStationClick}
                     handleStationMouseDown={handleStationMouseDown}
                     handleStationMouseUp={handleStationMouseUp}
-                    onStationHover={setHoveredLine} // Map station hover to line hover for context
+                    onStationHover={(id) => {
+                        if (!!dragStartStation) return; // Suppress station-based line highlights during dragging
+                        setHoveredLine(id);
+                    }}
+                    dragStartStation={dragStartStation}
                 />
             }
 

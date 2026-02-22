@@ -71,17 +71,20 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const svgWidth = Math.max(maxX - minX, 800);
     const svgHeight = maxY - minY;
 
-    const getSvgCoord = useCallback((e: any) => {
+    const getSvgCoord = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
         if (!containerRef.current) return { x: 0, y: 0 };
         const rect = containerRef.current.getBoundingClientRect();
 
         let clientX, clientY;
-        if (e.touches && e.touches.length > 0) {
+        if ('touches' in e && e.touches.length > 0) {
             clientX = e.touches[0].clientX;
             clientY = e.touches[0].clientY;
+        } else if ('clientX' in e) {
+            const me = e as unknown as MouseEvent;
+            clientX = me.clientX;
+            clientY = me.clientY;
         } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
+            return { x: 0, y: 0 };
         }
 
         // Pixel coordinates within the content (accounting for scroll)
@@ -94,14 +97,14 @@ const TubeMap: React.FC<TubeMapProps> = ({
         return { x: minX + x, y: minY + y };
     }, [minX, minY]);
 
-    const handleStart = (nodeId: string, e: any) => {
+    const handleStart = (nodeId: string, e: React.MouseEvent | React.TouchEvent) => {
         // Only trigger drag for non-joint nodes or if we want to allow joint selection
         setDragStartNode(nodeId);
         setMousePos(getSvgCoord(e));
         // We don't stop propagation here to allow potential scrolling if drag doesn't move much
     };
 
-    const handleMove = (e: any) => {
+    const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
         if (dragStartNode) {
             const coord = getSvgCoord(e);
             setMousePos(coord);
@@ -110,6 +113,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
             let minDist = 100; // Threshold for "snapping"
             let found = null;
             nodes.forEach(n => {
+                if (n.isJoint) return; // Skip joints for snapping
                 const d = Math.sqrt(Math.pow(n.x - coord.x, 2) + Math.pow(n.y - coord.y, 2));
                 if (d < minDist) {
                     minDist = d;
@@ -122,7 +126,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
     };
 
-    const handleEnd = (nodeId: string, e: any) => {
+    const handleEnd = (nodeId: string, e: React.MouseEvent | React.TouchEvent) => {
         if (dragStartNode) {
             if (dragStartNode !== nodeId) {
                 onPathCreate?.(dragStartNode, nodeId);
@@ -188,10 +192,16 @@ const TubeMap: React.FC<TubeMapProps> = ({
 
     const [isMinimapDragging, setIsMinimapDragging] = useState(false);
 
-    const handleMinimapInteraction = useCallback((e: any) => {
-        const minimap = e.currentTarget;
+    const handleMinimapInteraction = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+        const minimap = e.currentTarget as HTMLElement;
         const rect = minimap.getBoundingClientRect();
-        const clientX = e.clientX || e.touches?.[0]?.clientX;
+        let clientX: number | undefined;
+
+        if ('clientX' in e) {
+            clientX = e.clientX;
+        } else if ('touches' in e && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+        }
         if (clientX === undefined) return;
 
         const x = clientX - rect.left;
@@ -203,7 +213,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
     }, [scrollState]);
 
-    const handleMinimapStart = (e: any) => {
+    const handleMinimapStart = (e: React.MouseEvent | React.TouchEvent) => {
         setIsMinimapDragging(true);
         handleMinimapInteraction(e);
     };
@@ -394,7 +404,10 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                         stroke: '#ffffff', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round'
                                     }}
                                 >
-                                    {language === 'en' && node.name_en ? node.name_en : node.name}
+                                    <tspan x={node.x} dy="0">{node.name}</tspan>
+                                    {node.name_en && (
+                                        <tspan x={node.x} dy="14" style={{ fontSize: '11px', fontWeight: '500', fill: '#718096', opacity: 0.9 }}>{node.name_en}</tspan>
+                                    )}
                                 </text>
                             </g>
                         );
@@ -540,4 +553,5 @@ const TubeMap: React.FC<TubeMapProps> = ({
     );
 };
 
+TubeMap.displayName = 'TubeMap';
 export default TubeMap;

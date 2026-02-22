@@ -1,13 +1,15 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React from 'react';
 
-import { Language, UI_TRANSLATIONS } from '../lib/translations';
+import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
 import HowToModal from './HowToModal';
 import { useRailData } from '../hooks/useRailData';
+import { Trip } from '../types/trip';
+import { LineSegment, StationNode } from '../lib/graphUtils';
 
 const MapWithNoSSR = dynamic(() => import('./Map'), {
     ssr: false
@@ -68,25 +70,24 @@ const MainPageClient = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
     const [visitedLineLengths, setVisitedLineLengths] = React.useState<Record<string, number>>({});
-    const [recordedTrips, setRecordedTrips] = React.useState<any[]>([]);
+    const [recordedTrips, setRecordedTrips] = React.useState<Trip[]>([]);
     const [isLoaded, setIsLoaded] = React.useState(false);
     const [activeLine, setActiveLine] = React.useState<string | null>(null);
     const [lineDetailData, setLineDetailData] = React.useState<{
-        segments: any[],
+        segments: LineSegment[],
         visitedEdges: Set<string>,
         visitedStations: Set<string>,
-        nodes: Map<string, any>,
-        getShortestPath: any
+        nodes: Map<string, StationNode>,
+        getShortestPath: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
     } | null>(null);
-    const [showMyRoutes, setShowMyRoutes] = React.useState(false);
-    const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
-    const [language, setLanguage] = React.useState<Language>('en');
+    const [styleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
+    const [language] = React.useState<Language>('en');
     const [selectedStation, setSelectedStation] = React.useState<{ name: string, lines: string[] } | null>(null);
     const [isMobile, setIsMobile] = React.useState(false);
 
     // Edit Mode State
     const [isEditMode, setIsEditMode] = React.useState(false);
-    const [draftTrip, setDraftTrip] = React.useState<any>(null);
+    const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
     const [tempPath, setTempPath] = React.useState<string[]>([]);
     const [editPanelHeight, setEditPanelHeight] = React.useState(72);
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
@@ -140,20 +141,27 @@ const MainPageClient = () => {
     }, [railData]);
 
     React.useEffect(() => {
-        const saved = localStorage.getItem('jprail_trips');
-        if (saved) {
-            try {
+        if (typeof window === 'undefined') return;
+        try {
+            const saved = localStorage.getItem('jprail_trips');
+            if (saved) {
                 const parsed = JSON.parse(saved);
                 setRecordedTrips(parsed);
-            } catch (e) {
-                console.error("Failed to parse saved trips", e);
             }
+        } catch (e) {
+            console.error("Failed to load saved trips from localStorage", e);
         }
         setIsLoaded(true);
     }, []);
 
     React.useEffect(() => {
-        if (isLoaded) localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
+        if (isLoaded && typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
+            } catch (e) {
+                console.error("Failed to save trips to localStorage", e);
+            }
+        }
     }, [recordedTrips, isLoaded]);
 
     const handleRecordTrip = React.useCallback((trip: any) => {
@@ -216,17 +224,17 @@ const MainPageClient = () => {
             localStorage.removeItem('jprail_trips');
             trackEvent('reset_all_trips', 'engagement', 'confirm');
         }
-    }, [trackEvent]);
+    }, []);
 
     const handleDeleteLineHistory = React.useCallback(() => {
         if (!window.confirm('이 노선의 이동 기록을 모두 삭제하시겠습니까?')) return;
         setRecordedTrips(prev => prev.filter(() => true)); // Simplistic implementation as before
     }, []);
 
-    const [lineIdMapping, setLineIdIdMapping] = React.useState<Map<string, string>>(new Map());
-    const setLineIdMapping = React.useCallback((mapping: Map<string, string>) => {
-        setLineIdIdMapping(mapping);
+    const setLineIdMapping = React.useCallback((_mapping: Map<string, string>) => {
+        // Reserved for future use
     }, []);
+
 
     const stats = React.useMemo(() => {
         const visitedLineIds = Object.keys(visitedLineLengths);
@@ -308,9 +316,7 @@ const MainPageClient = () => {
                         </h1>
                         {!isMobile && (
                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                <a href="/credits" style={{ fontSize: '12px', color: '#666', textDecoration: 'none' }}>
-                                    {UI_TRANSLATIONS.about_credits[language]}
-                                </a>
+
                                 <button
                                     onClick={() => setIsHowToOpen(true)}
                                     style={{

@@ -6,13 +6,13 @@ import { getProgressColor } from '../lib/uiUtils';
 interface SidebarGroupProps {
     title: string;
     groupKey: string;
-    companies: Record<string, Record<string, any>>;
+    companies: Record<string, Record<string, { name: string; name_en?: string; stations?: string[] }>>;
     expanded: boolean;
     onToggleExpanded: (groupKey: string) => void;
     onToggleSelection: (groupKey: string) => void;
     selectedLines: string[];
     onToggleLine: (lineKey: string) => void;
-    onToggleCompany: (company: string, lines: Record<string, any>) => void;
+    onToggleCompany: (company: string, lines: Record<string, { name: string; name_en?: string; stations?: string[] }>) => void;
     expandedCompanies: Record<string, boolean>;
     toggleCompany: (company: string) => void;
     lineLengths: Record<string, number>;
@@ -22,14 +22,14 @@ interface SidebarGroupProps {
     onLineClick?: (line: string) => void;
     language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
-    companyNames: Record<string, any>;
-    lineNames: Record<string, any>;
+    companyNames: Record<string, { name: string; name_en?: string }>;
+    lineNames: Record<string, { name: string; name_en?: string }>;
 }
 
 const SidebarLineItem: React.FC<{
     lineId: string;
     companyId: string;
-    lineData: any;
+    lineData: { name: string; name_en?: string };
     language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
     onLineClick?: (line: string) => void;
@@ -38,7 +38,7 @@ const SidebarLineItem: React.FC<{
     activeLine?: string | null;
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
-}> = memo(({ lineId, companyId, lineData, language, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
+}> = memo(({ lineId, companyId, lineData, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
     const lName = lineData.name;
     const key = `${companyId}::${lineId}`;
     const isActive = activeLine === key;
@@ -138,30 +138,21 @@ const SidebarLineItem: React.FC<{
     );
 });
 
-const SidebarGroup: React.FC<SidebarGroupProps> = ({
-    title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
-    selectedLines, onToggleLine, onToggleCompany, expandedCompanies,
-    toggleCompany, lineLengths, visitedLineLengths, sortMode,
-    activeLine, onLineClick, language, registerLineRef,
-    companyNames, lineNames
-}) => {
+SidebarLineItem.displayName = 'SidebarLineItem';
+
+const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
+    const {
+        title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
+        selectedLines, onToggleLine, onToggleCompany, expandedCompanies, toggleCompany,
+        lineLengths, visitedLineLengths, sortMode, activeLine, onLineClick,
+        language, registerLineRef, companyNames, lineNames
+    } = props;
+
     if (Object.keys(companies).length === 0) return null;
 
     const getCompanyName = (id: string) => companyNames[id]?.name || id;
-    const getLineName = (id: string, lineData?: any) => lineData?.name || lineNames[id]?.name || id;
+    const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name || lineNames[id]?.name || id;
 
-    const sortLines = (lineIds: string[]) => {
-        if (sortMode === 'usage') {
-            const getLineUsage = (lineId: string, companyId: string) => {
-                const key = `${companyId}::${lineId}`;
-                return lineLengths[key] ? ((visitedLineLengths?.[key] || 0) / lineLengths[key]) : 0;
-            };
-            // This is slightly complex because we need companyId. Let's assume companyId is available in scope or passed.
-            // Actually, sortLines is called within sortedCompanies.map.
-            // Let's refactor sortLines to take companyId.
-        }
-        return [...lineIds].sort((a, b) => getLineName(a).localeCompare(getLineName(b), 'ja'));
-    };
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
@@ -327,4 +318,5 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({
     );
 };
 
+SidebarGroup.displayName = 'SidebarGroup';
 export default memo(SidebarGroup);

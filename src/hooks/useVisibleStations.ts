@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { LatLngBounds } from 'leaflet';
 import { ProcessedStation, StaticNode } from '../types/mapTypes';
-import { RailData } from '../types/railData';
+import { RailData, Station, Joint } from '../types/railData';
 
 interface VisibleStationsProps {
     railroadNetwork: RailData | null;
@@ -29,14 +29,14 @@ export const useVisibleStations = ({
     const spatialIndex = useMemo(() => {
         if (!railroadNetwork || !railroadNetwork.stations) return null;
 
-        const grid = new Map<string, { stations: any[], joints: any[] }>();
+        const grid = new Map<string, { stations: Station[], joints: Joint[] }>();
         const railData = railroadNetwork as RailData;
 
         const getGridKey = (lat: number, lon: number) =>
             `${Math.floor(lat / GRID_SIZE)}_${Math.floor(lon / GRID_SIZE)}`;
 
         // Index Stations
-        Object.values(railData.stations).forEach((s: any) => {
+        Object.values(railData.stations).forEach((s: Station) => {
             const key = getGridKey(s.lat, s.lon);
             if (!grid.has(key)) grid.set(key, { stations: [], joints: [] });
             grid.get(key)!.stations.push(s);
@@ -44,7 +44,7 @@ export const useVisibleStations = ({
 
         // Index Joints
         if (railData.joints && railData.joints.joints) {
-            railData.joints.joints.forEach((j: any) => {
+            railData.joints.joints.forEach((j: Joint) => {
                 const [lon, lat] = j.coordinates;
                 const key = getGridKey(lat, lon);
                 if (!grid.has(key)) grid.set(key, { stations: [], joints: [] });
@@ -74,7 +74,7 @@ export const useVisibleStations = ({
         const nameToId = new Map<string, string>(); // name -> firstId for grouping
 
         for (const cell of spatialIndex.values()) {
-            cell.stations.forEach((s: any) => {
+            cell.stations.forEach((s: Station) => {
                 const stationLines = new Set<string>();
                 if (s.platform_ids) {
                     s.platform_ids.forEach((pid: string) => {
@@ -83,7 +83,7 @@ export const useVisibleStations = ({
                     });
                 }
 
-                const platforms: any[] = [];
+                const platforms: [number, number][][] = [];
                 if (s.platform_ids) {
                     s.platform_ids.forEach((pid: string) => {
                         const p = railData.platforms[pid];
@@ -143,7 +143,7 @@ export const useVisibleStations = ({
             });
 
             if (effectiveZoom >= 12) {
-                cell.joints.forEach((j: any) => {
+                cell.joints.forEach((j: Joint) => {
                     const [jLon, jLat] = j.coordinates;
                     data[j.id] = {
                         id: j.id,

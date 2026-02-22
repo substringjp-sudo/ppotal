@@ -1,11 +1,12 @@
 import React from 'react';
 import L from 'leaflet';
+import { ProcessedStation } from '../types/mapTypes';
 
 interface OffScreenIndicatorProps {
     map: L.Map | null;
     mapBounds: L.LatLngBounds | null;
     dragStartStation: string | null;
-    visibleStations: any;
+    visibleStations: Record<string, ProcessedStation> | null;
 }
 
 const OffScreenIndicator: React.FC<OffScreenIndicatorProps> = ({ map, mapBounds, dragStartStation, visibleStations }) => {
@@ -19,11 +20,12 @@ const OffScreenIndicator: React.FC<OffScreenIndicatorProps> = ({ map, mapBounds,
 
     let containerPoint;
     try {
-        if (!(map as any)._loaded) return null;
+        // Simple readiness check
+        if (!map.getZoom() && (map as any)._zoom === undefined) return null;
         const center = map.getCenter();
-        if (!center || center.lat === undefined) return null;
+        if (!center) return null;
         containerPoint = map.latLngToContainerPoint(latLng);
-    } catch (e) {
+    } catch {
         return null; // Silent fail if map is mid-transition or not ready
     }
     const { x: width, y: height } = map.getSize();
@@ -53,4 +55,5 @@ const OffScreenIndicator: React.FC<OffScreenIndicatorProps> = ({ map, mapBounds,
     );
 };
 
+OffScreenIndicator.displayName = 'OffScreenIndicator';
 export default OffScreenIndicator;

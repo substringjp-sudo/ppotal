@@ -56,7 +56,7 @@ export default function PrivacyPage() {
                     <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Privacy Policy (English)</h2>
                     <p>Your privacy is important to us.</p>
                     <ul style={{ paddingLeft: '20px' }}>
-                        <li><strong>AdSense:</strong> Third party vendors, including Google, use cookies to serve ads based on a user's prior visits to your website or other websites.</li>
+                        <li><strong>AdSense:</strong> Third party vendors, including Google, use cookies to serve ads based on a user&apos;s prior visits to your website or other websites.</li>
                         <li><strong>Analytics:</strong> This site uses Google Analytics to track and report website traffic.</li>
                     </ul>
                 </section>

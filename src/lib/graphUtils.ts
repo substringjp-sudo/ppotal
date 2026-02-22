@@ -1,4 +1,4 @@
-import { Company, Line, Station, Section, RailData } from '../types/railData';
+import { Company, Line, Station, Section, RailData, Joint } from '../types/railData';
 
 export interface StationNode {
     id: string; // station_id (from stations.json)
@@ -37,7 +37,7 @@ export class RailroadGraph {
     // Mapping from full line key to simplified line keys (can be multiple if names are same? unlikely but possible)
     reverseLineIdMap: Map<string, string[]> = new Map();
 
-    constructor(data?: any) {
+    constructor(data?: RailData | any) {
         if (data) {
             // Check if it's the new granular format
             if ('stations' in data && 'railroadGraph' in data && 'lines' in data) {
@@ -72,79 +72,94 @@ export class RailroadGraph {
     } | null {
         if (!this.nodes.has(startId) || !this.nodes.has(endId)) return null;
 
-        const distances: Record<string, number> = {};
-        const previous: Record<string, string | null> = {};
-        const geometries: Record<string, [number, number][][]> = {};
-        const sectionIdsRecord: Record<string, number[]> = {};
-        const nodes = new Set<string>();
+        const distances = new Map<string, number>();
+        const previous = new Map<string, string | null>();
+        const edgeTo = new Map<string, Edge | null>();
 
-        // Initialize
-        for (const nodeId of this.nodes.keys()) {
-            distances[nodeId] = Infinity;
-            previous[nodeId] = null;
-            geometries[nodeId] = [];
-            sectionIdsRecord[nodeId] = [];
-            nodes.add(nodeId);
-        }
-
-        distances[startId] = 0;
-
-        while (nodes.size > 0) {
-            let closestNode: string | null = null;
-            let minDist = Infinity;
-
-            // Simple linear scan
-            for (const nodeId of nodes) {
-                if (distances[nodeId] < minDist) {
-                    minDist = distances[nodeId];
-                    closestNode = nodeId;
+        // Priority Queue (Minimal implementation for speed)
+        const pq: { id: string, dist: number }[] = [];
+        const push = (id: string, dist: number) => {
+            pq.push({ id, dist });
+            let i = pq.length - 1;
+            while (i > 0) {
+                let p = (i - 1) >> 1;
+                if (pq[p].dist <= pq[i].dist) break;
+                [pq[p], pq[i]] = [pq[i], pq[p]];
+                i = p;
+            }
+        };
+        const pop = () => {
+            const top = pq[0];
+            const last = pq.pop()!;
+            if (pq.length > 0) {
+                pq[0] = last;
+                let i = 0;
+                while (true) {
+                    let l = (i << 1) + 1, r = (i << 1) + 2, min = i;
+                    if (l < pq.length && pq[l].dist < pq[min].dist) min = l;
+                    if (r < pq.length && pq[r].dist < pq[min].dist) min = r;
+                    if (min === i) break;
+                    [pq[i], pq[min]] = [pq[min], pq[i]];
+                    i = min;
                 }
             }
+            return top;
+        };
 
-            if (closestNode === null || distances[closestNode] === Infinity) break;
+        distances.set(startId, 0);
+        push(startId, 0);
+
+        const visited = new Set<string>();
+
+        while (pq.length > 0) {
+            const { id: closestNode, dist } = pop();
+            if (visited.has(closestNode)) continue;
+            visited.add(closestNode);
+
             if (closestNode === endId) {
                 // Reconstruct path
                 const path: string[] = [];
+                const resGeometries: [number, number][][] = [];
+                const resSectionIds: number[] = [];
                 let curr: string | null = endId;
                 while (curr !== null) {
                     path.unshift(curr);
-                    if (curr === startId) break;
-                    curr = previous[curr];
+                    const prevEdge = edgeTo.get(curr);
+                    if (prevEdge) {
+                        resGeometries.unshift(prevEdge.geometry);
+                        if (prevEdge.sectionIds) resSectionIds.unshift(...prevEdge.sectionIds);
+                    }
+                    curr = previous.has(curr) ? previous.get(curr)! : null;
+                    if (curr === startId) {
+                        path.unshift(curr);
+                        break;
+                    }
                 }
 
                 return {
                     path,
-                    sectionIds: sectionIdsRecord[endId],
-                    distance: distances[endId],
-                    geometries: geometries[endId]
+                    sectionIds: resSectionIds,
+                    distance: distances.get(endId) || 0,
+                    geometries: resGeometries
                 };
             }
 
-            nodes.delete(closestNode);
-
+            const currentDist = distances.get(closestNode) || 0;
             const neighbors = this.adj.get(closestNode) || [];
             for (const neighbor of neighbors) {
-                if (!nodes.has(neighbor.to)) continue;
+                if (visited.has(neighbor.to)) continue;
 
-                // FILTERING LOGIC
                 if (allowedLines) {
                     const targetNode = this.nodes.get(neighbor.to);
-                    if (targetNode) {
-                        // Check if target node belongs to allowed lines
-                        // Note: normalizeKey might be needed if allowedLines formats differ, 
-                        // but assuming exact match for now as per MapPane usage.
-                        if (!allowedLines.includes(targetNode.fullLineId)) {
-                            continue;
-                        }
-                    }
+                    if (targetNode && !allowedLines.includes(targetNode.fullLineId)) continue;
                 }
 
-                const alt = distances[closestNode] + neighbor.distance;
-                if (alt < distances[neighbor.to]) {
-                    distances[neighbor.to] = alt;
-                    previous[neighbor.to] = closestNode;
-                    geometries[neighbor.to] = [...geometries[closestNode], neighbor.geometry];
-                    sectionIdsRecord[neighbor.to] = [...sectionIdsRecord[closestNode], ...(neighbor.sectionIds || [])];
+                const alt = currentDist + neighbor.distance;
+                if (!distances.has(neighbor.to) || alt < distances.get(neighbor.to)!) {
+                    distances.set(neighbor.to, alt);
+                    previous.set(neighbor.to, closestNode);
+                    edgeTo.set(neighbor.to, neighbor);
+                    push(neighbor.to, alt);
                 }
             }
         }
@@ -381,7 +396,7 @@ export class RailroadGraph {
             const node: StationNode = {
                 id: station.id,
                 name: station.name,
-                name_en: (station as any).name_en,
+                name_en: station.name_en,
                 company: companyName,
                 line: lineName,
                 companyId: companyId,
@@ -402,9 +417,9 @@ export class RailroadGraph {
         });
 
         // 2. Load Joints from hierarchy as nodes
-        const jointDataMap = new Map<string, any>();
+        const jointDataMap = new Map<string, Joint>();
         if (data.joints && data.joints.joints) {
-            data.joints.joints.forEach((j: any) => jointDataMap.set(j.id, j));
+            data.joints.joints.forEach((j: Joint) => jointDataMap.set(j.id, j));
         }
 
         if (data.hierarchy && data.hierarchy.companies) {

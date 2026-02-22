@@ -2,14 +2,27 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { RailroadGraph, haversineDistance } from '../lib/graphUtils';
+import { ProcessedStation } from '../types/mapTypes';
+import { Trip } from '../types/trip';
+
+interface GraphLike {
+    getShortestPath(startId: string, endId: string, allowedLines?: string[]): {
+        path: string[],
+        sectionIds: number[],
+        distance: number,
+        geometries: [number, number][][]
+    } | null;
+}
 
 interface UseTripRecorderProps {
-    graph: RailroadGraph | null;
-    visibleStations: any;
-    onRecordTrip?: (trip: any) => void;
+    graph: GraphLike | null;
+    visibleStations: Record<string, ProcessedStation> | null;
+    onRecordTrip?: (trip: Trip) => void;
     isEditMode?: boolean;
-    onDraftComplete?: (trip: any) => void;
+    onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
+    selectedLines?: string[];
+    activeLine?: string | null;
 }
 
 export const useTripRecorder = ({
@@ -18,7 +31,9 @@ export const useTripRecorder = ({
     onRecordTrip,
     isEditMode = false,
     onDraftComplete,
-    onDragUpdate
+    onDragUpdate,
+    selectedLines = [],
+    activeLine = null
 }: UseTripRecorderProps) => {
     const map = useMap();
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
@@ -62,6 +77,21 @@ export const useTripRecorder = ({
     }, [map, dragStartStation]);
 
     const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
+        // Validation: Only allow starting from visible lines
+        const stations = visibleStationsRef.current;
+        if (stations && stations[id]) {
+            const data = stations[id];
+            const selectionSet = new Set(selectedLines);
+            const isNoneExplicitlySelected = selectionSet.has("__NONE__");
+            const isFilterActive = isNoneExplicitlySelected || selectionSet.size > 0;
+
+            const isStationVisible = data.lines?.some((l: string) =>
+                selectionSet.has(l) || activeLine === l || !isFilterActive
+            );
+
+            if (!isStationVisible && !data.isJoint) return;
+        }
+
         setDragStartStation(id);
         setDragStartCoords(coords);
         setDragPath([]);
@@ -84,7 +114,7 @@ export const useTripRecorder = ({
                 console.warn("Failed to project initial point", e);
             }
         }
-    }, [map, onDragUpdate]);
+    }, [map, onDragUpdate, selectedLines, activeLine]);
 
     const updateDragPath = (mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
         const currentDragStation = dragStartStationRef.current;
@@ -104,6 +134,17 @@ export const useTripRecorder = ({
                 const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
 
                 if (stPoint.x >= minX && stPoint.x <= maxX && stPoint.y >= minY && stPoint.y <= maxY) {
+                    // Filter: Only allow stations that are on visible lines
+                    const selectionSet = new Set(selectedLines);
+                    const isNoneExplicitlySelected = selectionSet.has("__NONE__");
+                    const isFilterActive = isNoneExplicitlySelected || selectionSet.size > 0;
+
+                    const isStationVisible = data.lines?.some((l: string) =>
+                        selectionSet.has(l) || activeLine === l || !isFilterActive
+                    );
+
+                    if (!isStationVisible && !data.isJoint) return;
+
                     const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
                     if (d < 20) {
                         const distFromStart = prevLayerPoint.distanceTo(stPoint);
@@ -139,7 +180,7 @@ export const useTripRecorder = ({
                     const pathData = graph.getShortestPath(
                         lastWaypoint,
                         c.id,
-                        null
+                        selectedLines
                     );
 
                     if (pathData) {
@@ -153,12 +194,15 @@ export const useTripRecorder = ({
                             // 1. Never jump more than 25km in a single swipe segment
                             if (railDist > 25) isValid = false;
 
-                            // 2. If the rail route is more than 3x the crow-flies distance, it's likely a bay-crossing or accidental jump
+                            // 2. Limit swipe segments to 10 sections max (User requirement)
+                            if (pathData.sectionIds && pathData.sectionIds.length > 10) isValid = false;
+
+                            // 3. If the rail route is more than 3x the crow-flies distance, it's likely a bay-crossing or accidental jump
                             if (isValid && crowDist < 5 && (railDist / (crowDist + 0.01)) > 3.0) {
                                 isValid = false;
                             }
 
-                            // 3. Prevent extremely long "detour" jumps even for long crow distances
+                            // 4. Prevent extremely long "detour" jumps even for long crow distances
                             if (isValid && railDist > crowDist * 2 + 5) {
                                 isValid = false;
                             }
@@ -182,7 +226,7 @@ export const useTripRecorder = ({
                 onDragUpdate([...waypoints]);
             }
 
-            let allGeoms = segments.flatMap(s => s.geometries);
+            let allGeoms = segments.flatMap((s: { geometries: [number, number][][] }) => s.geometries);
             const lastWaypoint = waypoints[waypoints.length - 1];
             if (stations[lastWaypoint]) {
                 const startCoords = stations[lastWaypoint].centroid; // [lat, lon]
@@ -235,7 +279,7 @@ export const useTripRecorder = ({
                 const fullSectionIds: number[] = [];
                 let totalDist = 0;
 
-                segments.forEach((seg, idx) => {
+                segments.forEach((seg: any, idx: number) => {
                     if (idx === 0) fullPath.push(...seg.path);
                     else fullPath.push(...seg.path.slice(1));
                     fullGeoms.push(...seg.geometries);

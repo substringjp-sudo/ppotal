@@ -4,13 +4,11 @@ import React, { useCallback } from 'react';
 import { GeoJSON } from 'react-leaflet';
 
 interface MunicipalMapProps {
-    municipalities: any;
-    className?: string;
-    getColor?: (name: string) => string;
+    municipalities: GeoJSON.FeatureCollection | GeoJSON.Feature | null;
     zoom: number;
 }
 
-const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, zoom }) => {
+const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => {
     const style = useCallback(() => {
         let weight = 1;
         if (zoom <= 9) weight = 0.5;
@@ -39,4 +37,6 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, className, 
     );
 };
 
-export default React.memo(MunicipalMap);
+const MemoizedMunicipalMap = React.memo(MunicipalMap);
+MemoizedMunicipalMap.displayName = 'MunicipalMap';
+export default MemoizedMunicipalMap;

@@ -63,14 +63,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
+        {/* AdSense Auto Ads - Using lazyOnload to prevent hydration mismatch errors */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
+        {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-VF27R8XBMY"
           strategy="afterInteractive"
@@ -83,10 +88,6 @@ export default function RootLayout({
             gtag('config', 'G-VF27R8XBMY');
           `}
         </Script>
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
         {children}
       </body>
     </html>

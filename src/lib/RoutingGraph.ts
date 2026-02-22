@@ -1,5 +1,5 @@
 import { StationNode, haversineDistance, LineSegment } from './graphUtils';
-import { RailData } from '../types/railData';
+import { RailData, Section, Station, Joint } from '../types/railData';
 
 export interface RouteEdge {
     from: string;
@@ -21,7 +21,7 @@ export class RoutingGraph {
     // Name to ID mappings for granular data
     companyNameToId: Map<string, string> = new Map();
     lineNameToId: Map<string, string> = new Map();
-    sectionsMap: Map<number, any> = new Map();
+    sectionsMap: Map<number, Section> = new Map();
 
     constructor(data?: RailData) {
         if (data) {
@@ -54,7 +54,7 @@ export class RoutingGraph {
         });
 
         // 1. Process Stations
-        Object.values(data.stations).forEach((station: any) => {
+        Object.values(data.stations).forEach((station: Station) => {
             let companyName = "Unknown";
             let lineName = "Unknown";
             let fullLineName = "Unknown::Unknown";
@@ -74,6 +74,7 @@ export class RoutingGraph {
             const node: StationNode = {
                 id: station.id,
                 name: station.name,
+                name_en: station.name_en,
                 company: companyName,
                 line: lineName,
                 companyId: pid ? (data.platforms[pid]?.company || 0) : 0,
@@ -102,7 +103,7 @@ export class RoutingGraph {
 
         // 1.1 Load Joints if available
         if (data.joints && Array.isArray(data.joints.joints)) {
-            data.joints.joints.forEach((joint: any) => {
+            data.joints.joints.forEach((joint: Joint) => {
                 const node: StationNode = {
                     id: joint.id,
                     name: "Joint",
@@ -119,11 +120,11 @@ export class RoutingGraph {
         }
 
         // 2. Load Line IDs and populate lineLengths
-        data.sections.sections.forEach((s: any) => this.sectionsMap.set(s.id, s));
+        data.sections.sections.forEach((s: Section) => this.sectionsMap.set(s.id, s));
 
         if (data.railroadGraph) {
             Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
-                Object.entries(targets as Record<string, any>).forEach(([targetId, sectionIds]) => {
+                Object.entries(targets as Record<string, number[]>).forEach(([targetId, sectionIds]) => {
                     let totalDistance = 0;
                     let combinedGeometry: [number, number][] = [];
                     let lineId = "";

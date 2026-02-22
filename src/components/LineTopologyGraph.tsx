@@ -189,7 +189,7 @@ const useSubwayLayout = (segments: LineSegment[], nodes: Map<string, StationNode
 
         return { nodePositions, edges: edgeObjects, boundingBox };
 
-    }, [segments, nodes]);
+    }, [segments]);
 };
 
 // --- MAIN COMPONENT ---
@@ -264,4 +264,5 @@ const LineTopologyGraph: React.FC<LineTopologyGraphProps> = ({
     );
 };
 
+LineTopologyGraph.displayName = 'LineTopologyGraph';
 export default React.memo(LineTopologyGraph);

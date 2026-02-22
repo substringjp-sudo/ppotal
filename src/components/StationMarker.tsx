@@ -3,11 +3,11 @@ import React, { memo, useMemo, useCallback, useRef, useState } from 'react';
 import L from 'leaflet';
 import { CircleMarker, Tooltip, Marker, Polyline } from 'react-leaflet';
 import { lightenColor } from '../lib/lineColors';
-import { MapStyleSettings } from '../app/page';
+import { MapStyleSettings } from './MainPageClient';
 import { Language } from '../lib/translations';
 import { convexHull } from '../lib/geoUtils';
 import { ProcessedStation } from '../types/mapTypes';
-import { RailData } from '../types/railData';
+import { RailData, Company, Line } from '../types/railData';
 
 interface StationMarkerProps {
     id: string;
@@ -39,8 +39,8 @@ interface StationMarkerProps {
  * Optimized Station Node Item
  * Handles individual node and platform rendering with deep memoization.
  */
-const StationNodeItem: React.FC<{
-    node: any;
+interface StationNodeItemProps {
+    node: { id: string; coord: [number, number]; lineKey: string; isUsed?: boolean; platforms?: [number, number][][] };
     id: string;
     radius: number;
     isSelected: boolean;
@@ -58,7 +58,7 @@ const StationNodeItem: React.FC<{
     onStationMouseDown: (id: string, coords: [number, number]) => void;
     onStationMouseUp: (id: string) => void;
     station: ProcessedStation;
-    formattedLines: any[];
+    formattedLines: { company: string; line: string; key: string }[];
     showTooltip: boolean;
     railData: RailData;
     selectedLines: string[];
@@ -66,7 +66,9 @@ const StationNodeItem: React.FC<{
     selectedStation?: string;
     language: Language;
     zoomConfig: { baseRadius: number, weightValue: number, zoomCategory: number };
-}> = memo(({
+}
+
+const StationNodeItem: React.FC<StationNodeItemProps> = memo(({
     node, id, radius, isSelected, isHighlighted, isDragging, isMobile,
     isEditMode, isMoving, zoom, weightValue, getColor, handleStationClick,
     handleMouseOver, handleMouseOut, onStationMouseDown, onStationMouseUp,
@@ -83,7 +85,7 @@ const StationNodeItem: React.FC<{
         const baseColor = getColor(node.lineKey) || '#666';
         const lightenedColor = lightenColor(baseColor, 60);
 
-        const style: any = {
+        const style: L.PathOptions = {
             fill: !isLowZoom || isNodeSelected,
             fillColor: isNodeUsed ? '#2ecc71' : (isDragging ? '#2ecc71' : lightenedColor),
             fillOpacity: (isNodeSelected || isNodeUsed) ? 1 : 0.8,
@@ -105,17 +107,17 @@ const StationNodeItem: React.FC<{
 
     // 2. Memoize Handlers for the node
     const handlers = useMemo(() => ({
-        click: (e: any) => {
+        click: (e: L.LeafletMouseEvent) => {
             L.DomEvent.stopPropagation(e);
             if (!isEditMode) handleStationClick(id, station.lines);
         },
         mouseover: handleMouseOver,
         mouseout: handleMouseOut,
-        mousedown: (e: any) => {
+        mousedown: (e: L.LeafletMouseEvent) => {
             L.DomEvent.stopPropagation(e);
             if (isEditMode || !isMobile) onStationMouseDown(id, node.coord);
         },
-        mouseup: (e: any) => {
+        mouseup: (e: L.LeafletMouseEvent) => {
             L.DomEvent.stopPropagation(e);
             onStationMouseUp(id);
         }
@@ -127,10 +129,10 @@ const StationNodeItem: React.FC<{
     // 3. Memoize Platform Geometries
     const platformGeometries = useMemo(() => {
         if (!hasPlatforms) return [];
-        return node.platforms!.map((plat: any) => {
-            const positions = plat.filter((pt: any) => pt && pt.length >= 2).map((pt: any) => [pt[1], pt[0]] as [number, number]);
+        return node.platforms!.map((plat: [number, number][]) => {
+            const positions = plat.filter((pt: [number, number] | number[]) => pt && pt.length >= 2).map((pt: [number, number] | number[]) => [pt[1], pt[0]] as [number, number]);
             return positions.length >= 2 ? positions : null;
-        }).filter(Boolean);
+        }).filter((p): p is [number, number][] => p !== null);
     }, [hasPlatforms, node.platforms]);
 
     return (
@@ -157,13 +159,21 @@ const StationNodeItem: React.FC<{
                             weight: 20,
                             opacity: 0.0,
                             lineCap: 'butt',
-                            pane: 'station-interact',
+                            pane: 'station-interactions',
                             interactive: true
                         }}
                         eventHandlers={handlers}
                     />
                 </React.Fragment>
             ))}
+
+            {/* Visible Station Node */}
+            <CircleMarker
+                center={node.coord}
+                pathOptions={stationStyle}
+                radius={radius}
+                interactive={false}
+            />
 
             {/* Invisible Station Node for Interaction */}
             <CircleMarker
@@ -173,7 +183,7 @@ const StationNodeItem: React.FC<{
                     fill: true,
                     fillColor: '#000',
                     fillOpacity: 0.0,
-                    pane: 'railroad-lines',
+                    pane: 'station-interactions',
                     interactive: true
                 }}
                 radius={radius + 8}
@@ -186,19 +196,24 @@ const StationNodeItem: React.FC<{
                         pane="top-tooltips"
                         offset={[20, -20]}
                         direction="top"
-                        opacity={showTooltip ? (isDragging ? 0 : 1) : 0}
+                        opacity={showTooltip ? 1 : 0}
                     >
                         <div style={{ zIndex: 1000, position: 'relative', minWidth: '180px', padding: '4px' }}>
-                            <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px', color: '#000' }}>
-                                {language === 'en' ? (station.name_en || station.name) : station.name}
+                            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '8px', borderBottom: '2px solid #333', paddingBottom: '4px' }}>
+                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#000' }}>{station.name}</span>
+                                {station.name_en && (
+                                    <span style={{ fontSize: '11px', fontWeight: '600', color: '#718096', marginTop: '-2px' }}>
+                                        {station.name_en}
+                                    </span>
+                                )}
                             </div>
                             <div style={{ fontSize: '12px', color: '#333' }}>
                                 <div style={{ fontWeight: 'bold', fontSize: '10px', color: '#888', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                     Available Lines
                                 </div>
                                 {formattedLines.map((fl, fidx) => {
-                                    const corp = (railData.companies as any)[fl.company];
-                                    const line = (railData.lines as any)[fl.line];
+                                    const corp = (railData.companies as Record<string, Company>)[fl.company];
+                                    const line = (railData.lines as Record<string, Line>)[fl.line];
                                     const displayedCorp = language === 'en' ? (corp?.name_en || corp?.name || fl.company) : (corp?.name || fl.company);
                                     const displayedLine = language === 'en' ? (line?.name_en || line?.name || fl.line) : (line?.name || fl.line);
                                     return (
@@ -237,6 +252,7 @@ const StationNodeItem: React.FC<{
         </React.Fragment>
     );
 });
+StationNodeItem.displayName = 'StationNodeItem';
 
 const StationMarker: React.FC<StationMarkerProps> = ({
     id,
@@ -251,7 +267,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     onStationMouseDown,
     onStationMouseUp,
     dragStartStation,
-    visitedStations,
+    // visitedStations,
     settings,
     language,
     isMobile,
@@ -290,7 +306,7 @@ const StationMarker: React.FC<StationMarkerProps> = ({
             setShowTooltip(true);
             tooltipTimeoutRef.current = null;
         }, 200);
-    }, [isMobile, isEditMode]);
+    }, [isMobile, isEditMode, isMoving]);
 
     const handleMouseOut = useCallback(() => {
         if (tooltipTimeoutRef.current) {
@@ -309,25 +325,25 @@ const StationMarker: React.FC<StationMarkerProps> = ({
         return { company: 'Unknown', line: l, key: l };
     }), [station.lines]);
 
-    const hullPoints = useMemo(() => {
-        if (zoomConfig.zoomCategory < 4) return null;
-        const allPoints: [number, number][] = [];
-        station.nodes.forEach(node => {
-            if (node.platforms) {
-                node.platforms.forEach(plat => {
-                    if (Array.isArray(plat)) {
-                        plat.forEach(p => {
-                            if (Array.isArray(p) && p.length >= 2) {
-                                allPoints.push([p[1], p[0]]); // [lat, lon]
-                            }
-                        });
-                    }
-                });
-            }
-            if (node.coord && node.coord.length >= 2) allPoints.push(node.coord);
-        });
-        return allPoints.length > 2 ? convexHull(allPoints) : null;
-    }, [station, zoomConfig.zoomCategory]);
+    // const hullPoints = useMemo(() => {
+    //     if (zoomConfig.zoomCategory < 4) return null;
+    //     const allPoints: [number, number][] = [];
+    //     station.nodes.forEach(node => {
+    //         if (node.platforms) {
+    //             node.platforms.forEach(plat => {
+    //                 if (Array.isArray(plat)) {
+    //                     plat.forEach(p => {
+    //                         if (Array.isArray(p) && p.length >= 2) {
+    //                             allPoints.push([p[1], p[0]]); // [lat, lon]
+    //                         }
+    //                     });
+    //                 }
+    //             });
+    //         }
+    //         if (node.coord && node.coord.length >= 2) allPoints.push(node.coord);
+    //     });
+    //     return allPoints.length > 2 ? convexHull(allPoints) : null;
+    // }, [station, zoomConfig.zoomCategory]);
 
     if (station.isJoint) {
         const nodeCoord = station.nodes[0]?.coord || station.centroid;
@@ -337,9 +353,9 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                 pathOptions={{ stroke: false, fill: true, fillColor: '#000', fillOpacity: 0.0, pane: 'railroad-lines', interactive: true }}
                 radius={radius + 8}
                 eventHandlers={{
-                    click: (e) => { L.DomEvent.stopPropagation(e); if (!isEditMode) handleStationClick(id, station.lines); },
-                    mousedown: (e) => { L.DomEvent.stopPropagation(e); if (isEditMode || !isMobile) onStationMouseDown(id, nodeCoord); },
-                    mouseup: (e) => { L.DomEvent.stopPropagation(e); onStationMouseUp(id); }
+                    click: (e: L.LeafletMouseEvent) => { L.DomEvent.stopPropagation(e); if (!isEditMode) handleStationClick(id, station.lines); },
+                    mousedown: (e: L.LeafletMouseEvent) => { L.DomEvent.stopPropagation(e); if (isEditMode || !isMobile) onStationMouseDown(id, nodeCoord); },
+                    mouseup: (e: L.LeafletMouseEvent) => { L.DomEvent.stopPropagation(e); onStationMouseUp(id); }
                 }}
             />
         );
@@ -378,7 +394,10 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                                     pointer-events: none;
                                     opacity: ${isSelected ? 1 : 0.9};
                                     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                                ">${language === 'en' ? (station.name_en || station.name) : station.name}</div>
+                                ">
+                                    <div style="font-weight: 800; font-size: 11px; line-height: 1.1;">${station.name}</div>
+                                    ${station.name_en ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 0px; line-height: 1;">${station.name_en}</div>` : ''}
+                                </div>
                             </div>
                         `,
                         iconSize: [0, 0],
@@ -423,4 +442,5 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     );
 };
 
+StationMarker.displayName = 'StationMarker';
 export default memo(StationMarker);

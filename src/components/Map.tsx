@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { MapContainer, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface MapProps {

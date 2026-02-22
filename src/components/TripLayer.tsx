@@ -16,13 +16,13 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel, isMovin
             type: 'FeatureCollection',
             features: recordedTrips.flatMap(trip => {
                 if (!trip.geometries) return [];
-                return trip.geometries.map((segment: any, idx: number) => ({
+                return trip.geometries.map((segment: [number, number][], idx: number) => ({
                     type: 'Feature',
                     properties: { id: trip.id, start: trip.start, end: trip.end },
                     geometry: { type: 'LineString', coordinates: segment }
                 }));
             })
-        };
+        } as GeoJSON.FeatureCollection;
     }, [recordedTrips]);
 
     if (!geoJsonData) return null;
@@ -31,37 +31,37 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel, isMovin
     const baseWeight = 6;
     const dynamicWeight = baseWeight * weightFactor;
 
-    const baseStyle = {
+    const baseStyle: L.PathOptions = {
         color: '#2ecc71',
         weight: dynamicWeight,
         opacity: 0.8,
         lineCap: 'round',
         lineJoin: 'round',
         pane: 'ui-elements'
-    } as any;
+    };
 
-    const casingStyle = {
+    const casingStyle: L.PathOptions = {
         color: '#000000',
         weight: dynamicWeight + 1.2,
         opacity: 0.4,
         lineCap: 'round',
         lineJoin: 'round',
         pane: 'ui-elements'
-    } as any;
+    };
 
     return (
         <>
             {zoomLevel >= 10 && !isMoving && (
                 <GeoJSON
                     key={`trip-casing-${zoomLevel}`}
-                    data={geoJsonData as any}
+                    data={geoJsonData}
                     style={casingStyle}
                     interactive={false}
                 />
             )}
             <GeoJSON
                 key={`trip-base-${zoomLevel}`}
-                data={geoJsonData as any}
+                data={geoJsonData}
                 style={baseStyle}
                 interactive={false}
             />
@@ -69,4 +69,6 @@ const TripLayer: React.FC<TripLayerProps> = ({ recordedTrips, zoomLevel, isMovin
     );
 };
 
-export default React.memo(TripLayer);
+const MemoizedTripLayer = React.memo(TripLayer);
+MemoizedTripLayer.displayName = 'TripLayer';
+export default MemoizedTripLayer;
