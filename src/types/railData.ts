@@ -72,7 +72,14 @@ export interface RailData {
     lines: Record<string, Line>;
     platforms: Record<string, Platform>;
     stations: Record<string, Station>;
-    sections: { sections: Section[] };
+    sections: {
+        sections: Section[]; // Original high-res data
+        lod?: {
+            low: Section[];
+            mid: Section[];
+            high: Section[];
+        }
+    };
     hierarchy: {
         companies: Record<string, HierarchyCompany>;
     };

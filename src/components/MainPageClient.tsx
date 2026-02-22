@@ -305,7 +305,17 @@ const MainPageClient = () => {
             display: 'flex', flexDirection: 'column',
             backgroundColor: '#eee', backgroundImage: 'radial-gradient(#ccc 0.5px, transparent 0.5px)', backgroundSize: '10px 10px'
         }}>
-            <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+            <div style={{
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                position: 'relative',
+                maxWidth: '1920px',
+                margin: '0 auto',
+                width: '100%',
+                boxShadow: '0 0 40px rgba(0,0,0,0.1)'
+            }}>
 
                 <header style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px',

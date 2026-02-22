@@ -168,7 +168,44 @@ const MapPane: React.FC<MapPaneProps> = ({
         return { visitedStations: stationSet, visitedSectionIds: sectionSet };
     }, [recordedTrips, graph]);
 
-    // 3. Visible Stations (Spatial Culling)
+    // 3. LOD Data Selection
+    const lodLevel = useMemo(() => {
+        if (zoomLevel <= 8) return 'low';
+        if (zoomLevel <= 13) return 'mid';
+        return 'high';
+    }, [zoomLevel]);
+
+    const railDataForMap = useMemo(() => {
+        if (!railData) return null;
+        if (!('lod' in railData.sections) || !railData.sections.lod) return railData;
+
+        const lod = railData.sections.lod;
+        const activeSections = lod[lodLevel];
+
+        return {
+            ...railData,
+            sections: {
+                ...railData.sections,
+                sections: activeSections
+            }
+        };
+    }, [railData, lodLevel]);
+
+    const activePrefectures = useMemo(() => {
+        if (!prefectures) return null;
+        if (zoomLevel <= 8) return prefectures.low;
+        if (zoomLevel <= 13) return prefectures.mid;
+        return prefectures.high;
+    }, [prefectures, zoomLevel]);
+
+    const activeMunicipalities = useMemo(() => {
+        if (!municipalities) return null;
+        if (zoomLevel <= 9) return municipalities.low;
+        if (zoomLevel <= 13) return municipalities.mid;
+        return municipalities.high;
+    }, [municipalities, zoomLevel]);
+
+    // 4. Visible Stations (Spatial Culling)
     const { visibleStations, effectiveZoom } = useVisibleStations({
         railroadNetwork: railData,
         mapBounds,
@@ -222,6 +259,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
     }, [lineIdMap, onLineMappingCreated]);
 
+
     useEffect(() => {
         if (map) {
             // Create required panes if they don't exist
@@ -249,11 +287,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             setIsMoving(false);
         },
         movestart: () => setIsMoving(true),
-        move: (e) => {
-            if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
-            moveEndTimeoutRef.current = setTimeout(() => {
-                setMapBounds(e.target.getBounds());
-            }, 100); // 100ms for more responsive updates during drag
+        move: () => {
+            // Do not update mapBounds during move to allow pre-rendering to handle motion
         },
         moveend: (e) => {
             setMapBounds(e.target.getBounds());
@@ -350,9 +385,31 @@ const MapPane: React.FC<MapPaneProps> = ({
             {!isMobile && <MapControls zoom={zoomLevel} />}
             <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
             <Pane name="background" style={PANE_STYLES.background}>
-                <JapanMap prefectures={prefectures} interactive={zoomLevel <= 8 && !isMoving} zoom={zoomLevel} />
-                {zoomLevel > 8 && municipalities && <MunicipalMap municipalities={municipalities} zoom={zoomLevel} />}
-                {zoomLevel > 8 && prefectures && <JapanMap prefectures={prefectures} outlineOnly={true} interactive={false} zoom={zoomLevel} />}
+                {/* Background maps: Stability is key during motion */}
+                {activePrefectures && (
+                    <JapanMap
+                        key={`pref-${lodLevel}`}
+                        prefectures={activePrefectures}
+                        interactive={zoomLevel <= 8}
+                        zoom={zoomLevel}
+                    />
+                )}
+                {zoomLevel > 8 && activeMunicipalities && (
+                    <MunicipalMap
+                        key={`muni-${lodLevel}`}
+                        municipalities={activeMunicipalities}
+                        zoom={zoomLevel}
+                    />
+                )}
+                {zoomLevel > 8 && activePrefectures && (
+                    <JapanMap
+                        key={`pref-outline-${lodLevel}`}
+                        prefectures={activePrefectures}
+                        outlineOnly={true}
+                        interactive={false}
+                        zoom={zoomLevel}
+                    />
+                )}
             </Pane>
 
             <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
@@ -362,8 +419,9 @@ const MapPane: React.FC<MapPaneProps> = ({
             <Pane name="station-labels" style={PANE_STYLES.stationLabels} />
             <Pane name="globalInteraction" style={PANE_STYLES.globalInteraction} />
 
-            {railData && <RailroadLayer
-                railroadNetwork={railData}
+            {railDataForMap && <RailroadLayer
+                key={`rail-lod-${lodLevel}`}
+                railroadNetwork={railDataForMap}
                 selectedLines={selectedLines}
                 hoveredLine={hoveredLine}
                 activeLine={activeLine}

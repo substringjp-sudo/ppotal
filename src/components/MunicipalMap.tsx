@@ -21,6 +21,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => 
             weight: weight,
             opacity: 0.6,
             color: '#f5f5f5',
+            smoothFactor: 1.0,
         };
     }, [zoom]);
 

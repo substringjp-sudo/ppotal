@@ -2,11 +2,15 @@
 
 import React from 'react';
 import { MapContainer } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 export interface MapProps {
     children: React.ReactNode;
 }
+
+// Shared Canvas Renderer with large over-rendering (padding: 1.5 means 4x4 viewport area)
+export const sharedCanvasRenderer = typeof window !== 'undefined' ? L.canvas({ padding: 1.5 }) : null;
 
 const Map: React.FC<MapProps> = ({ children }) => {
     return (
@@ -20,6 +24,8 @@ const Map: React.FC<MapProps> = ({ children }) => {
             zoomDelta={0.5}
             minZoom={5}
             maxBounds={[[20, 120], [50, 160]]}
+            worldCopyJump={true}
+            renderer={sharedCanvasRenderer || L.canvas({ padding: 1.5 })}
         >
             {children}
         </MapContainer>

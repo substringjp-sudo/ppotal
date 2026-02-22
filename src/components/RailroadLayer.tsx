@@ -70,10 +70,6 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return 4;
     }, [zoomLevel]);
 
-    const dynamicSmoothFactor = useMemo(() => {
-        if (zoomGroup <= 2) return 2.0;
-        return 1.0;
-    }, [zoomGroup]);
 
     const styleConfig = useMemo(() => {
         // Stages: 1 (5-7), 2 (8-11), 3 (12-13), 4 (14+)
@@ -97,9 +93,9 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             usedGlowWeight,
             casingWeight,
             highlightWeight,
-            smoothFactor: dynamicSmoothFactor
+            smoothFactor: 1.0
         };
-    }, [zoomGroup, dynamicSmoothFactor, zoomLevel]);
+    }, [zoomGroup, zoomLevel]);
 
     const mergedGeoJsonData = useMemo<GeoJSON.FeatureCollection | null>(() => {
         if (!railroadNetwork) return null;
@@ -397,7 +393,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     return (
         <>
-            {/* 1. Under-layers: Glows and Outlines (Non-interactive) */}
+            {/* 1. Under-layers: Glows and Outlines (Always rendered for stability) */}
             {mergedGeoJsonData && (
                 <GeoJSON
                     ref={glowLayerRef}

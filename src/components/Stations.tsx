@@ -449,26 +449,30 @@ const Stations: React.FC<StationsProps> = ({
 
     const visibleLabels = useMemo(() => {
         if (!mapBounds) return [];
-        const paddedBounds = mapBounds.pad(0.5);
+        const paddedBounds = mapBounds.pad(1.5);
 
         // 1. Initial Candidates: Stations within map bounds
         let candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
 
         // 2. Zoom-based Filtering
         if (realZoom < 14) {
-            candidates = candidates.filter(({ data }) => {
-                const isTransfer = data.lines.length > 1;
-                const isSelected = data.lines.some(l =>
+            candidates = candidates.filter((item) => {
+                const isSelected = item.data.lines.some(l =>
                     (l && l !== '__NONE__' && selectedLines.includes(l)) ||
                     (activeLine && l === activeLine) ||
                     (hoveredLine && l === hoveredLine)
                 );
+                const isTransfer = item.data.lines.length > 1;
 
-                // 8~13: Only transfer stations OR stations on selected/hovered/active lines
+                // 8~11: Very strict (even more reduced frequency)
+                if (realZoom < 12) {
+                    return isTransfer || (isSelected && (item.id.charCodeAt(0) % 3 === 0));
+                }
+
+                // 12~13: Only transfer stations OR stations on selected/hovered/active lines
                 return isTransfer || isSelected;
             });
         }
-        // zoom >= 14: All stations are candidates
 
         if (candidates.length === 0) return [];
 
@@ -491,11 +495,11 @@ const Stations: React.FC<StationsProps> = ({
         });
 
         // 4. Collision Detection (Pruning)
-        // Adjust pruning distance based on zoom level. 
-        // We use Math.max(0, ...) to ensure zoomFactor doesn't drop below 1 at high zoom.
         const zoomFactor = Math.pow(2, Math.max(0, 14 - realZoom));
-        const minDistanceLat = 0.0035 * zoomFactor;
-        const minDistanceLon = 0.0070 * zoomFactor;
+        // Increase distance for lower zoom levels to reduce density (User Item #3)
+        const densityMultiplier = realZoom < 14 ? 1.5 : 1.0;
+        const minDistanceLat = 0.0035 * zoomFactor * densityMultiplier;
+        const minDistanceLon = 0.0070 * zoomFactor * densityMultiplier;
         const accepted: typeof prioritized = [];
 
         prioritized.forEach(candidate => {
@@ -514,7 +518,6 @@ const Stations: React.FC<StationsProps> = ({
                 return;
             }
 
-            // check for collisions with already accepted labels
             const hasCollision = accepted.some(acc => {
                 const dLat = Math.abs(acc.data.centroid[0] - candidate.data.centroid[0]);
                 const dLon = Math.abs(acc.data.centroid[1] - candidate.data.centroid[1]);

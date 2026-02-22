@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RailData } from '../types/railData';
+import { RailData, Section } from '../types/railData';
 
 export const useRailData = () => {
     const [railData, setRailData] = useState<RailData | null>(null);
@@ -15,7 +15,9 @@ export const useRailData = () => {
                     linesRes,
                     platformsRes,
                     stationsRes,
-                    sectionsRes,
+                    sectionsHighRes,
+                    sectionsMidRes,
+                    sectionsLowRes,
                     graphRes,
                     hierarchyRes,
                     jointsRes
@@ -25,30 +27,46 @@ export const useRailData = () => {
                     fetch('/rail/platforms.json'),
                     fetch('/rail/stations.json'),
                     fetch('/rail/sections.json'),
+                    fetch('/rail/sections_mid.json'),
+                    fetch('/rail/sections_low.json'),
                     fetch('/rail/railroad_graph.json'),
                     fetch('/rail/railroad_hierarchy.json'),
                     fetch('/rail/joints.json')
                 ]);
 
-                if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok || !sectionsRes.ok || !hierarchyRes.ok || !jointsRes.ok) {
+                if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok ||
+                    !sectionsHighRes.ok || !sectionsMidRes.ok || !sectionsLowRes.ok ||
+                    !hierarchyRes.ok || !jointsRes.ok) {
                     throw new Error('Failed to fetch one or more rail data files');
                 }
 
-                const companies = await companiesRes.json();
-                const lines = await linesRes.json();
-                const platforms = await platformsRes.json();
-                const stations = await stationsRes.json();
-                const sections = await sectionsRes.json();
+                const [companies, lines, platforms, stations, sectionsHigh, sectionsMid, sectionsLow, hierarchy, joints] = await Promise.all([
+                    companiesRes.json(),
+                    linesRes.json(),
+                    platformsRes.json(),
+                    stationsRes.json(),
+                    sectionsHighRes.json(),
+                    sectionsMidRes.json(),
+                    sectionsLowRes.json(),
+                    hierarchyRes.json(),
+                    jointsRes.json()
+                ]);
+
                 const railroadGraph = graphRes.ok ? await graphRes.json() : undefined;
-                const hierarchy = await hierarchyRes.json();
-                const joints = await jointsRes.json();
 
                 setRailData({
                     companies,
                     lines,
                     platforms,
                     stations,
-                    sections,
+                    sections: {
+                        sections: sectionsHigh.sections,
+                        lod: {
+                            high: sectionsHigh.sections,
+                            mid: sectionsMid.sections,
+                            low: sectionsLow.sections
+                        }
+                    },
                     railroadGraph,
                     hierarchy,
                     joints
