@@ -116,7 +116,7 @@ export const useTripRecorder = ({
         }
     }, [map, onDragUpdate, selectedLines, activeLine]);
 
-    const updateDragPath = (mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
+    const updateDragPath = useCallback((mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
         const currentDragStation = dragStartStationRef.current;
         const prevLayerPoint = lastLayerPointRef.current;
         const stations = visibleStationsRef.current;
@@ -129,7 +129,7 @@ export const useTripRecorder = ({
             const minY = Math.min(prevLayerPoint.y, currentLayerPoint.y) - padding;
             const maxY = Math.max(prevLayerPoint.y, currentLayerPoint.y) + padding;
 
-            Object.entries(stations).forEach(([id, data]: [string, any]) => {
+            Object.entries(stations).forEach(([id, data]) => {
                 const stLatLng = L.latLng(data.centroid[0], data.centroid[1]);
                 const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
 
@@ -240,7 +240,7 @@ export const useTripRecorder = ({
         }
 
         lastLayerPointRef.current = currentLayerPoint;
-    };
+    }, [graph, selectedLines, activeLine, onDragUpdate]);
 
     // Auto-scroll Loop
     useEffect(() => {
@@ -263,7 +263,7 @@ export const useTripRecorder = ({
         return () => {
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         };
-    }, [map, dragStartStation]);
+    }, [map, dragStartStation, updateDragPath]);
 
     const handleEnd = useCallback(() => {
         const currentDragStation = dragStartStationRef.current;
@@ -279,7 +279,7 @@ export const useTripRecorder = ({
                 const fullSectionIds: number[] = [];
                 let totalDist = 0;
 
-                segments.forEach((seg: any, idx: number) => {
+                segments.forEach((seg, idx) => {
                     if (idx === 0) fullPath.push(...seg.path);
                     else fullPath.push(...seg.path.slice(1));
                     fullGeoms.push(...seg.geometries);
@@ -388,7 +388,7 @@ export const useTripRecorder = ({
             container.removeEventListener('touchmove', onTouchMove);
             container.removeEventListener('touchend', onTouchEnd);
         };
-    }, [map, graph, handleEnd]);
+    }, [map, graph, handleEnd, updateDragPath]);
 
     return {
         dragStartStation,

@@ -15,19 +15,20 @@ interface RouteCreationPanelProps {
     railData: RailData | null;
 }
 
-const RouteCreationPanel: React.FC<RouteCreationPanelProps> = ({
+const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = ({
     isDragging,
     tempPath,
     draftTrip,
     onAdd,
     onDiscard,
-    onFinish,
     language,
     onHeightChange,
     railData
 }) => {
     // Determine which path to show
-    const displayPath = isDragging ? tempPath : (draftTrip ? draftTrip.waypoints : []);
+    const displayPath = React.useMemo(() => {
+        return isDragging ? tempPath : (draftTrip ? draftTrip.waypoints : []);
+    }, [isDragging, tempPath, draftTrip]);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
@@ -36,7 +37,7 @@ const RouteCreationPanel: React.FC<RouteCreationPanelProps> = ({
             const height = containerRef.current.offsetHeight;
             onHeightChange(height);
         }
-    }, [displayPath, draftTrip, isDragging, onHeightChange]);
+    }, [displayPath, onHeightChange]);
 
     return (
         <div ref={containerRef} style={{

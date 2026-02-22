@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useCallback, useRef, useEffect } from 'react';
-import { GeoJSON } from 'react-leaflet';
+import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import { GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { getLineColor } from '../lib/lineColors';
 import { RailData, Section } from '../types/railData';
@@ -33,6 +33,25 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     usedSectionIds = new Set(),
     isDragging = false
 }) => {
+    const map = useMap();
+    const [panesReady, setPanesReady] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        const checkPanes = () => {
+            if (!mounted) return;
+            const required = ['railroad-glow', 'railroad-lines', 'globalInteraction'];
+            const allReady = required.every(p => !!map.getPane(p));
+            if (allReady) {
+                setPanesReady(true);
+            } else {
+                requestAnimationFrame(checkPanes);
+            }
+        };
+        checkPanes();
+        return () => { mounted = false; };
+    }, [map]);
+
     const lastMouseDownPos = useRef<L.LatLng | null>(null);
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
@@ -262,7 +281,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     // 상호작용 전용 스타일 (투명하지만 클릭 영역 확보)
     const interactionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
-        const id = feature.properties.id;
+
 
         return {
             color: '#000',
@@ -273,7 +292,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             lineCap: 'round' as const,
             lineJoin: 'round' as const
         } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, isMobile]);
+    }, [isMobile]);
 
     const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
         if (!feature.properties) return;
@@ -374,7 +393,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}`;
     }, [zoomGroup, usedSectionIds.size, selectionSet.size]);
 
-    if (!mergedGeoJsonData) return null;
+    if (!mergedGeoJsonData || !panesReady) return null;
 
     return (
         <>

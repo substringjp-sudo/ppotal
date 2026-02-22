@@ -48,7 +48,7 @@ export const useStationHierarchy = (railData: RailData | null) => {
             const companyCategoryId = companyInfo?.category_id ?? 3;
 
             // Handle nested 'lines' if it exists, otherwise use companyObj directly
-            const lines = (companyObj as any).lines || companyObj;
+            const lines = (companyObj as HierarchyCompany).lines || companyObj;
 
             Object.entries(lines as Record<string, string[]>).forEach(([lineId, stations]) => {
                 const lineInfo = railData.lines?.[lineId];

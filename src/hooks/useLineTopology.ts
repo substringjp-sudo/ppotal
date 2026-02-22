@@ -57,7 +57,7 @@ export function useLineTopology(
         // 3. BFS/DFS to layout nodes linearly
         // We use a queue-based approach but with Y-level tracking for branches
         const queue: { id: string, x: number, y: number }[] = [{ id: startNode, x: 50, y: 150 }];
-        const spacingX = 120;
+
         const spacingY = 80;
 
         while (queue.length > 0) {

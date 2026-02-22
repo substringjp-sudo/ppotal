@@ -221,7 +221,7 @@ export class RoutingGraph {
     getLineIdMap = (): Map<string, string> => this.lineIdMap;
     getLineLengths = (): Record<string, number> => this.lineLengths;
 
-    getLineSegments = (lineId: string, hierarchy: any): LineSegment[] => {
+    getLineSegments = (lineId: string, hierarchy: RailData['hierarchy']): LineSegment[] => {
         const segments: LineSegment[] = [];
         if (!hierarchy || !this.nodes.size) return [];
 
@@ -236,7 +236,7 @@ export class RoutingGraph {
 
         // Reconstruction PRIORITY:
         // 1. If hierarchy lists sections, use them (most reliable for all parts of line including joints/branches)
-        if (lineEntry.sections && lineEntry.sections.length > 0) {
+        if (!Array.isArray(lineEntry) && lineEntry.sections && lineEntry.sections.length > 0) {
             lineEntry.sections.forEach((secId: number) => {
                 const section = this.sectionsMap.get(secId);
                 if (section) {
@@ -251,7 +251,7 @@ export class RoutingGraph {
         }
 
         // 2. Fallback to platform-based reconstruction (original logic)
-        if (lineEntry.platforms && lineEntry.platforms.length > 0) {
+        if (!Array.isArray(lineEntry) && lineEntry.platforms && lineEntry.platforms.length > 0) {
             for (let i = 0; i < lineEntry.platforms.length - 1; i++) {
                 const startId = lineEntry.platforms[i].station_id;
                 const endId = lineEntry.platforms[i + 1].station_id;

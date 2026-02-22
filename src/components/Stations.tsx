@@ -2,7 +2,7 @@
 
 import React, { memo, useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import L from 'leaflet';
-import { GeoJSON } from 'react-leaflet';
+import { GeoJSON, useMap } from 'react-leaflet';
 import { MapStyleSettings } from './MainPageClient';
 import { Language } from '../lib/translations';
 import { ProcessedStation } from '../types/mapTypes';
@@ -61,6 +61,24 @@ const Stations: React.FC<StationsProps> = ({
     onStationHover,
     dragStartStation
 }) => {
+    const map = useMap();
+    const [panesReady, setPanesReady] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        const checkPanes = () => {
+            if (!mounted) return;
+            const required = ['railroad-glow', 'railroad-casing', 'station-interactions', 'globalInteraction', 'station-labels'];
+            const allReady = required.every(p => !!map.getPane(p));
+            if (allReady) {
+                setPanesReady(true);
+            } else {
+                requestAnimationFrame(checkPanes);
+            }
+        };
+        checkPanes();
+        return () => { mounted = false; };
+    }, [map]);
 
     const allEntries = useMemo(() => {
         if (!processedStations) return [];
@@ -511,7 +529,7 @@ const Stations: React.FC<StationsProps> = ({
         return accepted;
     }, [allEntries, mapBounds, realZoom, selectedLines, activeLine, hoveredLine]);
 
-    if (!processedStations) return null;
+    if (!processedStations || !panesReady) return null;
 
     return (
         <React.Fragment>

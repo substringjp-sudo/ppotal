@@ -224,12 +224,15 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     useEffect(() => {
         if (map) {
-            Promise.resolve().then(() => {
+            // Create required panes if they don't exist
+            // Ensure map instance is valid and trigger ready state
+            const timer = setTimeout(() => {
                 setMapReady(true);
                 setZoomLevel(map.getZoom());
                 setMapBounds(map.getBounds());
                 map.invalidateSize();
-            });
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [map]);
 

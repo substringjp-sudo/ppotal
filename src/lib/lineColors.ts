@@ -44,7 +44,7 @@ export const getLineColor = (lineKey: string, railData: RailData | null): string
  * Compatibility wrapper for existing code using getOfficialColor
  * Note: This will eventually be removed once all components pass railData.
  */
-export const getOfficialColor = (lineKey: string): string | null => {
+export const getOfficialColor = (): string | null => {
     // This is hard to maintain without railData. 
     // We'll keep the most common hardcoded fallbacks here FOR NOW to prevent breakage
     // until all components are updated.

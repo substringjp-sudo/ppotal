@@ -157,7 +157,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
     };
 
-    const handleEnd = (nodeId: string, e: React.MouseEvent | React.TouchEvent) => {
+    const handleEnd = (nodeId: string) => {
         if (scrollIntervalRef.current) {
             clearInterval(scrollIntervalRef.current);
             scrollIntervalRef.current = null;
@@ -419,8 +419,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                 key={node.id}
                                 onMouseDown={(e) => handleStart(node.id, e)}
                                 onTouchStart={(e) => handleStart(node.id, e)}
-                                onMouseUp={(e) => handleEnd(node.id, e)}
-                                onTouchEnd={(e) => handleEnd(node.id, e)}
+                                onMouseUp={() => handleEnd(node.id)}
+                                onTouchEnd={() => handleEnd(node.id)}
                                 style={{ cursor: 'pointer' }}
                             >
                                 <circle cx={node.x} cy={node.y} r={25} fill="transparent" />

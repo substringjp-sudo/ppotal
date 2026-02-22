@@ -13,6 +13,7 @@ export interface HierarchyLine {
         platform_id: string;
         station_id: string;
     }[];
+    sections?: number[];
 }
 
 export interface HierarchyCompany {

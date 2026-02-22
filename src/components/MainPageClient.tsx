@@ -117,8 +117,8 @@ const MainPageClient = () => {
             const canvas = await html2canvas(mapElement, {
                 useCORS: true,
                 backgroundColor: '#a0c4ff',
-                ignoreElements: (element: Element) => element.classList.contains('edit-mode-ui')
-            } as any);
+                ignoreElements: (element: Element) => element.classList?.contains('edit-mode-ui') ?? false
+            } as Parameters<typeof html2canvas>[1]);
             const link = document.createElement('a');
             link.download = `jprail-map-${new Date().toISOString().slice(0, 10)}.png`;
             link.href = canvas.toDataURL();
@@ -231,10 +231,7 @@ const MainPageClient = () => {
         }
     }, []);
 
-    const handleDeleteLineHistory = React.useCallback(() => {
-        if (!window.confirm('이 노선의 이동 기록을 모두 삭제하시겠습니까?')) return;
-        setRecordedTrips(prev => prev.filter(() => true)); // Simplistic implementation as before
-    }, []);
+
 
     const setLineIdMapping = React.useCallback(() => {
         // Reserved for future use
@@ -482,11 +479,6 @@ const MainPageClient = () => {
                                     }
                                 }}
                                 onDiscard={() => {
-                                    setDraftTrip(null);
-                                    setTempPath([]);
-                                }}
-                                onFinish={() => {
-                                    setIsEditMode(false);
                                     setDraftTrip(null);
                                     setTempPath([]);
                                 }}

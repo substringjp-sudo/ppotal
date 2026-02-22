@@ -3,45 +3,15 @@
 > eslint
 
 
-H:\jprail\src\components\MainPageClient.tsx
-  121:18  error    Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
-  234:11  warning  'handleDeleteLineHistory' is assigned a value but never used  @typescript-eslint/no-unused-vars
-
 H:\jprail\src\components\Mobile\RouteCreationPanel.tsx
-  24:5   warning  'onFinish' is defined but never used                                                                                                                                                              @typescript-eslint/no-unused-vars
+  24:15  warning  '_onFinish' is defined but never used                                                                                                                                                             @typescript-eslint/no-unused-vars
   30:11  warning  The 'displayPath' conditional could make the dependencies of useEffect Hook (at line 39) change on every render. To fix this, wrap the initialization of 'displayPath' in its own useMemo() Hook  react-hooks/exhaustive-deps
 
-H:\jprail\src\components\RailroadLayer.tsx
-  169:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
 H:\jprail\src\components\TubeMap.tsx
-  160:40  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
-
-H:\jprail\src\hooks\useLineTopology.ts
-  60:15  warning  'spacingX' is assigned a value but never used  @typescript-eslint/no-unused-vars
-
-H:\jprail\src\hooks\useMapData.ts
-  4:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  5:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\hooks\useStationHierarchy.ts
-  51:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\hooks\useTripRecorder.ts
-  132:68  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
-  266:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  282:40  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
-  391:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-
-H:\jprail\src\lib\RoutingGraph.ts
-  224:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\lib\gtag.ts
-  11:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  12:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  160:40  warning  '_e' is defined but never used  @typescript-eslint/no-unused-vars
 
 H:\jprail\src\lib\lineColors.ts
-  47:34  warning  'lineKey' is defined but never used  @typescript-eslint/no-unused-vars
+  47:34  warning  '_lineKey' is defined but never used  @typescript-eslint/no-unused-vars
 
-??18 problems (10 errors, 8 warnings)
+??4 problems (0 errors, 4 warnings)
 
