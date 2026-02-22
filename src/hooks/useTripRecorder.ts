@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { RailroadGraph, haversineDistance } from '../lib/graphUtils';
+import { haversineDistance } from '../lib/graphUtils';
 import { ProcessedStation } from '../types/mapTypes';
 import { Trip } from '../types/trip';
 

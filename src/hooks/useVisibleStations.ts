@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { LatLngBounds } from 'leaflet';
 import { ProcessedStation, StaticNode } from '../types/mapTypes';
 import { RailData, Station, Joint } from '../types/railData';
@@ -7,8 +7,6 @@ interface VisibleStationsProps {
     railroadNetwork: RailData | null;
     mapBounds: LatLngBounds | null;
     zoomLevel: number;
-    lineIdMap: Map<string, string>;
-    isMoving?: boolean;
     usedStationIds: Set<string>;
 }
 
@@ -19,11 +17,8 @@ export const useVisibleStations = ({
     railroadNetwork,
     mapBounds,
     zoomLevel,
-    lineIdMap,
-    isMoving = false,
     usedStationIds
 }: VisibleStationsProps) => {
-    const lastResultRef = useRef<Record<string, ProcessedStation> | null>(null);
 
     // 1. Build Spatial Index Once
     const spatialIndex = useMemo(() => {
@@ -176,7 +171,6 @@ export const useVisibleStations = ({
             }
         });
 
-        lastResultRef.current = data;
         return data;
     }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds, mapBounds]);
 

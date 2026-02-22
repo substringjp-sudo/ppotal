@@ -3,6 +3,21 @@ export interface Company {
     name: string;
     name_en: string;
     color?: string;
+    category_id?: number;
+}
+
+export interface HierarchyLine {
+    id: number;
+    corp_id: number;
+    platforms: {
+        platform_id: string;
+        station_id: string;
+    }[];
+}
+
+export interface HierarchyCompany {
+    id: number;
+    lines: Record<string, string[] | HierarchyLine>;
 }
 
 export interface Line {
@@ -57,7 +72,9 @@ export interface RailData {
     platforms: Record<string, Platform>;
     stations: Record<string, Station>;
     sections: { sections: Section[] };
-    hierarchy: any; // Keep hierarchy flexible for now or define strictly if needed
+    hierarchy: {
+        companies: Record<string, HierarchyCompany>;
+    };
     joints: { joints: Joint[] };
     railroadGraph?: Record<string, Record<string, number[]>>;
 }

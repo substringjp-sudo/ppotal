@@ -7,7 +7,7 @@ import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
 import SidebarGroup from './SidebarGroup';
 
-interface SidebarProps {
+export interface SidebarProps {
     selectedLines: string[];
     onToggleLine: (line: string) => void;
     onSetSelectedLines: (lines: string[]) => void;
@@ -118,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         onSetSelectedLines(newSelected);
     }, [groupedHierarchy, selectedLines, onSetSelectedLines]);
 
-    const handleCompanyToggle = useCallback((companyId: string, lines: Record<string, any>) => {
+    const handleCompanyToggle = useCallback((companyId: string, lines: Record<string, { name: string; name_en?: string; stations?: string[]; }>) => {
         const lineIds = Object.keys(lines);
         const compositeKeys = lineIds.map(lineId => `${companyId}::${lineId}`);
 

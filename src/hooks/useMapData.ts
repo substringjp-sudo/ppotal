@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 
 export const useMapData = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [prefectures, setPrefectures] = useState<any>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [municipalities, setMunicipalities] = useState<any>(null);
 
     useEffect(() => {

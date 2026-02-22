@@ -1,15 +1,28 @@
 
-import React, { useState, useEffect } from 'react';
-import { Language } from '../lib/translations';
+import React, { useState, useEffect, useMemo } from 'react';
 import { trackEvent } from '../lib/gtag';
 import { RailData } from '../types/railData';
+
+interface Leg {
+    fromStation: { id: string; name: string; name_en?: string };
+    toStation: { id: string; name: string; name_en?: string };
+    distance: number;
+    type: 'TRIP' | 'TRANSFER';
+    lineId?: string;
+}
+
+interface RouteResult {
+    totalDistance: number;
+    transferCount: number;
+    legs: Leg[];
+}
 
 interface RoutePaneProps {
     startStation: string | null;
     endStation: string | null;
     onSetStartStation: (id: string) => void;
     onSetEndStation: (id: string) => void;
-    routeResult: any | null; // RouteResult from RoutingGraph
+    routeResult: RouteResult | null;
     onSwapStations: () => void;
     railData?: RailData | null;
 }
@@ -23,13 +36,12 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     onSwapStations,
     railData
 }) => {
-    const [stationList, setStationList] = useState<{ id: string, name: string, primary_name: string }[]>([]);
     const [startInput, setStartInput] = useState(startStation || '');
     const [endInput, setEndInput] = useState(endStation || '');
 
     // Autocomplete state
-    const [startSuggestions, setStartSuggestions] = useState<any[]>([]);
-    const [endSuggestions, setEndSuggestions] = useState<any[]>([]);
+    const [startSuggestions, setStartSuggestions] = useState<{ id: string, name: string, name_en?: string }[]>([]);
+    const [endSuggestions, setEndSuggestions] = useState<{ id: string, name: string, name_en?: string }[]>([]);
 
     useEffect(() => {
         if (startStation && railData?.stations?.[startStation]) {
@@ -55,14 +67,13 @@ const RoutePane: React.FC<RoutePaneProps> = ({
         }
     }, [routeResult, startStation, endStation, railData]);
 
-    useEffect(() => {
-        if (!railData?.stations) return;
+    const stationList = useMemo(() => {
+        if (!railData?.stations) return [];
 
         const names = new Set<string>();
-        const list: any[] = [];
+        const list: { id: string; name: string; primary_name: string; name_en?: string }[] = [];
 
         Object.values(railData.stations).forEach((station) => {
-            // Assuming station.name is the primary name we want to index
             if (!names.has(station.name)) {
                 names.add(station.name);
                 list.push({
@@ -74,7 +85,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
             }
         });
 
-        setStationList(list.sort((a, b) => a.name.localeCompare(b.name)));
+        return list.sort((a, b) => a.name.localeCompare(b.name));
     }, [railData]);
 
     const filterStations = (input: string) => {
@@ -188,7 +199,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                             <div style={{ fontSize: '12px', color: '#666' }}>Transfers: {routeResult.transferCount}</div>
                         </div>
 
-                        {routeResult.legs.map((leg: any, idx: number) => (
+                        {routeResult.legs.map((leg, idx: number) => (
                             <div key={idx} style={{ marginBottom: '0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>

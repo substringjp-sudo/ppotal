@@ -1,11 +1,12 @@
 import React from 'react';
+import { Trip } from '../../types/trip';
 import { Language } from '../../lib/translations';
 import { RailData } from '../../types/railData';
 
 interface RouteCreationPanelProps {
     isDragging: boolean;
     tempPath: string[];
-    draftTrip: any | null;
+    draftTrip: Trip | null;
     onAdd: () => void;
     onDiscard: () => void;
     onFinish: () => void;

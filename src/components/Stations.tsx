@@ -9,7 +9,7 @@ import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
 import { RailData } from '../types/railData';
 import { convexHull } from '../lib/geoUtils';
-import { Company, Line } from '../types/railData';
+import { Line } from '../types/railData';
 
 interface StationFeatureProperties {
     type: 'node' | 'platform' | 'hull';
@@ -51,9 +51,6 @@ const Stations: React.FC<StationsProps> = ({
     selectedLines,
     activeLine,
     hoveredLine,
-    visitedStations,
-    settings,
-    language,
     isMobile,
     isMoving = false,
     railData,
@@ -146,10 +143,8 @@ const Stations: React.FC<StationsProps> = ({
                     }
                 });
 
-                // 포인트가 2개 이상이면 Hull을 생성 (확장 포함)
                 if (points.length >= 2) {
                     const expandedPoints: [number, number][] = [];
-                    // 약 80m~100m 정도의 확장 오프셋 (각지게 확장하기 위해 사각형 포인트 추가)
                     const dLat = 0.0006;
                     const dLon = 0.0009;
 
@@ -211,7 +206,6 @@ const Stations: React.FC<StationsProps> = ({
             };
         }
 
-        // 강조 색상 결정 (클릭: Blue, 직접 호버: Red, 노선 호버: Yellow)
         let color = '#FF3B30';
         if (isClicked) {
             color = '#007AFF';
@@ -221,7 +215,7 @@ const Stations: React.FC<StationsProps> = ({
 
         return {
             fillColor: color,
-            fillOpacity: 0.25, // 강조 시 내부를 해당 색상으로 채움
+            fillOpacity: 0.25,
             stroke: false,
             interactive: false
         };
@@ -280,7 +274,6 @@ const Stations: React.FC<StationsProps> = ({
         if (!props.lines) return { opacity: 0, interactive: false };
         const { lines, stationId, isUsed } = props;
 
-        // 역 자체가 호버되거나, 역이 포함된 노선 중 하나가 호버된 경우
         const isLineHovered = hoveredLine !== null && lines.includes(hoveredLine);
         const isStationHovered = localHoveredStation === stationId;
         const isHovered = isLineHovered || isStationHovered;
@@ -288,21 +281,17 @@ const Stations: React.FC<StationsProps> = ({
         const isClicked = activeLine !== null && lines.includes(activeLine);
         const isDraggingOverall = !!dragStartStation;
 
-        // 이동 중일 때는 호버/클릭 상태를 무시하고 오직 방문 경로(isUsed)만 표시
         const showCasing = !!isUsed || (!isMoving && (isHovered || isClicked));
         if (!showCasing) return { opacity: 0, interactive: false };
 
-        let color = '#FF3B30'; // 기본: 직접 호버(Red)
-        // 강조 여부 (클릭, 호버, 혹은 방문한 경로 모두 동일한 두께 적용)
+        let color = '#FF3B30';
         const isEmphasis = !!isClicked || !!isHovered || (isDraggingOverall && !!isHovered) || !!isUsed;
 
         if (isMoving && isUsed) {
-            // 지도 이동 중에는 선택 상태보다 방문 경로(Green)를 최우선으로 표시
             color = '#2ecc71';
         } else if (isClicked || (isDraggingOverall && isHovered)) {
             color = '#007AFF';
         } else if (isLineHovered && !isStationHovered) {
-            // 노선 호버를 통해 강조되는 플랫폼은 노란색
             color = '#FFD60A';
         } else if (isUsed && !isHovered) {
             color = '#2ecc71';
@@ -360,7 +349,7 @@ const Stations: React.FC<StationsProps> = ({
         const stationNameEN = station.name_en || '';
 
         const lineList = station.lines.map(l => {
-            const [company, line] = l.includes('::') ? l.split('::') : ['Unknown', l];
+            const line = l.includes('::') ? l.split('::')[1] : l;
             const lineData = (railData.lines as Record<string, Line>)[line];
             const dispLineJA = lineData?.name || line;
             const dispLineEN = lineData?.name_en || (lineData?.name ? '' : line);
@@ -390,12 +379,37 @@ const Stations: React.FC<StationsProps> = ({
             });
         }
 
+        const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
+        const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
+        const isStationActive = !isFilterActive || station.lines.some(l =>
+            selectedLines.includes(l) || activeLine === l
+        );
+
         layer.on({
-            click: (e) => { L.DomEvent.stopPropagation(e); handleStationClick(id); },
-            mousedown: (e) => { L.DomEvent.stopPropagation(e); handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]); },
-            mouseover: () => { setLocalHoveredStation(id); if (onStationHover) onStationHover(id); },
-            mouseout: () => { setLocalHoveredStation(null); if (onStationHover) onStationHover(null); },
-            mouseup: (e) => { L.DomEvent.stopPropagation(e); if (handleStationMouseUp) handleStationMouseUp(id); }
+            click: (e) => {
+                L.DomEvent.stopPropagation(e);
+                handleStationClick(id);
+            },
+            mousedown: (e) => {
+                L.DomEvent.stopPropagation(e);
+                if (isStationActive) {
+                    handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
+                }
+            },
+            mouseover: () => {
+                setLocalHoveredStation(id);
+                if (onStationHover) onStationHover(id);
+            },
+            mouseout: () => {
+                setLocalHoveredStation(null);
+                if (onStationHover) onStationHover(null);
+            },
+            mouseup: (e) => {
+                L.DomEvent.stopPropagation(e);
+                if (isStationActive && handleStationMouseUp) {
+                    handleStationMouseUp(id);
+                }
+            }
         });
     };
 
@@ -411,32 +425,45 @@ const Stations: React.FC<StationsProps> = ({
         if (nodeRef.current) nodeRef.current.setStyle(nodeStyle as L.PathOptions);
         if (platformCasingRef.current) platformCasingRef.current.setStyle(platformCasingStyle as L.PathOptions);
         if (interactionRef.current) interactionRef.current.setStyle(stationInteractionStyle);
-    }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, platformInteractionStyle, nodeInteractionStyle, stationInteractionStyle, localHoveredStation, effectiveZoom]);
+    }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, stationInteractionStyle, localHoveredStation, effectiveZoom]);
 
     const bakedKey = useMemo(() => `${effectiveZoom}_${allEntries.length}`, [effectiveZoom, allEntries.length]);
 
     const visibleLabels = useMemo(() => {
-        if (realZoom < 10 || !mapBounds) return [];
+        if (!mapBounds) return [];
         const paddedBounds = mapBounds.pad(0.5);
 
-        // Filter candidates based on zoom level
-        // At zoom 10-13 (realZoom < 14), show only transfer stations
-        // At zoom 14+, show all stations
+        // 1. Initial Candidates: Stations within map bounds
         let candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
 
+        // 2. Zoom-based Filtering
         if (realZoom < 14) {
             candidates = candidates.filter(({ data }) => {
                 const isTransfer = data.lines.length > 1;
-                return isTransfer;
+                const isSelected = data.lines.some(l =>
+                    (l && l !== '__NONE__' && selectedLines.includes(l)) ||
+                    (activeLine && l === activeLine) ||
+                    (hoveredLine && l === hoveredLine)
+                );
+
+                // 8~13: Only transfer stations OR stations on selected/hovered/active lines
+                return isTransfer || isSelected;
             });
         }
+        // zoom >= 14: All stations are candidates
 
         if (candidates.length === 0) return [];
 
+        // 3. Sorting/Prioritization
         const prioritized = [...candidates].sort((a, b) => {
             const getPriority = (item: typeof a) => {
                 let p = 0;
-                const isSelected = item.data.lines.some(l => selectedLines.includes(l) || activeLine === l || hoveredLine === l);
+                const isSelected = item.data.lines.some(l =>
+                    (l && l !== '__NONE__' && selectedLines.includes(l)) ||
+                    (activeLine && l === activeLine) ||
+                    (hoveredLine && l === hoveredLine)
+                );
+
                 if (isSelected) p += 1000;
                 if (item.data.lines.length > 1) p += 100;
                 if (item.data.isUsed) p += 50;
@@ -445,23 +472,44 @@ const Stations: React.FC<StationsProps> = ({
             return getPriority(b) - getPriority(a);
         });
 
-        const zoomFactor = Math.pow(2, 14 - realZoom);
-        const minDistanceLat = 0.0035 * zoomFactor; // 0.0025 -> 0.0035
-        const minDistanceLon = 0.0070 * zoomFactor; // 0.0045 -> 0.0070
+        // 4. Collision Detection (Pruning)
+        // Adjust pruning distance based on zoom level. 
+        // We use Math.max(0, ...) to ensure zoomFactor doesn't drop below 1 at high zoom.
+        const zoomFactor = Math.pow(2, Math.max(0, 14 - realZoom));
+        const minDistanceLat = 0.0035 * zoomFactor;
+        const minDistanceLon = 0.0070 * zoomFactor;
         const accepted: typeof prioritized = [];
 
         prioritized.forEach(candidate => {
-            const isSelected = candidate.data.lines.some(l => selectedLines.includes(l) || activeLine === l || hoveredLine === l);
-            if (isSelected) { accepted.push(candidate); return; }
-            const collision = accepted.some(acc => {
+            const isSelected = candidate.data.lines.some(l =>
+                (l && l !== '__NONE__' && selectedLines.includes(l)) ||
+                (activeLine && l === activeLine) ||
+                (hoveredLine && l === hoveredLine)
+            );
+
+            // 8~13: Even selected stations MUST pass collision detection (don't show all)
+            // 14+: Selected stations bypass collision detection to ensure they are always visible
+            const bypassCollision = (realZoom >= 14 && isSelected);
+
+            if (bypassCollision) {
+                accepted.push(candidate);
+                return;
+            }
+
+            // check for collisions with already accepted labels
+            const hasCollision = accepted.some(acc => {
                 const dLat = Math.abs(acc.data.centroid[0] - candidate.data.centroid[0]);
                 const dLon = Math.abs(acc.data.centroid[1] - candidate.data.centroid[1]);
                 return dLat < minDistanceLat && dLon < minDistanceLon;
             });
-            if (!collision) accepted.push(candidate);
+
+            if (!hasCollision) {
+                accepted.push(candidate);
+            }
         });
+
         return accepted;
-    }, [allEntries, mapBounds, effectiveZoom, realZoom, selectedLines, activeLine, hoveredLine]);
+    }, [allEntries, mapBounds, realZoom, selectedLines, activeLine, hoveredLine]);
 
     if (!processedStations) return null;
 
@@ -512,36 +560,17 @@ const Stations: React.FC<StationsProps> = ({
                 pane="globalInteraction"
                 onEachFeature={onEachStation}
             />
+
             {visibleLabels.map(({ id, data }) => (
                 <StationMarker
                     key={`marker-${id}`}
-                    id={id}
                     station={data}
-                    highlightedStations={[]}
                     selectedLines={selectedLines}
                     activeLine={activeLine}
                     hoveredLine={hoveredLine}
-                    zoom={realZoom}
-                    zoomConfig={{
-                        baseRadius: realZoom >= 14 ? 1.5 : 1,
-                        weightValue: realZoom >= 14 ? 1.5 : 1,
-                        zoomCategory: effectiveZoom >= 12 ? 4 : (effectiveZoom >= 8 ? 2 : 1)
-                    }}
-                    getColor={getColor}
-                    handleStationClick={() => handleStationClick(id, data.lines)}
-                    onStationMouseDown={(id, coords) => handleStationMouseDown(id, coords)}
-                    onStationMouseUp={() => handleStationMouseUp?.(id)}
-                    dragStartStation={dragStartStation}
-                    visitedStations={visitedStations}
-                    settings={settings}
-                    language={language || 'en'}
-                    isMobile={isMobile}
-                    isMoving={isMoving}
-                    railData={railData}
-                    onlyLabels={true}
-                    interactive={false}
                 />
             ))}
+
         </React.Fragment>
     );
 };

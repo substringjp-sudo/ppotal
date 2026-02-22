@@ -3,322 +3,40 @@
 > eslint
 
 
-H:\jprail\src\components\JapanMap.tsx
-   7:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  15:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  53:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  53:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  67:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\LineDetailPane.tsx
-   79:11  warning  'cNamePrimary' is assigned a value but never used    @typescript-eslint/no-unused-vars
-   80:11  warning  'lNamePrimary' is assigned a value but never used    @typescript-eslint/no-unused-vars
-   82:11  warning  'cNameSecondary' is assigned a value but never used  @typescript-eslint/no-unused-vars
-   83:11  warning  'lNameSecondary' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  232:62  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\LineTopologyGraph.tsx
-  192:8  warning  React Hook useMemo has an unnecessary dependency: 'nodes'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
-
 H:\jprail\src\components\MainPageClient.tsx
-   71:62  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   75:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   78:28  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   79:26  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-   88:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  114:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  133:86  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  158:55  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  225:49  warning  '_mapping' is defined but never used      @typescript-eslint/no-unused-vars
-  265:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\Map.tsx
-  4:24  warning  'useMap' is defined but never used        @typescript-eslint/no-unused-vars
-  4:32  warning  'useMapEvents' is defined but never used  @typescript-eslint/no-unused-vars
-
-H:\jprail\src\components\MapPane.tsx
-  188:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:18  error    Unexpected any. Specify a different type                      @typescript-eslint/no-explicit-any
+  234:11  warning  'handleDeleteLineHistory' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 H:\jprail\src\components\MapStylePanel.tsx
   14:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\Mobile\MobileBottomSheet.tsx
-  1:35  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
-
-H:\jprail\src\components\Mobile\MobileEditLinePanel.tsx
-  30:5   warning  'onDragUpdate' is defined but never used             @typescript-eslint/no-unused-vars
-  44:11  warning  'cNamePrimary' is assigned a value but never used    @typescript-eslint/no-unused-vars
-  45:11  warning  'lNamePrimary' is assigned a value but never used    @typescript-eslint/no-unused-vars
-  47:11  warning  'cNameSecondary' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  48:11  warning  'lNameSecondary' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 H:\jprail\src\components\Mobile\RouteCreationPanel.tsx
    8:16  error    Unexpected any. Specify a different type                                                                                                                                                          @typescript-eslint/no-explicit-any
   23:5   warning  'onFinish' is defined but never used                                                                                                                                                              @typescript-eslint/no-unused-vars
   29:11  warning  The 'displayPath' conditional could make the dependencies of useEffect Hook (at line 38) change on every render. To fix this, wrap the initialization of 'displayPath' in its own useMemo() Hook  react-hooks/exhaustive-deps
 
-H:\jprail\src\components\MunicipalMap.tsx
-  7:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\MyLinesPane.tsx
-    5:10   warning  'trackEvent' is defined but never used          @typescript-eslint/no-unused-vars
-   15:221  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-   21:5    warning  'visitedLineLengths' is defined but never used  @typescript-eslint/no-unused-vars
-   22:5    warning  'lineLengths' is defined but never used         @typescript-eslint/no-unused-vars
-   23:5    warning  'onLineClick' is defined but never used         @typescript-eslint/no-unused-vars
-   58:62   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-   86:75   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-   87:71   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-  105:58   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-  105:93   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-  107:67   error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
-
 H:\jprail\src\components\OffScreenIndicator.tsx
-   8:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  22:22  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  26:14  warning  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  24:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 H:\jprail\src\components\RailroadLayer.tsx
-   85:25  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  102:53  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  138:40  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  140:33  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  140:61  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  142:81  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  163:48  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  196:8   warning  React Hook useCallback has an unnecessary dependency: 'isNoneExplicitlySelected'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
-  199:45  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  222:37  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  264:25  warning  'e' is defined but never used                                                                                                       @typescript-eslint/no-unused-vars
-  310:48  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-  322:48  error    Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\RoutePane.tsx
-    3:10  warning  'Language' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
-   12:18  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
-   31:62  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
-   32:58  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
-   62:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
-   77:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-H:\jprail\src\components\RoutePane.tsx:77:9
-  75 |         });
-  76 |
-> 77 |         setStationList(list.sort((a, b) => a.name.localeCompare(b.name)));
-     |         ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
-  78 |     }, [railData]);
-  79 |
-  80 |     const filterStations = (input: string) => {  react-hooks/set-state-in-effect
-  191:53  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-explicit-any
+  169:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 H:\jprail\src\components\RulerOverlay.tsx
     3:8  warning  'L' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
-  180:8  warning  React Hook useEffect has a missing dependency: 'drawRulers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   86:8  warning  React Hook useCallback has an unnecessary dependency: 'map'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+  119:8  warning  React Hook useEffect has a missing dependency: 'drawRulers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
 H:\jprail\src\components\SEOContent.tsx
-   24:13   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:24:13
-   22 |
-   23 |         return (
->  24 |             <div style={{ marginTop: '60px', color: '#888' }}>
-      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->  25 |                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->  26 |                     <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
-      ??      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 106 |                 </div>
-      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 107 |             </div>
-      | ^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  108 |         );
-  109 |     } catch (e) {
-  110 |         console.error("Failed to render RailwayDirectory", e);                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/error-boundaries
-   25:17   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:25:17
-  23 |         return (
-  24 |             <div style={{ marginTop: '60px', color: '#888' }}>
-> 25 |                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 26 |                     <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 27 |                         Japan Railway Network Directory
-     ??     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 34 |                     </p>
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 35 |                 </div>
-     | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  36 |                 <div style={{
-  37 |                     display: 'grid',
-  38 |                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',                                                                                                                                                                                                                                                                              react-hooks/error-boundaries
-   26:21   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:26:21
-  24 |             <div style={{ marginTop: '60px', color: '#888' }}>
-  25 |                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-> 26 |                     <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
-     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 27 |                         Japan Railway Network Directory
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 28 |                     </h3>
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
-  30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
-  31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/error-boundaries
-   29:21   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:29:21
-  27 |                         Japan Railway Network Directory
-  28 |                     </h3>
-> 29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
-     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 34 |                     </p>
-     | ^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  35 |                 </div>
-  36 |                 <div style={{
-  37 |                     display: 'grid',  react-hooks/error-boundaries
-   30:52   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:30:52
-  28 |                     </h3>
-  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
-> 30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
-     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
-  32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
-  33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/error-boundaries
-   31:25   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:31:25
-  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
-  30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
-> 31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
-     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
-  33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)
-  34 |                     </p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/error-boundaries
-   31:63   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:31:63
-  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
-  30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
-> 31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
-     |                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
-  33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)
-  34 |                     </p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/error-boundaries
-   36:17   error  Error: Avoid constructing JSX within try/catch
-
-React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
-
-H:\jprail\src\components\SEOContent.tsx:36:17
-   34 |                     </p>
-   35 |                 </div>
->  36 |                 <div style={{
-      |                 ^^^^^^^^^^^^^
->  37 |                     display: 'grid',
-      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->  38 |                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-      ??      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 105 |                     })}
-      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> 106 |                 </div>
-      | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
-  107 |             </div>
-  108 |         );
-  109 |     } catch (e) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/error-boundaries
-   41:68   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-   64:75   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-   89:77   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  137:106  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react/no-unescaped-entities
+  35:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 H:\jprail\src\components\Sidebar.tsx
-  119:87  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\SidebarGroup.tsx
-  159:79  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  188:69  warning  'lineData' is defined but never used      @typescript-eslint/no-unused-vars
-
-H:\jprail\src\components\StationMarker.tsx
-    8:10  warning  'convexHull' is defined but never used            @typescript-eslint/no-unused-vars
-   43:97  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-   71:57  error    Component definition is missing display name      react/display-name
-   73:17  warning  'isMoving' is defined but never used              @typescript-eslint/no-unused-vars
-   73:27  warning  'zoom' is defined but never used                  @typescript-eslint/no-unused-vars
-   88:22  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  110:20  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  116:24  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  120:22  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  127:11  warning  'isMultiLine' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  132:43  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  133:48  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  133:87  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  215:73  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-  216:69  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\Stations.tsx
-  140:18  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  174:45  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  185:15  warning  'isDimmed' is assigned a value but never used  @typescript-eslint/no-unused-vars
-  196:45  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  212:49  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  252:55  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  279:49  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  285:37  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  300:49  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  301:49  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  384:58  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  387:71  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-  476:34  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
-
-H:\jprail\src\components\TripLayer.tsx
-  19:54  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  19:59  warning  'idx' is defined but never used           @typescript-eslint/no-unused-vars
-  41:10  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  50:10  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  57:42  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-  64:38  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:87  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 H:\jprail\src\components\TubeMap.tsx
-   26:5   warning  'edgeInfos' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
-   27:5   warning  'visitedStations' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
-   28:5   warning  'visitedEdges' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
-   32:5   warning  'language' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
-   74:41  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
-   97:45  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
-  104:28  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
-  126:40  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
-  126:43  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
-  187:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+  160:40  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  230:21  error    Error: Calling setState synchronously within an effect can trigger cascading renders
 
 Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
 * Update external systems with the latest state from React.
@@ -326,17 +44,14 @@ Effects are intended to synchronize state between React and external systems suc
 
 Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
 
-H:\jprail\src\components\TubeMap.tsx:187:9
-  185 |
-  186 |     useEffect(() => {
-> 187 |         setPortalNode(document.getElementById('tube-minimap-portal'));
-      |         ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
-  188 |     }, [showMinimap]);
-  189 |
-  190 |     const [isMinimapDragging, setIsMinimapDragging] = useState(false);  react-hooks/set-state-in-effect
-  192:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
-  207:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
-  214:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+H:\jprail\src\components\TubeMap.tsx:230:21
+  228 |     useEffect(() => {
+  229 |         const portal = document.getElementById('tube-minimap-portal');
+> 230 |         if (portal) setPortalNode(portal);
+      |                     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  231 |     }, []);
+  232 |
+  233 |     const [isMinimapDragging, setIsMinimapDragging] = useState(false);  react-hooks/set-state-in-effect
 
 H:\jprail\src\hooks\useLineTopology.ts
   60:15  warning  'spacingX' is assigned a value but never used  @typescript-eslint/no-unused-vars
@@ -346,96 +61,22 @@ H:\jprail\src\hooks\useMapData.ts
   5:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 H:\jprail\src\hooks\useStationHierarchy.ts
-  15:77  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  17:47  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  18:78  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  20:69  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  21:63  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  28:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
-
-Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
-* Update external systems with the latest state from React.
-* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
-
-Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
-
-H:\jprail\src\hooks\useStationHierarchy.ts:28:9
-  26 |
-  27 |         const data = railData.hierarchy;
-> 28 |         setHierarchy(data);
-     |         ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
-  29 |         setCompanyNames(railData.companies || {});
-  30 |         setLineNames(railData.lines || {});
-  31 |  react-hooks/set-state-in-effect
-  35:58  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
-  45:82  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  51:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
 H:\jprail\src\hooks\useTripRecorder.ts
-    8:22  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
-    9:27  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
-   11:30  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
-  121:68  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
-  255:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
-  380:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  132:68  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  266:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  282:40  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
+  391:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
 H:\jprail\src\hooks\useVisibleStations.ts
-   20:5   warning  'mapBounds' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
-   22:5   warning  'lineIdMap' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
-   23:5   warning  'isMoving' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
-   32:50  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-   32:65  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-   39:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-   47:48  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-   77:39  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-   86:34  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-  146:41  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
-  160:9   error    Error: Cannot access refs during render
-
-React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
-
-H:\jprail\src\hooks\useVisibleStations.ts:160:9
-  158 |         }
-  159 |
-> 160 |         lastResultRef.current = data;
-      |         ^^^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
-  161 |         return data;
-  162 |     }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds]);
-  163 |  react-hooks/refs
+   1:19  warning  'useRef' is defined but never used             @typescript-eslint/no-unused-vars
+  22:5   warning  'lineIdMap' is defined but never used          @typescript-eslint/no-unused-vars
+  23:5   warning  'isMoving' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 H:\jprail\src\lib\RoutingGraph.ts
-   24:30  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-   57:56  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  106:48  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  123:44  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  127:58  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
   129:25  error  'combinedGeometry' is never reassigned. Use 'const' instead  prefer-const
   224:51  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-
-H:\jprail\src\lib\graphUtils.ts
-   40:24  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-   85:21  error    'p' is never reassigned. Use 'const' instead                 prefer-const
-   98:25  error    'l' is never reassigned. Use 'const' instead                 prefer-const
-   98:43  error    'r' is never reassigned. Use 'const' instead                 prefer-const
-  115:38  warning  'dist' is assigned a value but never used                    @typescript-eslint/no-unused-vars
-  170:34  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  178:37  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  188:84  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  399:38  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  420:46  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  422:44  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  426:68  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  427:58  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  457:25  error    'combinedGeometry' is never reassigned. Use 'const' instead  prefer-const
-  467:31  warning  'cName' is assigned a value but never used                   @typescript-eslint/no-unused-vars
-  468:31  warning  'lName' is assigned a value but never used                   @typescript-eslint/no-unused-vars
-  569:45  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  569:66  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  574:42  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  606:41  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
-  611:15  warning  'lineStations' is assigned a value but never used            @typescript-eslint/no-unused-vars
-  658:19  warning  'totalLength' is assigned a value but never used             @typescript-eslint/no-unused-vars
-  719:27  warning  'd2' is assigned a value but never used                      @typescript-eslint/no-unused-vars
-  737:49  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
 
 H:\jprail\src\lib\gtag.ts
   11:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -444,9 +85,6 @@ H:\jprail\src\lib\gtag.ts
 H:\jprail\src\lib\lineColors.ts
   47:34  warning  'lineKey' is defined but never used  @typescript-eslint/no-unused-vars
 
-H:\jprail\src\types\railData.ts
-  60:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
-
-??196 problems (145 errors, 51 warnings)
-  3 errors and 0 warnings potentially fixable with the `--fix` option.
+??33 problems (19 errors, 14 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
 

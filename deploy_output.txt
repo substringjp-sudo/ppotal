@@ -1,0 +1,68 @@
+
+   Thank you for trying our [3mearly preview[23m of Next.js support on Firebase Hosting.
+   [31mDuring the preview, support is best-effort and breaking changes can be expected. Proceed with caution.[39m[33m
+   The integration is known to work with Next.js version [3m12 - 15.0[23m. You may encounter errors.[39m
+
+   [1mDocumentation:[22m https://firebase.google.com/docs/hosting/frameworks/nextjs
+   [1mFile a bug:[22m https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   [1mSubmit a feature request:[22m https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+??Next.js 16.1.6 (Turbopack)
+
+
+
+  Creating an optimized production build ...
+
+??Compiled successfully in 1940.6ms
+
+  Running TypeScript ...
+
+  Collecting page data using 15 workers ...
+
+  Generating static pages using 15 workers (0/8) ...
+
+??metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+
+  Generating static pages using 15 workers (2/8) 
+
+  Generating static pages using 15 workers (4/8) 
+
+  Generating static pages using 15 workers (6/8) 
+
+??Generating static pages using 15 workers (8/8) in 767.9ms
+
+  Finalizing page optimization ...
+
+
+
+Route (app)
+????/
+????/_not-found
+????/credits
+????/privacy
+????/robots.txt
+????/sitemap.xml
+
+
+
+?? (Static)  prerendered as static content
+
+
+
+[1m[37m===[39m Deploying to 'jprail'...[22m
+
+[36m[1mi [22m[39m deploying [1mhosting[22m
+[36m[1mi  hosting[jprail]:[22m[39m beginning deploy...
+[36m[1mi  hosting[jprail]:[22m[39m found 69 files in [1m.firebase\jprail\hosting[22m
+[32m[1m+  hosting[jprail]:[22m[39m file upload complete
+[36m[1mi  hosting[jprail]:[22m[39m finalizing version...
+[32m[1m+  hosting[jprail]:[22m[39m version finalized
+[36m[1mi  hosting[jprail]:[22m[39m releasing new version...
+[32m[1m+  hosting[jprail]:[22m[39m release complete
+
+[32m[1m+ [22m[39m [1m[4mDeploy complete![24m[22m
+
+[1mProject Console:[22m https://console.firebase.google.com/project/jprail/overview
+[1mHosting URL:[22m https://jprail.web.app

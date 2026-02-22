@@ -2,16 +2,10 @@
 
 import React, { useMemo } from 'react';
 import { Language } from '../lib/translations';
-import { trackEvent } from '../lib/gtag';
 import { RailData, Station, Line, Section, Company } from '../types/railData';
 import { Trip } from '../types/trip';
 
-interface MyLinesPaneProps {
-    visitedLineLengths: Record<string, number>;
-    lineLengths: Record<string, number>;
-    onLineClick: (line: string) => void;
-    onDeleteLineHistory: (line: string) => void;
-    activeLine: string | null;
+export interface MyLinesPaneProps {
     language: Language;
     recordedTrips?: Trip[];
     onDeleteTrip?: (id: string) => void;
@@ -19,11 +13,6 @@ interface MyLinesPaneProps {
 }
 
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
-    visitedLineLengths,
-    lineLengths,
-    onLineClick,
-    // onDeleteLineHistory,
-    // activeLine,
     language,
     recordedTrips = [],
     onDeleteTrip,

@@ -3,6 +3,9 @@
 > eslint
 
 
+H:\jprail\src\components\LineTopologyGraph.tsx
+  60:51  warning  'nodes' is defined but never used  @typescript-eslint/no-unused-vars
+
 H:\jprail\src\components\MainPageClient.tsx
   116:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
   135:86  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -72,10 +75,144 @@ H:\jprail\src\components\RulerOverlay.tsx
   180:8  warning  React Hook useEffect has a missing dependency: 'drawRulers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
 H:\jprail\src\components\SEOContent.tsx
-   56:64   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
-   79:71   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
-  104:73   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
-  149:106  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   24:13   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:24:13
+   22 |
+   23 |         return (
+>  24 |             <div style={{ marginTop: '60px', color: '#888' }}>
+      |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  25 |                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  26 |                     <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
+      ??      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 106 |                 </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 107 |             </div>
+      | ^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  108 |         );
+  109 |     } catch (e) {
+  110 |         console.error("Failed to render RailwayDirectory", e);                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/error-boundaries
+   25:17   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:25:17
+  23 |         return (
+  24 |             <div style={{ marginTop: '60px', color: '#888' }}>
+> 25 |                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+     |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 26 |                     <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |                         Japan Railway Network Directory
+     ??     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 34 |                     </p>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 35 |                 </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  36 |                 <div style={{
+  37 |                     display: 'grid',
+  38 |                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',                                                                                                                                                                                                                                                                              react-hooks/error-boundaries
+   26:21   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:26:21
+  24 |             <div style={{ marginTop: '60px', color: '#888' }}>
+  25 |                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+> 26 |                     <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |                         Japan Railway Network Directory
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |                     </h3>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
+  30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
+  31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/error-boundaries
+   29:21   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:29:21
+  27 |                         Japan Railway Network Directory
+  28 |                     </h3>
+> 29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 34 |                     </p>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  35 |                 </div>
+  36 |                 <div style={{
+  37 |                     display: 'grid',  react-hooks/error-boundaries
+   30:52   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:30:52
+  28 |                     </h3>
+  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
+> 30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
+  32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
+  33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/error-boundaries
+   31:25   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:31:25
+  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
+  30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
+> 31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
+  33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)
+  34 |                     </p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/error-boundaries
+   31:63   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:31:63
+  29 |                     <p style={{ fontSize: '14px', maxWidth: '800px', margin: '0 auto' }}>
+  30 |                         ?꾩옱 JapanRailNote?먯꽌???쇰낯 ?꾩뿭??<strong>{companyCount}媛?泥좊룄 ?뚯궗</strong>,
+> 31 |                         <strong>{lineCount}媛??몄꽑</strong>, 洹몃━怨?<strong>{stationCount}媛??댁긽????/strong> ?뺣낫瑜??쒓났?섍퀬 ?덉뒿?덈떎.
+     |                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  32 |                         媛??뚯궗瑜??좏깮?섏뿬 ?곸꽭 ?몄꽑怨??뺤감???뺣낫瑜??뺤씤?대낫?몄슂.
+  33 |                         (Full database of {stationCount} stations across {lineCount} lines in Japan.)
+  34 |                     </p>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/error-boundaries
+   36:17   error  Error: Avoid constructing JSX within try/catch
+
+React does not immediately render components when JSX is rendered, so any errors from this component will not be caught by the try/catch. To catch errors in rendering a given component, wrap that component in an error boundary. (https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+H:\jprail\src\components\SEOContent.tsx:36:17
+   34 |                     </p>
+   35 |                 </div>
+>  36 |                 <div style={{
+      |                 ^^^^^^^^^^^^^
+>  37 |                     display: 'grid',
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  38 |                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      ??      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 105 |                     })}
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 106 |                 </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^ Avoid constructing JSX within try/catch
+  107 |             </div>
+  108 |         );
+  109 |     } catch (e) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/error-boundaries
+   41:68   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   64:75   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+   89:77   error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
+  137:106  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react/no-unescaped-entities
 
 H:\jprail\src\components\Sidebar.tsx
   121:87  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -85,18 +222,18 @@ H:\jprail\src\components\SidebarGroup.tsx
   188:69  warning  'lineData' is defined but never used      @typescript-eslint/no-unused-vars
 
 H:\jprail\src\components\StationMarker.tsx
-   6:10  warning  'RailData' is defined but never used  @typescript-eslint/no-unused-vars
-   7:10  warning  'Language' is defined but never used  @typescript-eslint/no-unused-vars
-  30:5   warning  'id' is defined but never used        @typescript-eslint/no-unused-vars
-  35:5   warning  'zoom' is defined but never used      @typescript-eslint/no-unused-vars
+    8:10  warning  'convexHull' is defined but never used            @typescript-eslint/no-unused-vars
+   73:17  warning  'isMoving' is defined but never used              @typescript-eslint/no-unused-vars
+   73:27  warning  'zoom' is defined but never used                  @typescript-eslint/no-unused-vars
+  127:11  warning  'isMultiLine' is assigned a value but never used  @typescript-eslint/no-unused-vars
 
 H:\jprail\src\components\Stations.tsx
    12:10  warning  'Company' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
-   54:5   warning  'visitedStations' is defined but never used                                                                          @typescript-eslint/no-unused-vars
-   55:5   warning  'settings' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
-   56:5   warning  'language' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
   363:20  warning  'company' is assigned a value but never used                                                                         @typescript-eslint/no-unused-vars
   464:8   warning  React Hook useMemo has an unnecessary dependency: 'effectiveZoom'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+
+H:\jprail\src\components\TripLayer.tsx
+  19:74  warning  'idx' is defined but never used  @typescript-eslint/no-unused-vars
 
 H:\jprail\src\components\TubeMap.tsx
    26:5   warning  'edgeInfos' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
@@ -155,6 +292,7 @@ H:\jprail\src\hooks\useStationHierarchy.ts:28:9
   45:82  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-explicit-any
 
 H:\jprail\src\hooks\useTripRecorder.ts
+    4:10  warning  'RailroadGraph' is defined but never used                                                                          @typescript-eslint/no-unused-vars
   132:68  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
   266:8   warning  React Hook useEffect has a missing dependency: 'updateDragPath'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
   282:40  error    Unexpected any. Specify a different type                                                                           @typescript-eslint/no-explicit-any
@@ -181,12 +319,27 @@ H:\jprail\src\lib\RoutingGraph.ts
   224:51  error  Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
 
 H:\jprail\src\lib\graphUtils.ts
-  1:10  warning  'Company' is defined but never used   @typescript-eslint/no-unused-vars
-  1:19  warning  'Line' is defined but never used      @typescript-eslint/no-unused-vars
-  1:25  warning  'Station' is defined but never used   @typescript-eslint/no-unused-vars
-  1:34  warning  'Section' is defined but never used   @typescript-eslint/no-unused-vars
-  1:43  warning  'RailData' is defined but never used  @typescript-eslint/no-unused-vars
-  1:53  warning  'Joint' is defined but never used     @typescript-eslint/no-unused-vars
+   40:35  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+   85:21  error    'p' is never reassigned. Use 'const' instead                 prefer-const
+   98:25  error    'l' is never reassigned. Use 'const' instead                 prefer-const
+   98:43  error    'r' is never reassigned. Use 'const' instead                 prefer-const
+  115:38  warning  'dist' is assigned a value but never used                    @typescript-eslint/no-unused-vars
+  170:34  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  178:37  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  188:84  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  426:68  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  427:58  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  457:25  error    'combinedGeometry' is never reassigned. Use 'const' instead  prefer-const
+  467:31  warning  'cName' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  468:31  warning  'lName' is assigned a value but never used                   @typescript-eslint/no-unused-vars
+  569:45  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  569:66  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  574:42  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  606:41  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
+  611:15  warning  'lineStations' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  658:19  warning  'totalLength' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  719:27  warning  'd2' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  737:49  error    Unexpected any. Specify a different type                     @typescript-eslint/no-explicit-any
 
 H:\jprail\src\lib\gtag.ts
   11:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
@@ -198,6 +351,6 @@ H:\jprail\src\lib\lineColors.ts
 H:\jprail\src\types\railData.ts
   60:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
 
-??87 problems (42 errors, 45 warnings)
-  1 error and 0 warnings potentially fixable with the `--fix` option.
+??110 problems (65 errors, 45 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
 

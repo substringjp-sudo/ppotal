@@ -156,7 +156,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
-            const getCompanyUsage = ([compId, lines]: [string, Record<string, any>]) => {
+            const getCompanyUsage = ([compId, lines]: [string, Record<string, { name: string; name_en?: string; stations?: string[] }>]) => {
                 const total = Object.keys(lines).reduce((sum, lineId) => sum + (lineLengths[`${compId}::${lineId}`] || 0), 0);
                 const visited = Object.keys(lines).reduce((sum, lineId) => sum + (visitedLineLengths[`${compId}::${lineId}`] || 0), 0);
                 return total > 0 ? visited / total : 0;
@@ -185,7 +185,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                         let total = 0;
                         let visited = 0;
                         Object.entries(companies).forEach(([compId, lines]) => {
-                            Object.entries(lines).forEach(([lineId, lineData]) => {
+                            Object.keys(lines).forEach((lineId) => {
                                 total++;
                                 const key = `${compId}::${lineId}`;
                                 if ((visitedLineLengths[key] || 0) > 0) visited++;

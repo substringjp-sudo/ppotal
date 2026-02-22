@@ -11,13 +11,18 @@ import { useRailData } from '../hooks/useRailData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
 
-const MapWithNoSSR = dynamic(() => import('./Map'), {
+import { MapProps } from './Map';
+
+const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
     ssr: false
 });
 
 const MapPaneWithNoSSR = dynamic(() => import('./MapPane'), { ssr: false });
-const SidebarWithNoSSR = dynamic(() => import('./Sidebar'), { ssr: false });
-const MyLinesPaneWithNoSSR = dynamic(() => import('./MyLinesPane'), { ssr: false });
+import { SidebarProps } from './Sidebar';
+import { MyLinesPaneProps } from './MyLinesPane';
+
+const SidebarWithNoSSR = dynamic<SidebarProps>(() => import('./Sidebar'), { ssr: false });
+const MyLinesPaneWithNoSSR = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
 
 import type { MobileLinePreviewProps } from './Mobile/MobileLinePreview';
 const MobileLinePreviewWithNoSSR = dynamic<MobileLinePreviewProps>(() => import('./Mobile/MobileLinePreview'), { ssr: false });
@@ -131,8 +136,8 @@ const MainPageClient = () => {
     React.useEffect(() => {
         if (railData && railData.hierarchy) {
             const allKeys: string[] = [];
-            const hierarchyData = railData.hierarchy.companies || railData.hierarchy;
-            Object.entries(hierarchyData).forEach(([companyId, companyObj]: [string, any]) => {
+            const hierarchyData = (railData.hierarchy.companies || railData.hierarchy);
+            Object.entries(hierarchyData).forEach(([companyId, companyObj]) => {
                 const lines = companyObj.lines || companyObj;
                 Object.keys(lines).forEach(lineId => allKeys.push(`${companyId}::${lineId}`));
             });
@@ -164,7 +169,7 @@ const MainPageClient = () => {
         }
     }, [recordedTrips, isLoaded]);
 
-    const handleRecordTrip = React.useCallback((trip: any) => {
+    const handleRecordTrip = React.useCallback((trip: Trip) => {
         setRecordedTrips(prev => {
             if (prev.find(t => t.id === trip.id)) return prev;
             trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
@@ -231,7 +236,7 @@ const MainPageClient = () => {
         setRecordedTrips(prev => prev.filter(() => true)); // Simplistic implementation as before
     }, []);
 
-    const setLineIdMapping = React.useCallback((_mapping: Map<string, string>) => {
+    const setLineIdMapping = React.useCallback(() => {
         // Reserved for future use
     }, []);
 
@@ -272,7 +277,7 @@ const MainPageClient = () => {
     }, [isMobile, isEditMode]);
 
     // Edit Mode Handlers
-    const handleDraftComplete = React.useCallback((trip: any) => {
+    const handleDraftComplete = React.useCallback((trip: Trip) => {
         setDraftTrip(trip);
         setTempPath([]);
     }, []);
@@ -594,7 +599,12 @@ const MainPageClient = () => {
 
                     {!isMobile && (
                         <div style={{ width: '300px', height: '100%', borderLeft: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, overflowY: 'auto' }}>
-                            <MyLinesPaneWithNoSSR visitedLineLengths={visitedLineLengths} lineLengths={lineLengths} onLineClick={handleLineClick} onDeleteLineHistory={handleDeleteLineHistory} activeLine={activeLine} language={language} recordedTrips={recordedTrips} onDeleteTrip={handleDeleteTrip} railData={railData} />
+                            <MyLinesPaneWithNoSSR
+                                language={language}
+                                recordedTrips={recordedTrips}
+                                onDeleteTrip={handleDeleteTrip}
+                                railData={railData}
+                            />
                         </div>
                     )}
                 </div>
@@ -624,7 +634,7 @@ const MainPageClient = () => {
                                         lineLengths={lineLengths}
                                         visitedLineLengths={visitedLineLengths}
                                         activeLine={activeLine}
-                                        onLineClick={(line) => {
+                                        onLineClick={(line: string) => {
                                             handleLineClick(line);
                                             if (isMobile) setIsMobileSheetOpen(false);
                                         }}
@@ -644,14 +654,6 @@ const MainPageClient = () => {
                                 ),
                                 content: (
                                     <MyLinesPaneWithNoSSR
-                                        visitedLineLengths={visitedLineLengths}
-                                        lineLengths={lineLengths}
-                                        onLineClick={(line) => {
-                                            handleLineClick(line);
-                                            if (isMobile) setIsMobileSheetOpen(false);
-                                        }}
-                                        onDeleteLineHistory={handleDeleteLineHistory}
-                                        activeLine={activeLine}
                                         language={language}
                                         recordedTrips={recordedTrips}
                                         onDeleteTrip={handleDeleteTrip}

@@ -11,7 +11,7 @@ interface MapStylePanelProps {
 const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChange }) => {
     const [isOpen, setIsOpen] = React.useState(false);
 
-    const handleChange = (category: keyof MapStyleSettings, field: string, value: any) => {
+    const handleChange = (category: keyof MapStyleSettings, field: string, value: number | boolean) => {
         onSettingsChange({
             ...settings,
             [category]: {

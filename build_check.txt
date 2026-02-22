@@ -1,0 +1,29 @@
+
+> japanrailnote@0.1.0 build
+> next build
+
+??Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+??Compiled successfully in 1902.1ms
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/8) ...
+??metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  Generating static pages using 15 workers (2/8) 
+  Generating static pages using 15 workers (4/8) 
+  Generating static pages using 15 workers (6/8) 
+??Generating static pages using 15 workers (8/8) in 746.7ms
+  Finalizing page optimization ...
+
+Route (app)
+????/
+????/_not-found
+????/credits
+????/privacy
+????/robots.txt
+????/sitemap.xml
+
+
+?? (Static)  prerendered as static content
+

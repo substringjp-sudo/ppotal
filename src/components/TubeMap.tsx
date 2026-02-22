@@ -23,13 +23,9 @@ const TubeMap: React.FC<TubeMapProps> = ({
     edges,
     adj,
     nodesById,
-    edgeInfos,
-    visitedStations,
-    visitedEdges,
     lineColor,
     onStationClick,
-    onPathCreate,
-    language
+    onPathCreate
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dragStartNode, setDragStartNode] = useState<string | null>(null);
@@ -230,8 +226,11 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
 
     useEffect(() => {
-        setPortalNode(document.getElementById('tube-minimap-portal'));
-    }, [showMinimap]);
+        const portal = document.getElementById('tube-minimap-portal');
+        if (portal) {
+            setTimeout(() => setPortalNode(portal), 0);
+        }
+    }, []);
 
     const [isMinimapDragging, setIsMinimapDragging] = useState(false);
 
@@ -263,11 +262,16 @@ const TubeMap: React.FC<TubeMapProps> = ({
 
     useEffect(() => {
         if (isMinimapDragging) {
-            const handleGlobalMove = (e: any) => {
+            const handleGlobalMove = (e: MouseEvent | TouchEvent) => {
                 const minimap = document.getElementById('tube-minimap');
                 if (minimap) {
                     const rect = minimap.getBoundingClientRect();
-                    const clientX = e.clientX || e.touches?.[0]?.clientX;
+                    let clientX: number;
+                    if ('clientX' in e) {
+                        clientX = e.clientX;
+                    } else {
+                        clientX = e.touches[0].clientX;
+                    }
                     const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
                     const ratio = x / rect.width;
                     if (containerRef.current) {

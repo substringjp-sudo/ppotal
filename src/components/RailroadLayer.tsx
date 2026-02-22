@@ -138,12 +138,23 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 });
             });
 
-        } else if (railroadNetwork && 'routes' in railroadNetwork) {
+        } else if (railroadNetwork && 'routes' in (railroadNetwork as unknown as { routes: unknown })) {
             // Systematic Data
-            const legacyData = railroadNetwork as { routes: any[] };
+            const legacyData = railroadNetwork as unknown as {
+                routes: {
+                    id: string;
+                    line?: string;
+                    name?: string;
+                    company?: string;
+                    color?: string;
+                    stations?: string[];
+                    routeGeometry?: number[][][];
+                    edges?: { geometry: number[][][] }[];
+                }[]
+            };
             legacyData.routes.forEach((route) => {
                 if (!route) return;
-                const coordinates = route.routeGeometry || route.edges?.map((e: { geometry: any }) => e.geometry) || [];
+                const coordinates = route.routeGeometry || route.edges?.map((e) => e.geometry) || [];
                 if (coordinates.length === 0) return;
                 features.push({
                     type: 'Feature',
@@ -155,7 +166,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         endpoints: route.stations ? `${route.stations[0]} \u2192 ${route.stations[route.stations.length - 1]}` : '',
                         isUsed: false // Fallback logic for trips if needed
                     },
-                    geometry: { type: 'MultiLineString', coordinates }
+                    geometry: { type: 'MultiLineString', coordinates: coordinates as number[][][] }
                 });
             });
         }
@@ -163,26 +174,6 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return { type: 'FeatureCollection', features };
     }, [railroadNetwork, usedSectionIds]);
 
-    // Casing Style: For outlines or background effects
-    const casingStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
-        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
-        const id = feature.properties.id;
-        const isHovered = !isDragging && hoveredLine === id;
-        const isClicked = activeLine === id;
-        const isVisible = selectionSet.has(id) || activeLine === id || !isFilterActive;
-
-        if (!isVisible && !isHovered && !isClicked) return { opacity: 0, interactive: false };
-
-        return {
-            color: '#000000', // Black casing
-            weight: styleConfig.casingWeight,
-            opacity: isVisible ? 0.3 : 0.1,
-            lineCap: 'round',
-            lineJoin: 'round',
-            smoothFactor: styleConfig.smoothFactor,
-            interactive: false
-        } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, hoveredLine, styleConfig, isDragging]);
 
     // Unified Style Function: Decides all visuals in one pass
     const unifiedStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
@@ -272,14 +263,13 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const interactionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
         const id = feature.properties.id;
-        const isVisible = selectionSet.has(id) || activeLine === id || !isFilterActive;
 
         return {
             color: '#000',
             weight: isMobile ? 22 : 14, // 충분한 클릭 영역
             opacity: 0, // 완전 투명
             pane: 'globalInteraction',
-            interactive: isVisible,
+            interactive: true,
             lineCap: 'round' as const,
             lineJoin: 'round' as const
         } as L.PathOptions;
@@ -287,7 +277,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
         if (!feature.properties) return;
-        const props = feature.properties as any;
+        const props = feature.properties as { id: string; name: string; name_en?: string; company: string; company_en?: string; endpoints?: string };
         const { name, name_en, company, company_en, endpoints } = props;
 
         // Japanese is always primary (larger), English is always secondary (smaller)

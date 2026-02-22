@@ -126,7 +126,7 @@ export class RoutingGraph {
             Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
                 Object.entries(targets as Record<string, number[]>).forEach(([targetId, sectionIds]) => {
                     let totalDistance = 0;
-                    let combinedGeometry: [number, number][] = [];
+                    const combinedGeometry: [number, number][] = [];
                     let lineId = "";
                     let currentPos = sourceId;
 

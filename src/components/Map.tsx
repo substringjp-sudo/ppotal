@@ -4,23 +4,22 @@ import React from 'react';
 import { MapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-interface MapProps {
+export interface MapProps {
     children: React.ReactNode;
 }
 
 const Map: React.FC<MapProps> = ({ children }) => {
     return (
         <MapContainer
-            center={[36, 138]}
+            center={[36.0, 138.0]}
             zoom={5}
-            minZoom={5}
-            maxZoom={18}
-            preferCanvas={true}
             style={{ height: '100%', width: '100%', background: '#a0c4ff' }}
-            scrollWheelZoom={true}
+            preferCanvas={true}
             zoomControl={false}
-            zoomSnap={1}
-            zoomDelta={1}
+            zoomSnap={0.5}
+            zoomDelta={0.5}
+            minZoom={5}
+            maxBounds={[[20, 120], [50, 160]]}
         >
             {children}
         </MapContainer>

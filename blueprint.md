@@ -48,12 +48,15 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 48. **Selective Routing & Creation Limits**: Route generation is now strictly limited to lines currently selected in the sidebar. Path creation (drawing) logic enforces a 10-section limit between waypoints to encourage precise route building, and unreachable stations are automatically filtered out. ✅
 49. **Interaction Focus Mode**: Clicking or dragging a station now automatically clears all active line/station highlights. During dragging, yellow 'hover' glows for railroad lines are suppressed, and the target station is highlighted in blue to match the active path, ensuring a distraction-free route creation experience. ✅
 50. **Dedicated Interaction Layer Separation**: Implemented a global invisible interaction layer (`globalInteraction` pane) for both stations and railroad lines. By separating visual rendering (casing, glow, main stroke) from event capture, we've achieved 100% reliable click and hover targeting even in dense urban areas where multiple elements overlap. Visual layers are now entirely non-interactive (`pointer-events: none`), passing all events up to the top-most interaction geometry. ✅
-51. **Intelligent Station Label Visibility**: Optimized map clutter by dynamically filtering station labels based on zoom level. At low zoom levels (below 10), station names are completely hidden. At intermediate zoom levels (10-13), only transfer stations show labels. At high zoom levels (14+), all stations display labels. ✅
+51. **Refined Station Label Visibility**: Improved map clarity by dynamically filtering station labels. At zoom 8-13, only transfer stations and stations on active/selected lines are displayed, and they are subject to strict collision detection to prevent overlapping names. At zoom 14+, all stations are candidates, but selected stations are prioritized and bypass collision pruning. ✅
+52. **Enhanced Line Information Discovery**: All railroad lines, includingThose dimmed/disabled by filters, are now interactive for tooltips. Users can hover over any line to see its Japanese/English name and operator information. ✅
+53. **Selective Drawing Constraints**: While all stations show tooltips, the ability to initiate or complete a route (drag-and-drop path creation) is strictly limited to stations belonging to active or selected lines. This ensures users build routes within their filtered context while still having access to general information. ✅
 
 ## Deployment Plan
-1. **Pre-deployment Check**: Run `npm run lint` and `npm run build` to ensure project stability.
-2. **Firebase Hosting**: Deploy the Next.js application to `jprail.web.app` using Firebase Hosting.
-3. **Verification**: Confirm SSR and client-side interactions on the live production environment.
+1. **Pre-deployment Check**: Ran `npm run lint` and `npm run build` to ensure project stability. ✅
+2. **Firebase Hosting**: Deployed the Next.js application to `jprail.web.app` using Firebase Hosting. ✅
+3. **Verification**: Confirmed SSR and client-side interactions on the live production environment. ✅
 
 # 메모
-- **상호작용 최적화 (Interaction & Stability)**: 지도 위에서 노선이나 역이 클릭되지 않던 근본적인 원인들(레이어 중첩, 잦은 리렌더링 등)을 모두 해결했습니다. 이제 모든 인터랙티브 레이어는 `ref`와 `setStyle`을 통해 상태 변화 시 끊김 없이 시각적으로 업데이트되며, 마우스 클릭이 다른 투명 레이어에 의해 방해받지 않도록 CSS와 Pane 구조를 개선했습니다.
+- **상호작용 및 시각적 균형 (Interaction & Visual Balance)**: 지도 줌 레벨에 따라 역 이름의 밀도를 조절하고, 노선을 선택했을 때만 해당 노선의 역들이 더 명확히 드러나도록 로직을 정교화했습니다. 동시에 비활성화된 노선에 대해서도 정보를 탐색할 수 있는 통로(툴팁)를 열어두어 정보의 접근성을 높였으며, 경로 그리기는 활성 노선 내로 제한하여 사용자의 작업 집중도를 높였습니다.
+- **최종 배포 완료**: 모든 주요 기능 구현 및 성능 최적화가 완료되어 `jprail.web.app`에 안정적으로 배포되었습니다. 

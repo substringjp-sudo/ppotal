@@ -173,8 +173,6 @@ const MapPane: React.FC<MapPaneProps> = ({
         railroadNetwork: railData,
         mapBounds,
         zoomLevel,
-        lineIdMap,
-        isMoving,
         usedStationIds: visitedStations
     });
 

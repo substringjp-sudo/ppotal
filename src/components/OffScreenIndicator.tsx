@@ -21,7 +21,7 @@ const OffScreenIndicator: React.FC<OffScreenIndicatorProps> = ({ map, mapBounds,
     let containerPoint;
     try {
         // Simple readiness check
-        if (!map.getZoom() && (map as any)._zoom === undefined) return null;
+        if (map.getZoom() === undefined) return null;
         const center = map.getCenter();
         if (!center) return null;
         containerPoint = map.latLngToContainerPoint(latLng);

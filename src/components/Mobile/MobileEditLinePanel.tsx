@@ -14,7 +14,6 @@ interface MobileEditLinePanelProps {
     visitedEdges: Set<string>;
     visitedStations: Set<string>;
     onPathCreate: (startId: string, endId: string) => void;
-    onDragUpdate?: (waypoints: string[]) => void;
     onClose: () => void;
     language: Language;
     railData: RailData | null;
@@ -27,7 +26,6 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
     visitedEdges,
     visitedStations,
     onPathCreate,
-    onDragUpdate,
     onClose,
     language,
     railData,
@@ -37,15 +35,6 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
 
     // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
-
-    const companyData = railData?.companies[company];
-    const lineData = railData?.lines[lineName];
-
-    const cNamePrimary = language === 'en' ? (companyData?.name_en || company) : (companyData?.name || company);
-    const lNamePrimary = language === 'en' ? (lineData?.name_en || lineName) : (lineData?.name || lineName);
-
-    const cNameSecondary = language === 'en' ? (companyData?.name || "") : (companyData?.name_en || "");
-    const lNameSecondary = language === 'en' ? (lineData?.name || "") : (lineData?.name_en || "");
 
     return (
         <div style={{
@@ -73,14 +62,6 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                         </span>
                         <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
                             {language === 'en' ? (railData?.lines[lineName]?.name_en || lineName) : (railData?.lines[lineName]?.name || lineName)}
-                        </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', opacity: 0.6 }}>
-                        <span style={{ fontSize: '11px', fontWeight: '500' }}>
-                            {railData?.companies[company]?.name_en || ""}
-                        </span>
-                        <span style={{ fontSize: '13px', fontWeight: '500' }}>
-                            {railData?.lines[lineName]?.name_en || ""}
                         </span>
                     </div>
                 </div>
