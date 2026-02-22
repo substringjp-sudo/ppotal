@@ -63,12 +63,13 @@ interface MapPaneProps {
 
 const PANE_STYLES = {
     topTooltips: { zIndex: 1000, pointerEvents: 'none' as const },
-    railroadLines: { zIndex: 820 },   // Main interaction pane
+    globalInteraction: { zIndex: 950 }, // 상호작용 전용 투명 레이어
+    stationLabels: { zIndex: 880, pointerEvents: 'none' as const },
+    stationInteractions: { zIndex: 850, pointerEvents: 'none' as const }, // 시각 전용
+    railroadLines: { zIndex: 820, pointerEvents: 'none' as const },    // 시각 전용
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const },
     railroadGlow: { zIndex: 810, pointerEvents: 'none' as const },
-    stationInteractions: { zIndex: 850 }, // New: dedicated for station hover/click
-    stationLabels: { zIndex: 880, pointerEvents: 'none' as const },
-    uiElements: { zIndex: 818, pointerEvents: 'none' as const }, // Below lines to avoid hiding them
+    uiElements: { zIndex: 818, pointerEvents: 'none' as const },
     background: { zIndex: 100 },
 };
 
@@ -253,7 +254,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
             moveEndTimeoutRef.current = setTimeout(() => {
                 setMapBounds(e.target.getBounds());
-            }, 200); // Update bounds every 200ms during long pans
+            }, 100); // 100ms for more responsive updates during drag
         },
         moveend: (e) => {
             setMapBounds(e.target.getBounds());
@@ -360,6 +361,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             <Pane name="railroad-lines" style={PANE_STYLES.railroadLines} />
             <Pane name="station-interactions" style={PANE_STYLES.stationInteractions} />
             <Pane name="station-labels" style={PANE_STYLES.stationLabels} />
+            <Pane name="globalInteraction" style={PANE_STYLES.globalInteraction} />
 
             {railData && <RailroadLayer
                 railroadNetwork={railData}

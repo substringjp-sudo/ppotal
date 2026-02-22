@@ -139,10 +139,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         } else if (railroadNetwork && 'routes' in railroadNetwork) {
             // Systematic Data
-            const legacyData = railroadNetwork as any; // Legacy format might be complex, keeping as any but with 'in' check
-            legacyData.routes.forEach((route: any) => {
+            const legacyData = railroadNetwork as { routes: any[] };
+            legacyData.routes.forEach((route) => {
                 if (!route) return;
-                const coordinates = route.routeGeometry || route.edges?.map((e: any) => e.geometry) || [];
+                const coordinates = route.routeGeometry || route.edges?.map((e: { geometry: any }) => e.geometry) || [];
                 if (coordinates.length === 0) return;
                 features.push({
                     type: 'Feature',
@@ -181,7 +181,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             smoothFactor: styleConfig.smoothFactor,
             interactive: false
         } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, hoveredLine, styleConfig]);
+    }, [isFilterActive, selectionSet, activeLine, hoveredLine, styleConfig, isDragging]);
 
     // Unified Style Function: Decides all visuals in one pass
     const unifiedStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
@@ -194,14 +194,14 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         // 1. Determine Color
         let color = feature.properties.color || '#999';
-        // Hover/Clicked no longer override main color to preserve line identity
         if (!isVisible) color = '#999999';
 
-        // 2. Determine Weight
-        let weight = isVisible ? styleConfig.baseVisibilityWeight : styleConfig.baseInvisibilityWeight;
-        if (isUsed) weight = styleConfig.usedWeight;
-        // Hover/Clicked no longer override weight here to prevent "blooming"
-        // We handle emphasis in the glow/casing layers
+        // 2. Determine Weight (Standardized to match Stations)
+        let weight = 4.0;
+        const z = Math.round(zoomLevel);
+        if (z <= 7) weight = Math.max(0.1, (z / 7) * 1.5);
+        else if (z <= 11) weight = 2.5;
+        else if (z <= 13) weight = 3.0;
 
         // 3. Determine Opacity
         let opacity = isVisible ? 0.8 : 0.4;
@@ -213,16 +213,16 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             weight,
             opacity,
             dashArray: isVisible ? undefined : '4, 8',
-            lineCap: 'round',
-            lineJoin: 'round',
+            lineCap: 'round' as const,
+            lineJoin: 'round' as const,
             smoothFactor: styleConfig.smoothFactor,
-            interactive: true,
+            interactive: false,
         } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine]);
+    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging]);
 
 
     const glowStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
-        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
+        if (!feature || !feature.properties || isMoving) return { opacity: 0, interactive: false };
         const isUsed = feature.properties.isUsed;
         const id = feature.properties.id;
         const isHovered = !isDragging && hoveredLine === id;
@@ -230,23 +230,59 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         if (!isUsed && !isHovered && !isClicked) return { opacity: 0, interactive: false };
 
-        let color = '#FFD700';
-        if (isClicked) color = '#007AFF';
-        else if (isUsed) color = '#2ecc71'; // Visited: Green Glow
+        // 색상 우선순위: 클릭(Blue) > 호버(Yellow) > 방문지(Green) 
+        let color = '#FFD60A'; // 호버: 시스템 옐로우
+        const isEmphasis = isClicked || isHovered;
+
+        if (isClicked) {
+            color = '#007AFF';
+        } else if (isUsed && !isHovered) {
+            color = '#2ecc71'; // Visited: Green Glow
+        }
+
+        // 표준화된 테두리 두께 로직 적용 (두께 절반으로 축소)
+        let baseWeight = 12.5;
+        const z = Math.round(zoomLevel);
+        if (z <= 7) baseWeight = Math.max(0.2, (z / 7) * 5.0);
+        else if (z <= 11) baseWeight = 7.5;
+        else if (z <= 13) baseWeight = 10.0;
+
+        const factor = isMobile ? 1.4 : 1.0;
+        const emphasisOffset = isEmphasis ? (z >= 14 ? 15 : 10) : 0;
+        const finalWeight = (baseWeight * factor) + emphasisOffset;
 
         return {
             color: color,
-            weight: (isHovered || isClicked || isUsed) ? styleConfig.highlightWeight + (6 * styleConfig.weightFactor) : styleConfig.usedGlowWeight,
-            opacity: (isHovered || isClicked || isUsed) ? 0.6 : 0.3,
-            lineCap: 'round',
-            lineJoin: 'round',
+            weight: finalWeight,
+            opacity: isUsed && !isHovered && !isClicked ? 0.6 : 1.0,
+            lineCap: 'round' as const,
+            lineJoin: 'round' as const,
             smoothFactor: styleConfig.smoothFactor,
             interactive: false
         } as L.PathOptions;
-    }, [hoveredLine, activeLine, styleConfig]);
+    }, [hoveredLine, activeLine, isMoving, isDragging, isMobile, zoomLevel, styleConfig]);
 
-    const onEachFeature = (feature: any, layer: L.Layer) => {
-        const { name, name_en, company, company_en, endpoints } = feature.properties;
+    // 상호작용 전용 스타일 (투명하지만 클릭 영역 확보)
+    const interactionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
+        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
+        const id = feature.properties.id;
+        const isVisible = selectionSet.has(id) || activeLine === id || !isFilterActive;
+
+        return {
+            color: '#000',
+            weight: isMobile ? 22 : 14, // 충분한 클릭 영역
+            opacity: 0, // 완전 투명
+            pane: 'globalInteraction',
+            interactive: isVisible,
+            lineCap: 'round' as const,
+            lineJoin: 'round' as const
+        } as L.PathOptions;
+    }, [isFilterActive, selectionSet, activeLine, isMobile]);
+
+    const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
+        if (!feature.properties) return;
+        const props = feature.properties as any;
+        const { name, name_en, company, company_en, endpoints } = props;
 
         // Japanese is always primary (larger), English is always secondary (smaller)
         const primaryLine = name;
@@ -286,13 +322,13 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             click: (e) => {
                 if (isDragging) return;
                 L.DomEvent.stopPropagation(e);
-                onRailroadClick(feature.properties.id);
+                onRailroadClick(props.id);
             },
-            mouseover: (e) => {
+            mouseover: () => {
                 if (!isMobile && !isMoving && !isDragging) {
                     if (tooltipTimeout) clearTimeout(tooltipTimeout);
                     tooltipTimeout = setTimeout(() => {
-                        onRailroadHover(feature.properties.id);
+                        onRailroadHover(props.id);
                         layer.openTooltip();
                         tooltipTimeout = null;
                     }, 50);
@@ -313,12 +349,14 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     const mainLayerRef = useRef<L.GeoJSON>(null);
     const glowLayerRef = useRef<L.GeoJSON>(null);
+    const interactionLayerRef = useRef<L.GeoJSON>(null);
 
     // Dynamic Style Update without unmounting the layer
     useEffect(() => {
         if (mainLayerRef.current) mainLayerRef.current.setStyle(unifiedStyle);
         if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
-    }, [activeLine, hoveredLine, isMoving, isDragging, unifiedStyle, glowStyle]);
+        if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+    }, [activeLine, hoveredLine, isMoving, isDragging, unifiedStyle, glowStyle, interactionStyle]);
 
     // Stable key: only re-render on data or major zoom changes
     const layerKey = useMemo(() => {
@@ -334,23 +372,35 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 <GeoJSON
                     ref={glowLayerRef}
                     key={`rail-under-${layerKey}`}
-                    data={mergedGeoJsonData as any}
+                    data={mergedGeoJsonData}
                     style={glowStyle}
                     interactive={false}
                     pane="railroad-glow"
                 />
             )}
 
-            {/* 2. Main Visual Line Layer (Handles events now) */}
+            {/* 2. Main Visual Line Layer */}
             {mergedGeoJsonData && (
                 <GeoJSON
                     ref={mainLayerRef}
                     key={`rail-main-${layerKey}`}
-                    data={mergedGeoJsonData as any}
+                    data={mergedGeoJsonData}
                     style={unifiedStyle}
+                    interactive={false}
+                    pane="railroad-lines"
+                />
+            )}
+
+            {/* 3. Interaction Overlay: Invisible but captures all events */}
+            {mergedGeoJsonData && (
+                <GeoJSON
+                    ref={interactionLayerRef}
+                    key={`rail-interact-${layerKey}`}
+                    data={mergedGeoJsonData}
+                    style={interactionStyle}
                     onEachFeature={onEachFeature}
                     interactive={!isDragging}
-                    pane="railroad-lines"
+                    pane="globalInteraction"
                 />
             )}
         </>

@@ -69,11 +69,33 @@ export const useVisibleStations = ({
         const data: Record<string, ProcessedStation> = {};
         const railData = railroadNetwork as RailData;
 
-        // Global Pre-bake: Process ALL stations in the network
-        // Use a logical grouping by Name + Proximity to merge separate company entries into one hub
-        const nameToId = new Map<string, string>(); // name -> firstId for grouping
+        // name to ID for grouping
+        const nameToId = new Map<string, string>();
 
-        for (const cell of spatialIndex.values()) {
+        // Calculate visible grid keys with a generous buffer (0.3 degrees)
+        const buffer = 0.3;
+        const keysToProcess: string[] = [];
+
+        if (mapBounds) {
+            const minLat = mapBounds.getSouth() - buffer;
+            const maxLat = mapBounds.getNorth() + buffer;
+            const minLon = mapBounds.getWest() - buffer;
+            const maxLon = mapBounds.getEast() + buffer;
+
+            for (let lat = Math.floor(minLat / GRID_SIZE) * GRID_SIZE; lat <= maxLat; lat += GRID_SIZE) {
+                for (let lon = Math.floor(minLon / GRID_SIZE) * GRID_SIZE; lon <= maxLon; lon += GRID_SIZE) {
+                    keysToProcess.push(`${Math.floor(lat / GRID_SIZE)}_${Math.floor(lon / GRID_SIZE)}`);
+                }
+            }
+        } else {
+            // Fallback to all if no bounds
+            keysToProcess.push(...Array.from(spatialIndex.keys()));
+        }
+
+        keysToProcess.forEach(key => {
+            const cell = spatialIndex.get(key);
+            if (!cell) return;
+
             cell.stations.forEach((s: Station) => {
                 const stationLines = new Set<string>();
                 if (s.platform_ids) {
@@ -99,20 +121,18 @@ export const useVisibleStations = ({
                     isUsed: usedStationIds.has(s.id)
                 };
 
-                // Logical Hub Check: If a station with same name exists nearby, merge it
                 const hubKey = `${s.name}_${s.name_en}`;
                 let targetId = s.id;
 
-                // Simple heuristic: if same name exists in this cell, we group them
-                // This handles major hubs like Shinjuku where different companies have distinct IDs
                 if (nameToId.has(hubKey)) {
                     const existingId = nameToId.get(hubKey)!;
                     const existing = data[existingId];
-                    // Verify distance (must be within ~500m to be a hub, roughly 0.005 degrees)
-                    const dLat = Math.abs(existing.centroid[0] - s.lat);
-                    const dLon = Math.abs(existing.centroid[1] - s.lon);
-                    if (dLat < 0.005 && dLon < 0.005) {
-                        targetId = existingId;
+                    if (existing) {
+                        const dLat = Math.abs(existing.centroid[0] - s.lat);
+                        const dLon = Math.abs(existing.centroid[1] - s.lon);
+                        if (dLat < 0.005 && dLon < 0.005) {
+                            targetId = existingId;
+                        }
                     }
                 } else {
                     nameToId.set(hubKey, s.id);
@@ -134,7 +154,6 @@ export const useVisibleStations = ({
                         if (!data[targetId].lines.includes(l)) data[targetId].lines.push(l);
                     });
                     if (usedStationIds.has(s.id)) data[targetId].isUsed = true;
-                    // Update centroid to be the average of all nodes for a balanced hub label
                     const totalNodes = data[targetId].nodes.length;
                     const avgLat = data[targetId].nodes.reduce((acc, n) => acc + n.coord[0], 0) / totalNodes;
                     const avgLon = data[targetId].nodes.reduce((acc, n) => acc + n.coord[1], 0) / totalNodes;
@@ -155,11 +174,11 @@ export const useVisibleStations = ({
                     };
                 });
             }
-        }
+        });
 
         lastResultRef.current = data;
         return data;
-    }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds]);
+    }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds, mapBounds]);
 
     return { visibleStations, effectiveZoom };
 };

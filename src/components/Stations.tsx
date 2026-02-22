@@ -6,7 +6,7 @@ import { GeoJSON } from 'react-leaflet';
 import { MapStyleSettings } from './MainPageClient';
 import { Language } from '../lib/translations';
 import { ProcessedStation } from '../types/mapTypes';
-import StationMarker from './StationMarker'; // Keep for labels and interaction
+import StationMarker from './StationMarker';
 import { RailData } from '../types/railData';
 import { convexHull } from '../lib/geoUtils';
 import { Company, Line } from '../types/railData';
@@ -23,8 +23,8 @@ interface StationFeatureProperties {
 
 interface StationsProps {
     processedStations: Record<string, ProcessedStation> | null;
-    effectiveZoom: number; // Discrete zoom (8, 12, 14)
-    realZoom: number;      // Continuous zoom for Leaflet scale
+    effectiveZoom: number;
+    realZoom: number;
     getColor: (lineKey: string) => string;
     selectedLines: string[];
     activeLine: string | null;
@@ -65,26 +65,19 @@ const Stations: React.FC<StationsProps> = ({
     dragStartStation
 }) => {
 
-    // 1. Process all entries (Raw data only - stable)
     const allEntries = useMemo(() => {
         if (!processedStations) return [];
         return Object.entries(processedStations).map(([id, data]) => {
             let isVisibleAtZoom = true;
-            // Removed: if (effectiveZoom === 8 && data.lines.length < 2) isVisibleAtZoom = false;
-            // Now we keep all stations in allEntries so platforms can be rendered for all.
-            // We'll filter the dots (node features) later in visualsGeoJson for density.
             if (effectiveZoom < 8) isVisibleAtZoom = false;
             if (data.isJoint) isVisibleAtZoom = false;
-
             return { id, data, isVisibleAtZoom };
         }).filter(item => item.isVisibleAtZoom);
     }, [processedStations, effectiveZoom]);
 
-    // 2. Prepare GeoJSON for "Baked" visuals (STABLE during hover)
     const visualsGeoJson = useMemo(() => {
         const features: GeoJSON.Feature[] = [];
 
-        // Platforms per station
         allEntries.forEach(({ id, data }) => {
             if (data.nodes) {
                 const platforms: number[][][] = [];
@@ -102,26 +95,21 @@ const Stations: React.FC<StationsProps> = ({
                             type: 'platform',
                             stationId: id,
                             lineKey: data.lines[0] || 'Unknown',
-                            lines: data.lines
+                            lines: data.lines,
+                            isUsed: data.isUsed
                         }
                     });
                 }
             }
         });
 
-        // 3. Node Features with Density Management
         const nodeAcceptedEntries: typeof allEntries = [];
-        // Thresholds for dot density culling (in degrees)
         const nodeCullDist = effectiveZoom === 8 ? 0.012 : (effectiveZoom === 12 ? 0.0015 : 0);
 
         allEntries.forEach((entry) => {
             const { id, data } = entry;
-
-            // At mid zoom (8-11), we only show dots for transfer stations or used stations
-            // to keep the map clean, but platforms (if any) are already processed above for all stations.
             if (effectiveZoom === 8 && data.lines.length < 2 && !data.isUsed) return;
 
-            // At mid zoom (8-12), we cull extremely close dots to avoid "blobbing"
             if (nodeCullDist > 0) {
                 const isImportant = data.lines.length > 1 || data.isUsed;
                 const tooDense = nodeAcceptedEntries.some(acc => {
@@ -129,10 +117,7 @@ const Stations: React.FC<StationsProps> = ({
                     const dLon = Math.abs(acc.data.centroid[1] - data.centroid[1]);
                     return dLat < nodeCullDist && dLon < nodeCullDist;
                 });
-
-                // If too dense, only keep it if it's more important than existing one or we skip
                 if (tooDense && !isImportant) return;
-                // If the new one is important but old wasn't, we still keep the new one (as a node)
             }
 
             nodeAcceptedEntries.push(entry);
@@ -151,7 +136,6 @@ const Stations: React.FC<StationsProps> = ({
             });
         });
 
-        // 4. Hull Features for Transfer Stations (Background Shapes)
         allEntries.forEach(({ id, data }) => {
             if (data.lines.length > 1 && data.nodes) {
                 const points: [number, number][] = [];
@@ -178,56 +162,44 @@ const Stations: React.FC<StationsProps> = ({
         return { type: 'FeatureCollection', features };
     }, [allEntries, effectiveZoom]);
 
-    // Track local hover for platforms to show yellow border without affecting general line hover
     const [localHoveredStation, setLocalHoveredStation] = useState<string | null>(null);
 
-    // 3. Dynamic Styles (Access props directly)
-    const nodeStyle = useCallback((feature: GeoJSON.Feature) => {
-        const props = feature.properties as unknown as StationFeatureProperties;
-        if (!props) return { opacity: 0, interactive: false };
-        const { lines } = props;
-        const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
-        const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
-        const isSelected = lines.some((l: string) =>
-            selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
-        );
-
+    const nodeStyle = useCallback((feature?: GeoJSON.Feature) => {
+        if (!feature) return { opacity: 0, interactive: false };
         let radius = 3;
         if (effectiveZoom === 12) radius = 5;
         if (effectiveZoom >= 14) radius = 7;
-        const isDimmed = isFilterActive && !isSelected;
 
         return {
             radius: radius,
             fillColor: '#000',
             stroke: false,
-            fillOpacity: 0, // Dots are now invisible interaction targets
-            pane: 'station-interactions' // Use dedicated pane for priority events
+            fillOpacity: 0,
+            pane: 'station-interactions'
         };
-    }, [selectedLines, activeLine, hoveredLine, effectiveZoom]);
+    }, [effectiveZoom]);
 
-    const hullStyle = useCallback((feature: GeoJSON.Feature) => {
-        const props = feature.properties as unknown as StationFeatureProperties;
-        if (!props) return { opacity: 0, interactive: false };
-        const { lines } = props;
+    const hullStyle = useCallback((feature?: GeoJSON.Feature) => {
+        if (!feature) return { opacity: 0, interactive: false };
+        const props = (feature.properties || {}) as StationFeatureProperties;
+        const { lines = [] } = props;
         const isSelected = lines.some((l: string) =>
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
         );
 
         return {
-            fillColor: isSelected ? '#ffffff' : '#f8f9fa',
-            fillOpacity: 0.9,
-            color: '#333333',
-            weight: isSelected ? 2 : 1.2,
-            pane: 'railroad-glow', // Behind railroad lines and platforms
+            fillColor: isSelected ? '#ffffff' : '#a0aec0',
+            fillOpacity: isSelected ? 0.7 : 0.5,
+            stroke: false,
             interactive: false
         };
     }, [selectedLines, activeLine, hoveredLine]);
 
-    const platformStyle = useCallback((feature: GeoJSON.Feature) => {
-        const props = feature.properties as unknown as StationFeatureProperties;
-        if (!props || !props.lineKey) return { opacity: 0, interactive: false };
-        const { lineKey, lines, stationId } = props;
+    const platformStyle = useCallback((feature?: GeoJSON.Feature) => {
+        if (!feature) return { opacity: 0, interactive: false };
+        const props = (feature.properties || {}) as StationFeatureProperties;
+        if (!props.lineKey) return { opacity: 0, interactive: false };
+        const { lineKey, lines = [], stationId } = props;
         const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
         const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
         const isSelected = lines.some((l: string) =>
@@ -235,118 +207,134 @@ const Stations: React.FC<StationsProps> = ({
         ) || (localHoveredStation === stationId);
 
         const isTransfer = lines.length > 1;
+        let color = '#313131';
 
-        let color = '#313131'; // Standardized to black for schematic look (default)
-
-        // 8~11: Transfer stations = Black, Regular stations = Line Color
-        // 12+: All = Black
         if (effectiveZoom >= 8 && effectiveZoom <= 11) {
             if (!isTransfer) {
                 color = getColor(lineKey);
             }
         }
 
-        // Match thickness with RailroadLayer: Stage-based
-        let weight = 3.5;
+        let weight = 4.0;
         if (effectiveZoom <= 7) weight = Math.max(0.1, (effectiveZoom / 7) * 1.5);
         else if (effectiveZoom <= 11) weight = 2.5;
         else if (effectiveZoom <= 13) weight = 3.0;
 
-        const opacity = 1.0;
         const isDimmed = isFilterActive && !isSelected;
 
         return {
             color: isDimmed ? '#dddddd' : color,
             weight: isMobile ? weight * 1.4 : weight,
-            opacity: isDimmed ? 0.3 : opacity,
-            pane: 'station-interactions', // Platforms act as part of the station interaction layer
-            interactive: true,
-            lineCap: 'round',
-            lineJoin: 'round',
+            opacity: isDimmed ? 0.3 : 1.0,
+            pane: 'station-interactions',
+            interactive: false,
+            lineCap: 'round' as const,
+            lineJoin: 'round' as const,
         } as L.PathOptions;
     }, [selectedLines, activeLine, hoveredLine, localHoveredStation, effectiveZoom, getColor, isMobile]);
 
-    const platformCasingStyle = useCallback((feature: GeoJSON.Feature) => {
-        const props = feature.properties as unknown as StationFeatureProperties;
-        if (!props || !props.lineKey) return { opacity: 0, interactive: false };
-        const { lineKey, stationId } = props;
-        const isHovered = (hoveredLine === lineKey || localHoveredStation === stationId);
-        const isClicked = (activeLine === lineKey);
+    const getStandardCasingWeight = useCallback((zoom: number, isEmphasis: boolean) => {
+        let base = 12.5;
+        if (zoom <= 7) base = Math.max(0.2, (zoom / 7) * 5.0);
+        else if (zoom <= 11) base = 7.5;
+        else if (zoom <= 13) base = 10.0;
+
+        const factor = isMobile ? 1.4 : 1.0;
+        const emphasisOffset = isEmphasis ? (zoom >= 14 ? 15 : 10) : 0;
+        return (base * factor) + emphasisOffset;
+    }, [isMobile]);
+
+    const platformCasingStyle = useCallback((feature?: GeoJSON.Feature) => {
+        if (!feature || isMoving) return { opacity: 0, interactive: false };
+        const props = (feature.properties || {}) as StationFeatureProperties;
+        if (!props.lines) return { opacity: 0, interactive: false };
+        const { lines, stationId, isUsed } = props;
+
+        // 역 자체가 호버되거나, 역이 포함된 노선 중 하나가 호버된 경우
+        const isLineHovered = hoveredLine !== null && lines.includes(hoveredLine);
+        const isStationHovered = localHoveredStation === stationId;
+        const isHovered = isLineHovered || isStationHovered;
+
+        const isClicked = activeLine !== null && lines.includes(activeLine);
         const isDraggingOverall = !!dragStartStation;
 
-        if (!isHovered && !isClicked) return { opacity: 0, interactive: false };
+        if (!isHovered && !isClicked && !isUsed) return { opacity: 0, interactive: false };
 
-        const color = isClicked || (isDraggingOverall && isHovered) ? '#007AFF' : '#FFD700';
+        let color = '#FF3B30'; // 기본: 직접 호버(Red)
+        const isEmphasis = isClicked || isHovered || (isDraggingOverall && isHovered);
 
-        let weight = 3.5;
-        if (effectiveZoom <= 7) weight = Math.max(0.1, (effectiveZoom / 7) * 1.5);
-        else if (effectiveZoom <= 11) weight = 2.5;
-        else if (effectiveZoom <= 13) weight = 3.0;
+        if (isClicked || (isDraggingOverall && isHovered)) {
+            color = '#007AFF';
+        } else if (isLineHovered && !isStationHovered) {
+            // 노선 호버를 통해 강조되는 플랫폼은 노란색
+            color = '#FFD60A';
+        } else if (isUsed && !isHovered) {
+            color = '#2ecc71';
+        }
+
+        const casingWeight = getStandardCasingWeight(effectiveZoom, isEmphasis);
 
         return {
             color: color,
-            weight: (isMobile ? weight * 1.4 : weight) + (2.2 * (weight / 3.5)),
-            opacity: 1.0,
+            weight: casingWeight,
+            opacity: isUsed && !isHovered && !isClicked ? 0.6 : 1.0,
             pane: 'railroad-casing',
             interactive: false,
-            lineCap: 'round',
-            lineJoin: 'round'
+            lineCap: 'round' as const,
+            lineJoin: 'round' as const
         };
-    }, [hoveredLine, localHoveredStation, activeLine, dragStartStation, effectiveZoom, isMobile]);
+    }, [hoveredLine, localHoveredStation, activeLine, dragStartStation, isMoving, effectiveZoom, getStandardCasingWeight]);
 
+    const platformInteractionStyle = useCallback((feature?: GeoJSON.Feature) => {
+        if (!feature) return { opacity: 0, interactive: false };
+        return {
+            color: '#000',
+            weight: isMobile ? 24 : 16,
+            opacity: 0,
+            interactive: true,
+            lineCap: 'round' as const,
+            lineJoin: 'round' as const
+        };
+    }, [isMobile]);
 
-    const combinedStyle = useCallback((feature: GeoJSON.Feature) => {
-        if (feature.properties?.type === 'hull') return hullStyle(feature);
-        if (feature.properties?.type === 'platform') return platformStyle(feature);
-        return nodeStyle(feature) as L.PathOptions;
-    }, [hullStyle, platformStyle, nodeStyle]);
+    const nodeInteractionStyle = useCallback((feature?: GeoJSON.Feature) => {
+        if (!feature) return { opacity: 0, interactive: false };
+        return {
+            radius: isMobile ? 12 : 8,
+            fillColor: '#000',
+            fillOpacity: 0,
+            stroke: false,
+            interactive: true
+        };
+    }, [isMobile]);
+
+    const stationInteractionStyle = useCallback((f?: GeoJSON.Feature) => {
+        if (!f || !f.properties) return { opacity: 0, interactive: false };
+        if (f.properties.type === 'platform') return platformInteractionStyle(f);
+        return nodeInteractionStyle(f);
+    }, [platformInteractionStyle, nodeInteractionStyle]);
 
     const onEachStation = (feature: GeoJSON.Feature, layer: L.Layer) => {
-        const props = feature.properties as unknown as StationFeatureProperties;
-        if (!props) return;
-        const isNode = props.type === 'node';
-        const isPlatform = props.type === 'platform';
-        if (!isNode && !isPlatform) return;
-
+        const props = (feature.properties || {}) as StationFeatureProperties;
         const id = props.stationId;
-        const station = processedStations![id];
+        const station = id ? processedStations?.[id] : null;
         if (!station) return;
 
         const stationNameJA = station.name;
         const stationNameEN = station.name_en || '';
 
-        // Build formatted lines for tooltip
         const lineList = station.lines.map(l => {
             const [company, line] = l.includes('::') ? l.split('::') : ['Unknown', l];
-            const corp = (railData.companies as Record<string, Company>)[company];
             const lineData = (railData.lines as Record<string, Line>)[line];
-
-            const dispCorpJA = corp?.name || company;
-            const dispCorpEN = corp?.name_en || (corp?.name ? '' : company);
             const dispLineJA = lineData?.name || line;
             const dispLineEN = lineData?.name_en || (lineData?.name ? '' : line);
-
             const color = getColor(l);
 
             return `
-                <div style="
-                    display: flex; 
-                    flex-direction: column; 
-                    gap: 1px; 
-                    background: #f8f9fa; 
-                    border-left: 4px solid ${color}; 
-                    padding: 6px 10px; 
-                    margin-bottom: 6px; 
-                    border-radius: 6px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-                ">
+                <div style="display: flex; flex-direction: column; gap: 1px; background: #f8f9fa; border-left: 4px solid ${color}; padding: 6px 10px; margin-bottom: 6px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
                     <div style="display: flex; flex-direction: column; line-height: 1.2;">
                         <span style="font-size: 11px; color: #1a1a1a; font-weight: 800;">${dispLineJA}</span>
                         ${dispLineEN ? `<span style="font-size: 9px; color: #718096; font-weight: 500; opacity: 0.9;">${dispLineEN}</span>` : ''}
-                    </div>
-                    <div style="display: flex; flex-direction: column; line-height: 1.2; margin-top: 4px; border-top: 1px solid #edf2f7; padding-top: 2px;">
-                        <span style="font-size: 9px; color: #718096; font-weight: 600;">${dispCorpJA}</span>
-                        ${dispCorpEN ? `<span style="font-size: 8px; color: #a0aec0; font-weight: 500; opacity: 0.8;">${dispCorpEN}</span>` : ''}
                     </div>
                 </div>`;
         }).join('');
@@ -358,78 +346,49 @@ const Stations: React.FC<StationsProps> = ({
                     ${stationNameEN ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${stationNameEN}</span>` : ''}
                 </div>
                 <div style="display: flex; flex-direction: column;">${lineList}</div>
-            </div>
-        `;
+            </div>`;
 
         if (!isMobile) {
             layer.bindTooltip(tooltipContent, {
-                sticky: true,
-                direction: 'top',
-                offset: [0, -10],
-                opacity: 0.9,
-                pane: 'top-tooltips'
+                sticky: true, direction: 'top', offset: [0, -10], opacity: 0.9, pane: 'top-tooltips'
             });
         }
 
         layer.on({
-            click: (e) => {
-                L.DomEvent.stopPropagation(e);
-                handleStationClick(id);
-            },
-            mousedown: (e) => {
-                L.DomEvent.stopPropagation(e);
-                handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
-            },
-            mouseover: () => {
-                setLocalHoveredStation(id);
-                if (onStationHover) onStationHover(id);
-            },
-            mouseout: () => {
-                setLocalHoveredStation(null);
-                if (onStationHover) onStationHover(null);
-            },
-            mouseup: (e) => {
-                // Ensure drag ends if mouse released over node/platform
-                L.DomEvent.stopPropagation(e);
-                if (handleStationMouseUp) handleStationMouseUp(id);
-            }
+            click: (e) => { L.DomEvent.stopPropagation(e); handleStationClick(id); },
+            mousedown: (e) => { L.DomEvent.stopPropagation(e); handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]); },
+            mouseover: () => { setLocalHoveredStation(id); if (onStationHover) onStationHover(id); },
+            mouseout: () => { setLocalHoveredStation(null); if (onStationHover) onStationHover(null); },
+            mouseup: (e) => { L.DomEvent.stopPropagation(e); if (handleStationMouseUp) handleStationMouseUp(id); }
         });
     };
 
-    const geoJsonRef = useRef<L.GeoJSON>(null);
+    const hullRef = useRef<L.GeoJSON>(null);
+    const platformRef = useRef<L.GeoJSON>(null);
+    const nodeRef = useRef<L.GeoJSON>(null);
     const platformCasingRef = useRef<L.GeoJSON>(null);
+    const interactionRef = useRef<L.GeoJSON>(null);
 
-    // Update styles without remounting
     useEffect(() => {
-        if (geoJsonRef.current) {
-            geoJsonRef.current.setStyle(combinedStyle as any);
-        }
-        if (platformCasingRef.current) {
-            platformCasingRef.current.setStyle(platformCasingStyle as any);
-        }
-    }, [activeLine, hoveredLine, selectedLines, combinedStyle, platformCasingStyle, localHoveredStation]);
+        if (hullRef.current) hullRef.current.setStyle(hullStyle);
+        if (platformRef.current) platformRef.current.setStyle(platformStyle as L.PathOptions);
+        if (nodeRef.current) nodeRef.current.setStyle(nodeStyle as L.PathOptions);
+        if (platformCasingRef.current) platformCasingRef.current.setStyle(platformCasingStyle as L.PathOptions);
+        if (interactionRef.current) interactionRef.current.setStyle(stationInteractionStyle);
+    }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, platformInteractionStyle, nodeInteractionStyle, stationInteractionStyle, localHoveredStation, effectiveZoom]);
 
-    // 4. Force re-render key ONLY for structural changes
-    const bakedKey = useMemo(() => {
-        return `${effectiveZoom}_${allEntries.length}`;
-    }, [effectiveZoom, allEntries.length]);
+    const bakedKey = useMemo(() => `${effectiveZoom}_${allEntries.length}`, [effectiveZoom, allEntries.length]);
 
-    // 5. Intelligent Label Management (Collision Avoidance + Culling)
     const visibleLabels = useMemo(() => {
         if (effectiveZoom < 14 || !mapBounds) return [];
-
-        const paddedBounds = mapBounds.pad(0.1);
+        const paddedBounds = mapBounds.pad(0.5);
         const candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
-
         if (candidates.length === 0) return [];
 
-        // 1. Sort by priority: Selected/Active > Transfer > Visited > Default
         const prioritized = [...candidates].sort((a, b) => {
             const getPriority = (item: typeof a) => {
                 let p = 0;
-                const isSelected = item.data.lines.some(l =>
-                    selectedLines.includes(l) || activeLine === l || hoveredLine === l
-                );
+                const isSelected = item.data.lines.some(l => selectedLines.includes(l) || activeLine === l || hoveredLine === l);
                 if (isSelected) p += 1000;
                 if (item.data.lines.length > 1) p += 100;
                 if (item.data.isUsed) p += 50;
@@ -438,69 +397,73 @@ const Stations: React.FC<StationsProps> = ({
             return getPriority(b) - getPriority(a);
         });
 
-        // 2. Greedy Collision Detection
-        // minDistance in degrees. 0.0025 at zoom 14 is roughly 30-40px.
         const zoomFactor = Math.pow(2, 14 - realZoom);
         const minDistanceLat = 0.0025 * zoomFactor;
-        const minDistanceLon = 0.0045 * zoomFactor; // Wider for horizontal text labels
-
+        const minDistanceLon = 0.0045 * zoomFactor;
         const accepted: typeof prioritized = [];
 
         prioritized.forEach(candidate => {
-            const isSelected = candidate.data.lines.some(l =>
-                selectedLines.includes(l) || activeLine === l || hoveredLine === l
-            );
-
-            // Always show selected/active labels
-            if (isSelected) {
-                accepted.push(candidate);
-                return;
-            }
-
+            const isSelected = candidate.data.lines.some(l => selectedLines.includes(l) || activeLine === l || hoveredLine === l);
+            if (isSelected) { accepted.push(candidate); return; }
             const collision = accepted.some(acc => {
                 const dLat = Math.abs(acc.data.centroid[0] - candidate.data.centroid[0]);
                 const dLon = Math.abs(acc.data.centroid[1] - candidate.data.centroid[1]);
                 return dLat < minDistanceLat && dLon < minDistanceLon;
             });
-
-            if (!collision) {
-                accepted.push(candidate);
-            }
+            if (!collision) accepted.push(candidate);
         });
-
         return accepted;
     }, [allEntries, mapBounds, effectiveZoom, realZoom, selectedLines, activeLine, hoveredLine]);
 
     if (!processedStations) return null;
 
     return (
-        <>
-            {/* Platform Casing (Highlight) Layer */}
+        <React.Fragment>
+            <GeoJSON
+                ref={hullRef}
+                key={`hulls-${bakedKey}`}
+                data={visualsGeoJson as GeoJSON.FeatureCollection}
+                style={hullStyle as L.PathOptions}
+                filter={(feature) => feature.properties?.type === 'hull'}
+                pane="railroad-glow"
+            />
             <GeoJSON
                 ref={platformCasingRef}
                 key={`platforms-casing-${bakedKey}`}
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={platformCasingStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'platform'}
+                pane="railroad-casing"
             />
-
-            {/* Baked Layer: High-performance canvas rendering for points/lines */}
             <GeoJSON
-                ref={geoJsonRef}
-                key={`stations-baked-${bakedKey}`}
+                ref={platformRef}
+                key={`platforms-${bakedKey}`}
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
-                style={combinedStyle as L.PathOptions}
-                pointToLayer={(feature, latlng) => {
-                    if (feature.properties?.type === 'node') {
-                        return L.circleMarker(latlng, nodeStyle(feature) as L.CircleMarkerOptions);
-                    }
-                    return (L as any).layerGroup();
-                }}
+                style={platformStyle as L.PathOptions}
+                filter={(feature) => feature.properties?.type === 'platform'}
+                pane="station-interactions"
+                interactive={false}
+            />
+            <GeoJSON
+                ref={nodeRef}
+                key={`nodes-${bakedKey}`}
+                data={visualsGeoJson as GeoJSON.FeatureCollection}
+                style={nodeStyle as L.PathOptions}
+                filter={(feature) => feature.properties?.type === 'node'}
+                pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, nodeStyle(feature) as L.CircleMarkerOptions)}
+                pane="station-interactions"
+                interactive={false}
+            />
+            <GeoJSON
+                ref={interactionRef}
+                key={`station-interact-${bakedKey}`}
+                data={visualsGeoJson as GeoJSON.FeatureCollection}
+                filter={(feature) => feature.properties?.type === 'platform' || feature.properties?.type === 'node'}
+                style={stationInteractionStyle}
+                pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, nodeInteractionStyle(feature))}
+                pane="globalInteraction"
                 onEachFeature={onEachStation}
             />
-
-
-            {/* DOM Layer: Labels (Filtered by Viewport for performance) */}
             {effectiveZoom >= 14 && visibleLabels.map(({ id, data }) => (
                 <StationMarker
                     key={`marker-${id}`}
@@ -523,11 +486,11 @@ const Stations: React.FC<StationsProps> = ({
                     isMobile={isMobile}
                     isMoving={isMoving}
                     railData={railData}
-                    onlyLabels={true} // New prop for ultra-light rendering
-                    interactive={false} // Labels don't block interaction
+                    onlyLabels={true}
+                    interactive={false}
                 />
             ))}
-        </>
+        </React.Fragment>
     );
 };
 
