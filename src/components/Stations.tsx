@@ -146,8 +146,21 @@ const Stations: React.FC<StationsProps> = ({
                     }
                 });
 
-                if (points.length >= 3) {
-                    const hull = convexHull(points);
+                // 포인트가 2개 이상이면 Hull을 생성 (확장 포함)
+                if (points.length >= 2) {
+                    const expandedPoints: [number, number][] = [];
+                    // 약 80m~100m 정도의 확장 오프셋 (각지게 확장하기 위해 사각형 포인트 추가)
+                    const dLat = 0.0006;
+                    const dLon = 0.0009;
+
+                    points.forEach(([lat, lon]) => {
+                        expandedPoints.push([lat + dLat, lon + dLon]);
+                        expandedPoints.push([lat + dLat, lon - dLon]);
+                        expandedPoints.push([lat - dLat, lon + dLon]);
+                        expandedPoints.push([lat - dLat, lon - dLon]);
+                    });
+
+                    const hull = convexHull(expandedPoints);
                     if (hull.length >= 3) {
                         features.push({
                             type: 'Feature',
@@ -180,20 +193,39 @@ const Stations: React.FC<StationsProps> = ({
     }, [effectiveZoom]);
 
     const hullStyle = useCallback((feature?: GeoJSON.Feature) => {
-        if (!feature) return { opacity: 0, interactive: false };
-        const props = (feature.properties || {}) as StationFeatureProperties;
-        const { lines = [] } = props;
-        const isSelected = lines.some((l: string) =>
-            selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
-        );
+        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
+        const props = feature.properties as StationFeatureProperties;
+        const { lines = [], stationId } = props;
+
+        const isStationHovered = localHoveredStation === stationId;
+        const isLineHovered = hoveredLine !== null && lines.includes(hoveredLine);
+        const isHovered = isStationHovered || isLineHovered;
+        const isClicked = (activeLine !== null && lines.includes(activeLine));
+
+        if (!isHovered && !isClicked) {
+            return {
+                fillColor: '#4a5568',
+                fillOpacity: 0.12,
+                stroke: false,
+                interactive: false
+            };
+        }
+
+        // 강조 색상 결정 (클릭: Blue, 직접 호버: Red, 노선 호버: Yellow)
+        let color = '#FF3B30';
+        if (isClicked) {
+            color = '#007AFF';
+        } else if (isLineHovered && !isStationHovered) {
+            color = '#FFD60A';
+        }
 
         return {
-            fillColor: isSelected ? '#ffffff' : '#a0aec0',
-            fillOpacity: isSelected ? 0.7 : 0.5,
+            fillColor: color,
+            fillOpacity: 0.25, // 강조 시 내부를 해당 색상으로 채움
             stroke: false,
             interactive: false
         };
-    }, [selectedLines, activeLine, hoveredLine]);
+    }, [hoveredLine, activeLine, localHoveredStation]);
 
     const platformStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature) return { opacity: 0, interactive: false };
