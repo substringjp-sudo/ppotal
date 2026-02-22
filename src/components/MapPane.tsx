@@ -59,18 +59,19 @@ interface MapPaneProps {
     onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
     rulerTopOffset?: number;
+    onTransitionStateChange?: (isPending: boolean) => void;
 }
 
 const PANE_STYLES = {
-    topTooltips: { zIndex: 1000, pointerEvents: 'none' as const },
-    globalInteraction: { zIndex: 950 }, // 상호작용 전용 투명 레이어
-    stationLabels: { zIndex: 880, pointerEvents: 'none' as const },
-    stationInteractions: { zIndex: 850, pointerEvents: 'none' as const }, // 시각 전용
-    railroadLines: { zIndex: 820, pointerEvents: 'none' as const },    // 시각 전용
-    railroadCasing: { zIndex: 815, pointerEvents: 'none' as const },
-    railroadGlow: { zIndex: 810, pointerEvents: 'none' as const },
-    uiElements: { zIndex: 818, pointerEvents: 'none' as const },
-    background: { zIndex: 100 },
+    topTooltips: { zIndex: 1000, pointerEvents: 'none' as const, overflow: 'visible' },
+    globalInteraction: { zIndex: 950, overflow: 'visible' }, // 상호작용 전용 투명 레이어
+    stationLabels: { zIndex: 880, pointerEvents: 'none' as const, overflow: 'visible' },
+    stationInteractions: { zIndex: 850, pointerEvents: 'none' as const, overflow: 'visible' }, // 시각 전용
+    railroadLines: { zIndex: 820, pointerEvents: 'none' as const, overflow: 'visible' },    // 시각 전용
+    railroadCasing: { zIndex: 815, pointerEvents: 'none' as const, overflow: 'visible' },
+    railroadGlow: { zIndex: 810, pointerEvents: 'none' as const, overflow: 'visible' },
+    uiElements: { zIndex: 818, pointerEvents: 'none' as const, overflow: 'visible' },
+    background: { zIndex: 100, overflow: 'visible' },
 };
 
 const MapPane: React.FC<MapPaneProps> = ({
@@ -96,7 +97,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     draftTrip,
     onDraftComplete,
     onDragUpdate,
-    rulerTopOffset = 80
+    rulerTopOffset = 80,
+    onTransitionStateChange
 }) => {
     // 1. Map Data & State
     const map = useMap();
@@ -105,7 +107,12 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [mapReady, setMapReady] = useState(false);
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
     const [isMoving, setIsMoving] = useState(false);
+    const [isPending, startTransition] = React.useTransition();
     const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        onTransitionStateChange?.(isPending);
+    }, [isPending, onTransitionStateChange]);
 
     const { prefectures, municipalities } = useMapData();
     const { railData } = useRailData();
@@ -283,7 +290,10 @@ const MapPane: React.FC<MapPaneProps> = ({
         },
         zoomstart: () => setIsMoving(true),
         zoomend: (e) => {
-            setZoomLevel(e.target.getZoom());
+            const newZoom = e.target.getZoom();
+            startTransition(() => {
+                setZoomLevel(newZoom);
+            });
             setIsMoving(false);
         },
         movestart: () => setIsMoving(true),
@@ -291,8 +301,11 @@ const MapPane: React.FC<MapPaneProps> = ({
             // Do not update mapBounds during move to allow pre-rendering to handle motion
         },
         moveend: (e) => {
-            setMapBounds(e.target.getBounds());
-            setIsMoving(false);
+            const newBounds = e.target.getBounds();
+            startTransition(() => {
+                setMapBounds(newBounds);
+                setIsMoving(false);
+            });
             if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
         }
     });

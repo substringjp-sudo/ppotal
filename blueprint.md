@@ -24,7 +24,9 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Non-Blocking Overlay System**: All decorative and informational Leaflet panes (casing, glow, background, tooltips) are strictly configured with `pointer-events: none` to ensure 100% click pass-through to the core railroad network.
 - **Granular Trip Recording (ID-Based)**: Refactored the trip recording engine to capture exact station, section, and joint IDs. This transition from coordinate-based guessing to precise graph tracking allows for perfect reconstruction of journeys and zero-latency path highlighting.
 - **LOD (Level of Detail) Geometry Pre-simplification**: Implemented a 3-tier LOD system for all vector data (railroads, prefectures, municipalities). Data is pre-simplified into 'low', 'mid', and 'high' resolutions. The application dynamically switches between these resolutions based on zoom level (z5-8, z9-13, z14+), drastically reducing GPU vertex load and JS main-thread processing during map interactions.
-- **Aggressive Map Over-rendering**: Increased canvas renderer padding to 1.5 (creating a 4x4 viewport buffer). This ensures that panned areas are already pre-rendered, eliminating the 'empty map' effect during rapid movement.
+- **Aggressive Map Over-rendering**: Increased canvas renderer padding to 2.0 (creating a 5x5 viewport buffer). This ensures that panned areas are already pre-rendered while keeping computation load balanced.
+- **Background Resource Optimization**: Used React 18's `useTransition` to process heavy map updates (LOD switching, filtering) in the background. This keeps the UI responsive for dragging and clicking even during complex redraws.
+- **Integrated Feedback System**: A direct pipeline for user suggestions using Next.js Server Actions and Cloud Firestore, allowing for seamless data collection without an external backend.
 
 
 ## Implementation History & Current State
@@ -56,6 +58,8 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 54. **Final Runtime & Code Quality Fix**: Resolved a critical runtime crash where missing Leaflet panes (`railroad-glow`, etc.) caused the map to fail on initial load. Successfully eliminated all remaining ESLint warnings and errors, ensuring a 100% clean codebase for production. ✅
 55. **Stable Deployment**: Final deployment to Firebase Hosting confirmed with zero lint errors and verified functionality. ✅
 56. **LOD Geometry Implementation**: Successfully integrated pre-simplified data with a dynamic switching engine in `MapPane`. This eliminated the jittery 'smoothFactor' recalculation and ensured topologically sound boundaries even at low resolutions. ✅
+57. **Background UI Optimization**: Implemented `useTransition` for non-blocking map updates and refined the loading indicator to show "Optimizing View" during background tasks. ✅
+58. **User Feedback Pipeline**: Built a Firestore-backed feedback system. Users can now submit suggestions via a dedicated modal, with data handled securely by Next.js Server Actions and Firebase Admin SDK. ✅
 
 ## Deployment Plan
 1. **Pre-deployment Check**: Ran `npm run lint` and `npm run build` to ensure project stability. ✅

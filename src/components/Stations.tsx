@@ -449,7 +449,7 @@ const Stations: React.FC<StationsProps> = ({
 
     const visibleLabels = useMemo(() => {
         if (!mapBounds) return [];
-        const paddedBounds = mapBounds.pad(1.5);
+        const paddedBounds = mapBounds.pad(2.0);
 
         // 1. Initial Candidates: Stations within map bounds
         let candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));

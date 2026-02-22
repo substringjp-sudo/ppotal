@@ -8,10 +8,13 @@ import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
 import HowToModal from './HowToModal';
 import { useRailData } from '../hooks/useRailData';
+import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
 
 import { MapProps } from './Map';
+import MapLoadingIndicator from './MapLoadingIndicator';
+import FeedbackModal from './FeedbackModal';
 
 const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
     ssr: false
@@ -96,6 +99,8 @@ const MainPageClient = () => {
     const [tempPath, setTempPath] = React.useState<string[]>([]);
     const [editPanelHeight, setEditPanelHeight] = React.useState(72);
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
+    const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
+    const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
 
     React.useEffect(() => {
         const checkMobile = () => {
@@ -131,7 +136,10 @@ const MainPageClient = () => {
         }
     };
 
-    const { railData } = useRailData();
+    const { railData, isLoading: isRailLoading } = useRailData();
+    const { prefectures, municipalities, isLoading: isMapDataLoading } = useMapData();
+
+    const isTotalLoading = !isLoaded || isRailLoading || isMapDataLoading;
 
     React.useEffect(() => {
         if (railData && railData.hierarchy) {
@@ -344,6 +352,21 @@ const MainPageClient = () => {
                                 >
                                     Tips
                                 </button>
+                                <button
+                                    onClick={() => setIsFeedbackOpen(true)}
+                                    style={{
+                                        padding: '4px 10px',
+                                        borderRadius: '20px',
+                                        border: '1px solid #3b82f6',
+                                        backgroundColor: 'transparent',
+                                        color: '#3b82f6',
+                                        fontSize: '12px',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Feedback
+                                </button>
                             </div>
                         )}
                     </div>
@@ -405,22 +428,19 @@ const MainPageClient = () => {
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => setIsHowToOpen(true)}
+                                    onClick={() => setIsFeedbackOpen(true)}
                                     style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '50%',
-                                        border: '1px solid #3498db',
+                                        padding: '6px 12px',
+                                        borderRadius: '4px',
+                                        border: '1px solid #3b82f6',
                                         backgroundColor: '#fff',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: '#3498db',
+                                        fontSize: '14px',
                                         fontWeight: 'bold',
-                                        fontSize: '16px'
+                                        color: '#3b82f6',
+                                        cursor: 'pointer'
                                     }}
                                 >
-                                    ?
+                                    Feedback
                                 </button>
                             </div>
                         )
@@ -576,8 +596,10 @@ const MainPageClient = () => {
                                     onDraftComplete={handleDraftComplete}
                                     onDragUpdate={handleDragUpdate}
                                     rulerTopOffset={editPanelHeight}
+                                    onTransitionStateChange={setIsMapTransitioning}
                                 />
                             </MapWithNoSSR>
+                            <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
                         </div>
                         {!isMobile && lineDetailData && activeLine && railData && (
                             <div style={{ position: 'relative', zIndex: 1100 }}>
@@ -688,6 +710,11 @@ const MainPageClient = () => {
                 isOpen={isHowToOpen}
                 onClose={() => setIsHowToOpen(false)}
                 currentLanguage={language}
+            />
+
+            <FeedbackModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
             />
         </div >
     );

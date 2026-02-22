@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import { GeoJSON } from 'react-leaflet';
+import { sharedCanvasRenderer } from './Map';
 
 interface JapanMapProps {
     prefectures: GeoJSON.FeatureCollection | GeoJSON.Feature;
@@ -20,10 +21,9 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
     }, [onPrefectureClick]);
 
     const style = useCallback(() => {
-        // Removed simplification (smoothFactor) to avoid gaps between neighboring boundaries.
         if (outlineOnly) {
             let weight = 1.5;
-            const z = Math.round(zoom); // Round zoom for stable styles
+            const z = Math.round(zoom);
             if (z <= 7) weight = 0.5;
             else if (z <= 9) weight = 1.0;
 
@@ -49,10 +49,6 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
         };
     }, [outlineOnly, zoom]);
 
-    if (!prefectures) {
-        return null;
-    }
-
     const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
         if (interactive && onPrefectureClick) {
             layer.on({
@@ -61,12 +57,21 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
         }
     };
 
+    const pathOptions = useMemo(() => ({
+        renderer: sharedCanvasRenderer || undefined
+    }), []);
+
+    if (!prefectures) {
+        return null;
+    }
+
     return (
         <GeoJSON
             data={prefectures}
             style={style}
             onEachFeature={onEachFeature}
             interactive={interactive}
+            pathOptions={pathOptions}
         />
     );
 };

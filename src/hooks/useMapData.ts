@@ -10,10 +10,12 @@ export interface BoundaryLOD {
 export const useMapData = () => {
     const [prefectures, setPrefectures] = useState<BoundaryLOD | null>(null);
     const [municipalities, setMunicipalities] = useState<BoundaryLOD | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const loadBoundaries = async () => {
             try {
+                setIsLoading(true);
                 const [pLow, pMid, pHigh, mLow, mMid, mHigh] = await Promise.all([
                     fetch('/data/adm1_low.geojson').then(res => res.json()),
                     fetch('/data/adm1_mid.geojson').then(res => res.json()),
@@ -27,6 +29,8 @@ export const useMapData = () => {
                 setMunicipalities({ low: mLow, mid: mMid, high: mHigh });
             } catch (err) {
                 console.error("Error loading map data:", err);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -35,6 +39,7 @@ export const useMapData = () => {
 
     return {
         prefectures,
-        municipalities
+        municipalities,
+        isLoading
     };
 };

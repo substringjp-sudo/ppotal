@@ -5,6 +5,7 @@ import { GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { getLineColor } from '../lib/lineColors';
 import { RailData, Section } from '../types/railData';
+import { sharedCanvasRenderer } from './Map';
 
 interface RailroadLayerProps {
     railroadNetwork: RailData | null;
@@ -35,6 +36,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 }) => {
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
+
+    const pathOptions = useMemo(() => ({
+        renderer: sharedCanvasRenderer || undefined
+    }), []);
 
     useEffect(() => {
         let mounted = true;
@@ -402,6 +407,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     style={glowStyle}
                     interactive={false}
                     pane="railroad-glow"
+                    pathOptions={pathOptions}
                 />
             )}
 
@@ -414,6 +420,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     style={unifiedStyle}
                     interactive={false}
                     pane="railroad-lines"
+                    pathOptions={pathOptions}
                 />
             )}
 
@@ -427,6 +434,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     onEachFeature={onEachFeature}
                     interactive={!isDragging}
                     pane="globalInteraction"
+                    pathOptions={pathOptions}
                 />
             )}
         </>

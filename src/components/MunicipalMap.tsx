@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
+import { sharedCanvasRenderer } from './Map';
 
 interface MunicipalMapProps {
     municipalities: GeoJSON.FeatureCollection | GeoJSON.Feature | null;
@@ -13,8 +14,6 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => 
         let weight = 1;
         if (zoom <= 9) weight = 0.5;
 
-        // Removed simplification (smoothFactor) to avoid gaps between neighboring city/town boundaries.
-        // Keeping the geometry as is to maintain visual integrity.
         return {
             fillColor: '#ffffff',
             fillOpacity: 1.0,
@@ -25,6 +24,10 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => 
         };
     }, [zoom]);
 
+    const pathOptions = useMemo(() => ({
+        renderer: sharedCanvasRenderer || undefined
+    }), []);
+
     if (!municipalities) {
         return null;
     }
@@ -34,6 +37,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => 
             data={municipalities}
             style={style}
             interactive={false}
+            pathOptions={pathOptions}
         />
     );
 };

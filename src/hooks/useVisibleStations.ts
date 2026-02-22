@@ -68,14 +68,14 @@ export const useVisibleStations = ({
         const nameToId = new Map<string, string>();
 
         // Calculate visible grid keys with a generous buffer (0.3 degrees)
-        const buffer = 0.3;
         const keysToProcess: string[] = [];
 
         if (mapBounds) {
-            const minLat = mapBounds.getSouth() - buffer;
-            const maxLat = mapBounds.getNorth() + buffer;
-            const minLon = mapBounds.getWest() - buffer;
-            const maxLon = mapBounds.getEast() + buffer;
+            const padded = mapBounds.pad(2.0);
+            const minLat = padded.getSouth();
+            const maxLat = padded.getNorth();
+            const minLon = padded.getWest();
+            const maxLon = padded.getEast();
 
             for (let lat = Math.floor(minLat / GRID_SIZE) * GRID_SIZE; lat <= maxLat; lat += GRID_SIZE) {
                 for (let lon = Math.floor(minLon / GRID_SIZE) * GRID_SIZE; lon <= maxLon; lon += GRID_SIZE) {

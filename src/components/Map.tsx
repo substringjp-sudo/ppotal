@@ -9,8 +9,8 @@ export interface MapProps {
     children: React.ReactNode;
 }
 
-// Shared Canvas Renderer with large over-rendering (padding: 1.5 means 4x4 viewport area)
-export const sharedCanvasRenderer = typeof window !== 'undefined' ? L.canvas({ padding: 1.5 }) : null;
+// Shared Canvas Renderer with large over-rendering (padding: 2.0 means 5x5 viewport area)
+export const sharedCanvasRenderer = typeof window !== 'undefined' ? L.canvas({ padding: 2.0 }) : null;
 
 const Map: React.FC<MapProps> = ({ children }) => {
     return (
