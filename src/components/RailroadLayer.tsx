@@ -33,6 +33,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     usedSectionIds = new Set(),
     isDragging = false
 }) => {
+    const lastMouseDownPos = useRef<L.LatLng | null>(null);
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
     const isNoneExplicitlySelected = useMemo(() => selectionSet.has("__NONE__"), [selectionSet]);
     const isFilterActive = useMemo(() => {
@@ -199,8 +200,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // 2. Determine Weight (Standardized to match Stations)
         let weight = 4.0;
         const z = Math.round(zoomLevel);
-        if (z <= 7) weight = Math.max(0.1, (z / 7) * 1.5);
-        else if (z <= 11) weight = 2.5;
+        if (z <= 11) weight = 2.2;
         else if (z <= 13) weight = 3.0;
 
         // 3. Determine Opacity
@@ -222,33 +222,39 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
 
     const glowStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
-        if (!feature || !feature.properties || isMoving) return { opacity: 0, interactive: false };
+        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
         const isUsed = feature.properties.isUsed;
         const id = feature.properties.id;
         const isHovered = !isDragging && hoveredLine === id;
         const isClicked = activeLine === id;
 
-        if (!isUsed && !isHovered && !isClicked) return { opacity: 0, interactive: false };
+        // 이동 중일 때는 호버/클릭 상태를 무시하고 오직 방문 경로(isUsed)만 표시
+        const showGlow = isUsed || (!isMoving && (isHovered || isClicked));
+        if (!showGlow) return { opacity: 0, interactive: false };
 
-        // 색상 우선순위: 클릭(Blue) > 호버(Yellow) > 방문지(Green) 
-        let color = '#FFD60A'; // 호버: 시스템 옐로우
-        const isEmphasis = isClicked || isHovered;
+        // 강조 색상 결정
+        let color = '#FFD60A'; // 기본: 호버(Yellow)
 
-        if (isClicked) {
+        // 지도 이동 중에는 선택 상태보다 방문 경로(Green)를 최우선으로 표시
+        if (isMoving && isUsed) {
+            color = '#2ecc71';
+        } else if (isClicked) { // isDraggingOverall and isLineHovered/isStationHovered are not defined in this scope. Reverting to original logic for these.
             color = '#007AFF';
         } else if (isUsed && !isHovered) {
-            color = '#2ecc71'; // Visited: Green Glow
+            color = '#2ecc71';
         }
 
-        // 표준화된 테두리 두께 로직 적용 (두께 절반으로 축소)
-        let baseWeight = 12.5;
+        // 강조 여부 (클릭, 호버, 혹은 방문한 경로 모두 동일한 두께 적용)
+        const isEmphasis = isClicked || isHovered || isUsed;
+
+        // 표준화된 테두리 두께 로직 적용 (두께 다시 절반으로 축소)
+        let baseWeight = 6.25;
         const z = Math.round(zoomLevel);
-        if (z <= 7) baseWeight = Math.max(0.2, (z / 7) * 5.0);
-        else if (z <= 11) baseWeight = 7.5;
-        else if (z <= 13) baseWeight = 10.0;
+        if (z <= 11) baseWeight = 4.0;
+        else if (z <= 13) baseWeight = 5.0;
 
         const factor = isMobile ? 1.4 : 1.0;
-        const emphasisOffset = isEmphasis ? (z >= 14 ? 15 : 10) : 0;
+        const emphasisOffset = isEmphasis ? (z >= 14 ? 7.5 : 5.0) : 0;
         const finalWeight = (baseWeight * factor) + emphasisOffset;
 
         return {
@@ -319,10 +325,25 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         let tooltipTimeout: NodeJS.Timeout | null = null;
 
         layer.on({
-            click: (e) => {
+            mousedown: (e: L.LeafletMouseEvent) => {
+                lastMouseDownPos.current = e.latlng;
+            },
+            click: (e: L.LeafletMouseEvent) => {
                 if (isDragging) return;
+
+                // 마우스가 눌렸을 때와 뗐을 때의 거리를 체크하여 '진짜 클릭'인지 판별
+                if (lastMouseDownPos.current) {
+                    const distance = e.latlng.distanceTo(lastMouseDownPos.current);
+                    // 5미터 이상 이동했다면 드래그로 간주하고 무시 (클릭 판정 거리)
+                    if (distance > 5) {
+                        lastMouseDownPos.current = null;
+                        return;
+                    }
+                }
+
                 L.DomEvent.stopPropagation(e);
                 onRailroadClick(props.id);
+                lastMouseDownPos.current = null;
             },
             mouseover: () => {
                 if (!isMobile && !isMoving && !isDragging) {

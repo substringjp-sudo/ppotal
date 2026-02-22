@@ -104,6 +104,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
         // We don't stop propagation here to allow potential scrolling if drag doesn't move much
     };
 
+    const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
     const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
         if (dragStartNode) {
             const coord = getSvgCoord(e);
@@ -122,11 +124,48 @@ const TubeMap: React.FC<TubeMapProps> = ({
             });
             setNearestNode(found);
 
+            // Auto-scroll when dragging near edges
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                let clientX: number | undefined;
+                if ('clientX' in e) {
+                    clientX = (e as React.MouseEvent).clientX;
+                } else if ('touches' in e && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                }
+
+                if (clientX !== undefined) {
+                    const threshold = 50; // pixels from edge
+                    const speed = 15; // scroll speed
+
+                    if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
+
+                    scrollIntervalRef.current = setInterval(() => {
+                        if (containerRef.current && clientX !== undefined) {
+                            if (clientX < rect.left + threshold) {
+                                containerRef.current.scrollLeft -= speed;
+                            } else if (clientX > rect.right - threshold) {
+                                containerRef.current.scrollLeft += speed;
+                            } else {
+                                if (scrollIntervalRef.current) {
+                                    clearInterval(scrollIntervalRef.current);
+                                    scrollIntervalRef.current = null;
+                                }
+                            }
+                        }
+                    }, 20);
+                }
+            }
+
             if (e.cancelable) e.preventDefault(); // Prevent scroll while dragging
         }
     };
 
     const handleEnd = (nodeId: string, e: React.MouseEvent | React.TouchEvent) => {
+        if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = null;
+        }
         if (dragStartNode) {
             if (dragStartNode !== nodeId) {
                 onPathCreate?.(dragStartNode, nodeId);
@@ -143,6 +182,10 @@ const TubeMap: React.FC<TubeMapProps> = ({
     };
 
     const handleGlobalEnd = () => {
+        if (scrollIntervalRef.current) {
+            clearInterval(scrollIntervalRef.current);
+            scrollIntervalRef.current = null;
+        }
         setDragStartNode(null);
         setMousePos(null);
         setNearestNode(null);

@@ -19,9 +19,11 @@ interface SidebarProps {
     onLanguageChange?: (lang: Language) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, visitedLineLengths = {}, activeLine, onLineClick, language }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, language }) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
+
+    const effectiveLineLengths = propLineLengths && Object.keys(propLineLengths).length > 0 ? propLineLengths : hookLineLengths;
     const [sortMode, setSortMode] = useState<'ja' | 'usage'>('ja');
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
@@ -253,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             onToggleCompany={handleCompanyToggle}
                             expandedCompanies={expandedCompanies}
                             toggleCompany={toggleCompany}
-                            lineLengths={hookLineLengths}
+                            lineLengths={effectiveLineLengths}
                             visitedLineLengths={visitedLineLengths}
                             sortMode={sortMode}
                             activeLine={activeLine}

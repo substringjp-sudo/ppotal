@@ -104,7 +104,7 @@ const Stations: React.FC<StationsProps> = ({
         });
 
         const nodeAcceptedEntries: typeof allEntries = [];
-        const nodeCullDist = effectiveZoom === 8 ? 0.012 : (effectiveZoom === 12 ? 0.0015 : 0);
+        const nodeCullDist = effectiveZoom === 8 ? 0.012 : (effectiveZoom === 10 ? 0.0015 : 0);
 
         allEntries.forEach((entry) => {
             const { id, data } = entry;
@@ -180,7 +180,7 @@ const Stations: React.FC<StationsProps> = ({
     const nodeStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature) return { opacity: 0, interactive: false };
         let radius = 3;
-        if (effectiveZoom === 12) radius = 5;
+        if (effectiveZoom === 10) radius = 5;
         if (effectiveZoom >= 14) radius = 7;
 
         return {
@@ -248,8 +248,7 @@ const Stations: React.FC<StationsProps> = ({
         }
 
         let weight = 4.0;
-        if (effectiveZoom <= 7) weight = Math.max(0.1, (effectiveZoom / 7) * 1.5);
-        else if (effectiveZoom <= 11) weight = 2.5;
+        if (effectiveZoom <= 11) weight = 2.2;
         else if (effectiveZoom <= 13) weight = 3.0;
 
         const isDimmed = isFilterActive && !isSelected;
@@ -266,18 +265,17 @@ const Stations: React.FC<StationsProps> = ({
     }, [selectedLines, activeLine, hoveredLine, localHoveredStation, effectiveZoom, getColor, isMobile]);
 
     const getStandardCasingWeight = useCallback((zoom: number, isEmphasis: boolean) => {
-        let base = 12.5;
-        if (zoom <= 7) base = Math.max(0.2, (zoom / 7) * 5.0);
-        else if (zoom <= 11) base = 7.5;
-        else if (zoom <= 13) base = 10.0;
+        let base = 6.25;
+        if (zoom <= 11) base = 4.0;
+        else if (zoom <= 13) base = 5.0;
 
         const factor = isMobile ? 1.4 : 1.0;
-        const emphasisOffset = isEmphasis ? (zoom >= 14 ? 15 : 10) : 0;
+        const emphasisOffset = isEmphasis ? (zoom >= 14 ? 7.5 : 5.0) : 0;
         return (base * factor) + emphasisOffset;
     }, [isMobile]);
 
     const platformCasingStyle = useCallback((feature?: GeoJSON.Feature) => {
-        if (!feature || isMoving) return { opacity: 0, interactive: false };
+        if (!feature) return { opacity: 0, interactive: false };
         const props = (feature.properties || {}) as StationFeatureProperties;
         if (!props.lines) return { opacity: 0, interactive: false };
         const { lines, stationId, isUsed } = props;
@@ -290,12 +288,18 @@ const Stations: React.FC<StationsProps> = ({
         const isClicked = activeLine !== null && lines.includes(activeLine);
         const isDraggingOverall = !!dragStartStation;
 
-        if (!isHovered && !isClicked && !isUsed) return { opacity: 0, interactive: false };
+        // 이동 중일 때는 호버/클릭 상태를 무시하고 오직 방문 경로(isUsed)만 표시
+        const showCasing = !!isUsed || (!isMoving && (isHovered || isClicked));
+        if (!showCasing) return { opacity: 0, interactive: false };
 
         let color = '#FF3B30'; // 기본: 직접 호버(Red)
-        const isEmphasis = isClicked || isHovered || (isDraggingOverall && isHovered);
+        // 강조 여부 (클릭, 호버, 혹은 방문한 경로 모두 동일한 두께 적용)
+        const isEmphasis = !!isClicked || !!isHovered || (isDraggingOverall && !!isHovered) || !!isUsed;
 
-        if (isClicked || (isDraggingOverall && isHovered)) {
+        if (isMoving && isUsed) {
+            // 지도 이동 중에는 선택 상태보다 방문 경로(Green)를 최우선으로 표시
+            color = '#2ecc71';
+        } else if (isClicked || (isDraggingOverall && isHovered)) {
             color = '#007AFF';
         } else if (isLineHovered && !isStationHovered) {
             // 노선 호버를 통해 강조되는 플랫폼은 노란색
@@ -412,9 +416,21 @@ const Stations: React.FC<StationsProps> = ({
     const bakedKey = useMemo(() => `${effectiveZoom}_${allEntries.length}`, [effectiveZoom, allEntries.length]);
 
     const visibleLabels = useMemo(() => {
-        if (effectiveZoom < 14 || !mapBounds) return [];
+        if (realZoom < 10 || !mapBounds) return [];
         const paddedBounds = mapBounds.pad(0.5);
-        const candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
+
+        // Filter candidates based on zoom level
+        // At zoom 10-13 (realZoom < 14), show only transfer stations
+        // At zoom 14+, show all stations
+        let candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
+
+        if (realZoom < 14) {
+            candidates = candidates.filter(({ data }) => {
+                const isTransfer = data.lines.length > 1;
+                return isTransfer;
+            });
+        }
+
         if (candidates.length === 0) return [];
 
         const prioritized = [...candidates].sort((a, b) => {
@@ -430,8 +446,8 @@ const Stations: React.FC<StationsProps> = ({
         });
 
         const zoomFactor = Math.pow(2, 14 - realZoom);
-        const minDistanceLat = 0.0025 * zoomFactor;
-        const minDistanceLon = 0.0045 * zoomFactor;
+        const minDistanceLat = 0.0035 * zoomFactor; // 0.0025 -> 0.0035
+        const minDistanceLon = 0.0070 * zoomFactor; // 0.0045 -> 0.0070
         const accepted: typeof prioritized = [];
 
         prioritized.forEach(candidate => {
@@ -496,7 +512,7 @@ const Stations: React.FC<StationsProps> = ({
                 pane="globalInteraction"
                 onEachFeature={onEachStation}
             />
-            {effectiveZoom >= 14 && visibleLabels.map(({ id, data }) => (
+            {visibleLabels.map(({ id, data }) => (
                 <StationMarker
                     key={`marker-${id}`}
                     id={id}
@@ -506,7 +522,11 @@ const Stations: React.FC<StationsProps> = ({
                     activeLine={activeLine}
                     hoveredLine={hoveredLine}
                     zoom={realZoom}
-                    zoomConfig={{ baseRadius: 1, weightValue: 1, zoomCategory: 1 }}
+                    zoomConfig={{
+                        baseRadius: realZoom >= 14 ? 1.5 : 1,
+                        weightValue: realZoom >= 14 ? 1.5 : 1,
+                        zoomCategory: effectiveZoom >= 12 ? 4 : (effectiveZoom >= 8 ? 2 : 1)
+                    }}
                     getColor={getColor}
                     handleStationClick={() => handleStationClick(id, data.lines)}
                     onStationMouseDown={(id, coords) => handleStationMouseDown(id, coords)}

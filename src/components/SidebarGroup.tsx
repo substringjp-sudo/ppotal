@@ -284,9 +284,36 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                                 </span>
                                             )}
                                         </div>
-                                        <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
-                                            ({companyVisitedCount}/{companyTotalLines})
-                                        </span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {(() => {
+                                                let totalDist = 0;
+                                                let visitedDist = 0;
+                                                Object.keys(lines).forEach(lId => {
+                                                    const key = `${companyId}::${lId}`;
+                                                    totalDist += lineLengths[key] || 0;
+                                                    visitedDist += visitedLineLengths[key] || 0;
+                                                });
+                                                if (totalDist === 0) return null;
+                                                const companyPercent = (visitedDist / totalDist) * 100;
+                                                const colors = getProgressColor(companyPercent);
+                                                return (
+                                                    <span style={{
+                                                        fontSize: '9px',
+                                                        fontWeight: '800',
+                                                        backgroundColor: colors.bg,
+                                                        color: colors.text,
+                                                        padding: '0px 4px',
+                                                        borderRadius: '4px',
+                                                        transition: 'all 0.3s'
+                                                    }}>
+                                                        {companyPercent.toFixed(companyPercent >= 100 ? 0 : 1)}%
+                                                    </span>
+                                                );
+                                            })()}
+                                            <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
+                                                ({companyVisitedCount}/{companyTotalLines})
+                                            </span>
+                                        </div>
                                     </span>
                                 </div>
                                 {isExpanded && (

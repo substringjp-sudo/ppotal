@@ -58,7 +58,7 @@ export const useVisibleStations = ({
     // 2. Perform Visible Filtering using Spatial Index
     const effectiveZoom = useMemo(() => {
         if (zoomLevel >= 14) return 14;
-        if (zoomLevel >= 12) return 12;
+        if (zoomLevel >= 10) return 10;
         if (zoomLevel >= 8) return 8;
         return 1; // Always process data for platforms
     }, [zoomLevel]);

@@ -158,9 +158,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         recordedTrips.forEach(trip => {
             if (trip.path) {
                 trip.path.forEach((nodeId: string) => {
-                    const node = graph.getNode(nodeId);
-                    if (node && node.name) stationSet.add(node.name);
-                    else stationSet.add(nodeId);
+                    stationSet.add(nodeId);
                 });
             }
             if (trip.sectionIds) {

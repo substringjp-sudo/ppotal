@@ -375,28 +375,29 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                     icon={L.divIcon({
                         className: 'station-label-icon',
                         html: `
-                            <div style="position: relative; display: flex; flex-direction: column; align-items: center; z-index: 500;">
+                            <div style="position: relative; display: flex; flex-direction: column; align-items: center; z-index: 500; transition: all 0.2s ease;">
                                 <div style="
                                     margin-top: ${(isHighlighted ? 12 : 10) / 2 + 4}px;
                                     font-size: 11px; 
-                                    font-weight: ${isSelected ? '800' : '700'}; 
-                                    color: ${isSelected ? '#000' : '#4a5568'};
-                                    background: rgba(255, 255, 255, 0.75);
+                                    font-weight: ${showTooltip || isSelected ? '800' : '700'}; 
+                                    color: ${showTooltip ? '#fff' : (isSelected ? '#000' : '#4a5568')};
+                                    background: ${showTooltip ? '#FF3B30' : 'rgba(255, 255, 255, 0.85)'};
                                     backdrop-filter: blur(2px);
-                                    padding: 1px 4px;
-                                    border-radius: 3px;
-                                    border: 1px solid rgba(255,255,255,0.8);
-                                    text-shadow: 0 0 2px #fff;
+                                    padding: 2px 6px;
+                                    border-radius: 4px;
+                                    border: 1px solid ${showTooltip ? '#FF3B30' : 'rgba(255,255,255,0.9)'};
+                                    text-shadow: ${showTooltip ? 'none' : '0 0 2px #fff'};
                                     white-space: nowrap; 
-                                    transform: translateX(-50%); 
+                                    transform: translateX(-50%) ${showTooltip ? 'scale(1.1)' : 'scale(1)'}; 
                                     position: absolute; 
                                     top: 0; 
                                     pointer-events: none;
-                                    opacity: ${isSelected ? 1 : 0.9};
-                                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                                    opacity: ${showTooltip || isSelected ? 1 : 0.9};
+                                    box-shadow: ${showTooltip ? '0 4px 12px rgba(255,59,48,0.4)' : '0 2px 4px rgba(0,0,0,0.1)'};
+                                    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                                 ">
                                     <div style="font-weight: 800; font-size: 11px; line-height: 1.1;">${station.name}</div>
-                                    ${station.name_en ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 0px; line-height: 1;">${station.name_en}</div>` : ''}
+                                    ${station.name_en ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 1px; line-height: 1;">${station.name_en}</div>` : ''}
                                 </div>
                             </div>
                         `,
