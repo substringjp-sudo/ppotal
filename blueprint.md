@@ -60,6 +60,7 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 56. **LOD Geometry Implementation**: Successfully integrated pre-simplified data with a dynamic switching engine in `MapPane`. This eliminated the jittery 'smoothFactor' recalculation and ensured topologically sound boundaries even at low resolutions. ✅
 57. **Background UI Optimization**: Implemented `useTransition` for non-blocking map updates and refined the loading indicator to show "Optimizing View" during background tasks. ✅
 58. **User Feedback Pipeline**: Built a Firestore-backed feedback system. Users can now submit suggestions via a dedicated modal, with data handled securely by Next.js Server Actions and Firebase Admin SDK. ✅
+59. **Feedback System Internationalization**: Refactored the feedback interface to support multiple languages (English, Korean, Japanese) using the centralized translation system. The interface now defaults to English as requested. ✅
 
 ## Deployment Plan
 1. **Pre-deployment Check**: Ran `npm run lint` and `npm run build` to ensure project stability. ✅

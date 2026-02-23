@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-import { Language } from '../lib/translations';
+import { Language, UI_TRANSLATIONS } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
 import HowToModal from './HowToModal';
@@ -365,7 +365,7 @@ const MainPageClient = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    Feedback
+                                    {UI_TRANSLATIONS.feedback_button[language]}
                                 </button>
                             </div>
                         )}
@@ -440,7 +440,7 @@ const MainPageClient = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    Feedback
+                                    {UI_TRANSLATIONS.feedback_button[language]}
                                 </button>
                             </div>
                         )
@@ -715,6 +715,7 @@ const MainPageClient = () => {
             <FeedbackModal
                 isOpen={isFeedbackOpen}
                 onClose={() => setIsFeedbackOpen(false)}
+                language={language}
             />
         </div >
     );

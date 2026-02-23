@@ -1,43 +1,58 @@
 'use client';
 
 import React, { useState } from 'react';
-import { submitFeedback } from '../app/actions/feedback';
+import { db } from '../lib/firebase';
+import { UI_TRANSLATIONS, Language } from '../lib/translations';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface FeedbackModalProps {
     isOpen: boolean;
     onClose: () => void;
+    language: Language;
 }
 
-const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
+const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language }) => {
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+    const t = UI_TRANSLATIONS;
+
     if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!content || content.trim().length === 0) {
+            setMessage({ type: 'error', text: t.feedback_empty_content[language] });
+            return;
+        }
+
         setIsSubmitting(true);
         setMessage(null);
 
-        const formData = new FormData();
-        formData.append('content', content);
-        formData.append('author', author);
+        try {
+            await addDoc(collection(db, 'feedbacks'), {
+                content,
+                author: author || 'Anonymous',
+                type: 'General',
+                createdAt: serverTimestamp(),
+                status: 'new'
+            });
 
-        const result = await submitFeedback(formData);
-
-        setIsSubmitting(false);
-        if (result.success) {
-            setMessage({ type: 'success', text: '건의사항이 성공적으로 전달되었습니다. 감사합니다!' });
+            setMessage({ type: 'success', text: t.feedback_success[language] });
             setContent('');
             setAuthor('');
             setTimeout(() => {
                 onClose();
                 setMessage(null);
             }, 2000);
-        } else {
-            setMessage({ type: 'error', text: result.error || '오류가 발생했습니다.' });
+        } catch (error) {
+            console.error('Feedback submission error:', error);
+            setMessage({ type: 'error', text: t.feedback_error[language] });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -87,14 +102,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                     fontWeight: '700',
                     color: '#1e293b'
                 }}>
-                    사용자 건의함 📮
+                    {t.feedback_title[language]}
                 </h2>
                 <p style={{
                     color: '#64748b',
                     marginBottom: '24px',
                     fontSize: '15px'
                 }}>
-                    기능 제안, 버그 보고 등 의견을 자유롭게 남겨주세요.
+                    {t.feedback_description[language]}
                 </p>
 
                 <form onSubmit={handleSubmit}>
@@ -106,13 +121,13 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             fontSize: '14px',
                             color: '#475569'
                         }}>
-                            의견 내용
+                            {t.feedback_content_label[language]}
                         </label>
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             required
-                            placeholder="개선되었으면 하는 점이나 추가되었으면 하는 기능을 적어주세요."
+                            placeholder={t.feedback_placeholder[language]}
                             style={{
                                 width: '100%',
                                 height: '150px',
@@ -135,13 +150,13 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             fontSize: '14px',
                             color: '#475569'
                         }}>
-                            성함 또는 닉네임 (선택)
+                            {t.feedback_author_label[language]}
                         </label>
                         <input
                             type="text"
                             value={author}
                             onChange={(e) => setAuthor(e.target.value)}
-                            placeholder="익명"
+                            placeholder={t.feedback_author_placeholder[language]}
                             style={{
                                 width: '100%',
                                 padding: '12px 16px',
@@ -186,7 +201,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
                         }}
                     >
-                        {isSubmitting ? '전송 중...' : '의견 보내기'}
+                        {isSubmitting ? t.feedback_submitting[language] : t.feedback_submit[language]}
                     </button>
                 </form>
             </div>

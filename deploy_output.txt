@@ -15,7 +15,7 @@
 
   Creating an optimized production build ...
 
-??Compiled successfully in 1940.6ms
+??Compiled successfully in 2.2s
 
   Running TypeScript ...
 
@@ -31,7 +31,7 @@
 
   Generating static pages using 15 workers (6/8) 
 
-??Generating static pages using 15 workers (8/8) in 767.9ms
+??Generating static pages using 15 workers (8/8) in 1037.2ms
 
   Finalizing page optimization ...
 
@@ -46,23 +46,11 @@ Route (app)
 ????/sitemap.xml
 
 
-
 ?? (Static)  prerendered as static content
 
 
+Building a Cloud Function to run this application. This is needed due to:
+ ??route with server action /
 
-[1m[37m===[39m Deploying to 'jprail'...[22m
 
-[36m[1mi [22m[39m deploying [1mhosting[22m
-[36m[1mi  hosting[jprail]:[22m[39m beginning deploy...
-[36m[1mi  hosting[jprail]:[22m[39m found 69 files in [1m.firebase\jprail\hosting[22m
-[32m[1m+  hosting[jprail]:[22m[39m file upload complete
-[36m[1mi  hosting[jprail]:[22m[39m finalizing version...
-[32m[1m+  hosting[jprail]:[22m[39m version finalized
-[36m[1mi  hosting[jprail]:[22m[39m releasing new version...
-[32m[1m+  hosting[jprail]:[22m[39m release complete
-
-[32m[1m+ [22m[39m [1m[4mDeploy complete![24m[22m
-
-[1mProject Console:[22m https://console.firebase.google.com/project/jprail/overview
-[1mHosting URL:[22m https://jprail.web.app
+[1m[31mError:[39m[22m An unexpected error has occurred.
