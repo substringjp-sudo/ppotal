@@ -9,8 +9,12 @@ export interface MapProps {
     children: React.ReactNode;
 }
 
-// Shared Canvas Renderer with large over-rendering (padding: 2.0 means 5x5 viewport area)
+// Shared Canvas Renderer for visual layers (padding: 2.0 means 5x5 viewport area)
 export const sharedCanvasRenderer = typeof window !== 'undefined' ? L.canvas({ padding: 2.0 }) : null;
+
+// Shared SVG Renderer for interaction layers (Perfect hit detection)
+// Must be associated with master-interactions pane to be above visual layers
+export const sharedSvgRenderer = typeof window !== 'undefined' ? L.svg({ padding: 0.5, pane: 'master-interactions' }) : null;
 
 const Map: React.FC<MapProps> = ({ children }) => {
     return (

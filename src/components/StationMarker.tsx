@@ -57,8 +57,10 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                         ">
-                            <div style="font-weight: 800; font-size: 11px; line-height: 1.1;">${station.name}</div>
-                            ${station.name_en ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; margin-top: 1px; line-height: 1;">${station.name_en}</div>` : ''}
+                            <div style="font-weight: 800; font-size: 11px; line-height: 1.1; margin-bottom: 1px;">
+                                ${station.name_en || station.name}
+                            </div>
+                            ${station.name_en ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; line-height: 1;">${station.name}</div>` : ''}
                         </div>
                     </div>
                 `,

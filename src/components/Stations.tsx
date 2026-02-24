@@ -7,6 +7,7 @@ import { MapStyleSettings } from './MainPageClient';
 import { Language } from '../lib/translations';
 import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
+import { sharedSvgRenderer } from './Map';
 import { RailData } from '../types/railData';
 import { convexHull } from '../lib/geoUtils';
 import { Line } from '../types/railData';
@@ -41,6 +42,7 @@ interface StationsProps {
     handleStationMouseUp?: (id: string) => void;
     onStationHover?: (id: string | null) => void;
     dragStartStation: string | null;
+    showLabels?: boolean;
 }
 
 const Stations: React.FC<StationsProps> = ({
@@ -59,7 +61,8 @@ const Stations: React.FC<StationsProps> = ({
     handleStationMouseDown,
     handleStationMouseUp,
     onStationHover,
-    dragStartStation
+    dragStartStation,
+    showLabels = false
 }) => {
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
@@ -68,7 +71,13 @@ const Stations: React.FC<StationsProps> = ({
         let mounted = true;
         const checkPanes = () => {
             if (!mounted) return;
-            const required = ['railroad-glow', 'railroad-casing', 'station-interactions', 'globalInteraction', 'station-labels'];
+            const required = [
+                'railroad-glow',
+                'railroad-casing',
+                'railroad-lines',
+                'master-interactions',
+                'station-labels'
+            ];
             const allReady = required.every(p => !!map.getPane(p));
             if (allReady) {
                 setPanesReady(true);
@@ -201,7 +210,7 @@ const Stations: React.FC<StationsProps> = ({
             fillColor: '#000',
             stroke: false,
             fillOpacity: 0,
-            pane: 'station-interactions'
+            pane: 'railroad-lines'
         };
     }, [effectiveZoom]);
 
@@ -269,7 +278,7 @@ const Stations: React.FC<StationsProps> = ({
             color: isDimmed ? '#dddddd' : color,
             weight: isMobile ? weight * 1.4 : weight,
             opacity: isDimmed ? 0.3 : 1.0,
-            pane: 'station-interactions',
+            pane: 'railroad-lines',
             interactive: false,
             lineCap: 'round' as const,
             lineJoin: 'round' as const,
@@ -328,33 +337,37 @@ const Stations: React.FC<StationsProps> = ({
         };
     }, [hoveredLine, localHoveredStation, activeLine, dragStartStation, isMoving, effectiveZoom, getStandardCasingWeight]);
 
-    const platformInteractionStyle = useCallback((feature?: GeoJSON.Feature) => {
+    const platformInteractionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
         if (!feature) return { opacity: 0, interactive: false };
         return {
             color: '#000',
             weight: isMobile ? 24 : 16,
-            opacity: 0,
+            opacity: 0.0001,
+            pane: 'master-interactions',
             interactive: true,
             lineCap: 'round' as const,
-            lineJoin: 'round' as const
+            lineJoin: 'round' as const,
+            renderer: sharedSvgRenderer || undefined
         };
     }, [isMobile]);
 
-    const nodeInteractionStyle = useCallback((feature?: GeoJSON.Feature) => {
+    const nodeInteractionStyle = useCallback((feature?: GeoJSON.Feature): L.CircleMarkerOptions => {
         if (!feature) return { opacity: 0, interactive: false };
         return {
             radius: isMobile ? 12 : 8,
             fillColor: '#000',
-            fillOpacity: 0,
+            fillOpacity: 0.0001, // Use near-zero instead of zero for reliable hit testing
             stroke: false,
-            interactive: true
+            interactive: true,
+            pane: 'master-interactions',
+            renderer: sharedSvgRenderer || undefined
         };
     }, [isMobile]);
 
-    const stationInteractionStyle = useCallback((f?: GeoJSON.Feature) => {
+    const stationInteractionStyle = useCallback((f?: GeoJSON.Feature): L.PathOptions => {
         if (!f || !f.properties) return { opacity: 0, interactive: false };
         if (f.properties.type === 'platform') return platformInteractionStyle(f);
-        return nodeInteractionStyle(f);
+        return nodeInteractionStyle(f) as L.PathOptions;
     }, [platformInteractionStyle, nodeInteractionStyle]);
 
     const onEachStation = (feature: GeoJSON.Feature, layer: L.Layer) => {
@@ -558,7 +571,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={platformStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'platform'}
-                pane="station-interactions"
+                pane="railroad-lines"
                 interactive={false}
             />
             <GeoJSON
@@ -568,7 +581,7 @@ const Stations: React.FC<StationsProps> = ({
                 style={nodeStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'node'}
                 pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, nodeStyle(feature) as L.CircleMarkerOptions)}
-                pane="station-interactions"
+                pane="railroad-lines"
                 interactive={false}
             />
             <GeoJSON
@@ -578,11 +591,11 @@ const Stations: React.FC<StationsProps> = ({
                 filter={(feature) => feature.properties?.type === 'platform' || feature.properties?.type === 'node'}
                 style={stationInteractionStyle}
                 pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, nodeInteractionStyle(feature))}
-                pane="globalInteraction"
+                pane="master-interactions"
                 onEachFeature={onEachStation}
             />
 
-            {visibleLabels.map(({ id, data }) => (
+            {showLabels && visibleLabels.map(({ id, data }) => (
                 <StationMarker
                     key={`marker-${id}`}
                     station={data}

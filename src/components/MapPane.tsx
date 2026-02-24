@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 import { Language } from '../lib/translations';
-import { useMap, useMapEvents, Pane, Polyline } from 'react-leaflet';
+import { useMap, useMapEvents, Polyline } from 'react-leaflet';
 import L, { LatLngBounds, LatLngExpression } from 'leaflet';
 
 import JapanMap from './JapanMap';
@@ -60,17 +60,27 @@ interface MapPaneProps {
     onDragUpdate?: (waypoints: string[]) => void;
     rulerTopOffset?: number;
     onTransitionStateChange?: (isPending: boolean) => void;
+    showLabels?: boolean;
+    onToggleLabels?: () => void;
 }
 
 const PANE_STYLES = {
     topTooltips: { zIndex: 1000, pointerEvents: 'none' as const, overflow: 'visible' },
-    globalInteraction: { zIndex: 950, overflow: 'visible' }, // 상호작용 전용 투명 레이어
+
+    // Single unified interaction layer for perfect hit capture
+    // No pointerEvents: 'none' here because internal elements handle it
+    masterInteractions: { zIndex: 950, overflow: 'visible' },
+
+    globalInteraction: { zIndex: 940, overflow: 'visible' }, // Emergency fallback
+
+    // Labels and UI
     stationLabels: { zIndex: 880, pointerEvents: 'none' as const, overflow: 'visible' },
-    stationInteractions: { zIndex: 850, pointerEvents: 'none' as const, overflow: 'visible' }, // 시각 전용
-    railroadLines: { zIndex: 820, pointerEvents: 'none' as const, overflow: 'visible' },    // 시각 전용
+
+    // Visual layers (Must have pointerEvents: 'none' to not block interaction layer above)
+    railroadLines: { zIndex: 820, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadGlow: { zIndex: 810, pointerEvents: 'none' as const, overflow: 'visible' },
-    uiElements: { zIndex: 818, pointerEvents: 'none' as const, overflow: 'visible' },
+    uiElements: { zIndex: 900, pointerEvents: 'none' as const, overflow: 'visible' },
     background: { zIndex: 100, overflow: 'visible' },
 };
 
@@ -98,7 +108,9 @@ const MapPane: React.FC<MapPaneProps> = ({
     onDraftComplete,
     onDragUpdate,
     rulerTopOffset = 80,
-    onTransitionStateChange
+    onTransitionStateChange,
+    showLabels = false,
+    onToggleLabels
 }) => {
     // 1. Map Data & State
     const map = useMap();
@@ -269,7 +281,42 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     useEffect(() => {
         if (map) {
-            // Create required panes if they don't exist
+            const pane = map.getPane('station-labels');
+            if (pane) {
+                // Use visibility: hidden instead of display: none to keep layout stable if needed,
+                // but display: none is usually fine for absolute positioned Leaflet markers.
+                // Switching to visibility for smoother transition potential.
+                pane.style.visibility = isMoving ? 'hidden' : 'visible';
+                pane.style.opacity = isMoving ? '0' : '1';
+                pane.style.transition = 'opacity 0.2s ease, visibility 0.2s';
+            }
+        }
+    }, [map, isMoving]);
+
+    useEffect(() => {
+        if (map) {
+            // Function to safely create a pane if it doesn't exist
+            const ensurePane = (name: string, style: React.CSSProperties) => {
+                if (!map.getPane(name)) {
+                    map.createPane(name);
+                    const pane = map.getPane(name);
+                    if (pane) {
+                        Object.assign(pane.style, style);
+                    }
+                }
+            };
+
+            // Create all required panes with their styles
+            ensurePane('top-tooltips', PANE_STYLES.topTooltips);
+            ensurePane('background', PANE_STYLES.background);
+            ensurePane('railroad-glow', PANE_STYLES.railroadGlow);
+            ensurePane('railroad-casing', PANE_STYLES.railroadCasing);
+            ensurePane('railroad-lines', PANE_STYLES.railroadLines);
+            ensurePane('ui-elements', PANE_STYLES.uiElements);
+            ensurePane('station-labels', PANE_STYLES.stationLabels);
+            ensurePane('master-interactions', PANE_STYLES.masterInteractions);
+            ensurePane('globalInteraction', PANE_STYLES.globalInteraction);
+
             // Ensure map instance is valid and trigger ready state
             const timer = setTimeout(() => {
                 setMapReady(true);
@@ -395,42 +442,42 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     return (
         <>
-            {!isMobile && <MapControls zoom={zoomLevel} />}
-            <Pane name="top-tooltips" style={PANE_STYLES.topTooltips} />
-            <Pane name="background" style={PANE_STYLES.background}>
-                {/* Background maps: Stability is key during motion */}
-                {activePrefectures && (
-                    <JapanMap
-                        key={`pref-${lodLevel}`}
-                        prefectures={activePrefectures}
-                        interactive={zoomLevel <= 8}
-                        zoom={zoomLevel}
-                    />
-                )}
-                {zoomLevel > 8 && activeMunicipalities && (
-                    <MunicipalMap
-                        key={`muni-${lodLevel}`}
-                        municipalities={activeMunicipalities}
-                        zoom={zoomLevel}
-                    />
-                )}
-                {zoomLevel > 8 && activePrefectures && (
-                    <JapanMap
-                        key={`pref-outline-${lodLevel}`}
-                        prefectures={activePrefectures}
-                        outlineOnly={true}
-                        interactive={false}
-                        zoom={zoomLevel}
-                    />
-                )}
-            </Pane>
+            {!isMobile && <MapControls
+                zoom={zoomLevel}
+                showLabels={showLabels}
+                onToggleLabels={onToggleLabels}
+            />}
 
-            <Pane name="railroad-glow" style={PANE_STYLES.railroadGlow} />
-            <Pane name="railroad-casing" style={PANE_STYLES.railroadCasing} />
-            <Pane name="railroad-lines" style={PANE_STYLES.railroadLines} />
-            <Pane name="station-interactions" style={PANE_STYLES.stationInteractions} />
-            <Pane name="station-labels" style={PANE_STYLES.stationLabels} />
-            <Pane name="globalInteraction" style={PANE_STYLES.globalInteraction} />
+            {/* Background maps: Stability is key during motion */}
+            {activePrefectures && (
+                <JapanMap
+                    key={`pref-${lodLevel}`}
+                    prefectures={activePrefectures}
+                    interactive={zoomLevel <= 8}
+                    zoom={zoomLevel}
+                    pane="background"
+                />
+            )}
+            {zoomLevel > 8 && activeMunicipalities && (
+                <MunicipalMap
+                    key={`muni-${lodLevel}`}
+                    municipalities={activeMunicipalities}
+                    zoom={zoomLevel}
+                    pane="background"
+                />
+            )}
+            {zoomLevel > 8 && activePrefectures && (
+                <JapanMap
+                    key={`pref-outline-${lodLevel}`}
+                    prefectures={activePrefectures}
+                    outlineOnly={true}
+                    interactive={false}
+                    zoom={zoomLevel}
+                    pane="background"
+                />
+            )}
+
+            {/* Other panes are created programmatically in useEffect for better stability and HMR support */}
 
             {railDataForMap && <RailroadLayer
                 key={`rail-lod-${lodLevel}`}
@@ -449,6 +496,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             {visibleStations && railData &&
                 <Stations
+                    key={`stations-lod-${lodLevel}`}
                     processedStations={visibleStations}
                     effectiveZoom={effectiveZoom}
                     realZoom={zoomLevel}
@@ -460,6 +508,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     settings={styleSettings}
                     language={language}
                     isMobile={isMobile}
+                    showLabels={showLabels}
                     isMoving={isMoving || !!dragStartStation} // Pass combined dragging state
                     railData={railData}
                     mapBounds={mapBounds}
@@ -474,36 +523,34 @@ const MapPane: React.FC<MapPaneProps> = ({
                 />
             }
 
-            <Pane name="ui-elements" style={PANE_STYLES.uiElements}>
-                {dragPath && dragPath.length > 0 && (
-                    <Polyline
-                        positions={dragPath.map(segment => segment.map(c => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
-                        pathOptions={{
-                            color: '#007AFF',
-                            weight: 12,
-                            opacity: 0.5,
-                            lineCap: 'round',
-                            lineJoin: 'round',
-                            pane: 'ui-elements'
-                        }}
-                        interactive={false}
-                    />
-                )}
-                {draftTrip && (
-                    <Polyline
-                        positions={draftTrip.geometries.map((segment: number[][]) => segment.map((c: number[]) => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
-                        pathOptions={{
-                            color: '#ff9800',
-                            weight: 12,
-                            opacity: 0.5,
-                            lineCap: 'round',
-                            lineJoin: 'round',
-                            pane: 'ui-elements'
-                        }}
-                        interactive={false}
-                    />
-                )}
-            </Pane>
+            {dragPath && dragPath.length > 0 && (
+                <Polyline
+                    positions={dragPath.map(segment => segment.map(c => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.5,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            )}
+            {draftTrip && (
+                <Polyline
+                    positions={draftTrip.geometries.map((segment: number[][]) => segment.map((c: number[]) => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
+                    pathOptions={{
+                        color: '#ff9800',
+                        weight: 12,
+                        opacity: 0.5,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            )}
 
             {isMobile && isEditMode && (
                 <RulerOverlay topOffset={rulerTopOffset} />

@@ -104,6 +104,7 @@ const MainPageClient = () => {
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
+    const [showLabels, setShowLabels] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
     const isSyncingRef = React.useRef(false);
 
@@ -264,15 +265,20 @@ const MainPageClient = () => {
     const [zoomTarget, setZoomTarget] = React.useState<{ type: 'line' | 'station', id: string } | null>(null);
 
     const handleRailroadClick = React.useCallback((line: string) => {
-        if (isEditMode && !isMobile) return;
+        // Allow railroad click even in edit mode for context/visual feedback
         setActiveLine(line);
-        if (!isEditMode) setSelectedStation(null); // Clear station selection only if not in edit mode
+        setSelectedStation(null); // Clear station selection when a line is clicked
+
         setSelectedLines(prev => {
-            let next = prev.includes(line) ? prev : [...prev, line];
+            if (prev.includes(line)) return prev;
+            let next = [...prev, line];
             if (next.length > 1 && next.includes("__NONE__")) next = next.filter(l => l !== "__NONE__");
             return next;
         });
-    }, [isEditMode, isMobile]);
+
+        // Track interaction
+        trackEvent('railroad_click', 'interaction', line);
+    }, []);
 
     const handleLineClick = React.useCallback((line: string) => {
         setActiveLine(line);
@@ -286,11 +292,17 @@ const MainPageClient = () => {
     }, []);
 
     const handleStationClick = React.useCallback((stationName: string, lines?: string[]) => {
-        if (isEditMode) return; // Disable in edit mode
-        console.log("Station clicked:", stationName);
+        // Only disable station selection if we are actively dragging/creating a path
+        if (isEditMode && tempPath.length > 0) return;
+
         setSelectedStation({ name: stationName, lines: lines || [] });
-        if (!isMobile) setActiveLine(null); // Clear active line on desktop if needed, or keep for context
-    }, [isMobile, isEditMode]);
+
+        // When a station is clicked, we might want to see its lines but keep current focus
+        if (!isMobile) {
+            // On desktop, clicking a station provides information but doesn't necessarily deselect the active line
+            // unless the user specifically wants to switch context.
+        }
+    }, [isMobile, isEditMode, tempPath.length]);
 
     const handleResetTrips = React.useCallback(() => {
         if (window.confirm('모든 이동 기록을 삭제하시겠습니까?')) {
@@ -661,6 +673,8 @@ const MainPageClient = () => {
                                     isMobile={isMobile}
                                     selectedStation={selectedStation?.name}
                                     onMapClick={handleMapClick}
+                                    showLabels={showLabels}
+                                    onToggleLabels={() => setShowLabels(prev => !prev)}
                                     isEditMode={isEditMode}
                                     draftTrip={draftTrip}
                                     onDraftComplete={handleDraftComplete}

@@ -11,9 +11,10 @@ interface JapanMapProps {
     outlineOnly?: boolean;
     interactive?: boolean;
     zoom: number;
+    pane?: string;
 }
 
-const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, outlineOnly = false, interactive = true, zoom }) => {
+const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, outlineOnly = false, interactive = true, zoom, pane }) => {
     const handleClick = useCallback((feature: GeoJSON.Feature) => {
         if (onPrefectureClick && feature.properties) {
             onPrefectureClick(feature.properties.shapeName);
@@ -72,6 +73,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
             onEachFeature={onEachFeature}
             interactive={interactive}
             pathOptions={pathOptions}
+            pane={pane}
         />
     );
 };

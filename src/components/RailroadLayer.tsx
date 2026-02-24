@@ -5,7 +5,7 @@ import { GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { getLineColor } from '../lib/lineColors';
 import { RailData, Section } from '../types/railData';
-import { sharedCanvasRenderer } from './Map';
+import { sharedCanvasRenderer, sharedSvgRenderer } from './Map';
 
 interface RailroadLayerProps {
     railroadNetwork: RailData | null;
@@ -45,7 +45,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         let mounted = true;
         const checkPanes = () => {
             if (!mounted) return;
-            const required = ['railroad-glow', 'railroad-lines', 'globalInteraction'];
+            const required = ['railroad-glow', 'railroad-lines', 'master-interactions'];
             const allReady = required.every(p => !!map.getPane(p));
             if (allReady) {
                 setPanesReady(true);
@@ -286,12 +286,13 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         return {
             color: '#000',
-            weight: isMobile ? 22 : 14, // 충분한 클릭 영역
-            opacity: 0, // 완전 투명
-            pane: 'globalInteraction',
+            weight: isMobile ? 22 : 14,
+            opacity: 0.0001,
+            pane: 'master-interactions',
             interactive: true,
             lineCap: 'round' as const,
-            lineJoin: 'round' as const
+            lineJoin: 'round' as const,
+            renderer: sharedSvgRenderer || undefined
         } as L.PathOptions;
     }, [isMobile]);
 
@@ -308,16 +309,30 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const secondaryCorp = company_en && company_en !== company ? company_en : '';
 
         const tooltipContent = `
-            <div style="text-align: center; font-family: sans-serif; padding: 4px;">
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <div style="font-weight: bold; font-size: 1.1em; color: #000;">${primaryLine}</div>
-                    ${secondaryLine ? `<div style="font-size: 0.85em; font-weight: 400; color: #666; margin-top: -2px;">${secondaryLine}</div>` : ''}
+            <div style="
+                display: flex; 
+                flex-direction: row; 
+                gap: 12px; 
+                padding: 6px 8px; 
+                min-width: 180px; 
+                align-items: stretch;
+                border-left: 4px solid ${feature.properties.color || '#999'};
+            ">
+                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left;">
+                    <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
+                        <span style="font-weight: 800; font-size: 13px; color: #1a202c;">${primaryLine}</span>
+                        ${secondaryLine ? `<span style="font-size: 10px; font-weight: 600; color: #718096;">${secondaryLine}</span>` : ''}
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; margin-top: 2px;">
+                        <span style="font-size: 11px; color: #4a5568; font-weight: 600;">${primaryCorp}</span>
+                        ${secondaryCorp ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0;">${secondaryCorp}</span>` : ''}
+                    </div>
+                    ${endpoints ? `
+                        <div style="font-size: 9px; color: #cbd5e0; margin-top: 4px; border-top: 1px solid #edf2f7; padding-top: 4px; font-style: italic;">
+                            ${endpoints}
+                        </div>
+                    ` : ''}
                 </div>
-                <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 0px; border-top: 1px solid #eee; padding-top: 4px;">
-                    <div style="font-size: 0.9em; color: #444; font-weight: 600;">${primaryCorp}</div>
-                    ${secondaryCorp ? `<div style="font-size: 0.75em; font-weight: 400; color: #888; margin-top: -1px;">${secondaryCorp}</div>` : ''}
-                </div>
-                ${endpoints ? `<div style="font-size: 0.7em; color: #aaa; margin-top: 4px; border-top: 1px dotted #eee; padding-top: 2px;">(${endpoints})</div>` : ''}
             </div>
         `;
 
@@ -433,8 +448,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     style={interactionStyle}
                     onEachFeature={onEachFeature}
                     interactive={!isDragging}
-                    pane="globalInteraction"
-                    pathOptions={pathOptions}
+                    pane="master-interactions"
                 />
             )}
         </>

@@ -7,9 +7,10 @@ import { sharedCanvasRenderer } from './Map';
 interface MunicipalMapProps {
     municipalities: GeoJSON.FeatureCollection | GeoJSON.Feature | null;
     zoom: number;
+    pane?: string;
 }
 
-const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => {
+const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom, pane }) => {
     const style = useCallback(() => {
         let weight = 1;
         if (zoom <= 9) weight = 0.5;
@@ -38,6 +39,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom }) => 
             style={style}
             interactive={false}
             pathOptions={pathOptions}
+            pane={pane}
         />
     );
 };

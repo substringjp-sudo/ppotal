@@ -7,9 +7,17 @@ interface MapControlsProps {
     zoom: number;
     minZoom?: number;
     maxZoom?: number;
+    showLabels?: boolean;
+    onToggleLabels?: () => void;
 }
 
-const MapControls: React.FC<MapControlsProps> = ({ zoom, minZoom = 5, maxZoom = 18 }) => {
+const MapControls: React.FC<MapControlsProps> = ({
+    zoom,
+    minZoom = 5,
+    maxZoom = 18,
+    showLabels = false,
+    onToggleLabels
+}) => {
     const map = useMap();
 
     const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +63,48 @@ const MapControls: React.FC<MapControlsProps> = ({ zoom, minZoom = 5, maxZoom = 
                         accentColor: '#3498db'
                     }}
                 />
+            </div>
+
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                padding: '8px 0',
+                borderTop: '1px solid #eee',
+                borderBottom: '1px solid #eee'
+            }}>
+                <div
+                    onClick={onToggleLabels}
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        padding: '4px 0'
+                    }}
+                >
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#666' }}>STATION NAMES </span>
+                    <div style={{
+                        width: '32px',
+                        height: '18px',
+                        backgroundColor: showLabels ? '#3498db' : '#ccc',
+                        borderRadius: '9px',
+                        position: 'relative',
+                        transition: 'background-color 0.2s'
+                    }}>
+                        <div style={{
+                            width: '14px',
+                            height: '14px',
+                            backgroundColor: '#fff',
+                            borderRadius: '50%',
+                            position: 'absolute',
+                            top: '2px',
+                            left: showLabels ? '16px' : '2px',
+                            transition: 'left 0.2s',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                        }} />
+                    </div>
+                </div>
             </div>
 
             <button
