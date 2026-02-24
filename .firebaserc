@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "jprail"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

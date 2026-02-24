@@ -1,0 +1,19 @@
+
+> japanrailnote@0.1.0 lint
+> eslint
+
+
+H:\jprail\src\components\MainPageClient.tsx
+  107:28  warning  'authLoading' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  108:11  warning  'isSyncingRef' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  145:13  warning  'prefectures' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  145:26  warning  'municipalities' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+H:\jprail\src\components\auth\AuthModal.tsx
+  43:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+H:\jprail\src\hooks\useRailData.ts
+  2:20  warning  'Section' is defined but never used  @typescript-eslint/no-unused-vars
+
+??6 problems (1 error, 5 warnings)
+

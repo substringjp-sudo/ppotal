@@ -74,6 +74,61 @@ export const UI_TRANSLATIONS = {
     feedback_empty_content: {
         en: 'Please enter the content.',
         ko: '내용을 입력해주세요.',
-        ja: '内容を入力してください。',
+        ja: '内容を入力してください.',
+    },
+    auth_login: {
+        en: 'Login',
+        ko: '로그인',
+        ja: 'ログイン',
+    },
+    auth_logout: {
+        en: 'Logout',
+        ko: '로그아웃',
+        ja: 'ログアウト',
+    },
+    auth_signup: {
+        en: 'Sign Up',
+        ko: '회원가입',
+        ja: '新規登録',
+    },
+    auth_email: {
+        en: 'Email',
+        ko: '이메일',
+        ja: 'メールアドレス',
+    },
+    auth_password: {
+        en: 'Password',
+        ko: '비밀번호',
+        ja: 'パスワード',
+    },
+    auth_confirm_password: {
+        en: 'Confirm Password',
+        ko: '비밀번호 확인',
+        ja: 'パスワード確認',
+    },
+    auth_welcome: {
+        en: 'Welcome back!',
+        ko: '다시 오신 것을 환영합니다!',
+        ja: 'お帰りなさい！',
+    },
+    auth_syncing: {
+        en: 'Syncing your travels...',
+        ko: '여행 기록을 동기화 중입니다...',
+        ja: '移動履歴を同期中...',
+    },
+    auth_no_account: {
+        en: "Don't have an account?",
+        ko: '계정이 없으신가요?',
+        ja: 'アカウントをお持ちでないですか？',
+    },
+    auth_have_account: {
+        en: 'Already have an account?',
+        ko: '이미 계정이 있으신가요?',
+        ja: '既にアカウントをお持ちですか？',
+    },
+    auth_save_cloud: {
+        en: 'Create an account to save your travels forever.',
+        ko: '계정을 만들고 소중한 기록을 클라우드에 영구 보관하세요.',
+        ja: 'アカウントを作成して、移動履歴を永久に保存しましょう。',
     }
 };

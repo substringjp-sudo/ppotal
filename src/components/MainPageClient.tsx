@@ -11,6 +11,9 @@ import { useRailData } from '../hooks/useRailData';
 import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
+import { useAuth } from '../lib/auth-context';
+import { db } from '../lib/firebase';
+import { collection, query, getDocs, setDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 
 import { MapProps } from './Map';
 import MapLoadingIndicator from './MapLoadingIndicator';
@@ -101,6 +104,19 @@ const MainPageClient = () => {
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
+    const { user, loading: authLoading } = useAuth();
+    const isSyncingRef = React.useRef(false);
+
+    // Helpers for Firestore data structure constraints (No nested arrays)
+    const toFirestoreTrip = (trip: Trip) => ({
+        ...trip,
+        geometries: JSON.stringify(trip.geometries)
+    });
+
+    const fromFirestoreTrip = (data: any): Trip => ({
+        ...data,
+        geometries: typeof data.geometries === 'string' ? JSON.parse(data.geometries) : data.geometries
+    });
 
     React.useEffect(() => {
         const checkMobile = () => {
@@ -155,17 +171,53 @@ const MainPageClient = () => {
 
     React.useEffect(() => {
         if (typeof window === 'undefined') return;
-        try {
-            const saved = localStorage.getItem('jprail_trips');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                setRecordedTrips(parsed);
+
+        const loadInitialData = async () => {
+            if (authLoading) return; // Wait for auth to initialize
+            try {
+                // 1. Load from localStorage as baseline
+                const saved = localStorage.getItem('jprail_trips');
+                let localTrips: Trip[] = [];
+                if (saved) {
+                    localTrips = JSON.parse(saved);
+                }
+
+                if (user) {
+                    // 2. If logged in, prioritize Firestore
+                    const tripsRef = collection(db, `users/${user.uid}/trips`);
+                    const q = query(tripsRef);
+                    const querySnapshot = await getDocs(q);
+                    const cloudTrips: Trip[] = [];
+                    querySnapshot.forEach((doc) => {
+                        cloudTrips.push(fromFirestoreTrip(doc.data()));
+                    });
+
+                    // 3. Migration: If Firestore is empty but local has data, migrate
+                    if (cloudTrips.length === 0 && localTrips.length > 0) {
+                        const batch = writeBatch(db);
+                        localTrips.forEach(trip => {
+                            const tRef = doc(db, `users/${user.uid}/trips`, trip.id);
+                            batch.set(tRef, toFirestoreTrip(trip));
+                        });
+                        await batch.commit();
+                        setRecordedTrips(localTrips);
+                    } else {
+                        // Merge or overwrite? Usually cloud should win for "history"
+                        // For now, let's use cloud data if it exists
+                        setRecordedTrips(cloudTrips.length > 0 ? cloudTrips : localTrips);
+                    }
+                } else {
+                    setRecordedTrips(localTrips);
+                }
+            } catch (e) {
+                console.error("Failed to load initial trips", e);
+            } finally {
+                setIsLoaded(true);
             }
-        } catch (e) {
-            console.error("Failed to load saved trips from localStorage", e);
-        }
-        setIsLoaded(true);
-    }, []);
+        };
+
+        loadInitialData();
+    }, [user, authLoading]);
 
     React.useEffect(() => {
         if (isLoaded && typeof window !== 'undefined') {
@@ -177,13 +229,23 @@ const MainPageClient = () => {
         }
     }, [recordedTrips, isLoaded]);
 
-    const handleRecordTrip = React.useCallback((trip: Trip) => {
+    const handleRecordTrip = React.useCallback(async (trip: Trip) => {
         setRecordedTrips(prev => {
             if (prev.find(t => t.id === trip.id)) return prev;
-            trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
             return [...prev, trip];
         });
-    }, []);
+
+        trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
+
+        // Sync to cloud if logged in
+        if (user) {
+            try {
+                await setDoc(doc(db, `users/${user.uid}/trips`, trip.id), toFirestoreTrip(trip));
+            } catch (e) {
+                console.error("Cloud sync failed", e);
+            }
+        }
+    }, [user]);
 
     const toggleLine = React.useCallback((line: string) => {
         setSelectedLines(prev => {
@@ -267,10 +329,18 @@ const MainPageClient = () => {
         };
     }, [visitedLineLengths, recordedTrips]);
 
-    const handleDeleteTrip = React.useCallback((id: string) => {
+    const handleDeleteTrip = React.useCallback(async (id: string) => {
         setRecordedTrips(prev => prev.filter(t => t.id !== id));
         trackEvent('delete_trip', 'engagement', id);
-    }, []);
+
+        if (user) {
+            try {
+                await deleteDoc(doc(db, `users/${user.uid}/trips`, id));
+            } catch (e) {
+                console.error("Cloud delete failed", e);
+            }
+        }
+    }, [user]);
 
     const [isMobileSheetOpen, setIsMobileSheetOpen] = React.useState(false);
 

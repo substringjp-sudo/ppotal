@@ -27,6 +27,8 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 - **Aggressive Map Over-rendering**: Increased canvas renderer padding to 2.0 (creating a 5x5 viewport buffer). This ensures that panned areas are already pre-rendered while keeping computation load balanced.
 - **Background Resource Optimization**: Used React 18's `useTransition` to process heavy map updates (LOD switching, filtering) in the background. This keeps the UI responsive for dragging and clicking even during complex redraws.
 - **Integrated Feedback System**: A direct pipeline for user suggestions using Next.js Server Actions and Cloud Firestore, allowing for seamless data collection without an external backend.
+- **Firebase Authentication & Cloud Sync**: Implementation of a secure user authentication system (Email/Password) to allow users to persist their railroad travel records (`recordedTrips`) across different devices and sessions.
+- **Hybrid Data Persistence**: Intelligent synchronization between `localStorage` (for offline/guest use) and Firestore (for authenticated users), with automatic data migration during signup/login.
 
 
 ## Implementation History & Current State
@@ -61,6 +63,7 @@ jprail is a web application for visualizing and tracking Japanese railroad netwo
 57. **Background UI Optimization**: Implemented `useTransition` for non-blocking map updates and refined the loading indicator to show "Optimizing View" during background tasks. ✅
 58. **User Feedback Pipeline**: Built a Firestore-backed feedback system. Users can now submit suggestions via a dedicated modal, with data handled securely by Next.js Server Actions and Firebase Admin SDK. ✅
 59. **Feedback System Internationalization**: Refactored the feedback interface to support multiple languages (English, Korean, Japanese) using the centralized translation system. The interface now defaults to English as requested. ✅
+60. **Firebase Auth & Trip Sync**: (Planned) Integrating Firebase Authentication and Firestore-based record synchronization to enable accounts and multi-device persistence. 🔄
 
 ## Deployment Plan
 1. **Pre-deployment Check**: Ran `npm run lint` and `npm run build` to ensure project stability. ✅

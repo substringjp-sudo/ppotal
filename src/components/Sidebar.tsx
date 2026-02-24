@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
-import { Language } from '../lib/translations';
+import { Language, UI_TRANSLATIONS } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
 import SidebarGroup from './SidebarGroup';
+import { useAuth } from '../lib/auth-context';
+import AuthModal from './auth/AuthModal';
 
 export interface SidebarProps {
     selectedLines: string[];
@@ -27,6 +29,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     const [sortMode, setSortMode] = useState<'ja' | 'usage'>('ja');
     const [expandedCompanies, setExpandedCompanies] = useState<Record<string, boolean>>({});
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const { user, logout } = useAuth();
     const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
     useEffect(() => {
@@ -178,6 +182,64 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                     JapanRailNote
                 </h2>
             </div>
+
+            <div style={{
+                marginBottom: '20px',
+                padding: '16px',
+                backgroundColor: 'rgba(52, 152, 219, 0.05)',
+                borderRadius: '16px',
+                border: '1px solid rgba(52, 152, 219, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px'
+            }}>
+                {user ? (
+                    <>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
+                            <span style={{ fontSize: '14px', fontWeight: '800', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {user.displayName || user.email?.split('@')[0] || 'User'}
+                            </span>
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>
+                                {user.email}
+                            </span>
+                        </div>
+                        <button
+                            onClick={logout}
+                            style={{
+                                padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0',
+                                backgroundColor: '#fff', color: '#64748b', fontSize: '11px', fontWeight: '700', cursor: 'pointer'
+                            }}
+                        >
+                            {UI_TRANSLATIONS.auth_logout[language]}
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <div style={{ flex: 1 }}>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#475569', fontWeight: '500', lineHeight: '1.4' }}>
+                                {UI_TRANSLATIONS.auth_save_cloud[language]}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setIsAuthModalOpen(true)}
+                            style={{
+                                padding: '8px 16px', borderRadius: '10px', backgroundColor: '#3498db',
+                                color: '#fff', border: 'none', fontSize: '12px', fontWeight: '800', cursor: 'pointer',
+                                boxShadow: '0 4px 10px rgba(52, 152, 219, 0.2)'
+                            }}
+                        >
+                            {UI_TRANSLATIONS.auth_login[language]}
+                        </button>
+                    </>
+                )}
+            </div>
+
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                language={language}
+            />
 
             <div style={{ marginBottom: '15px' }}>
                 <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Sorting</div>
