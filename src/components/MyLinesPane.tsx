@@ -27,18 +27,18 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     return (
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontSize: '18px', marginBottom: '15px', fontWeight: '900', color: '#2c3e50', borderBottom: '3px solid #27ae60', paddingBottom: '8px' }}>
-                {language === 'ko' ? '나의 기록' : 'MY HISTORY'}
+                MY HISTORY
             </h2>
 
             <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                {language === 'ko' ? '이동 내역' : 'TRIPS'} ({recordedTrips?.length || 0})
+                TRIPS ({recordedTrips?.length || 0})
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
                 {displayTrips.length === 0 ? (
                     <div style={{ textAlign: 'center', color: '#999', marginTop: '40px', fontSize: '14px' }}>
-                        {language === 'ko' ? '기록된 이동 내역이 없습니다.\n역과 역 사이를 드래그하여 기록해 보세요!' :
-                            'No trips recorded yet.\nDrag between stations to record!'}
+                        No trips recorded yet.
+                        Drag between stations to record!
                     </div>
                 ) : (
                     displayTrips.map(trip => {

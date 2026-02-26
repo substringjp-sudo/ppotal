@@ -94,7 +94,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
                     {!isLogin && (
                         <div>
                             <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                {language === 'ko' ? '닉네임' : 'Nickname'}
+                                Nickname
                             </label>
                             <input
                                 type="text"

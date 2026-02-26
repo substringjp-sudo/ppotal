@@ -58,10 +58,10 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                         <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
-                            {language === 'en' ? (railData?.companies[company]?.name_en || company) : (railData?.companies[company]?.name || company)}
+                            {railData?.companies[company]?.name || company}
                         </span>
                         <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
-                            {language === 'en' ? (railData?.lines[lineName]?.name_en || lineName) : (railData?.lines[lineName]?.name || lineName)}
+                            {railData?.lines[lineName]?.name || lineName}
                         </span>
                     </div>
                 </div>
@@ -115,7 +115,7 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                     fontWeight: 'bold'
                 }}>!</div>
                 <span style={{ fontSize: '13px', color: '#444' }}>
-                    {language === 'en' ? "Tap stations on the map to specify start and end points." : "노선도에서 역을 탭하여 시작점과 도착점을 지정할 수 있습니다."}
+                    Tap stations on the map to specify start and end points.
                 </span>
             </div>
         </div>

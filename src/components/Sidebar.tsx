@@ -297,7 +297,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 {sortedCategoryIds.map((categoryId, index) => {
                     const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
                     if (!categoryInfo) return null;
-                    const title = language === 'ko' ? categoryInfo.name : (language === 'en' ? categoryInfo.name_en : categoryInfo.name);
+                    const title = categoryInfo.name_en || categoryInfo.name;
                     return (
                         <SidebarGroup
                             key={categoryId}

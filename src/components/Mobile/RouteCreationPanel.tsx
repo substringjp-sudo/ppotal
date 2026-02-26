@@ -76,25 +76,33 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                 }}>
                     {displayPath.length === 0 ? (
                         <span style={{ color: '#555', fontSize: '14px', margin: 'auto', fontWeight: 'bold' }}>
-                            {language === 'ko' ? '역을 누른 채 옆으로 드래그하여 경로를 추가하세요' : 'Press and drag a station to record your route'}
+                            Press and drag a station to record your route
                         </span>
                     ) : (
                         displayPath.map((stationId: string, idx: number) => {
                             const station = railData?.stations[stationId];
-                            const displayName = (language === 'en' && station?.name_en) ? station.name_en : (station?.name || stationId);
+                            const displayName = station?.name || stationId;
+                            const displayNameEn = station?.name_en;
 
                             return (
                                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <span style={{
-                                        padding: '4px 8px',
-                                        backgroundColor: '#ecf0f1',
-                                        borderRadius: '12px',
-                                        fontSize: '12px',
-                                        color: '#333',
-                                        fontWeight: '700'
-                                    }}>
-                                        {displayName}
-                                    </span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <span style={{
+                                            padding: '2px 8px',
+                                            backgroundColor: '#ecf0f1',
+                                            borderRadius: '8px',
+                                            fontSize: '12px',
+                                            color: '#333',
+                                            fontWeight: '800'
+                                        }}>
+                                            {displayName}
+                                        </span>
+                                        {displayNameEn && (
+                                            <span style={{ fontSize: '9px', color: '#718096', fontWeight: '500', marginTop: '1px' }}>
+                                                {displayNameEn}
+                                            </span>
+                                        )}
+                                    </div>
                                     {idx < displayPath.length - 1 && (
                                         <span style={{ color: '#ccc', fontWeight: 'bold' }}>→</span>
                                     )}
