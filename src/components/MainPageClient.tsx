@@ -407,6 +407,39 @@ const MainPageClient = () => {
                 width: '100%',
                 boxShadow: '0 0 40px rgba(0,0,0,0.1)'
             }}>
+                <a
+                    href="#main-content"
+                    style={{
+                        position: 'absolute',
+                        left: '-9999px',
+                        top: 'auto',
+                        width: '1px',
+                        height: '1px',
+                        overflow: 'hidden',
+                        zIndex: -1,
+                        backgroundColor: '#3498db',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        borderRadius: '0 0 8px 8px',
+                        textDecoration: 'none',
+                        fontWeight: 'bold'
+                    }}
+                    onFocus={(e) => {
+                        e.currentTarget.style.left = '50%';
+                        e.currentTarget.style.transform = 'translateX(-50%)';
+                        e.currentTarget.style.width = 'auto';
+                        e.currentTarget.style.height = 'auto';
+                        e.currentTarget.style.zIndex = '10001';
+                    }}
+                    onBlur={(e) => {
+                        e.currentTarget.style.left = '-9999px';
+                        e.currentTarget.style.width = '1px';
+                        e.currentTarget.style.height = '1px';
+                        e.currentTarget.style.zIndex = '-1';
+                    }}
+                >
+                    메인 콘텐츠로 건너뛰기
+                </a>
 
                 <header style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px',
@@ -422,6 +455,7 @@ const MainPageClient = () => {
 
                                 <button
                                     onClick={() => setIsHowToOpen(true)}
+                                    aria-label="View Usage Tips"
                                     style={{
                                         padding: '4px 10px',
                                         borderRadius: '20px',
@@ -578,7 +612,7 @@ const MainPageClient = () => {
                     )}
                 </header>
 
-                <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
+                <main id="main-content" style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }} tabIndex={-1}>
                     {isMobile && isEditMode && (
                         <div className="edit-mode-ui" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1200 }}>
                             <RouteCreationPanelWithNoSSR
@@ -716,80 +750,80 @@ const MainPageClient = () => {
                             />
                         </div>
                     )}
-                </div>
 
-                {isMobile && !isEditMode && (
-                    <MobileBottomSheet
-                        isOpen={isMobileSheetOpen}
-                        onToggle={setIsMobileSheetOpen}
-                        onExpand={() => {
-                            setSelectedStation(null);
-                            setActiveLine(null);
-                        }}
-                        tabs={[
-                            {
-                                id: 'sidebar',
-                                label: 'Line List',
-                                summary: (
-                                    <div style={{ textAlign: 'center', color: '#666', fontSize: '14px', fontWeight: '500' }}>
-                                        Select Lines to Display
-                                    </div>
-                                ),
-                                content: (
-                                    <SidebarWithNoSSR
-                                        selectedLines={selectedLines}
-                                        onToggleLine={toggleLine}
-                                        onSetSelectedLines={setSelectedLinesList}
-                                        lineLengths={lineLengths}
-                                        visitedLineLengths={visitedLineLengths}
-                                        activeLine={activeLine}
-                                        onLineClick={(line: string) => {
-                                            handleLineClick(line);
-                                            if (isMobile) setIsMobileSheetOpen(false);
-                                        }}
-                                        language={language}
-                                    />
-                                )
-                            },
-                            {
-                                id: 'mylines',
-                                label: 'Usage History',
-                                summary: (
-                                    <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%', fontWeight: 'bold', color: '#555' }}>
-                                        <span>{stats.lines} Lines</span>
-                                        <span>{stats.distance} km</span>
-                                        <span>{stats.stations} Stns</span>
-                                    </div>
-                                ),
-                                content: (
-                                    <MyLinesPane
-                                        language={language}
-                                        recordedTrips={recordedTrips}
-                                        onDeleteTrip={handleDeleteTrip}
-                                        railData={railData}
-                                    />
-                                )
-                            }
-                        ]}
-                    />
-                )}
-
-                {isMobile && isEditMode && activeLine && lineDetailData && (
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 1300 }}>
-                        <MobileEditLinePanelWithNoSSR
-                            lineId={activeLine}
-                            segments={lineDetailData.segments}
-                            nodes={lineDetailData.nodes}
-                            visitedEdges={lineDetailData.visitedEdges}
-                            visitedStations={lineDetailData.visitedStations}
-                            onPathCreate={handleStationPathCreate}
-                            onClose={() => setIsEditMode(false)}
-                            language={language}
-                            railData={railData}
+                    {isMobile && !isEditMode && (
+                        <MobileBottomSheet
+                            isOpen={isMobileSheetOpen}
+                            onToggle={setIsMobileSheetOpen}
+                            onExpand={() => {
+                                setSelectedStation(null);
+                                setActiveLine(null);
+                            }}
+                            tabs={[
+                                {
+                                    id: 'sidebar',
+                                    label: 'Line List',
+                                    summary: (
+                                        <div style={{ textAlign: 'center', color: '#666', fontSize: '14px', fontWeight: '500' }}>
+                                            Select Lines to Display
+                                        </div>
+                                    ),
+                                    content: (
+                                        <SidebarWithNoSSR
+                                            selectedLines={selectedLines}
+                                            onToggleLine={toggleLine}
+                                            onSetSelectedLines={setSelectedLinesList}
+                                            lineLengths={lineLengths}
+                                            visitedLineLengths={visitedLineLengths}
+                                            activeLine={activeLine}
+                                            onLineClick={(line: string) => {
+                                                handleLineClick(line);
+                                                if (isMobile) setIsMobileSheetOpen(false);
+                                            }}
+                                            language={language}
+                                        />
+                                    )
+                                },
+                                {
+                                    id: 'mylines',
+                                    label: 'Usage History',
+                                    summary: (
+                                        <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%', fontWeight: 'bold', color: '#555' }}>
+                                            <span>{stats.lines} Lines</span>
+                                            <span>{stats.distance} km</span>
+                                            <span>{stats.stations} Stns</span>
+                                        </div>
+                                    ),
+                                    content: (
+                                        <MyLinesPane
+                                            language={language}
+                                            recordedTrips={recordedTrips}
+                                            onDeleteTrip={handleDeleteTrip}
+                                            railData={railData}
+                                        />
+                                    )
+                                }
+                            ]}
                         />
-                    </div>
-                )}
-            </div>
+                    )}
+
+                    {isMobile && isEditMode && activeLine && lineDetailData && (
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 1300 }}>
+                            <MobileEditLinePanelWithNoSSR
+                                lineId={activeLine}
+                                segments={lineDetailData.segments}
+                                nodes={lineDetailData.nodes}
+                                visitedEdges={lineDetailData.visitedEdges}
+                                visitedStations={lineDetailData.visitedStations}
+                                onPathCreate={handleStationPathCreate}
+                                onClose={() => setIsEditMode(false)}
+                                language={language}
+                                railData={railData}
+                            />
+                        </div>
+                    )}
+                </main>
+            </div >
 
             <HowToModal
                 isOpen={isHowToOpen}

@@ -50,6 +50,15 @@ const SidebarLineItem: React.FC<{
         <div
             ref={el => registerLineRef(key, el)}
             onClick={() => onLineClick?.(key)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onLineClick?.(key);
+                }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isActive}
             style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -169,6 +178,9 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
     return (
         <div style={{ marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
             <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={expanded}
                 style={{
                     padding: '10px',
                     background: '#f0f0f0',
@@ -178,6 +190,12 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                     cursor: 'pointer'
                 }}
                 onClick={() => onToggleExpanded(groupKey)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onToggleExpanded(groupKey);
+                    }
+                }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>{title}</span>
@@ -257,6 +275,15 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                     />
                                     <span
                                         onClick={() => toggleCompany(companyId)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                toggleCompany(companyId);
+                                            }
+                                        }}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-expanded={isExpanded}
                                         style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
                                     >
                                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>

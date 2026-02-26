@@ -19,6 +19,16 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
 
     const t = UI_TRANSLATIONS;
 
+    React.useEffect(() => {
+        if (isOpen) {
+            const handleEscape = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') onClose();
+            };
+            window.addEventListener('keydown', handleEscape);
+            return () => window.removeEventListener('keydown', handleEscape);
+        }
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -57,19 +67,23 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
     };
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            backdropFilter: 'blur(4px)',
-        }} onClick={onClose}>
+        <div role="dialog"
+            aria-modal="true"
+            aria-labelledby="feedback-modal-title"
+            aria-describedby="feedback-modal-desc"
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10000,
+                backdropFilter: 'blur(4px)',
+            }} onClick={onClose}>
             <div style={{
                 backgroundColor: 'white',
                 padding: '32px',
@@ -95,7 +109,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                     &times;
                 </button>
 
-                <h2 style={{
+                <h2 id="feedback-modal-title" style={{
                     marginTop: 0,
                     marginBottom: '8px',
                     fontSize: '24px',
@@ -104,7 +118,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                 }}>
                     {t.feedback_title[language]}
                 </h2>
-                <p style={{
+                <p id="feedback-modal-desc" style={{
                     color: '#64748b',
                     marginBottom: '24px',
                     fontSize: '15px'
@@ -114,7 +128,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{
+                        <label htmlFor="feedback-content" style={{
                             display: 'block',
                             marginBottom: '8px',
                             fontWeight: '600',
@@ -124,6 +138,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                             {t.feedback_content_label[language]}
                         </label>
                         <textarea
+                            id="feedback-content"
+                            autoFocus
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             required
@@ -143,7 +159,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                     </div>
 
                     <div style={{ marginBottom: '24px' }}>
-                        <label style={{
+                        <label htmlFor="feedback-author" style={{
                             display: 'block',
                             marginBottom: '8px',
                             fontWeight: '600',
@@ -153,6 +169,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                             {t.feedback_author_label[language]}
                         </label>
                         <input
+                            id="feedback-author"
                             type="text"
                             value={author}
                             onChange={(e) => setAuthor(e.target.value)}

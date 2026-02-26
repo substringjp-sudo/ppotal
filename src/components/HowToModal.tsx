@@ -71,26 +71,38 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose, currentLanguag
         if (isOpen) {
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             setActiveTab(isMobileDevice ? 'mobile' : 'desktop');
+
+            const handleEscape = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') onClose();
+            };
+            window.addEventListener('keydown', handleEscape);
+            return () => window.removeEventListener('keydown', handleEscape);
         }
-    }, [isOpen]);
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
     const lang = currentLanguage;
 
     return (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', zIndex: 10000, backdropFilter: 'blur(4px)'
-        }} onClick={onClose}>
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="howto-modal-title"
+            style={{
+                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', zIndex: 10000, backdropFilter: 'blur(4px)'
+            }}
+            onClick={onClose}
+        >
             <div style={{
                 backgroundColor: '#fff', width: '90%', maxWidth: '500px',
                 borderRadius: '24px', padding: '30px', position: 'relative',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'modalSlideUp 0.3s ease-out'
             }} onClick={e => e.stopPropagation()}>
 
-                <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '20px', color: '#2c3e50', textAlign: 'center' }}>
+                <h2 id="howto-modal-title" style={{ fontSize: '24px', fontWeight: '900', marginBottom: '20px', color: '#2c3e50', textAlign: 'center' }}>
                     {UI_TEXT.title[lang]}
                 </h2>
 
@@ -133,6 +145,7 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose, currentLanguag
                 </div>
 
                 <button
+                    autoFocus
                     onClick={onClose}
                     style={{
                         width: '100%', padding: '14px', backgroundColor: '#3498db', color: '#fff',
