@@ -177,9 +177,9 @@ const SEOContent = () => {
                     marginBottom: '80px'
                 }}>
                     <article>
-                        <h4 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
+                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
                             Comprehensive JR & Private Rail Data
-                        </h4>
+                        </h3>
                         <p style={{ fontSize: '15px' }}>
                             Japan&apos;s rail network is divided between the <strong>JR Group</strong> (Hokkaido, East, Central, West, Shikoku, and Kyushu) and hundreds of <strong>private railway companies</strong> like Odakyu, Keio, and Tokyu.
                             Our map integrates data from the Ministry of Land, Infrastructure, Transport and Tourism (MLIT) to ensure every station, from the bustling platforms of Shinjuku to remote stops in Hokkaido, is accurately represented.
@@ -187,9 +187,9 @@ const SEOContent = () => {
                     </article>
 
                     <article>
-                        <h4 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
+                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
                             The Shinkansen (Bullet Train) Network
-                        </h4>
+                        </h3>
                         <p style={{ fontSize: '15px' }}>
                             Visualize the backbone of Japanese travel: the Shinkansen. From the legendary <strong>Tokaido Shinkansen</strong> connecting Tokyo and Osaka to the <strong>Hokkaido Shinkansen</strong> and <strong>Kyushu Shinkansen</strong>,
                             easily track the high-speed corridors that define modern Japanese inter-city transport.
@@ -197,9 +197,9 @@ const SEOContent = () => {
                     </article>
 
                     <article>
-                        <h4 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
+                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
                             Digital Journey Tracking (Noritsubushi)
-                        </h4>
+                        </h3>
                         <p style={{ fontSize: '15px' }}>
                             For rail enthusiasts (<em>Densha-Otaku</em>), tracking the miles is a passion. JapanRailNote allows you to record your trips digitally.
                             Select your departure and arrival stations, visualize your path on our high-performance canvas map, and keep a permanent record of your railroad completion status.
@@ -212,19 +212,19 @@ const SEOContent = () => {
                     <h3 style={{ color: '#fff', marginBottom: '25px', textAlign: 'center' }}>Frequently Asked Questions</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
                         <div>
-                            <h5 style={{ color: '#eee', marginBottom: '10px' }}>Is the JR Pass covered?</h5>
+                            <h4 style={{ color: '#eee', marginBottom: '10px' }}>Is the JR Pass covered?</h4>
                             <p style={{ fontSize: '14px' }}>Yes, all JR lines included in the Japan Rail Pass are mapped. You can filter for JR lines specifically in our sidebar to plan your pass usage effectively.</p>
                         </div>
                         <div>
-                            <h5 style={{ color: '#eee', marginBottom: '10px' }}>How accurate is the map data?</h5>
+                            <h4 style={{ color: '#eee', marginBottom: '10px' }}>How accurate is the map data?</h4>
                             <p style={{ fontSize: '14px' }}>We use the latest high-fidelity geographic data (KSJ) provided by the Japanese government, ensuring curve accuracy and station co-location are precise.</p>
                         </div>
                         <div>
-                            <h5 style={{ color: '#eee', marginBottom: '10px' }}>Can I use this on mobile?</h5>
+                            <h4 style={{ color: '#eee', marginBottom: '10px' }}>Can I use this on mobile?</h4>
                             <p style={{ fontSize: '14px' }}>The site is fully responsive. Use the mobile-optimized interface to record trips while you are actually on the train.</p>
                         </div>
                         <div>
-                            <h5 style={{ color: '#eee', marginBottom: '10px' }}>What languages are supported?</h5>
+                            <h4 style={{ color: '#eee', marginBottom: '10px' }}>What languages are supported?</h4>
                             <p style={{ fontSize: '14px' }}>We support Japanese, Korean, and English. Station names and line information are displayed in bilingual formats for ease of use by tourists.</p>
                         </div>
                     </div>
