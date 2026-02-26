@@ -20,7 +20,8 @@ import MapLoadingIndicator from './MapLoadingIndicator';
 import FeedbackModal from './FeedbackModal';
 
 const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
-    ssr: false
+    ssr: false,
+    loading: () => <div style={{ height: '100%', width: '100%', backgroundColor: '#a0c4ff' }} />
 });
 
 const MapPaneWithNoSSR = dynamic(() => import('./MapPane'), { ssr: false });
@@ -28,7 +29,7 @@ import { SidebarProps } from './Sidebar';
 import { MyLinesPaneProps } from './MyLinesPane';
 
 const SidebarWithNoSSR = dynamic<SidebarProps>(() => import('./Sidebar'), { ssr: false });
-const MyLinesPaneWithNoSSR = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
+import MyLinesPane from './MyLinesPane';
 
 import type { MobileLinePreviewProps } from './Mobile/MobileLinePreview';
 const MobileLinePreviewWithNoSSR = dynamic<MobileLinePreviewProps>(() => import('./Mobile/MobileLinePreview'), { ssr: false });
@@ -106,7 +107,6 @@ const MainPageClient = () => {
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
     const [showLabels, setShowLabels] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
-    const isSyncingRef = React.useRef(false);
 
     // Helpers for Firestore data structure constraints (No nested arrays)
     const toFirestoreTrip = (trip: Trip) => ({
@@ -114,6 +114,7 @@ const MainPageClient = () => {
         geometries: JSON.stringify(trip.geometries)
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fromFirestoreTrip = (data: any): Trip => ({
         ...data,
         geometries: typeof data.geometries === 'string' ? JSON.parse(data.geometries) : data.geometries
@@ -154,7 +155,7 @@ const MainPageClient = () => {
     };
 
     const { railData, isLoading: isRailLoading } = useRailData();
-    const { prefectures, municipalities, isLoading: isMapDataLoading } = useMapData();
+    const { isLoading: isMapDataLoading } = useMapData();
 
     const isTotalLoading = !isLoaded || isRailLoading || isMapDataLoading;
 
@@ -707,7 +708,7 @@ const MainPageClient = () => {
 
                     {!isMobile && (
                         <div style={{ width: '300px', height: '100%', borderLeft: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, overflowY: 'auto' }}>
-                            <MyLinesPaneWithNoSSR
+                            <MyLinesPane
                                 language={language}
                                 recordedTrips={recordedTrips}
                                 onDeleteTrip={handleDeleteTrip}
@@ -761,7 +762,7 @@ const MainPageClient = () => {
                                     </div>
                                 ),
                                 content: (
-                                    <MyLinesPaneWithNoSSR
+                                    <MyLinesPane
                                         language={language}
                                         recordedTrips={recordedTrips}
                                         onDeleteTrip={handleDeleteTrip}

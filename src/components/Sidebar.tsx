@@ -33,16 +33,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     const { user, logout } = useAuth();
     const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    useEffect(() => {
-        if (groupedHierarchy) {
-            const initialExpansion: Record<string, boolean> = {};
-            Object.keys(groupedHierarchy).forEach((categoryId, index) => {
-                initialExpansion[categoryId] = index < 4; // Expand top 4 categories by default (Shinkansen, JR, Major, Local)
-            });
-            Promise.resolve().then(() => setExpandedGroups(initialExpansion));
-        }
-    }, [groupedHierarchy]);
-
     // const getCompanyName = useCallback((id: string) => {
     //     return companyNames[id]?.name || id;
     // }, [companyNames]);
@@ -92,11 +82,16 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
     const toggleGroup = useCallback((group: string) => {
         setExpandedGroups(prev => {
-            const newState = !prev[group];
+            let currentState = prev[group];
+            if (currentState === undefined && groupedHierarchy) {
+                const sortedIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
+                currentState = sortedIds.indexOf(group) < 4;
+            }
+            const newState = !currentState;
             trackEvent('group_toggle', 'ui_interaction', group, newState ? 1 : 0);
             return { ...prev, [group]: newState };
         });
-    }, []);
+    }, [groupedHierarchy]);
 
     const handleGroupToggle = useCallback((groupKey: string) => {
         if (!groupedHierarchy) return;
@@ -299,7 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
-                {sortedCategoryIds.map(categoryId => {
+                {sortedCategoryIds.map((categoryId, index) => {
                     const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
                     if (!categoryInfo) return null;
                     const title = language === 'ko' ? categoryInfo.name : (language === 'en' ? categoryInfo.name_en : categoryInfo.name);
@@ -309,7 +304,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             title={title}
                             groupKey={categoryId}
                             companies={groupedHierarchy[categoryId]}
-                            expanded={expandedGroups[categoryId] ?? false}
+                            expanded={expandedGroups[categoryId] !== undefined ? expandedGroups[categoryId] : index < 4}
                             onToggleExpanded={toggleGroup}
                             onToggleSelection={handleGroupToggle}
                             selectedLines={selectedLines}
