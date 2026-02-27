@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import { getProgressColor } from '../lib/uiUtils';
 
@@ -20,7 +19,6 @@ interface SidebarGroupProps {
     sortMode: 'ja' | 'usage';
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
-    language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
     companyNames: Record<string, { name: string; name_en?: string }>;
     lineNames: Record<string, { name: string; name_en?: string }>;
@@ -30,7 +28,6 @@ const SidebarLineItem: React.FC<{
     lineId: string;
     companyId: string;
     lineData: { name: string; name_en?: string };
-    language: Language;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
     onLineClick?: (line: string) => void;
     onToggleLine: (lineKey: string) => void;
@@ -39,7 +36,7 @@ const SidebarLineItem: React.FC<{
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
 }> = memo(({ lineId, companyId, lineData, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
-    const lName = lineData.name;
+    const lName = lineData.name_en || lineData.name;
     const key = `${companyId}::${lineId}`;
     const isActive = activeLine === key;
     const isSelected = selectedLines.includes(key) || isActive;
@@ -104,7 +101,7 @@ const SidebarLineItem: React.FC<{
                                 textOverflow: 'ellipsis',
                                 opacity: 0.8
                             }}>
-                                {lineData.name_en}
+                                {lineData.name}
                             </span>
                         )}
                     </div>
@@ -154,13 +151,13 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
         title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
         selectedLines, onToggleLine, onToggleCompany, expandedCompanies, toggleCompany,
         lineLengths, visitedLineLengths, sortMode, activeLine, onLineClick,
-        language, registerLineRef, companyNames, lineNames
+        registerLineRef, companyNames, lineNames
     } = props;
 
     if (Object.keys(companies).length === 0) return null;
 
-    const getCompanyName = (id: string) => companyNames[id]?.name || id;
-    const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name || lineNames[id]?.name || id;
+    const getCompanyName = (id: string) => companyNames[id]?.name_en || companyNames[id]?.name || id;
+    const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name_en || lineData?.name || lineNames[id]?.name_en || lineNames[id]?.name || id;
 
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
@@ -172,7 +169,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
             };
             return getCompanyUsage(b) - getCompanyUsage(a);
         }
-        return getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'ja');
+        return getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'en');
     });
 
     return (
@@ -238,8 +235,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                         const isExpanded = expandedCompanies[companyId];
                         const lineIds = Object.keys(lines);
                         const companyData = companyNames[companyId];
-                        const cName = companyData?.name || companyId;
-                        const cNameEn = companyData?.name_en || "";
+                        const cName = companyData?.name_en || companyData?.name || companyId;
+                        const cNameEn = companyData?.name || "";
 
                         const allLinesSelected = Object.keys(lines).every(lineId => selectedLines.includes(`${companyId}::${lineId}`));
                         const someLinesSelected = Object.keys(lines).some(lineId => selectedLines.includes(`${companyId}::${lineId}`));
@@ -247,7 +244,6 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                         const companyTotalLines = Object.keys(lines).length;
                         const companyVisitedCount = Object.keys(lines).filter(lineId => (visitedLineLengths[`${companyId}::${lineId}`] || 0) > 0).length;
 
-                        // Local sort with companyId
                         const companySortedLines = [...lineIds].sort((a, b) => {
                             if (sortMode === 'usage') {
                                 const getUsage = (lId: string) => {
@@ -256,7 +252,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                 };
                                 return getUsage(b) - getUsage(a);
                             }
-                            return getLineName(a).localeCompare(getLineName(b), 'ja');
+                            return getLineName(a).localeCompare(getLineName(b), 'en');
                         });
 
                         return (
@@ -351,7 +347,6 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                                 lineId={lId}
                                                 companyId={companyId}
                                                 lineData={lineNames[lId]}
-                                                language={language}
                                                 registerLineRef={registerLineRef}
                                                 onLineClick={onLineClick}
                                                 onToggleLine={onToggleLine}

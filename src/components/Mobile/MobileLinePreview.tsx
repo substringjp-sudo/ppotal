@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { StationNode, LineSegment } from '../../lib/graphUtils';
 
-import { Language } from '../../lib/translations';
 import TubeMap from '../TubeMap';
 import { useLineTopology } from '../../hooks/useLineTopology';
 import { getLineColor } from '../../lib/lineColors';
@@ -15,7 +14,6 @@ export interface MobileLinePreviewProps {
     visitedStations: Set<string>;
     selectedLines: string[];
     onToggleLine: (lineId: string) => void;
-    language: Language;
     railData: RailData | null;
 }
 
@@ -27,13 +25,11 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     visitedStations,
     selectedLines,
     onToggleLine,
-    language,
     railData
 }) => {
     const isSelected = selectedLines.includes(lineId);
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
-    // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
 
     const stats = useMemo(() => {
@@ -62,11 +58,11 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     const companyData = railData?.companies[company];
     const lineData = railData?.lines[lineName];
 
-    const cNamePrimary = language === 'en' ? (companyData?.name_en || company) : (companyData?.name || company);
-    const lNamePrimary = language === 'en' ? (lineData?.name_en || lineName) : (lineData?.name || lineName);
+    const cNamePrimary = companyData?.name_en || company;
+    const lNamePrimary = lineData?.name_en || lineName;
 
-    const cNameSecondary = language === 'en' ? (companyData?.name || "") : (companyData?.name_en || "");
-    const lNameSecondary = language === 'en' ? (lineData?.name || "") : (lineData?.name_en || "");
+    const cNameSecondary = companyData?.name || "";
+    const lNameSecondary = lineData?.name || "";
 
     return (
         <div style={{
@@ -110,7 +106,6 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                     visitedStations={visitedStations}
                     visitedEdges={visitedEdges}
                     lineColor={lineColor}
-                    language={language}
                 />
             </div>
 
@@ -128,7 +123,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                     transition: 'all 0.2s'
                 }}
             >
-                {isSelected ? '지도에서 숨기기' : '지도에 표시하기'}
+                {isSelected ? 'Hide from Map' : 'Show on Map'}
             </button>
         </div>
     );

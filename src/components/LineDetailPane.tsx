@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
-import { Language } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
 import { useLineTopology } from '../hooks/useLineTopology';
@@ -20,13 +19,12 @@ export interface LineDetailPaneProps {
     getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null;
     onStationClick?: (id: string) => void;
     onClose: () => void;
-    language: Language;
     onToggleLine?: (lineId: string) => void;
     railData: RailData | null;
 }
 
 const LineDetailPane: React.FC<LineDetailPaneProps> = ({
-    lineId, segments, nodes, visitedEdges, selectedLines, onClose, onStationClick, language, onToggleLine,
+    lineId, segments, nodes, visitedEdges, selectedLines, onClose, onStationClick, onToggleLine,
     getShortestPath, onRecordTrip, railData
 }) => {
     const [company, lineName] = lineId.split('::');
@@ -73,9 +71,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
         };
     }, [segments, visitedEdges, lineData]);
 
-    // Calculate topology data using the hook
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
-
 
     return (
         <div style={{
@@ -128,25 +124,23 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     </button>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        {/* Primary Row: Line Name (JA followed by EN) */}
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
                             <span style={{ fontSize: '26px', fontWeight: '900', color: '#1a1a1a', lineHeight: '1' }}>
-                                {lineData?.name || lineName}
+                                {lineData?.name_en || lineData?.name || lineName}
                             </span>
                             {lineData?.name_en && (
                                 <span style={{ fontSize: '16px', fontWeight: '600', color: '#718096', opacity: 0.8 }}>
-                                    {lineData.name_en}
+                                    {lineData.name}
                                 </span>
                             )}
                         </div>
-                        {/* Secondary Row: Company Name (JA followed by EN) */}
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
                             <span style={{ fontSize: '13px', color: '#888', fontWeight: '700' }}>
-                                {companyData?.name || company}
+                                {companyData?.name_en || companyData?.name || company}
                             </span>
                             {companyData?.name_en && (
                                 <span style={{ fontSize: '11px', color: '#a0aec0', fontWeight: '500' }}>
-                                    {companyData.name_en}
+                                    {companyData.name}
                                 </span>
                             )}
                         </div>
@@ -211,7 +205,6 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     visitedEdges={visitedEdges}
                     lineColor={lineColor}
                     onStationClick={onStationClick}
-                    language={language}
                     onPathCreate={(start, end) => {
                         if (getShortestPath && onRecordTrip) {
                             const pathData = getShortestPath(start, end, [lineId]);

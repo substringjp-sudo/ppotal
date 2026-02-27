@@ -1,24 +1,20 @@
 "use client";
 
 import React, { useMemo } from 'react';
-import { Language } from '../lib/translations';
 import { RailData, Station, Line, Section, Company } from '../types/railData';
 import { Trip } from '../types/trip';
 
 export interface MyLinesPaneProps {
-    language: Language;
     recordedTrips?: Trip[];
     onDeleteTrip?: (id: string) => void;
     railData: RailData | null;
 }
 
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
-    language,
     recordedTrips = [],
     onDeleteTrip,
     railData
 }) => {
-    // Reverse recorded trips to show newest first
     const displayTrips = useMemo(() => {
         return [...(recordedTrips || [])].reverse();
     }, [recordedTrips]);
@@ -48,18 +44,14 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                         const getStationFullInfo = (station: (Station & { lines?: string[] }) | undefined, id: string) => {
                             if (!station) return {
                                 name: id,
-                                name_en: '',
                                 companyName: 'Unknown',
-                                companyName_en: '',
                                 lineName: 'Unknown',
-                                lineName_en: '',
                                 lineColor: '#cbd5e0'
                             };
 
                             let compId = '';
                             let lineId = '';
 
-                            // processedStations has 'lines', but raw railData.stations has 'platform_ids'
                             if (station.lines && station.lines.length > 0) {
                                 const firstLineId = station.lines[0];
                                 const parts = firstLineId?.split('::') || [];
@@ -77,12 +69,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             const line = lineId ? (railData?.lines as Record<string, Line>)?.[lineId] : null;
 
                             return {
-                                name: station.name,
-                                name_en: station.name_en || '',
-                                companyName: comp?.name || compId || 'Unknown',
-                                companyName_en: comp?.name_en || '',
-                                lineName: line?.name || lineId || 'Unknown',
-                                lineName_en: line?.name_en || '',
+                                name: station.name_en || station.name,
+                                companyName: comp?.name_en || comp?.name || compId || 'Unknown',
+                                lineName: line?.name_en || line?.name || lineId || 'Unknown',
                                 lineColor: line?.color || '#cbd5e0'
                             };
                         };
@@ -90,23 +79,17 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                         const startInfo = getStationFullInfo(startStation, trip.start);
                         const endInfo = getStationFullInfo(endStation, trip.end);
 
-                        // Identify unique lines used in this trip with bilingual support
                         const linesUsed = Array.from(new Set(trip.sectionIds?.map((sid: number) => {
                             const section = railData?.sections?.sections?.find((s: Section) => s.id === sid);
                             if (section) {
                                 const lData = railData?.lines[section.line_id];
-                                return JSON.stringify({
-                                    name: lData?.name || section.line_id.toString(),
-                                    name_en: lData?.name_en || '',
-                                    color: lData?.color || '#3498db'
-                                });
+                                return lData?.name_en || lData?.name || section.line_id.toString();
                             }
                             return null;
-                        }).filter(Boolean))).map(s => JSON.parse(s as string)) as { name: string, name_en: string, color: string }[];
+                        }).filter(Boolean))) as string[];
 
-                        const StationInfo = ({ info }: { info: { name: string; name_en: string; companyName: string; companyName_en: string; lineName: string; lineName_en: string; lineColor: string }, isStart: boolean }) => (
+                        const StationInfo = ({ info }: { info: { name: string; companyName: string; lineName: string; lineColor: string } }) => (
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                {/* Line & Company Header */}
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -124,7 +107,6 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         textOverflow: 'ellipsis'
                                     }}>
                                         {info.lineName}
-                                        {info.lineName_en && <span style={{ fontSize: '9px', fontWeight: '500', color: '#718096', marginLeft: '4px' }}>{info.lineName_en}</span>}
                                     </div>
                                     <div style={{
                                         fontSize: '9px',
@@ -135,11 +117,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         textOverflow: 'ellipsis'
                                     }}>
                                         {info.companyName}
-                                        {info.companyName_en && <span style={{ fontWeight: '500', marginLeft: '4px' }}>{info.companyName_en}</span>}
                                     </div>
                                 </div>
 
-                                {/* Station Name Area */}
                                 <div style={{ minWidth: 0 }}>
                                     <div style={{
                                         fontSize: '16px',
@@ -152,19 +132,6 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     }}>
                                         {info.name}
                                     </div>
-                                    {info.name_en && (
-                                        <div style={{
-                                            fontSize: '10px',
-                                            color: '#718096',
-                                            fontWeight: '500',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            marginTop: '1px'
-                                        }}>
-                                            {info.name_en}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         );
@@ -184,7 +151,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             >
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                                    <StationInfo info={startInfo} isStart={true} />
+                                    <StationInfo info={startInfo} />
 
                                     <div style={{
                                         margin: '8px 0 8px 10px',
@@ -213,7 +180,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis'
                                                 }}>
-                                                    {linesUsed.map(l => l.name).join(', ')}
+                                                    {linesUsed.join(', ')}
                                                     {trip.path.length > 2 && (
                                                         <span style={{ marginLeft: '6px', color: '#a0aec0', fontWeight: 'bold' }}>
                                                             ({trip.path.length - 2} stations)
@@ -224,7 +191,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         )}
                                     </div>
 
-                                    <StationInfo info={endInfo} isStart={false} />
+                                    <StationInfo info={endInfo} />
                                 </div>
 
                                 <div style={{

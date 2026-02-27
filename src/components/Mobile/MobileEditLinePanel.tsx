@@ -3,7 +3,6 @@ import { StationNode, LineSegment } from '../../lib/graphUtils';
 import TubeMap from '../TubeMap';
 import { useLineTopology } from '../../hooks/useLineTopology';
 
-import { Language } from '../../lib/translations';
 import { getLineColor } from '../../lib/lineColors';
 import { RailData } from '../../types/railData';
 
@@ -15,7 +14,6 @@ interface MobileEditLinePanelProps {
     visitedStations: Set<string>;
     onPathCreate: (startId: string, endId: string) => void;
     onClose: () => void;
-    language: Language;
     railData: RailData | null;
 }
 
@@ -27,7 +25,6 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
     visitedStations,
     onPathCreate,
     onClose,
-    language,
     railData,
 }) => {
     const [company, lineName] = lineId.split('::');
@@ -58,10 +55,10 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                         <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
-                            {railData?.companies[company]?.name || company}
+                            {railData?.companies[company]?.name_en || railData?.companies[company]?.name || company}
                         </span>
                         <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
-                            {railData?.lines[lineName]?.name || lineName}
+                            {railData?.lines[lineName]?.name_en || railData?.lines[lineName]?.name || lineName}
                         </span>
                     </div>
                 </div>
@@ -90,7 +87,6 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                     visitedEdges={visitedEdges}
                     lineColor={lineColor}
                     onPathCreate={onPathCreate}
-                    language={language}
                 />
             </div>
 

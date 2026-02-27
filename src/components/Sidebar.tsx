@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
-import { Language, UI_TRANSLATIONS } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
@@ -17,11 +16,9 @@ export interface SidebarProps {
     visitedLineLengths?: Record<string, number>;
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
-    language: Language;
-    onLanguageChange?: (lang: Language) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, language }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick }) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
 
@@ -32,14 +29,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const { user, logout } = useAuth();
     const lineRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-    // const getCompanyName = useCallback((id: string) => {
-    //     return companyNames[id]?.name || id;
-    // }, [companyNames]);
-
-    // const getLineName = useCallback((id: string) => {
-    //     return lineNames[id]?.name || id;
-    // }, [lineNames]);
 
     useEffect(() => {
         if (activeLine && groupedHierarchy) {
@@ -206,14 +195,14 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                 backgroundColor: '#fff', color: '#64748b', fontSize: '11px', fontWeight: '700', cursor: 'pointer'
                             }}
                         >
-                            {UI_TRANSLATIONS.auth_logout[language]}
+                            Logout
                         </button>
                     </>
                 ) : (
                     <>
                         <div style={{ flex: 1 }}>
                             <p style={{ margin: 0, fontSize: '12px', color: '#475569', fontWeight: '500', lineHeight: '1.4' }}>
-                                {UI_TRANSLATIONS.auth_save_cloud[language]}
+                                Save your progress to the cloud.
                             </p>
                         </div>
                         <button
@@ -224,7 +213,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                 boxShadow: '0 4px 10px rgba(52, 152, 219, 0.2)'
                             }}
                         >
-                            {UI_TRANSLATIONS.auth_login[language]}
+                            Login
                         </button>
                     </>
                 )}
@@ -233,7 +222,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
-                language={language}
             />
 
             <div style={{ marginBottom: '15px' }}>
@@ -317,7 +305,6 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             sortMode={sortMode}
                             activeLine={activeLine}
                             onLineClick={onLineClick}
-                            language={language}
                             registerLineRef={registerLineRef}
                             companyNames={companyNames}
                             lineNames={lineNames}

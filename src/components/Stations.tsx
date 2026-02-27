@@ -4,7 +4,6 @@ import React, { memo, useMemo, useRef, useEffect, useState, useCallback } from '
 import L from 'leaflet';
 import { GeoJSON, useMap } from 'react-leaflet';
 import { MapStyleSettings } from './MainPageClient';
-import { Language } from '../lib/translations';
 import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
 import { sharedSvgRenderer } from './Map';
@@ -32,7 +31,6 @@ interface StationsProps {
     hoveredLine: string | null;
     visitedStations: Set<string>;
     settings: MapStyleSettings;
-    language?: Language;
     isMobile: boolean;
     isMoving?: boolean;
     railData: RailData;
@@ -464,10 +462,8 @@ const Stations: React.FC<StationsProps> = ({
         if (!mapBounds) return [];
         const paddedBounds = mapBounds.pad(2.0);
 
-        // 1. Initial Candidates: Stations within map bounds
         let candidates = allEntries.filter(({ data }) => paddedBounds.contains(data.centroid));
 
-        // 2. Zoom-based Filtering
         if (realZoom < 14) {
             candidates = candidates.filter((item) => {
                 const isSelected = item.data.lines.some(l =>
@@ -477,19 +473,16 @@ const Stations: React.FC<StationsProps> = ({
                 );
                 const isTransfer = item.data.lines.length > 1;
 
-                // 8~11: Very strict (even more reduced frequency)
                 if (realZoom < 12) {
                     return isTransfer || (isSelected && (item.id.charCodeAt(0) % 3 === 0));
                 }
 
-                // 12~13: Only transfer stations OR stations on selected/hovered/active lines
                 return isTransfer || isSelected;
             });
         }
 
         if (candidates.length === 0) return [];
 
-        // 3. Sorting/Prioritization
         const prioritized = [...candidates].sort((a, b) => {
             const getPriority = (item: typeof a) => {
                 let p = 0;
@@ -507,9 +500,7 @@ const Stations: React.FC<StationsProps> = ({
             return getPriority(b) - getPriority(a);
         });
 
-        // 4. Collision Detection (Pruning)
         const zoomFactor = Math.pow(2, Math.max(0, 14 - realZoom));
-        // Increase distance for lower zoom levels to reduce density (User Item #3)
         const densityMultiplier = realZoom < 14 ? 1.5 : 1.0;
         const minDistanceLat = 0.0035 * zoomFactor * densityMultiplier;
         const minDistanceLon = 0.0070 * zoomFactor * densityMultiplier;
@@ -522,8 +513,6 @@ const Stations: React.FC<StationsProps> = ({
                 (hoveredLine && l === hoveredLine)
             );
 
-            // 8~13: Even selected stations MUST pass collision detection (don't show all)
-            // 14+: Selected stations bypass collision detection to ensure they are always visible
             const bypassCollision = (realZoom >= 14 && isSelected);
 
             if (bypassCollision) {

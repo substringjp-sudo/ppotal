@@ -7,15 +7,13 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
-import { Language, UI_TRANSLATIONS } from '../../lib/translations';
 
 interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
-    language: Language;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,8 +45,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
             setLoading(false);
         }
     };
-
-    const t = UI_TRANSLATIONS;
 
     return (
         <div style={{
@@ -83,10 +79,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
 
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                     <h2 style={{ fontSize: '28px', fontWeight: '900', color: '#1e293b', marginBottom: '8px', letterSpacing: '-0.5px' }}>
-                        {isLogin ? t.auth_login[language] : t.auth_signup[language]}
+                        {isLogin ? "Login" : "Sign Up"}
                     </h2>
                     <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>
-                        {t.auth_save_cloud[language]}
+                        Save your progress to the cloud.
                     </p>
                 </div>
 
@@ -112,7 +108,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
 
                     <div>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            {t.auth_email[language]}
+                            Email
                         </label>
                         <input
                             type="email"
@@ -130,7 +126,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
 
                     <div>
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            {t.auth_password[language]}
+                            Password
                         </label>
                         <input
                             type="password"
@@ -161,7 +157,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
                             marginTop: '10px', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
                         }}
                     >
-                        {loading ? '...' : (isLogin ? t.auth_login[language] : t.auth_signup[language])}
+                        {loading ? '...' : (isLogin ? "Login" : "Sign Up")}
                     </button>
                 </form>
 
@@ -173,7 +169,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, language }) => {
                             textDecoration: 'underline'
                         }}
                     >
-                        {isLogin ? t.auth_no_account[language] : t.auth_have_account[language]}
+                        {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
                     </button>
                 </div>
             </div>

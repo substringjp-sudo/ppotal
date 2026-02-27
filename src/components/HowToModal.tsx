@@ -1,10 +1,8 @@
 import React from 'react';
-import { Language } from '../lib/translations';
 
 interface HowToModalProps {
     isOpen: boolean;
     onClose: () => void;
-    currentLanguage?: Language;
 }
 
 const UI_TEXT = {
@@ -31,10 +29,9 @@ const GUIDES = {
     ]
 };
 
-const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose, currentLanguage = 'en' }) => {
+const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = React.useState<'desktop' | 'mobile'>('desktop');
 
-    // Sync active tab and detect device
     React.useEffect(() => {
         if (isOpen) {
             const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -49,8 +46,6 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose, currentLanguag
     }, [isOpen, onClose]);
 
     if (!isOpen) return null;
-
-    const lang = currentLanguage;
 
     return (
         <div

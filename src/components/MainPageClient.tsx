@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 
-import { Language, UI_TRANSLATIONS } from '../lib/translations';
 import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
 import HowToModal from './HowToModal';
@@ -93,11 +92,9 @@ const MainPageClient = () => {
         getShortestPath: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
     } | null>(null);
     const [styleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
-    const [language] = React.useState<Language>('en');
     const [selectedStation, setSelectedStation] = React.useState<{ name: string, lines: string[] } | null>(null);
     const [isMobile, setIsMobile] = React.useState(false);
 
-    // Edit Mode State
     const [isEditMode, setIsEditMode] = React.useState(false);
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
     const [tempPath, setTempPath] = React.useState<string[]>([]);
@@ -108,13 +105,11 @@ const MainPageClient = () => {
     const [showLabels, setShowLabels] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
 
-    // Helpers for Firestore data structure constraints (No nested arrays)
     const toFirestoreTrip = (trip: Trip) => ({
         ...trip,
         geometries: JSON.stringify(trip.geometries)
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fromFirestoreTrip = (data: any): Trip => ({
         ...data,
         geometries: typeof data.geometries === 'string' ? JSON.parse(data.geometries) : data.geometries
@@ -123,7 +118,7 @@ const MainPageClient = () => {
     React.useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth <= 768);
-            if (window.innerWidth > 768) setIsEditMode(false); // Auto-exit edit mode on resize to desktop
+            if (window.innerWidth > 768) setIsEditMode(false);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -133,7 +128,6 @@ const MainPageClient = () => {
     const exportMap = async () => {
         const mapElement = document.querySelector('.leaflet-container') as HTMLElement;
         if (!mapElement) return;
-        // Hide UI elements for clean screenshot
         const controls = document.querySelectorAll('.leaflet-control, .map-custom-control, .edit-mode-ui');
         controls.forEach(c => (c as HTMLElement).style.display = 'none');
         try {
@@ -175,9 +169,8 @@ const MainPageClient = () => {
         if (typeof window === 'undefined') return;
 
         const loadInitialData = async () => {
-            if (authLoading) return; // Wait for auth to initialize
+            if (authLoading) return;
             try {
-                // 1. Load from localStorage as baseline
                 const saved = localStorage.getItem('jprail_trips');
                 let localTrips: Trip[] = [];
                 if (saved) {
@@ -185,7 +178,6 @@ const MainPageClient = () => {
                 }
 
                 if (user) {
-                    // 2. If logged in, prioritize Firestore
                     const tripsRef = collection(db, `users/${user.uid}/trips`);
                     const q = query(tripsRef);
                     const querySnapshot = await getDocs(q);
@@ -194,7 +186,6 @@ const MainPageClient = () => {
                         cloudTrips.push(fromFirestoreTrip(doc.data()));
                     });
 
-                    // 3. Migration: If Firestore is empty but local has data, migrate
                     if (cloudTrips.length === 0 && localTrips.length > 0) {
                         const batch = writeBatch(db);
                         localTrips.forEach(trip => {
@@ -204,8 +195,6 @@ const MainPageClient = () => {
                         await batch.commit();
                         setRecordedTrips(localTrips);
                     } else {
-                        // Merge or overwrite? Usually cloud should win for "history"
-                        // For now, let's use cloud data if it exists
                         setRecordedTrips(cloudTrips.length > 0 ? cloudTrips : localTrips);
                     }
                 } else {
@@ -239,7 +228,6 @@ const MainPageClient = () => {
 
         trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
 
-        // Sync to cloud if logged in
         if (user) {
             try {
                 await setDoc(doc(db, `users/${user.uid}/trips`, trip.id), toFirestoreTrip(trip));
@@ -266,9 +254,8 @@ const MainPageClient = () => {
     const [zoomTarget, setZoomTarget] = React.useState<{ type: 'line' | 'station', id: string } | null>(null);
 
     const handleRailroadClick = React.useCallback((line: string) => {
-        // Allow railroad click even in edit mode for context/visual feedback
         setActiveLine(line);
-        setSelectedStation(null); // Clear station selection when a line is clicked
+        setSelectedStation(null);
 
         setSelectedLines(prev => {
             if (prev.includes(line)) return prev;
@@ -277,13 +264,12 @@ const MainPageClient = () => {
             return next;
         });
 
-        // Track interaction
         trackEvent('railroad_click', 'interaction', line);
     }, []);
 
     const handleLineClick = React.useCallback((line: string) => {
         setActiveLine(line);
-        setSelectedStation(null); // Clear station selection
+        setSelectedStation(null);
         setZoomTarget({ type: 'line', id: line });
         setSelectedLines(prev => {
             let next = prev.includes(line) ? prev : [...prev, line];
@@ -293,20 +279,16 @@ const MainPageClient = () => {
     }, []);
 
     const handleStationClick = React.useCallback((stationName: string, lines?: string[]) => {
-        // Only disable station selection if we are actively dragging/creating a path
         if (isEditMode && tempPath.length > 0) return;
 
         setSelectedStation({ name: stationName, lines: lines || [] });
 
-        // When a station is clicked, we might want to see its lines but keep current focus
         if (!isMobile) {
-            // On desktop, clicking a station provides information but doesn't necessarily deselect the active line
-            // unless the user specifically wants to switch context.
         }
     }, [isMobile, isEditMode, tempPath.length]);
 
     const handleResetTrips = React.useCallback(() => {
-        if (window.confirm('모든 이동 기록을 삭제하시겠습니까?')) {
+        if (window.confirm('Are you sure you want to delete all trip records?')) {
             setRecordedTrips([]);
             setVisitedLineLengths({});
             localStorage.removeItem('jprail_trips');
@@ -314,12 +296,8 @@ const MainPageClient = () => {
         }
     }, []);
 
-
-
     const setLineIdMapping = React.useCallback(() => {
-        // Reserved for future use
     }, []);
-
 
     const stats = React.useMemo(() => {
         const visitedLineIds = Object.keys(visitedLineLengths);
@@ -364,7 +342,6 @@ const MainPageClient = () => {
         setIsMobileSheetOpen(false);
     }, [isMobile, isEditMode]);
 
-    // Edit Mode Handlers
     const handleDraftComplete = React.useCallback((trip: Trip) => {
         setDraftTrip(trip);
         setTempPath([]);
@@ -438,7 +415,7 @@ const MainPageClient = () => {
                         e.currentTarget.style.zIndex = '-1';
                     }}
                 >
-                    메인 콘텐츠로 건너뛰기
+                    Skip to main content
                 </a>
 
                 <header style={{
@@ -482,7 +459,7 @@ const MainPageClient = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    {UI_TRANSLATIONS.feedback_button[language]}
+                                    Feedback
                                 </button>
                             </div>
                         )}
@@ -557,7 +534,7 @@ const MainPageClient = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    {UI_TRANSLATIONS.feedback_button[language]}
+                                    Feedback
                                 </button>
                             </div>
                         )
@@ -582,9 +559,9 @@ const MainPageClient = () => {
                                 onClick={handleResetTrips}
                                 style={{
                                     padding: '6px 12px',
-                                    backgroundColor: '#fff',
+                                    backgroundColor: '#e74c3c',
                                     border: '1px solid #e74c3c',
-                                    color: '#e74c3c',
+                                    color: '#fff',
                                     borderRadius: '4px',
                                     cursor: 'pointer',
                                     fontWeight: 'bold',
@@ -629,7 +606,6 @@ const MainPageClient = () => {
                                     setDraftTrip(null);
                                     setTempPath([]);
                                 }}
-                                language={language}
                                 onHeightChange={setEditPanelHeight}
                                 railData={railData}
                             />
@@ -652,7 +628,6 @@ const MainPageClient = () => {
                                     <MobileStationPreviewWithNoSSR
                                         stationName={selectedStation.name}
                                         lines={selectedStation.lines}
-                                        language={language}
                                         onLineClick={(lineId: string) => {
                                             handleRailroadClick(lineId);
                                         }}
@@ -667,7 +642,6 @@ const MainPageClient = () => {
                                         segments={lineDetailData.segments}
                                         nodes={lineDetailData.nodes}
                                         visitedStations={lineDetailData.visitedStations}
-                                        language={language}
                                         selectedLines={selectedLines}
                                         onToggleLine={toggleLine}
                                         railData={railData}
@@ -680,7 +654,7 @@ const MainPageClient = () => {
                     {!isMobile && (
                         <div style={{ width: '350px', height: '100%', borderRight: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}>
                             <div style={{ flex: 1, overflowY: 'auto' }}>
-                                <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} language={language} />
+                                <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
                             </div>
                         </div>
                     )}
@@ -704,7 +678,6 @@ const MainPageClient = () => {
                                     zoomTarget={zoomTarget}
                                     onZoomComplete={() => setZoomTarget(null)}
                                     styleSettings={styleSettings}
-                                    language={language}
                                     isMobile={isMobile}
                                     selectedStation={selectedStation?.name}
                                     onMapClick={handleMapClick}
@@ -732,7 +705,6 @@ const MainPageClient = () => {
                                     onRecordTrip={handleRecordTrip}
                                     onStationClick={handleStationClick}
                                     onClose={() => setActiveLine(null)}
-                                    language={language}
                                     onToggleLine={toggleLine}
                                     railData={railData}
                                 />
@@ -743,7 +715,6 @@ const MainPageClient = () => {
                     {!isMobile && (
                         <div style={{ width: '300px', height: '100%', borderLeft: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, overflowY: 'auto' }}>
                             <MyLinesPane
-                                language={language}
                                 recordedTrips={recordedTrips}
                                 onDeleteTrip={handleDeleteTrip}
                                 railData={railData}
@@ -780,7 +751,6 @@ const MainPageClient = () => {
                                                 handleLineClick(line);
                                                 if (isMobile) setIsMobileSheetOpen(false);
                                             }}
-                                            language={language}
                                         />
                                     )
                                 },
@@ -796,7 +766,6 @@ const MainPageClient = () => {
                                     ),
                                     content: (
                                         <MyLinesPane
-                                            language={language}
                                             recordedTrips={recordedTrips}
                                             onDeleteTrip={handleDeleteTrip}
                                             railData={railData}
@@ -817,7 +786,6 @@ const MainPageClient = () => {
                                 visitedStations={lineDetailData.visitedStations}
                                 onPathCreate={handleStationPathCreate}
                                 onClose={() => setIsEditMode(false)}
-                                language={language}
                                 railData={railData}
                             />
                         </div>
@@ -828,13 +796,11 @@ const MainPageClient = () => {
             <HowToModal
                 isOpen={isHowToOpen}
                 onClose={() => setIsHowToOpen(false)}
-                currentLanguage={language}
             />
 
             <FeedbackModal
                 isOpen={isFeedbackOpen}
                 onClose={() => setIsFeedbackOpen(false)}
-                language={language}
             />
         </div >
     );

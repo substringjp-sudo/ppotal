@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Language } from '../../lib/translations';
 import { getLineColor } from '../../lib/lineColors';
 import { RailData } from '../../types/railData';
 
@@ -8,7 +7,6 @@ export interface MobileStationPreviewProps {
     stationName: string;
     lines: string[]; // List of line IDs (Company::LineName)
     onLineClick?: (lineId: string) => void;
-    language: Language;
     railData: RailData | null;
 }
 
@@ -16,7 +14,6 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     stationName,
     lines,
     onLineClick,
-    language,
     railData
 }) => {
     return (
@@ -42,11 +39,11 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                     const corpInfo = railData?.companies[company];
                     const lineInfo = railData?.lines[line];
 
-                    const corpDisplayName = language === 'en' ? (corpInfo?.name_en || company) : (corpInfo?.name || company);
-                    const lineDisplayName = language === 'en' ? (lineInfo?.name_en || line) : (lineInfo?.name || line);
+                    const corpDisplayName = corpInfo?.name_en || company;
+                    const lineDisplayName = lineInfo?.name_en || line;
 
-                    const corpSecondaryName = language === 'en' ? (corpInfo?.name || "") : (corpInfo?.name_en || "");
-                    const lineSecondaryName = language === 'en' ? (lineInfo?.name || "") : (lineInfo?.name_en || "");
+                    const corpSecondaryName = corpInfo?.name || "";
+                    const lineSecondaryName = lineInfo?.name || "";
 
                     return (
                         <div

@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { TopologyNode, TopologyEdge } from '../hooks/useLineTopology';
-import { Language } from '../lib/translations';
-
 
 interface TubeMapProps {
     nodes: TopologyNode[];
@@ -15,7 +13,6 @@ interface TubeMapProps {
     lineColor: string;
     onStationClick?: (id: string) => void;
     onPathCreate?: (startId: string, endId: string) => void;
-    language: Language;
 }
 
 const TubeMap: React.FC<TubeMapProps> = ({
@@ -32,7 +29,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const [mousePos, setMousePos] = useState<{ x: number, y: number } | null>(null);
     const [nearestNode, setNearestNode] = useState<string | null>(null);
 
-    // Shortest path calculation (BFS) within the local topology
     const previewPath = useMemo(() => {
         if (!dragStartNode || !nearestNode || !adj || dragStartNode === nearestNode) return [];
 
@@ -56,7 +52,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
         return [];
     }, [dragStartNode, nearestNode, adj]);
 
-    // Calculate bounds with padding
     const xs = nodes.map(n => n.x);
     const ys = nodes.map(n => n.y);
     const minX = xs.length > 0 ? Math.min(...xs) - 100 : 0;
@@ -83,21 +78,15 @@ const TubeMap: React.FC<TubeMapProps> = ({
             return { x: 0, y: 0 };
         }
 
-        // Pixel coordinates within the content (accounting for scroll)
         const x = clientX - rect.left + containerRef.current.scrollLeft;
         const y = clientY - rect.top + containerRef.current.scrollTop;
 
-        // Map pixel coord to viewBox coord
-        // Since svgWidth/Height are the pixel dimensions of the SVG and viewBox is minX/minY/svgWidth/svgHeight
-        // SVG Coord = ViewBoxStart + PixelOffset
         return { x: minX + x, y: minY + y };
     }, [minX, minY]);
 
     const handleStart = (nodeId: string, e: React.MouseEvent | React.TouchEvent) => {
-        // Only trigger drag for non-joint nodes or if we want to allow joint selection
         setDragStartNode(nodeId);
         setMousePos(getSvgCoord(e));
-        // We don't stop propagation here to allow potential scrolling if drag doesn't move much
     };
 
     const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -107,11 +96,10 @@ const TubeMap: React.FC<TubeMapProps> = ({
             const coord = getSvgCoord(e);
             setMousePos(coord);
 
-            // Find nearest node within some distance
-            let minDist = 100; // Threshold for "snapping"
+            let minDist = 100;
             let found = null;
             nodes.forEach(n => {
-                if (n.isJoint) return; // Skip joints for snapping
+                if (n.isJoint) return;
                 const d = Math.sqrt(Math.pow(n.x - coord.x, 2) + Math.pow(n.y - coord.y, 2));
                 if (d < minDist) {
                     minDist = d;
@@ -120,7 +108,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
             });
             setNearestNode(found);
 
-            // Auto-scroll when dragging near edges
             if (containerRef.current) {
                 const rect = containerRef.current.getBoundingClientRect();
                 let clientX: number | undefined;
@@ -131,8 +118,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 }
 
                 if (clientX !== undefined) {
-                    const threshold = 50; // pixels from edge
-                    const speed = 15; // scroll speed
+                    const threshold = 50;
+                    const speed = 15;
 
                     if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
 
@@ -153,7 +140,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 }
             }
 
-            if (e.cancelable) e.preventDefault(); // Prevent scroll while dragging
+            if (e.cancelable) e.preventDefault();
         }
     };
 
@@ -333,7 +320,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         </filter>
                     </defs>
 
-                    {/* 1. Edges */}
                     {edges.map((edge, i) => {
                         const fromNode = nodes.find(n => n.id === edge.from);
                         const toNode = nodes.find(n => n.id === edge.to);
@@ -357,7 +343,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         );
                     })}
 
-                    {/* 2. Drag feedback path */}
                     {dragStartNode && previewPath.length > 1 && nodesById && (
                         <g style={{ pointerEvents: 'none' }}>
                             {previewPath.map((nodeId: string, idx: number) => {
@@ -379,7 +364,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         </g>
                     )}
 
-                    {/* 2.1 Fallback direct line if no path yet or just started */}
                     {dragStartNode && startNodeObj && mousePos && (!nearestNode || previewPath.length <= 1) && (
                         <line
                             x1={startNodeObj.x}
@@ -394,7 +378,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         />
                     )}
 
-                    {/* 2.2 Connector from nearest node to exact mouse pos */}
                     {dragStartNode && nearestNode && nodesById && mousePos && (
                         <line
                             x1={nodesById.get(nearestNode)!.x}
@@ -409,7 +392,6 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         />
                     )}
 
-                    {/* 3. Nodes */}
                     {nodes.map((node) => {
                         const isSelected = dragStartNode === node.id;
                         if (node.isJoint) return null;
@@ -451,9 +433,9 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                         stroke: '#ffffff', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round'
                                     }}
                                 >
-                                    <tspan x={node.x} dy="0">{node.name}</tspan>
+                                    <tspan x={node.x} dy="0">{node.name_en || node.name}</tspan>
                                     {node.name_en && (
-                                        <tspan x={node.x} dy="14" style={{ fontSize: '11px', fontWeight: '500', fill: '#718096', opacity: 0.9 }}>{node.name_en}</tspan>
+                                        <tspan x={node.x} dy="14" style={{ fontSize: '11px', fontWeight: '500', fill: '#718096', opacity: 0.9 }}>{node.name}</tspan>
                                     )}
                                 </text>
                             </g>

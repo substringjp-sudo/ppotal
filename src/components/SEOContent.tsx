@@ -51,7 +51,7 @@ const RailwayDirectory = () => {
     const { hierarchy, companies, lines, stations, companyCount, lineCount, stationCount } = data;
 
     return (
-        <div style={{ marginTop: '60px', color: '#888' }}>
+        <div style={{ marginTop: '60px', color: '#b0b0b0' }}>
             <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                 <h3 style={{ color: '#fff', fontSize: '24px', marginBottom: '15px' }}>
                     Japan Railway Network Directory
@@ -109,7 +109,7 @@ const RailwayDirectory = () => {
                                             <div style={{
                                                 padding: '8px 10px',
                                                 fontSize: '12px',
-                                                color: '#999',
+                                                color: '#b0b0b0',
                                                 display: 'grid',
                                                 gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
                                                 gap: '4px',
@@ -143,7 +143,7 @@ const SEOContent = () => {
         <section style={{
             padding: '80px 20px',
             backgroundColor: '#1a1c1e',
-            color: '#a0a0a0',
+            color: '#b0b0b0',
             lineHeight: '1.8',
             borderTop: '1px solid #333'
         }}>
@@ -159,7 +159,7 @@ const SEOContent = () => {
                     }}>
                         Ultimate Interactive Japan Railway Map & Journey Tracker
                     </h2>
-                    <p style={{ fontSize: '18px', maxWidth: '850px', margin: '0 auto', color: '#ccc', marginBottom: '20px' }}>
+                    <p style={{ fontSize: '18px', maxWidth: '850px', margin: '0 auto', color: '#dcdcdc', marginBottom: '20px' }}>
                         JapanRailNote is the premier digital companion for both daily commuters and international travelers navigating the world&apos;s most complex railway network.
                         We provide a high-fidelity, interactive visualization of every JR line, private railroad, subway system, and tramway across all 47 prefectures of Japan.
                     </p>
@@ -252,7 +252,7 @@ const SEOContent = () => {
                     <span style={{ color: '#ccc' }}>Hokkaido, Tohoku, Kanto, Chubu, Kansai, Chugoku, Shikoku, Kyushu</span>
                 </nav>
 
-                <div style={{ marginTop: '40px', textAlign: 'center', opacity: '0.6', fontSize: '12px' }}>
+                <div style={{ marginTop: '40px', textAlign: 'center', fontSize: '12px', color: '#999' }}>
                     <p>&copy; {new Date().getFullYear()} JapanRailNote (일본 철도 노트). Designed for precision travel and railroad history tracking.</p>
                 </div>
             </div>

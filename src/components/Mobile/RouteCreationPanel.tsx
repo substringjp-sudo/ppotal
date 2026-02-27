@@ -1,6 +1,5 @@
 import React from 'react';
 import { Trip } from '../../types/trip';
-import { Language } from '../../lib/translations';
 import { RailData } from '../../types/railData';
 
 interface RouteCreationPanelProps {
@@ -10,7 +9,6 @@ interface RouteCreationPanelProps {
     onAdd: () => void;
     onDiscard: () => void;
     onFinish: () => void;
-    language: Language;
     onHeightChange?: (height: number) => void;
     railData: RailData | null;
 }
@@ -21,11 +19,9 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
     draftTrip,
     onAdd,
     onDiscard,
-    language,
     onHeightChange,
     railData
 }) => {
-    // Determine which path to show
     const displayPath = React.useMemo(() => {
         return isDragging ? tempPath : (draftTrip ? draftTrip.waypoints : []);
     }, [isDragging, tempPath, draftTrip]);
@@ -33,7 +29,6 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
 
     React.useEffect(() => {
         if (containerRef.current && onHeightChange) {
-            // Measure actual height including padding/borders
             const height = containerRef.current.offsetHeight;
             onHeightChange(height);
         }
@@ -49,7 +44,7 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
             zIndex: 2000,
             display: 'flex',
             flexDirection: 'column',
-            pointerEvents: 'none' // Allow click-through on transparent parts if any, but children need events
+            pointerEvents: 'none'
         }}>
             <div style={{
                 backgroundColor: '#fff',
@@ -60,9 +55,7 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                 gap: '10px',
                 pointerEvents: 'auto'
             }}>
-                {/* Header removed: Title and Finish button moved to main App Header */}
 
-                {/* Station List or Instruction */}
                 <div style={{
                     display: 'flex',
                     overflowX: 'auto',
@@ -112,7 +105,6 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                     )}
                 </div>
 
-                {/* Action Buttons (Only when draft exists) */}
                 {draftTrip && !isDragging && (
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <button

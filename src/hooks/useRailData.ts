@@ -15,18 +15,7 @@ export const useRailData = () => {
 
                 if (!cachedRailDataPromise) {
                     cachedRailDataPromise = (async () => {
-                        const [
-                            companiesRes,
-                            linesRes,
-                            platformsRes,
-                            stationsRes,
-                            sectionsHighRes,
-                            sectionsMidRes,
-                            sectionsLowRes,
-                            graphRes,
-                            hierarchyRes,
-                            jointsRes
-                        ] = await Promise.all([
+                        const responses = await Promise.all([
                             fetch('/rail/companies.json'),
                             fetch('/rail/lines.json'),
                             fetch('/rail/platforms.json'),
@@ -39,25 +28,27 @@ export const useRailData = () => {
                             fetch('/rail/joints.json')
                         ]);
 
-                        if (!companiesRes.ok || !linesRes.ok || !platformsRes.ok || !stationsRes.ok ||
-                            !sectionsHighRes.ok || !sectionsMidRes.ok || !sectionsLowRes.ok ||
-                            !hierarchyRes.ok || !jointsRes.ok) {
-                            throw new Error('Failed to fetch one or more rail data files');
+                        for (const res of responses) {
+                            if (!res.ok) {
+                                console.error('Failed to fetch:', res.url);
+                                throw new Error(`Failed to fetch ${res.url}: ${res.statusText}`);
+                            }
                         }
 
-                        const [companies, lines, platforms, stations, sectionsHigh, sectionsMid, sectionsLow, hierarchy, joints] = await Promise.all([
-                            companiesRes.json(),
-                            linesRes.json(),
-                            platformsRes.json(),
-                            stationsRes.json(),
-                            sectionsHighRes.json(),
-                            sectionsMidRes.json(),
-                            sectionsLowRes.json(),
-                            hierarchyRes.json(),
-                            jointsRes.json()
-                        ]);
+                        const jsonData = await Promise.all(responses.map(res => res.json()));
 
-                        const railroadGraph = graphRes.ok ? await graphRes.json() : undefined;
+                        const [
+                            companies,
+                            lines,
+                            platforms,
+                            stations,
+                            sectionsHigh,
+                            sectionsMid,
+                            sectionsLow,
+                            railroadGraph,
+                            hierarchy,
+                            joints
+                        ] = jsonData;
 
                         return {
                             companies,
@@ -75,7 +66,7 @@ export const useRailData = () => {
                             railroadGraph,
                             hierarchy,
                             joints
-                        };
+                        } as RailData;
                     })();
                 }
 
@@ -84,7 +75,7 @@ export const useRailData = () => {
             } catch (err) {
                 console.error("Error loading rail data:", err);
                 setError(err instanceof Error ? err : new Error('Unknown error loading rail data'));
-                cachedRailDataPromise = null;
+                cachedRailDataPromise = null; // Clear cache on error
             } finally {
                 setIsLoading(false);
             }

@@ -2,22 +2,18 @@
 
 import React, { useState } from 'react';
 import { db } from '../lib/firebase';
-import { UI_TRANSLATIONS, Language } from '../lib/translations';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface FeedbackModalProps {
     isOpen: boolean;
     onClose: () => void;
-    language: Language;
 }
 
-const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language }) => {
+const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-
-    const t = UI_TRANSLATIONS;
 
     React.useEffect(() => {
         if (isOpen) {
@@ -35,7 +31,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
         e.preventDefault();
 
         if (!content || content.trim().length === 0) {
-            setMessage({ type: 'error', text: t.feedback_empty_content[language] });
+            setMessage({ type: 'error', text: "Feedback content cannot be empty." });
             return;
         }
 
@@ -51,7 +47,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                 status: 'new'
             });
 
-            setMessage({ type: 'success', text: t.feedback_success[language] });
+            setMessage({ type: 'success', text: "Thank you! Your feedback has been submitted." });
             setContent('');
             setAuthor('');
             setTimeout(() => {
@@ -60,7 +56,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
             }, 2000);
         } catch (error) {
             console.error('Feedback submission error:', error);
-            setMessage({ type: 'error', text: t.feedback_error[language] });
+            setMessage({ type: 'error', text: "An error occurred. Please try again." });
         } finally {
             setIsSubmitting(false);
         }
@@ -116,14 +112,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                     fontWeight: '700',
                     color: '#1e293b'
                 }}>
-                    {t.feedback_title[language]}
+                    Submit Feedback
                 </h2>
                 <p id="feedback-modal-desc" style={{
                     color: '#64748b',
                     marginBottom: '24px',
                     fontSize: '15px'
                 }}>
-                    {t.feedback_description[language]}
+                    Have a suggestion or found a bug? Let us know!
                 </p>
 
                 <form onSubmit={handleSubmit}>
@@ -135,7 +131,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                             fontSize: '14px',
                             color: '#475569'
                         }}>
-                            {t.feedback_content_label[language]}
+                            Feedback
                         </label>
                         <textarea
                             id="feedback-content"
@@ -143,7 +139,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             required
-                            placeholder={t.feedback_placeholder[language]}
+                            placeholder="I think it would be great if..."
                             style={{
                                 width: '100%',
                                 height: '150px',
@@ -166,14 +162,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                             fontSize: '14px',
                             color: '#475569'
                         }}>
-                            {t.feedback_author_label[language]}
+                            Your Name (Optional)
                         </label>
                         <input
                             id="feedback-author"
                             type="text"
                             value={author}
                             onChange={(e) => setAuthor(e.target.value)}
-                            placeholder={t.feedback_author_placeholder[language]}
+                            placeholder="Anonymous"
                             style={{
                                 width: '100%',
                                 padding: '12px 16px',
@@ -218,7 +214,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, language
                             boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
                         }}
                     >
-                        {isSubmitting ? t.feedback_submitting[language] : t.feedback_submit[language]}
+                        {isSubmitting ? "Submitting..." : "Submit Feedback"}
                     </button>
                 </form>
             </div>
