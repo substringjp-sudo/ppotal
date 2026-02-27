@@ -19,6 +19,7 @@ interface RailroadLayerProps {
     isMoving?: boolean;
     usedSectionIds?: Set<number>;
     isDragging?: boolean;
+    draftSectionIds?: Set<number>;
 }
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
@@ -32,7 +33,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     isMobile,
     isMoving = false,
     usedSectionIds = new Set(),
-    isDragging = false
+    isDragging = false,
+    draftSectionIds = new Set()
 }) => {
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
@@ -121,21 +123,23 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 color: l.color
             }));
 
-            // Group sections by (line_id, isUsed) (MultiLineString per line/usage state)
+            // Group sections by (line_id, isUsed, isDraft)
             const groupedSections = new Map<string, [number, number][][]>();
             if (data.sections && Array.isArray(data.sections.sections)) {
                 data.sections.sections.forEach((s: Section) => {
                     const isUsed = usedSectionIds.has(s.id);
-                    const key = `${s.line_id}_${isUsed}`;
+                    const isDraft = draftSectionIds?.has(s.id) || false;
+                    const key = `${s.line_id}_${isUsed}_${isDraft}`;
                     if (!groupedSections.has(key)) groupedSections.set(key, []);
                     groupedSections.get(key)!.push(s.geometry);
                 });
             }
 
             groupedSections.forEach((geoms, key) => {
-                const [lineIdStr, isUsedStr] = key.split('_');
+                const [lineIdStr, isUsedStr, isDraftStr] = key.split('_');
                 const lineId = parseInt(lineIdStr);
                 const isUsed = isUsedStr === 'true';
+                const isDraft = isDraftStr === 'true';
 
                 const info = lineInfoMap.get(lineId);
                 if (!info) return;
@@ -152,7 +156,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         company: companyName,
                         company_en: companyInfo?.name_en || '',
                         color: getLineColor(fullId, data) || '#999',
-                        isUsed: isUsed
+                        isUsed: isUsed,
+                        isDraft: isDraft
                     },
                     geometry: { type: 'MultiLineString', coordinates: geoms }
                 });
@@ -192,7 +197,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         }
 
         return { type: 'FeatureCollection', features };
-    }, [railroadNetwork, usedSectionIds]);
+    }, [railroadNetwork, usedSectionIds, draftSectionIds]);
 
 
     // Unified Style Function: Decides all visuals in one pass
@@ -235,30 +240,32 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const glowStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
         const isUsed = feature.properties.isUsed;
+        const isDraft = feature.properties.isDraft;
         const id = feature.properties.id;
         const isHovered = !isDragging && hoveredLine === id;
         const isClicked = activeLine === id;
 
-        // 이동 중일 때는 호버/클릭 상태를 무시하고 오직 방문 경로(isUsed)만 표시
-        const showGlow = isUsed || (!isMoving && (isHovered || isClicked));
+        // 이동 중일 때도 방문 경로(isUsed)와 미리보기 경로(isDraft)는 계속 표시함
+        const showGlow = isUsed || isDraft || (!isMoving && (isHovered || isClicked));
         if (!showGlow) return { opacity: 0, interactive: false };
 
-        // 강조 색상 결정
+        // 강조 색상 결정 (isDraft가 최우선 순위 중 하나)
         let color = '#FFD60A'; // 기본: 호버(Yellow)
 
-        // 지도 이동 중에는 선택 상태보다 방문 경로(Green)를 최우선으로 표시
-        if (isMoving && isUsed) {
+        if (isDraft) {
+            color = '#007AFF'; // 미리보기는 파란색
+        } else if (isMoving && isUsed) {
             color = '#2ecc71';
-        } else if (isClicked) { // isDraggingOverall and isLineHovered/isStationHovered are not defined in this scope. Reverting to original logic for these.
+        } else if (isClicked) {
             color = '#007AFF';
         } else if (isUsed && !isHovered) {
             color = '#2ecc71';
         }
 
-        // 강조 여부 (클릭, 호버, 혹은 방문한 경로 모두 동일한 두께 적용)
-        const isEmphasis = isClicked || isHovered || isUsed;
+        // 강조 여부
+        const isEmphasis = isClicked || isHovered || isUsed || isDraft;
 
-        // 표준화된 테두리 두께 로직 적용 (두께 다시 절반으로 축소)
+        // 표준화된 테두리 두께 로직
         let baseWeight = 6.25;
         const z = Math.round(zoomLevel);
         if (z <= 11) baseWeight = 4.0;
@@ -271,7 +278,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return {
             color: color,
             weight: finalWeight,
-            opacity: isUsed && !isHovered && !isClicked ? 0.6 : 1.0,
+            opacity: (isUsed || isDraft) && !isHovered && !isClicked ? 0.6 : 1.0,
             lineCap: 'round' as const,
             lineJoin: 'round' as const,
             smoothFactor: styleConfig.smoothFactor,
@@ -406,8 +413,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     // Stable key: only re-render on data or major zoom changes
     const layerKey = useMemo(() => {
-        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}`;
-    }, [zoomGroup, usedSectionIds.size, selectionSet.size]);
+        const draftIdsArray = Array.from(draftSectionIds || []);
+        const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
+        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}_${draftKey}`;
+    }, [zoomGroup, usedSectionIds.size, selectionSet.size, draftSectionIds]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 

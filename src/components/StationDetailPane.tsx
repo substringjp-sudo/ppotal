@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './StationDetailPane.module.css';
-import { Station, RailData, Platform, Section } from '../types/railData';
+import { Station, RailData, Platform } from '../types/railData';
 
 interface RegionNames {
   adm1: Record<string, { shapeName: string }>;
@@ -12,10 +12,22 @@ export interface StationDetailPaneProps {
   station: Station;
   railData: RailData;
   onClose: () => void;
+  isTripInProgress: boolean;
+  tripStartStationId: string | null;
+  onStartTrip: (station: Station) => void;
+  onEndTrip: (station: Station) => void;
 }
 
 
-const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData, onClose }) => {
+const StationDetailPane: React.FC<StationDetailPaneProps> = ({
+  station,
+  railData,
+  onClose,
+  isTripInProgress,
+  tripStartStationId,
+  onStartTrip,
+  onEndTrip
+}) => {
   const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
 
   useEffect(() => {
@@ -104,16 +116,37 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData
   return (
     <div className={styles.pane}>
       <div className={styles.header}>
-        <div className={styles.stationInfoContainer}>
-          <div className={styles.stationNameWrapper}>
+        <div className={styles.headerMain}>
+          <div className={styles.stationInfoContainer}>
             <span className={styles.stationName}>{station.name}</span>
-            {(prefectureName || cityName) &&
-              <span className={styles.regionName}>({prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName})</span>
-            }
+            <span className={styles.stationNameEn}>{station.name_en}</span>
           </div>
-          <span className={styles.stationNameEn}>{station.name_en}</span>
+          {(prefectureName || cityName) &&
+            <div className={styles.regionNameContainer}>
+              <span className={styles.regionName}>{prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName}</span>
+            </div>
+          }
         </div>
-        <button onClick={onClose} className={styles.closeButton}>×</button>
+        <div className={styles.headerActions}>
+          {isTripInProgress ? (
+            station.id !== tripStartStationId && (
+              <button
+                className={`${styles.tripButton} ${styles.endTrip}`}
+                onClick={() => onEndTrip(station)}
+              >
+                End Trip
+              </button>
+            )
+          ) : (
+            <button
+              className={`${styles.tripButton} ${styles.startTrip}`}
+              onClick={() => onStartTrip(station)}
+            >
+              Start Trip
+            </button>
+          )}
+          <button onClick={onClose} className={styles.closeButton}>×</button>
+        </div>
       </div>
       <div className={styles.content}>
         <div className={styles.section}>
@@ -129,7 +162,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData
 
               const { left, right } = getDirectionalNeighbors(p);
               const maxNeighbors = Math.max(left.length, right.length);
-              const rowHeight = Math.max(100, maxNeighbors * 45);
+              const rowHeight = Math.max(60, maxNeighbors * 32);
 
               return (
                 <div key={p.code} className={styles.lineRow} style={{ height: rowHeight }}>

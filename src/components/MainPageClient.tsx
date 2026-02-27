@@ -93,10 +93,13 @@ const MainPageClient = () => {
         visitedEdges: Set<string>,
         visitedStations: Set<string>,
         nodes: Map<string, StationNode>,
-        getShortestPath: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
+        getShortestPath: (start: string, end: string, lines?: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
     } | null>(null);
     const [styleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [selectedStation, setSelectedStation] = React.useState<Station | null>(null);
+    // Trip Recording States
+    const [tripStartStation, setTripStartStation] = React.useState<Station | null>(null);
+    const isTripInProgress = !!tripStartStation;
     const [isMobile, setIsMobile] = React.useState(false);
 
     const [isEditMode, setIsEditMode] = React.useState(false);
@@ -224,6 +227,49 @@ const MainPageClient = () => {
         }
     }, [recordedTrips, isLoaded]);
 
+    const handleStartTrip = React.useCallback((station: Station) => {
+        setTripStartStation(station);
+        trackEvent('start_trip', 'interaction', station.name);
+    }, []);
+
+    const handleEndTrip = React.useCallback((endStation: Station) => {
+        if (!tripStartStation || !lineDetailData) return;
+
+        // Use RoutingGraph to calculate path
+        const pathResult = lineDetailData.getShortestPath(tripStartStation.id, endStation.id, undefined);
+
+        if (pathResult) {
+            const newTrip: Trip = {
+                id: `trip-${Date.now()}`,
+                name: `${tripStartStation.name} → ${endStation.name}`,
+                start: tripStartStation.name,
+                end: endStation.name,
+                startId: tripStartStation.id,
+                endId: endStation.id,
+                path: pathResult.path,
+                waypoints: [tripStartStation.id, endStation.id],
+                geometries: pathResult.geometries,
+                distance: pathResult.distance,
+                sectionIds: pathResult.sectionIds,
+                createdAt: new Date().toISOString()
+            };
+
+            setRecordedTrips(prev => [...prev, newTrip]);
+            trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
+
+            // Sync with Firebase if user logged in
+            if (user) {
+                setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip))
+                    .catch(e => console.error("Cloud sync failed", e));
+            }
+
+            // Reset
+            setTripStartStation(null);
+            setDraftTrip(null);
+            setSelectedStation(null);
+        }
+    }, [tripStartStation, lineDetailData, user]);
+
     const handleRecordTrip = React.useCallback(async (trip: Trip) => {
         setRecordedTrips(prev => {
             if (prev.find(t => t.id === trip.id)) return prev;
@@ -299,9 +345,61 @@ const MainPageClient = () => {
                     setIsMobileSheetOpen(false);
                 }
                 trackEvent('station_click', 'interaction', station.name);
+
+                // Preview trip path if one is in progress
+                if (tripStartStation && lineDetailData) {
+                    const pathResult = lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
+                    if (pathResult) {
+                        const previewTrip: Trip = {
+                            id: 'preview',
+                            start: tripStartStation.name,
+                            end: station.name,
+                            path: pathResult.path,
+                            waypoints: [tripStartStation.id, station.id],
+                            geometries: pathResult.geometries,
+                            distance: pathResult.distance,
+                            sectionIds: pathResult.sectionIds,
+                        };
+                        setDraftTrip(previewTrip);
+                    }
+                }
             }, 0);
         }
-    }, [isMobile, isEditMode, tempPath.length, railData]);
+    }, [isMobile, isEditMode, tempPath.length, railData, tripStartStation, lineDetailData]);
+
+    const handleStationHover = React.useCallback((stationId: string | null) => {
+        if (!tripStartStation || !lineDetailData || !railData?.stations) {
+            return;
+        }
+
+        const targetStationId = stationId || (selectedStation?.id !== tripStartStation.id ? selectedStation?.id : null);
+
+        if (targetStationId) {
+            const station = (railData.stations as Record<string, Station>)[targetStationId];
+            if (station && station.id !== tripStartStation.id) {
+                const pathResult = lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
+                if (pathResult) {
+                    const previewTrip: Trip = {
+                        id: 'preview',
+                        start: tripStartStation.name,
+                        end: station.name,
+                        path: pathResult.path,
+                        waypoints: [tripStartStation.id, station.id],
+                        geometries: pathResult.geometries,
+                        distance: pathResult.distance,
+                        sectionIds: pathResult.sectionIds,
+                    };
+                    setDraftTrip(previewTrip);
+                } else {
+                    setDraftTrip(null);
+                }
+            } else if (station && station.id === tripStartStation.id) {
+                setDraftTrip(null);
+            }
+        } else {
+            setDraftTrip(null);
+        }
+    }, [railData, tripStartStation, lineDetailData, selectedStation]);
 
     const handleResetTrips = React.useCallback(() => {
         if (window.confirm('Are you sure you want to delete all trip records?')) {
@@ -717,6 +815,8 @@ const MainPageClient = () => {
                                     onDragUpdate={handleDragUpdate}
                                     rulerTopOffset={editPanelHeight}
                                     onTransitionStateChange={setIsMapTransitioning}
+                                    tripStartStationId={tripStartStation?.id || null}
+                                    onStationHover={handleStationHover}
                                 />
                             </MapWithNoSSR>
                             <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
@@ -744,6 +844,10 @@ const MainPageClient = () => {
                                     station={selectedStation}
                                     railData={railData}
                                     onClose={() => setSelectedStation(null)}
+                                    isTripInProgress={isTripInProgress}
+                                    tripStartStationId={tripStartStation?.id || null}
+                                    onStartTrip={handleStartTrip}
+                                    onEndTrip={handleEndTrip}
                                 />
                             </div>
                         )}

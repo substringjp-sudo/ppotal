@@ -43,9 +43,12 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
                         const getStationFullInfo = (station: (Station & { lines?: string[] }) | undefined, id: string) => {
                             if (!station) return {
-                                name: id,
-                                companyName: 'Unknown',
-                                lineName: 'Unknown',
+                                nameJa: id,
+                                nameEn: '',
+                                companyJa: 'Unknown',
+                                companyEn: '',
+                                lineJa: 'Unknown',
+                                lineEn: '',
                                 lineColor: '#cbd5e0'
                             };
 
@@ -69,9 +72,12 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             const line = lineId ? (railData?.lines as Record<string, Line>)?.[lineId] : null;
 
                             return {
-                                name: station.name_en || station.name,
-                                companyName: comp?.name_en || comp?.name || compId || 'Unknown',
-                                lineName: line?.name_en || line?.name || lineId || 'Unknown',
+                                nameJa: station.name,
+                                nameEn: station.name_en,
+                                companyJa: comp?.name || compId || 'Unknown',
+                                companyEn: comp?.name_en || '',
+                                lineJa: line?.name || lineId || 'Unknown',
+                                lineEn: line?.name_en || '',
                                 lineColor: line?.color || '#cbd5e0'
                             };
                         };
@@ -83,55 +89,96 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             const section = railData?.sections?.sections?.find((s: Section) => s.id === sid);
                             if (section) {
                                 const lData = railData?.lines[section.line_id];
-                                return lData?.name_en || lData?.name || section.line_id.toString();
+                                // Combine JA and EN for VIA list or just use JA? 
+                                // User said Japanese main, English sub. For comma-separated list, maybe just Japanese or "Ja (En)" format.
+                                // Let's use Ja only or abbreviated format to save space.
+                                return lData?.name || section.line_id.toString();
                             }
                             return null;
                         }).filter(Boolean))) as string[];
 
-                        const StationInfo = ({ info }: { info: { name: string; companyName: string; lineName: string; lineColor: string } }) => (
+                        const StationInfo = ({ info }: {
+                            info: {
+                                nameJa: string; nameEn?: string;
+                                companyJa: string; companyEn?: string;
+                                lineJa: string; lineEn?: string;
+                                lineColor: string
+                            }
+                        }) => (
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '1px',
+                                    gap: '0px',
                                     marginBottom: '6px',
                                     borderLeft: `3px solid ${info.lineColor || '#edf2f7'}`,
                                     paddingLeft: '8px'
                                 }}>
-                                    <div style={{
-                                        fontSize: '10px',
-                                        fontWeight: '800',
-                                        color: '#4a5568',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
-                                        {info.lineName}
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <div style={{
+                                            fontSize: '11px',
+                                            fontWeight: '800',
+                                            color: '#2d3748',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {info.lineJa}
+                                        </div>
+                                        {info.lineEn && (
+                                            <div style={{
+                                                fontSize: '9px',
+                                                fontWeight: '600',
+                                                color: '#718096',
+                                                marginTop: '-2px',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                opacity: 0.8
+                                            }}>
+                                                {info.lineEn}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div style={{
-                                        fontSize: '9px',
-                                        fontWeight: 'bold',
-                                        color: '#a0aec0',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
-                                        {info.companyName}
+                                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: '1px' }}>
+                                        <div style={{
+                                            fontSize: '9px',
+                                            fontWeight: 'bold',
+                                            color: '#a0aec0',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {info.companyJa}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div style={{ minWidth: 0 }}>
+                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                                     <div style={{
-                                        fontSize: '16px',
+                                        fontSize: '18px',
                                         fontWeight: '900',
                                         color: '#1a202c',
-                                        lineHeight: '1.1',
+                                        lineHeight: '1',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis'
                                     }}>
-                                        {info.name}
+                                        {info.nameJa}
                                     </div>
+                                    {info.nameEn && (
+                                        <div style={{
+                                            fontSize: '11px',
+                                            fontWeight: '700',
+                                            color: '#718096',
+                                            marginTop: '0px',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {info.nameEn}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );

@@ -59,6 +59,8 @@ interface MapPaneProps {
     onTransitionStateChange?: (isPending: boolean) => void;
     showLabels?: boolean;
     onToggleLabels?: () => void;
+    tripStartStationId?: string | null;
+    onStationHover?: (id: string | null) => void;
 }
 
 const PANE_STYLES = {
@@ -98,7 +100,9 @@ const MapPane: React.FC<MapPaneProps> = ({
     rulerTopOffset = 80,
     onTransitionStateChange,
     showLabels = false,
-    onToggleLabels
+    onToggleLabels,
+    tripStartStationId,
+    onStationHover: onStationHoverExternal
 }) => {
     const map = useMap();
     const [zoomLevel, setZoomLevel] = useState(5);
@@ -170,6 +174,16 @@ const MapPane: React.FC<MapPaneProps> = ({
         });
         return { visitedStations: stationSet, visitedSectionIds: sectionSet };
     }, [recordedTrips, graph]);
+
+    const { draftStationIds, draftSectionIds } = useMemo(() => {
+        const stationSet = new Set<string>();
+        const sectionSet = new Set<number>();
+        if (draftTrip) {
+            if (draftTrip.path) draftTrip.path.forEach(id => stationSet.add(id));
+            if (draftTrip.sectionIds) draftTrip.sectionIds.forEach(id => sectionSet.add(id));
+        }
+        return { draftStationIds: stationSet, draftSectionIds: sectionSet };
+    }, [draftTrip]);
 
     const lodLevel = useMemo(() => {
         if (zoomLevel <= 8) return 'low';
@@ -314,7 +328,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             setIsMoving(false);
         },
         movestart: () => setIsMoving(true),
-        move: () => {},
+        move: () => { },
         moveend: (e) => {
             const newBounds = e.target.getBounds();
             startTransition(() => {
@@ -326,30 +340,32 @@ const MapPane: React.FC<MapPaneProps> = ({
     });
 
     useEffect(() => {
-        if (!activeLine || !graph || !railData || !onLineDetailData) {
+        if (!onLineDetailData || !graph || !railData) {
             if (onLineDetailData) onLineDetailData(null);
             return;
         }
 
-        const segments = graph.getLineSegments(activeLine, railData.hierarchy);
+        const segments = activeLine ? graph.getLineSegments(activeLine, railData.hierarchy) : [];
         const visitedEdges = new Set<string>();
         const visitedStationNames = new Set<string>();
 
-        recordedTrips.forEach(trip => {
-            if (trip.path) {
-                trip.path.forEach((sid: string) => {
-                    const node = graph.getNode(sid);
-                    if (node && node.fullLineId === activeLine) {
-                        visitedStationNames.add(node.name);
-                    }
-                });
+        if (activeLine) {
+            recordedTrips.forEach(trip => {
+                if (trip.path) {
+                    trip.path.forEach((sid: string) => {
+                        const node = graph.getNode(sid);
+                        if (node && node.fullLineId === activeLine) {
+                            visitedStationNames.add(node.name);
+                        }
+                    });
 
-                for (let i = 0; i < trip.path.length - 1; i++) {
-                    const key = [trip.path[i], trip.path[i + 1]].sort().join('<->');
-                    visitedEdges.add(key);
+                    for (let i = 0; i < trip.path.length - 1; i++) {
+                        const key = [trip.path[i], trip.path[i + 1]].sort().join('<->');
+                        visitedEdges.add(key);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         onLineDetailData({
             segments,
@@ -455,6 +471,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 isMoving={isMoving || !!dragStartStation}
                 isDragging={!!dragStartStation}
                 usedSectionIds={visitedSectionIds}
+                draftSectionIds={draftSectionIds}
             />}
 
             {visibleStations && railData &&
@@ -480,8 +497,10 @@ const MapPane: React.FC<MapPaneProps> = ({
                     onStationHover={(id) => {
                         if (!!dragStartStation) return;
                         setHoveredLine(id);
+                        if (onStationHoverExternal) onStationHoverExternal(id);
                     }}
-                    dragStartStation={dragStartStation}
+                    dragStartStation={dragStartStation || tripStartStationId || null}
+                    draftStationIds={draftStationIds}
                 />
             }
 
@@ -503,9 +522,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                 <Polyline
                     positions={draftTrip.geometries.map((segment: number[][]) => segment.map((c: number[]) => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
                     pathOptions={{
-                        color: '#ff9800',
+                        color: '#007AFF',
                         weight: 12,
-                        opacity: 0.5,
+                        opacity: 0.6,
                         lineCap: 'round',
                         lineJoin: 'round',
                         pane: 'ui-elements'

@@ -290,7 +290,18 @@ export class RoutingGraph {
         return segments;
     }
 
-    getShortestPath = (startId: string, endId: string, allowedLines?: string[]): { path: string[], sectionIds: number[], distance: number, geometries: [number, number][][] } | null => {
+    getShortestPath = (rawStartId: string, rawEndId: string, allowedLines?: string[]): { path: string[], sectionIds: number[], distance: number, geometries: [number, number][][] } | null => {
+        const startNode = this.nodes.get(rawStartId);
+        const endNode = this.nodes.get(rawEndId);
+
+        if (!startNode || !endNode) {
+            console.warn(`RoutingGraph: Node not found for ${rawStartId} or ${rawEndId}`);
+            return null;
+        }
+
+        const startId = startNode.id;
+        const endId = endNode.id;
+
         const dists = new Map<string, number>();
         const prev = new Map<string, { node: string, edge: RouteEdge } | null>();
         const pq = new Set<string>();
@@ -304,22 +315,23 @@ export class RoutingGraph {
             let u: string | null = null;
             let minDist = Infinity;
             for (const id of pq) {
-                const d = dists.get(id)!;
+                const d = dists.get(id) ?? Infinity;
                 if (d < minDist) {
                     minDist = d;
                     u = id;
                 }
             }
-            if (u === null) break;
+            if (u === null || minDist === Infinity) break;
             pq.delete(u);
             if (u === endId) break;
 
             const neighbors = this.adj.get(u) || [];
             for (const edge of neighbors) {
-                if (allowedLines && !allowedLines.includes(edge.lineId) && edge.type === 'RAIL') {
+                // If allowedLines is empty or undefined, all RAIL lines are allowed
+                if (allowedLines && allowedLines.length > 0 && !allowedLines.includes(edge.lineId) && edge.type === 'RAIL') {
                     continue;
                 }
-                const alt = dists.get(u)! + edge.distance;
+                const alt = (dists.get(u) ?? Infinity) + edge.distance;
                 if (alt < (dists.get(edge.to) ?? Infinity)) {
                     dists.set(edge.to, alt);
                     prev.set(edge.to, { node: u, edge });

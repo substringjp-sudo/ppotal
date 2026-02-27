@@ -1,1881 +1,2506 @@
 {
   "adm1": {
     "47310658B55038426470858": {
-      "shapeName": "Osaka Prefecture"
+      "shapeName_en": "Osaka Prefecture",
+      "shapeName": "大阪府"
     },
     "47310658B53666900505284": {
-      "shapeName": "Oita"
+      "shapeName_en": "Oita Prefecture",
+      "shapeName": "大分県"
     },
     "47310658B99690886618857": {
-      "shapeName": "Hyogo Prefecture"
+      "shapeName_en": "Hyogo Prefecture",
+      "shapeName": "兵庫県"
     },
     "47310658B56113460554138": {
-      "shapeName": "Fukui Prefecture"
+      "shapeName_en": "Fukui Prefecture",
+      "shapeName": "福井県"
     },
     "47310658B66619598690773": {
-      "shapeName": "Shiga"
+      "shapeName_en": "Shiga Prefecture",
+      "shapeName": "滋賀県"
     },
     "47310658B6129583352403": {
-      "shapeName": "Nara Prefecture"
+      "shapeName_en": "Nara Prefecture",
+      "shapeName": "奈良県"
     },
     "47310658B28580642450327": {
-      "shapeName": "Gifu Prefecture"
+      "shapeName_en": "Gifu Prefecture",
+      "shapeName": "岐阜県"
     },
     "47310658B36253982271084": {
-      "shapeName": "Mie Prefecture"
+      "shapeName_en": "Mie Prefecture",
+      "shapeName": "三重県"
     },
     "47310658B18585040133157": {
-      "shapeName": "Wakayama Prefecture"
+      "shapeName_en": "Wakayama Prefecture",
+      "shapeName": "和歌山県"
     },
     "47310658B199342310790": {
-      "shapeName": "Tokyo"
+      "shapeName_en": "Tokyo",
+      "shapeName": "東京都"
     },
     "47310658B84955483384411": {
-      "shapeName": "Fukuoka Prefecture"
+      "shapeName_en": "Fukuoka Prefecture",
+      "shapeName": "福岡県"
     },
     "47310658B92659408322453": {
-      "shapeName": "Saitama"
+      "shapeName_en": "Saitama Prefecture",
+      "shapeName": "埼玉県"
     },
     "47310658B52822170400832": {
-      "shapeName": "Fukushima"
+      "shapeName_en": "Fukushima Prefecture",
+      "shapeName": "福島県"
     },
     "47310658B20461581662238": {
-      "shapeName": "Tochigi"
+      "shapeName_en": "Tochigi Prefecture",
+      "shapeName": "栃木県"
     },
     "47310658B70834199776359": {
-      "shapeName": "Aomori"
+      "shapeName_en": "Aomori Prefecture",
+      "shapeName": "青森県"
     },
     "47310658B53717877461658": {
-      "shapeName": "Saga Prefecture"
+      "shapeName_en": "Saga Prefecture",
+      "shapeName": "佐賀県"
     },
     "47310658B82893106270036": {
-      "shapeName": "Nagasaki Prefecture"
+      "shapeName_en": "Nagasaki Prefecture",
+      "shapeName": "長崎県"
     },
     "47310658B9011809709100": {
-      "shapeName": "Miyazaki Prefecture"
+      "shapeName_en": "Miyazaki Prefecture",
+      "shapeName": "宮崎県"
     },
     "47310658B50146545060878": {
-      "shapeName": "Kumamoto"
+      "shapeName_en": "Kumamoto Prefecture",
+      "shapeName": "熊本県"
     },
     "47310658B56795339529760": {
-      "shapeName": "Kagoshima Prefecture"
+      "shapeName_en": "Kagoshima Prefecture",
+      "shapeName": "鹿児島県"
     },
     "47310658B57998234967550": {
-      "shapeName": "Gunma"
+      "shapeName_en": "Gunma Prefecture",
+      "shapeName": "群馬県"
     },
     "47310658B94014236912993": {
-      "shapeName": "Kyoto Prefecture"
+      "shapeName_en": "Kyoto Prefecture",
+      "shapeName": "京都府"
     },
     "47310658B1351727290704": {
-      "shapeName": "Chiba"
+      "shapeName_en": "Chiba Prefecture",
+      "shapeName": "千葉県"
     },
     "47310658B31759366295450": {
-      "shapeName": "Ibaraki"
+      "shapeName_en": "Ibaraki Prefecture",
+      "shapeName": "茨城県"
     },
     "47310658B16920518838967": {
-      "shapeName": "Kanagawa"
+      "shapeName_en": "Kanagawa Prefecture",
+      "shapeName": "神奈川県"
     },
     "47310658B84769036468911": {
-      "shapeName": "Hiroshima"
+      "shapeName_en": "Hiroshima Prefecture",
+      "shapeName": "広島県"
     },
     "47310658B78383189487115": {
-      "shapeName": "Tottori Prefecture"
+      "shapeName_en": "Tottori Prefecture",
+      "shapeName": "鳥取県"
     },
     "47310658B41093195623763": {
-      "shapeName": "Shimane"
+      "shapeName_en": "Shimane Prefecture",
+      "shapeName": "島根県"
     },
     "47310658B84734951454670": {
-      "shapeName": "Niigata"
+      "shapeName_en": "Niigata Prefecture",
+      "shapeName": "新潟県"
     },
     "47310658B40291932252870": {
-      "shapeName": "Nagano"
+      "shapeName_en": "Nagano Prefecture",
+      "shapeName": "長野県"
     },
     "47310658B49885151916407": {
-      "shapeName": "Aichi Prefecture"
+      "shapeName_en": "Aichi Prefecture",
+      "shapeName": "愛知県"
     },
     "47310658B89229150671737": {
-      "shapeName": "Yamanashi"
+      "shapeName_en": "Yamanashi Prefecture",
+      "shapeName": "山梨県"
     },
     "47310658B93104231283628": {
-      "shapeName": "Miyagi"
+      "shapeName_en": "Miyagi Prefecture",
+      "shapeName": "宮城県"
     },
     "47310658B1770087263252": {
-      "shapeName": "Yamagata"
+      "shapeName_en": "Yamagata Prefecture",
+      "shapeName": "山形県"
     },
     "47310658B79582216473080": {
-      "shapeName": "Akita"
+      "shapeName_en": "Akita Prefecture",
+      "shapeName": "秋田県"
     },
     "47310658B25007192225139": {
-      "shapeName": "Iwate"
+      "shapeName_en": "Iwate Prefecture",
+      "shapeName": "岩手県"
     },
     "47310658B23327126724630": {
-      "shapeName": "Toyama"
+      "shapeName_en": "Toyama Prefecture",
+      "shapeName": "富山県"
     },
     "47310658B25198997079345": {
-      "shapeName": "Shizuoka"
+      "shapeName_en": "Shizuoka Prefecture",
+      "shapeName": "静岡県"
     },
     "47310658B64524405341851": {
-      "shapeName": "Ishikawa Prefecture"
+      "shapeName_en": "Ishikawa Prefecture",
+      "shapeName": "石川県"
     },
     "47310658B14484689696833": {
-      "shapeName": "Okayama Prefecture"
+      "shapeName_en": "Okayama Prefecture",
+      "shapeName": "岡山県"
     },
     "47310658B83740553463450": {
-      "shapeName": "Tokushima Prefecture"
+      "shapeName_en": "Tokushima Prefecture",
+      "shapeName": "徳島県"
     },
     "47310658B3517091690": {
-      "shapeName": "Kochi Prefecture"
+      "shapeName_en": "Kochi Prefecture",
+      "shapeName": "高知県"
     },
     "47310658B51488753471902": {
-      "shapeName": "Ehime Prefecture"
+      "shapeName_en": "Ehime Prefecture",
+      "shapeName": "愛媛県"
     },
     "47310658B61159371292051": {
-      "shapeName": "Kagawa Prefecture"
+      "shapeName_en": "Kagawa Prefecture",
+      "shapeName": "香川県"
     },
     "47310658B31569081891025": {
-      "shapeName": "Okinawa Prefecture"
+      "shapeName_en": "Okinawa Prefecture",
+      "shapeName": "沖縄県"
     },
     "47310658B99930143900280": {
-      "shapeName": "Hokkaido"
+      "shapeName_en": "Hokkaido",
+      "shapeName": "北海道"
     },
     "47310658B89542195514726": {
-      "shapeName": "Yamaguchi"
+      "shapeName_en": "Yamaguchi Prefecture",
+      "shapeName": "山口県"
     }
   },
   "adm2": {
     "22064153B77932337401071": {
-      "shapeName": "Ine"
+      "shapeName": "伊根町",
+      "shapeName_en": "Ine"
     },
     "22064153B41643449660961": {
-      "shapeName": "Kyotango"
+      "shapeName": "京丹後市",
+      "shapeName_en": "Kyotango"
     },
     "22064153B85291170334429": {
-      "shapeName": "Miyazu"
+      "shapeName": "宮津市",
+      "shapeName_en": "Miyazu"
     },
     "22064153B80637713594426": {
-      "shapeName": "Yosano"
+      "shapeName": "与謝野町",
+      "shapeName_en": "Yosano"
     },
     "22064153B89369754706736": {
-      "shapeName": "Fukuchiyama"
+      "shapeName": "福知山市",
+      "shapeName_en": "Fukuchiyama"
     },
     "22064153B13639223419847": {
-      "shapeName": "Ayabe"
+      "shapeName": "綾部市",
+      "shapeName_en": "Ayabe"
     },
     "22064153B87057363105409": {
-      "shapeName": "Nantan"
+      "shapeName": "南丹市",
+      "shapeName_en": "Nantan"
     },
     "22064153B41096346317753": {
-      "shapeName": "Kyotanba"
+      "shapeName": "京丹波町",
+      "shapeName_en": "Kyotanba"
     },
     "22064153B29354983880781": {
-      "shapeName": "Kameoka"
+      "shapeName": "亀岡市",
+      "shapeName_en": "Kameoka"
     },
     "22064153B5541969291593": {
-      "shapeName": "Nose"
+      "shapeName": "能勢町",
+      "shapeName_en": "Nose"
     },
     "22064153B12861375372699": {
-      "shapeName": "Toyono"
+      "shapeName": "豊能町",
+      "shapeName_en": "Toyono"
     },
     "22064153B57425006507818": {
-      "shapeName": "Kyoto"
+      "shapeName": "京都市",
+      "shapeName_en": "Kyoto"
     },
     "22064153B18725311091842": {
-      "shapeName": "Ibaraki"
+      "shapeName": "茨木市",
+      "shapeName_en": "Ibaraki"
     },
     "22064153B47985746370691": {
-      "shapeName": "Takatsuki"
+      "shapeName": "高槻市",
+      "shapeName_en": "Takatsuki"
     },
     "22064153B75135560754886": {
-      "shapeName": "Shimamoto"
+      "shapeName": "島本町",
+      "shapeName_en": "Shimamoto"
     },
     "22064153B36640851523102": {
-      "shapeName": "Nagaokakyo"
+      "shapeName": "長岡京市",
+      "shapeName_en": "Nagaokakyo"
     },
     "22064153B13974843260526": {
-      "shapeName": "Oyamazaki"
+      "shapeName": "大山崎町",
+      "shapeName_en": "Oyamazaki"
     },
     "22064153B24851023127688": {
-      "shapeName": "Yawata"
+      "shapeName": "八幡市",
+      "shapeName_en": "Yawata"
     },
     "22064153B15329717394060": {
-      "shapeName": "Muko"
+      "shapeName": "向日市",
+      "shapeName_en": "Muko"
     },
     "22064153B56990836800595": {
-      "shapeName": "Uji"
+      "shapeName": "宇治市",
+      "shapeName_en": "Uji"
     },
     "22064153B58761955320799": {
-      "shapeName": "Kumiyama"
+      "shapeName": "久御山町",
+      "shapeName_en": "Kumiyama"
     },
     "22064153B47508893912930": {
-      "shapeName": "Hirakata"
+      "shapeName": "枚方市",
+      "shapeName_en": "Hirakata"
     },
     "22064153B43904559584393": {
-      "shapeName": "Joyo"
+      "shapeName": "城陽市",
+      "shapeName_en": "Joyo"
     },
     "22064153B26243303203029": {
-      "shapeName": "Ujitawara"
+      "shapeName": "宇治田原町",
+      "shapeName_en": "Ujitawara"
     },
     "22064153B20726542801588": {
-      "shapeName": "Ide"
+      "shapeName": "井手町",
+      "shapeName_en": "Ide"
     },
     "22064153B4475386175158": {
-      "shapeName": "Wazuka"
+      "shapeName": "和束町",
+      "shapeName_en": "Wazuka"
     },
     "22064153B29701758489760": {
-      "shapeName": "Kizugawa"
+      "shapeName": "木津川市",
+      "shapeName_en": "Kizugawa"
     },
     "22064153B94269242958702": {
-      "shapeName": "Kasagi"
+      "shapeName": "笠置町",
+      "shapeName_en": "Kasagi"
     },
     "22064153B64690480836823": {
-      "shapeName": "Minamiyamashiro"
+      "shapeName": "南山城村",
+      "shapeName_en": "Minamiyamashiro"
     },
     "22064153B96177150781440": {
-      "shapeName": "Seika"
+      "shapeName": "精華町",
+      "shapeName_en": "Seika"
     },
     "22064153B38167262052076": {
-      "shapeName": "Kyotanabe"
+      "shapeName": "京田辺市",
+      "shapeName_en": "Kyotanabe"
     },
     "22064153B50417144579003": {
-      "shapeName": "Mino"
+      "shapeName": "箕面市",
+      "shapeName_en": "Mino"
     },
     "22064153B36847259305466": {
-      "shapeName": "Ikeda"
+      "shapeName": "池田市",
+      "shapeName_en": "Ikeda"
     },
     "22064153B33921572198120": {
-      "shapeName": "Toyonaka"
+      "shapeName": "豊中市",
+      "shapeName_en": "Toyonaka"
     },
     "22064153B89943083958801": {
-      "shapeName": "Suita"
+      "shapeName": "吹田市",
+      "shapeName_en": "Suita"
     },
     "22064153B3938039280311": {
-      "shapeName": "Osaka"
+      "shapeName": "大阪市",
+      "shapeName_en": "Osaka"
     },
     "22064153B47905717209978": {
-      "shapeName": "Moriguchi"
+      "shapeName": "守口市",
+      "shapeName_en": "Moriguchi"
     },
     "22064153B46426068444343": {
-      "shapeName": "Settsu"
+      "shapeName": "摂津市",
+      "shapeName_en": "Settsu"
     },
     "22064153B65910039566541": {
-      "shapeName": "Katano"
+      "shapeName": "交野市",
+      "shapeName_en": "Katano"
     },
     "22064153B52753140489458": {
-      "shapeName": "Neyagawa"
+      "shapeName": "寝屋川市",
+      "shapeName_en": "Neyagawa"
     },
     "22064153B13823601910405": {
-      "shapeName": "Shijonawate"
+      "shapeName": "四條畷市",
+      "shapeName_en": "Shijonawate"
     },
     "22064153B2702411680064": {
-      "shapeName": "Kadoma"
+      "shapeName": "門真市",
+      "shapeName_en": "Kadoma"
     },
     "22064153B49332133216628": {
-      "shapeName": "Daito"
+      "shapeName": "大東市",
+      "shapeName_en": "Daito"
     },
     "22064153B92569175059493": {
-      "shapeName": "Higashiosaka"
+      "shapeName": "東大阪市",
+      "shapeName_en": "Higashiosaka"
     },
     "22064153B42347188648904": {
-      "shapeName": "Yao"
+      "shapeName": "八尾市",
+      "shapeName_en": "Yao"
     },
     "22064153B1352051297857": {
-      "shapeName": "Matsubara"
+      "shapeName": "松原市",
+      "shapeName_en": "Matsubara"
     },
     "22064153B79599851642878": {
-      "shapeName": "Kashiwara"
+      "shapeName": "柏原市",
+      "shapeName_en": "Kashiwara"
     },
     "22064153B86012482981038": {
-      "shapeName": "Fujiidera"
+      "shapeName": "藤井寺市",
+      "shapeName_en": "Fujiidera"
     },
     "22064153B3707797018061": {
-      "shapeName": "Habikino"
+      "shapeName": "羽曳野市",
+      "shapeName_en": "Habikino"
     },
     "22064153B38947998190164": {
-      "shapeName": "Sakai"
+      "shapeName": "堺市",
+      "shapeName_en": "Sakai"
     },
     "22064153B64380847796562": {
-      "shapeName": "Osakasayama"
+      "shapeName": "大阪狭山市",
+      "shapeName_en": "Osakasayama"
     },
     "22064153B75480988210132": {
-      "shapeName": "Tondabayashi"
+      "shapeName": "富田林市",
+      "shapeName_en": "Tondabayashi"
     },
     "22064153B54195115998574": {
-      "shapeName": "Taishi"
+      "shapeName": "太子町",
+      "shapeName_en": "Taishi"
     },
     "22064153B67052333434032": {
-      "shapeName": "Kanan"
+      "shapeName": "河南町",
+      "shapeName_en": "Kanan"
     },
     "22064153B77062639046888": {
-      "shapeName": "Chihayaakasaka"
+      "shapeName": "千早赤阪村",
+      "shapeName_en": "Chihayaakasaka"
     },
     "22064153B41590295384233": {
-      "shapeName": "Kawachinagano"
+      "shapeName": "河内長野市",
+      "shapeName_en": "Kawachinagano"
     },
     "22064153B92836462541903": {
-      "shapeName": "Izumi"
+      "shapeName": "和泉市",
+      "shapeName_en": "Izumi"
     },
     "22064153B17451481377922": {
-      "shapeName": "Takaishi"
+      "shapeName": "高石市",
+      "shapeName_en": "Takaishi"
     },
     "22064153B21468669116940": {
-      "shapeName": "Izumiotsu"
+      "shapeName": "泉大津市",
+      "shapeName_en": "Izumiotsu"
     },
     "22064153B24324307757053": {
-      "shapeName": "Kishiwada"
+      "shapeName": "岸和田市",
+      "shapeName_en": "Kishiwada"
     },
     "22064153B29529124372788": {
-      "shapeName": "Kaizuka"
+      "shapeName": "貝塚市",
+      "shapeName_en": "Kaizuka"
     },
     "22064153B63121572566835": {
-      "shapeName": "Kumatori"
+      "shapeName": "熊取町",
+      "shapeName_en": "Kumatori"
     },
     "22064153B76675545591158": {
-      "shapeName": "Izumisano"
+      "shapeName": "泉佐野市",
+      "shapeName_en": "Izumisano"
     },
     "22064153B10908081440803": {
-      "shapeName": "Tajiri"
+      "shapeName": "田尻町",
+      "shapeName_en": "Tajiri"
     },
     "22064153B37844292168146": {
-      "shapeName": "Sennan"
+      "shapeName": "泉南市",
+      "shapeName_en": "Sennan"
     },
     "22064153B41932272876566": {
-      "shapeName": "Hannan"
+      "shapeName": "阪南市",
+      "shapeName_en": "Hannan"
     },
     "22064153B21330820256622": {
-      "shapeName": "Misaki"
+      "shapeName": "岬町",
+      "shapeName_en": "Misaki"
     },
     "22064153B90377794213847": {
-      "shapeName": "Tadaoka"
+      "shapeName": "忠岡町",
+      "shapeName_en": "Tadaoka"
     },
     "22064153B88888028347521": {
-      "shapeName": "Otsu"
+      "shapeName": "大津市",
+      "shapeName_en": "Otsu"
     },
     "22064153B69011593937576": {
-      "shapeName": "Higashiomi"
+      "shapeName": "東近江市",
+      "shapeName_en": "Higashiomi"
     },
     "22064153B43689420545928": {
-      "shapeName": "Hikone"
+      "shapeName": "彦根市",
+      "shapeName_en": "Hikone"
     },
     "22064153B46097580032507": {
-      "shapeName": "Takashima"
+      "shapeName": "高島市",
+      "shapeName_en": "Takashima"
     },
     "22064153B12345861604897": {
-      "shapeName": "Omihachiman"
+      "shapeName": "近江八幡市",
+      "shapeName_en": "Omihachiman"
     },
     "22064153B88045540539043": {
-      "shapeName": "Nagahama"
+      "shapeName": "長浜市",
+      "shapeName_en": "Nagahama"
     },
     "22064153B34425405263494": {
-      "shapeName": "Maibara"
+      "shapeName": "米原市",
+      "shapeName_en": "Maibara"
     },
     "22064153B92335026142603": {
-      "shapeName": "Taga"
+      "shapeName": "多賀町",
+      "shapeName_en": "Taga"
     },
     "22064153B54201279846149": {
-      "shapeName": "Kora"
+      "shapeName": "甲良町",
+      "shapeName_en": "Kora"
     },
     "22064153B38229059765707": {
-      "shapeName": "Aisho"
+      "shapeName": "愛荘町",
+      "shapeName_en": "Aisho"
     },
     "22064153B88194855037275": {
-      "shapeName": "Toyosato"
+      "shapeName": "豊郷町",
+      "shapeName_en": "Toyosato"
     },
     "22064153B74601702876653": {
-      "shapeName": "Yasu"
+      "shapeName": "野洲市",
+      "shapeName_en": "Yasu"
     },
     "22064153B31188277470964": {
-      "shapeName": "Moriyama"
+      "shapeName": "守山市",
+      "shapeName_en": "Moriyama"
     },
     "22064153B10066515375089": {
-      "shapeName": "Kusatsu"
+      "shapeName": "草津市",
+      "shapeName_en": "Kusatsu"
     },
     "22064153B44553862516969": {
-      "shapeName": "Ritto"
+      "shapeName": "栗東市",
+      "shapeName_en": "Ritto"
     },
     "22064153B44315864590380": {
-      "shapeName": "Konan"
+      "shapeName": "湖南市",
+      "shapeName_en": "Konan"
     },
     "22064153B841709119109": {
-      "shapeName": "Ryuo"
+      "shapeName": "竜王町",
+      "shapeName_en": "Ryuo"
     },
     "22064153B46807653083164": {
-      "shapeName": "Koka"
+      "shapeName": "甲賀市",
+      "shapeName_en": "Koka"
     },
     "22064153B84489488181314": {
-      "shapeName": "Hino"
+      "shapeName": "日野町",
+      "shapeName_en": "Hino"
     },
     "22064153B27933078040866": {
-      "shapeName": "Toyooka"
+      "shapeName": "豊岡市",
+      "shapeName_en": "Toyooka"
     },
     "22064153B57655293715823": {
-      "shapeName": "Asago"
+      "shapeName": "朝来市",
+      "shapeName_en": "Asago"
     },
     "22064153B90906708968862": {
-      "shapeName": "Kami"
+      "shapeName": "香美町",
+      "shapeName_en": "Kami"
     },
     "22064153B51590096369017": {
-      "shapeName": "Yabu"
+      "shapeName": "養父市",
+      "shapeName_en": "Yabu"
     },
     "22064153B40833492978159": {
-      "shapeName": "Shin-onsen"
+      "shapeName": "新温泉町",
+      "shapeName_en": "Shin-onsen"
     },
     "22064153B3017496076038": {
-      "shapeName": "Taka"
+      "shapeName": "多可町",
+      "shapeName_en": "Taka"
     },
     "22064153B24965253967759": {
-      "shapeName": "Tamba"
+      "shapeName": "丹波市",
+      "shapeName_en": "Tamba"
     },
     "22064153B11925080577501": {
-      "shapeName": "Shiso"
+      "shapeName": "宍粟市",
+      "shapeName_en": "Shiso"
     },
     "22064153B30238599380330": {
-      "shapeName": "Sayo"
+      "shapeName": "佐用町",
+      "shapeName_en": "Sayo"
     },
     "22064153B50299465118131": {
-      "shapeName": "Kamikawa"
+      "shapeName": "神河町",
+      "shapeName_en": "Kamikawa"
     },
     "22064153B99520360805383": {
-      "shapeName": "Sasayama"
+      "shapeName": "丹波篠山市",
+      "shapeName_en": "Sasayama"
     },
     "22064153B6613288399563": {
-      "shapeName": "Takarazuka"
+      "shapeName": "宝塚市",
+      "shapeName_en": "Takarazuka"
     },
     "22064153B8508267062616": {
-      "shapeName": "Sanda"
+      "shapeName": "三田市",
+      "shapeName_en": "Sanda"
     },
     "22064153B67668331145865": {
-      "shapeName": "Inagawa"
+      "shapeName": "猪名川町",
+      "shapeName_en": "Inagawa"
     },
     "22064153B98214763966062": {
-      "shapeName": "Nishiwaki"
+      "shapeName": "西脇市",
+      "shapeName_en": "Nishiwaki"
     },
     "22064153B37072051859512": {
-      "shapeName": "Himeji"
+      "shapeName": "姫路市",
+      "shapeName_en": "Himeji"
     },
     "22064153B20082507087369": {
-      "shapeName": "Kamigori"
+      "shapeName": "上郡町",
+      "shapeName_en": "Kamigori"
     },
     "22064153B97121686045482": {
-      "shapeName": "Tatsuno"
+      "shapeName": "たつの市",
+      "shapeName_en": "Tatsuno"
     },
     "22064153B61344255457770": {
-      "shapeName": "Aioi"
+      "shapeName": "相生市",
+      "shapeName_en": "Aioi"
     },
     "22064153B70293086274273": {
-      "shapeName": "Fukusaki"
+      "shapeName": "福崎町",
+      "shapeName_en": "Fukusaki"
     },
     "22064153B92046986895255": {
-      "shapeName": "Kasai"
+      "shapeName": "加西市",
+      "shapeName_en": "Kasai"
     },
     "22064153B99847717856531": {
-      "shapeName": "Ichikawa"
+      "shapeName": "市川町",
+      "shapeName_en": "Ichikawa"
     },
     "22064153B85239813190769": {
-      "shapeName": "Kato"
+      "shapeName": "加東市",
+      "shapeName_en": "Kato"
     },
     "22064153B58215996136290": {
-      "shapeName": "Nishinomiya"
+      "shapeName": "西宮市",
+      "shapeName_en": "Nishinomiya"
     },
     "22064153B88946393629550": {
-      "shapeName": "Kawanishi"
+      "shapeName": "川西市",
+      "shapeName_en": "Kawanishi"
     },
     "22064153B26843686140780": {
-      "shapeName": "Ono"
+      "shapeName": "小野市",
+      "shapeName_en": "Ono"
     },
     "22064153B60409495183126": {
-      "shapeName": "Miki"
+      "shapeName": "三木市",
+      "shapeName_en": "Miki"
     },
     "22064153B24985865314901": {
-      "shapeName": "Kobe"
+      "shapeName": "神戸市",
+      "shapeName_en": "Kobe"
     },
     "22064153B88432688459960": {
-      "shapeName": "Kakogawa"
+      "shapeName": "加古川市",
+      "shapeName_en": "Kakogawa"
     },
     "22064153B61450639125107": {
-      "shapeName": "Taishi"
+      "shapeName": "太子町",
+      "shapeName_en": "Taishi"
     },
     "22064153B58560058955462": {
-      "shapeName": "Ako"
+      "shapeName": "赤穂市",
+      "shapeName_en": "Ako"
     },
     "22064153B15644746046041": {
-      "shapeName": "Takasago"
+      "shapeName": "高砂市",
+      "shapeName_en": "Takasago"
     },
     "22064153B67146630599686": {
-      "shapeName": "Akashi"
+      "shapeName": "明石市",
+      "shapeName_en": "Akashi"
     },
     "22064153B80439011945054": {
-      "shapeName": "Harima"
+      "shapeName": "播磨町",
+      "shapeName_en": "Harima"
     },
     "22064153B64872720029218": {
-      "shapeName": "Inami"
+      "shapeName": "稲美町",
+      "shapeName_en": "Inami"
     },
     "22064153B84575638248633": {
-      "shapeName": "Ashiya"
+      "shapeName": "芦屋市",
+      "shapeName_en": "Ashiya"
     },
     "22064153B80196181684705": {
-      "shapeName": "Amagasaki"
+      "shapeName": "尼崎市",
+      "shapeName_en": "Amagasaki"
     },
     "22064153B23991641947742": {
-      "shapeName": "Itami"
+      "shapeName": "伊丹市",
+      "shapeName_en": "Itami"
     },
     "22064153B14409781546574": {
-      "shapeName": "Awaji"
+      "shapeName": "淡路市",
+      "shapeName_en": "Awaji"
     },
     "22064153B12953099652868": {
-      "shapeName": "Sumoto"
+      "shapeName": "洲本市",
+      "shapeName_en": "Sumoto"
     },
     "22064153B5950324807443": {
-      "shapeName": "Minamiawaji"
+      "shapeName": "南あわじ市",
+      "shapeName_en": "Minamiawaji"
     },
     "22064153B84245586977349": {
-      "shapeName": "Sakaide"
+      "shapeName": "坂出市",
+      "shapeName_en": "Sakaide"
     },
     "22064153B80186148009906": {
-      "shapeName": "Iwate"
+      "shapeName": "岩手町",
+      "shapeName_en": "Iwate"
     },
     "22064153B80672932538290": {
-      "shapeName": "Kamaishi"
+      "shapeName": "釜石市",
+      "shapeName_en": "Kamaishi"
     },
     "22064153B75871799756298": {
-      "shapeName": "Ninohe"
+      "shapeName": "二戸市",
+      "shapeName_en": "Ninohe"
     },
     "22064153B22262945271660": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B92456215586434": {
-      "shapeName": "Sumita"
+      "shapeName": "住田町",
+      "shapeName_en": "Sumita"
     },
     "22064153B39757169885153": {
-      "shapeName": "Shiwa"
+      "shapeName": "紫波町",
+      "shapeName_en": "Shiwa"
     },
     "22064153B45091365620199": {
-      "shapeName": "Yahaba"
+      "shapeName": "矢巾町",
+      "shapeName_en": "Yahaba"
     },
     "22064153B42815652831414": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B44882212732018": {
-      "shapeName": "Otsuchi"
+      "shapeName": "大槌町",
+      "shapeName_en": "Otsuchi"
     },
     "22064153B2210274470223": {
-      "shapeName": "Karumai"
+      "shapeName": "軽米町",
+      "shapeName_en": "Karumai"
     },
     "22064153B85881258684971": {
-      "shapeName": "Noda"
+      "shapeName": "野田村",
+      "shapeName_en": "Noda"
     },
     "22064153B48596792634391": {
-      "shapeName": "Hiraizumi"
+      "shapeName": "平泉町",
+      "shapeName_en": "Hiraizumi"
     },
     "22064153B86152706636527": {
-      "shapeName": "Kanegasaki"
+      "shapeName": "金ケ崎町",
+      "shapeName_en": "Kanegasaki"
     },
     "22064153B20439234355907": {
-      "shapeName": "Takizawa"
+      "shapeName": "滝沢市",
+      "shapeName_en": "Takizawa"
     },
     "22064153B95476251404862": {
-      "shapeName": "Yamada"
+      "shapeName": "山田町",
+      "shapeName_en": "Yamada"
     },
     "22064153B52893965353266": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B15735563052201": {
-      "shapeName": "Tanohara"
+      "shapeName": "田野畑村",
+      "shapeName_en": "Tanohara"
     },
     "22064153B40478377839978": {
-      "shapeName": "Hirono"
+      "shapeName": "洋野町",
+      "shapeName_en": "Hirono"
     },
     "22064153B23846455241552": {
-      "shapeName": "Oshu"
+      "shapeName": "奥州市",
+      "shapeName_en": "Oshu"
     },
     "22064153B48912941109892": {
-      "shapeName": "Nishiwaga"
+      "shapeName": "西和賀町",
+      "shapeName_en": "Nishiwaga"
     },
     "22064153B73781091699116": {
-      "shapeName": "Morioka"
+      "shapeName": "盛岡市",
+      "shapeName_en": "Morioka"
     },
     "22064153B57763514697313": {
-      "shapeName": "Hachimantai"
+      "shapeName": "八幡平市",
+      "shapeName_en": "Hachimantai"
     },
     "22064153B18932707643422": {
-      "shapeName": "Iwaizumi"
+      "shapeName": "岩泉町",
+      "shapeName_en": "Iwaizumi"
     },
     "22064153B29148027628767": {
-      "shapeName": "Kuji"
+      "shapeName": "久慈市",
+      "shapeName_en": "Kuji"
     },
     "22064153B8402988919720": {
-      "shapeName": "Rikuzen Takata"
+      "shapeName": "陸前高田市",
+      "shapeName_en": "Rikuzen Takata"
     },
     "22064153B38511485001637": {
-      "shapeName": "Kitakami"
+      "shapeName": "北上市",
+      "shapeName_en": "Kitakami"
     },
     "22064153B4519570067417": {
-      "shapeName": "Tono"
+      "shapeName": "遠野市",
+      "shapeName_en": "Tono"
     },
     "22064153B96257795624750": {
-      "shapeName": "Shizukuishi"
+      "shapeName": "雫石町",
+      "shapeName_en": "Shizukuishi"
     },
     "22064153B53598611305764": {
-      "shapeName": "Ofunato"
+      "shapeName": "大船渡市",
+      "shapeName_en": "Ofunato"
     },
     "22064153B55567026325895": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B54500770580391": {
-      "shapeName": "Miyako"
+      "shapeName": "宮古市",
+      "shapeName_en": "Miyako"
     },
     "22064153B5295337142210": {
-      "shapeName": "Hanamaki"
+      "shapeName": "花巻市",
+      "shapeName_en": "Hanamaki"
     },
     "22064153B89665543421150": {
-      "shapeName": "Zentsuji"
+      "shapeName": "善通寺市",
+      "shapeName_en": "Zentsuji"
     },
     "22064153B18374709515284": {
-      "shapeName": "Fukutsu"
+      "shapeName": "福津市",
+      "shapeName_en": "Fukutsu"
     },
     "22064153B27378883096087": {
-      "shapeName": "Suginami"
+      "shapeName": "杉並区",
+      "shapeName_en": "Suginami"
     },
     "22064153B6874249672824": {
-      "shapeName": "Nakano"
+      "shapeName": "中野区",
+      "shapeName_en": "Nak野"
     },
     "22064153B70502530200246": {
-      "shapeName": "Maizuru"
+      "shapeName": "舞鶴市",
+      "shapeName_en": "Maizuru"
     },
     "22064153B20086130003796": {
-      "shapeName": "Munakata"
+      "shapeName": "宗像市",
+      "shapeName_en": "Munakata"
     },
     "22064153B83234888303578": {
-      "shapeName": "Koga"
+      "shapeName": "古賀市",
+      "shapeName_en": "Koga"
     },
     "22064153B68061345904698": {
-      "shapeName": "Shinjuku"
+      "shapeName": "新宿区",
+      "shapeName_en": "Shinjuku"
     },
     "22064153B65236790677801": {
-      "shapeName": "Bunkyo"
+      "shapeName": "文京区",
+      "shapeName_en": "Bunkyo"
     },
     "22064153B51627476063203": {
-      "shapeName": "Taito"
+      "shapeName": "台東区",
+      "shapeName_en": "Taito"
     },
     "22064153B9474359651692": {
-      "shapeName": "Sumida"
+      "shapeName": "墨田区",
+      "shapeName_en": "Sumida"
     },
     "22064153B17150931610065": {
-      "shapeName": "Chuo"
+      "shapeName": "中央区",
+      "shapeName_en": "Chuo"
     },
     "22064153B10136144710667": {
-      "shapeName": "Meguro"
+      "shapeName": "目黒区",
+      "shapeName_en": "Meguro"
     },
     "22064153B39270708607806": {
-      "shapeName": "Ota"
+      "shapeName": "大田区",
+      "shapeName_en": "Ota"
     },
     "22064153B95018112275614": {
-      "shapeName": "Setagaya"
+      "shapeName": "世田谷区",
+      "shapeName_en": "Setagaya"
     },
     "22064153B47306424439203": {
-      "shapeName": "Komae"
+      "shapeName": "狛江市",
+      "shapeName_en": "Komae"
     },
     "22064153B21585833160132": {
-      "shapeName": "Shibuya"
+      "shapeName": "渋谷区",
+      "shapeName_en": "Shibuya"
     },
     "22064153B29202371584226": {
-      "shapeName": "Toshima"
+      "shapeName": "豊島区",
+      "shapeName_en": "Toshima"
     },
     "22064153B54270882779278": {
-      "shapeName": "Kita"
+      "shapeName": "北区",
+      "shapeName_en": "Kita"
     },
     "22064153B63835909795908": {
-      "shapeName": "Arakawa"
+      "shapeName": "荒川区",
+      "shapeName_en": "Arakawa"
     },
     "22064153B23017512967810": {
-      "shapeName": "Itabashi"
+      "shapeName": "板橋区",
+      "shapeName_en": "Itabashi"
     },
     "22064153B26660671620175": {
-      "shapeName": "Nerima"
+      "shapeName": "練馬区",
+      "shapeName_en": "Nerima"
     },
     "22064153B34439901226362": {
-      "shapeName": "Adachi"
+      "shapeName": "足立区",
+      "shapeName_en": "Adachi"
     },
     "22064153B53244281721356": {
-      "shapeName": "Minato"
+      "shapeName": "港区",
+      "shapeName_en": "Minato"
     },
     "22064153B26379129013913": {
-      "shapeName": "Katsushika"
+      "shapeName": "葛飾区",
+      "shapeName_en": "Katsushika"
     },
     "22064153B4211596098450": {
-      "shapeName": "Chiyoda"
+      "shapeName": "千代田区",
+      "shapeName_en": "Chiyoda"
     },
     "22064153B6350784980137": {
-      "shapeName": "Edogawa"
+      "shapeName": "江戸川区",
+      "shapeName_en": "Edogawa"
     },
     "22064153B71281946459031": {
-      "shapeName": "Tachikawa"
+      "shapeName": "立川市",
+      "shapeName_en": "Tachikawa"
     },
     "22064153B55990340820977": {
-      "shapeName": "Musashino"
+      "shapeName": "武蔵野市",
+      "shapeName_en": "Musashino"
     },
     "22064153B53114788196581": {
-      "shapeName": "Mitaka"
+      "shapeName": "三鷹市",
+      "shapeName_en": "Mitaka"
     },
     "22064153B12049663471572": {
-      "shapeName": "Ome"
+      "shapeName": "青梅市",
+      "shapeName_en": "Ome"
     },
     "22064153B31303079621207": {
-      "shapeName": "Chichibu"
+      "shapeName": "秩父市",
+      "shapeName_en": "Chichibu"
     },
     "22064153B60558378980420": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B33610753881119": {
-      "shapeName": "Ora"
+      "shapeName": "邑楽町",
+      "shapeName_en": "Ora"
     },
     "22064153B23148495981135": {
-      "shapeName": "Saitama"
+      "shapeName": "さいたま市",
+      "shapeName_en": "Saitama"
     },
     "22064153B11347435242213": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B54478878575697": {
-      "shapeName": "Hanno"
+      "shapeName": "飯能市",
+      "shapeName_en": "Hanno"
     },
     "22064153B4943550686052": {
-      "shapeName": "Iruma"
+      "shapeName": "入間市",
+      "shapeName_en": "Iruma"
     },
     "22064153B71985542420847": {
-      "shapeName": "Tokorozawa"
+      "shapeName": "所沢市",
+      "shapeName_en": "Tokorozawa"
     },
     "22064153B32499931661973": {
-      "shapeName": "Niiza"
+      "shapeName": "新座市",
+      "shapeName_en": "Niiza"
     },
     "22064153B86353051825362": {
-      "shapeName": "Hidaka"
+      "shapeName": "日高市",
+      "shapeName_en": "Hidaka"
     },
     "22064153B41312501853097": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B73554949432718": {
-      "shapeName": "Sayama"
+      "shapeName": "狭山市",
+      "shapeName_en": "Sayama"
     },
     "22064153B55422469295161": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B26432964343600": {
-      "shapeName": "Wako"
+      "shapeName": "和光市",
+      "shapeName_en": "Wako"
     },
     "22064153B69785759438689": {
-      "shapeName": "Toda"
+      "shapeName": "戸田市",
+      "shapeName_en": "Toda"
     },
     "22064153B95037722693010": {
-      "shapeName": "Asaka"
+      "shapeName": "朝霞市",
+      "shapeName_en": "Asaka"
     },
     "22064153B16625159005652": {
-      "shapeName": "Warabi"
+      "shapeName": "蕨市",
+      "shapeName_en": "Warabi"
     },
     "22064153B82319600160004": {
-      "shapeName": "Misato"
+      "shapeName": "三郷市",
+      "shapeName_en": "Misato"
     },
     "22064153B79919938369804": {
-      "shapeName": "Yashio"
+      "shapeName": "八潮市",
+      "shapeName_en": "Yashio"
     },
     "22064153B73719790331249": {
-      "shapeName": "Kawaguchi"
+      "shapeName": "川口市",
+      "shapeName_en": "Kawaguchi"
     },
     "22064153B22685350390729": {
-      "shapeName": "Soka"
+      "shapeName": "草加市",
+      "shapeName_en": "Soka"
     },
     "22064153B32697897340727": {
-      "shapeName": "Yoshikawa"
+      "shapeName": "吉川市",
+      "shapeName_en": "Yoshikawa"
     },
     "22064153B20504043763502": {
-      "shapeName": "Kasukabe"
+      "shapeName": "春日部市",
+      "shapeName_en": "Kasukabe"
     },
     "22064153B14191280892347": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B30363651690938": {
-      "shapeName": "Koshigaya"
+      "shapeName": "越谷市",
+      "shapeName_en": "Koshigaya"
     },
     "22064153B69836136073733": {
-      "shapeName": "Kazo"
+      "shapeName": "加須市",
+      "shapeName_en": "Kazo"
     },
     "22064153B58180962451731": {
-      "shapeName": "Kuki"
+      "shapeName": "久喜市",
+      "shapeName_en": "Kuki"
     },
     "22064153B53434069623251": {
-      "shapeName": "Miyoshi"
+      "shapeName": "三芳町",
+      "shapeName_en": "Miyoshi"
     },
     "22064153B51464692079899": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B95388461124704": {
-      "shapeName": "Satte"
+      "shapeName": "幸手市",
+      "shapeName_en": "Satte"
     },
     "22064153B81183812222249": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B28841810223211": {
-      "shapeName": "Hanyu"
+      "shapeName": "羽生市",
+      "shapeName_en": "Hanyu"
     },
     "22064153B18860011713755": {
-      "shapeName": "Fujimino"
+      "shapeName": "ふじみ野市",
+      "shapeName_en": "Fujimino"
     },
     "22064153B7839934707198": {
-      "shapeName": "Fujimi"
+      "shapeName": "富士見市",
+      "shapeName_en": "Fujimi"
     },
     "22064153B25557212584140": {
-      "shapeName": "Kawagoe"
+      "shapeName": "川越市",
+      "shapeName_en": "Kawagoe"
     },
     "22064153B21553303139286": {
-      "shapeName": "Shiki"
+      "shapeName": "志木市",
+      "shapeName_en": "Shiki"
     },
     "22064153B54693030859615": {
-      "shapeName": "Tsurugashima"
+      "shapeName": "鶴ヶ島市",
+      "shapeName_en": "Tsurugashima"
     },
     "22064153B60548593458523": {
-      "shapeName": "Ageo"
+      "shapeName": "上尾市",
+      "shapeName_en": "Ageo"
     },
     "22064153B1420949553929": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B28562561290701": {
-      "shapeName": "Yoshimi"
+      "shapeName": "吉見町",
+      "shapeName_en": "Yoshimi"
     },
     "22064153B4599338501443": {
-      "shapeName": "Sakado"
+      "shapeName": "坂戸市",
+      "shapeName_en": "Sakado"
     },
     "22064153B79488910412367": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B36448258784434": {
-      "shapeName": "Higashimatsuyama"
+      "shapeName": "東松山市",
+      "shapeName_en": "Higashimatsuyama"
     },
     "22064153B20764763312334": {
-      "shapeName": "Okegawa"
+      "shapeName": "桶川市",
+      "shapeName_en": "Okegawa"
     },
     "22064153B69680253088719": {
-      "shapeName": "Hasuda"
+      "shapeName": "蓮田市",
+      "shapeName_en": "Hasuda"
     },
     "22064153B31135289991863": {
-      "shapeName": "Gyoda"
+      "shapeName": "行田市",
+      "shapeName_en": "Gyoda"
     },
     "22064153B53472362936594": {
-      "shapeName": "Konosu"
+      "shapeName": "鴻巣市",
+      "shapeName_en": "Konosu"
     },
     "22064153B83233320380459": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B7091731953162": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B42446330332241": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B90614639681244": {
-      "shapeName": "Kumagaya"
+      "shapeName": "熊谷市",
+      "shapeName_en": "Kumagaya"
     },
     "22064153B84652164446594": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B19687868642382": {
-      "shapeName": "Kamisato"
+      "shapeName": "上里町",
+      "shapeName_en": "Kamisato"
     },
     "22064153B63829453739833": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B93622399148332": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B65721710551900": {
-      "shapeName": "Honjo"
+      "shapeName": "本庄市",
+      "shapeName_en": "Honjo"
     },
     "22064153B74511540229227": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B67559782883122": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B65475311637837": {
-      "shapeName": "Kamikawa"
+      "shapeName": "神川町",
+      "shapeName_en": "Kamikawa"
     },
     "22064153B18486924389046": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B25299017238233": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B4986899209326": {
-      "shapeName": "Meiwa"
+      "shapeName": "明和町",
+      "shapeName_en": "Meiwa"
     },
     "22064153B93482560698592": {
-      "shapeName": "Oyama"
+      "shapeName": "小山市",
+      "shapeName_en": "Oyama"
     },
     "22064153B22522574438890": {
-      "shapeName": "Shimotsuke"
+      "shapeName": "下野市",
+      "shapeName_en": "Shimotsuke"
     },
     "22064153B56887254979091": {
-      "shapeName": "Midori"
+      "shapeName": "みどり市",
+      "shapeName_en": "Midori"
     },
     "22064153B17547452708566": {
-      "shapeName": "Kiryu City"
+      "shapeName": "桐生市",
+      "shapeName_en": "Kiryu City"
     },
     "22064153B34770411990432": {
-      "shapeName": "Isesaki"
+      "shapeName": "伊勢崎市",
+      "shapeName_en": "Isesaki"
     },
     "22064153B17824097613778": {
-      "shapeName": "Tamamura"
+      "shapeName": "玉村町",
+      "shapeName_en": "Tamamura"
     },
     "22064153B2446826655857": {
-      "shapeName": "Mooka"
+      "shapeName": "真岡市",
+      "shapeName_en": "Mooka"
     },
     "22064153B76436938350922": {
-      "shapeName": "Kaminokawa"
+      "shapeName": "上三川町",
+      "shapeName_en": "Kaminokawa"
     },
     "22064153B25382009967091": {
-      "shapeName": "Takanezawa"
+      "shapeName": "高根沢町",
+      "shapeName_en": "Takanezawa"
     },
     "22064153B85437171259684": {
-      "shapeName": "Wakayama"
+      "shapeName": "和歌山市",
+      "shapeName_en": "Wakayama"
     },
     "22064153B37690647476013": {
-      "shapeName": "Koryo"
+      "shapeName": "広陵町",
+      "shapeName_en": "Koryo"
     },
     "22064153B56572969434164": {
-      "shapeName": "Isumi"
+      "shapeName": "いすみ市",
+      "shapeName_en": "Isumi"
     },
     "22064153B9766515498802": {
-      "shapeName": "Ichinomiya"
+      "shapeName": "一宮町",
+      "shapeName_en": "Ichinomiya"
     },
     "22064153B81595625097237": {
-      "shapeName": "Kujukuri"
+      "shapeName": "九十九里町",
+      "shapeName_en": "Kujukuri"
     },
     "22064153B1052554637005": {
-      "shapeName": "Sakura"
+      "shapeName": "佐倉市",
+      "shapeName_en": "Sakura"
     },
     "22064153B81263079942066": {
-      "shapeName": "Yachiyo"
+      "shapeName": "八千代市",
+      "shapeName_en": "Yachiyo"
     },
     "22064153B17932497232001": {
-      "shapeName": "Yachimata"
+      "shapeName": "八街市",
+      "shapeName_en": "Yachimata"
     },
     "22064153B48657370827340": {
-      "shapeName": "Katsuura"
+      "shapeName": "勝浦市",
+      "shapeName_en": "Katsuura"
     },
     "22064153B825337930111": {
-      "shapeName": "Sousa"
+      "shapeName": "匝瑳市",
+      "shapeName_en": "Sousa"
     },
     "22064153B67581321748824": {
-      "shapeName": "Minamibouso"
+      "shapeName": "南房総市",
+      "shapeName_en": "Minamibouso"
     },
     "22064153B96374809115220": {
-      "shapeName": "Inzai"
+      "shapeName": "印西市",
+      "shapeName_en": "Inzai"
     },
     "22064153B39921881538290": {
-      "shapeName": "Kimitsu"
+      "shapeName": "君津市",
+      "shapeName_en": "Kimitsu"
     },
     "22064153B69533754697672": {
-      "shapeName": "Yotsukaido"
+      "shapeName": "四街道市",
+      "shapeName_en": "Yotsukaido"
     },
     "22064153B62287563607588": {
-      "shapeName": "Tako"
+      "shapeName": "多古町",
+      "shapeName_en": "Tako"
     },
     "22064153B5267804533831": {
-      "shapeName": "Otaki"
+      "shapeName": "大多喜町",
+      "shapeName_en": "Otaki"
     },
     "22064153B64118294616923": {
-      "shapeName": "Oamishirasato"
+      "shapeName": "大網白里市",
+      "shapeName_en": "Oamishirasato"
     },
     "22064153B96832433526360": {
-      "shapeName": "Futtsu"
+      "shapeName": "富津市",
+      "shapeName_en": "Futtsu"
     },
     "22064153B57896694451609": {
-      "shapeName": "Tomisato"
+      "shapeName": "富里市",
+      "shapeName_en": "Tomisato"
     },
     "22064153B42280137563605": {
-      "shapeName": "Sanmu"
+      "shapeName": "山武市",
+      "shapeName_en": "Sanmu"
     },
     "22064153B18197472399049": {
-      "shapeName": "Ichihara"
+      "shapeName": "市原市",
+      "shapeName_en": "Ichihara"
     },
     "22064153B53353386763224": {
-      "shapeName": "Ichikawa"
+      "shapeName": "市川市",
+      "shapeName_en": "Ichikawa"
     },
     "22064153B40278985513053": {
-      "shapeName": "Onjuku"
+      "shapeName": "御宿町",
+      "shapeName_en": "Onjuku"
     },
     "22064153B34645070246824": {
-      "shapeName": "Narita"
+      "shapeName": "成田市",
+      "shapeName_en": "Narita"
     },
     "22064153B6927791471577": {
-      "shapeName": "Abiko"
+      "shapeName": "我孫子市",
+      "shapeName_en": "Abiko"
     },
     "22064153B42729341445185": {
-      "shapeName": "?????"
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B32663760346389": {
-      "shapeName": "Asahi"
+      "shapeName": "旭市",
+      "shapeName_en": "Asahi"
     },
     "22064153B64476610605868": {
-      "shapeName": "Kisarazu"
+      "shapeName": "木更津市",
+      "shapeName_en": "Kisarazu"
     },
     "22064153B71828449311091": {
-      "shapeName": "Toonosho"
+      "shapeName": "東庄町",
+      "shapeName_en": "Toonosho"
     },
     "22064153B79630920379478": {
-      "shapeName": "Toogane"
+      "shapeName": "東金市",
+      "shapeName_en": "Toogane"
     },
     "22064153B99919647628025": {
-      "shapeName": "Matsudo"
+      "shapeName": "松戸市",
+      "shapeName_en": "Matsudo"
     },
     "22064153B43988911271418": {
-      "shapeName": "Kashiwa"
+      "shapeName": "柏市",
+      "shapeName_en": "Kashiwa"
     },
     "22064153B34173315549622": {
-      "shapeName": "Sakae"
+      "shapeName": "栄町",
+      "shapeName_en": "Sakae"
     },
     "22064153B34851227738598": {
-      "shapeName": "Yokoshibahikari"
+      "shapeName": "横芝光町",
+      "shapeName_en": "Yokoshibahikari"
     },
     "22064153B89149578572225": {
-      "shapeName": "Nagareyama"
+      "shapeName": "流山市",
+      "shapeName_en": "Nagareyama"
     },
     "22064153B82009101284809": {
-      "shapeName": "Urayasu"
+      "shapeName": "浦安市",
+      "shapeName_en": "Urayasu"
     },
     "22064153B64946776552870": {
-      "shapeName": "Shiroi"
+      "shapeName": "白井市",
+      "shapeName_en": "Shiroi"
     },
     "22064153B18981391951778": {
-      "shapeName": "Shirako"
+      "shapeName": "白子町",
+      "shapeName_en": "Shirako"
     },
     "22064153B11870363925687": {
-      "shapeName": "Mutsuzawa"
+      "shapeName": "睦沢町",
+      "shapeName_en": "Mutsuzawa"
     },
     "22064153B66933042170680": {
-      "shapeName": "Kozaki"
+      "shapeName": "神崎町",
+      "shapeName_en": "Kozaki"
     },
     "22064153B52911851929609": {
-      "shapeName": "Narashino"
+      "shapeName": "習志野市",
+      "shapeName_en": "Narashino"
     },
     "22064153B32661608825034": {
-      "shapeName": "Funabashi"
+      "shapeName": "船橋市",
+      "shapeName_en": "Funabashi"
     },
     "22064153B38748946116024": {
-      "shapeName": "Shibayama"
+      "shapeName": "芝山町",
+      "shapeName_en": "Shibayama"
     },
     "22064153B7763811650899": {
-      "shapeName": "Mobara"
+      "shapeName": "茂原市",
+      "shapeName_en": "Mobara"
     },
     "22064153B82556228504312": {
-      "shapeName": "Sodegaura"
+      "shapeName": "袖ケ浦市",
+      "shapeName_en": "Sodegaura"
     },
     "22064153B21224542742547": {
-      "shapeName": "Shisui"
+      "shapeName": "酒々井町",
+      "shapeName_en": "Shisui"
     },
     "22064153B65398665506308": {
-      "shapeName": "Noda"
+      "shapeName": "野田市",
+      "shapeName_en": "Noda"
     },
     "22064153B91785979325065": {
-      "shapeName": "Choshi"
+      "shapeName": "銚子市",
+      "shapeName_en": "Choshi"
     },
     "22064153B17622592602982": {
-      "shapeName": "Kyonan"
+      "shapeName": "鋸南町",
+      "shapeName_en": "Kyonan"
     },
     "22064153B86856131608768": {
-      "shapeName": "Kamagaya"
+      "shapeName": "鎌ケ谷市",
+      "shapeName_en": "Kamagaya"
     },
     "22064153B75208844196005": {
-      "shapeName": "Chonan"
+      "shapeName": "長南町",
+      "shapeName_en": "Chonan"
     },
     "22064153B73558398041144": {
-      "shapeName": "Nagara"
+      "shapeName": "長柄町",
+      "shapeName_en": "Nagara"
     },
     "22064153B87137159672256": {
-      "shapeName": "Chosei"
+      "shapeName": "長生村",
+      "shapeName_en": "Chosei"
     },
     "22064153B82107167810847": {
-      "shapeName": "Tateyama"
+      "shapeName": "館山市",
+      "shapeName_en": "Tateyama"
     },
     "22064153B93672474053317": {
-      "shapeName": "Katori"
+      "shapeName": "香取市",
+      "shapeName_en": "Katori"
     },
     "22064153B61853178733261": {
-      "shapeName": "Kamogawa"
+      "shapeName": "鴨川市",
+      "shapeName_en": "Kamogawa"
     },
     "22064153B16459031557594": {
-      "shapeName": "Chiba"
+      "shapeName": "千葉市",
+      "shapeName_en": "Chiba"
     },
     "22064153B88328488927062": {
-      "shapeName": "Kasumigaura"
+      "shapeName": "かすみがうら市",
+      "shapeName_en": "Kasumigaura"
     },
     "22064153B22863459733327": {
-      "shapeName": "Tsukubamirai"
+      "shapeName": "つくばみらい市",
+      "shapeName_en": "Tsukubamirai"
     },
     "22064153B52633464961485": {
-      "shapeName": "Tsukuba"
+      "shapeName": "つくば市",
+      "shapeName_en": "Tsukuba"
     },
     "22064153B15714680533513": {
-      "shapeName": "Hitachinaka"
+      "shapeName": "ひたちなか市",
+      "shapeName_en": "Hitachinaka"
     },
     "22064153B40775689638766": {
-      "shapeName": "Shimotsuma"
+      "shapeName": "下妻市",
+      "shapeName_en": "Shimotsuma"
     },
     "22064153B67705173205056": {
-      "shapeName": "Goka"
+      "shapeName": "五霞町",
+      "shapeName_en": "Goka"
     },
     "22064153B56407070841201": {
-      "shapeName": "Yachiyo"
+      "shapeName": "八千代町",
+      "shapeName_en": "Yachiyo"
     },
     "22064153B49253931002117": {
-      "shapeName": "Tone"
+      "shapeName": "利根町",
+      "shapeName_en": "Tone"
     },
     "22064153B47377223297779": {
-      "shapeName": "Kitaibaraki"
+      "shapeName": "北茨城市",
+      "shapeName_en": "Kitaibaraki"
     },
     "22064153B60305206630690": {
-      "shapeName": "Toride"
+      "shapeName": "取手市",
+      "shapeName_en": "Toride"
     },
     "22064153B66358962164543": {
-      "shapeName": "Koga"
+      "shapeName": "古河市",
+      "shapeName_en": "Koga"
     },
     "22064153B11384904576552": {
-      "shapeName": "Tsuchiura"
+      "shapeName": "土浦市",
+      "shapeName_en": "Tsuchiura"
     },
     "22064153B4671862991873": {
-      "shapeName": "Bando"
+      "shapeName": "坂東市",
+      "shapeName_en": "Bando"
     },
     "22064153B47110066124982": {
-      "shapeName": "Shirosato"
+      "shapeName": "城里町",
+      "shapeName_en": "Shirosato"
     },
     "22064153B99534934631305": {
-      "shapeName": "Sakai"
+      "shapeName": "境町",
+      "shapeName_en": "Sakai"
     },
     "22064153B13436797224753": {
-      "shapeName": "Daigo"
+      "shapeName": "大子町",
+      "shapeName_en": "Daigo"
     },
     "22064153B61865595964656": {
-      "shapeName": "Oarai"
+      "shapeName": "大洗町",
+      "shapeName_en": "Oarai"
     },
     "22064153B35076023646202": {
-      "shapeName": "Moriya"
+      "shapeName": "守谷市",
+      "shapeName_en": "Moriya"
     },
     "22064153B15346425233004": {
-      "shapeName": "Omitama"
+      "shapeName": "小美玉市",
+      "shapeName_en": "Omitama"
     },
     "22064153B55351511475413": {
-      "shapeName": "Joso"
+      "shapeName": "常総市",
+      "shapeName_en": "Joso"
     },
     "22064153B3260295763556": {
-      "shapeName": "Hitachiomiya"
+      "shapeName": "常陸大宮市",
+      "shapeName_en": "Hitachiomiya"
     },
     "22064153B41545162624275": {
-      "shapeName": "Hitachiota"
+      "shapeName": "常陸太田市",
+      "shapeName_en": "Hitachiota"
     },
     "22064153B23745136254640": {
-      "shapeName": "Hitachi"
+      "shapeName": "日立市",
+      "shapeName_en": "Hitachi"
     },
     "22064153B64891765792099": {
-      "shapeName": "Tokai"
+      "shapeName": "東海村",
+      "shapeName_en": "Tokai"
     },
     "22064153B78382308499165": {
-      "shapeName": "Sakuragawa"
+      "shapeName": "桜川市",
+      "shapeName_en": "Sakuragawa"
     },
     "22064153B59005328689415": {
-      "shapeName": "Mito"
+      "shapeName": "水戸市",
+      "shapeName_en": "Mito"
     },
     "22064153B74936950050526": {
-      "shapeName": "Kawachi"
+      "shapeName": "河内町",
+      "shapeName_en": "Kawachi"
     },
     "22064153B68880016704101": {
-      "shapeName": "Itako"
+      "shapeName": "潮来市",
+      "shapeName_en": "Itako"
     },
     "22064153B79836169988029": {
-      "shapeName": "Ushiku"
+      "shapeName": "牛久市",
+      "shapeName_en": "Ushiku"
     },
     "22064153B78632499037431": {
-      "shapeName": "Ishioka"
+      "shapeName": "石岡市",
+      "shapeName_en": "Ishioka"
     },
     "22064153B6965188213643": {
-      "shapeName": "Kamisu"
+      "shapeName": "神栖市",
+      "shapeName_en": "Kamisu"
     },
     "22064153B79429110732098": {
-      "shapeName": "Inashiki"
+      "shapeName": "稲敷市",
+      "shapeName_en": "Inashiki"
     },
     "22064153B81529275129859": {
-      "shapeName": "Kasama"
+      "shapeName": "笠間市",
+      "shapeName_en": "Kasama"
     },
     "22064153B14260428934540": {
-      "shapeName": "Chikusei"
+      "shapeName": "筑西市",
+      "shapeName_en": "Chikusei"
     },
     "22064153B9064679601577": {
-      "shapeName": "Yuki"
+      "shapeName": "結城市",
+      "shapeName_en": "Yuki"
     },
     "22064153B28200881155358": {
-      "shapeName": "Miho"
+      "shapeName": "美浦村",
+      "shapeName_en": "Miho"
     },
     "22064153B30625233243143": {
-      "shapeName": "Ibaraki"
+      "shapeName": "茨城町",
+      "shapeName_en": "Ibaraki"
     },
     "22064153B40136139146839": {
-      "shapeName": "Namekata"
+      "shapeName": "行方市",
+      "shapeName_en": "Namekata"
     },
     "22064153B63881976764969": {
-      "shapeName": "Naka"
+      "shapeName": "那珂市",
+      "shapeName_en": "Naka"
     },
     "22064153B12979096179166": {
-      "shapeName": "Hokota"
+      "shapeName": "鉾田市",
+      "shapeName_en": "Hokota"
     },
     "22064153B66002224145568": {
-      "shapeName": "Ami"
+      "shapeName": "阿見町",
+      "shapeName_en": "Ami"
     },
     "22064153B70592042041650": {
-      "shapeName": "Takahagi"
+      "shapeName": "高萩市",
+      "shapeName_en": "Takahagi"
     },
     "22064153B68559217227558": {
-      "shapeName": "Kashima"
+      "shapeName": "鹿嶋市",
+      "shapeName_en": "Kashima"
     },
     "22064153B79045995074029": {
-      "shapeName": "Ryugasaki"
+      "shapeName": "龍ケ崎市",
+      "shapeName_en": "Ryugasaki"
     },
     "22064153B29179737200672": {
-      "shapeName": "Miura"
+      "shapeName": "三浦市",
+      "shapeName_en": "Miura"
     },
     "22064153B99641769976782": {
-      "shapeName": "Nakai"
+      "shapeName": "中井町",
+      "shapeName_en": "Nakai"
     },
     "22064153B47665726673429": {
-      "shapeName": "Ninomiya"
+      "shapeName": "二宮町",
+      "shapeName_en": "Ninomiya"
     },
     "22064153B90835968382747": {
-      "shapeName": "Isehara"
+      "shapeName": "伊勢原市",
+      "shapeName_en": "Isehara"
     },
     "22064153B81931446357320": {
-      "shapeName": "Minamiashigara"
+      "shapeName": "南足柄市",
+      "shapeName_en": "Minamiashigara"
     },
     "22064153B13347263805777": {
-      "shapeName": "Atsugi"
+      "shapeName": "厚木市",
+      "shapeName_en": "Atsugi"
     },
     "22064153B5819975327596": {
-      "shapeName": "Oi"
+      "shapeName": "大井町",
+      "shapeName_en": "Oi"
     },
     "22064153B71067186574144": {
-      "shapeName": "Yamato"
+      "shapeName": "大和市",
+      "shapeName_en": "Yamato"
     },
     "22064153B23217272115075": {
-      "shapeName": "Oiso"
+      "shapeName": "大磯町",
+      "shapeName_en": "Oiso"
     },
     "22064153B97971723277655": {
-      "shapeName": "Samukawa"
+      "shapeName": "寒川町",
+      "shapeName_en": "Samukawa"
     },
     "22064153B14023525117600": {
-      "shapeName": "Odawara"
+      "shapeName": "小田原市",
+      "shapeName_en": "Odawara"
     },
     "22064153B74794903489103": {
-      "shapeName": "Yamakita"
+      "shapeName": "山北町",
+      "shapeName_en": "Yamakita"
     },
     "22064153B40974377910611": {
-      "shapeName": "Hiratsuka"
+      "shapeName": "平塚市",
+      "shapeName_en": "Hiratsuka"
     },
     "22064153B3601656726791": {
-      "shapeName": "Zama"
+      "shapeName": "座間市",
+      "shapeName_en": "Zama"
     },
     "22064153B44499834230387": {
-      "shapeName": "Aikawa"
+      "shapeName": "愛川町",
+      "shapeName_en": "Aikawa"
     },
     "22064153B74721517788558": {
-      "shapeName": "Matsuda"
+      "shapeName": "松田町",
+      "shapeName_en": "Matsuda"
     },
     "22064153B3805543078066": {
-      "shapeName": "Yokosuka"
+      "shapeName": "横須賀市",
+      "shapeName_en": "Yokosuka"
     },
     "22064153B68900591559433": {
-      "shapeName": "Ebina"
+      "shapeName": "海老名市",
+      "shapeName_en": "Ebina"
     },
     "22064153B14001863011483": {
-      "shapeName": "Kiyokawa"
+      "shapeName": "清川村",
+      "shapeName_en": "Kiyokawa"
     },
     "22064153B39248770948024": {
-      "shapeName": "Yugawara"
+      "shapeName": "湯河原町",
+      "shapeName_en": "Yugawara"
     },
     "22064153B88833417807281": {
-      "shapeName": "Manazuru"
+      "shapeName": "真鶴町",
+      "shapeName_en": "Manazuru"
     },
     "22064153B67847090482379": {
-      "shapeName": "Hadano"
+      "shapeName": "秦野市",
+      "shapeName_en": "Hadano"
     },
     "22064153B8665907160310": {
-      "shapeName": "Hakone"
+      "shapeName": "箱根町",
+      "shapeName_en": "Hakone"
     },
     "22064153B4409747403252": {
-      "shapeName": "Ayase"
+      "shapeName": "綾瀬市",
+      "shapeName_en": "Ayase"
     },
     "22064153B73325412364778": {
-      "shapeName": "Chigasaki"
+      "shapeName": "茅ヶ崎市",
+      "shapeName_en": "Chigasaki"
     },
     "22064153B8564356760578": {
-      "shapeName": "Hayama"
+      "shapeName": "葉山町",
+      "shapeName_en": "Hayama"
     },
     "22064153B67163681434847": {
-      "shapeName": "Fujisawa"
+      "shapeName": "藤沢市",
+      "shapeName_en": "Fujisawa"
     },
     "22064153B20986912902018": {
-      "shapeName": "Zushi"
+      "shapeName": "逗子市",
+      "shapeName_en": "Zushi"
     },
     "22064153B40501348045878": {
-      "shapeName": "Kamakura"
+      "shapeName": "鎌倉市",
+      "shapeName_en": "Kamakura"
     },
     "22064153B84142752258378": {
-      "shapeName": "Kaisei"
+      "shapeName": "開成町",
+      "shapeName_en": "Kaisei"
     },
     "22064153B90768154691941": {
-      "shapeName": "Kawasaki"
+      "shapeName": "川崎市",
+      "shapeName_en": "Kawasaki"
     },
     "22064153B32622592109390": {
-      "shapeName": "Sagamihara"
+      "shapeName": "相模原市",
+      "shapeName_en": "Sagamihara"
     },
     "22064153B46077925963614": {
-      "shapeName": "Yokohama"
+      "shapeName": "横浜市",
+      "shapeName_en": "Yokohama"
     },
     "22064153B81991171753056": {
-      "shapeName": "Ando"
+      "shapeName": "安堵町",
+      "shapeName_en": "Ando"
     },
     "22064153B78492538655391": {
-      "shapeName": "Kawanishi"
+      "shapeName": "川西町",
+      "shapeName_en": "Kawanishi"
     },
     "22064153B79170440452296": {
-      "shapeName": "Miyake"
+      "shapeName": "三宅町",
+      "shapeName_en": "Miyake"
     },
     "22064153B29541790734430": {
-      "shapeName": "Ikoma"
+      "shapeName": "生駒市",
+      "shapeName_en": "Ikoma"
     },
     "22064153B90488906209418": {
-      "shapeName": "Heguri"
+      "shapeName": "平群町",
+      "shapeName_en": "Heguri"
     },
     "22064153B21881953859573": {
-      "shapeName": "Nara"
+      "shapeName": "奈良市",
+      "shapeName_en": "Nara"
     },
     "22064153B9578504350076": {
-      "shapeName": "Sango"
+      "shapeName": "三郷町",
+      "shapeName_en": "Sango"
     },
     "22064153B52803081317924": {
-      "shapeName": "Ikaruga"
+      "shapeName": "斑鳩町",
+      "shapeName_en": "Ikaruga"
     },
     "22064153B70117244890923": {
-      "shapeName": "Yamatokoriyama"
+      "shapeName": "大和郡山市",
+      "shapeName_en": "Yamatokoriyama"
     },
     "22064153B15237000314247": {
-      "shapeName": "Yamazoe"
+      "shapeName": "山添村",
+      "shapeName_en": "Yamazoe"
     },
     "22064153B22167023977783": {
-      "shapeName": "Tenri"
+      "shapeName": "天理市",
+      "shapeName_en": "Tenri"
     },
     "22064153B3166560830766": {
-      "shapeName": "Tawaramoto"
+      "shapeName": "田原本町",
+      "shapeName_en": "Tawaramoto"
     },
     "22064153B79593541155568": {
-      "shapeName": "Uda"
+      "shapeName": "宇陀市",
+      "shapeName_en": "Uda"
     },
     "22064153B20936499562813": {
-      "shapeName": "Sakurai"
+      "shapeName": "桜井市",
+      "shapeName_en": "Sakurai"
     },
     "22064153B90465324055614": {
-      "shapeName": "Asuka"
+      "shapeName": "明日香村",
+      "shapeName_en": "Asuka"
     },
     "22064153B45509780052584": {
-      "shapeName": "Takatori"
+      "shapeName": "高取町",
+      "shapeName_en": "Takatori"
     },
     "22064153B75384634569664": {
-      "shapeName": "Soni"
+      "shapeName": "曽爾村",
+      "shapeName_en": "Soni"
     },
     "22064153B7294445238824": {
-      "shapeName": "Mitsue"
+      "shapeName": "御杖村",
+      "shapeName_en": "Mitsue"
     },
     "22064153B58231040039933": {
-      "shapeName": "Oji"
+      "shapeName": "王寺町",
+      "shapeName_en": "Oji"
     },
     "22064153B48335058983319": {
-      "shapeName": "Kawai"
+      "shapeName": "河合町",
+      "shapeName_en": "Kawai"
     },
     "22064153B74407470913412": {
-      "shapeName": "Kanmaki"
+      "shapeName": "上牧町",
+      "shapeName_en": "Kanmaki"
     },
     "22064153B6523383930027": {
-      "shapeName": "Kashihara"
+      "shapeName": "橿原市",
+      "shapeName_en": "Kashihara"
     },
     "22064153B26413774655735": {
-      "shapeName": "Kashiba"
+      "shapeName": "香芝市",
+      "shapeName_en": "Kashiba"
     },
     "22064153B15364293597369": {
-      "shapeName": "Yamatotakada"
+      "shapeName": "大和高田市",
+      "shapeName_en": "Yamatotakada"
     },
     "22064153B30582374301374": {
-      "shapeName": "Katsuragi"
+      "shapeName": "葛城市",
+      "shapeName_en": "Katsuragi"
     },
     "22064153B26773121701856": {
-      "shapeName": "Gose"
+      "shapeName": "御所市",
+      "shapeName_en": "Gose"
     },
     "22064153B92040031890076": {
-      "shapeName": "Gojo"
+      "shapeName": "五條市",
+      "shapeName_en": "Gojo"
     },
     "22064153B56972160606638": {
-      "shapeName": "Higashiyoshino"
+      "shapeName": "東吉野村",
+      "shapeName_en": "Higashiyoshino"
     },
     "22064153B60310534251699": {
-      "shapeName": "Yoshino"
+      "shapeName": "吉野町",
+      "shapeName_en": "Yoshino"
     },
     "22064153B3490214986239": {
-      "shapeName": "Oyodo"
+      "shapeName": "大淀町",
+      "shapeName_en": "Oyodo"
     },
     "22064153B4579292300123": {
-      "shapeName": "Shimoichi"
+      "shapeName": "下市町",
+      "shapeName_en": "Shimoichi"
     },
     "22064153B88498953220491": {
-      "shapeName": "Kudoyama"
+      "shapeName": "九度山町",
+      "shapeName_en": "Kudoyama"
     },
     "22064153B68471878713834": {
-      "shapeName": "Hashimoto"
+      "shapeName": "橋本市",
+      "shapeName_en": "Hashimoto"
     },
     "22064153B57637751083346": {
-      "shapeName": "Kawakami"
+      "shapeName": "川上村",
+      "shapeName_en": "Kawakami"
     },
     "22064153B28150220320962": {
-      "shapeName": "Kurotaki"
+      "shapeName": "黒滝村",
+      "shapeName_en": "Kurotaki"
     },
     "22064153B73176772627279": {
-      "shapeName": "Tenkawa"
+      "shapeName": "天川村",
+      "shapeName_en": "Tenkawa"
     },
     "22064153B96463446975181": {
-      "shapeName": "Kamikitayama"
+      "shapeName": "上北山村",
+      "shapeName_en": "Kamikitayama"
     },
     "22064153B5049217711544": {
-      "shapeName": "Nosegawa"
+      "shapeName": "野迫川村",
+      "shapeName_en": "Nosegawa"
     },
     "22064153B34956601586296": {
-      "shapeName": "Totsukawa"
+      "shapeName": "十津川村",
+      "shapeName_en": "Totsukawa"
     },
     "22064153B50045413715781": {
-      "shapeName": "Shimokitayama"
+      "shapeName": "下北山村",
+      "shapeName_en": "Shimokitayama"
     },
     "22064153B70291693279162": {
-      "shapeName": "Iwade"
+      "shapeName": "岩出市",
+      "shapeName_en": "Iwade"
     },
     "22064153B80081213273756": {
-      "shapeName": "Koya"
+      "shapeName": "高野町",
+      "shapeName_en": "Koya"
     },
     "22064153B91429451718848": {
-      "shapeName": "Kinokawa"
+      "shapeName": "紀の川市",
+      "shapeName_en": "Kinokawa"
     },
     "22064153B80333600461310": {
-      "shapeName": "Katsuragi"
+      "shapeName": "かつらぎ町",
+      "shapeName_en": "Katsuragi"
     },
     "22064153B41206405308946": {
-      "shapeName": "Tanabe"
+      "shapeName": "田辺市",
+      "shapeName_en": "Tanabe"
     },
     "22064153B66595558459060": {
-      "shapeName": "Kainan"
+      "shapeName": "海南市",
+      "shapeName_en": "Kainan"
     },
     "22064153B27289126175617": {
-      "shapeName": "Kimino"
+      "shapeName": "紀美野町",
+      "shapeName_en": "Kimino"
     },
     "22064153B40508197079928": {
-      "shapeName": "Arida"
+      "shapeName": "有田市",
+      "shapeName_en": "Arida"
     },
     "22064153B65800581846028": {
-      "shapeName": "Hirogawa"
+      "shapeName": "広川町",
+      "shapeName_en": "Hirogawa"
     },
     "22064153B44894866493506": {
-      "shapeName": "Aridagawa"
+      "shapeName": "有田川町",
+      "shapeName_en": "Aridagawa"
     },
     "22064153B22111041587368": {
-      "shapeName": "Yuasa"
+      "shapeName": "湯浅町",
+      "shapeName_en": "Yuasa"
     },
     "22064153B11283862904746": {
-      "shapeName": "Gobo"
+      "shapeName": "御坊市",
+      "shapeName_en": "Gobo"
     },
     "22064153B57923514267215": {
-      "shapeName": "Yura"
+      "shapeName": "由良町",
+      "shapeName_en": "Yura"
     },
     "22064153B89417284310535": {
-      "shapeName": "Hidaka"
+      "shapeName": "日高町",
+      "shapeName_en": "Hidaka"
     },
     "22064153B46444356983113": {
-      "shapeName": "Mihama"
+      "shapeName": "美浜町",
+      "shapeName_en": "Mihama"
     },
     "22064153B16137538167455": {
-      "shapeName": "Hidakagawa"
+      "shapeName": "日高川町",
+      "shapeName_en": "Hidakagawa"
     },
     "22064153B670450203879": {
-      "shapeName": "Inami"
+      "shapeName": "印南町",
+      "shapeName_en": "Inami"
     },
     "22064153B81057246302511": {
-      "shapeName": "Minabe"
+      "shapeName": "みなべ町",
+      "shapeName_en": "Minabe"
     },
     "22064153B83223852380108": {
-      "shapeName": "Shirahama"
+      "shapeName": "白浜町",
+      "shapeName_en": "Shirahama"
     },
     "22064153B66021827430595": {
-      "shapeName": "Kamitonda"
+      "shapeName": "上富田町",
+      "shapeName_en": "Kamitonda"
     },
     "22064153B49599067230525": {
-      "shapeName": "Susami"
+      "shapeName": "すさみ町",
+      "shapeName_en": "Susami"
     },
     "22064153B69084165037525": {
-      "shapeName": "Shingu"
+      "shapeName": "新宮市",
+      "shapeName_en": "Shingu"
     },
     "22064153B70218534764896": {
-      "shapeName": "Kushimoto"
+      "shapeName": "串本町",
+      "shapeName_en": "Kushimoto"
     },
     "22064153B8093767218470": {
-      "shapeName": "Taiji"
+      "shapeName": "太地町",
+      "shapeName_en": "Taiji"
     },
     "22064153B32207594646608": {
-      "shapeName": "Nachikatsuura"
+      "shapeName": "那智勝浦町",
+      "shapeName_en": "Nachikatsuura"
     },
     "22064153B17640645318479": {
-      "shapeName": "Kozagawa"
+      "shapeName": "古座川町",
+      "shapeName_en": "Kozagawa"
     },
     "22064153B5639303990614": {
-      "shapeName": "Kitayama"
+      "shapeName": "北山村",
+      "shapeName_en": "Kitayama"
     },
     "22064153B52887999669387": {
-      "shapeName": "Koto"
+      "shapeName": "江東区",
+      "shapeName_en": "Koto"
     },
     "22064153B77106068491412": {
-      "shapeName": "Shinagawa"
+      "shapeName": "品川区",
+      "shapeName_en": "Shinagawa"
     },
     "22064153B56867511813359": {
-      "shapeName": "Fujioka"
+      "shapeName": "藤岡市",
+      "shapeName_en": "Fujioka"
     },
     "22064153B28337090831591": {
-      "shapeName": "Takasaki"
+      "shapeName": "高崎市",
+      "shapeName_en": "Takasaki"
     },
     "22064153B42062720942264": {
-      "shapeName": "Ueno"
+      "shapeName": "上野村",
+      "shapeName_en": "Ueno"
     },
     "22064153B31050453163422": {
-      "shapeName": "Minamimaki-Mura"
+      "shapeName": "南牧村",
+      "shapeName_en": "Minamimaki-Mura"
     },
     "22064153B45193462412831": {
-      "shapeName": "Kanna"
+      "shapeName": "神流町",
+      "shapeName_en": "Kanna"
     },
     "22064153B88577614993358": {
-      "shapeName": "Ota"
+      "shapeName": "太田市",
+      "shapeName_en": "Ota"
     },
     "22064153B54492214323948": {
-      "shapeName": "Annaka City"
+      "shapeName": "安中市",
+      "shapeName_en": "Annaka City"
     },
     "22064153B76574269122529": {
-      "shapeName": "Shimonita Town"
+      "shapeName": "下仁田町",
+      "shapeName_en": "Shimonita Town"
     },
     "22064153B38245769729166": {
-      "shapeName": "Shibukawa"
+      "shapeName": "渋川市",
+      "shapeName_en": "Shibukawa"
     },
     "22064153B63858884041047": {
-      "shapeName": "Maebashi"
+      "shapeName": "前橋市",
+      "shapeName_en": "Maebashi"
     },
     "22064153B20100015994007": {
-      "shapeName": null
+      "shapeName": null,
+      "shapeName_en": null
     },
     "22064153B65367495834859": {
-      "shapeName": "Numata"
+      "shapeName": "沼田市",
+      "shapeName_en": "Numata"
     },
     "22064153B12662900476516": {
-      "shapeName": "Yomitan"
+      "shapeName": "読谷村",
+      "shapeName_en": "Yomitan"
     },
     "22064153B28864104730432": {
-      "shapeName": "Shiraoka"
+      "shapeName": "白岡市",
+      "shapeName_en": "Shiraoka"
     },
     "22064153B50127678643850": {
-      "shapeName": "Tomioka"
+      "shapeName": "富岡市",
+      "shapeName_en": "Tomioka"
     },
     "22064153B82025029560168": {
-      "shapeName": "Karuizawa"
+      "shapeName": "軽井沢町",
+      "shapeName_en": "Karuizawa"
     },
     "22064153B55178851895716": {
-      "shapeName": "Miyota"
+      "shapeName": "御代田町",
+      "shapeName_en": "Miyota"
     },
     "22064153B27367893757530": {
-      "shapeName": "Komoro"
+      "shapeName": "小諸市",
+      "shapeName_en": "Komoro"
     },
     "22064153B93078615339227": {
-      "shapeName": "Tomi"
+      "shapeName": "東御市",
+      "shapeName_en": "Tomi"
     },
     "22064153B86629940764584": {
-      "shapeName": "Ueda"
+      "shapeName": "上田市",
+      "shapeName_en": "Ueda"
     },
     "22064153B35820151330939": {
-      "shapeName": "Oshima"
+      "shapeName": "大島町",
+      "shapeName_en": "Oshima"
     },
     "22064153B79202574618165": {
-      "shapeName": "Toshima"
+      "shapeName": "利島村",
+      "shapeName_en": "Toshima"
     },
     "22064153B21018855363784": {
-      "shapeName": "Niijima"
+      "shapeName": "新島村",
+      "shapeName_en": "Niijima"
     },
     "22064153B75016173897449": {
-      "shapeName": "Kozushima"
+      "shapeName": "神津島村",
+      "shapeName_en": "Kozushima"
     },
     "22064153B72338395356904": {
-      "shapeName": "Mikurajima"
+      "shapeName": "御蔵島村",
+      "shapeName_en": "Mikurajima"
     },
     "22064153B51662529993673": {
-      "shapeName": "Miyake"
+      "shapeName": "三宅村",
+      "shapeName_en": "Miyake"
     },
     "22064153B66349136174891": {
-      "shapeName": "Kitamoto"
+      "shapeName": "北本市",
+      "shapeName_en": "Kitamoto"
     },
     "22064153B97070168127410": {
-      "shapeName": "Kusatsu"
+      "shapeName": "草津町",
+      "shapeName_en": "Kusatsu"
     },
     "22064153B24250896793566": {
-      "shapeName": "Sakuho"
+      "shapeName": "佐久穂町",
+      "shapeName_en": "Sakuho"
     },
     "22064153B8325167179900": {
-      "shapeName": "Kawakami"
+      "shapeName": "川上村",
+      "shapeName_en": "Kawakami"
     },
     "22064153B53754534753242": {
-      "shapeName": "Koumi"
+      "shapeName": "小海町",
+      "shapeName_en": "Koumi"
     },
     "22064153B397815229123": {
-      "shapeName": "Kitaaiki"
+      "shapeName": "北相木村",
+      "shapeName_en": "Kitaaiki"
     },
     "22064153B8461855353098": {
-      "shapeName": "Minamiaiki"
+      "shapeName": "南相木村",
+      "shapeName_en": "Minamiaiki"
     },
     "22064153B97866090466841": {
-      "shapeName": "Saku"
+      "shapeName": "佐久市",
+      "shapeName_en": "Saku"
     },
     "22064153B26624831097193": {
-      "shapeName": "Tateshina"
+      "shapeName": "立科町",
+      "shapeName_en": "Tateshina"
     },
     "22064153B55574544094548": {
-      "shapeName": "Suzaka"
+      "shapeName": "須坂市",
+      "shapeName_en": "Suzaka"
     },
     "22064153B88669235683638": {
-      "shapeName": "Nagano"
+      "shapeName": "長野市",
+      "shapeName_en": "Nagano"
     },
     "22064153B24536315802693": {
-      "shapeName": "Matsumoto"
+      "shapeName": "松本市",
+      "shapeName_en": "Matsumoto"
     },
     "22064153B27741683898286": {
-      "shapeName": "Okaya"
+      "shapeName": "岡谷市",
+      "shapeName_en": "Okaya"
     },
     "22064153B88983601589874": {
-      "shapeName": "Iida"
+      "shapeName": "飯田市",
+      "shapeName_en": "Iida"
     },
     "22064153B48448071500223": {
-      "shapeName": "Suwa"
+      "shapeName": "諏訪市",
+      "shapeName_en": "Suwa"
     },
     "22064153B10436959918879": {
-      "shapeName": "Tatebayashi City"
+      "shapeName": "館林市",
+      "shapeName_en": "Tatebayashi City"
     },
     "22064153B87269269919659": {
-      "shapeName": "Fukaya"
+      "shapeName": "深谷市",
+      "shapeName_en": "Fukaya"
     },
     "22064153B73342944647376": {
-      "shapeName": "Itakura"
+      "shapeName": "板倉町",
+      "shapeName_en": "Itakura"
     },
     "22064153B24235604109925": {
-      "shapeName": "Higashimatsushima"
+      "shapeName": "東松島市",
+      "shapeName_en": "Higashimatsushima"
     },
     "22064153B72786106713517": {
-      "shapeName": "Kakuda"
+      "shapeName": "角田市",
+      "shapeName_en": "Kakuda"
     },
     "22064153B69985190181734": {
-      "shapeName": "Kurihara"
+      "shapeName": "栗原市",
+      "shapeName_en": "Kurihara"
     },
     "22064153B64962111186487": {
-      "shapeName": "Tome"
+      "shapeName": "登米市",
+      "shapeName_en": "Tome"
     },
     "22064153B52801339035563": {
-      "shapeName": "Osaki"
+      "shapeName": "大崎市",
+      "shapeName_en": "Osaki"
     },
     "22064153B11326037690958": {
-      "shapeName": "Shiroishi"
+      "shapeName": "白石市",
+      "shapeName_en": "Shiroishi"
     },
     "22064153B33572200276184": {
-      "shapeName": "Shichikashuku"
+      "shapeName": "七ヶ宿町",
+      "shapeName_en": "Shichikashuku"
     },
     "22064153B12114341004920": {
-      "shapeName": "Zao"
+      "shapeName": "蔵王町",
+      "shapeName_en": "Zao"
     },
     "22064153B51725743038941": {
-      "shapeName": "Inagi"
+      "shapeName": "稲城市",
+      "shapeName_en": "Inagi"
     },
     "22064153B86821614203557": {
-      "shapeName": "Yuzawa"
+      "shapeName": "湯沢市",
+      "shapeName_en": "Yuzawa"
     },
     "22064153B5111391554664": {
-      "shapeName": "Ibara"
+      "shapeName": "井原市",
+      "shapeName_en": "Ibara"
     },
     "22064153B14063031562338": {
-      "shapeName": "Kasaoka"
+      "shapeName": "笠岡市",
+      "shapeName_en": "Kasaoka"
     },
     "22064153B60131456575281": {
-      "shapeName": "Kibichuo"
+      "shapeName": "吉備中央町",
+      "shapeName_en": "Kibichuo"
     },
     "22064153B46237965810139": {
-      "shapeName": "Kumenan"
+      "shapeName": "久米南町",
+      "shapeName_en": "Kumenan"
     },
     "22064153B87940577626061": {
-      "shapeName": "Kagamino"
+      "shapeName": "鏡野町",
+      "shapeName_en": "Kagamino"
     },
     "22064153B87600766129132": {
-      "shapeName": "Tamano"
+      "shapeName": "玉野市",
+      "shapeName_en": "Tamano"
     },
     "22064153B52523580672290": {
-      "shapeName": "Takahashi"
+      "shapeName": "高梁市",
+      "shapeName_en": "Takahashi"
     },
     "22064153B17016857460461": {
-      "shapeName": "Shoo"
+      "shapeName": "勝央町",
+      "shapeName_en": "Shoo"
     },
     "22064153B19974298911936": {
-      "shapeName": "Niimi"
+      "shapeName": "新見市",
+      "shapeName_en": "Niimi"
     },
     "22064153B90780529710926": {
-      "shapeName": "Shinjo"
+      "shapeName": "新庄村",
+      "shapeName_en": "Shinjo"
     },
     "22064153B4024875933909": {
-      "shapeName": "Maniwa"
+      "shapeName": "真庭市",
+      "shapeName_en": "Maniwa"
     },
     "22064153B21867415191580": {
-      "shapeName": "Setouchi"
+      "shapeName": "瀬戸内市",
+      "shapeName_en": "Setouchi"
     },
     "22064153B92230134603738": {
-      "shapeName": "Nishiawakura"
+      "shapeName": "西粟倉村",
+      "shapeName_en": "Nishiawakura"
     },
     "22064153B46015146665875": {
-      "shapeName": "Akaiwa"
+      "shapeName": "赤磐市",
+      "shapeName_en": "Akaiwa"
     },
     "22064153B52179912270627": {
-      "shapeName": "Asakuchi"
+      "shapeName": "浅口市",
+      "shapeName_en": "Asakuchi"
     },
     "22064153B6795873571666": {
-      "shapeName": "Kurashiki"
+      "shapeName": "倉敷市",
+      "shapeName_en": "Kurashiki"
     },
     "22064153B2252165856655": {
-      "shapeName": "Hayashima"
+      "shapeName": "早島町",
+      "shapeName_en": "Hayashima"
     },
     "22064153B8516585574683": {
-      "shapeName": "Souja"
+      "shapeName": "総社市",
+      "shapeName_en": "Souja"
     },
     "22064153B3825663705425": {
-      "shapeName": "Tsuyama"
+      "shapeName": "津山市",
+      "shapeName_en": "Tsuyama"
     },
     "22064153B52526289873005": {
-      "shapeName": "Nagi"
+      "shapeName": "奈義町",
+      "shapeName_en": "Nagi"
     },
     "22064153B78696629959853": {
-      "shapeName": "Bizen"
+      "shapeName": "備前市",
+      "shapeName_en": "Bizen"
     },
     "22064153B76094051519887": {
-      "shapeName": "Misaki"
+      "shapeName": "美咲町",
+      "shapeName_en": "Misaki"
     },
     "22064153B1664466739684": {
-      "shapeName": "Mimasaka"
+      "shapeName": "美作市",
+      "shapeName_en": "Mimasaka"
     },
     "22064153B73058523223682": {
-      "shapeName": "Yakage"
+      "shapeName": "矢掛町",
+      "shapeName_en": "Yakage"
     },
     "22064153B81775396633762": {
-      "shapeName": "Satosho"
+      "shapeName": "里庄町",
+      "shapeName_en": "Satosho"
     },
     "22064153B7777757861783": {
-      "shapeName": "Wake"
+      "shapeName": "和気町",
+      "shapeName_en": "Wake"
     },
     "22064153B47469236554060": {
-      "shapeName": "Okayama"
+      "shapeName": "岡山市",
+      "shapeName_en": "Okayama"
     },
     "22064153B68069187412847": {
-      "shapeName": "Ichikikushikino"
+      "shapeName": "いちき串木野市",
+      "shapeName_en": "Ichikikushikino"
     },
     "22064153B58787616490408": {
-      "shapeName": "Satsuma"
+      "shapeName": "さつま町",
+      "shapeName_en": "Satsuma"
     },
     "22064153B50130441477952": {
-      "shapeName": "Akune"
+      "shapeName": "阿久根市",
+      "shapeName_en": "Akune"
     },
     "22064153B21463927954199": {
-      "shapeName": "Aira"
+      "shapeName": "姶良市",
+      "shapeName_en": "Aira"
     },
     "22064153B1430516965980": {
-      "shapeName": "Isa"
+      "shapeName": "伊佐市",
+      "shapeName_en": "Isa"
     },
     "22064153B87695161266591": {
-      "shapeName": "Yakushima"
+      "shapeName": "屋久島町",
+      "shapeName_en": "Yakushima"
     },
     "22064153B35070439080278": {
-      "shapeName": "Kimotsuki"
+      "shapeName": "肝付町",
+      "shapeName_en": "Kimotsuki"
     },
     "22064153B21529335846532": {
-      "shapeName": "Kinkou"
+      "shapeName": "錦江町",
+      "shapeName_en": "Kinkou"
     },
     "22064153B16264764307082": {
-      "shapeName": "Satsumasendai"
+      "shapeName": "薩摩川内市",
+      "shapeName_en": "Satsumasendai"
     },
     "22064153B77106514402580": {
-      "shapeName": "Mishima"
+      "shapeName": "三島村",
+      "shapeName_en": "Mishima"
     },
     "22064153B58621167796121": {
-      "shapeName": "Shibushi"
+      "shapeName": "志布志市",
+      "shapeName_en": "Shibushi"
     },
     "22064153B63840040249051": {
-      "shapeName": "Ibusuki"
+      "shapeName": "指宿市",
+      "shapeName_en": "Ibusuki"
     },
     "22064153B25042190901764": {
-      "shapeName": "Kagoshima"
+      "shapeName": "鹿児島市",
+      "shapeName_en": "Kagoshima"
     },
     "22064153B34841335570745": {
-      "shapeName": "Kanoya"
+      "shapeName": "鹿屋市",
+      "shapeName_en": "Kanoya"
     },
     "22064153B49276333720668": {
-      "shapeName": "Toshima"
+      "shapeName": "十島村",
+      "shapeName_en": "Toshima"
     },
     "22064153B82042887470941": {
-      "shapeName": "Izumi"
+      "shapeName": "出水市",
+      "shapeName_en": "Izumi"
     },
     "22064153B35477366306356": {
-      "shapeName": "Tarumizu"
+      "shapeName": "垂水市",
+      "shapeName_en": "Tarumizu"
     },
     "22064153B56938477027476": {
-      "shapeName": "Setouchi"
+      "shapeName": "瀬戸内町",
+      "shapeName_en": "Setouchi"
     },
     "22064153B55493173352162": {
-      "shapeName": "Nishinoomote"
+      "shapeName": "西之表市",
+      "shapeName_en": "Nishinoomote"
     },
     "22064153B21914755064517": {
-      "shapeName": "Soo"
+      "shapeName": "曽於市",
+      "shapeName_en": "Soo"
     },
     "22064153B27870068763569": {
-      "shapeName": "Oosaki"
+      "shapeName": "大崎町",
+      "shapeName_en": "Oosaki"
     },
     "22064153B80640640435871": {
-      "shapeName": "Yamato"
+      "shapeName": "大和村",
+      "shapeName_en": "Yamato"
     },
     "22064153B72557409137783": {
-      "shapeName": "China"
+      "shapeName": "知名町",
+      "shapeName_en": "China"
     },
     "22064153B45188135537989": {
-      "shapeName": "Naka Tane"
+      "shapeName": "中種子町",
+      "shapeName_en": "Naka Tane"
     },
     "22064153B18443780619579": {
-      "shapeName": "Nagashima"
+      "shapeName": "長島町",
+      "shapeName_en": "Nagashima"
     },
     "22064153B89218276356736": {
-      "shapeName": "Amagi"
+      "shapeName": "天城町",
+      "shapeName_en": "Amagi"
     },
     "22064153B17402484703457": {
-      "shapeName": "Higashi Kushira"
+      "shapeName": "東串良町",
+      "shapeName_en": "Higashi Kushira"
     },
     "22064153B1320154413470": {
-      "shapeName": "Tokunoshima"
+      "shapeName": "徳之島町",
+      "shapeName_en": "Tokunoshima"
     },
     "22064153B92754256682750": {
-      "shapeName": "Minami Satsuma"
+      "shapeName": "南さつま市",
+      "shapeName_en": "Minami Satsuma"
     },
     "22064153B47088094291136": {
-      "shapeName": "Minami Kyushu"
+      "shapeName": "南九州市",
+      "shapeName_en": "Minami Kyushu"
     },
     "22064153B2722132887235": {
-      "shapeName": "Minami Tane"
+      "shapeName": "南種子町",
+      "shapeName_en": "Minami Tane"
     },
     "22064153B79178271585243": {
       "shapeName": "Minami Oosumi"

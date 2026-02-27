@@ -36,7 +36,8 @@ const SidebarLineItem: React.FC<{
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
 }> = memo(({ lineId, companyId, lineData, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
-    const lName = lineData.name_en || lineData.name;
+    const lName = lineData.name;
+    const lNameEn = lineData.name_en;
     const key = `${companyId}::${lineId}`;
     const isActive = activeLine === key;
     const isSelected = selectedLines.includes(key) || isActive;
@@ -90,7 +91,7 @@ const SidebarLineItem: React.FC<{
                             }}>
                             {lName}
                         </span>
-                        {lineData.name_en && lineData.name_en !== lName && (
+                        {lNameEn && (
                             <span style={{
                                 fontSize: '10px',
                                 fontWeight: '500',
@@ -101,7 +102,7 @@ const SidebarLineItem: React.FC<{
                                 textOverflow: 'ellipsis',
                                 opacity: 0.8
                             }}>
-                                {lineData.name}
+                                {lNameEn}
                             </span>
                         )}
                     </div>
@@ -156,8 +157,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
 
     if (Object.keys(companies).length === 0) return null;
 
-    const getCompanyName = (id: string) => companyNames[id]?.name_en || companyNames[id]?.name || id;
-    const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name_en || lineData?.name || lineNames[id]?.name_en || lineNames[id]?.name || id;
+    const getCompanyName = (id: string) => companyNames[id]?.name || id;
+    const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name || lineNames[id]?.name || id;
 
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
@@ -235,8 +236,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                         const isExpanded = expandedCompanies[companyId];
                         const lineIds = Object.keys(lines);
                         const companyData = companyNames[companyId];
-                        const cName = companyData?.name_en || companyData?.name || companyId;
-                        const cNameEn = companyData?.name || "";
+                        const cName = companyData?.name || companyId;
+                        const cNameEn = companyData?.name_en || "";
 
                         const allLinesSelected = Object.keys(lines).every(lineId => selectedLines.includes(`${companyId}::${lineId}`));
                         const someLinesSelected = Object.keys(lines).some(lineId => selectedLines.includes(`${companyId}::${lineId}`));
