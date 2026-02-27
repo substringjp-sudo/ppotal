@@ -31,8 +31,15 @@ body {
   transition: filter 0.3s ease;
 }
 
-/* Fix selection rectangle artifact */
-.leaflet-container:focus {
+/* --- Leaflet Interaction & Style Fixes --- */
+
+/* 
+  Globally remove the focus outline from the map container and its interactive elements. 
+  This prevents the blue/orange rectangle from appearing when clicking lines or stations.
+*/
+.leaflet-container:focus,
+.leaflet-marker-icon:focus,
+.leaflet-interactive:focus {
   outline: none !important;
 }
 
@@ -46,8 +53,6 @@ body {
     display: block !important;
   }
 }
-
-/* --- Leaflet Interaction Fixes --- */
 
 /* 
   Leaflet custom panes are full-screen divs. 

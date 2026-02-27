@@ -54,10 +54,10 @@ const TubeMap: React.FC<TubeMapProps> = ({
 
     const xs = nodes.map(n => n.x);
     const ys = nodes.map(n => n.y);
-    const minX = xs.length > 0 ? Math.min(...xs) - 100 : 0;
-    const maxX = xs.length > 0 ? Math.max(...xs) + 100 : 1000;
-    const minY = ys.length > 0 ? Math.min(...ys) - 100 : 0;
-    const maxY = ys.length > 0 ? Math.max(...ys) + 100 : 350;
+    const minX = xs.length > 0 ? Math.min(...xs) - 40 : 0;
+    const maxX = xs.length > 0 ? Math.max(...xs) + 40 : 1000;
+    const minY = ys.length > 0 ? Math.min(...ys) - 40 : 0;
+    const maxY = ys.length > 0 ? Math.max(...ys) + 40 : 350;
 
     const svgWidth = Math.max(maxX - minX, 800);
     const svgHeight = maxY - minY;

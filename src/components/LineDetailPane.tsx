@@ -79,7 +79,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             bottom: 0,
             left: 0,
             right: 0,
-            maxHeight: '70vh',
+            maxHeight: '35vh', // Reduced max height by half from 70vh
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             backdropFilter: 'blur(20px)',
             borderTop: '1px solid rgba(0,0,0,0.1)',
@@ -96,7 +96,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '20px',
-                gap: '24px'
+                gap: '24px',
+                flexShrink: 0
             }}>
                 <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <button
@@ -194,6 +195,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
             <div style={{
                 flex: 1,
                 position: 'relative',
+                overflowY: 'auto',
+                minHeight: 0
             }}>
                 <TubeMap
                     nodes={topology.nodes}

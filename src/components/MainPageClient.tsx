@@ -285,16 +285,21 @@ const MainPageClient = () => {
     const handleStationClick = React.useCallback((stationId: string) => {
         if (isEditMode && tempPath.length > 0) return;
         if (!railData?.stations) return;
-
+    
         const station = (railData.stations as { [key: string]: Station })[stationId];
-
+    
         if (station) {
-            setSelectedStation(station);
-            setActiveLine(null);
-            if (isMobile) {
-                setIsMobileSheetOpen(false);
-            }
-            trackEvent('station_click', 'interaction', station.name);
+            // Close any existing popups by temporarily setting to null
+            setSelectedStation(null);
+    
+            setTimeout(() => {
+                setSelectedStation(station);
+                setActiveLine(null);
+                if (isMobile) {
+                    setIsMobileSheetOpen(false);
+                }
+                trackEvent('station_click', 'interaction', station.name);
+            }, 0);
         }
     }, [isMobile, isEditMode, tempPath.length, railData]);
 
