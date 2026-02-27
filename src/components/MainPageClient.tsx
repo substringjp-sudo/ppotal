@@ -14,6 +14,7 @@ import { useAuth } from '../lib/auth-context';
 import { db } from '../lib/firebase';
 import { collection, query, getDocs, setDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 
+import { Station } from '../types/railData';
 import { MapProps } from './Map';
 import MapLoadingIndicator from './MapLoadingIndicator';
 import FeedbackModal from './FeedbackModal';
@@ -25,7 +26,6 @@ const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
 
 const MapPaneWithNoSSR = dynamic(() => import('./MapPane'), { ssr: false });
 import { SidebarProps } from './Sidebar';
-import { MyLinesPaneProps } from './MyLinesPane';
 
 const SidebarWithNoSSR = dynamic<SidebarProps>(() => import('./Sidebar'), { ssr: false });
 import MyLinesPane from './MyLinesPane';
@@ -38,6 +38,10 @@ const MobileStationPreviewWithNoSSR = dynamic<MobileStationPreviewProps>(() => i
 
 import type { LineDetailPaneProps } from './LineDetailPane';
 const LineDetailPaneWithNoSSR = dynamic<LineDetailPaneProps>(() => import('./LineDetailPane'), { ssr: false });
+
+import type { StationDetailPaneProps } from './StationDetailPane';
+const StationDetailPaneWithNoSSR = dynamic<StationDetailPaneProps>(() => import('./StationDetailPane'), { ssr: false });
+
 
 export interface MapStyleSettings {
     unselected: {
@@ -92,7 +96,7 @@ const MainPageClient = () => {
         getShortestPath: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
     } | null>(null);
     const [styleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
-    const [selectedStation, setSelectedStation] = React.useState<{ name: string, lines: string[] } | null>(null);
+    const [selectedStation, setSelectedStation] = React.useState<Station | null>(null);
     const [isMobile, setIsMobile] = React.useState(false);
 
     const [isEditMode, setIsEditMode] = React.useState(false);
@@ -110,8 +114,8 @@ const MainPageClient = () => {
         geometries: JSON.stringify(trip.geometries)
     });
 
-    const fromFirestoreTrip = (data: any): Trip => ({
-        ...data,
+    const fromFirestoreTrip = (data: Record<string, unknown>): Trip => ({
+        ...(data as Trip),
         geometries: typeof data.geometries === 'string' ? JSON.parse(data.geometries) : data.geometries
     });
 
@@ -278,14 +282,21 @@ const MainPageClient = () => {
         });
     }, []);
 
-    const handleStationClick = React.useCallback((stationName: string, lines?: string[]) => {
+    const handleStationClick = React.useCallback((stationId: string) => {
         if (isEditMode && tempPath.length > 0) return;
+        if (!railData?.stations) return;
 
-        setSelectedStation({ name: stationName, lines: lines || [] });
+        const station = (railData.stations as { [key: string]: Station })[stationId];
 
-        if (!isMobile) {
+        if (station) {
+            setSelectedStation(station);
+            setActiveLine(null);
+            if (isMobile) {
+                setIsMobileSheetOpen(false);
+            }
+            trackEvent('station_click', 'interaction', station.name);
         }
-    }, [isMobile, isEditMode, tempPath.length]);
+    }, [isMobile, isEditMode, tempPath.length, railData]);
 
     const handleResetTrips = React.useCallback(() => {
         if (window.confirm('Are you sure you want to delete all trip records?')) {
@@ -367,6 +378,18 @@ const MainPageClient = () => {
             setTempPath([]);
         }
     }, [lineDetailData, activeLine]);
+
+    const mobilePreviewLines = React.useMemo(() => {
+        if (!selectedStation || !railData?.platforms || !railData.lines) return [];
+        const lineIds = selectedStation.platform_ids
+            .map(platformId => railData.platforms[platformId]?.line)
+            .filter((lineId, index, self) => lineId !== undefined && self.indexOf(lineId) === index);
+        return lineIds.map(lineId => {
+            const line = railData.lines[lineId];
+            if (!line) return null;
+            return `${line.corp_id}::${line.id}`;
+        }).filter((id): id is string => !!id);
+    }, [selectedStation, railData]);
 
     return (
         <div style={{
@@ -626,8 +649,8 @@ const MainPageClient = () => {
                             {selectedStation && railData ? (
                                 <div style={{ padding: '10px' }}>
                                     <MobileStationPreviewWithNoSSR
-                                        stationName={selectedStation.name}
-                                        lines={selectedStation.lines}
+                                        station={selectedStation}
+                                        lines={mobilePreviewLines}
                                         onLineClick={(lineId: string) => {
                                             handleRailroadClick(lineId);
                                         }}
@@ -707,6 +730,17 @@ const MainPageClient = () => {
                                     onClose={() => setActiveLine(null)}
                                     onToggleLine={toggleLine}
                                     railData={railData}
+                                />
+                            </div>
+                        )}
+                        {!isMobile && selectedStation && railData && (
+                            <div style={{ position: 'relative', zIndex: 1100 }}>
+                                <StationDetailPaneWithNoSSR
+                                    station={selectedStation}
+                                    lines={railData.lines}
+                                    platforms={railData.platforms}
+                                    railData={railData}
+                                    onClose={() => setSelectedStation(null)}
                                 />
                             </div>
                         )}

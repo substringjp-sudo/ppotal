@@ -1,0 +1,152 @@
+.pane {
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    padding: 16px;
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align to the top */
+    margin-bottom: 16px;
+  }
+  
+  /* FIX: Make station title bold and arrange names vertically */
+  .header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold; 
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  
+  /* FIX: Style for English station name in the header */
+  .stationNameEn {
+    font-size: 14px;
+    color: #666;
+    font-weight: normal;
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* FIX: Remove bottom border and margin */
+  .section {
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  
+  .platformContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .platformRow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  /* FIX: Use flexbox for vertical alignment of names */
+  .directionPill {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  /* Style for main station name inside the pill */
+  .directionStationName {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px; /* Adjust as needed */
+  }
+
+  /* FIX: Style for English neighbor station name */
+  .directionStationNameEn {
+    font-size: 11px;
+    font-weight: normal;
+    opacity: 0.9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px; /* Adjust as needed */
+  }
+  
+  .directionColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .platformTrack {
+    position: relative;
+    height: 40px; /* Adjusted for two lines */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .platformTrack::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    right: -20px;
+    height: 4px;
+    background-color: #ccc;
+    z-index: 1;
+  }
+  
+  /* FIX: Use flexbox for vertical alignment and adjust padding */
+  .platformInfo {
+    position: relative;
+    z-index: 2;
+    background-color: #fff;
+    border: 2px solid; 
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    line-height: 1.3;
+  }
+  
+  /* FIX: Ensure boldness for main line name */
+  .platformLineName {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  /* FIX: Style for English line name */
+  .platformLineNameEn {
+    font-size: 11px;
+    font-weight: normal;
+    color: #555;
+  }

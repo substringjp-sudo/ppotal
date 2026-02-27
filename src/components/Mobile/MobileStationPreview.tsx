@@ -1,17 +1,17 @@
 import React from 'react';
 
 import { getLineColor } from '../../lib/lineColors';
-import { RailData } from '../../types/railData';
+import { RailData, Station } from '../../types/railData';
 
 export interface MobileStationPreviewProps {
-    stationName: string;
+    station: Station;
     lines: string[]; // List of line IDs (Company::LineName)
     onLineClick?: (lineId: string) => void;
     railData: RailData | null;
 }
 
 const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
-    stationName,
+    station,
     lines,
     onLineClick,
     railData
@@ -27,7 +27,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
         }}>
             <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '12px' }}>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>
-                    {stationName}
+                    {station.name} <span style={{ fontSize: '14px', color: '#666', fontWeight: 'normal' }}>{station.name_en}</span>
                 </div>
             </div>
 
