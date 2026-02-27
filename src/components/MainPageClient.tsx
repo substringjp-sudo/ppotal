@@ -115,7 +115,7 @@ const MainPageClient = () => {
     });
 
     const fromFirestoreTrip = (data: Record<string, unknown>): Trip => ({
-        ...(data as Trip),
+        ...(data as unknown as Trip),
         geometries: typeof data.geometries === 'string' ? JSON.parse(data.geometries) : data.geometries
     });
 
@@ -285,13 +285,13 @@ const MainPageClient = () => {
     const handleStationClick = React.useCallback((stationId: string) => {
         if (isEditMode && tempPath.length > 0) return;
         if (!railData?.stations) return;
-    
+
         const station = (railData.stations as { [key: string]: Station })[stationId];
-    
+
         if (station) {
             // Close any existing popups by temporarily setting to null
             setSelectedStation(null);
-    
+
             setTimeout(() => {
                 setSelectedStation(station);
                 setActiveLine(null);
@@ -742,8 +742,6 @@ const MainPageClient = () => {
                             <div style={{ position: 'relative', zIndex: 1100 }}>
                                 <StationDetailPaneWithNoSSR
                                     station={selectedStation}
-                                    lines={railData.lines}
-                                    platforms={railData.platforms}
                                     railData={railData}
                                     onClose={() => setSelectedStation(null)}
                                 />

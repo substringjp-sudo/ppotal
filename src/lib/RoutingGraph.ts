@@ -123,14 +123,15 @@ export class RoutingGraph {
         data.sections.sections.forEach((s: Section) => this.sectionsMap.set(s.id, s));
 
         if (data.railroadGraph) {
-            Object.entries(data.railroadGraph).forEach(([sourceId, targets]) => {
-                Object.entries(targets as Record<string, number[]>).forEach(([targetId, sectionIds]) => {
+            Object.entries(data.railroadGraph.stationGraph).forEach(([sourceId, targets]) => {
+                Object.entries(targets).forEach(([targetId, info]) => {
+                    const sectionIds = info.section_ids;
                     let totalDistance = 0;
                     const combinedGeometry: [number, number][] = [];
                     let lineId = "";
                     let currentPos = sourceId;
 
-                    (sectionIds as number[]).forEach((secId: number) => {
+                    sectionIds.forEach((secId: number) => {
                         const section = this.sectionsMap.get(secId);
                         if (!section) return;
 

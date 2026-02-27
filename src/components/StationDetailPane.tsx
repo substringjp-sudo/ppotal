@@ -1,28 +1,19 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './StationDetailPane.module.css';
-import { Station, RailData, Company, Line, Platform } from '../types';
+import { Station, RailData, Platform, Section } from '../types/railData';
 
 interface RegionNames {
-    adm1: Record<string, { shapeName: string }>;
-    adm2: Record<string, { shapeName: string }>;
+  adm1: Record<string, { shapeName: string }>;
+  adm2: Record<string, { shapeName: string }>;
 }
 
-interface StationDetailPaneProps {
+export interface StationDetailPaneProps {
   station: Station;
   railData: RailData;
   onClose: () => void;
 }
 
-const buildSectionsByIdMap = (sections: any[]): Map<number, any> => {
-  const map = new Map<number, any>();
-  if (Array.isArray(sections)) {
-    for (const section of sections) {
-      map.set(section.id, section);
-    }
-  }
-  return map;
-};
 
 const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData, onClose }) => {
   const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
@@ -34,68 +25,60 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData
       .catch(err => console.error("Failed to load region names:", err));
   }, []);
 
+  const { stations, platforms, lines, companies } = railData || { stations: {}, platforms: {}, lines: {}, companies: {} };
+
   if (!railData) return null;
-
-  const { stations, platforms, lines, companies, sections, railroadGraph } = railData;
-
-  const sectionsById = React.useMemo(() => buildSectionsByIdMap(sections.sections), [sections.sections]);
 
   const sortedStationPlatforms = station.platform_ids
     .map(pid => platforms[pid])
     .filter(p => p && lines[p.line])
     .sort((a, b) => {
-        const lineA = lines[a.line];
-        const lineB = lines[b.line];
-        if (!lineA || !lineB) return 0;
-        if (lineA.corp_id !== lineB.corp_id) {
-            return lineA.corp_id - lineB.corp_id;
-        }
-        return a.line - b.line;
+      const lineA = lines[a.line];
+      const lineB = lines[b.line];
+      if (!lineA || !lineB) return 0;
+      if (lineA.corp_id !== lineB.corp_id) {
+        return lineA.corp_id - lineB.corp_id;
+      }
+      return a.line - b.line;
     });
 
-    const getDirectionalNeighbors = (platform: Platform) => {
-        const leftStations: Station[] = [];
-        const rightStations: Station[] = [];
-        const currentStation = station;
-        const targetLineId = platform.line;
-    
-        const neighborStationIds = railroadGraph[currentStation.id]
-          ? Object.keys(railroadGraph[currentStation.id])
-          : [];
-    
-        for (const neighborId of neighborStationIds) {
-          const neighborStation = stations[neighborId];
-          if (!neighborStation) continue;
-    
-          const connectingSectionIds = railroadGraph[currentStation.id][neighborId];
-          if (!connectingSectionIds || connectingSectionIds.length === 0) continue;
-    
-          const isOnTargetLine = connectingSectionIds.some(sectionId => {
-              const section = sectionsById.get(sectionId);
-              return section && section.line_id === targetLineId;
-          });
-    
-          if (isOnTargetLine) {
-            const deltaLon = neighborStation.lon - currentStation.lon;
-            const deltaLat = neighborStation.lat - currentStation.lat;
-    
-            if (Math.abs(deltaLon) > Math.abs(deltaLat)) {
-              if (deltaLon < 0) { 
-                if (!leftStations.find(s => s.id === neighborStation.id)) leftStations.push(neighborStation);
-              } else { 
-                if (!rightStations.find(s => s.id === neighborStation.id)) rightStations.push(neighborStation);
-              }
-            } else {
-              if (deltaLat < 0) { 
-                if (!leftStations.find(s => s.id === neighborStation.id)) leftStations.push(neighborStation);
-              } else { 
-                if (!rightStations.find(s => s.id === neighborStation.id)) rightStations.push(neighborStation);
-              }
-            }
+  const getDirectionalNeighbors = (platform: Platform) => {
+    const left: { station: Station; ratio: number; skippedCount: number }[] = [];
+    const right: { station: Station; ratio: number; skippedCount: number }[] = [];
+    const currentStation = station;
+
+    const railroadGraph = railData.railroadGraph;
+    if (!railroadGraph || !railroadGraph.platformGraph) return { left, right };
+
+    const platformConnections = railroadGraph.platformGraph[currentStation.id]?.[platform.code] || [];
+    const totalPoints = platform.geometries && platform.geometries[0] ? platform.geometries[0].length : 2;
+
+    for (const conn of platformConnections) {
+      const ratio = totalPoints > 1 ? conn.point_index / (totalPoints - 1) : 0.5;
+      for (const neighborInfo of conn.neighbors) {
+        const neighborId = neighborInfo.station_id;
+        const neighborStation = stations[neighborId];
+        if (!neighborStation) continue;
+
+        const entry = {
+          station: neighborStation,
+          ratio,
+          skippedCount: neighborInfo.skipped?.length || 0
+        };
+
+        if (ratio <= 0.5) {
+          if (!left.find(e => e.station.id === neighborStation.id)) {
+            left.push(entry);
+          }
+        } else {
+          if (!right.find(e => e.station.id === neighborStation.id)) {
+            right.push(entry);
           }
         }
-        return { leftStations, rightStations };
-      };
+      }
+    }
+    return { left, right };
+  };
 
   const prefectureName = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id]?.shapeName : '';
   const cityName = station.city_id && regionNames ? regionNames.adm2[station.city_id]?.shapeName : '';
@@ -104,22 +87,31 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData
     if (!colorStr) return null;
     const sanitizedColor = colorStr.startsWith('#') ? colorStr.substring(1) : colorStr;
     if (/^[0-9a-fA-F]{6}$/.test(sanitizedColor)) {
-        return `#${sanitizedColor}`;
+      return `#${sanitizedColor}`;
     }
     return null;
   }
+
+  const getPlatformWidth = (p: Platform) => {
+    // 100m = 8 units in our 100-unit viewBox
+    // typical platform is 100-200m -> 8-16 units
+    // shinkansen is 400m -> 32 units
+    const length = p.length || 150;
+    const width = Math.min(60, length * 0.08);
+    return Math.max(8, width); // Minimum width to be visible
+  };
 
   return (
     <div className={styles.pane}>
       <div className={styles.header}>
         <div className={styles.stationInfoContainer}>
-            <div className={styles.stationNameWrapper}>
-                <span className={styles.stationName}>{station.name}</span>
-                {(prefectureName || cityName) && 
-                <span className={styles.regionName}>({prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName})</span>
-                }
-            </div>
-            <span className={styles.stationNameEn}>{station.name_en}</span>
+          <div className={styles.stationNameWrapper}>
+            <span className={styles.stationName}>{station.name}</span>
+            {(prefectureName || cityName) &&
+              <span className={styles.regionName}>({prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName})</span>
+            }
+          </div>
+          <span className={styles.stationNameEn}>{station.name_en}</span>
         </div>
         <button onClick={onClose} className={styles.closeButton}>×</button>
       </div>
@@ -135,61 +127,113 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({ station, railData
               const companyColor = company ? formatColor(company.color) : null;
               const finalColor = lineColor || companyColor || '#000000';
 
-              const { leftStations, rightStations } = getDirectionalNeighbors(p);
+              const { left, right } = getDirectionalNeighbors(p);
+              const maxNeighbors = Math.max(left.length, right.length);
+              const rowHeight = Math.max(100, maxNeighbors * 45);
 
               return (
-                <div key={p.code} className={styles.lineRow}>
-                    <div className={`${styles.neighborColumn} ${styles.left}`}>
-                        {leftStations.map((s, index) => {
-                             const y = 100 / (leftStations.length + 1) * (index + 1);
-                             return (
-                                <div key={s.id} className={styles.neighborStation} style={{top: `${y}%`}}>
-                                    <div className={styles.neighborInfo}>
-                                        <span className={styles.neighborStationName}>{s.name}</span>
-                                        <span className={styles.neighborStationNameEn}>{s.name_en}</span>
-                                    </div>
-                                    <div className={styles.neighborDot} style={{backgroundColor: finalColor}}></div>
-                                </div>
-                            )
-                        })}
-                    </div>
-            
-                    <div className={styles.centerColumn}>
-                        <div className={styles.svgWrapper}>
-                            <div className={styles.lineNameContainer}>
-                                <span className={styles.lineName}>{line.name}</span>
-                                <span className={styles.lineNameEn}>{line.name_en}</span>
+                <div key={p.code} className={styles.lineRow} style={{ height: rowHeight }}>
+                  <div className={`${styles.neighborColumn} ${styles.left}`}>
+                    {left.map((entry, index) => {
+                      const y = 100 / (left.length + 1) * (index + 1);
+                      return (
+                        <div key={entry.station.id} className={styles.neighborStation} style={{ top: `${y}%` }}>
+                          <div className={styles.neighborInfo}>
+                            <div className={styles.neighborStationNameRow}>
+                              <span className={styles.neighborStationName}>{entry.station.name}</span>
+                              {entry.skippedCount > 0 && <span className={styles.skippedIndicator}>+{entry.skippedCount}</span>}
                             </div>
-                            <svg className={styles.connectingLines} viewBox="0 0 100 100" preserveAspectRatio="none">
-                                {leftStations.map((s, index) => {
-                                    const y = 100 / (leftStations.length + 1) * (index + 1);
-                                    const pathD = `M 50,50 C 20,50 20,${y} 0,${y}`;
-                                    return <path key={s.id} d={pathD} stroke={finalColor} strokeWidth="2.5" fill="none" />
-                                })}
-                                {rightStations.map((s, index) => {
-                                    const y = 100 / (rightStations.length + 1) * (index + 1);
-                                    const pathD = `M 50,50 C 80,50 80,${y} 100,${y}`;
-                                    return <path key={s.id} d={pathD} stroke={finalColor} strokeWidth="2.5" fill="none" />
-                                })}
-                            </svg>
-                            <div className={styles.centerPoint} style={{borderColor: finalColor}}></div>
+                            <span className={styles.neighborStationNameEn}>{entry.station.name_en}</span>
+                          </div>
+                          <div className={styles.neighborDot} style={{ backgroundColor: finalColor }}></div>
                         </div>
+                      )
+                    })}
+                  </div>
+
+                  <div className={styles.centerColumn}>
+                    <div className={styles.svgWrapper}>
+                      <div className={styles.lineNameContainer}>
+                        <span className={styles.lineName}>{line.name}</span>
+                        <span className={styles.lineNameEn}>{line.name_en}</span>
+                      </div>
+                      <svg className={styles.connectingLines} viewBox="0 0 100 100" preserveAspectRatio="none">
+                        {(() => {
+                          const pWidth = getPlatformWidth(p);
+                          const pStartX = 50 - pWidth / 2;
+                          const pEndX = 50 + pWidth / 2;
+
+                          return (
+                            <>
+                              {/* Connecting Lines */}
+                              {left.map((entry, index) => {
+                                const y = 100 / (left.length + 1) * (index + 1);
+                                const connX = pStartX + entry.ratio * pWidth;
+                                const pathD = `M ${connX},50 C ${connX - 10},50 ${pStartX - 10},${y} 0,${y}`;
+                                return (
+                                  <path
+                                    key={entry.station.id}
+                                    d={pathD}
+                                    stroke={finalColor}
+                                    strokeWidth="2"
+                                    fill="none"
+                                    opacity="0.6"
+                                    strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
+                                  />
+                                );
+                              })}
+                              {right.map((entry, index) => {
+                                const y = 100 / (right.length + 1) * (index + 1);
+                                const connX = pStartX + entry.ratio * pWidth;
+                                const pathD = `M ${connX},50 C ${connX + 10},50 ${pEndX + 10},${y} 100,${y}`;
+                                return (
+                                  <path
+                                    key={entry.station.id}
+                                    d={pathD}
+                                    stroke={finalColor}
+                                    strokeWidth="2"
+                                    fill="none"
+                                    opacity="0.6"
+                                    strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
+                                  />
+                                );
+                              })}
+
+                              {/* Platform Line */}
+                              <rect
+                                x={pStartX}
+                                y={47.5}
+                                width={pWidth}
+                                height={5}
+                                rx={2.5}
+                                fill="#fff"
+                                stroke={finalColor}
+                                strokeWidth="2"
+                              />
+                            </>
+                          );
+                        })()}
+                      </svg>
                     </div>
-            
-                    <div className={`${styles.neighborColumn} ${styles.right}`}>
-                        {rightStations.map((s, index) => {
-                            const y = 100 / (rightStations.length + 1) * (index + 1);
-                            return (
-                                <div key={s.id} className={styles.neighborStation} style={{top: `${y}%`}}>
-                                    <div className={styles.neighborDot} style={{backgroundColor: finalColor}}></div>
-                                    <div className={styles.neighborInfo}>
-                                        <span className={styles.neighborStationName}>{s.name}</span>
-                                        <span className={styles.neighborStationNameEn}>{s.name_en}</span>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
+                  </div>
+
+                  <div className={`${styles.neighborColumn} ${styles.right}`}>
+                    {right.map((entry, index) => {
+                      const y = 100 / (right.length + 1) * (index + 1);
+                      return (
+                        <div key={entry.station.id} className={styles.neighborStation} style={{ top: `${y}%` }}>
+                          <div className={styles.neighborDot} style={{ backgroundColor: finalColor }}></div>
+                          <div className={styles.neighborInfo}>
+                            <div className={styles.neighborStationNameRow}>
+                              <span className={styles.neighborStationName}>{entry.station.name}</span>
+                              {entry.skippedCount > 0 && <span className={styles.skippedIndicator}>+{entry.skippedCount}</span>}
+                            </div>
+                            <span className={styles.neighborStationNameEn}>{entry.station.name_en}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               );
             })}

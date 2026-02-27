@@ -49,6 +49,8 @@ export interface Station {
     lat: number;
     lon: number;
     platform_ids: string[];
+    prefecture_id?: string;
+    city_id?: string;
 }
 
 export interface Section {
@@ -65,6 +67,21 @@ export interface Joint {
     id: string;
     coordinates: [number, number];
     line_ids: number[];
+}
+
+export interface SectionNeighbor {
+    station_id: string;
+    name: string;
+    line_id: number;
+    available_lines: number[];
+    sections: number[];
+    skipped?: string[];
+}
+
+export interface PlatformConnection {
+    point: [number, number];
+    point_index: number;
+    neighbors: SectionNeighbor[];
 }
 
 export interface RailData {
@@ -84,5 +101,8 @@ export interface RailData {
         companies: Record<string, HierarchyCompany>;
     };
     joints: { joints: Joint[] };
-    railroadGraph?: Record<string, Record<string, number[]>>;
+    railroadGraph?: {
+        stationGraph: Record<string, Record<string, { section_ids: number[], available_lines: number[] }>>;
+        platformGraph: Record<string, Record<string, PlatformConnection[]>>;
+    };
 }
