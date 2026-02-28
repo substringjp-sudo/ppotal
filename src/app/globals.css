@@ -26,7 +26,21 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  user-select: none;
+  /* Block overall text selection */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
+
+input,
+textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
 
 /* Visited Station Glow Effect */
 .visited-station-glow {
@@ -38,12 +52,42 @@ body {
 
 /* 
   Globally remove the focus outline from the map container and its interactive elements. 
-  This prevents the blue/orange rectangle from appearing when clicking lines or stations.
 */
-.leaflet-container:focus,
-.leaflet-marker-icon:focus,
-.leaflet-interactive:focus {
+.leaflet-container,
+.leaflet-container *,
+.leaflet-marker-icon,
+.leaflet-interactive,
+svg,
+g,
+path {
   outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.leaflet-container:focus,
+.leaflet-container:active,
+.leaflet-marker-icon:focus,
+.leaflet-marker-icon:active,
+.leaflet-interactive:focus,
+.leaflet-interactive:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Clear selection styling for the entire app except form elements */
+::selection {
+  background-color: transparent !important;
+}
+
+input::selection,
+textarea::selection {
+  background-color: rgba(28, 116, 233, 0.2) !important;
+  color: inherit !important;
 }
 
 /* SEO Content Visibility */
@@ -93,17 +137,15 @@ body {
 }
 
 /* Tooltip Enhancements */
-.leaflet-tooltip {
-  background-color: white !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+.railroad-tooltip {
+  pointer-events: none !important;
+  max-width: 280px !important;
+  white-space: normal !important;
+  word-break: break-all !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  border: none !important;
   border-radius: 8px !important;
-  padding: 0 !important;
-  overflow: hidden;
-}
-
-.leaflet-tooltip-pane {
-  z-index: 1200 !important;
+  z-index: 10002 !important;
 }
 
 .leaflet-tooltip-top:before,

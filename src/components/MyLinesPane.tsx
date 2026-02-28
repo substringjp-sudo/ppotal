@@ -99,9 +99,10 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     </div>
                     {recordedTrips.length > 0 && (
                         <button
-                            onClick={onResetTrips}
-                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 transition-colors uppercase tracking-wider px-2 py-1 rounded-md hover:bg-rose-50 active:scale-95"
+                            onClick={() => onResetTrips && onResetTrips()}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-100 dark:border-rose-900/30 transition-all duration-200 active:scale-95 shadow-sm"
                         >
+                            <span className="material-symbols-outlined !text-[14px]">delete_sweep</span>
                             Delete All
                         </button>
                     )}
@@ -195,8 +196,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 key={trip.id}
                                 className="group relative bg-white dark:bg-slate-800/40 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800/50 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300"
                             >
-                                {/* Vertical Path Line */}
-                                <div className="absolute left-[37.5px] top-[40px] bottom-[108px] w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-700"></div>
+                                <div className="absolute left-[38px] top-[40px] bottom-[110px] w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-700"></div>
 
                                 {/* Start Station */}
                                 <div className="relative z-10 flex gap-4 mb-6">
@@ -305,7 +305,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     </div>
                                     <button
                                         onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
-                                        className="size-8 rounded-lg flex items-center justify-center text-rose-500/50 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all active:scale-90"
+                                        className="size-8 rounded-lg flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all active:scale-90"
                                     >
                                         <span className="material-symbols-outlined !text-[18px]">delete</span>
                                     </button>

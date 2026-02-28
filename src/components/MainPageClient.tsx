@@ -30,6 +30,7 @@ import { SidebarProps } from './Sidebar';
 
 const SidebarWithNoSSR = dynamic<SidebarProps>(() => import('./Sidebar'), { ssr: false });
 import MyLinesPane from './MyLinesPane';
+import RailSearch from './RailSearch';
 
 import type { MobileLinePreviewProps } from './Mobile/MobileLinePreview';
 const MobileLinePreviewWithNoSSR = dynamic<MobileLinePreviewProps>(() => import('./Mobile/MobileLinePreview'), { ssr: false });
@@ -311,6 +312,30 @@ const MainPageClient = () => {
 
     const [zoomTarget, setZoomTarget] = React.useState<{ type: 'line' | 'station', id: string } | null>(null);
 
+    const handleSearchSelectStation = React.useCallback((id: string) => {
+        if (!railData) return;
+        const station = railData.stations[id];
+        if (station) {
+            setSelectedStation(station);
+            setZoomTarget({ type: 'station', id });
+            trackEvent('search_select_station', 'search', station.name);
+        }
+    }, [railData]);
+
+    const handleSearchSelectLine = React.useCallback((id: string, fullId: string) => {
+        if (!railData) return;
+        const line = railData.lines[id];
+        if (line) {
+            // Ensure the line is visible on map
+            if (!selectedLines.includes(fullId)) {
+                setSelectedLines(prev => [...prev, fullId]);
+            }
+            setActiveLine(fullId);
+            setZoomTarget({ type: 'line', id: fullId });
+            trackEvent('search_select_line', 'search', line.name);
+        }
+    }, [railData, selectedLines]);
+
     const handleRailroadClick = React.useCallback((line: string) => {
         setActiveLine(line);
         setSelectedStation(null);
@@ -551,16 +576,12 @@ const MainPageClient = () => {
                     {/* Middle: Search (Centered) */}
                     {!isMobile && (
                         <div className="flex-1 flex justify-center px-4">
-                            <div className="relative w-full max-w-sm lg:max-w-md group">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                                    <span className="material-symbols-outlined text-xl">search</span>
-                                </div>
-                                <input
-                                    className="block w-full pl-10 pr-3 py-2 border border-transparent bg-slate-100 dark:bg-slate-800 rounded-xl text-sm placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/20 outline-none transition-all"
-                                    placeholder="Search stations or lines..."
-                                    type="text"
-                                />
-                            </div>
+                            <RailSearch
+                                railData={railData}
+                                onSelectStation={handleSearchSelectStation}
+                                onSelectLine={handleSearchSelectLine}
+                                isMobile={isMobile}
+                            />
                         </div>
                     )}
 

@@ -184,9 +184,15 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                     input.indeterminate = isSomeGroupSelected && !isAllGroupSelected;
                                 }
                             }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                // Prevent default checkbox behavior to handle it completely in our handler
+                                // and avoid weird dual-triggering in details/summary
+                            }}
                             onChange={(e) => {
                                 e.stopPropagation();
                                 onToggleSelection(groupKey);
+                                trackEvent('category_toggle', 'interaction', groupKey);
                             }}
                             className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
                         />
@@ -250,7 +256,12 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                                 input.indeterminate = someLinesSelected && !allLinesSelected;
                                             }
                                         }}
-                                        onChange={() => onToggleCompany(companyId, lines)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onToggleCompany(companyId, lines);
+                                            trackEvent('company_toggle_selection', 'interaction', companyId);
+                                        }}
                                         className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
                                     />
                                     <span className="material-symbols-outlined absolute pointer-events-none text-[10px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
@@ -266,12 +277,12 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                     role="button"
                                     tabIndex={0}
                                 >
-                                    <div className="flex flex-1 flex-col items-start gap-1 min-w-0">
-                                        <span className="text-[13px] font-black text-slate-800 dark:text-slate-200 truncate group-hover/company:text-primary transition-colors">
+                                    <div className="flex flex-1 flex-col items-start min-w-0">
+                                        <span className="text-[13px] font-black text-slate-800 dark:text-slate-200 truncate group-hover/company:text-primary transition-colors leading-tight">
                                             {cName}
                                         </span>
                                         {cNameEn && (
-                                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate tracking-tight uppercase leading-none">
+                                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate tracking-tight uppercase leading-tight mt-0.5">
                                                 {cNameEn}
                                             </span>
                                         )}
