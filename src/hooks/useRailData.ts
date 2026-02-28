@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RailData } from '../types/railData';
+import { decodePolyline } from '../utils/polyline';
 
 let cachedRailDataPromise: Promise<RailData> | null = null;
 
@@ -18,11 +19,13 @@ export const useRailData = () => {
                         const responses = await Promise.all([
                             fetch('/rail/companies.json'),
                             fetch('/rail/lines.json'),
-                            fetch('/rail/platforms.json'),
-                            fetch('/rail/stations.json'),
-                            fetch('/rail/sections.json'),
-                            fetch('/rail/sections_mid.json'),
-                            fetch('/rail/sections_low.json'),
+                            fetch('/rail/platforms_meta.json'),
+                            fetch('/rail/platforms_geom.json'),
+                            fetch('/rail/stations_master.json'),
+                            fetch('/rail/sections_meta.json'),
+                            fetch('/rail/sections_geom_high.json'),
+                            fetch('/rail/sections_geom_mid.json'),
+                            fetch('/rail/sections_geom_low.json'),
                             fetch('/rail/railroad_graph.json'),
                             fetch('/rail/railroad_hierarchy.json'),
                             fetch('/rail/joints.json'),
@@ -41,28 +44,53 @@ export const useRailData = () => {
                         const [
                             companies,
                             lines,
-                            platforms,
-                            stations,
-                            sectionsHigh,
-                            sectionsMid,
-                            sectionsLow,
+                            platformsMeta,
+                            platformsGeom,
+                            stationsMaster,
+                            sectionsMeta,
+                            sectionsGeomHigh,
+                            sectionsGeomMid,
+                            sectionsGeomLow,
                             railroadGraph,
                             hierarchy,
                             joints,
                             stationsLod
                         ] = jsonData;
 
+                        // Reconstruct Platforms
+                        const platforms: Record<string, any> = {};
+                        for (const id in platformsMeta) {
+                            platforms[id] = {
+                                ...platformsMeta[id],
+                                geometries: (platformsGeom[id] || []).map((poly: string) => decodePolyline(poly))
+                            };
+                        }
+
+                        // Reconstruct Sections
+                        const reconstructSections = (geomData: Record<string, string>) => {
+                            if (!geomData) return [];
+                            return Object.keys(geomData).map(id => ({
+                                id: parseInt(id),
+                                ...sectionsMeta[id],
+                                geometry: decodePolyline(geomData[id])
+                            }));
+                        };
+
+                        const sectionsHigh = reconstructSections(sectionsGeomHigh);
+                        const sectionsMid = reconstructSections(sectionsGeomMid);
+                        const sectionsLow = reconstructSections(sectionsGeomLow);
+
                         return {
                             companies,
                             lines,
                             platforms,
-                            stations,
+                            stations: stationsMaster,
                             sections: {
-                                sections: sectionsHigh.sections,
+                                sections: sectionsHigh,
                                 lod: {
-                                    high: sectionsHigh.sections,
-                                    mid: sectionsMid.sections,
-                                    low: sectionsLow.sections
+                                    high: sectionsHigh,
+                                    mid: sectionsMid,
+                                    low: sectionsLow
                                 }
                             },
                             railroadGraph,

@@ -24,7 +24,7 @@ const RailwayDirectory = () => {
         const hierarchyPath = path.join(process.cwd(), 'public/rail/railroad_hierarchy.json');
         const companiesPath = path.join(process.cwd(), 'public/rail/companies.json');
         const linesPath = path.join(process.cwd(), 'public/rail/lines.json');
-        const stationsPath = path.join(process.cwd(), 'public/rail/stations.json');
+        const stationsPath = path.join(process.cwd(), 'public/rail/stations_master.json');
 
         if (fs.existsSync(hierarchyPath)) {
             const hierarchy = JSON.parse(fs.readFileSync(hierarchyPath, 'utf-8'));
