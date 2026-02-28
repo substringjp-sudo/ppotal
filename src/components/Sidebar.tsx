@@ -225,11 +225,11 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             />
 
             <div style={{ marginBottom: '15px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>Sorting</div>
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>SORT</div>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {[
-                        { id: 'ja', label: 'Alphabetical' },
-                        { id: 'usage', label: 'Usage Rate' },
+                        { id: 'ja', label: 'ABC' },
+                        { id: 'usage', label: 'Usage' },
                     ].map(opt => (
                         <button
                             key={opt.id}
@@ -258,7 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Selection</div>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>SELECT</div>
                     <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={handleSelectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
                             Select All
@@ -269,13 +269,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                     </div>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>Display</div>
+                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>DISPLAY</div>
                     <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => handleToggleAllGroups(true)} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            Open All
+                            Expand All
                         </button>
                         <button onClick={() => handleToggleAllGroups(false)} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            Close All
+                            Collapse All
                         </button>
                     </div>
                 </div>
@@ -285,7 +285,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 {sortedCategoryIds.map((categoryId, index) => {
                     const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
                     if (!categoryInfo) return null;
-                    const title = categoryInfo.name_en || categoryInfo.name;
+                    const title = categoryInfo.name || categoryInfo.name_en;
                     return (
                         <SidebarGroup
                             key={categoryId}

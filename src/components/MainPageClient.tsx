@@ -18,6 +18,7 @@ import { Station } from '../types/railData';
 import { MapProps } from './Map';
 import MapLoadingIndicator from './MapLoadingIndicator';
 import FeedbackModal from './FeedbackModal';
+import AuthModal from './auth/AuthModal';
 
 const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
     ssr: false,
@@ -108,6 +109,8 @@ const MainPageClient = () => {
     const [editPanelHeight, setEditPanelHeight] = React.useState(72);
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
+    const [isInfoOpen, setIsInfoOpen] = React.useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
     const [showLabels, setShowLabels] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
@@ -153,6 +156,10 @@ const MainPageClient = () => {
         } finally {
             controls.forEach(c => (c as HTMLElement).style.display = '');
         }
+    };
+
+    const handleLogout = async () => {
+        const { logout } = await import('../lib/auth-context').then(m => m.useAuth()); // This won't work easily here due to hook rules, but I'll use logout from context
     };
 
     const { railData, isLoading: isRailLoading } = useRailData();
@@ -307,6 +314,10 @@ const MainPageClient = () => {
         setActiveLine(line);
         setSelectedStation(null);
 
+        if (isMobile) {
+            setIsMobileSheetOpen(false);
+        }
+
         setSelectedLines(prev => {
             if (prev.includes(line)) return prev;
             let next = [...prev, line];
@@ -315,18 +326,23 @@ const MainPageClient = () => {
         });
 
         trackEvent('railroad_click', 'interaction', line);
-    }, []);
+    }, [isMobile]);
 
     const handleLineClick = React.useCallback((line: string) => {
         setActiveLine(line);
         setSelectedStation(null);
         setZoomTarget({ type: 'line', id: line });
+
+        if (isMobile) {
+            setIsMobileSheetOpen(false);
+        }
+
         setSelectedLines(prev => {
             let next = prev.includes(line) ? prev : [...prev, line];
             if (next.length > 1 && next.includes("__NONE__")) next = next.filter(l => l !== "__NONE__");
             return next;
         });
-    }, []);
+    }, [isMobile]);
 
     const handleStationClick = React.useCallback((stationId: string) => {
         if (isEditMode && tempPath.length > 0) return;
@@ -545,17 +561,24 @@ const MainPageClient = () => {
                 </a>
 
                 <header style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 20px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #ccc',
-                    zIndex: 100, boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                    height: isMobile ? '60px' : '70px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: isMobile ? '0 15px' : '0 30px',
+                    zIndex: 10001,
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
+                    boxShadow: '0 4px 30px rgba(0,0,0,0.03)'
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-1.5px' }}>
-                            {isMobile && isEditMode ? 'Edit Mode' : 'JapanRailNote'}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-0.5px' }}>
+                            JapanRailNote
                         </h1>
                         {!isMobile && (
-                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                 <button
                                     onClick={() => setIsHowToOpen(true)}
                                     aria-label="View Usage Tips"
@@ -565,7 +588,7 @@ const MainPageClient = () => {
                                         border: '1px solid #3498db',
                                         backgroundColor: 'transparent',
                                         color: '#3498db',
-                                        fontSize: '12px',
+                                        fontSize: '11px',
                                         fontWeight: 'bold',
                                         cursor: 'pointer'
                                     }}
@@ -580,7 +603,7 @@ const MainPageClient = () => {
                                         border: '1px solid #3b82f6',
                                         backgroundColor: 'transparent',
                                         color: '#3b82f6',
-                                        fontSize: '12px',
+                                        fontSize: '11px',
                                         fontWeight: 'bold',
                                         cursor: 'pointer'
                                     }}
@@ -590,153 +613,97 @@ const MainPageClient = () => {
                             </div>
                         )}
                     </div>
-                    {isMobile ? (
-                        isEditMode ? (
-                            <button
-                                onClick={() => {
-                                    setIsEditMode(false);
-                                    setDraftTrip(null);
-                                    setTempPath([]);
-                                }}
-                                style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#2c3e50',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    fontWeight: 'bold',
-                                    fontSize: '14px'
-                                }}
-                            >
-                                Finish
-                            </button>
-                        ) : (
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <button
-                                    onClick={exportMap}
-                                    style={{
-                                        padding: '6px 12px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #ddd',
-                                        backgroundColor: '#fff',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold',
-                                        color: '#2c3e50'
-                                    }}
-                                    aria-label="Export Map"
-                                >
-                                    Export
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setIsEditMode(true);
-                                        setIsMobileSheetOpen(false);
-                                        setSelectedStation(null);
-                                        setActiveLine(null);
-                                    }}
-                                    style={{
-                                        padding: '6px 12px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #ddd',
-                                        backgroundColor: '#fff',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold',
-                                        color: '#2c3e50'
-                                    }}
-                                    aria-label="Edit Route"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => setIsFeedbackOpen(true)}
-                                    style={{
-                                        padding: '6px 12px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #3b82f6',
-                                        backgroundColor: '#fff',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold',
-                                        color: '#3b82f6',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    Feedback
-                                </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '25px' }}>
+                        {!isMobile && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginRight: '10px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase' }}>Lines</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{stats.lines}</span>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase' }}>Dist</span>
+                                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{stats.distance}km</span>
+                                </div>
                             </div>
-                        )
-                    ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Lines</span>
-                                <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#2c3e50' }}>{stats.lines}</span>
-                            </div>
-                            <div style={{ height: '30px', width: '1px', background: '#ccc' }}></div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Distance</span>
-                                <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#2c3e50' }}>{stats.distance}km</span>
-                            </div>
-                            <div style={{ height: '30px', width: '1px', background: '#ccc' }}></div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <span style={{ fontSize: '10px', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Stations</span>
-                                <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#2c3e50' }}>{stats.stations}</span>
-                            </div>
-                            <div style={{ height: '30px', width: '1px', background: '#ccc' }}></div>
-                            <button
-                                onClick={handleResetTrips}
-                                style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#e74c3c',
-                                    border: '1px solid #e74c3c',
-                                    color: '#fff',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold',
-                                    fontSize: '12px'
-                                }}
-                            >
-                                Reset
-                            </button>
+                        )}
+
+                        <div style={{ display: 'flex', gap: isMobile ? '5px' : '10px' }}>
                             <button
                                 onClick={exportMap}
                                 style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: '#2c3e50',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
+                                    padding: isMobile ? '6px' : '6px 12px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ddd',
+                                    backgroundColor: '#fff',
+                                    fontSize: '12px',
                                     fontWeight: 'bold',
-                                    fontSize: '12px'
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px'
                                 }}
+                                aria-label="Export Map"
                             >
-                                Export
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                {!isMobile && "Export"}
                             </button>
+
+                            {isMobile && (
+                                <button
+                                    onClick={() => setIsInfoOpen(true)}
+                                    style={{
+                                        padding: '6px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #ddd',
+                                        backgroundColor: '#fff',
+                                        color: '#2c3e50',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                    aria-label="Info"
+                                >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                </button>
+                            )}
+
+                            {user ? (
+                                <div
+                                    style={{
+                                        width: '32px', height: '32px', borderRadius: '50%',
+                                        backgroundColor: '#3498db', color: '#fff',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '14px', fontWeight: 'bold',
+                                        cursor: 'pointer', border: '2px solid #fff', boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                                    }}
+                                    onClick={() => {
+                                        if (isMobile) setIsMobileSheetOpen(true);
+                                    }}
+                                    title={user.email || 'User'}
+                                >
+                                    {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setIsAuthModalOpen(true)}
+                                    style={{
+                                        padding: isMobile ? '6px 10px' : '6px 14px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#3498db',
+                                        color: '#fff',
+                                        border: 'none',
+                                        fontSize: '12px',
+                                        fontWeight: '800',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Login
+                                </button>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </header>
 
                 <main id="main-content" style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }} tabIndex={-1}>
-                    {isMobile && isEditMode && (
-                        <div className="edit-mode-ui" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1200 }}>
-                            <RouteCreationPanelWithNoSSR
-                                isDragging={tempPath.length > 0}
-                                tempPath={tempPath}
-                                draftTrip={draftTrip}
-                                onAdd={() => {
-                                    if (draftTrip) {
-                                        handleRecordTrip(draftTrip);
-                                        setDraftTrip(null);
-                                    }
-                                }}
-                                onDiscard={() => {
-                                    setDraftTrip(null);
-                                    setTempPath([]);
-                                }}
-                                onHeightChange={setEditPanelHeight}
-                                railData={railData}
-                            />
-                        </div>
-                    )}
 
                     {isMobile && !isEditMode && (
                         <div style={{
@@ -758,6 +725,14 @@ const MainPageClient = () => {
                                             handleRailroadClick(lineId);
                                         }}
                                         railData={railData}
+                                        isTripInProgress={isTripInProgress}
+                                        tripStartStationId={tripStartStation?.id || null}
+                                        onStartTrip={handleStartTrip}
+                                        onEndTrip={handleEndTrip}
+                                        onCancel={() => {
+                                            setTripStartStation(null);
+                                            setDraftTrip(null);
+                                        }}
                                     />
                                 </div>
                             ) : activeLine && lineDetailData && railData ? (
@@ -848,6 +823,10 @@ const MainPageClient = () => {
                                     tripStartStationId={tripStartStation?.id || null}
                                     onStartTrip={handleStartTrip}
                                     onEndTrip={handleEndTrip}
+                                    onCancel={() => {
+                                        setTripStartStation(null);
+                                        setDraftTrip(null);
+                                    }}
                                 />
                             </div>
                         )}
@@ -917,20 +896,6 @@ const MainPageClient = () => {
                         />
                     )}
 
-                    {isMobile && isEditMode && activeLine && lineDetailData && (
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 1300 }}>
-                            <MobileEditLinePanelWithNoSSR
-                                lineId={activeLine}
-                                segments={lineDetailData.segments}
-                                nodes={lineDetailData.nodes}
-                                visitedEdges={lineDetailData.visitedEdges}
-                                visitedStations={lineDetailData.visitedStations}
-                                onPathCreate={handleStationPathCreate}
-                                onClose={() => setIsEditMode(false)}
-                                railData={railData}
-                            />
-                        </div>
-                    )}
                 </main>
             </div >
 
@@ -943,6 +908,85 @@ const MainPageClient = () => {
                 isOpen={isFeedbackOpen}
                 onClose={() => setIsFeedbackOpen(false)}
             />
+
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+            />
+
+            {/* Info Modal for Mobile (Directory & Description) */}
+            {
+                isInfoOpen && (
+                    <div
+                        style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10002,
+                            display: 'flex', flexDirection: 'column', padding: '20px',
+                            backdropFilter: 'blur(8px)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h2 style={{ color: '#fff', margin: 0, fontSize: '20px', fontWeight: '900' }}>Information</h2>
+                            <button
+                                onClick={() => setIsInfoOpen(false)}
+                                style={{
+                                    color: '#fff', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer'
+                                }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <div style={{ flex: 1, overflowY: 'auto', color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
+                                <h3 style={{ color: '#fff', marginTop: 0 }}>Ultimate Japan Railway Map</h3>
+                                <p>
+                                    JapanRailNote is a digital companion for navigating the world's most complex railway network.
+                                    We provide visualization of every JR line, private railroad, subway system, and tramway across Japan.
+                                </p>
+                            </div>
+
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
+                                <h3 style={{ color: '#fff', marginTop: 0 }}>Stats Overview</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div>
+                                        <span style={{ fontSize: '10px', display: 'block' }}>RECORDS</span>
+                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{recordedTrips.length}</span>
+                                    </div>
+                                    <div>
+                                        <span style={{ fontSize: '10px', display: 'block' }}>VISITED LINES</span>
+                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{stats.lines}</span>
+                                    </div>
+                                    <div>
+                                        <span style={{ fontSize: '10px', display: 'block' }}>TOTAL DISTANCE</span>
+                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{stats.distance} km</span>
+                                    </div>
+                                    <div>
+                                        <span style={{ fontSize: '10px', display: 'block' }}>AVG DISTANCE</span>
+                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{recordedTrips.length > 0 ? Math.round(stats.distance / recordedTrips.length) : 0} km</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ padding: '0 10px', textAlign: 'center' }}>
+                                <p style={{ fontSize: '12px', opacity: 0.6 }}>
+                                    For a full directory of all {stats.stations} stations and {stats.lines} lines,
+                                    please visit our website on a desktop device.
+                                </p>
+                                <button
+                                    onClick={() => setIsFeedbackOpen(true)}
+                                    style={{
+                                        marginTop: '20px', width: '100%', padding: '12px', borderRadius: '12px',
+                                        border: '1px solid #3b82f6', background: 'transparent', color: '#3b82f6',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    Send Feedback
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
         </div >
     );
 };

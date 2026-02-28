@@ -58,11 +58,11 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     const companyData = railData?.companies[company];
     const lineData = railData?.lines[lineName];
 
-    const cNamePrimary = companyData?.name_en || company;
-    const lNamePrimary = lineData?.name_en || lineName;
+    const cNamePrimary = companyData?.name || company;
+    const lNamePrimary = lineData?.name || lineName;
 
-    const cNameSecondary = companyData?.name || "";
-    const lNameSecondary = lineData?.name || "";
+    const cNameSecondary = companyData?.name_en || "";
+    const lNameSecondary = lineData?.name_en || "";
 
     return (
         <div style={{
@@ -74,22 +74,22 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.3)'
         }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
-                            {cNamePrimary}
-                        </span>
                         <span style={{ fontSize: '20px', fontWeight: '900', color: '#1a1a1a' }}>
                             {lNamePrimary}
                         </span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', opacity: 0.6 }}>
-                        <span style={{ fontSize: '11px', fontWeight: '500' }}>
-                            {cNameSecondary}
-                        </span>
-                        <span style={{ fontSize: '12px', fontWeight: '500' }}>
+                        <span style={{ fontSize: '12px', color: '#718096', fontWeight: '500' }}>
                             {lNameSecondary}
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#4a5568' }}>
+                            {cNamePrimary}
+                        </span>
+                        <span style={{ fontSize: '10px', color: '#a0aec0', fontWeight: '500' }}>
+                            {cNameSecondary}
                         </span>
                     </div>
                 </div>
@@ -99,7 +99,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                 </div>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginTop: '20px', marginBottom: '30px' }}>
                 <TubeMap
                     nodes={topology.nodes}
                     edges={topology.edges}
@@ -107,24 +107,13 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                     visitedEdges={visitedEdges}
                     lineColor={lineColor}
                 />
+                <div id="tube-minimap-portal" style={{
+                    marginTop: '12px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    minHeight: '60px'
+                }} />
             </div>
-
-            <button
-                onClick={() => onToggleLine(lineId)}
-                style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    backgroundColor: isSelected ? '#eee' : lineColor,
-                    color: isSelected ? '#666' : '#fff',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                }}
-            >
-                {isSelected ? 'Hide from Map' : 'Show on Map'}
-            </button>
         </div>
     );
 };

@@ -56,7 +56,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                     fontSize: '0.9rem'
                 }}
             >
-                🎨 지도 스타일 설정
+                🎨 Map Style Settings
             </button>
         );
     }
@@ -89,7 +89,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>지도 스타일 설정</h3>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Map Style Settings</h3>
                 <button
                     onClick={() => setIsOpen(false)}
                     style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#666' }}
@@ -100,10 +100,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
 
             {/* Section: Unselected */}
             <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>미표시 노선 (사이드바 미체크)</h4>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>Hidden Lines (Deselected)</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>투명도 ({Math.round(settings.unselected.opacity * 100)}%)</span>
+                        <span>Opacity ({Math.round(settings.unselected.opacity * 100)}%)</span>
                         <input
                             type="range" min="0" max="1" step="0.1"
                             value={settings.unselected.opacity}
@@ -112,7 +112,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                         />
                     </label>
                     <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>두께 ({settings.unselected.weight}x)</span>
+                        <span>Thickness ({settings.unselected.weight}x)</span>
                         <input
                             type="range" min="0.1" max="3" step="0.1"
                             value={settings.unselected.weight}
@@ -125,10 +125,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
 
             {/* Section: Unvisited */}
             <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>미방문 노선 (사이드바 체크됨)</h4>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>Unvisited Lines (Selected)</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>선 두께 ({settings.unvisited.weight}x)</span>
+                        <span>Line Weight ({settings.unvisited.weight}x)</span>
                         <input
                             type="range" min="0.5" max="5" step="0.1"
                             value={settings.unvisited.weight}
@@ -142,10 +142,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                             checked={settings.unvisited.showOutline}
                             onChange={(e) => handleChange('unvisited', 'showOutline', e.target.checked)}
                         />
-                        <span>선 테두리 표시</span>
+                        <span>Show Line Outline</span>
                     </label>
                     <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>역 점 크기 ({settings.unvisited.stationSize}x)</span>
+                        <span>Station Marker Size ({settings.unvisited.stationSize}x)</span>
                         <input
                             type="range" min="0.1" max="3" step="0.1"
                             value={settings.unvisited.stationSize}
@@ -158,10 +158,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
 
             {/* Section: Visited */}
             <div style={{ marginBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>방문 노선 (이동 기록 있음)</h4>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>Visited Lines (Recorded)</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>선 두께 ({settings.visited.weight}x)</span>
+                        <span>Line Weight ({settings.visited.weight}x)</span>
                         <input
                             type="range" min="0.5" max="5" step="0.1"
                             value={settings.visited.weight}
@@ -175,10 +175,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                             checked={settings.visited.showOutline}
                             onChange={(e) => handleChange('visited', 'showOutline', e.target.checked)}
                         />
-                        <span>선 테두리 표시</span>
+                        <span>Show Line Outline</span>
                     </label>
                     <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>역 점 크기 ({settings.visited.stationSize}x)</span>
+                        <span>Station Marker Size ({settings.visited.stationSize}x)</span>
                         <input
                             type="range" min="0.1" max="3" step="0.1"
                             value={settings.visited.stationSize}

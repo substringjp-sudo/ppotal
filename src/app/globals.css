@@ -48,6 +48,12 @@ body {
   display: block;
 }
 
+@media (max-width: 768px) {
+  .seo-content-root {
+    display: none !important;
+  }
+}
+
 @media print {
   #content-info {
     display: block !important;

@@ -21,6 +21,11 @@ interface StationFeatureProperties {
     color?: string;
 }
 
+interface RegionNames {
+    adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
+    adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
+}
+
 interface StationsProps {
     processedStations: Record<string, ProcessedStation> | null;
     effectiveZoom: number;
@@ -66,6 +71,14 @@ const Stations: React.FC<StationsProps> = ({
 }) => {
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
+    const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
+
+    useEffect(() => {
+        fetch('/data/region_names.json')
+            .then(res => res.json())
+            .then(data => setRegionNames(data))
+            .catch(err => console.error("Failed to load region names:", err));
+    }, []);
 
     useEffect(() => {
         let mounted = true;
@@ -386,6 +399,14 @@ const Stations: React.FC<StationsProps> = ({
 
         const stationNameJA = station.name;
         const stationNameEN = station.name_en || '';
+        const rawStation = railData.stations[id];
+        const prefecture = rawStation?.prefecture_id && regionNames ? regionNames.adm1[rawStation.prefecture_id] : null;
+        const cityName = rawStation?.city_id && regionNames ? regionNames.adm2[rawStation.city_id]?.shapeName : '';
+        const regionNameJA = prefecture ? `${prefecture.shapeName}${cityName ? ' ' + cityName : ''}` : cityName;
+
+        const prefectureEn = prefecture?.shapeName_en || '';
+        const cityNameEn = rawStation?.city_id && regionNames ? regionNames.adm2[rawStation.city_id]?.shapeName_en : '';
+        const regionNameEN = prefectureEn ? `${prefectureEn}${cityNameEn ? ', ' + cityNameEn : ''}` : cityNameEn;
 
         const lineList = station.lines.map(l => {
             const line = l.includes('::') ? l.split('::')[1] : l;
@@ -406,8 +427,17 @@ const Stations: React.FC<StationsProps> = ({
         const tooltipContent = `
             <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif;">
                 <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 8px; padding-bottom: 4px;">
-                    <span style="font-weight: 900; font-size: 15px; color: #2c3e50;">${stationNameJA}</span>
-                    ${stationNameEN ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${stationNameEN}</span>` : ''}
+                    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 900; font-size: 15px; color: #2c3e50;">${stationNameJA}</span>
+                            ${stationNameEN ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${stationNameEN}</span>` : ''}
+                        </div>
+                        ${regionNameJA ? `
+                        <div style="display: flex; flex-direction: column; text-align: right; margin-top: 2px;">
+                            <span style="font-size: 10px; color: #4a5568; font-weight: 700;">${regionNameJA}</span>
+                            ${regionNameEN ? `<span style="font-size: 8px; color: #718096; font-weight: 500; margin-top: -1px;">${regionNameEN}</span>` : ''}
+                        </div>` : ''}
+                    </div>
                 </div>
                 <div style="display: flex; flex-direction: column;">${lineList}</div>
             </div>`;
@@ -469,8 +499,9 @@ const Stations: React.FC<StationsProps> = ({
     const bakedKey = useMemo(() => {
         const draftIdsArray = Array.from(draftStationIds || []);
         const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
-        return `${effectiveZoom}_${allEntries.length}_${draftKey}`;
-    }, [effectiveZoom, allEntries.length, draftStationIds]);
+        const regionKey = regionNames ? 'loaded' : 'loading';
+        return `${effectiveZoom}_${allEntries.length}_${draftKey}_${regionKey}`;
+    }, [effectiveZoom, allEntries.length, draftStationIds, regionNames]);
 
     const visibleLabels = useMemo(() => {
         if (!mapBounds) return [];

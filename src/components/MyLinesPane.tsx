@@ -10,11 +10,25 @@ export interface MyLinesPaneProps {
     railData: RailData | null;
 }
 
+interface RegionNames {
+    adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
+    adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
+}
+
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     recordedTrips = [],
     onDeleteTrip,
     railData
 }) => {
+    const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
+
+    React.useEffect(() => {
+        fetch('/data/region_names.json')
+            .then(res => res.json())
+            .then(data => setRegionNames(data))
+            .catch(err => console.error("Failed to load region names:", err));
+    }, []);
+
     const displayTrips = useMemo(() => {
         return [...(recordedTrips || [])].reverse();
     }, [recordedTrips]);
@@ -27,7 +41,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
             </h2>
 
             <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                TRIPS ({recordedTrips?.length || 0})
+                TRIP RECORDS ({recordedTrips?.length || 0})
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
@@ -49,7 +63,11 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 companyEn: '',
                                 lineJa: 'Unknown',
                                 lineEn: '',
-                                lineColor: '#cbd5e0'
+                                lineColor: '#cbd5e0',
+                                prefJa: '',
+                                prefEn: '',
+                                cityJa: '',
+                                cityEn: ''
                             };
 
                             let compId = '';
@@ -63,13 +81,16 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             } else if (station.platform_ids && station.platform_ids.length > 0) {
                                 const platform = railData?.platforms?.[station.platform_ids[0]];
                                 if (platform) {
-                                    compId = platform.company?.toString() || '';
-                                    lineId = platform.line?.toString() || '';
+                                    compId = (platform.company !== undefined && platform.company !== null) ? platform.company.toString() : '';
+                                    lineId = (platform.line !== undefined && platform.line !== null) ? platform.line.toString() : '';
                                 }
                             }
 
-                            const comp = compId ? (railData?.companies as Record<string, Company>)?.[compId] : null;
-                            const line = lineId ? (railData?.lines as Record<string, Line>)?.[lineId] : null;
+                            const comp = compId !== '' ? (railData?.companies as Record<string, Company>)?.[compId] : null;
+                            const line = lineId !== '' ? (railData?.lines as Record<string, Line>)?.[lineId] : null;
+
+                            const prefecture = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id] : null;
+                            const city = station.city_id && regionNames ? regionNames.adm2[station.city_id] : null;
 
                             return {
                                 nameJa: station.name,
@@ -78,105 +99,141 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 companyEn: comp?.name_en || '',
                                 lineJa: line?.name || lineId || 'Unknown',
                                 lineEn: line?.name_en || '',
-                                lineColor: line?.color || '#cbd5e0'
+                                lineColor: line?.color || '#cbd5e0',
+                                prefJa: prefecture?.shapeName || '',
+                                prefEn: prefecture?.shapeName_en || '',
+                                cityJa: city?.shapeName || '',
+                                cityEn: city?.shapeName_en || ''
                             };
                         };
 
                         const startInfo = getStationFullInfo(startStation, trip.start);
                         const endInfo = getStationFullInfo(endStation, trip.end);
 
-                        const linesUsed = Array.from(new Set(trip.sectionIds?.map((sid: number) => {
+                        const linesUsedMap = new Map<number, { ja: string, en: string }>();
+                        trip.sectionIds?.forEach((sid: number) => {
                             const section = railData?.sections?.sections?.find((s: Section) => s.id === sid);
                             if (section) {
                                 const lData = railData?.lines[section.line_id];
-                                // Combine JA and EN for VIA list or just use JA? 
-                                // User said Japanese main, English sub. For comma-separated list, maybe just Japanese or "Ja (En)" format.
-                                // Let's use Ja only or abbreviated format to save space.
-                                return lData?.name || section.line_id.toString();
+                                if (!linesUsedMap.has(section.line_id)) {
+                                    linesUsedMap.set(section.line_id, {
+                                        ja: lData?.name || section.line_id.toString(),
+                                        en: lData?.name_en || ''
+                                    });
+                                }
                             }
-                            return null;
-                        }).filter(Boolean))) as string[];
+                        });
+                        const linesUsed = Array.from(linesUsedMap.values());
 
                         const StationInfo = ({ info }: {
                             info: {
                                 nameJa: string; nameEn?: string;
                                 companyJa: string; companyEn?: string;
                                 lineJa: string; lineEn?: string;
-                                lineColor: string
+                                lineColor: string;
+                                prefJa: string; prefEn: string;
+                                cityJa: string; cityEn: string;
                             }
                         }) => (
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '0px',
-                                    marginBottom: '6px',
-                                    borderLeft: `3px solid ${info.lineColor || '#edf2f7'}`,
-                                    paddingLeft: '8px'
+                                    marginBottom: '8px',
+                                    border: `1px solid ${info.lineColor || '#edf2f7'}`,
+                                    borderRadius: '8px',
+                                    padding: '6px 8px',
+                                    backgroundColor: (info.lineColor || '#edf2f7') + '08', // Low opacity background
+                                    borderLeft: `4px solid ${info.lineColor || '#edf2f7'}`
                                 }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{
-                                            fontSize: '11px',
-                                            fontWeight: '800',
-                                            color: '#2d3748',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }}>
-                                            {info.lineJa}
-                                        </div>
-                                        {info.lineEn && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
                                             <div style={{
-                                                fontSize: '9px',
-                                                fontWeight: '600',
-                                                color: '#718096',
-                                                marginTop: '-2px',
+                                                fontSize: '11px',
+                                                fontWeight: '900',
+                                                color: '#2d3748',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                opacity: 0.8
+                                                textOverflow: 'ellipsis'
                                             }}>
-                                                {info.lineEn}
+                                                {info.lineJa}
                                             </div>
-                                        )}
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', marginTop: '1px' }}>
-                                        <div style={{
-                                            fontSize: '9px',
-                                            fontWeight: 'bold',
-                                            color: '#a0aec0',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }}>
-                                            {info.companyJa}
+                                            {info.lineEn && (
+                                                <div style={{
+                                                    fontSize: '9px',
+                                                    fontWeight: '600',
+                                                    color: '#718096',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    opacity: 0.8
+                                                }}>
+                                                    {info.lineEn}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right', flex: 1, minWidth: 0 }}>
+                                            <div style={{
+                                                fontSize: '9px',
+                                                fontWeight: 'bold',
+                                                color: '#a0aec0',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                {info.companyJa}
+                                            </div>
+                                            {info.companyEn && (
+                                                <div style={{
+                                                    fontSize: '8px',
+                                                    fontWeight: '600',
+                                                    color: '#cbd5e0',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis'
+                                                }}>
+                                                    {info.companyEn}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <div style={{
-                                        fontSize: '18px',
-                                        fontWeight: '900',
-                                        color: '#1a202c',
-                                        lineHeight: '1',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
-                                        {info.nameJa}
-                                    </div>
-                                    {info.nameEn && (
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                                    <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
                                         <div style={{
-                                            fontSize: '11px',
-                                            fontWeight: '700',
-                                            color: '#718096',
-                                            marginTop: '0px',
+                                            fontSize: '18px',
+                                            fontWeight: '900',
+                                            color: '#1a202c',
+                                            lineHeight: '1.2',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis'
                                         }}>
-                                            {info.nameEn}
+                                            {info.nameJa}
+                                        </div>
+                                        {info.nameEn && (
+                                            <div style={{
+                                                fontSize: '11px',
+                                                fontWeight: '700',
+                                                color: '#718096',
+                                                marginTop: '2px',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                {info.nameEn}
+                                            </div>
+                                        )}
+                                    </div>
+                                    {info.prefJa && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', flexShrink: 0, marginTop: '3px', textAlign: 'right' }}>
+                                            <div style={{ fontSize: '9px', color: '#718096', fontWeight: 'bold' }}>
+                                                {info.prefJa} {info.cityJa}
+                                            </div>
+                                            <div style={{ fontSize: '7px', color: '#a0aec0', marginTop: '-1px' }}>
+                                                {info.prefEn} {info.cityEn}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -202,39 +259,52 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
                                     <div style={{
                                         margin: '8px 0 8px 10px',
-                                        padding: '2px 0 2px 18px',
+                                        padding: '4px 0 4px 18px',
                                         borderLeft: '2px dotted #cbd5e0',
-                                        minHeight: '24px',
                                         display: 'flex',
-                                        alignItems: 'center'
+                                        flexDirection: 'column',
+                                        gap: '4px'
                                     }}>
                                         {linesUsed.length > 0 && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                                                <div style={{
-                                                    fontSize: '9px',
-                                                    fontWeight: '900',
-                                                    color: '#48bb78',
-                                                    backgroundColor: '#f0fff4',
-                                                    padding: '1px 4px',
-                                                    borderRadius: '3px',
-                                                    flexShrink: 0
-                                                }}>VIA</div>
-                                                <div style={{
-                                                    fontSize: '10px',
-                                                    color: '#718096',
-                                                    fontWeight: '600',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
-                                                }}>
-                                                    {linesUsed.join(', ')}
-                                                    {trip.path.length > 2 && (
-                                                        <span style={{ marginLeft: '6px', color: '#a0aec0', fontWeight: 'bold' }}>
-                                                            ({trip.path.length - 2} stations)
-                                                        </span>
-                                                    )}
+                                            <>
+                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                                                    <div style={{
+                                                        fontSize: '9px',
+                                                        fontWeight: '900',
+                                                        color: '#48bb78',
+                                                        backgroundColor: '#f0fff4',
+                                                        padding: '1px 4px',
+                                                        borderRadius: '3px',
+                                                        flexShrink: 0,
+                                                        marginTop: '2px'
+                                                    }}>via</div>
+                                                    <div style={{
+                                                        fontSize: '10px',
+                                                        color: '#718096',
+                                                        fontWeight: '600',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '2px'
+                                                    }}>
+                                                        {linesUsed.map((l, i) => (
+                                                            <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                                                <span>{l.ja}</span>
+                                                                <span style={{ fontSize: '8px', color: '#a0aec0' }}>{l.en}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                                {trip.path.length > 2 && (
+                                                    <div style={{
+                                                        fontSize: '9px',
+                                                        color: '#a0aec0',
+                                                        fontWeight: 'bold',
+                                                        paddingLeft: '32px'
+                                                    }}>
+                                                        ({trip.path.length - 2} stations)
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
 

@@ -4,8 +4,8 @@ import styles from './StationDetailPane.module.css';
 import { Station, RailData, Platform } from '../types/railData';
 
 interface RegionNames {
-  adm1: Record<string, { shapeName: string }>;
-  adm2: Record<string, { shapeName: string }>;
+  adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
+  adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
 }
 
 export interface StationDetailPaneProps {
@@ -16,6 +16,7 @@ export interface StationDetailPaneProps {
   tripStartStationId: string | null;
   onStartTrip: (station: Station) => void;
   onEndTrip: (station: Station) => void;
+  onCancel?: () => void;
 }
 
 
@@ -26,7 +27,8 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   isTripInProgress,
   tripStartStationId,
   onStartTrip,
-  onEndTrip
+  onEndTrip,
+  onCancel
 }) => {
   const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
 
@@ -92,8 +94,13 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
     return { left, right };
   };
 
-  const prefectureName = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id]?.shapeName : '';
-  const cityName = station.city_id && regionNames ? regionNames.adm2[station.city_id]?.shapeName : '';
+  const prefecture = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id] : null;
+  const prefectureName = prefecture?.shapeName || '';
+  const prefectureNameEn = prefecture?.shapeName_en || '';
+
+  const city = station.city_id && regionNames ? regionNames.adm2[station.city_id] : null;
+  const cityName = city?.shapeName || '';
+  const cityNameEn = city?.shapeName_en || '';
 
   const formatColor = (colorStr: string | undefined): string | null => {
     if (!colorStr) return null;
@@ -123,20 +130,36 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
           </div>
           {(prefectureName || cityName) &&
             <div className={styles.regionNameContainer}>
-              <span className={styles.regionName}>{prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName}</span>
+              <span className={styles.regionName}>
+                {prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName}
+              </span>
+              {(prefectureNameEn || cityNameEn) && (
+                <span className={styles.regionNameEn}>
+                  {prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}
+                </span>
+              )}
             </div>
           }
         </div>
         <div className={styles.headerActions}>
           {isTripInProgress ? (
-            station.id !== tripStartStationId && (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {station.id !== tripStartStationId && (
+                <button
+                  className={`${styles.tripButton} ${styles.endTrip}`}
+                  onClick={() => onEndTrip(station)}
+                >
+                  End Trip
+                </button>
+              )}
               <button
-                className={`${styles.tripButton} ${styles.endTrip}`}
-                onClick={() => onEndTrip(station)}
+                className={`${styles.tripButton}`}
+                style={{ backgroundColor: '#e2e8f0', color: '#4a5568' }}
+                onClick={() => onCancel && onCancel()}
               >
-                End Trip
+                Cancel
               </button>
-            )
+            </div>
           ) : (
             <button
               className={`${styles.tripButton} ${styles.startTrip}`}
@@ -273,7 +296,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

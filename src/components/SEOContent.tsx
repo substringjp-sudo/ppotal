@@ -140,7 +140,7 @@ const RailwayDirectory = () => {
 
 const SEOContent = () => {
     return (
-        <section style={{
+        <section className="seo-content-root" style={{
             padding: '80px 20px',
             backgroundColor: '#1a1c1e',
             color: '#b0b0b0',

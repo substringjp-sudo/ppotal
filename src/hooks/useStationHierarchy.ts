@@ -3,13 +3,13 @@ import { RailData, HierarchyCompany } from '../types/railData';
 
 // 카테고리 정의 (신칸센은 별도 카테고리 '0'으로 관리)
 export const CATEGORY_MAP: Record<number, { name: string; name_en: string }> = {
-    0: { name: '신칸센', name_en: 'Shinkansen' },
+    0: { name: 'Shinkansen', name_en: 'Shinkansen' },
     1: { name: 'JR', name_en: 'JR' },
-    2: { name: '대형사철', name_en: 'Major Private' },
-    3: { name: '일반사철', name_en: 'Local Private' },
-    4: { name: '3섹터', name_en: 'Third-Sector' },
-    5: { name: '공영교통', name_en: 'Public/Municipal' },
-    6: { name: '기타철도', name_en: 'Specialized/Other' },
+    2: { name: 'Major Private', name_en: 'Major Private' },
+    3: { name: 'Local Private', name_en: 'Local Private' },
+    4: { name: 'Third-Sector', name_en: 'Third-Sector' },
+    5: { name: 'Public/Municipal', name_en: 'Public/Municipal' },
+    6: { name: 'Specialized/Other', name_en: 'Specialized/Other' },
 };
 
 // 카테고리 ID를 키로 사용하는 동적 계층 구조 타입
