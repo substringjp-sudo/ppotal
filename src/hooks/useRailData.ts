@@ -25,7 +25,8 @@ export const useRailData = () => {
                             fetch('/rail/sections_low.json'),
                             fetch('/rail/railroad_graph.json'),
                             fetch('/rail/railroad_hierarchy.json'),
-                            fetch('/rail/joints.json')
+                            fetch('/rail/joints.json'),
+                            fetch('/rail/stations_lod.json')
                         ]);
 
                         for (const res of responses) {
@@ -47,7 +48,8 @@ export const useRailData = () => {
                             sectionsLow,
                             railroadGraph,
                             hierarchy,
-                            joints
+                            joints,
+                            stationsLod
                         ] = jsonData;
 
                         return {
@@ -65,7 +67,8 @@ export const useRailData = () => {
                             },
                             railroadGraph,
                             hierarchy,
-                            joints
+                            joints,
+                            stationsLod
                         } as RailData;
                     })();
                 }

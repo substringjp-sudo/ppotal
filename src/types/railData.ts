@@ -78,7 +78,18 @@ export interface SectionNeighbor {
     skipped?: string[];
 }
 
+export interface StationLod {
+    id: string;
+    name: string;
+    name_en?: string;
+    z: number;
+    lines: string[];
+    nodes: { id: string, c: [number, number] }[];
+    c: [number, number];
+}
+
 export interface PlatformConnection {
+
     point: [number, number];
     point_index: number;
     neighbors: SectionNeighbor[];
@@ -105,4 +116,5 @@ export interface RailData {
         stationGraph: Record<string, Record<string, { section_ids: number[], available_lines: number[] }>>;
         platformGraph: Record<string, Record<string, PlatformConnection[]>>;
     };
+    stationsLod?: StationLod[];
 }

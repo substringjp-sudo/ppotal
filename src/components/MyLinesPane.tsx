@@ -7,6 +7,7 @@ import { Trip } from '../types/trip';
 export interface MyLinesPaneProps {
     recordedTrips?: Trip[];
     onDeleteTrip?: (id: string) => void;
+    onResetTrips?: () => void;
     railData: RailData | null;
 }
 
@@ -18,6 +19,7 @@ interface RegionNames {
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     recordedTrips = [],
     onDeleteTrip,
+    onResetTrips,
     railData
 }) => {
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
@@ -40,8 +42,36 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                 MY HISTORY
             </h2>
 
-            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                TRIP RECORDS ({recordedTrips?.length || 0})
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    TRIP RECORDS ({recordedTrips?.length || 0})
+                </div>
+                {recordedTrips.length > 0 && (
+                    <button
+                        onClick={onResetTrips}
+                        style={{
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            color: '#e53e3e',
+                            backgroundColor: '#fff5f5',
+                            border: '1px solid #fed7d7',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e53e3e';
+                            e.currentTarget.style.color = '#fff';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#fff5f5';
+                            e.currentTarget.style.color = '#e53e3e';
+                        }}
+                    >
+                        DELETE ALL
+                    </button>
+                )}
             </div>
 
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>

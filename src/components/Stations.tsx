@@ -141,25 +141,8 @@ const Stations: React.FC<StationsProps> = ({
             }
         });
 
-        const nodeAcceptedEntries: typeof allEntries = [];
-        const nodeCullDist = effectiveZoom === 8 ? 0.012 : (effectiveZoom === 10 ? 0.0015 : 0);
-
         allEntries.forEach((entry) => {
             const { id, data } = entry;
-            if (effectiveZoom === 8 && data.lines.length < 2 && !data.isUsed) return;
-
-            if (nodeCullDist > 0) {
-                const isImportant = data.lines.length > 1 || data.isUsed;
-                const tooDense = nodeAcceptedEntries.some(acc => {
-                    const dLat = Math.abs(acc.data.centroid[0] - data.centroid[0]);
-                    const dLon = Math.abs(acc.data.centroid[1] - data.centroid[1]);
-                    return dLat < nodeCullDist && dLon < nodeCullDist;
-                });
-                if (tooDense && !isImportant) return;
-            }
-
-            nodeAcceptedEntries.push(entry);
-
             features.push({
                 type: 'Feature',
                 id: `node-${id}`,

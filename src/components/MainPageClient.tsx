@@ -417,14 +417,30 @@ const MainPageClient = () => {
         }
     }, [railData, tripStartStation, lineDetailData, selectedStation]);
 
-    const handleResetTrips = React.useCallback(() => {
+    const handleResetTrips = React.useCallback(async () => {
+        if (recordedTrips.length === 0) return;
+
         if (window.confirm('Are you sure you want to delete all trip records?')) {
             setRecordedTrips([]);
             setVisitedLineLengths({});
             localStorage.removeItem('jprail_trips');
             trackEvent('reset_all_trips', 'engagement', 'confirm');
+
+            if (user) {
+                try {
+                    const batch = writeBatch(db);
+                    const tripsRef = collection(db, `users/${user.uid}/trips`);
+                    const querySnapshot = await getDocs(query(tripsRef));
+                    querySnapshot.forEach((doc) => {
+                        batch.delete(doc.ref);
+                    });
+                    await batch.commit();
+                } catch (e) {
+                    console.error("Cloud reset failed", e);
+                }
+            }
         }
-    }, []);
+    }, [recordedTrips.length, user]);
 
     const setLineIdMapping = React.useCallback(() => {
     }, []);
@@ -837,6 +853,7 @@ const MainPageClient = () => {
                             <MyLinesPane
                                 recordedTrips={recordedTrips}
                                 onDeleteTrip={handleDeleteTrip}
+                                onResetTrips={handleResetTrips}
                                 railData={railData}
                             />
                         </div>
@@ -888,6 +905,7 @@ const MainPageClient = () => {
                                         <MyLinesPane
                                             recordedTrips={recordedTrips}
                                             onDeleteTrip={handleDeleteTrip}
+                                            onResetTrips={handleResetTrips}
                                             railData={railData}
                                         />
                                     )

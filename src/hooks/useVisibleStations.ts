@@ -64,12 +64,49 @@ export const useVisibleStations = ({
         const data: Record<string, ProcessedStation> = {};
         const railData = railroadNetwork as RailData;
 
-        // name to ID for grouping
-        const nameToId = new Map<string, string>();
+        // If stationsLod is available, use it for pre-decided visibility
+        if (railData.stationsLod) {
+            railData.stationsLod.forEach(s => {
+                const isAnyNodeUsed = s.nodes.some(n => usedStationIds.has(n.id));
+                const isVisible = zoomLevel >= s.z || isAnyNodeUsed;
 
-        // Calculate visible grid keys with a generous buffer (0.3 degrees)
+                if (isVisible) {
+                    data[s.id] = {
+                        id: s.id,
+                        name: s.name,
+                        name_en: s.name_en,
+                        centroid: s.c as [number, number],
+                        lines: s.lines,
+                        nodes: s.nodes.map(n => ({
+                            id: n.id,
+                            coord: n.c as [number, number],
+                            lineKey: s.lines[0] || "",
+                            isUsed: usedStationIds.has(n.id)
+                        })),
+                        isUsed: isAnyNodeUsed
+                    };
+                }
+            });
+
+            if (effectiveZoom >= 12 && railData.joints?.joints) {
+                railData.joints.joints.forEach((j: Joint) => {
+                    const [jLon, jLat] = j.coordinates;
+                    data[j.id] = {
+                        id: j.id,
+                        name: "",
+                        nodes: [{ id: j.id, coord: [jLat, jLon], lineKey: "" }],
+                        centroid: [jLat, jLon],
+                        lines: [],
+                        isJoint: true
+                    };
+                });
+            }
+
+            return data;
+        }
+
+        // Fallback to dynamic grouping if stationsLod is not yet loaded
         const keysToProcess: string[] = [];
-
         if (mapBounds) {
             const padded = mapBounds.pad(2.0);
             const minLat = padded.getSouth();
@@ -83,14 +120,13 @@ export const useVisibleStations = ({
                 }
             }
         } else {
-            // Fallback to all if no bounds
             keysToProcess.push(...Array.from(spatialIndex.keys()));
         }
 
+        const nameToId = new Map<string, string>();
         keysToProcess.forEach(key => {
             const cell = spatialIndex.get(key);
             if (!cell) return;
-
             cell.stations.forEach((s: Station) => {
                 const stationLines = new Set<string>();
                 if (s.platform_ids) {
@@ -99,7 +135,6 @@ export const useVisibleStations = ({
                         if (p) stationLines.add(`${p.company}::${p.line}`);
                     });
                 }
-
                 const platforms: [number, number][][] = [];
                 if (s.platform_ids) {
                     s.platform_ids.forEach((pid: string) => {
@@ -107,7 +142,6 @@ export const useVisibleStations = ({
                         if (p && p.geometries) platforms.push(...p.geometries);
                     });
                 }
-
                 const node: StaticNode = {
                     id: s.id,
                     coord: [s.lat, s.lon],
@@ -115,24 +149,17 @@ export const useVisibleStations = ({
                     platforms: platforms.length > 0 ? platforms : undefined,
                     isUsed: usedStationIds.has(s.id)
                 };
-
                 const hubKey = `${s.name}_${s.name_en}`;
                 let targetId = s.id;
-
                 if (nameToId.has(hubKey)) {
                     const existingId = nameToId.get(hubKey)!;
                     const existing = data[existingId];
-                    if (existing) {
-                        const dLat = Math.abs(existing.centroid[0] - s.lat);
-                        const dLon = Math.abs(existing.centroid[1] - s.lon);
-                        if (dLat < 0.005 && dLon < 0.005) {
-                            targetId = existingId;
-                        }
+                    if (existing && Math.abs(existing.centroid[0] - s.lat) < 0.005 && Math.abs(existing.centroid[1] - s.lon) < 0.005) {
+                        targetId = existingId;
                     }
                 } else {
                     nameToId.set(hubKey, s.id);
                 }
-
                 if (!data[targetId]) {
                     data[targetId] = {
                         id: targetId,
@@ -149,13 +176,12 @@ export const useVisibleStations = ({
                         if (!data[targetId].lines.includes(l)) data[targetId].lines.push(l);
                     });
                     if (usedStationIds.has(s.id)) data[targetId].isUsed = true;
-                    const totalNodes = data[targetId].nodes.length;
-                    const avgLat = data[targetId].nodes.reduce((acc, n) => acc + n.coord[0], 0) / totalNodes;
-                    const avgLon = data[targetId].nodes.reduce((acc, n) => acc + n.coord[1], 0) / totalNodes;
-                    data[targetId].centroid = [avgLat, avgLon];
+                    data[targetId].centroid = [
+                        data[targetId].nodes.reduce((acc, n) => acc + n.coord[0], 0) / data[targetId].nodes.length,
+                        data[targetId].nodes.reduce((acc, n) => acc + n.coord[1], 0) / data[targetId].nodes.length
+                    ];
                 }
             });
-
             if (effectiveZoom >= 12) {
                 cell.joints.forEach((j: Joint) => {
                     const [jLon, jLat] = j.coordinates;
@@ -170,9 +196,8 @@ export const useVisibleStations = ({
                 });
             }
         });
-
         return data;
-    }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds, mapBounds]);
+    }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds, mapBounds, zoomLevel]);
 
     return { visibleStations, effectiveZoom };
 };
