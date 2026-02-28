@@ -17,6 +17,7 @@ interface StationFeatureProperties {
     lines: string[];
     isUsed?: boolean;
     isTransfer?: boolean;
+    isDraft?: boolean;
     lineKey?: string;
     color?: string;
 }
@@ -47,6 +48,7 @@ interface StationsProps {
     dragStartStation: string | null;
     draftStationIds?: Set<string>;
     showLabels?: boolean;
+    selectedStation?: string | null;
 }
 
 const Stations: React.FC<StationsProps> = ({
@@ -67,7 +69,8 @@ const Stations: React.FC<StationsProps> = ({
     onStationHover,
     dragStartStation,
     draftStationIds = new Set(),
-    showLabels = false
+    showLabels = false,
+    selectedStation = null
 }) => {
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
@@ -105,12 +108,13 @@ const Stations: React.FC<StationsProps> = ({
     const allEntries = useMemo(() => {
         if (!processedStations) return [];
         return Object.entries(processedStations).map(([id, data]) => {
+            // stations_lod already manages which stations are visible at which zoom.
+            // So we trust processedStations here.
             let isVisibleAtZoom = true;
-            if (effectiveZoom < 8) isVisibleAtZoom = false;
             if (data.isJoint) isVisibleAtZoom = false;
             return { id, data, isVisibleAtZoom };
         }).filter(item => item.isVisibleAtZoom);
-    }, [processedStations, effectiveZoom]);
+    }, [processedStations]);
 
     const visualsGeoJson = useMemo(() => {
         const features: GeoJSON.Feature[] = [];
@@ -198,19 +202,51 @@ const Stations: React.FC<StationsProps> = ({
     const [localHoveredStation, setLocalHoveredStation] = useState<string | null>(null);
 
     const nodeStyle = useCallback((feature?: GeoJSON.Feature) => {
-        if (!feature) return { opacity: 0, interactive: false };
-        let radius = 3;
-        if (effectiveZoom === 10) radius = 5;
-        if (effectiveZoom >= 14) radius = 7;
+        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
+        const props = feature.properties as StationFeatureProperties;
+        const { isTransfer, isDraft } = props;
+
+        // Base radii adjusted to ensure white fill Visibility at low zoom
+        let radius = 2.0; // Increased from 1.7 to make it visible
+        if (realZoom >= 10) radius = 2.7;
+        if (realZoom >= 12) radius = 3.3;
+        if (realZoom >= 14) radius = 4.0;
+
+        if (isTransfer) {
+            radius *= 1.4; // Slightly increased for more prominence
+        }
+
+        // Only show nodes when zoomed in enough or if it's a transfer/draft
+        // Base styling
+        let weight = 1.0;
+        let color = '#000';
+        if (realZoom >= 11) {
+            weight = isTransfer ? 1.7 : 1.0;
+        }
+
+        // Highlight if hovered or selected
+        const isHovered = localHoveredStation === props.stationId;
+        const isSelected = selectedStation === props.stationId;
+
+        if (isHovered || isSelected) {
+            weight = isTransfer ? 2.5 : 2.0;
+            color = isSelected ? '#007AFF' : '#FFD60A'; // Blue for selected, Yellow for hover
+        }
+
+        const minVisibleZoom = isTransfer ? 7 : 10;
+        const isVisible = realZoom >= minVisibleZoom || isDraft;
 
         return {
             radius: radius,
-            fillColor: '#000',
-            stroke: false,
-            fillOpacity: 0,
-            pane: 'railroad-lines'
+            fillColor: '#ffffff',
+            stroke: true,
+            color: color,
+            weight: weight,
+            fillOpacity: isVisible ? 1.0 : 0,
+            opacity: isVisible ? 1.0 : 0,
+            pane: 'station-labels'
         };
-    }, [effectiveZoom]);
+    }, [realZoom, localHoveredStation, selectedStation]);
 
     const hullStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
@@ -251,95 +287,84 @@ const Stations: React.FC<StationsProps> = ({
         const props = (feature.properties || {}) as StationFeatureProperties;
         if (!props.lineKey) return { opacity: 0, interactive: false };
         const { lineKey, lines = [], stationId } = props;
+
         const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
         const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
         const isSelected = lines.some((l: string) =>
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
         ) || (localHoveredStation === stationId);
 
-        const isTransfer = lines.length > 1;
-        let color = '#313131';
+        const baseColor = getColor(lineKey);
+        const color = isFilterActive && !isSelected ? '#dddddd' : baseColor;
 
-        if (effectiveZoom >= 8 && effectiveZoom <= 11) {
-            if (!isTransfer) {
-                color = getColor(lineKey);
-            }
+        // Weights reduced by ~2/3 from [8.0, 4.5, 6.5]
+        let weight = 5.3;
+        if (effectiveZoom <= 11) weight = 3.0;
+        else if (effectiveZoom <= 13) weight = 4.3;
+
+        const isHoveredLocal = localHoveredStation === stationId;
+        const isSelectedLocal = selectedStation === stationId;
+
+        // Add special weight or styling for hovered/selected platform
+        if (isHoveredLocal || isSelectedLocal) {
+            weight += 2.0;
         }
-
-        let weight = 4.0;
-        if (effectiveZoom <= 11) weight = 2.2;
-        else if (effectiveZoom <= 13) weight = 3.0;
 
         const isDimmed = isFilterActive && !isSelected;
 
         return {
-            color: isDimmed ? '#dddddd' : color,
-            weight: isMobile ? weight * 1.4 : weight,
+            color: color,
+            weight: isMobile ? weight * 1.3 : weight,
             opacity: isDimmed ? 0.3 : 1.0,
             pane: 'railroad-lines',
             interactive: false,
-            lineCap: 'round' as const,
-            lineJoin: 'round' as const,
+            lineCap: 'butt' as const,
+            lineJoin: 'miter' as const,
         } as L.PathOptions;
-    }, [selectedLines, activeLine, hoveredLine, localHoveredStation, effectiveZoom, getColor, isMobile]);
-
-    const getStandardCasingWeight = useCallback((zoom: number, isEmphasis: boolean) => {
-        let base = 6.25;
-        if (zoom <= 11) base = 4.0;
-        else if (zoom <= 13) base = 5.0;
-
-        const factor = isMobile ? 1.4 : 1.0;
-        const emphasisOffset = isEmphasis ? (zoom >= 14 ? 7.5 : 5.0) : 0;
-        return (base * factor) + emphasisOffset;
-    }, [isMobile]);
+    }, [selectedLines, activeLine, hoveredLine, localHoveredStation, selectedStation, effectiveZoom, getColor, isMobile]);
 
     const platformCasingStyle = useCallback((feature?: GeoJSON.Feature) => {
-        if (!feature) return { opacity: 0, interactive: false };
+        if (!feature || !feature.properties) return { opacity: 0, interactive: false };
         const props = (feature.properties || {}) as StationFeatureProperties;
-        if (!props.lines) return { opacity: 0, interactive: false };
-        const { lines, stationId, isUsed } = props;
-        const isDraft = draftStationIds.has(stationId);
+        const { lines = [], stationId, isUsed, isDraft } = props;
 
         const isLineHovered = hoveredLine !== null && lines.includes(hoveredLine);
         const isStationHovered = localHoveredStation === stationId;
-        const isHovered = isLineHovered || isStationHovered;
-
-        const isClicked = activeLine !== null && lines.includes(activeLine);
-        const isDraggingOverall = !!dragStartStation;
+        const isSelectedLocal = selectedStation === stationId;
+        const isHovered = isLineHovered || isStationHovered || isSelectedLocal;
+        const isClicked = (activeLine !== null && lines.includes(activeLine)) || isSelectedLocal;
         const isDragStart = dragStartStation === stationId;
 
-        // 드래프트 상태도 항상 보여줌
-        const showCasing = isDragStart || !!isUsed || isDraft || (!isMoving && (isHovered || isClicked));
-        if (!showCasing) return { opacity: 0, interactive: false };
+        const isEmphasis = isClicked || isHovered || isDragStart || isUsed || isDraft;
+        const showEmphasis = isEmphasis && !isMoving;
 
-        let color = '#FF3B30';
-        const isEmphasis = !!isClicked || !!isHovered || isDragStart || !!isUsed || isDraft;
+        // Weights reduced by ~2/3 from [12.0, 7.0, 9.5]
+        let weight = 8.0;
+        if (effectiveZoom <= 11) weight = 4.7;
+        else if (effectiveZoom <= 13) weight = 6.3;
 
-        if (isDraft) {
-            color = '#007AFF'; // 미리보기 역도 파란색
-        } else if (isMoving && isUsed) {
-            color = '#2ecc71';
-        } else if (isDragStart || isClicked || (isDraggingOverall && isHovered)) {
-            color = '#007AFF';
-        } else if (isLineHovered && !isStationHovered) {
-            color = '#FFD60A';
-        } else if (isUsed && !isHovered) {
-            color = '#2ecc71';
+        if (isHovered || isClicked) {
+            weight += 2.0;
         }
 
-        const casingWeight = getStandardCasingWeight(effectiveZoom, isEmphasis);
-        const z = Math.round(effectiveZoom);
+        let color = '#333';
+        if (showEmphasis) {
+            if (isDraft) color = '#007AFF';
+            else if (isUsed) color = '#2ecc71';
+            else if (isDragStart || isClicked) color = '#007AFF';
+            else if (isLineHovered || isStationHovered) color = '#FFD60A';
+        }
 
         return {
             color: color,
-            weight: casingWeight,
-            opacity: (isUsed || isDraft) && !isHovered && !isClicked ? 0.6 : 1.0,
+            weight: weight,
+            opacity: showEmphasis ? 1.0 : 0.4,
             pane: 'railroad-casing',
             interactive: false,
-            lineCap: 'round' as const,
-            lineJoin: 'round' as const
+            lineCap: 'butt' as const,
+            lineJoin: 'miter' as const,
         };
-    }, [hoveredLine, localHoveredStation, activeLine, dragStartStation, draftStationIds, isMoving, effectiveZoom, getStandardCasingWeight]);
+    }, [hoveredLine, activeLine, dragStartStation, localHoveredStation, selectedStation, effectiveZoom, isMoving]);
 
     const platformInteractionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
         if (!feature) return { opacity: 0, interactive: false };
@@ -422,12 +447,16 @@ const Stations: React.FC<StationsProps> = ({
                         </div>` : ''}
                     </div>
                 </div>
-                <div style="display: flex; flex-direction: column;">${lineList}</div>
+                <div style="display: flex; flex-direction: column; max-height: 250px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">${lineList}</div>
             </div>`;
 
         if (!isMobile) {
             layer.bindTooltip(tooltipContent, {
-                sticky: true, direction: 'top', offset: [0, -10], opacity: 0.9, pane: 'top-tooltips'
+                sticky: true,
+                direction: 'auto',
+                offset: [15, 0],
+                opacity: 0.9,
+                pane: 'top-tooltips'
             });
         }
 
@@ -455,6 +484,7 @@ const Stations: React.FC<StationsProps> = ({
             mouseout: () => {
                 setLocalHoveredStation(null);
                 if (onStationHover) onStationHover(null);
+                layer.closeTooltip();
             },
             mouseup: (e) => {
                 L.DomEvent.stopPropagation(e);
@@ -477,7 +507,18 @@ const Stations: React.FC<StationsProps> = ({
         if (nodeRef.current) nodeRef.current.setStyle(nodeStyle as L.PathOptions);
         if (platformCasingRef.current) platformCasingRef.current.setStyle(platformCasingStyle as L.PathOptions);
         if (interactionRef.current) interactionRef.current.setStyle(stationInteractionStyle);
-    }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, stationInteractionStyle, localHoveredStation, effectiveZoom]);
+    }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, stationInteractionStyle, localHoveredStation, selectedStation, effectiveZoom]);
+
+    // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
+    useEffect(() => {
+        return () => {
+            if (interactionRef.current) {
+                interactionRef.current.eachLayer((l: any) => {
+                    if (l.closeTooltip) l.closeTooltip();
+                });
+            }
+        };
+    }, []);
 
     const bakedKey = useMemo(() => {
         const draftIdsArray = Array.from(draftStationIds || []);
@@ -598,8 +639,24 @@ const Stations: React.FC<StationsProps> = ({
                 style={nodeStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'node'}
                 pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, nodeStyle(feature) as L.CircleMarkerOptions)}
-                pane="railroad-lines"
+                pane="station-labels"
                 interactive={false}
+            />
+            <GeoJSON
+                key={`nodes-dots-${bakedKey}`}
+                data={visualsGeoJson as GeoJSON.FeatureCollection}
+                filter={(feature) => feature.properties?.type === 'node' && feature.properties?.isTransfer}
+                pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => {
+                    const baseStyle = nodeStyle(feature) as L.CircleMarkerOptions;
+                    return L.circleMarker(latlng, {
+                        radius: (baseStyle.radius || 0) * 0.3,
+                        fillColor: '#000',
+                        fillOpacity: baseStyle.fillOpacity,
+                        stroke: false,
+                        pane: 'station-labels',
+                        interactive: false
+                    });
+                }}
             />
             <GeoJSON
                 ref={interactionRef}

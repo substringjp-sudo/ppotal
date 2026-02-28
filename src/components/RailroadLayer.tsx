@@ -69,28 +69,30 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return true;
     }, [isNoneExplicitlySelected, selectionSet.size]);
 
-    // Unified discrete zoom level for stable styles
+    // 1 (<=8, Low), 2 (9-13, Mid), 3 (14+, High)
     const zoomGroup = useMemo(() => {
-        if (zoomLevel <= 7) return 1;
-        if (zoomLevel <= 11) return 2;
-        if (zoomLevel <= 13) return 3;
-        return 4;
+        if (zoomLevel <= 8) return 1;
+        if (zoomLevel <= 13) return 2;
+        return 3;
     }, [zoomLevel]);
 
 
     const styleConfig = useMemo(() => {
-        // Stages: 1 (5-7), 2 (8-11), 3 (12-13), 4 (14+)
+        // Stages: 1 (<=8), 2 (9-13), 3 (14+)
         let weightFactor = 1.0;
-        if (zoomGroup === 1) weightFactor = Math.max(0.1, zoomLevel / 14);
-        else if (zoomGroup === 2) weightFactor = 0.8;
+        if (zoomGroup === 1) weightFactor = Math.max(0.15, zoomLevel / 14);
+        else if (zoomGroup === 2) weightFactor = 0.85;
 
-        // Discrete weights per stage - now consistent to avoid bloat at zoom 12+
-        const baseVisibilityWeight = 2.5 * weightFactor;
-        const baseInvisibilityWeight = 1.5 * weightFactor;
-        const usedWeight = 4.0 * weightFactor;
-        const usedGlowWeight = 7.0 * weightFactor;
-        const casingWeight = baseVisibilityWeight + (1.2 * weightFactor);
-        const highlightWeight = 10 * weightFactor;
+        // Smooth transition for weight factor
+        const zoomWeight = isMoving ? 0.7 : 1.0; // Slightly thin when moving
+
+        // Discrete weights per stage
+        const baseVisibilityWeight = 1.7 * weightFactor * zoomWeight;
+        const baseInvisibilityWeight = 1.0 * weightFactor * zoomWeight;
+        const usedWeight = 2.7 * weightFactor * zoomWeight;
+        const usedGlowWeight = 4.7 * weightFactor * zoomWeight;
+        const casingWeight = baseVisibilityWeight + (0.8 * weightFactor);
+        const highlightWeight = 6.7 * weightFactor * zoomWeight;
 
         return {
             weightFactor,
@@ -100,9 +102,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             usedGlowWeight,
             casingWeight,
             highlightWeight,
+            zoomWeight,
             smoothFactor: 1.0
         };
-    }, [zoomGroup, zoomLevel]);
+    }, [zoomGroup, zoomLevel, isMoving]);
 
     const mergedGeoJsonData = useMemo<GeoJSON.FeatureCollection | null>(() => {
         if (!railroadNetwork) return null;
@@ -213,11 +216,11 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         let color = feature.properties.color || '#999';
         if (!isVisible) color = '#999999';
 
-        // 2. Determine Weight (Standardized to match Stations)
-        let weight = 4.0;
+        // 2. Determine Weight (Standardized to match Stations) - 2/3 Scale Applied
+        let weight = 2.7; // 4.0 * 2/3 ≈ 2.67
         const z = Math.round(zoomLevel);
-        if (z <= 11) weight = 2.2;
-        else if (z <= 13) weight = 3.0;
+        if (z <= 11) weight = 1.5; // 2.2 * 2/3 ≈ 1.47
+        else if (z <= 13) weight = 2.0; // 3.0 * 2/3 ≈ 2.0
 
         // 3. Determine Opacity
         let opacity = isVisible ? 0.8 : 0.4;
@@ -265,14 +268,14 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // 강조 여부
         const isEmphasis = isClicked || isHovered || isUsed || isDraft;
 
-        // 표준화된 테두리 두께 로직
-        let baseWeight = 6.25;
+        // 표준화된 테두리 두께 로직 - 2/3 Scale Applied
+        let baseWeight = 4.2; // 6.25 * 2/3 ≈ 4.17
         const z = Math.round(zoomLevel);
-        if (z <= 11) baseWeight = 4.0;
-        else if (z <= 13) baseWeight = 5.0;
+        if (z <= 11) baseWeight = 2.7; // 4.0 * 2/3 ≈ 2.67
+        else if (z <= 13) baseWeight = 3.3; // 5.0 * 2/3 ≈ 3.33
 
         const factor = isMobile ? 1.4 : 1.0;
-        const emphasisOffset = isEmphasis ? (z >= 14 ? 7.5 : 5.0) : 0;
+        const emphasisOffset = isEmphasis ? (z >= 14 ? 5.0 : 3.3) : 0; // 7.5 * 2/3 = 5.0, 5.0 * 2/3 ≈ 3.33
         const finalWeight = (baseWeight * factor) + emphasisOffset;
 
         return {
@@ -316,23 +319,17 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const secondaryCorp = company_en && company_en !== company ? company_en : '';
 
         const tooltipContent = `
-            <div style="
-                display: flex; 
-                flex-direction: row; 
-                gap: 12px; 
-                padding: 6px 8px; 
-                min-width: 180px; 
-                align-items: stretch;
-                border-left: 4px solid ${feature.properties.color || '#999'};
-            ">
-                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; text-align: left;">
-                    <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
-                        <span style="font-weight: 800; font-size: 13px; color: #1a202c;">${primaryLine}</span>
-                        ${secondaryLine ? `<span style="font-size: 10px; font-weight: 600; color: #718096;">${secondaryLine}</span>` : ''}
+            <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif; max-height: 300px; display: flex; flex-direction: column; border-left: 4px solid ${feature.properties.color || '#999'}; padding-left: 8px;">
+                <div style="display: flex; flex-direction: column; border-bottom: 2px solid ${feature.properties.color || '#999'}; margin-bottom: 8px; padding-bottom: 4px;">
+                    <span style="font-weight: 900; font-size: 14px; color: #2c3e50;">${primaryLine}</span>
+                    <span style="font-weight: 600; font-size: 10px; color: #718096; margin-top: -2px;">${secondaryLine}</span>
+                </div>
+                <div style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">
+                    <div style="font-size: 11px; font-weight: 700; color: #4a5568; line-height: 1.4;">
+                        ${primaryCorp}
                     </div>
-                    <div style="display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; margin-top: 2px;">
-                        <span style="font-size: 11px; color: #4a5568; font-weight: 600;">${primaryCorp}</span>
-                        ${secondaryCorp ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0;">${secondaryCorp}</span>` : ''}
+                    <div style="font-size: 9px; font-weight: 600; color: #718096; margin-bottom: 4px;">
+                        ${secondaryCorp}
                     </div>
                     ${endpoints ? `
                         <div style="font-size: 9px; color: #cbd5e0; margin-top: 4px; border-top: 1px solid #edf2f7; padding-top: 4px; font-style: italic;">
@@ -346,8 +343,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         if (!isMobile) {
             layer.bindTooltip(tooltipContent, {
                 sticky: true,
-                direction: 'top',
-                offset: [0, -10],
+                direction: 'auto',
+                offset: [15, 0],
                 opacity: 0.9,
                 className: 'railroad-tooltip',
                 pane: 'top-tooltips'
@@ -410,6 +407,17 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
         if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
     }, [activeLine, hoveredLine, isMoving, isDragging, unifiedStyle, glowStyle, interactionStyle]);
+
+    // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
+    useEffect(() => {
+        return () => {
+            if (interactionLayerRef.current) {
+                interactionLayerRef.current.eachLayer((l: any) => {
+                    if (l.closeTooltip) l.closeTooltip();
+                });
+            }
+        };
+    }, []);
 
     // Stable key: only re-render on data or major zoom changes
     const layerKey = useMemo(() => {

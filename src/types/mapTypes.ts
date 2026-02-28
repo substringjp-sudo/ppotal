@@ -2,7 +2,7 @@ export interface StaticNode {
     id: string;
     coord: [number, number];
     lineKey: string;
-    platforms?: [number, number][][];
+    platforms?: number[][][];
     group?: string;
     isUsed?: boolean;
 }

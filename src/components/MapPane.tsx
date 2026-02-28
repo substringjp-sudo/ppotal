@@ -102,7 +102,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     showLabels = false,
     onToggleLabels,
     tripStartStationId,
-    onStationHover: onStationHoverExternal
+    onStationHover: onStationHoverExternal,
+    selectedStation
 }) => {
     const map = useMap();
     const [zoomLevel, setZoomLevel] = useState(5);
@@ -270,16 +271,34 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [lineIdMap, onLineMappingCreated]);
 
 
+    // Hide labels and show subtle fade when moving or switching LOD
+    const [isLODChanging, setIsLODChanging] = useState(false);
+    useEffect(() => {
+        setIsLODChanging(true);
+        const timer = setTimeout(() => setIsLODChanging(false), 300);
+        return () => clearTimeout(timer);
+    }, [lodLevel]);
+
+    const isInteractionHidden = isMoving || isLODChanging;
+
     useEffect(() => {
         if (map) {
-            const pane = map.getPane('station-labels');
-            if (pane) {
-                pane.style.visibility = isMoving ? 'hidden' : 'visible';
-                pane.style.opacity = isMoving ? '0' : '1';
-                pane.style.transition = 'opacity 0.2s ease, visibility 0.2s';
-            }
+            const panes = ['station-labels', 'railroad-lines', 'railroad-casing', 'railroad-glow'];
+            panes.forEach(p => {
+                const pane = map.getPane(p);
+                if (pane) {
+                    pane.style.transition = 'opacity 0.2s ease-in-out';
+                    // We don't hide railroad lines during normal movement, only during LOD switch for stability
+                    if (p === 'station-labels') {
+                        pane.style.opacity = isInteractionHidden ? '0' : '1';
+                        pane.style.visibility = isInteractionHidden ? 'hidden' : 'visible';
+                    } else {
+                        pane.style.opacity = isLODChanging ? '0.3' : '1';
+                    }
+                }
+            });
         }
-    }, [map, isMoving]);
+    }, [map, isInteractionHidden, isLODChanging]);
 
     useEffect(() => {
         if (map) {
@@ -501,6 +520,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     }}
                     dragStartStation={dragStartStation || tripStartStationId || null}
                     draftStationIds={draftStationIds}
+                    selectedStation={selectedStation}
                 />
             }
 

@@ -297,43 +297,51 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     }}>
                                         {linesUsed.length > 0 && (
                                             <>
-                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                                                    <div style={{
-                                                        fontSize: '9px',
-                                                        fontWeight: '900',
-                                                        color: '#48bb78',
-                                                        backgroundColor: '#f0fff4',
-                                                        padding: '1px 4px',
-                                                        borderRadius: '3px',
-                                                        flexShrink: 0,
-                                                        marginTop: '2px'
-                                                    }}>via</div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{
+                                                            fontSize: '9px',
+                                                            fontWeight: '900',
+                                                            color: '#48bb78',
+                                                            backgroundColor: '#f0fff4',
+                                                            padding: '2px 6px',
+                                                            borderRadius: '4px',
+                                                            flexShrink: 0,
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px'
+                                                        }}>via</div>
+                                                        {trip.path.length > 2 && (
+                                                            <div style={{
+                                                                fontSize: '10px',
+                                                                color: '#718096',
+                                                                fontWeight: '800',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '3px'
+                                                            }}>
+                                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                                                                {trip.path.length - 2} stations
+                                                            </div>
+                                                        )}
+                                                    </div>
+
                                                     <div style={{
                                                         fontSize: '10px',
-                                                        color: '#718096',
+                                                        color: '#4a5568',
                                                         fontWeight: '600',
                                                         display: 'flex',
                                                         flexDirection: 'column',
-                                                        gap: '2px'
+                                                        gap: '4px',
+                                                        paddingLeft: '2px'
                                                     }}>
                                                         {linesUsed.map((l, i) => (
-                                                            <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                                                                <span>{l.ja}</span>
-                                                                <span style={{ fontSize: '8px', color: '#a0aec0' }}>{l.en}</span>
+                                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                                                                <span style={{ lineHeight: '1.2' }}>{l.ja}</span>
+                                                                {l.en && <span style={{ fontSize: '8px', color: '#a0aec0', lineHeight: '1.1' }}>{l.en}</span>}
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
-                                                {trip.path.length > 2 && (
-                                                    <div style={{
-                                                        fontSize: '9px',
-                                                        color: '#a0aec0',
-                                                        fontWeight: 'bold',
-                                                        paddingLeft: '32px'
-                                                    }}>
-                                                        ({trip.path.length - 2} stations)
-                                                    </div>
-                                                )}
                                             </>
                                         )}
                                     </div>

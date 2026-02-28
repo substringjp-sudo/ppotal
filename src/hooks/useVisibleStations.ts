@@ -50,12 +50,12 @@ export const useVisibleStations = ({
         return grid;
     }, [railroadNetwork]);
 
-    // 2. Perform Visible Filtering using Spatial Index
+    // 2. Perform Visible Filtering using Spatial Index or stationsLod
+    // Standardized breakpoints: Low (<=8), Mid (9-13), High (14+)
     const effectiveZoom = useMemo(() => {
         if (zoomLevel >= 14) return 14;
-        if (zoomLevel >= 10) return 10;
-        if (zoomLevel >= 8) return 8;
-        return 1; // Always process data for platforms
+        if (zoomLevel >= 9) return 10;
+        return 8;
     }, [zoomLevel]);
 
     const visibleStations = useMemo(() => {
@@ -64,33 +64,97 @@ export const useVisibleStations = ({
         const data: Record<string, ProcessedStation> = {};
         const railData = railroadNetwork as RailData;
 
-        // If stationsLod is available, use it for pre-decided visibility
+        // --- Path A: Use stationsLod with Smart Density Filtering ---
         if (railData.stationsLod) {
-            railData.stationsLod.forEach(s => {
-                const isAnyNodeUsed = s.nodes.some(n => usedStationIds.has(n.id));
-                const isVisible = zoomLevel >= s.z || isAnyNodeUsed;
+            // 1. Initial filter by padded bounds for performance
+            let candidates = railData.stationsLod;
+            if (mapBounds) {
+                const padded = mapBounds.pad(0.5);
+                candidates = candidates.filter(s => padded.contains(s.c as [number, number]));
+            }
+
+            // 2. Sort by importance (used > transfer > lines count > data Z)
+            const sortedCandidates = [...candidates].sort((a, b) => {
+                const getPriority = (item: typeof a) => {
+                    const isUsed = item.nodes.some(n => usedStationIds.has(n.id));
+                    const isTransfer = item.lines.length > 1;
+                    let p = 0;
+                    if (isUsed) p += 10000;
+                    if (isTransfer) p += 1000;
+                    p += item.lines.length * 50;
+                    p -= item.z * 10;
+                    return p;
+                };
+                return getPriority(b) - getPriority(a);
+            });
+
+            // 3. Smart Filtering Logic
+            const accepted: typeof sortedCandidates = [];
+            // Zoom-dependent collision thresholds (in degrees)
+            const threshold = Math.pow(2, 9 - zoomLevel) * 0.025;
+            const isVeryFarZoom = zoomLevel < 8;
+
+            sortedCandidates.forEach(c => {
+                const isExplicitlyUsed = c.nodes.some(n => usedStationIds.has(n.id));
+                const isTransfer = c.lines.length > 1;
+
+                const hasCollision = accepted.some(acc => {
+                    const dLat = Math.abs(acc.c[0] - c.c[0]);
+                    const dLon = Math.abs(acc.c[1] - c.c[1]);
+                    return dLat < threshold && dLon < threshold * 1.2;
+                });
+
+                let isVisible = false;
+                if (isExplicitlyUsed) {
+                    isVisible = true;
+                } else if (zoomLevel >= 12) {
+                    isVisible = true;
+                } else {
+                    const baseVisible = zoomLevel >= c.z;
+                    if (baseVisible) {
+                        // Dense Area Guard: Hide colliding stations unless they are very important
+                        isVisible = !hasCollision;
+                    } else if (!isTransfer && !hasCollision && zoomLevel >= c.z - 2 && !isVeryFarZoom && zoomLevel >= 8) {
+                        // Sparse Area Boost: Show isolated rural stations earlier (at lower zoom)
+                        isVisible = true;
+                    }
+                }
 
                 if (isVisible) {
-                    data[s.id] = {
-                        id: s.id,
-                        name: s.name,
-                        name_en: s.name_en,
-                        centroid: s.c as [number, number],
-                        lines: s.lines,
-                        nodes: s.nodes.map(n => ({
-                            id: n.id,
-                            coord: n.c as [number, number],
-                            lineKey: s.lines[0] || "",
-                            isUsed: usedStationIds.has(n.id)
-                        })),
-                        isUsed: isAnyNodeUsed
+                    accepted.push(c);
+                    data[c.id] = {
+                        id: c.id,
+                        name: c.name,
+                        name_en: c.name_en,
+                        centroid: c.c as [number, number],
+                        lines: c.lines,
+                        nodes: c.nodes.map(n => {
+                            const rawStation = railData.stations[n.id];
+                            const platformGeoms: number[][][] = [];
+                            if (rawStation && rawStation.platform_ids) {
+                                rawStation.platform_ids.forEach((pid: string) => {
+                                    const p = railData.platforms[pid];
+                                    if (p && p.geometries) platformGeoms.push(...p.geometries);
+                                });
+                            }
+                            return {
+                                id: n.id,
+                                coord: n.c as [number, number],
+                                lineKey: c.lines[0] || "",
+                                platforms: platformGeoms.length > 0 ? platformGeoms : undefined,
+                                isUsed: usedStationIds.has(n.id)
+                            };
+                        }),
+                        isUsed: isExplicitlyUsed
                     };
                 }
             });
 
-            if (effectiveZoom >= 12 && railData.joints?.joints) {
+            // Add Joints (junctions) at high zoom
+            if (zoomLevel >= 12 && railData.joints?.joints) {
                 railData.joints.joints.forEach((j: Joint) => {
                     const [jLon, jLat] = j.coordinates;
+                    if (mapBounds && !mapBounds.contains([jLat, jLon])) return;
                     data[j.id] = {
                         id: j.id,
                         name: "",
@@ -101,11 +165,10 @@ export const useVisibleStations = ({
                     };
                 });
             }
-
             return data;
         }
 
-        // Fallback to dynamic grouping if stationsLod is not yet loaded
+        // --- Path B: Fallback Dynamic Grouping (if stationsLod not present) ---
         const keysToProcess: string[] = [];
         if (mapBounds) {
             const padded = mapBounds.pad(2.0);
@@ -135,7 +198,7 @@ export const useVisibleStations = ({
                         if (p) stationLines.add(`${p.company}::${p.line}`);
                     });
                 }
-                const platforms: [number, number][][] = [];
+                const platforms: number[][][] = []; // Assuming number[][][] per previous refactor
                 if (s.platform_ids) {
                     s.platform_ids.forEach((pid: string) => {
                         const p = railData.platforms[pid];
@@ -197,7 +260,7 @@ export const useVisibleStations = ({
             }
         });
         return data;
-    }, [railroadNetwork, effectiveZoom, spatialIndex, usedStationIds, mapBounds, zoomLevel]);
+    }, [railroadNetwork, spatialIndex, usedStationIds, mapBounds, zoomLevel, effectiveZoom]);
 
     return { visibleStations, effectiveZoom };
 };

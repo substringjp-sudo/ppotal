@@ -195,26 +195,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                     }
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>{title}</span>
-                    {(() => {
-                        let total = 0;
-                        let visited = 0;
-                        Object.entries(companies).forEach(([compId, lines]) => {
-                            Object.keys(lines).forEach((lineId) => {
-                                total++;
-                                const key = `${compId}::${lineId}`;
-                                if ((visitedLineLengths[key] || 0) > 0) visited++;
-                            });
-                        });
-                        return (
-                            <span style={{ fontSize: '12px', color: '#666', fontWeight: 'normal' }}>
-                                ({visited}/{total})
-                            </span>
-                        );
-                    })()}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                     <input
                         type="checkbox"
                         checked={Object.entries(companies).every(([compId, lines]) => {
@@ -225,8 +206,29 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                             onToggleSelection(groupKey);
                         }}
                         title="Toggle Category"
-                        style={{ cursor: 'pointer' }}
+                        style={{ cursor: 'pointer', flexShrink: 0 }}
                     />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                        <span style={{ fontWeight: '800', fontSize: '14px', color: '#2c3e50' }}>{title}</span>
+                        {(() => {
+                            let total = 0;
+                            let visited = 0;
+                            Object.entries(companies).forEach(([compId, lines]) => {
+                                Object.keys(lines).forEach((lineId) => {
+                                    total++;
+                                    const key = `${compId}::${lineId}`;
+                                    if ((visitedLineLengths[key] || 0) > 0) visited++;
+                                });
+                            });
+                            return (
+                                <span style={{ fontSize: '11px', color: '#7f8c8d', fontWeight: '600' }}>
+                                    ({visited}/{total})
+                                </span>
+                            );
+                        })()}
+                    </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                     <span>{expanded ? '▼' : '▶'}</span>
                 </div>
             </div>

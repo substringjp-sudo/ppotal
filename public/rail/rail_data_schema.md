@@ -11,7 +11,7 @@
 -   `platforms_meta.json`: 승강장의 메타데이터(이름, 소속 등)를 담고 있습니다.
 -   `platforms_geom.json`: 승강장의 지오메트리(Polyline)를 담고 있습니다.
 -   `sections_meta.json`: 구간의 메타데이터(시작/종료, 노선 ID 등)를 담고 있습니다.
--   `sections_geom_high.json`: 높은 해상도의 구간 지오메트리(Polyline)를 담고 있습니다.
+-   `sections_geom_high.json`: 높은 해상도의 구간 지오메트리ㄹ(Polyline)를 담고 있습니다.
 -   `sections_geom_mid.json`: 중간 해상도의 구간 지오메트리(Polyline)를 담고 있습니다.
 -   `sections_geom_low.json`: 낮은 해상도의 구간 지오메트리(Polyline)를 담고 있습니다.
 -   `railroad_graph.json`: 역 간의 연결 관계를 그래프 형태로 담고 있습니다.

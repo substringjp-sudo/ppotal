@@ -482,11 +482,11 @@ const MainPageClient = () => {
     const [isMobileSheetOpen, setIsMobileSheetOpen] = React.useState(false);
 
     const handleMapClick = React.useCallback(() => {
-        if (!isMobile || isEditMode) return;
+        if (isEditMode) return;
         setSelectedStation(null);
         setActiveLine(null);
         setIsMobileSheetOpen(false);
-    }, [isMobile, isEditMode]);
+    }, [isEditMode]);
 
     const handleDraftComplete = React.useCallback((trip: Trip) => {
         setDraftTrip(trip);
@@ -796,7 +796,7 @@ const MainPageClient = () => {
                                     onZoomComplete={() => setZoomTarget(null)}
                                     styleSettings={styleSettings}
                                     isMobile={isMobile}
-                                    selectedStation={selectedStation?.name}
+                                    selectedStation={selectedStation?.id}
                                     onMapClick={handleMapClick}
                                     showLabels={showLabels}
                                     onToggleLabels={() => setShowLabels(prev => !prev)}

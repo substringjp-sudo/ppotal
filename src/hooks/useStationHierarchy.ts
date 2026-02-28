@@ -3,7 +3,7 @@ import { RailData, HierarchyCompany } from '../types/railData';
 
 // 카테고리 정의 (신칸센은 별도 카테고리 '0'으로 관리)
 export const CATEGORY_MAP: Record<number, { name: string; name_en: string }> = {
-    0: { name: 'Shinkansen', name_en: 'Shinkansen' },
+    0: { name: 'SHINKANSEN', name_en: 'SHINKANSEN' },
     1: { name: 'JR', name_en: 'JR' },
     2: { name: 'Major Private', name_en: 'Major Private' },
     3: { name: 'Local Private', name_en: 'Local Private' },

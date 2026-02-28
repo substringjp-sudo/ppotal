@@ -44,19 +44,19 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   if (!railData) return null;
 
   const sortedStationPlatforms = station.platform_ids
-    .map(pid => platforms[pid])
+    .map(pid => ({ ...platforms[pid], pid }))
     .filter(p => p && lines[p.line])
     .sort((a, b) => {
       const lineA = lines[a.line];
       const lineB = lines[b.line];
       if (!lineA || !lineB) return 0;
       if (lineA.corp_id !== lineB.corp_id) {
-        return lineA.corp_id - lineB.corp_id;
+        return (lineA.corp_id as number) - (lineB.corp_id as number);
       }
-      return a.line - b.line;
+      return (a.line as number) - (b.line as number);
     });
 
-  const getDirectionalNeighbors = (platform: Platform) => {
+  const getDirectionalNeighbors = (platform: Platform & { pid: string }) => {
     const left: { station: Station; ratio: number; skippedCount: number }[] = [];
     const right: { station: Station; ratio: number; skippedCount: number }[] = [];
     const currentStation = station;
@@ -64,7 +64,10 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
     const railroadGraph = railData.railroadGraph;
     if (!railroadGraph || !railroadGraph.platformGraph) return { left, right };
 
-    const platformConnections = railroadGraph.platformGraph[currentStation.id]?.[platform.code] || [];
+    // Try primary lookup by unique platform ID (pid), fallback to platform code
+    const platformConnections = railroadGraph.platformGraph[currentStation.id]?.[platform.pid] ||
+      railroadGraph.platformGraph[currentStation.id]?.[platform.code] || [];
+
     const totalPoints = platform.geometries && platform.geometries[0] ? platform.geometries[0].length : 2;
 
     for (const conn of platformConnections) {
@@ -185,10 +188,15 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 
               const { left, right } = getDirectionalNeighbors(p);
               const maxNeighbors = Math.max(left.length, right.length);
-              const rowHeight = Math.max(60, maxNeighbors * 32);
+
+              // More generous spacing for multiple neighbors
+              // Base height 80, 48px per neighbor if >= 3, else 42px
+              const spacingFactor = maxNeighbors >= 3 ? 52 : 44;
+              const rowHeight = Math.max(80, maxNeighbors * spacingFactor);
 
               return (
-                <div key={p.code} className={styles.lineRow} style={{ height: rowHeight }}>
+                <div key={p.pid} className={styles.lineRow} style={{ height: rowHeight }}>
+                  {/* Neighbor Stations (HTML Labels) */}
                   <div className={`${styles.neighborColumn} ${styles.left}`}>
                     {left.map((entry, index) => {
                       const y = 100 / (left.length + 1) * (index + 1);
@@ -201,7 +209,6 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                             </div>
                             <span className={styles.neighborStationNameEn}>{entry.station.name_en}</span>
                           </div>
-                          <div className={styles.neighborDot} style={{ backgroundColor: finalColor }}></div>
                         </div>
                       )
                     })}
@@ -213,45 +220,61 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                         <span className={styles.lineName}>{line.name}</span>
                         <span className={styles.lineNameEn}>{line.name_en}</span>
                       </div>
-                      <svg className={styles.connectingLines} viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <svg className={styles.connectingLines} viewBox="0 0 1000 100" preserveAspectRatio="none">
                         {(() => {
-                          const pWidth = getPlatformWidth(p);
-                          const pStartX = 50 - pWidth / 2;
-                          const pEndX = 50 + pWidth / 2;
+                          // In 1000-unit viewBox:
+                          // Left dots at x=180
+                          // Right dots at x=820
+                          // Platform centered at x=500
+                          const dotLX = 180;
+                          const dotRX = 820;
+                          const pWidth = getPlatformWidth(p) * 4; // Scale platform width for 1000 units
+                          const pStartX = 500 - pWidth / 2;
+                          const pEndX = 500 + pWidth / 2;
 
                           return (
                             <>
-                              {/* Connecting Lines */}
+                              {/* Left Curves and Dots */}
                               {left.map((entry, index) => {
                                 const y = 100 / (left.length + 1) * (index + 1);
                                 const connX = pStartX + entry.ratio * pWidth;
-                                const pathD = `M ${connX},50 C ${connX - 10},50 ${pStartX - 10},${y} 0,${y}`;
+                                const dist = connX - dotLX;
+                                const handle = dist * 0.4;
+                                const d = `M ${connX},50 C ${connX - handle},50 ${dotLX + handle},${y} ${dotLX},${y}`;
                                 return (
-                                  <path
-                                    key={entry.station.id}
-                                    d={pathD}
-                                    stroke={finalColor}
-                                    strokeWidth="2"
-                                    fill="none"
-                                    opacity="0.6"
-                                    strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
-                                  />
+                                  <g key={entry.station.id}>
+                                    <path
+                                      d={d}
+                                      stroke={finalColor}
+                                      strokeWidth="2"
+                                      fill="none"
+                                      opacity="0.8"
+                                      strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
+                                    />
+                                    <circle cx={dotLX} cy={y} r="3" fill="#fff" stroke={finalColor} strokeWidth="1.5" />
+                                  </g>
                                 );
                               })}
+
+                              {/* Right Curves and Dots */}
                               {right.map((entry, index) => {
                                 const y = 100 / (right.length + 1) * (index + 1);
                                 const connX = pStartX + entry.ratio * pWidth;
-                                const pathD = `M ${connX},50 C ${connX + 10},50 ${pEndX + 10},${y} 100,${y}`;
+                                const dist = dotRX - connX;
+                                const handle = dist * 0.4;
+                                const d = `M ${connX},50 C ${connX + handle},50 ${dotRX - handle},${y} ${dotRX},${y}`;
                                 return (
-                                  <path
-                                    key={entry.station.id}
-                                    d={pathD}
-                                    stroke={finalColor}
-                                    strokeWidth="2"
-                                    fill="none"
-                                    opacity="0.6"
-                                    strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
-                                  />
+                                  <g key={entry.station.id}>
+                                    <path
+                                      d={d}
+                                      stroke={finalColor}
+                                      strokeWidth="2"
+                                      fill="none"
+                                      opacity="0.8"
+                                      strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
+                                    />
+                                    <circle cx={dotRX} cy={y} r="3" fill="#fff" stroke={finalColor} strokeWidth="1.5" />
+                                  </g>
                                 );
                               })}
 
@@ -264,7 +287,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                                 rx={2.5}
                                 fill="#fff"
                                 stroke={finalColor}
-                                strokeWidth="2"
+                                strokeWidth="2.5"
                               />
                             </>
                           );
@@ -278,7 +301,6 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                       const y = 100 / (right.length + 1) * (index + 1);
                       return (
                         <div key={entry.station.id} className={styles.neighborStation} style={{ top: `${y}%` }}>
-                          <div className={styles.neighborDot} style={{ backgroundColor: finalColor }}></div>
                           <div className={styles.neighborInfo}>
                             <div className={styles.neighborStationNameRow}>
                               <span className={styles.neighborStationName}>{entry.station.name}</span>
