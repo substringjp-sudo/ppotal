@@ -48,100 +48,69 @@ const SidebarLineItem: React.FC<{
         <div
             ref={el => registerLineRef(key, el)}
             onClick={() => onLineClick?.(key)}
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onLineClick?.(key);
-                }
-            }}
+            className={`flex flex-col p-2 rounded-lg cursor-pointer transition-all border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 group/line ${isActive ? 'bg-primary/5 border-primary/20 shadow-sm ring-1 ring-primary/10' : ''
+                }`}
             role="button"
             tabIndex={0}
-            aria-pressed={isActive}
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '4px 0',
-                backgroundColor: isActive ? '#e6f7ff' : 'transparent',
-                borderRadius: '4px',
-                borderBottom: '1px solid #f9f9f9',
-                cursor: 'pointer'
-            }}
         >
-            <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={(e) => {
-                    e.stopPropagation();
-                    onToggleLine(key);
-                    trackEvent('line_toggle', 'interaction', key);
-                }}
-                style={{ marginRight: '8px', flexShrink: 0, cursor: 'pointer' }}
-            />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                        <span
-                            style={{
-                                fontSize: '13px',
-                                color: isCompleted ? '#186A3B' : '#333',
-                                fontWeight: (isSelected || isCompleted) ? 'bold' : '800',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}>
-                            {lName}
-                        </span>
-                        {lNameEn && (
-                            <span style={{
-                                fontSize: '10px',
-                                fontWeight: '500',
-                                color: '#718096',
-                                marginTop: '-1px',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                opacity: 0.8
-                            }}>
-                                {lNameEn}
+            <div className="flex items-center gap-2 mb-1.5">
+                <div className="relative size-4 flex items-center justify-center">
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleLine(key);
+                            trackEvent('line_toggle', 'interaction', key);
+                        }}
+                        className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 pointer-events-auto"
+                    />
+                    <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
+                        check
+                    </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
+                            <span className={`text-xs font-bold truncate ${isCompleted ? 'text-green-600 dark:text-green-400' : 'text-slate-700 dark:text-slate-200'
+                                } group-hover/line:text-primary transition-colors`}>
+                                {lName}
+                            </span>
+                            {lNameEn && (
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">
+                                    {lNameEn}
+                                </span>
+                            )}
+                        </div>
+                        {percent > 0 && (
+                            <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${isCompleted
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-primary/10 text-primary dark:bg-primary/20'
+                                }`}>
+                                {percent.toFixed(percent >= 100 ? 0 : 1)}%
                             </span>
                         )}
                     </div>
-                    {(() => {
-                        const colors = getProgressColor(percent);
-                        return (
-                            <span style={{
-                                fontSize: '9px',
-                                color: colors.text,
-                                flexShrink: 0,
-                                marginLeft: '6px',
-                                fontWeight: '800',
-                                backgroundColor: colors.bg,
-                                padding: '0px 5px',
-                                borderRadius: '6px',
-                                transition: 'all 0.3s ease'
-                            }}>
-                                {percent.toFixed(percent >= 100 ? 0 : 1)}%
-                            </span>
-                        );
-                    })()}
                 </div>
-                {lineLengths[key] > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ fontSize: '9px', color: '#999', marginBottom: '1px' }}>
-                            {(visitedLineLengths?.[key] || 0).toFixed(1)} / {lineLengths[key].toFixed(1)} km
-                        </div>
-                        <div style={{ width: '100%', height: '2px', backgroundColor: '#f0f0f0', borderRadius: '1px', overflow: 'hidden' }}>
-                            <div style={{
-                                width: `${Math.min(100, percent)}%`,
-                                height: '100%',
-                                backgroundColor: isCompleted ? '#27ae60' : '#3498db',
-                                transition: 'width 0.4s ease-out'
-                            }} />
-                        </div>
-                    </div>
-                )}
             </div>
-        </div >
+
+            {lineLengths[key] > 0 && (
+                <div className="pl-6 pr-1 space-y-1">
+                    <div className="flex justify-between items-center text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">
+                        <span>{(visitedLineLengths?.[key] || 0).toFixed(1)} km</span>
+                        <span>{lineLengths[key].toFixed(1)} km</span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all duration-500 ${isCompleted ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-primary'
+                                }`}
+                            style={{ width: `${Math.min(100, percent)}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+        </div>
     );
 });
 
@@ -160,12 +129,16 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
     const getCompanyName = (id: string) => companyNames[id]?.name || id;
     const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name || lineNames[id]?.name || id;
 
-
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
-            const getCompanyUsage = ([compId, lines]: [string, Record<string, { name: string; name_en?: string; stations?: string[] }>]) => {
-                const total = Object.keys(lines).reduce((sum, lineId) => sum + (lineLengths[`${compId}::${lineId}`] || 0), 0);
-                const visited = Object.keys(lines).reduce((sum, lineId) => sum + (visitedLineLengths[`${compId}::${lineId}`] || 0), 0);
+            const getCompanyUsage = ([compId, lines]: [string, Record<string, any>]) => {
+                let total = 0;
+                let visited = 0;
+                Object.keys(lines).forEach(lineId => {
+                    const key = `${compId}::${lineId}`;
+                    total += lineLengths[key] || 0;
+                    visited += visitedLineLengths[key] || 0;
+                });
                 return total > 0 ? visited / total : 0;
             };
             return getCompanyUsage(b) - getCompanyUsage(a);
@@ -173,94 +146,102 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
         return getCompanyName(a[0]).localeCompare(getCompanyName(b[0]), 'en');
     });
 
+    // Group-level stats
+    let groupTotalLines = 0;
+    let groupVisitedLines = 0;
+    Object.entries(companies).forEach(([compId, lines]) => {
+        Object.keys(lines).forEach((lineId) => {
+            groupTotalLines++;
+            const key = `${compId}::${lineId}`;
+            if ((visitedLineLengths[key] || 0) > 0) groupVisitedLines++;
+        });
+    });
+
+    const isAllGroupSelected = Object.entries(companies).every(([compId, lines]) => {
+        return Object.keys(lines).every(lineId => selectedLines.includes(`${compId}::${lineId}`));
+    });
+
+    const isSomeGroupSelected = Object.entries(companies).some(([compId, lines]) => {
+        return Object.keys(lines).some(lineId => selectedLines.includes(`${compId}::${lineId}`));
+    });
+
     return (
-        <div style={{ marginBottom: '10px', border: '1px solid #ddd', borderRadius: '4px', overflow: 'hidden' }}>
-            <div
-                role="button"
-                tabIndex={0}
-                aria-expanded={expanded}
-                style={{
-                    padding: '10px',
-                    background: '#f0f0f0',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer'
-                }}
-                onClick={() => onToggleExpanded(groupKey)}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        onToggleExpanded(groupKey);
-                    }
+        <details className="group/details border-b border-slate-50 dark:border-slate-800/50" open={expanded}>
+            <summary
+                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer list-none transition-colors"
+                onClick={(e) => {
+                    e.preventDefault();
+                    onToggleExpanded(groupKey);
                 }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                    <input
-                        type="checkbox"
-                        checked={Object.entries(companies).every(([compId, lines]) => {
-                            return Object.keys(lines).every(lineId => selectedLines.includes(`${compId}::${lineId}`));
-                        })}
-                        onChange={(e) => {
-                            e.stopPropagation();
-                            onToggleSelection(groupKey);
-                        }}
-                        title="Toggle Category"
-                        style={{ cursor: 'pointer', flexShrink: 0 }}
-                    />
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                        <span style={{ fontWeight: '800', fontSize: '14px', color: '#2c3e50' }}>{title}</span>
-                        {(() => {
-                            let total = 0;
-                            let visited = 0;
-                            Object.entries(companies).forEach(([compId, lines]) => {
-                                Object.keys(lines).forEach((lineId) => {
-                                    total++;
-                                    const key = `${compId}::${lineId}`;
-                                    if ((visitedLineLengths[key] || 0) > 0) visited++;
-                                });
-                            });
-                            return (
-                                <span style={{ fontSize: '11px', color: '#7f8c8d', fontWeight: '600' }}>
-                                    ({visited}/{total})
-                                </span>
-                            );
-                        })()}
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative size-4 flex items-center justify-center">
+                        <input
+                            type="checkbox"
+                            checked={isAllGroupSelected}
+                            ref={input => {
+                                if (input) {
+                                    input.indeterminate = isSomeGroupSelected && !isAllGroupSelected;
+                                }
+                            }}
+                            onChange={(e) => {
+                                e.stopPropagation();
+                                onToggleSelection(groupKey);
+                            }}
+                            className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
+                        />
+                        <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
+                            check
+                        </span>
+                        <div className="absolute pointer-events-none scale-0 peer-indeterminate:scale-100 transition-transform">
+                            <div className="size-1.5 bg-white rounded-full"></div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-slate-400 text-lg group-open/details:text-primary transition-colors">
+                            {groupKey === '1' ? 'speed' : groupKey === '2' ? 'tram' : groupKey === '3' ? 'subway' : 'train'}
+                        </span>
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate group-open/details:text-slate-900 dark:group-open/details:text-white">
+                            {title}
+                        </span>
+                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded font-black">
+                            {groupVisitedLines}/{groupTotalLines}
+                        </span>
                     </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                    <span>{expanded ? '▼' : '▶'}</span>
-                </div>
-            </div>
-            {expanded && (
-                <div style={{ padding: '0 10px 10px 10px' }}>
-                    {sortedCompanies.map(([companyId, lines]) => {
-                        const isExpanded = expandedCompanies[companyId];
-                        const lineIds = Object.keys(lines);
-                        const companyData = companyNames[companyId];
-                        const cName = companyData?.name || companyId;
-                        const cNameEn = companyData?.name_en || "";
+                <span className="material-symbols-outlined text-slate-400 group-open/details:rotate-180 transition-transform duration-300 text-xl">
+                    expand_more
+                </span>
+            </summary>
 
-                        const allLinesSelected = Object.keys(lines).every(lineId => selectedLines.includes(`${companyId}::${lineId}`));
-                        const someLinesSelected = Object.keys(lines).some(lineId => selectedLines.includes(`${companyId}::${lineId}`));
+            <div className="pl-6 pr-1 py-1 space-y-3">
+                {sortedCompanies.map(([companyId, lines]) => {
+                    const isExpanded = expandedCompanies[companyId];
+                    const companyData = companyNames[companyId];
+                    const cName = companyData?.name || companyId;
+                    const cNameEn = companyData?.name_en || "";
 
-                        const companyTotalLines = Object.keys(lines).length;
-                        const companyVisitedCount = Object.keys(lines).filter(lineId => (visitedLineLengths[`${companyId}::${lineId}`] || 0) > 0).length;
+                    const allLinesSelected = Object.keys(lines).every(lineId => selectedLines.includes(`${companyId}::${lineId}`));
+                    const someLinesSelected = Object.keys(lines).some(lineId => selectedLines.includes(`${companyId}::${lineId}`));
 
-                        const companySortedLines = [...lineIds].sort((a, b) => {
-                            if (sortMode === 'usage') {
-                                const getUsage = (lId: string) => {
-                                    const k = `${companyId}::${lId}`;
-                                    return lineLengths[k] ? (visitedLineLengths[k] || 0) / lineLengths[k] : 0;
-                                };
-                                return getUsage(b) - getUsage(a);
-                            }
-                            return getLineName(a).localeCompare(getLineName(b), 'en');
-                        });
+                    const companyTotalLines = Object.keys(lines).length;
+                    const companyVisitedCount = Object.keys(lines).filter(lineId => (visitedLineLengths[`${companyId}::${lineId}`] || 0) > 0).length;
 
-                        return (
-                            <div key={companyId} style={{ marginTop: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                    const companySortedLines = Object.keys(lines).sort((a, b) => {
+                        if (sortMode === 'usage') {
+                            const getUsage = (lId: string) => {
+                                const k = `${companyId}::${lId}`;
+                                return lineLengths[k] ? (visitedLineLengths[k] || 0) / lineLengths[k] : 0;
+                            };
+                            return getUsage(b) - getUsage(a);
+                        }
+                        return getLineName(a, lines[a]).localeCompare(getLineName(b, lines[b]), 'en');
+                    });
+
+                    return (
+                        <div key={companyId} className="border-l-2 border-slate-100 dark:border-slate-800 pl-3 py-1 ml-2">
+                            <div className="flex items-center gap-2 mb-2 group/company">
+                                <div className="relative size-3.5 flex items-center justify-center">
                                     <input
                                         type="checkbox"
                                         checked={allLinesSelected}
@@ -270,103 +251,66 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                             }
                                         }}
                                         onChange={() => onToggleCompany(companyId, lines)}
-                                        style={{ marginRight: '8px', cursor: 'pointer' }}
+                                        className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
                                     />
-                                    <span
-                                        onClick={() => toggleCompany(companyId)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                toggleCompany(companyId);
-                                            }
-                                        }}
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-expanded={isExpanded}
-                                        style={{ cursor: 'pointer', flex: 1, fontWeight: 'bold', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minWidth: 0 }}
-                                    >
-                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                                            <span style={{
-                                                fontSize: '13px',
-                                                fontWeight: '800',
-                                                color: '#333',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {cName}
-                                            </span>
-                                            {cNameEn && cNameEn !== cName && (
-                                                <span style={{
-                                                    fontSize: '10px',
-                                                    color: '#718096',
-                                                    marginTop: '-2px',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    opacity: 0.8
-                                                }}>
-                                                    {cNameEn}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            {(() => {
-                                                let totalDist = 0;
-                                                let visitedDist = 0;
-                                                Object.keys(lines).forEach(lId => {
-                                                    const key = `${companyId}::${lId}`;
-                                                    totalDist += lineLengths[key] || 0;
-                                                    visitedDist += visitedLineLengths[key] || 0;
-                                                });
-                                                if (totalDist === 0) return null;
-                                                const companyPercent = (visitedDist / totalDist) * 100;
-                                                const colors = getProgressColor(companyPercent);
-                                                return (
-                                                    <span style={{
-                                                        fontSize: '9px',
-                                                        fontWeight: '800',
-                                                        backgroundColor: colors.bg,
-                                                        color: colors.text,
-                                                        padding: '0px 4px',
-                                                        borderRadius: '4px',
-                                                        transition: 'all 0.3s'
-                                                    }}>
-                                                        {companyPercent.toFixed(companyPercent >= 100 ? 0 : 1)}%
-                                                    </span>
-                                                );
-                                            })()}
-                                            <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', flexShrink: 0 }}>
-                                                ({companyVisitedCount}/{companyTotalLines})
-                                            </span>
-                                        </div>
+                                    <span className="material-symbols-outlined absolute pointer-events-none text-[10px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
+                                        check
                                     </span>
-                                </div>
-                                {isExpanded && (
-                                    <div style={{ marginLeft: '22px' }}>
-                                        {companySortedLines.map(lId => (
-                                            <SidebarLineItem
-                                                key={lId}
-                                                lineId={lId}
-                                                companyId={companyId}
-                                                lineData={lineNames[lId]}
-                                                registerLineRef={registerLineRef}
-                                                onLineClick={onLineClick}
-                                                onToggleLine={onToggleLine}
-                                                selectedLines={selectedLines}
-                                                activeLine={activeLine}
-                                                lineLengths={lineLengths}
-                                                visitedLineLengths={visitedLineLengths}
-                                            />
-                                        ))}
+                                    <div className="absolute pointer-events-none scale-0 peer-indeterminate:scale-100 transition-transform">
+                                        <div className="size-1 bg-white rounded-full"></div>
                                     </div>
-                                )}
+                                </div>
+                                <div
+                                    className="flex-1 min-w-0 cursor-pointer flex justify-between items-center pr-2"
+                                    onClick={() => toggleCompany(companyId)}
+                                    role="button"
+                                    tabIndex={0}
+                                >
+                                    <div className="flex flex-1 flex-col items-start gap-1 min-w-0">
+                                        <span className="text-[13px] font-black text-slate-800 dark:text-slate-200 truncate group-hover/company:text-primary transition-colors">
+                                            {cName}
+                                        </span>
+                                        {cNameEn && (
+                                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate tracking-tight uppercase leading-none">
+                                                {cNameEn}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500">
+                                            {companyVisitedCount}/{companyTotalLines}
+                                        </div>
+                                        <span className={`material-symbols-outlined text-slate-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                            arrow_drop_down
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
+
+                            {isExpanded && (
+                                <div className="space-y-1 animate-in slide-in-from-left-2 duration-200">
+                                    {companySortedLines.map(lId => (
+                                        <SidebarLineItem
+                                            key={lId}
+                                            lineId={lId}
+                                            companyId={companyId}
+                                            lineData={lineNames[lId]}
+                                            registerLineRef={registerLineRef}
+                                            onLineClick={onLineClick}
+                                            onToggleLine={onToggleLine}
+                                            selectedLines={selectedLines}
+                                            activeLine={activeLine}
+                                            lineLengths={lineLengths}
+                                            visitedLineLengths={visitedLineLengths}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </details>
     );
 };
 

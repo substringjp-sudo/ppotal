@@ -42,6 +42,7 @@ const LineDetailPaneWithNoSSR = dynamic<LineDetailPaneProps>(() => import('./Lin
 
 import type { StationDetailPaneProps } from './StationDetailPane';
 const StationDetailPaneWithNoSSR = dynamic<StationDetailPaneProps>(() => import('./StationDetailPane'), { ssr: false });
+const MapStylePanel = dynamic(() => import('./MapStylePanel'), { ssr: false });
 
 
 export interface MapStyleSettings {
@@ -96,7 +97,7 @@ const MainPageClient = () => {
         nodes: Map<string, StationNode>,
         getShortestPath: (start: string, end: string, lines?: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
     } | null>(null);
-    const [styleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
+    const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [selectedStation, setSelectedStation] = React.useState<Station | null>(null);
     // Trip Recording States
     const [tripStartStation, setTripStartStation] = React.useState<Station | null>(null);
@@ -527,173 +528,92 @@ const MainPageClient = () => {
     }, [selectedStation, railData]);
 
     return (
-        <div style={{
-            display: 'flex', flexDirection: 'column',
-            backgroundColor: '#eee', backgroundImage: 'radial-gradient(#ccc 0.5px, transparent 0.5px)', backgroundSize: '10px 10px'
-        }}>
-            <div style={{
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                position: 'relative',
-                maxWidth: '1920px',
-                margin: '0 auto',
-                width: '100%',
-                boxShadow: '0 0 40px rgba(0,0,0,0.1)'
-            }}>
+        <div className="flex flex-col bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]">
+            <div className="h-screen flex flex-col overflow-hidden relative max-w-[1920px] mx-auto w-full shadow-2xl shadow-slate-900/10">
                 <a
                     href="#main-content"
-                    style={{
-                        position: 'absolute',
-                        left: '-9999px',
-                        top: 'auto',
-                        width: '1px',
-                        height: '1px',
-                        overflow: 'hidden',
-                        zIndex: -1,
-                        backgroundColor: '#3498db',
-                        color: '#fff',
-                        padding: '10px 20px',
-                        borderRadius: '0 0 8px 8px',
-                        textDecoration: 'none',
-                        fontWeight: 'bold'
-                    }}
-                    onFocus={(e) => {
-                        e.currentTarget.style.left = '50%';
-                        e.currentTarget.style.transform = 'translateX(-50%)';
-                        e.currentTarget.style.width = 'auto';
-                        e.currentTarget.style.height = 'auto';
-                        e.currentTarget.style.zIndex = '10001';
-                    }}
-                    onBlur={(e) => {
-                        e.currentTarget.style.left = '-9999px';
-                        e.currentTarget.style.width = '1px';
-                        e.currentTarget.style.height = '1px';
-                        e.currentTarget.style.zIndex = '-1';
-                    }}
+                    className="absolute -left-[9999px] top-auto w-px h-px overflow-hidden z-[-1] bg-primary text-white p-2.5 rounded-b-lg no-underline font-bold focus:left-1/2 focus:-translate-x-1/2 focus:w-auto focus:h-auto focus:z-[10001]"
                 >
                     Skip to main content
                 </a>
 
-                <header style={{
-                    height: isMobile ? '60px' : '70px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: isMobile ? '0 15px' : '0 30px',
-                    zIndex: 10001,
-                    borderBottom: '1px solid rgba(0,0,0,0.05)',
-                    boxShadow: '0 4px 30px rgba(0,0,0,0.03)'
-                }}>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '20px', fontWeight: '900', color: '#2c3e50', letterSpacing: '-0.5px' }}>
-                            JapanRailNote
+                <header className={`flex ${isMobile ? 'h-[60px]' : 'h-16'} items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative`}>
+                    {/* Left: Logo & Title */}
+                    <div className="flex items-center gap-3 shrink-0 mr-4">
+                        <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-sm">
+                            <span className="material-symbols-outlined text-2xl">train</span>
+                        </div>
+                        <h1 className="text-lg md:text-xl font-black tracking-tight text-slate-800 dark:text-white block">
+                            <span className="text-primary">Japan</span>RailNote
                         </h1>
-                        {!isMobile && (
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <button
-                                    onClick={() => setIsHowToOpen(true)}
-                                    aria-label="View Usage Tips"
-                                    style={{
-                                        padding: '4px 10px',
-                                        borderRadius: '20px',
-                                        border: '1px solid #3498db',
-                                        backgroundColor: 'transparent',
-                                        color: '#3498db',
-                                        fontSize: '11px',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    Tips
-                                </button>
-                                <button
-                                    onClick={() => setIsFeedbackOpen(true)}
-                                    style={{
-                                        padding: '4px 10px',
-                                        borderRadius: '20px',
-                                        border: '1px solid #3b82f6',
-                                        backgroundColor: 'transparent',
-                                        color: '#3b82f6',
-                                        fontSize: '11px',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    Feedback
-                                </button>
-                            </div>
-                        )}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '25px' }}>
-                        {!isMobile && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginRight: '10px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase' }}>Lines</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{stats.lines}</span>
+                    {/* Middle: Search (Centered) */}
+                    {!isMobile && (
+                        <div className="flex-1 flex justify-center px-4">
+                            <div className="relative w-full max-w-sm lg:max-w-md group">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                                    <span className="material-symbols-outlined text-xl">search</span>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase' }}>Dist</span>
-                                    <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{stats.distance}km</span>
-                                </div>
+                                <input
+                                    className="block w-full pl-10 pr-3 py-2 border border-transparent bg-slate-100 dark:bg-slate-800 rounded-xl text-sm placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-primary/10 focus:border-primary/20 outline-none transition-all"
+                                    placeholder="Search stations or lines..."
+                                    type="text"
+                                />
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        <div style={{ display: 'flex', gap: isMobile ? '5px' : '10px' }}>
+                    {/* Right: Navigation & Actions */}
+                    <div className="flex items-center gap-3 md:gap-6 shrink-0 ml-auto mr-0">
+                        <nav className="hidden lg:flex items-center gap-6">
+                            <button
+                                onClick={() => setIsHowToOpen(true)}
+                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-lg">lightbulb</span> Tips
+                            </button>
+                            <button
+                                onClick={() => setIsFeedbackOpen(true)}
+                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-lg">chat_bubble</span> Feedback
+                            </button>
                             <button
                                 onClick={exportMap}
-                                style={{
-                                    padding: isMobile ? '6px' : '6px 12px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #ddd',
-                                    backgroundColor: '#fff',
-                                    fontSize: '12px',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px'
-                                }}
-                                aria-label="Export Map"
+                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
                             >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                {!isMobile && "Export"}
+                                <span className="material-symbols-outlined text-lg">download</span> Export
                             </button>
+                        </nav>
 
+                        {!isMobile && <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>}
+
+                        <div className="flex items-center gap-2 md:gap-4">
                             {isMobile && (
                                 <button
                                     onClick={() => setIsInfoOpen(true)}
-                                    style={{
-                                        padding: '6px',
-                                        borderRadius: '8px',
-                                        border: '1px solid #ddd',
-                                        backgroundColor: '#fff',
-                                        color: '#2c3e50',
-                                        display: 'flex',
-                                        alignItems: 'center'
-                                    }}
+                                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
                                     aria-label="Info"
                                 >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                    <span className="material-symbols-outlined text-xl">info</span>
+                                </button>
+                            )}
+
+                            {!isMobile && (
+                                <button
+                                    onClick={exportMap}
+                                    className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
+                                    aria-label="Export"
+                                >
+                                    <span className="material-symbols-outlined text-xl">download</span>
                                 </button>
                             )}
 
                             {user ? (
                                 <div
-                                    style={{
-                                        width: '32px', height: '32px', borderRadius: '50%',
-                                        backgroundColor: '#3498db', color: '#fff',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '14px', fontWeight: 'bold',
-                                        cursor: 'pointer', border: '2px solid #fff', boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-                                    }}
-                                    onClick={() => {
-                                        if (isMobile) setIsMobileSheetOpen(true);
-                                    }}
+                                    className="size-8 md:size-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold cursor-pointer ring-2 ring-white dark:ring-slate-800 shadow-md transition-transform hover:scale-105"
+                                    onClick={() => isMobile && setIsMobileSheetOpen(true)}
                                     title={user.email || 'User'}
                                 >
                                     {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
@@ -701,16 +621,7 @@ const MainPageClient = () => {
                             ) : (
                                 <button
                                     onClick={() => setIsAuthModalOpen(true)}
-                                    style={{
-                                        padding: isMobile ? '6px 10px' : '6px 14px',
-                                        borderRadius: '8px',
-                                        backgroundColor: '#3498db',
-                                        color: '#fff',
-                                        border: 'none',
-                                        fontSize: '12px',
-                                        fontWeight: '800',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="bg-primary hover:bg-primary/90 text-white px-4 md:px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm whitespace-nowrap"
                                 >
                                     Login
                                 </button>
@@ -719,21 +630,12 @@ const MainPageClient = () => {
                     </div>
                 </header>
 
-                <main id="main-content" style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }} tabIndex={-1}>
+                <main id="main-content" className="flex-1 flex relative overflow-hidden focus:outline-none" tabIndex={-1}>
 
                     {isMobile && !isEditMode && (
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            zIndex: 1100,
-                            backgroundColor: 'rgba(255,255,255,0.95)',
-                            borderBottom: '1px solid #ddd',
-                            boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-                        }}>
+                        <div className="absolute top-0 left-0 right-0 z-[1100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-lg">
                             {selectedStation && railData ? (
-                                <div style={{ padding: '10px' }}>
+                                <div className="p-2.5">
                                     <MobileStationPreviewWithNoSSR
                                         station={selectedStation}
                                         lines={mobilePreviewLines}
@@ -752,7 +654,7 @@ const MainPageClient = () => {
                                     />
                                 </div>
                             ) : activeLine && lineDetailData && railData ? (
-                                <div style={{ padding: '0', maxHeight: '30vh', overflow: 'hidden' }}>
+                                <div className="p-0 max-h-[30vh] overflow-hidden">
                                     <MobileLinePreviewWithNoSSR
                                         lineId={activeLine}
                                         visitedEdges={lineDetailData.visitedEdges}
@@ -769,15 +671,15 @@ const MainPageClient = () => {
                     )}
 
                     {!isMobile && (
-                        <div style={{ width: '350px', height: '100%', borderRight: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
                                 <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
                             </div>
-                        </div>
+                        </aside>
                     )}
 
-                    <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                    <div className="flex-1 relative flex flex-col min-w-0">
+                        <section className="flex-1 relative overflow-hidden">
                             <MapWithNoSSR>
                                 <MapPaneWithNoSSR
                                     selectedLines={selectedLines}
@@ -810,10 +712,11 @@ const MainPageClient = () => {
                                     onStationHover={handleStationHover}
                                 />
                             </MapWithNoSSR>
+                            <MapStylePanel settings={styleSettings} onSettingsChange={setStyleSettings} />
                             <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
-                        </div>
+                        </section>
                         {!isMobile && lineDetailData && activeLine && railData && (
-                            <div style={{ position: 'relative', zIndex: 1100 }}>
+                            <div className="relative z-[1100]">
                                 <LineDetailPaneWithNoSSR
                                     lineId={activeLine}
                                     segments={lineDetailData.segments}
@@ -830,7 +733,7 @@ const MainPageClient = () => {
                             </div>
                         )}
                         {!isMobile && selectedStation && railData && (
-                            <div style={{ position: 'relative', zIndex: 1100 }}>
+                            <div className="relative z-[1100]">
                                 <StationDetailPaneWithNoSSR
                                     station={selectedStation}
                                     railData={railData}
@@ -849,14 +752,16 @@ const MainPageClient = () => {
                     </div>
 
                     {!isMobile && (
-                        <div style={{ width: '300px', height: '100%', borderLeft: '1px solid #ddd', background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, overflowY: 'auto' }}>
+                        <aside className="w-[320px] h-full border-l border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-[1000] shadow-2xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col">
                             <MyLinesPane
                                 recordedTrips={recordedTrips}
                                 onDeleteTrip={handleDeleteTrip}
                                 onResetTrips={handleResetTrips}
                                 railData={railData}
+                                lineLengths={lineLengths}
+                                visitedLineLengths={visitedLineLengths}
                             />
-                        </div>
+                        </aside>
                     )}
 
                     {isMobile && !isEditMode && (
@@ -907,6 +812,8 @@ const MainPageClient = () => {
                                             onDeleteTrip={handleDeleteTrip}
                                             onResetTrips={handleResetTrips}
                                             railData={railData}
+                                            lineLengths={lineLengths}
+                                            visitedLineLengths={visitedLineLengths}
                                         />
                                     )
                                 }
@@ -932,80 +839,75 @@ const MainPageClient = () => {
                 onClose={() => setIsAuthModalOpen(false)}
             />
 
-            {/* Info Modal for Mobile (Directory & Description) */}
-            {
-                isInfoOpen && (
-                    <div
-                        style={{
-                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                            backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10002,
-                            display: 'flex', flexDirection: 'column', padding: '20px',
-                            backdropFilter: 'blur(8px)'
-                        }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h2 style={{ color: '#fff', margin: 0, fontSize: '20px', fontWeight: '900' }}>Information</h2>
-                            <button
-                                onClick={() => setIsInfoOpen(false)}
-                                style={{
-                                    color: '#fff', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer'
-                                }}
-                            >
-                                &times;
-                            </button>
-                        </div>
-                        <div style={{ flex: 1, overflowY: 'auto', color: '#ccc', fontSize: '14px', lineHeight: '1.6' }}>
-                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
-                                <h3 style={{ color: '#fff', marginTop: 0 }}>Ultimate Japan Railway Map</h3>
-                                <p>
-                                    JapanRailNote is a digital companion for navigating the world's most complex railway network.
-                                    We provide visualization of every JR line, private railroad, subway system, and tramway across Japan.
-                                </p>
-                            </div>
+            {/* Info Modal for Mobile */}
+            {isInfoOpen && (
+                <div className="fixed inset-0 z-[11000] bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-white text-xl font-black uppercase tracking-widest">Information</h2>
+                        <button
+                            onClick={() => setIsInfoOpen(false)}
+                            className="text-white/60 hover:text-white transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-3xl">close</span>
+                        </button>
+                    </div>
 
-                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px', marginBottom: '20px' }}>
-                                <h3 style={{ color: '#fff', marginTop: 0 }}>Stats Overview</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                    <div>
-                                        <span style={{ fontSize: '10px', display: 'block' }}>RECORDS</span>
-                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{recordedTrips.length}</span>
+                    <div className="flex-1 overflow-y-auto space-y-6">
+                        <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                            <h3 className="text-white text-lg font-black mb-3 italic">Ultimate Japan Railway Map</h3>
+                            <p className="text-slate-400 text-sm leading-relaxed">
+                                JapanRailNote is a digital companion for navigating the world's most complex railway network.
+                                We provide visualization of every JR line, private railroad, subway system, and tramway across Japan.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                            <h3 className="text-white text-lg font-black mb-5">Stats Overview</h3>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Records</span>
+                                    <span className="text-2xl font-black text-primary">{recordedTrips.length}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Visited Lines</span>
+                                    <span className="text-2xl font-black text-primary">{stats.lines}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Total Distance</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black text-primary">{stats.distance}</span>
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase">km</span>
                                     </div>
-                                    <div>
-                                        <span style={{ fontSize: '10px', display: 'block' }}>VISITED LINES</span>
-                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{stats.lines}</span>
-                                    </div>
-                                    <div>
-                                        <span style={{ fontSize: '10px', display: 'block' }}>TOTAL DISTANCE</span>
-                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{stats.distance} km</span>
-                                    </div>
-                                    <div>
-                                        <span style={{ fontSize: '10px', display: 'block' }}>AVG DISTANCE</span>
-                                        <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>{recordedTrips.length > 0 ? Math.round(stats.distance / recordedTrips.length) : 0} km</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Avg Distance</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black text-primary">{recordedTrips.length > 0 ? Math.round(stats.distance / recordedTrips.length) : 0}</span>
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase">km</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div style={{ padding: '0 10px', textAlign: 'center' }}>
-                                <p style={{ fontSize: '12px', opacity: 0.6 }}>
-                                    For a full directory of all {stats.stations} stations and {stats.lines} lines,
-                                    please visit our website on a desktop device.
-                                </p>
-                                <button
-                                    onClick={() => setIsFeedbackOpen(true)}
-                                    style={{
-                                        marginTop: '20px', width: '100%', padding: '12px', borderRadius: '12px',
-                                        border: '1px solid #3b82f6', background: 'transparent', color: '#3b82f6',
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    Send Feedback
-                                </button>
-                            </div>
+                        <div className="px-2 text-center pb-8">
+                            <p className="text-xs text-slate-500 font-bold leading-relaxed mb-6">
+                                For a full directory of all <span className="text-slate-300">{stats.stations}</span> stations and <span className="text-slate-300">{stats.lines}</span> lines,
+                                please visit our website on a desktop device.
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setIsInfoOpen(false);
+                                    setIsFeedbackOpen(true);
+                                }}
+                                className="w-full py-4 rounded-xl border-2 border-primary/30 text-primary font-black uppercase tracking-widest text-sm hover:bg-primary/10 transition-all active:scale-95"
+                            >
+                                Send Feedback
+                            </button>
                         </div>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 };
 

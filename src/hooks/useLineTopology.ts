@@ -85,7 +85,19 @@ export function useLineTopology(
             neighbors.forEach((neighborId, idx) => {
                 const nextIsJoint = neighborId.startsWith('J_');
                 const currentIsJoint = id.startsWith('J_');
-                const effectiveSpacingX = (currentIsJoint || nextIsJoint) ? 60 : 120;
+
+                let effectiveSpacingX = (currentIsJoint || nextIsJoint) ? 60 : 120;
+
+                if (!currentIsJoint && !nextIsJoint) {
+                    const nodeA = nodes.get(id);
+                    const nodeB = nodes.get(neighborId);
+                    if (nodeA && nodeB) {
+                        const widthA = Math.max((nodeA.name || "").length * 16, (nodeA.name_en || "").length * 8);
+                        const widthB = Math.max((nodeB.name || "").length * 16, (nodeB.name_en || "").length * 8);
+                        const dynamicGap = (widthA + widthB) / 2 + 40;
+                        effectiveSpacingX = Math.max(effectiveSpacingX, dynamicGap);
+                    }
+                }
 
                 const nextY = idx === 0 ? y : y + (idx % 2 === 0 ? -(idx / 2) : Math.ceil(idx / 2)) * spacingY;
                 queue.push({ id: neighborId, x: x + effectiveSpacingX, y: nextY });
@@ -118,7 +130,18 @@ export function useLineTopology(
                     neighbors.forEach((nId, idx) => {
                         const nextIsJoint = nId.startsWith('J_');
                         const currentIsJoint = curr.id.startsWith('J_');
-                        const effectiveSpacingX = (currentIsJoint || nextIsJoint) ? 60 : 120;
+
+                        let effectiveSpacingX = (currentIsJoint || nextIsJoint) ? 60 : 120;
+                        if (!currentIsJoint && !nextIsJoint) {
+                            const nodeA = nodes.get(curr.id);
+                            const nodeB = nodes.get(nId);
+                            if (nodeA && nodeB) {
+                                const widthA = Math.max((nodeA.name || "").length * 16, (nodeA.name_en || "").length * 8);
+                                const widthB = Math.max((nodeB.name || "").length * 16, (nodeB.name_en || "").length * 8);
+                                const dynamicGap = (widthA + widthB) / 2 + 40;
+                                effectiveSpacingX = Math.max(effectiveSpacingX, dynamicGap);
+                            }
+                        }
 
                         const nextY = idx === 0 ? curr.y : curr.y + spacingY;
                         q.push({ id: nId, x: curr.x + effectiveSpacingX, y: nextY });

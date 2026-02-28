@@ -491,6 +491,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 isDragging={!!dragStartStation}
                 usedSectionIds={visitedSectionIds}
                 draftSectionIds={draftSectionIds}
+                settings={styleSettings}
             />}
 
             {visibleStations && railData &&

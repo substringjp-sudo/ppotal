@@ -124,201 +124,256 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   };
 
   return (
-    <div className={styles.pane}>
-      <div className={styles.header}>
-        <div className={styles.headerMain}>
-          <div className={styles.stationInfoContainer}>
-            <span className={styles.stationName}>{station.name}</span>
-            <span className={styles.stationNameEn}>{station.name_en}</span>
+    <div className="absolute bottom-0 left-0 right-0 max-h-[50vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.15)] rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out font-display">
+      {/* Premium Header Section */}
+      <div className="flex-shrink-0 px-6 py-5 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/50 rounded-t-[32px] flex items-center justify-between">
+        <div className="flex items-center gap-5">
+          <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+            <span className="material-symbols-outlined text-2xl">location_on</span>
           </div>
-          {(prefectureName || cityName) &&
-            <div className={styles.regionNameContainer}>
-              <span className={styles.regionName}>
-                {prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName}
-              </span>
-              {(prefectureNameEn || cityNameEn) && (
-                <span className={styles.regionNameEn}>
-                  {prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}
-                </span>
-              )}
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{station.name}</h2>
+              <span className="text-sm font-bold text-slate-400 dark:text-slate-500 italic uppercase tracking-wider">{station.name_en}</span>
             </div>
-          }
+            {(prefectureName || cityName) && (
+              <div className="flex items-center gap-1.5 mt-1 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                <span className="material-symbols-outlined text-xs">map</span>
+                {prefectureName} {cityName}
+                <span className="mx-1 text-slate-300 dark:text-slate-700">|</span>
+                <span className="text-slate-400 dark:text-slate-500">{prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}</span>
+              </div>
+            )}
+          </div>
         </div>
-        <div className={styles.headerActions}>
-          {isTripInProgress ? (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {station.id !== tripStartStationId && (
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700 mr-1">
+            {isTripInProgress ? (
+              <div className="flex items-center gap-2">
+                {station.id !== tripStartStationId && (
+                  <button
+                    className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-1.5"
+                    onClick={() => onEndTrip(station)}
+                  >
+                    <span className="material-symbols-outlined text-sm">flag</span>
+                    Arrival
+                  </button>
+                )}
                 <button
-                  className={`${styles.tripButton} ${styles.endTrip}`}
-                  onClick={() => onEndTrip(station)}
+                  className="px-3 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-[10px] hover:bg-slate-300 dark:hover:bg-slate-600 transition-all active:scale-95"
+                  onClick={() => onCancel && onCancel()}
                 >
-                  End Trip
+                  Cancel
                 </button>
-              )}
+              </div>
+            ) : (
               <button
-                className={`${styles.tripButton}`}
-                style={{ backgroundColor: '#e2e8f0', color: '#4a5568' }}
-                onClick={() => onCancel && onCancel()}
+                className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-2 group"
+                onClick={() => onStartTrip(station)}
               >
-                Cancel
+                <div className="size-5 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-sm">play_arrow</span>
+                </div>
+                Departure
               </button>
-            </div>
-          ) : (
-            <button
-              className={`${styles.tripButton} ${styles.startTrip}`}
-              onClick={() => onStartTrip(station)}
-            >
-              Start Trip
-            </button>
-          )}
-          <button onClick={onClose} className={styles.closeButton}>×</button>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center active:scale-90"
+          >
+            <span className="material-symbols-outlined text-2xl">close</span>
+          </button>
         </div>
       </div>
-      <div className={styles.content}>
-        <div className={styles.section}>
-          <div className={styles.platformContainer}>
-            {sortedStationPlatforms.map((p) => {
-              const line = lines[p.line];
-              if (!line) return null;
 
-              const company = companies && companies[line.corp_id];
-              const lineColor = formatColor(line.color);
-              const companyColor = company ? formatColor(company.color) : null;
-              const finalColor = lineColor || companyColor || '#000000';
+      <div className="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-950/20">
+        <div className="max-w-5xl mx-auto p-6 space-y-8">
+          {sortedStationPlatforms.map((p, index) => {
+            const line = lines[p.line];
+            if (!line) return null;
 
-              const { left, right } = getDirectionalNeighbors(p);
-              const maxNeighbors = Math.max(left.length, right.length);
+            const company = companies && companies[line.corp_id];
+            const lineColor = formatColor(line.color);
+            const companyColor = company ? formatColor(company.color) : null;
+            const finalColor = lineColor || companyColor || '#000000';
 
-              // More generous spacing for multiple neighbors
-              // Base height 80, 48px per neighbor if >= 3, else 42px
-              const spacingFactor = maxNeighbors >= 3 ? 52 : 44;
-              const rowHeight = Math.max(80, maxNeighbors * spacingFactor);
+            const { left, right } = getDirectionalNeighbors(p);
+            const maxNeighbors = Math.max(left.length, right.length);
+            const rowHeight = Math.max(160, maxNeighbors * 70 + 80);
 
-              return (
-                <div key={p.pid} className={styles.lineRow} style={{ height: rowHeight }}>
-                  {/* Neighbor Stations (HTML Labels) */}
-                  <div className={`${styles.neighborColumn} ${styles.left}`}>
-                    {left.map((entry, index) => {
-                      const y = 100 / (left.length + 1) * (index + 1);
-                      return (
-                        <div key={entry.station.id} className={styles.neighborStation} style={{ top: `${y}%` }}>
-                          <div className={styles.neighborInfo}>
-                            <div className={styles.neighborStationNameRow}>
-                              <span className={styles.neighborStationName}>{entry.station.name}</span>
-                              {entry.skippedCount > 0 && <span className={styles.skippedIndicator}>+{entry.skippedCount}</span>}
-                            </div>
-                            <span className={styles.neighborStationNameEn}>{entry.station.name_en}</span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+            // Ordinal number helper
+            const getOrdinal = (n: number) => {
+              const s = ["th", "st", "nd", "rd"];
+              const v = n % 100;
+              return n + (s[(v - 20) % 10] || s[v] || s[0]);
+            };
 
-                  <div className={styles.centerColumn}>
-                    <div className={styles.svgWrapper}>
-                      <div className={styles.lineNameContainer}>
-                        <span className={styles.lineName}>{line.name}</span>
-                        <span className={styles.lineNameEn}>{line.name_en}</span>
-                      </div>
-                      <svg className={styles.connectingLines} viewBox="0 0 1000 100" preserveAspectRatio="none">
-                        {(() => {
-                          // In 1000-unit viewBox:
-                          // Left dots at x=180
-                          // Right dots at x=820
-                          // Platform centered at x=500
-                          const dotLX = 180;
-                          const dotRX = 820;
-                          const pWidth = getPlatformWidth(p) * 4; // Scale platform width for 1000 units
-                          const pStartX = 500 - pWidth / 2;
-                          const pEndX = 500 + pWidth / 2;
+            return (
+              <div key={p.pid} className="group/row relative w-full rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 p-6 transition-all hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-black/30" style={{ height: rowHeight }}>
 
-                          return (
-                            <>
-                              {/* Left Curves and Dots */}
-                              {left.map((entry, index) => {
-                                const y = 100 / (left.length + 1) * (index + 1);
-                                const connX = pStartX + entry.ratio * pWidth;
-                                const dist = connX - dotLX;
-                                const handle = dist * 0.4;
-                                const d = `M ${connX},50 C ${connX - handle},50 ${dotLX + handle},${y} ${dotLX},${y}`;
-                                return (
-                                  <g key={entry.station.id}>
-                                    <path
-                                      d={d}
-                                      stroke={finalColor}
-                                      strokeWidth="2"
-                                      fill="none"
-                                      opacity="0.8"
-                                      strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
-                                    />
-                                    <circle cx={dotLX} cy={y} r="3" fill="#fff" stroke={finalColor} strokeWidth="1.5" />
-                                  </g>
-                                );
-                              })}
-
-                              {/* Right Curves and Dots */}
-                              {right.map((entry, index) => {
-                                const y = 100 / (right.length + 1) * (index + 1);
-                                const connX = pStartX + entry.ratio * pWidth;
-                                const dist = dotRX - connX;
-                                const handle = dist * 0.4;
-                                const d = `M ${connX},50 C ${connX + handle},50 ${dotRX - handle},${y} ${dotRX},${y}`;
-                                return (
-                                  <g key={entry.station.id}>
-                                    <path
-                                      d={d}
-                                      stroke={finalColor}
-                                      strokeWidth="2"
-                                      fill="none"
-                                      opacity="0.8"
-                                      strokeDasharray={entry.skippedCount > 0 ? "4 2" : "none"}
-                                    />
-                                    <circle cx={dotRX} cy={y} r="3" fill="#fff" stroke={finalColor} strokeWidth="1.5" />
-                                  </g>
-                                );
-                              })}
-
-                              {/* Platform Line */}
-                              <rect
-                                x={pStartX}
-                                y={47.5}
-                                width={pWidth}
-                                height={5}
-                                rx={2.5}
-                                fill="#fff"
-                                stroke={finalColor}
-                                strokeWidth="2.5"
-                              />
-                            </>
-                          );
-                        })()}
-                      </svg>
+                {/* Section Title Header: Top Left */}
+                <div className="absolute top-0 left-0 right-0 h-10 flex items-center px-6 border-b border-slate-50 dark:border-slate-800/50">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      {getOrdinal(index + 1)} Platform
+                    </span>
+                    <div className="w-1 h-3 rounded-full" style={{ backgroundColor: finalColor }}></div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-black text-slate-800 dark:text-white tracking-tight leading-none">
+                        {line.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic leading-none">
+                        {line.name_en}
+                      </span>
                     </div>
                   </div>
-
-                  <div className={`${styles.neighborColumn} ${styles.right}`}>
-                    {right.map((entry, index) => {
-                      const y = 100 / (right.length + 1) * (index + 1);
-                      return (
-                        <div key={entry.station.id} className={styles.neighborStation} style={{ top: `${y}%` }}>
-                          <div className={styles.neighborInfo}>
-                            <div className={styles.neighborStationNameRow}>
-                              <span className={styles.neighborStationName}>{entry.station.name}</span>
-                              {entry.skippedCount > 0 && <span className={styles.skippedIndicator}>+{entry.skippedCount}</span>}
-                            </div>
-                            <span className={styles.neighborStationNameEn}>{entry.station.name_en}</span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Left Side: Next Stations */}
+                <div className="absolute top-[calc(50%+12px)] -translate-y-1/2 left-6 w-[110px] md:w-[140px] space-y-3 z-10 pointer-events-none">
+                  {left.map((entry, i) => {
+                    const yOffset = (i - (left.length - 1) / 2) * 70;
+                    return (
+                      <div
+                        key={entry.station.id}
+                        className="absolute left-0 w-full pointer-events-auto transition-transform hover:scale-105"
+                        style={{ top: '50%', transform: `translateY(calc(-50% + ${yOffset}px))` }}
+                      >
+                        <div className="group/card flex flex-col bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all">
+                          <div className="flex items-center justify-between mb-0.5 min-w-0">
+                            <span className="text-[11px] font-black text-slate-800 dark:text-white truncate leading-tight">{entry.station.name}</span>
+                            {entry.skippedCount > 0 && (
+                              <span className="text-[7px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full font-black text-slate-500 ml-1">
+                                +{entry.skippedCount}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate uppercase tracking-tight italic leading-none">
+                            {entry.station.name_en}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Right Side: Next Stations */}
+                <div className="absolute top-[calc(50%+12px)] -translate-y-1/2 right-6 w-[110px] md:w-[140px] space-y-3 z-10 pointer-events-none">
+                  {right.map((entry, i) => {
+                    const yOffset = (i - (right.length - 1) / 2) * 70;
+                    return (
+                      <div
+                        key={entry.station.id}
+                        className="absolute right-0 w-full pointer-events-auto transition-transform hover:scale-105"
+                        style={{ top: '50%', transform: `translateY(calc(-50% + ${yOffset}px))` }}
+                      >
+                        <div className="group/card flex flex-col items-end text-right bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all">
+                          <div className="flex items-center justify-end mb-0.5 min-w-0 w-full">
+                            {entry.skippedCount > 0 && (
+                              <span className="text-[7px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full font-black text-slate-500 mr-1">
+                                +{entry.skippedCount}
+                              </span>
+                            )}
+                            <span className="text-[11px] font-black text-slate-800 dark:text-white truncate leading-tight">{entry.station.name}</span>
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate uppercase tracking-tight italic leading-none">
+                            {entry.station.name_en}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Connection SVG */}
+                <div className="absolute top-[20px] left-0 right-0 bottom-0 z-0">
+                  <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                    {(() => {
+                      // Internal coordinate adjustments to account for header offset
+                      const dotLX = 150;
+                      const dotRX = 850;
+                      const baseWidth = getPlatformWidth(p) * 4;
+                      const pWidth = Math.max(120, baseWidth);
+                      const pStartX = 500 - pWidth / 2;
+                      const pEndX = 500 + pWidth / 2;
+                      const centerY = 500;
+
+                      return (
+                        <>
+                          {left.map((entry, i) => {
+                            const y = centerY + (i - (left.length - 1) / 2) * 110;
+                            const connX = pStartX + entry.ratio * pWidth;
+                            const handle = (connX - dotLX) * 0.4;
+                            const d = `M ${connX},${centerY} C ${connX - handle},${centerY} ${dotLX + handle},${y} ${dotLX},${y}`;
+                            return (
+                              <g key={entry.station.id}>
+                                <path
+                                  d={d}
+                                  stroke={finalColor}
+                                  strokeWidth="2.5"
+                                  fill="none"
+                                  className="opacity-20 transition-all group-hover/row:opacity-100"
+                                  strokeDasharray={entry.skippedCount > 0 ? "8 6" : "none"}
+                                />
+                                <circle cx={dotLX} cy={y} r="4.5" className="fill-white dark:fill-slate-900" stroke={finalColor} strokeWidth="2" />
+                              </g>
+                            );
+                          })}
+
+                          {right.map((entry, i) => {
+                            const y = centerY + (i - (right.length - 1) / 2) * 110;
+                            const connX = pStartX + entry.ratio * pWidth;
+                            const handle = (dotRX - connX) * 0.4;
+                            const d = `M ${connX},${centerY} C ${connX + handle},${centerY} ${dotRX - handle},${y} ${dotRX},${y}`;
+                            return (
+                              <g key={entry.station.id}>
+                                <path
+                                  d={d}
+                                  stroke={finalColor}
+                                  strokeWidth="2.5"
+                                  fill="none"
+                                  className="opacity-20 transition-all group-hover/row:opacity-100"
+                                  strokeDasharray={entry.skippedCount > 0 ? "8 6" : "none"}
+                                />
+                                <circle cx={dotRX} cy={y} r="4.5" className="fill-white dark:fill-slate-900" stroke={finalColor} strokeWidth="2" />
+                              </g>
+                            );
+                          })}
+
+                          {/* Center Platform Bar */}
+                          <rect
+                            x={pStartX}
+                            y={centerY - 15}
+                            width={pWidth}
+                            height={30}
+                            rx={15}
+                            className="fill-white dark:fill-slate-800 shadow-xl shadow-black/10"
+                            stroke={finalColor}
+                            strokeWidth="4"
+                          />
+                          {/* Inner Platform Decoration */}
+                          <rect
+                            x={pStartX + 8}
+                            y={centerY - 4}
+                            width={pWidth - 16}
+                            height={8}
+                            rx={4}
+                            fill={finalColor}
+                            opacity="0.15"
+                          />
+                        </>
+                      );
+                    })()}
+                  </svg>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

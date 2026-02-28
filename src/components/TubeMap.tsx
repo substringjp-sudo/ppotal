@@ -56,8 +56,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const ys = nodes.map(n => n.y);
     const minX = xs.length > 0 ? Math.min(...xs) - 40 : 0;
     const maxX = xs.length > 0 ? Math.max(...xs) + 40 : 1000;
-    const minY = ys.length > 0 ? Math.min(...ys) - 40 : 0;
-    const maxY = ys.length > 0 ? Math.max(...ys) + 40 : 350;
+    const minY = ys.length > 0 ? Math.min(...ys) - 60 : 0;
+    const maxY = ys.length > 0 ? Math.max(...ys) + 120 : 350;
 
     const svgWidth = Math.max(maxX - minX, 800);
     const svgHeight = maxY - minY;
@@ -425,17 +425,17 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                 />
                                 {node.isVisited && <circle cx={node.x} cy={node.y} r={5} fill="#2ecc71" />}
                                 <text
-                                    x={node.x} y={node.y + 35}
+                                    x={node.x} y={node.y + 40}
                                     textAnchor="middle"
                                     style={{
-                                        fontSize: '14px', fontWeight: '800', fill: '#2c3e50',
+                                        fontSize: '16px', fontWeight: '900', fill: '#0f172a',
                                         userSelect: 'none', paintOrder: 'stroke',
-                                        stroke: '#ffffff', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round'
+                                        stroke: '#ffffff', strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round'
                                     }}
                                 >
-                                    <tspan x={node.x} dy="0">{node.name_en || node.name}</tspan>
+                                    <tspan x={node.x} dy="0">{node.name}</tspan>
                                     {node.name_en && (
-                                        <tspan x={node.x} dy="14" style={{ fontSize: '11px', fontWeight: '500', fill: '#718096', opacity: 0.9 }}>{node.name}</tspan>
+                                        <tspan x={node.x} dy="18" style={{ fontSize: '11px', fontWeight: '700', fill: '#64748b', opacity: 0.9 }}>{node.name_en}</tspan>
                                     )}
                                 </text>
                             </g>
@@ -448,8 +448,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 <div
                     id="tube-minimap"
                     style={{
-                        width: '180px',
-                        height: '60px',
+                        width: '140px',
+                        height: '50px',
                         backgroundColor: 'rgba(255, 255, 255, 0.5)',
                         backdropFilter: 'blur(8px)',
                         borderRadius: '10px',
@@ -460,7 +460,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         cursor: 'move',
                         pointerEvents: 'auto',
                         userSelect: 'none',
-                        position: 'relative'
+                        position: 'relative',
+                        maxWidth: '100%'
                     }}
                     onMouseDown={handleMinimapStart}
                     onTouchStart={handleMinimapStart}
@@ -517,8 +518,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         position: 'absolute',
                         top: '15px',
                         right: '15px',
-                        width: '180px',
-                        height: '60px',
+                        width: '140px',
+                        height: '50px',
                         backgroundColor: 'rgba(255, 255, 255, 0.9)',
                         backdropFilter: 'blur(8px)',
                         borderRadius: '10px',
@@ -528,7 +529,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                         overflow: 'hidden',
                         cursor: 'move',
                         pointerEvents: 'auto',
-                        userSelect: 'none'
+                        userSelect: 'none',
+                        maxWidth: '100%'
                     }}
                     onMouseDown={handleMinimapStart}
                     onTouchStart={handleMinimapStart}

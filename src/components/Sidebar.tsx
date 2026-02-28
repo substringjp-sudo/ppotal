@@ -158,102 +158,121 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     const sortedCategoryIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
 
     return (
-        <div className="sidebar-content" style={{ padding: '20px', fontFamily: 'Pretendard, sans-serif', display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ marginBottom: '15px' }}>
-                <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '900', color: '#2b3e50', borderBottom: '3px solid #3498db', paddingBottom: '8px' }}>
-                    RAILROAD LIST
+        <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-display">
+            {/* Sidebar Header & Progress Card */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
+                    Railroad Networks
                 </h2>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">Select lines to visualize on map</p>
             </div>
 
-            <div style={{ marginBottom: '15px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '6px', textTransform: 'uppercase' }}>SORT</div>
-                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                    {[
-                        { id: 'ja', label: 'ABC' },
-                        { id: 'usage', label: 'Usage' },
-                    ].map(opt => (
-                        <button
-                            key={opt.id}
-                            onClick={() => {
-                                setSortMode(opt.id as 'ja' | 'usage');
-                                trackEvent('sort_mode_change', 'filter', opt.id);
-                            }}
-                            style={{
-                                flex: 1,
-                                padding: '6px 4px',
-                                fontSize: '11px',
-                                cursor: 'pointer',
-                                border: '1px solid #ddd',
-                                borderRadius: '4px',
-                                backgroundColor: sortMode === opt.id ? '#3498db' : '#fff',
-                                color: sortMode === opt.id ? '#fff' : '#333',
-                                fontWeight: sortMode === opt.id ? 'bold' : 'normal',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>SELECT</div>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={handleSelectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            Select All
-                        </button>
-                        <button onClick={handleDeselectAll} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            Deselect All
-                        </button>
+            {/* Sidebar Controls */}
+            <div className="p-3 border-b border-slate-50 dark:border-slate-800 space-y-3 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
+                {/* Sort Mode */}
+                <div>
+                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">Sort & Organize</div>
+                    <div className="flex p-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
+                        {[
+                            { id: 'ja', label: 'Alphabetical', icon: 'sort_by_alpha' },
+                            { id: 'usage', label: 'By Usage', icon: 'trending_up' },
+                        ].map(opt => (
+                            <button
+                                key={opt.id}
+                                onClick={() => {
+                                    setSortMode(opt.id as 'ja' | 'usage');
+                                    trackEvent('sort_mode_change', 'filter', opt.id);
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-bold rounded-md transition-all ${sortMode === opt.id
+                                    ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-sm">{opt.icon}</span>
+                                {opt.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase' }}>DISPLAY</div>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => handleToggleAllGroups(true)} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            Expand All
-                        </button>
-                        <button onClick={() => handleToggleAllGroups(false)} style={{ flex: 1, padding: '8px 4px', fontSize: '11px', cursor: 'pointer', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                            Collapse All
-                        </button>
+
+                {/* Bulk Actions */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">Selection</div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <button
+                                onClick={handleSelectAll}
+                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                title="Select All Lines"
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={handleDeselectAll}
+                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm"
+                                title="Deselect All Lines"
+                            >
+                                None
+                            </button>
+                        </div>
+                    </div>
+                    <div className="space-y-1.5">
+                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">View Groups</div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <button
+                                onClick={() => handleToggleAllGroups(true)}
+                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                title="Expand All Categories"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">expand_all</span>
+                            </button>
+                            <button
+                                onClick={() => handleToggleAllGroups(false)}
+                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                title="Collapse All Categories"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">collapse_all</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
-                {sortedCategoryIds.map((categoryId, index) => {
-                    const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
-                    if (!categoryInfo) return null;
-                    const title = categoryInfo.name || categoryInfo.name_en;
-                    return (
-                        <SidebarGroup
-                            key={categoryId}
-                            title={title}
-                            groupKey={categoryId}
-                            companies={groupedHierarchy[categoryId]}
-                            expanded={expandedGroups[categoryId] !== undefined ? expandedGroups[categoryId] : index < 4}
-                            onToggleExpanded={toggleGroup}
-                            onToggleSelection={handleGroupToggle}
-                            selectedLines={selectedLines}
-                            onToggleLine={onToggleLine}
-                            onToggleCompany={handleCompanyToggle}
-                            expandedCompanies={expandedCompanies}
-                            toggleCompany={toggleCompany}
-                            lineLengths={effectiveLineLengths}
-                            visitedLineLengths={visitedLineLengths}
-                            sortMode={sortMode}
-                            activeLine={activeLine}
-                            onLineClick={onLineClick}
-                            registerLineRef={registerLineRef}
-                            companyNames={companyNames}
-                            lineNames={lineNames}
-                        />
-                    );
-                })}
+            {/* Scrollable Groups List */}
+            <div className="flex-1 overflow-y-auto p-2 pb-10 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+                <div className="space-y-1">
+                    {sortedCategoryIds.map((categoryId, index) => {
+                        const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
+                        if (!categoryInfo) return null;
+                        const title = categoryInfo.name || categoryInfo.name_en;
+                        return (
+                            <SidebarGroup
+                                key={categoryId}
+                                title={title}
+                                groupKey={categoryId}
+                                companies={groupedHierarchy[categoryId]}
+                                expanded={expandedGroups[categoryId] !== undefined ? expandedGroups[categoryId] : index < 4}
+                                onToggleExpanded={toggleGroup}
+                                onToggleSelection={handleGroupToggle}
+                                selectedLines={selectedLines}
+                                onToggleLine={onToggleLine}
+                                onToggleCompany={handleCompanyToggle}
+                                expandedCompanies={expandedCompanies}
+                                toggleCompany={toggleCompany}
+                                lineLengths={effectiveLineLengths}
+                                visitedLineLengths={visitedLineLengths}
+                                sortMode={sortMode}
+                                activeLine={activeLine}
+                                onLineClick={onLineClick}
+                                registerLineRef={registerLineRef}
+                                companyNames={companyNames}
+                                lineNames={lineNames}
+                            />
+                        );
+                    })}
+                </div>
             </div>
-
         </div>
     );
 };

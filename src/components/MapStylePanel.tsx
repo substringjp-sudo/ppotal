@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { MapStyleSettings } from './MainPageClient';
+import { MapStyleSettings, DEFAULT_STYLE_SETTINGS } from './MainPageClient';
 
 interface MapStylePanelProps {
     settings: MapStyleSettings;
@@ -21,6 +21,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
         });
     };
 
+    const handleReset = () => {
+        onSettingsChange(DEFAULT_STYLE_SETTINGS);
+    };
+
     const stopPropagation = (e: React.MouseEvent | React.TouchEvent | React.WheelEvent) => {
         e.stopPropagation();
     };
@@ -37,26 +41,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 onDoubleClick={stopPropagation}
                 onWheel={stopPropagation}
                 onTouchStart={stopPropagation}
-                style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    zIndex: 1000,
-                    padding: '8px 12px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    fontWeight: 'bold',
-                    color: '#333',
-                    fontSize: '0.9rem'
-                }}
+                className="absolute top-4 right-4 z-[1000] flex items-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
             >
-                🎨 Map Style Settings
+                <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-500">palette</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Map Style</span>
             </button>
         );
     }
@@ -71,122 +59,164 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             onTouchStart={stopPropagation}
             onTouchMove={stopPropagation}
             onTouchEnd={stopPropagation}
-            style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                zIndex: 1000,
-                width: '280px',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '15px',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-                backdropFilter: 'blur(5px)',
-                maxHeight: '80vh',
-                overflowY: 'auto',
-                color: '#333'
-            }}
+            className="absolute top-4 right-4 z-[1000] w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/20 dark:border-slate-800/50 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] animate-in slide-in-from-right-4 fade-in duration-300 overflow-hidden shadow-primary/5"
         >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Map Style Settings</h3>
+            {/* Header: Sticky */}
+            <div className="p-5 pb-3 flex justify-between items-center border-b border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
+                <div className="flex items-center gap-2 text-primary">
+                    <span className="material-symbols-outlined text-lg">settings_suggest</span>
+                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Map Styles</h3>
+                </div>
                 <button
                     onClick={() => setIsOpen(false)}
-                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#666' }}
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
                 >
-                    ✕
+                    <span className="material-symbols-outlined text-lg">close</span>
                 </button>
             </div>
 
-            {/* Section: Unselected */}
-            <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>Hidden Lines (Deselected)</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>Opacity ({Math.round(settings.unselected.opacity * 100)}%)</span>
-                        <input
-                            type="range" min="0" max="1" step="0.1"
-                            value={settings.unselected.opacity}
-                            onChange={(e) => handleChange('unselected', 'opacity', parseFloat(e.target.value))}
-                            style={{ width: '100%', cursor: 'pointer' }}
-                        />
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>Thickness ({settings.unselected.weight}x)</span>
-                        <input
-                            type="range" min="0.1" max="3" step="0.1"
-                            value={settings.unselected.weight}
-                            onChange={(e) => handleChange('unselected', 'weight', parseFloat(e.target.value))}
-                            style={{ width: '100%', cursor: 'pointer' }}
-                        />
-                    </label>
+            {/* Content: Scrollable */}
+            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 custom-scrollbar">
+                {/* Section: Unselected */}
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-slate-400 text-sm">visibility_off</span>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hidden Lines (Deselected)</h4>
+                    </div>
+                    <div className="flex flex-col gap-5 px-1">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
+                                <span>OPACITY</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{Math.round(settings.unselected.opacity * 100)}%</span>
+                            </div>
+                            <input
+                                type="range" min="0" max="1" step="0.05"
+                                value={settings.unselected.opacity}
+                                onChange={(e) => handleChange('unselected', 'opacity', parseFloat(e.target.value))}
+                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
+                                <span>THICKNESS</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unselected.weight.toFixed(1)}x</span>
+                            </div>
+                            <input
+                                type="range" min="0.1" max="3" step="0.1"
+                                value={settings.unselected.weight}
+                                onChange={(e) => handleChange('unselected', 'weight', parseFloat(e.target.value))}
+                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Section: Unvisited */}
+                <div className="flex flex-col gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-slate-400 text-sm">map</span>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unvisited (Selected)</h4>
+                    </div>
+                    <div className="flex flex-col gap-5 px-1">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
+                                <span>LINE WEIGHT</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unvisited.weight.toFixed(1)}x</span>
+                            </div>
+                            <input
+                                type="range" min="0.5" max="8" step="0.1"
+                                value={settings.unvisited.weight}
+                                onChange={(e) => handleChange('unvisited', 'weight', parseFloat(e.target.value))}
+                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
+                        </div>
+
+                        <label className="flex items-center gap-3 cursor-pointer group px-0.5">
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={settings.unvisited.showOutline}
+                                    onChange={(e) => handleChange('unvisited', 'showOutline', e.target.checked)}
+                                />
+                                <div className="w-9 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                            </div>
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Show Line Outline</span>
+                        </label>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
+                                <span>STATION SIZE</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unvisited.stationSize.toFixed(1)}x</span>
+                            </div>
+                            <input
+                                type="range" min="0.1" max="4" step="0.1"
+                                value={settings.unvisited.stationSize}
+                                onChange={(e) => handleChange('unvisited', 'stationSize', parseFloat(e.target.value))}
+                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Section: Visited */}
+                <div className="flex flex-col gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-emerald-500 text-sm">verified</span>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Visited (Recorded)</h4>
+                    </div>
+                    <div className="flex flex-col gap-5 px-1">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
+                                <span>LINE WEIGHT</span>
+                                <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">{settings.visited.weight.toFixed(1)}x</span>
+                            </div>
+                            <input
+                                type="range" min="0.5" max="10" step="0.1"
+                                value={settings.visited.weight}
+                                onChange={(e) => handleChange('visited', 'weight', parseFloat(e.target.value))}
+                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                            />
+                        </div>
+
+                        <label className="flex items-center gap-3 cursor-pointer group px-0.5">
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={settings.visited.showOutline}
+                                    onChange={(e) => handleChange('visited', 'showOutline', e.target.checked)}
+                                />
+                                <div className="w-9 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </div>
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-emerald-500 transition-colors">Show Line Outline</span>
+                        </label>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
+                                <span>STATION SIZE</span>
+                                <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">{settings.visited.stationSize.toFixed(1)}x</span>
+                            </div>
+                            <input
+                                type="range" min="0.1" max="5" step="0.1"
+                                value={settings.visited.stationSize}
+                                onChange={(e) => handleChange('visited', 'stationSize', parseFloat(e.target.value))}
+                                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Section: Unvisited */}
-            <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>Unvisited Lines (Selected)</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>Line Weight ({settings.unvisited.weight}x)</span>
-                        <input
-                            type="range" min="0.5" max="5" step="0.1"
-                            value={settings.unvisited.weight}
-                            onChange={(e) => handleChange('unvisited', 'weight', parseFloat(e.target.value))}
-                            style={{ width: '100%', cursor: 'pointer' }}
-                        />
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input
-                            type="checkbox"
-                            checked={settings.unvisited.showOutline}
-                            onChange={(e) => handleChange('unvisited', 'showOutline', e.target.checked)}
-                        />
-                        <span>Show Line Outline</span>
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>Station Marker Size ({settings.unvisited.stationSize}x)</span>
-                        <input
-                            type="range" min="0.1" max="3" step="0.1"
-                            value={settings.unvisited.stationSize}
-                            onChange={(e) => handleChange('unvisited', 'stationSize', parseFloat(e.target.value))}
-                            style={{ width: '100%', cursor: 'pointer' }}
-                        />
-                    </label>
-                </div>
-            </div>
-
-            {/* Section: Visited */}
-            <div style={{ marginBottom: '10px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: '#555', fontWeight: 'bold' }}>Visited Lines (Recorded)</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>Line Weight ({settings.visited.weight}x)</span>
-                        <input
-                            type="range" min="0.5" max="5" step="0.1"
-                            value={settings.visited.weight}
-                            onChange={(e) => handleChange('visited', 'weight', parseFloat(e.target.value))}
-                            style={{ width: '100%', cursor: 'pointer' }}
-                        />
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <input
-                            type="checkbox"
-                            checked={settings.visited.showOutline}
-                            onChange={(e) => handleChange('visited', 'showOutline', e.target.checked)}
-                        />
-                        <span>Show Line Outline</span>
-                    </label>
-                    <label style={{ fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span>Station Marker Size ({settings.visited.stationSize}x)</span>
-                        <input
-                            type="range" min="0.1" max="3" step="0.1"
-                            value={settings.visited.stationSize}
-                            onChange={(e) => handleChange('visited', 'stationSize', parseFloat(e.target.value))}
-                            style={{ width: '100%', cursor: 'pointer' }}
-                        />
-                    </label>
-                </div>
+            {/* Footer: Sticky */}
+            <div className="p-5 pt-3 border-t border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
+                <button
+                    onClick={handleReset}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] font-black tracking-widest transition-all active:scale-95"
+                >
+                    <span className="material-symbols-outlined text-sm">restart_alt</span>
+                    RESET TO DEFAULTS
+                </button>
             </div>
         </div>
     );

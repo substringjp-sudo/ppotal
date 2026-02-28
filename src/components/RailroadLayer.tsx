@@ -20,6 +20,7 @@ interface RailroadLayerProps {
     usedSectionIds?: Set<number>;
     isDragging?: boolean;
     draftSectionIds?: Set<number>;
+    settings: import('./MainPageClient').MapStyleSettings;
 }
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
@@ -34,7 +35,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     isMoving = false,
     usedSectionIds = new Set(),
     isDragging = false,
-    draftSectionIds = new Set()
+    draftSectionIds = new Set(),
+    settings
 }) => {
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
@@ -217,27 +219,31 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         if (!isVisible) color = '#999999';
 
         // 2. Determine Weight (Standardized to match Stations) - 2/3 Scale Applied
-        let weight = 2.7; // 4.0 * 2/3 ≈ 2.67
+        let baseWeight = isVisible ? settings.unvisited.weight : (settings.unselected.weight || 1.0);
+        if (isUsed) baseWeight = settings.visited.weight;
+
+        // Apply zoom adjustments to the user-defined base weight
+        let weight = baseWeight;
         const z = Math.round(zoomLevel);
-        if (z <= 11) weight = 1.5; // 2.2 * 2/3 ≈ 1.47
-        else if (z <= 13) weight = 2.0; // 3.0 * 2/3 ≈ 2.0
+        if (z <= 11) weight = baseWeight * 0.6;
+        else if (z <= 13) weight = baseWeight * 0.8;
 
         // 3. Determine Opacity
-        let opacity = isVisible ? 0.8 : 0.4;
-        if (isUsed) opacity = 0.9;
+        let opacity = isVisible ? 0.8 : settings.unselected.opacity;
+        if (isUsed) opacity = 0.95;
         if (isHovered || isClicked) opacity = 1.0;
 
         return {
             color,
             weight,
             opacity,
-            dashArray: isVisible ? undefined : '4, 8',
+            dashArray: isVisible ? undefined : '2, 4',
             lineCap: 'round' as const,
             lineJoin: 'round' as const,
             smoothFactor: styleConfig.smoothFactor,
             interactive: false,
         } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging]);
+    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging, settings]);
 
 
     const glowStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
@@ -247,47 +253,52 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const id = feature.properties.id;
         const isHovered = !isDragging && hoveredLine === id;
         const isClicked = activeLine === id;
+        const isVisible = selectionSet.has(id) || activeLine === id || !isFilterActive;
 
-        // 이동 중일 때도 방문 경로(isUsed)와 미리보기 경로(isDraft)는 계속 표시함
-        const showGlow = isUsed || isDraft || (!isMoving && (isHovered || isClicked));
-        if (!showGlow) return { opacity: 0, interactive: false };
+        // Determine if we should show the outline/glow
+        const showOutline = (isUsed && settings.visited.showOutline) ||
+            (isVisible && !isUsed && settings.unvisited.showOutline);
+        const showEmphasis = isDraft || (!isMoving && (isHovered || isClicked));
 
-        // 강조 색상 결정 (isDraft가 최우선 순위 중 하나)
-        let color = '#FFD60A'; // 기본: 호버(Yellow)
+        if (!showOutline && !showEmphasis) return { opacity: 0, interactive: false };
 
-        if (isDraft) {
-            color = '#007AFF'; // 미리보기는 파란색
-        } else if (isMoving && isUsed) {
-            color = '#2ecc71';
-        } else if (isClicked) {
-            color = '#007AFF';
-        } else if (isUsed && !isHovered) {
-            color = '#2ecc71';
+        // Determine Color
+        let color = '#000000'; // Default casing is black
+        let opacity = 0.4;
+
+        if (showEmphasis) {
+            opacity = 1.0;
+            if (isDraft || isClicked) color = '#007AFF';
+            else if (isHovered) color = '#FFD60A';
+            else if (isUsed) color = '#2ecc71';
+        } else if (isUsed) {
+            color = '#000000';
+            opacity = 0.5;
         }
 
-        // 강조 여부
-        const isEmphasis = isClicked || isHovered || isUsed || isDraft;
+        // Standardized border thickness - based on settings weight
+        let targetWeight = isUsed ? settings.visited.weight : settings.unvisited.weight;
+        if (!isVisible && !isUsed) targetWeight = settings.unselected.weight;
 
-        // 표준화된 테두리 두께 로직 - 2/3 Scale Applied
-        let baseWeight = 4.2; // 6.25 * 2/3 ≈ 4.17
+        let baseWeight = targetWeight + 2.0;
         const z = Math.round(zoomLevel);
-        if (z <= 11) baseWeight = 2.7; // 4.0 * 2/3 ≈ 2.67
-        else if (z <= 13) baseWeight = 3.3; // 5.0 * 2/3 ≈ 3.33
+        if (z <= 11) baseWeight = targetWeight + 1.2;
+        else if (z <= 13) baseWeight = targetWeight + 1.5;
 
         const factor = isMobile ? 1.4 : 1.0;
-        const emphasisOffset = isEmphasis ? (z >= 14 ? 5.0 : 3.3) : 0; // 7.5 * 2/3 = 5.0, 5.0 * 2/3 ≈ 3.33
+        const emphasisOffset = showEmphasis ? (z >= 14 ? 4.0 : 2.5) : 0;
         const finalWeight = (baseWeight * factor) + emphasisOffset;
 
         return {
-            color: color,
+            color,
             weight: finalWeight,
-            opacity: (isUsed || isDraft) && !isHovered && !isClicked ? 0.6 : 1.0,
+            opacity: opacity,
             lineCap: 'round' as const,
             lineJoin: 'round' as const,
             smoothFactor: styleConfig.smoothFactor,
-            interactive: false
+            interactive: false,
         } as L.PathOptions;
-    }, [hoveredLine, activeLine, isMoving, isDragging, isMobile, zoomLevel, styleConfig]);
+    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging, isMobile, settings, isMoving]);
 
     // 상호작용 전용 스타일 (투명하지만 클릭 영역 확보)
     const interactionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {

@@ -9,6 +9,8 @@ export interface MyLinesPaneProps {
     onDeleteTrip?: (id: string) => void;
     onResetTrips?: () => void;
     railData: RailData | null;
+    lineLengths?: Record<string, number>;
+    visitedLineLengths?: Record<string, number>;
 }
 
 interface RegionNames {
@@ -20,7 +22,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     recordedTrips = [],
     onDeleteTrip,
     onResetTrips,
-    railData
+    railData,
+    lineLengths = {},
+    visitedLineLengths = {}
 }) => {
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
 
@@ -37,48 +41,86 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
 
     return (
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <h2 style={{ fontSize: '18px', marginBottom: '15px', fontWeight: '900', color: '#2c3e50', borderBottom: '3px solid #27ae60', paddingBottom: '8px' }}>
-                MY HISTORY
-            </h2>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    TRIP RECORDS ({recordedTrips?.length || 0})
-                </div>
-                {recordedTrips.length > 0 && (
-                    <button
-                        onClick={onResetTrips}
-                        style={{
-                            fontSize: '10px',
-                            fontWeight: 'bold',
-                            color: '#e53e3e',
-                            backgroundColor: '#fff5f5',
-                            border: '1px solid #fed7d7',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e53e3e';
-                            e.currentTarget.style.color = '#fff';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fff5f5';
-                            e.currentTarget.style.color = '#e53e3e';
-                        }}
-                    >
-                        DELETE ALL
-                    </button>
-                )}
+        <div className="flex flex-col h-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+            {/* Header */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-xl">history</span>
+                    My History
+                </h2>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">Track your Japanese rail journey records.</p>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
+            <div className="px-5 py-4">
+                {/* Progress Card (Moved from Sidebar) */}
+                {(() => {
+                    let totalKm = 0;
+                    let visitedKm = 0;
+                    Object.values(lineLengths).forEach((len) => {
+                        totalKm += len as number;
+                    });
+                    Object.values(visitedLineLengths).forEach((len) => {
+                        visitedKm += len as number;
+                    });
+                    const totalPercent = totalKm > 0 ? (visitedKm / totalKm) * 100 : 0;
+
+                    return (
+                        <div className="mb-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md">
+                            <div className="flex justify-between items-end mb-2">
+                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Progress</span>
+                                <span className="text-sm font-black text-primary">{totalPercent.toFixed(1)}%</span>
+                            </div>
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                                <div
+                                    className="bg-primary h-full rounded-full transition-all duration-1000 ease-out"
+                                    style={{ width: `${totalPercent}%` }}
+                                />
+                            </div>
+                            <div className="flex justify-between items-center mt-2">
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                                    {visitedKm.toLocaleString(undefined, { maximumFractionDigits: 1 })} / {totalKm.toLocaleString(undefined, { maximumFractionDigits: 1 })} KM
+                                </p>
+                                <p className="text-[10px] text-primary uppercase tracking-wider font-bold">
+                                    {Object.keys(visitedLineLengths).length} LINES
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })()}
+
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-xl font-black text-slate-800 dark:text-slate-100">
+                            {recordedTrips.length}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                            Trip Records
+                        </span>
+                    </div>
+                    {recordedTrips.length > 0 && (
+                        <button
+                            onClick={onResetTrips}
+                            className="text-[10px] font-black text-rose-500 hover:text-rose-600 transition-colors uppercase tracking-wider px-2 py-1 rounded-md hover:bg-rose-50 active:scale-95"
+                        >
+                            Delete All
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-4">
                 {displayTrips.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: '#999', marginTop: '40px', fontSize: '14px' }}>
-                        No trips recorded yet.
-                        Drag between stations to record!
+                    <div className="flex flex-col items-center justify-center h-64 text-center px-8">
+                        <div className="size-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-4">
+                            <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 !text-3xl">route</span>
+                        </div>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
+                            No trips recorded yet.
+                        </p>
+                        <p className="text-[11px] text-slate-400/70 mt-1 uppercase tracking-wider">
+                            Drag between stations to record!
+                        </p>
                     </div>
                 ) : (
                     displayTrips.map(trip => {
@@ -87,17 +129,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
                         const getStationFullInfo = (station: (Station & { lines?: string[] }) | undefined, id: string) => {
                             if (!station) return {
-                                nameJa: id,
-                                nameEn: '',
-                                companyJa: 'Unknown',
-                                companyEn: '',
-                                lineJa: 'Unknown',
-                                lineEn: '',
-                                lineColor: '#cbd5e0',
-                                prefJa: '',
-                                prefEn: '',
-                                cityJa: '',
-                                cityEn: ''
+                                nameJa: id, nameEn: '', companyJa: 'Unknown', companyEn: '',
+                                lineJa: 'Unknown', lineEn: '', lineColor: '#primary',
+                                prefJa: '', prefEn: '', cityJa: '', cityEn: ''
                             };
 
                             let compId = '';
@@ -129,7 +163,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 companyEn: comp?.name_en || '',
                                 lineJa: line?.name || lineId || 'Unknown',
                                 lineEn: line?.name_en || '',
-                                lineColor: line?.color || '#cbd5e0',
+                                lineColor: line?.color || '#3b82f6',
                                 prefJa: prefecture?.shapeName || '',
                                 prefEn: prefecture?.shapeName_en || '',
                                 cityJa: city?.shapeName || '',
@@ -140,7 +174,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                         const startInfo = getStationFullInfo(startStation, trip.start);
                         const endInfo = getStationFullInfo(endStation, trip.end);
 
-                        const linesUsedMap = new Map<number, { ja: string, en: string }>();
+                        const linesUsedMap = new Map<number, { ja: string, en: string, color: string }>();
                         trip.sectionIds?.forEach((sid: number) => {
                             const section = railData?.sections?.sections?.find((s: Section) => s.id === sid);
                             if (section) {
@@ -148,257 +182,132 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 if (!linesUsedMap.has(section.line_id)) {
                                     linesUsedMap.set(section.line_id, {
                                         ja: lData?.name || section.line_id.toString(),
-                                        en: lData?.name_en || ''
+                                        en: lData?.name_en || '',
+                                        color: lData?.color || '#3b82f6'
                                     });
                                 }
                             }
                         });
                         const linesUsed = Array.from(linesUsedMap.values());
 
-                        const StationInfo = ({ info }: {
-                            info: {
-                                nameJa: string; nameEn?: string;
-                                companyJa: string; companyEn?: string;
-                                lineJa: string; lineEn?: string;
-                                lineColor: string;
-                                prefJa: string; prefEn: string;
-                                cityJa: string; cityEn: string;
-                            }
-                        }) => (
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    marginBottom: '8px',
-                                    border: `1px solid ${info.lineColor || '#edf2f7'}`,
-                                    borderRadius: '8px',
-                                    padding: '6px 8px',
-                                    backgroundColor: (info.lineColor || '#edf2f7') + '08', // Low opacity background
-                                    borderLeft: `4px solid ${info.lineColor || '#edf2f7'}`
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-                                            <div style={{
-                                                fontSize: '11px',
-                                                fontWeight: '900',
-                                                color: '#2d3748',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {info.lineJa}
-                                            </div>
-                                            {info.lineEn && (
-                                                <div style={{
-                                                    fontSize: '9px',
-                                                    fontWeight: '600',
-                                                    color: '#718096',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    opacity: 0.8
-                                                }}>
-                                                    {info.lineEn}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'right', flex: 1, minWidth: 0 }}>
-                                            <div style={{
-                                                fontSize: '9px',
-                                                fontWeight: 'bold',
-                                                color: '#a0aec0',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {info.companyJa}
-                                            </div>
-                                            {info.companyEn && (
-                                                <div style={{
-                                                    fontSize: '8px',
-                                                    fontWeight: '600',
-                                                    color: '#cbd5e0',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
-                                                }}>
-                                                    {info.companyEn}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                                    <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
-                                        <div style={{
-                                            fontSize: '18px',
-                                            fontWeight: '900',
-                                            color: '#1a202c',
-                                            lineHeight: '1.2',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }}>
-                                            {info.nameJa}
-                                        </div>
-                                        {info.nameEn && (
-                                            <div style={{
-                                                fontSize: '11px',
-                                                fontWeight: '700',
-                                                color: '#718096',
-                                                marginTop: '2px',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>
-                                                {info.nameEn}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {info.prefJa && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', flexShrink: 0, marginTop: '3px', textAlign: 'right' }}>
-                                            <div style={{ fontSize: '9px', color: '#718096', fontWeight: 'bold' }}>
-                                                {info.prefJa} {info.cityJa}
-                                            </div>
-                                            <div style={{ fontSize: '7px', color: '#a0aec0', marginTop: '-1px' }}>
-                                                {info.prefEn} {info.cityEn}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-
                         return (
                             <div
                                 key={trip.id}
-                                style={{
-                                    padding: '16px',
-                                    marginBottom: '15px',
-                                    border: '1px solid #edf2f7',
-                                    borderRadius: '12px',
-                                    backgroundColor: '#fff',
-                                    transition: 'all 0.2s',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
-                                }}
+                                className="group relative bg-white dark:bg-slate-800/40 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800/50 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300"
                             >
+                                {/* Vertical Path Line */}
+                                <div className="absolute left-[37.5px] top-[40px] bottom-[108px] w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-700"></div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                                    <StationInfo info={startInfo} />
-
-                                    <div style={{
-                                        margin: '8px 0 8px 10px',
-                                        padding: '4px 0 4px 18px',
-                                        borderLeft: '2px dotted #cbd5e0',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '4px'
-                                    }}>
-                                        {linesUsed.length > 0 && (
-                                            <>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <div style={{
-                                                            fontSize: '9px',
-                                                            fontWeight: '900',
-                                                            color: '#48bb78',
-                                                            backgroundColor: '#f0fff4',
-                                                            padding: '2px 6px',
-                                                            borderRadius: '4px',
-                                                            flexShrink: 0,
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px'
-                                                        }}>via</div>
-                                                        {trip.path.length > 2 && (
-                                                            <div style={{
-                                                                fontSize: '10px',
-                                                                color: '#718096',
-                                                                fontWeight: '800',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                gap: '3px'
-                                                            }}>
-                                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
-                                                                {trip.path.length - 2} stations
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div style={{
-                                                        fontSize: '10px',
-                                                        color: '#4a5568',
-                                                        fontWeight: '600',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: '4px',
-                                                        paddingLeft: '2px'
-                                                    }}>
-                                                        {linesUsed.map((l, i) => (
-                                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                                                                <span style={{ lineHeight: '1.2' }}>{l.ja}</span>
-                                                                {l.en && <span style={{ fontSize: '8px', color: '#a0aec0', lineHeight: '1.1' }}>{l.en}</span>}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
+                                {/* Start Station */}
+                                <div className="relative z-10 flex gap-4 mb-6">
+                                    <div className="size-9 rounded-full bg-white dark:bg-slate-900 border-2 border-primary shadow-[0_0_10px_rgba(28,116,233,0.3)] flex items-center justify-center shrink-0">
+                                        <div className="size-2 bg-primary rounded-full"></div>
                                     </div>
-
-                                    <StationInfo info={endInfo} />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between mb-1">
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[10px] font-black text-primary uppercase tracking-wider truncate">
+                                                    {startInfo.lineJa}
+                                                </span>
+                                                {startInfo.lineEn && (
+                                                    <span className="text-[8px] font-bold text-primary/60 uppercase tracking-tight truncate leading-none mt-0.5">
+                                                        {startInfo.lineEn}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col items-end shrink-0 ml-2">
+                                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
+                                                    {startInfo.prefJa} {startInfo.cityJa}
+                                                </span>
+                                                {(startInfo.prefEn || startInfo.cityEn) && (
+                                                    <span className="text-[7px] font-bold text-slate-400/50 uppercase tracking-tighter leading-none mt-0.5">
+                                                        {startInfo.prefEn} {startInfo.cityEn}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <h3 className="text-base font-black text-slate-800 dark:text-slate-100 truncate">
+                                            {startInfo.nameJa}
+                                        </h3>
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                            {startInfo.nameEn}
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div style={{
-                                    marginTop: '16px',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    borderTop: '1px solid #edf2f7',
-                                    paddingTop: '12px'
-                                }}>
-                                    {trip.distance > 0 && (
-                                        <div style={{
-                                            fontSize: '12px',
-                                            fontWeight: '800',
-                                            color: '#3182ce',
-                                            backgroundColor: '#ebf8ff',
-                                            padding: '3px 10px',
-                                            borderRadius: '6px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '4px'
-                                        }}>
-                                            <span style={{ fontSize: '10px', opacity: 0.7 }}>DIST</span>
-                                            {Math.round(trip.distance * 10) / 10} km
+                                {/* Intermediate Info */}
+                                <div className="relative z-10 pl-[52px] mb-6">
+                                    <div className="flex flex-col gap-2">
+                                        {linesUsed.map((line, idx) => (
+                                            <div key={idx} className="flex items-center gap-2">
+                                                <div className="w-2.5 h-0.5 rounded-full" style={{ backgroundColor: line.color }}></div>
+                                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{line.ja}</span>
+                                            </div>
+                                        ))}
+                                        {trip.path.length > 2 && (
+                                            <div className="flex items-center gap-1.5 opacity-60">
+                                                <span className="material-symbols-outlined !text-[14px] text-slate-400">more_vert</span>
+                                                <span className="text-[10px] font-bold text-slate-400 tracking-wider">
+                                                    {trip.path.length - 2} STATIONS
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* End Station */}
+                                <div className="relative z-10 flex gap-4 mb-5">
+                                    <div className="size-9 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0">
+                                        <div className="size-2 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between mb-1">
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                                                    {endInfo.lineJa}
+                                                </span>
+                                                {endInfo.lineEn && (
+                                                    <span className="text-[8px] font-bold text-slate-400/60 uppercase tracking-tight truncate leading-none mt-0.5">
+                                                        {endInfo.lineEn}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col items-end shrink-0 ml-2">
+                                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
+                                                    {endInfo.prefJa} {endInfo.cityJa}
+                                                </span>
+                                                {(endInfo.prefEn || endInfo.cityEn) && (
+                                                    <span className="text-[7px] font-bold text-slate-400/50 uppercase tracking-tighter leading-none mt-0.5">
+                                                        {endInfo.prefEn} {endInfo.cityEn}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
+                                        <h3 className="text-base font-black text-slate-800 dark:text-slate-100 truncate">
+                                            {endInfo.nameJa}
+                                        </h3>
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                            {endInfo.nameEn}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Card Footer */}
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
+                                            <span className="material-symbols-outlined !text-[14px] text-primary">distance</span>
+                                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">
+                                                {Math.round(trip.distance * 10) / 10}
+                                                <span className="text-[9px] text-slate-400 ml-0.5 font-bold uppercase">km</span>
+                                            </span>
+                                        </div>
+                                    </div>
                                     <button
                                         onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
-                                        style={{
-                                            background: '#fff5f5',
-                                            border: '1px solid #fed7d7',
-                                            color: '#e53e3e',
-                                            cursor: 'pointer',
-                                            width: '26px',
-                                            height: '26px',
-                                            borderRadius: '6px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '12px',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        onMouseOver={(e) => {
-                                            e.currentTarget.style.background = '#e53e3e';
-                                            e.currentTarget.style.color = '#fff';
-                                        }}
-                                        onMouseOut={(e) => {
-                                            e.currentTarget.style.background = '#fff5f5';
-                                            e.currentTarget.style.color = '#e53e3e';
-                                        }}
+                                        className="size-8 rounded-lg flex items-center justify-center text-rose-500/50 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all active:scale-90"
                                     >
-                                        ✕
+                                        <span className="material-symbols-outlined !text-[18px]">delete</span>
                                     </button>
                                 </div>
                             </div>

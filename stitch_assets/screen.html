@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1c74e9",
+              "background-light": "#f6f7f8",
+              "background-dark": "#111821",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<title>JapanRailNote - Digital Railway Map</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Header -->
+<header class="flex h-16 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0 z-30">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">train</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">JapanRailNote</h1>
+</div>
+<div class="relative w-72">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none bg-slate-100 dark:bg-slate-800 rounded-lg text-sm placeholder-slate-500 focus:ring-2 focus:ring-primary" placeholder="Search stations or lines..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-lg">lightbulb</span> Tips
+                    </a>
+<a class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-lg">chat_bubble</span> Feedback
+                    </a>
+<a class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-lg">download</span> Export
+                    </a>
+</nav>
+<div class="h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm">
+                    Login
+                </button>
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden ring-2 ring-white dark:ring-slate-800 shadow-sm">
+<img alt="User Profile" data-alt="Minimalist user profile avatar icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkLSZh52ifq1bWoN3j4VYqMXBa5bpyHHKQzUP3ggycRrndn34gzq_md3LbtPOKYkuKBhtzrItpOmPe8L1MonqcZqq90enddb1BQRiaraah8wy2bur2sb7tUQSVd2opCtTZ7ZD9qh1GoynFWgyeAj_SnO8GrKKsVC7HMXA6rrKn6F6uOfA4rnLpg_yIL53FH07isd7NGKZPWxtuQ21tFZG6q0fOY7QxEiimoQyZVej-EogVwQlXOWbfKFnZjLzVvfNgbw1OGoqcVcrX"/>
+</div>
+</div>
+</header>
+<!-- Main Layout -->
+<main class="flex flex-1 overflow-hidden">
+<!-- Left Sidebar: Railroad List -->
+<aside class="w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-y-auto z-20 shadow-sm">
+<div class="p-4 border-b border-slate-100 dark:border-slate-800">
+<h2 class="font-bold text-slate-800 dark:text-white">Railroad Networks</h2>
+<p class="text-xs text-slate-500 mt-1">Select lines to visualize on map</p>
+<!-- Progress Card -->
+<div class="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+<div class="flex justify-between items-end mb-2">
+<span class="text-xs font-bold text-slate-600 dark:text-slate-400">Total Progress</span>
+<span class="text-sm font-black text-primary">12.5%</span>
+</div>
+<div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 12.5%"></div>
+</div>
+<p class="text-[10px] text-slate-400 mt-2 uppercase tracking-wider font-semibold text-right">9 / 72 STATIONS VISITED</p>
+</div>
+</div>
+<div class="p-2 space-y-2">
+<!-- Shinkansen Accordion -->
+<details class="group" open="">
+<summary class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer list-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">speed</span>
+<span class="text-sm font-semibold">Shinkansen</span>
+<span class="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md">0/9</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="pl-11 pr-4 py-2 space-y-3">
+<label class="flex items-center gap-3 cursor-pointer group/item">
+<input class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover/item:text-primary transition-colors">Tokaido Shinkansen</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group/item">
+<input class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover/item:text-primary transition-colors">Tohoku Shinkansen</span>
+</label>
+</div>
+</details>
+<!-- JR East Accordion -->
+<details class="group">
+<summary class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer list-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500">tram</span>
+<span class="text-sm font-semibold">JR East</span>
+<span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-md">4/52</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="pl-11 pr-4 py-2 space-y-3">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400">Yamanote Line</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400">Chuo Line</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400">Keihin-Tohoku Line</span>
+</label>
+</div>
+</details>
+<!-- Tokyo Metro Accordion -->
+<details class="group">
+<summary class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer list-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500">subway</span>
+<span class="text-sm font-semibold">Tokyo Metro</span>
+<span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-md">5/9</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+</details>
+</div>
+<div class="mt-auto p-4 bg-slate-50 dark:bg-slate-800/50">
+<button class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 py-2 rounded-lg text-sm font-semibold hover:border-primary hover:text-primary transition-all shadow-sm">
+                        Filter View
+                    </button>
+</div>
+</aside>
+<!-- Center: Interactive Map Area -->
+<section class="flex-1 relative bg-slate-100 dark:bg-slate-950">
+<!-- Map Background Placeholder -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center opacity-40">
+<img class="w-full h-full object-cover grayscale" data-alt="Schematic map of Tokyo railway network lines" data-location="Tokyo, Japan" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCh9es4Ec6TZLuBiT_LgOVlLjxuPgiarZ9SXMVEIRj5bxIy3iOst5fryuIeHdGIj1iUOGJk8PR65sfSI345GX1a_iV-Dka625xC19jV0UTcr8kAwatpBsSQgQsf_pkPjC9jjWbFTzPauX7jzb-5wju_fLvcHXeY-0MwZzA9O3QVt4AhqQm6woE9Z9AMLBki398EpnciZn3WUMwIj_XwYeGBOG8vyRm_b3gyNkvodNtbcL3LD2jEXhGtFudq_3lUU5B-bF0iVH19ova"/>
+</div>
+<!-- Custom SVG Grid/Lines Overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewbox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+<path d="M100 500H900" stroke="#1c74e9" stroke-dasharray="10 10" stroke-linecap="round" stroke-width="4"></path>
+<circle cx="500" cy="500" r="150" stroke="#1c74e9" stroke-dasharray="5 5" stroke-width="2"></circle>
+<path d="M300 300L700 700" stroke="#ff9f43" stroke-width="3"></path>
+<path d="M700 300L300 700" stroke="#ee5253" stroke-width="3"></path>
+<circle cx="500" cy="500" fill="white" r="10" stroke="#1c74e9" stroke-width="4"></circle>
+<text class="text-xs font-bold font-sans" fill="#1c74e9" x="520" y="505">SHINJUKU STATION</text>
+</svg>
+</div>
+<!-- Floating Controls -->
+<div class="absolute bottom-6 left-6 flex flex-col gap-2 z-10">
+<div class="bg-white dark:bg-slate-900 shadow-xl rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col p-1">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">add</span>
+</button>
+<div class="h-px bg-slate-100 dark:bg-slate-800 mx-2"></div>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">remove</span>
+</button>
+</div>
+<button class="bg-white dark:bg-slate-900 shadow-xl rounded-xl border border-slate-200 dark:border-slate-800 p-2 text-slate-600 dark:text-slate-300 flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">restart_alt</span> Reset
+                    </button>
+</div>
+<!-- Map Legend/Label -->
+<div class="absolute top-6 left-6 z-10">
+<div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur shadow-sm rounded-lg px-4 py-2 border border-slate-200 dark:border-slate-800">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Active View</p>
+<h3 class="text-lg font-bold">Greater Tokyo Area</h3>
+</div>
+</div>
+</section>
+<!-- Right Sidebar: My History -->
+<aside class="w-80 border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex flex-col overflow-y-auto z-20">
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between">
+<div>
+<h2 class="font-bold text-slate-800 dark:text-white">Trip History</h2>
+<p class="text-[10px] text-slate-400 uppercase font-bold tracking-tight">Recent Records</p>
+</div>
+<button class="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase border border-red-200 px-2 py-1 rounded">
+                        Delete All
+                    </button>
+</div>
+<div class="p-4 space-y-4">
+<!-- Record Card 1 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative group">
+<button class="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+<div class="flex items-start gap-3">
+<div class="flex flex-col items-center gap-1 mt-1">
+<span class="size-2 rounded-full bg-primary ring-2 ring-primary/20"></span>
+<div class="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+<span class="size-2 rounded-full border-2 border-primary"></span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="mb-3">
+<p class="text-sm font-bold text-slate-800 dark:text-white truncate">Shinjuku</p>
+<p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span> JR Yamanote Line
+                                    </p>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-800 dark:text-white truncate">Kitasando</p>
+<p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#9c27b0]"></span> Fukutoshin Line
+                                    </p>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">1.2 km</span>
+<span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-bold">25 MAR</span>
+</div>
+</div>
+<!-- Record Card 2 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm relative group">
+<button class="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+<div class="flex items-start gap-3">
+<div class="flex flex-col items-center gap-1 mt-1">
+<span class="size-2 rounded-full bg-[#ff9f43] ring-2 ring-[#ff9f43]/20"></span>
+<div class="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
+<span class="size-2 rounded-full border-2 border-[#ff9f43]"></span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="mb-3">
+<p class="text-sm font-bold text-slate-800 dark:text-white truncate">Shibuya</p>
+<p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#ff9f43]"></span> Ginza Line
+                                    </p>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-800 dark:text-white truncate">Omotesando</p>
+<p class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#00d2d3]"></span> Chiyoda Line
+                                    </p>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+<span class="text-[10px] font-bold text-slate-400">2.1 km</span>
+<span class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-bold">24 MAR</span>
+</div>
+</div>
+</div>
+<div class="mt-auto p-4 flex flex-col items-center text-slate-400 gap-2">
+<span class="material-symbols-outlined text-4xl opacity-20">history</span>
+<p class="text-xs italic">End of history</p>
+</div>
+</aside>
+</main>
+<!-- Tooltip/Hover Station Label -->
+<div class="absolute pointer-events-none bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg z-50 transition-opacity opacity-0" id="station-tooltip">
+            STATION NAME
+        </div>
+</div>
+</body></html>

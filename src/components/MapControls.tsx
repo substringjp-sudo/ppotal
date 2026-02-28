@@ -30,103 +30,56 @@ const MapControls: React.FC<MapControlsProps> = ({
     };
 
     return (
-        <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            padding: '12px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-            border: '1px solid #eee',
-            backdropFilter: 'blur(5px)'
-        }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#666' }}>ZOOM</span>
-                    <span style={{ fontSize: '12px', fontWeight: '900', color: '#2c3e50' }}>{zoom.toFixed(1)}</span>
-                </div>
-                <input
-                    type="range"
-                    min={minZoom}
-                    max={maxZoom}
-                    step={1}
-                    value={zoom}
-                    onChange={handleZoomChange}
-                    style={{
-                        width: '120px',
-                        cursor: 'pointer',
-                        accentColor: '#3498db'
-                    }}
-                />
-            </div>
-
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '6px',
-                padding: '8px 0',
-                borderTop: '1px solid #eee',
-                borderBottom: '1px solid #eee'
-            }}>
-                <div
-                    onClick={onToggleLabels}
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        cursor: 'pointer',
-                        padding: '4px 0'
-                    }}
-                >
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#666' }}>STATION NAMES </span>
-                    <div style={{
-                        width: '32px',
-                        height: '18px',
-                        backgroundColor: showLabels ? '#3498db' : '#ccc',
-                        borderRadius: '9px',
-                        position: 'relative',
-                        transition: 'background-color 0.2s'
-                    }}>
-                        <div style={{
-                            width: '14px',
-                            height: '14px',
-                            backgroundColor: '#fff',
-                            borderRadius: '50%',
-                            position: 'absolute',
-                            top: '2px',
-                            left: showLabels ? '16px' : '2px',
-                            transition: 'left 0.2s',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                        }} />
+        <>
+            {/* Map Interaction Controls (Top Left) */}
+            <div className="absolute top-4 left-6 z-[1000] flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                    {/* Zoom Controls (Horizontal) */}
+                    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-1 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 flex items-center">
+                        <button
+                            onClick={() => map.setZoom(Math.min(maxZoom, zoom + 1))}
+                            disabled={zoom >= maxZoom}
+                            className="w-8 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors disabled:opacity-30"
+                        >
+                            <span className="material-symbols-outlined !text-[20px]">add</span>
+                        </button>
+                        <div className="w-px h-6 bg-slate-100 dark:bg-slate-800 mx-1"></div>
+                        <button
+                            onClick={() => map.setZoom(Math.max(minZoom, zoom - 1))}
+                            disabled={zoom <= minZoom}
+                            className="w-8 h-9 flex items-center justify-center rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors disabled:opacity-30"
+                        >
+                            <span className="material-symbols-outlined !text-[20px]">remove</span>
+                        </button>
                     </div>
+
+                    {/* Reset Button (Next to Zoom) */}
+                    <button
+                        onClick={handleReset}
+                        className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md h-9 px-3 flex items-center justify-center rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all active:scale-95 group"
+                        title="Reset View"
+                    >
+                        <span className="material-symbols-outlined !text-[20px] group-hover:rotate-[-45deg] transition-transform">restart_alt</span>
+                    </button>
+                </div>
+
+                <button
+                    onClick={onToggleLabels}
+                    className={`backdrop-blur-md px-3 py-2 rounded-xl shadow-lg border transition-all flex items-center gap-2 ${showLabels
+                        ? 'bg-primary/10 border-primary/20 text-primary'
+                        : 'bg-white/95 dark:bg-slate-900/95 border-slate-200/50 dark:border-slate-700/50 text-slate-500 hover:bg-slate-50'
+                        }`}
+                >
+                    <span className="text-[10px] font-black whitespace-nowrap">STATION NAMES</span>
+                    <span className={`size-1.5 rounded-full ${showLabels ? 'bg-primary animate-pulse' : 'bg-slate-300'}`}></span>
+                </button>
+
+                <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-2 w-fit">
+                    <span className="text-[10px] font-bold text-slate-500">ZOOM</span>
+                    <span className="text-[10px] font-black text-primary">{zoom.toFixed(1)}</span>
                 </div>
             </div>
-
-            <button
-                onClick={handleReset}
-                style={{
-                    padding: '8px',
-                    backgroundColor: '#3498db',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    fontWeight: '800',
-                    transition: 'all 0.2s',
-                    boxShadow: '0 2px 4px rgba(52, 152, 219, 0.3)'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2980b9'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3498db'}
-            >
-                RESET VIEW
-            </button>
-        </div>
+        </>
     );
 };
 

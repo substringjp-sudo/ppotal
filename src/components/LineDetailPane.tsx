@@ -74,130 +74,96 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
 
     return (
-        <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            maxHeight: '35vh', // Reduced max height by half from 70vh
-            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-            backdropFilter: 'blur(20px)',
-            borderTop: '1px solid rgba(0,0,0,0.1)',
-            zIndex: 1100,
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '20px',
-            boxShadow: '0 -10px 40px rgba(0,0,0,0.15)',
-            borderTopLeftRadius: '24px',
-            borderTopRightRadius: '24px'
-        }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '20px',
-                gap: '24px',
-                flexShrink: 0
-            }}>
-                <div style={{ flex: 1, minWidth: '200px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <button
-                        onClick={() => {
-                            if (onToggleLine) onToggleLine(lineId);
-                        }}
-                        style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '12px',
-                            border: '1px solid #eee',
-                            backgroundColor: selectedLines.includes(lineId) ? '#3498db' : '#f8f9fa',
-                            color: selectedLines.includes(lineId) ? '#fff' : '#666',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            fontSize: '18px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                            transition: 'all 0.2s'
-                        }}
-                        title={selectedLines.includes(lineId) ? "Hide Line" : "Show Line"}
-                    >
-                        {selectedLines.includes(lineId) ? '✓' : '+'}
-                    </button>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-                            <span style={{ fontSize: '26px', fontWeight: '900', color: '#1a1a1a', lineHeight: '1' }}>
-                                {lineData?.name_en || lineData?.name || lineName}
+        <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out">
+            {/* Header with Title and Stats */}
+            <div className="flex flex-col gap-4 mb-6 flex-shrink-0">
+                {/* Primary Row: Title and Close Button */}
+                <div className="flex justify-between items-start gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                        <button
+                            onClick={() => {
+                                if (onToggleLine) onToggleLine(lineId);
+                            }}
+                            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl border flex items-center justify-center transition-all duration-300 shadow-sm shrink-0
+                                ${selectedLines.includes(lineId)
+                                    ? 'bg-primary border-primary text-white shadow-primary/20'
+                                    : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700'
+                                }`}
+                            title={selectedLines.includes(lineId) ? "Hide Line" : "Show Line"}
+                        >
+                            <span className="material-symbols-outlined text-xl sm:text-2xl">
+                                {selectedLines.includes(lineId) ? 'check' : 'add'}
                             </span>
-                            {lineData?.name_en && (
-                                <span style={{ fontSize: '16px', fontWeight: '600', color: '#718096', opacity: 0.8 }}>
-                                    {lineData.name}
-                                </span>
-                            )}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '2px' }}>
-                            <span style={{ fontSize: '13px', color: '#888', fontWeight: '700' }}>
-                                {companyData?.name_en || companyData?.name || company}
-                            </span>
-                            {companyData?.name_en && (
-                                <span style={{ fontSize: '11px', color: '#a0aec0', fontWeight: '500' }}>
-                                    {companyData.name}
-                                </span>
-                            )}
-                        </div>
-                    </div>
+                        </button>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: '20px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <div style={{ fontSize: '11px', color: '#888', fontWeight: 'bold', textTransform: 'uppercase' }}>Completion</div>
-                            <div style={{ fontSize: '16px', color: '#1a1a1a', fontWeight: '900' }}>
-                                {stats.visited} <span style={{ fontSize: '11px', color: '#888' }}>/ {stats.total} km</span>
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-baseline gap-2 overflow-hidden">
+                                <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
+                                    {lineData?.name || lineName}
+                                </span>
+                                {lineData?.name_en && (
+                                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">
+                                        {lineData.name_en}
+                                    </span>
+                                )}
                             </div>
-                        </div>
-                        <div style={{ position: 'relative', width: '60px', height: '60px' }}>
-                            <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" strokeWidth="3" />
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#27ae60" strokeWidth="3" strokeDasharray={`${stats.percent}, 100`} strokeLinecap="round" style={{ transition: 'stroke-dasharray 1s ease' }} />
-                            </svg>
-                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '12px', fontWeight: '900', color: '#27ae60' }}>
-                                {stats.percent}%
+                            <div className="flex items-baseline gap-2 mt-0.5 overflow-hidden">
+                                <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest truncate">
+                                    {companyData?.name || company}
+                                </span>
+                                {companyData?.name_en && (
+                                    <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase truncate">
+                                        {companyData.name_en}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div id="tube-minimap-portal"></div>
                     <button
                         onClick={() => {
                             onClose();
                             trackEvent('close_line_detail', 'ui_interaction', lineId);
                         }}
-                        style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            backgroundColor: '#f1f2f6',
-                            border: 'none',
-                            fontSize: '20px',
-                            cursor: 'pointer',
-                            color: '#666',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
+                        className="w-10 h-10 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center active:scale-90"
                     >
-                        ×
+                        <span className="material-symbols-outlined text-2xl">close</span>
                     </button>
+                </div>
+
+                {/* Secondary Row: Stats and Minimap */}
+                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+                        <div className="flex flex-col gap-0.5">
+                            <div className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Completion</div>
+                            <div className="text-base sm:text-lg text-slate-900 dark:text-white font-black leading-none whitespace-nowrap">
+                                {stats.visited} <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold">/ {stats.total} km</span>
+                            </div>
+                        </div>
+                        <div className="relative size-10 sm:size-12 shrink-0">
+                            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                                <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    className="fill-none stroke-slate-200 dark:stroke-slate-800 stroke-[3]"
+                                />
+                                <path
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    className="fill-none stroke-emerald-500 stroke-[3] transition-all duration-1000 ease-in-out"
+                                    strokeDasharray={`${stats.percent}, 100`}
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">
+                                {stats.percent}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tube-minimap-portal" className="shrink-0 ml-auto sm:ml-0"></div>
                 </div>
             </div>
 
-            <div style={{
-                flex: 1,
-                position: 'relative',
-                overflowY: 'auto',
-                minHeight: 0
-            }}>
+            <div className="flex-1 relative overflow-y-auto min-h-0 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/50">
                 <TubeMap
                     nodes={topology.nodes}
                     edges={topology.edges}
