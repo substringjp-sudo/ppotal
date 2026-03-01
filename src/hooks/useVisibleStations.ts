@@ -125,7 +125,8 @@ export const useVisibleStations = ({
                     data[c.id] = {
                         id: c.id,
                         name: c.name,
-                        name_en: c.name_en,
+                        name_en: c.name_en || railData.stations[c.nodes[0]?.id]?.name_en,
+                        name_kr: c.name_kr || railData.stations[c.nodes[0]?.id]?.name_kr,
                         centroid: c.c as [number, number],
                         lines: c.lines,
                         nodes: c.nodes.map(n => {
@@ -231,6 +232,7 @@ export const useVisibleStations = ({
                         lines: Array.from(stationLines),
                         name: s.name,
                         name_en: s.name_en,
+                        name_kr: s.name_kr,
                         isUsed: usedStationIds.has(s.id)
                     };
                 } else {

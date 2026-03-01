@@ -2,6 +2,7 @@ export interface Company {
     id: number;
     name: string;
     name_en: string;
+    name_kr?: string;
     color?: string;
     category_id?: number;
 }
@@ -25,6 +26,7 @@ export interface Line {
     id: number;
     name: string;
     name_en: string;
+    name_kr?: string;
     corp_id: number;
     total_length?: number;
     color?: string; // Optional, can be derived or fetched from constants if not in JSON
@@ -46,6 +48,7 @@ export interface Station {
     id: string; // group_id or station_id
     name: string;
     name_en?: string;
+    name_kr?: string;
     lat: number;
     lon: number;
     platform_ids: string[];
@@ -82,6 +85,7 @@ export interface StationLod {
     id: string;
     name: string;
     name_en?: string;
+    name_kr?: string;
     z: number;
     lines: string[];
     nodes: { id: string, c: [number, number] }[];

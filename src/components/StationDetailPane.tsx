@@ -2,11 +2,29 @@ import React, { useEffect, useState } from 'react';
 import styles from './StationDetailPane.module.css';
 import { Station, RailData, Platform } from '../types/railData';
 import { getLineColor } from '../lib/lineColors';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 
-interface RegionNames {
-  adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
-  adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
-}
+const TRANSLATIONS = {
+  ko: {
+    arr: '도착',
+    cancel: '취소',
+    start: '시작',
+    platform: '번 승강장',
+  },
+  en: {
+    arr: 'Arr',
+    cancel: 'Cancel',
+    start: 'Start',
+    platform: ' Platform',
+  },
+  ja: {
+    arr: '到着',
+    cancel: 'キャンセル',
+    start: '開始',
+    platform: '番線',
+  }
+};
 
 export interface StationDetailPaneProps {
   station: Station;
@@ -30,6 +48,8 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   onEndTrip,
   onCancel
 }) => {
+  const { isKorean, isJapanese, language } = useI18n();
+  const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
   const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
 
   useEffect(() => {
@@ -38,6 +58,8 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
       .then(data => setRegionNames(data))
       .catch(err => console.error("Failed to load region names:", err));
   }, []);
+
+  const localizedAddress = getLocalizedAddress(station.prefecture_id, station.city_id, regionNames, language);
 
   const { stations, platforms, lines, companies } = railData || { stations: {}, platforms: {}, lines: {}, companies: {} };
 
@@ -97,14 +119,6 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
     return { left, right };
   };
 
-  const prefecture = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id] : null;
-  const prefectureName = prefecture?.shapeName || '';
-  const prefectureNameEn = prefecture?.shapeName_en || '';
-
-  const city = station.city_id && regionNames ? regionNames.adm2[station.city_id] : null;
-  const cityName = city?.shapeName || '';
-  const cityNameEn = city?.shapeName_en || '';
-
   const formatColor = (colorStr: string | undefined): string | null => {
     if (!colorStr) return null;
     const sanitizedColor = colorStr.startsWith('#') ? colorStr.substring(1) : colorStr;
@@ -133,8 +147,14 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <div className="flex items-center gap-2 sm:gap-3">
-              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate max-w-[120px] sm:max-w-none">{station.name}</h2>
-              <span className="text-[10px] sm:text-sm font-bold text-slate-400 dark:text-slate-500 italic uppercase tracking-wider truncate max-w-[80px] sm:max-w-none">{station.name_en}</span>
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate max-w-[120px] sm:max-w-none">
+                {language === 'ja' ? station.name : getLocalizedName(station, language)}
+              </h2>
+              {language !== 'ja' && (
+                <span className="text-[10px] sm:text-sm font-bold text-slate-400 dark:text-slate-500 italic uppercase tracking-wider truncate max-w-[80px] sm:max-w-none">
+                  {station.name}
+                </span>
+              )}
 
               {/* Trip Buttons - Moved next to name for mobile accessibility */}
               <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
@@ -146,7 +166,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                         onClick={() => onEndTrip(station)}
                       >
                         <span className="material-symbols-outlined text-[10px]">flag</span>
-                        Arr
+                        {t.arr}
                       </button>
                     )}
                     <button
@@ -154,7 +174,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                       onClick={() => onCancel && onCancel()}
                     >
                       <span className="material-symbols-outlined text-[10px] sm:hidden">close</span>
-                      <span className="hidden sm:inline">Cancel</span>
+                      <span className="hidden sm:inline">{t.cancel}</span>
                     </button>
                   </div>
                 ) : (
@@ -163,17 +183,17 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                     onClick={() => onStartTrip(station)}
                   >
                     <span className="material-symbols-outlined text-[10px]">play_arrow</span>
-                    Start
+                    {t.start}
                   </button>
                 )}
               </div>
             </div>
-            {(prefectureName || cityName) && (
+            {regionNames && (
               <div className="flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">
                 <span className="material-symbols-outlined text-[10px] sm:text-xs">map</span>
-                {prefectureName} {cityName}
-                <span className="mx-1 text-slate-300 dark:text-slate-700">|</span>
-                <span className="text-slate-400 dark:text-slate-500 truncate">{prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}</span>
+                <span className="text-slate-400 dark:text-slate-500 truncate">
+                  {localizedAddress}
+                </span>
               </div>
             )}
           </div>
@@ -203,9 +223,12 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 
             // Ordinal number helper
             const getOrdinal = (n: number) => {
-              const s = ["th", "st", "nd", "rd"];
-              const v = n % 100;
-              return n + (s[(v - 20) % 10] || s[v] || s[0]);
+              if (language === 'en') {
+                const s = ["th", "st", "nd", "rd"];
+                const v = n % 100;
+                return n + (s[(v - 20) % 10] || s[v] || s[0]) + t.platform;
+              }
+              return n + t.platform;
             };
 
             return (
@@ -215,7 +238,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                 <div className="absolute top-0 left-0 right-0 h-10 flex items-center px-6 border-b border-slate-50 dark:border-slate-800/50">
                   <div className="flex items-center gap-3">
                     <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                      {getOrdinal(index + 1)} Platform
+                      {getOrdinal(index + 1)}
                     </span>
                     <div className="w-1 h-3 rounded-full" style={{ backgroundColor: finalColor }}></div>
                     <div className="flex items-baseline gap-2">
@@ -223,7 +246,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                         {line.name}
                       </span>
                       <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic leading-none">
-                        {line.name_en}
+                        {isKorean ? line.name_kr || line.name_en : line.name_en}
                       </span>
                     </div>
                   </div>
@@ -249,7 +272,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                             )}
                           </div>
                           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate uppercase tracking-tight italic leading-none">
-                            {entry.station.name_en}
+                            {isKorean ? entry.station.name_kr || entry.station.name_en : entry.station.name_en}
                           </span>
                         </div>
                       </div>
@@ -277,7 +300,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                             <span className="text-[11px] font-black text-slate-800 dark:text-white truncate leading-tight">{entry.station.name}</span>
                           </div>
                           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate uppercase tracking-tight italic leading-none">
-                            {entry.station.name_en}
+                            {isKorean ? entry.station.name_kr || entry.station.name_en : entry.station.name_en}
                           </span>
                         </div>
                       </div>

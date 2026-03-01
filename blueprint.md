@@ -33,12 +33,20 @@ JapanRailNote is a web application for recording and visualizing Japanese railro
     - **Cancel Functionality**: Fixed a bug where the 'Cancel' button would mistakenly start a new trip instead of resetting the current one. Added a dedicated `onCancel` handler.
     - **History & Sidebar Density**: Refined the visual hierarchy in the history and sidebar panes to ensure Japanese names are primary and English names are secondary, with improved spacing.
 
+- **Search Experience Enhancement**:
+    - **Premium UI**: Introduced a glassmorphic popover with `backdrop-blur` and refined shadow/border styles. Improved result card layout with iconography and clear typography.
+    - **Search Highlighting**: Implemented real-time highlighting of matched query terms within results for better scannability.
+    - **Advanced Navigation**: Added full keyboard support (Arrow keys for selection, Enter to navigate, ESC to close).
+    - **Efficiency Features**: Implemented a global `Cmd/Ctrl + K` shortcut and persistent "Recent Searches" (localStorage) to speed up user workflows.
+    - **Contextual Info**: Search results now include regional data (Prefecture/City) and associated rail lines for better station identification.
+
 ## Plan for Current Task
-1. [DONE] Implement Trip Recording UI and Logic (Fixed preview and pathfinding bugs, localized buttons).
+1. [DONE] Implement Trip Recording UI and Logic.
 2. [DONE] Enhance Station Detail Pane header and line spacing.
-3. [DONE] Visual feedback for trip progress on the map (Hover Preview).
+3. [DONE] Visual feedback for trip progress on the map.
 4. [DONE] Prioritize Japanese names in History and Sidebar UI.
-5. [DONE] Refactor Mobile Layout (Header, Info Modal, Edit Mode Removal).
-6. [DONE] Refine Mobile Line Preview UI (Text hierarchy, Spacing, Mini-map repositioning).
-7. [PENDING] Perform final testing of the end-to-end trip recording flow and authentication.
+5. [DONE] Refactor Mobile Layout.
+6. [DONE] Refine Mobile Line Preview UI.
+7. [DONE] **Refine Rail Search Experience** (Premium UI, Highlighting, Keyboard Nav, Recent Searches).
+8. [PENDING] Final end-to-end testing and performance verification.
 

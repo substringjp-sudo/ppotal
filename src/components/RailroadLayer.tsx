@@ -7,7 +7,9 @@ import { getLineColor } from '../lib/lineColors';
 import { getSmartTooltipOptions } from '../lib/uiUtils';
 import { trackEvent } from '../lib/gtag';
 import { RailData, Section } from '../types/railData';
-import { sharedCanvasRenderer, sharedSvgRenderer } from './Map';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
+import { railroadCanvas, sharedSvgRenderer } from './Map';
 
 interface RailroadLayerProps {
     railroadNetwork: RailData | null;
@@ -40,11 +42,12 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     draftSectionIds = new Set(),
     settings
 }) => {
+    const { language } = useI18n();
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
 
     const pathOptions = useMemo(() => ({
-        renderer: sharedCanvasRenderer || undefined
+        renderer: railroadCanvas || undefined
     }), []);
 
     useEffect(() => {
@@ -119,13 +122,14 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // Check for Granular Data (RailData)
         if (railroadNetwork.stations && railroadNetwork.sections && railroadNetwork.lines) {
             const data = railroadNetwork as RailData;
-            const companyMap = new Map<number, { name: string, name_en: string }>();
-            Object.values(data.companies).forEach((c) => companyMap.set(c.id, { name: c.name, name_en: c.name_en }));
+            const companyMap = new Map<number, { name: string, name_en: string, name_kr?: string }>();
+            Object.values(data.companies).forEach((c) => companyMap.set(c.id, { name: c.name, name_en: c.name_en, name_kr: c.name_kr }));
 
-            const lineInfoMap = new Map<number, { name: string, name_en: string, companyId: number, color?: string }>();
+            const lineInfoMap = new Map<number, { name: string, name_en: string, name_kr?: string, companyId: number, color?: string }>();
             Object.values(data.lines).forEach((l) => lineInfoMap.set(l.id, {
                 name: l.name,
                 name_en: l.name_en,
+                name_kr: l.name_kr,
                 companyId: l.corp_id,
                 color: l.color
             }));
@@ -160,8 +164,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         id: fullId,
                         name: info.name,
                         name_en: info.name_en,
+                        name_kr: info.name_kr,
                         company: companyName,
                         company_en: companyInfo?.name_en || '',
+                        company_kr: companyInfo?.name_kr || '',
                         color: getLineColor(fullId, data) || '#999',
                         isUsed: isUsed,
                         isDraft: isDraft
@@ -321,29 +327,29 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
     const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
         if (!feature.properties) return;
-        const props = feature.properties as { id: string; name: string; name_en?: string; company: string; company_en?: string; endpoints?: string };
-        const { name, name_en, company, company_en, endpoints } = props;
+        const props = feature.properties as any;
+        const { id, endpoints } = props;
 
-        // Japanese is always primary (larger), English is always secondary (smaller)
-        const primaryLine = name;
-        const secondaryLine = name_en && name_en !== name ? name_en : '';
+        const lineData = railroadNetwork?.lines[id.split('::')[1]];
+        const companyData = railroadNetwork?.companies[id.split('::')[0]];
 
-        const primaryCorp = company;
-        const secondaryCorp = company_en && company_en !== company ? company_en : '';
+        const primaryLine = getLocalizedName(lineData, language) || props.name;
+        const secondaryLine = language !== 'ja' ? props.name : '';
+
+        const primaryCorp = getLocalizedName(companyData, language) || props.company;
+        const secondaryCorp = language !== 'ja' ? props.company : '';
 
         const tooltipContent = `
             <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif; max-height: 300px; display: flex; flex-direction: column; border-left: 4px solid ${feature.properties.color || '#999'}; padding-left: 8px;">
                 <div style="display: flex; flex-direction: column; border-bottom: 2px solid ${feature.properties.color || '#999'}; margin-bottom: 8px; padding-bottom: 4px;">
                     <span style="font-weight: 900; font-size: 14px; color: #2c3e50;">${primaryLine}</span>
-                    <span style="font-weight: 600; font-size: 10px; color: #718096; margin-top: -2px;">${secondaryLine}</span>
+                    ${secondaryLine ? `<span style="font-weight: 600; font-size: 10px; color: #718096; margin-top: -2px;">${secondaryLine}</span>` : ''}
                 </div>
                 <div style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">
                     <div style="font-size: 11px; font-weight: 700; color: #4a5568; line-height: 1.4;">
                         ${primaryCorp}
                     </div>
-                    <div style="font-size: 9px; font-weight: 600; color: #718096; margin-bottom: 4px;">
-                        ${secondaryCorp}
-                    </div>
+                    ${secondaryCorp ? `<div style="font-size: 9px; font-weight: 600; color: #718096; margin-bottom: 4px;">${secondaryCorp}</div>` : ''}
                     ${endpoints ? `
                         <div style="font-size: 9px; color: #cbd5e0; margin-top: 4px; border-top: 1px solid #edf2f7; padding-top: 4px; font-style: italic;">
                             ${endpoints}
@@ -477,8 +483,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const layerKey = useMemo(() => {
         const draftIdsArray = Array.from(draftSectionIds || []);
         const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
-        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}_${draftKey}`;
-    }, [zoomGroup, usedSectionIds.size, selectionSet.size, draftSectionIds]);
+        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}_${draftKey}_${language}`;
+    }, [zoomGroup, usedSectionIds.size, selectionSet.size, draftSectionIds, language]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 

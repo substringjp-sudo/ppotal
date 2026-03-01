@@ -3,8 +3,13 @@ export interface StationNode {
     id: string; // station_id (from stations.json)
     name: string;
     name_en?: string;
+    name_kr?: string;
     company: string; // company NAME (looked up)
+    company_en?: string;
+    company_kr?: string;
     line: string; // line NAME (looked up)
+    line_en?: string;
+    line_kr?: string;
     companyId: number;
     lineId: number;
     fullLineId: string; // "CompanyID::LineID" format

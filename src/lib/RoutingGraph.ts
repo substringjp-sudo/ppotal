@@ -41,22 +41,26 @@ export class RoutingGraph {
 
         if (!data.stations || !data.lines || !data.companies || !data.sections) return;
 
-        const companyNameMap = new Map<number, string>();
+        const companyInfoMap = new Map<number, { name: string, name_en: string, name_kr?: string }>();
         Object.values(data.companies).forEach(c => {
-            companyNameMap.set(c.id, c.name);
+            companyInfoMap.set(c.id, { name: c.name, name_en: c.name_en, name_kr: c.name_kr });
             this.companyNameToId.set(c.name, String(c.id));
         });
 
-        const lineNameMap = new Map<number, { name: string, companyId: number }>();
+        const lineInfoMap = new Map<number, { name: string, name_en: string, name_kr?: string, companyId: number }>();
         Object.values(data.lines).forEach(l => {
-            lineNameMap.set(l.id, { name: l.name, companyId: l.corp_id });
+            lineInfoMap.set(l.id, { name: l.name, name_en: l.name_en, name_kr: l.name_kr, companyId: l.corp_id });
             this.lineNameToId.set(l.name, String(l.id));
         });
 
         // 1. Process Stations
         Object.values(data.stations).forEach((station: Station) => {
             let companyName = "Unknown";
+            let companyNameEn = "Unknown";
+            let companyNameKr = undefined;
             let lineName = "Unknown";
+            let lineNameEn = "Unknown";
+            let lineNameKr = undefined;
             let fullLineName = "Unknown::Unknown";
 
             let pid = "";
@@ -64,9 +68,14 @@ export class RoutingGraph {
                 pid = station.platform_ids[0];
                 const platform = data.platforms[pid];
                 if (platform) {
-                    const lineInfo = lineNameMap.get(platform.line);
-                    companyName = companyNameMap.get(platform.company) || "Unknown";
-                    lineName = lineInfo ? lineInfo.name : "Unknown";
+                    const lInfo = lineInfoMap.get(platform.line);
+                    const cInfo = companyInfoMap.get(platform.company);
+                    companyName = cInfo?.name || "Unknown";
+                    companyNameEn = cInfo?.name_en || "Unknown";
+                    companyNameKr = cInfo?.name_kr;
+                    lineName = lInfo ? lInfo.name : "Unknown";
+                    lineNameEn = lInfo ? lInfo.name_en : "Unknown";
+                    lineNameKr = lInfo?.name_kr;
                     fullLineName = `${platform.company}::${platform.line}`;
                 }
             }
@@ -75,8 +84,13 @@ export class RoutingGraph {
                 id: station.id,
                 name: station.name,
                 name_en: station.name_en,
+                name_kr: station.name_kr,
                 company: companyName,
+                company_en: companyNameEn,
+                company_kr: companyNameKr,
                 line: lineName,
+                line_en: lineNameEn,
+                line_kr: lineNameKr,
                 companyId: pid ? (data.platforms[pid]?.company || 0) : 0,
                 lineId: pid ? (data.platforms[pid]?.line || 0) : 0,
                 fullLineId: fullLineName,

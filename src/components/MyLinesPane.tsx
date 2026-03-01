@@ -2,7 +2,54 @@
 
 import React, { useMemo } from 'react';
 import { RailData, Station, Line, Section, Company } from '../types/railData';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName, getLocalizedRegion } from '../lib/i18n-utils';
 import { Trip } from '../types/trip';
+
+const TRANSLATIONS = {
+    ko: {
+        title: '나의 기록',
+        subtitle: '일본 철도 여행 기록',
+        totalProgress: '전체 진행률',
+        lines: '개 노선',
+        tripRecord: '기록',
+        cancel: '취소',
+        confirm: '확인',
+        deleteAll: '전체 삭제',
+        noTrips: '기록된 여정이 없습니다.',
+        dragToRecord: '역 사이를 드래그하여 기록하세요!',
+        stations: '개 역',
+        deleteTrip: '이 기록 삭제',
+    },
+    en: {
+        title: 'MY HISTORY',
+        subtitle: 'Your Japanese rail journey records',
+        totalProgress: 'Total Progress',
+        lines: ' LINES',
+        tripRecord: ' Trip Record',
+        cancel: 'Cancel',
+        confirm: 'Confirm',
+        deleteAll: 'Delete All',
+        noTrips: 'No trips recorded yet.',
+        dragToRecord: 'Drag between stations to record!',
+        stations: ' STATIONS',
+        deleteTrip: 'Delete this record',
+    },
+    ja: {
+        title: 'マイ履歴',
+        subtitle: '日本の鉄道旅行の記録',
+        totalProgress: '全体進척',
+        lines: ' 路線',
+        tripRecord: '件の記録',
+        cancel: 'キャンセル',
+        confirm: '確認',
+        deleteAll: '全削除',
+        noTrips: 'まだ記録がありません。',
+        dragToRecord: '駅間をドラッグして記録しましょう！',
+        stations: ' 駅',
+        deleteTrip: 'この記録を削除',
+    }
+};
 
 export interface MyLinesPaneProps {
     recordedTrips?: Trip[];
@@ -15,8 +62,8 @@ export interface MyLinesPaneProps {
 }
 
 interface RegionNames {
-    adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
-    adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
+    adm1: Record<string, { name: string; name_en?: string; name_kr?: string }>;
+    adm2: Record<string, { name: string; name_en?: string; name_kr?: string }>;
 }
 
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
@@ -28,6 +75,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     visitedLineLengths = {},
     className
 }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
     const [isResetConfirming, setIsResetConfirming] = React.useState(false);
 
@@ -56,9 +105,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary text-xl">history</span>
-                    MY HISTORY
+                    {t.title}
                 </h2>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">Your Japanese rail journey records</p>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
             </div>
 
             <div className="px-5 py-4">
@@ -77,7 +126,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     return (
                         <div className="mb-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md">
                             <div className="flex justify-between items-end mb-2">
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Total Progress</span>
+                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{t.totalProgress}</span>
                                 <span className="text-sm font-black text-primary">{totalPercent.toFixed(1)}%</span>
                             </div>
                             <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
@@ -91,7 +140,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     {visitedKm.toLocaleString(undefined, { maximumFractionDigits: 1 })} / {totalKm.toLocaleString(undefined, { maximumFractionDigits: 1 })} KM
                                 </p>
                                 <p className="text-[10px] text-primary uppercase tracking-wider font-bold">
-                                    {Object.keys(visitedLineLengths).length} LINES
+                                    {Object.keys(visitedLineLengths).length}{t.lines}
                                 </p>
                             </div>
                         </div>
@@ -104,7 +153,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             {recordedTrips.length}
                         </span>
                         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                            Trip Record{recordedTrips.length !== 1 ? 's' : ''}
+                            {language === 'en' ? (recordedTrips.length !== 1 ? t.tripRecord + 's' : t.tripRecord) : t.tripRecord}
                         </span>
                     </div>
                     {recordedTrips.length > 0 && (
@@ -121,7 +170,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         onMouseUp={(e) => e.stopPropagation()}
                                         className="px-2 py-1 rounded-lg text-[9px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                     >
-                                        Cancel
+                                        {t.cancel}
                                     </button>
                                     <button
                                         onClick={(e) => {
@@ -134,7 +183,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         onMouseUp={(e) => e.stopPropagation()}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-500 text-white shadow-lg shadow-rose-500/20 active:scale-95 transition-all"
                                     >
-                                        Confirm
+                                        {t.confirm}
                                     </button>
                                 </div>
                             ) : (
@@ -149,7 +198,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-100 dark:border-rose-900/10 transition-all duration-200 active:scale-95 shadow-sm active:bg-rose-600 group/reset"
                                 >
                                     <span className="material-symbols-outlined !text-[13px] group-hover/reset:rotate-12 transition-transform">delete_sweep</span>
-                                    Delete All
+                                    {t.deleteAll}
                                 </button>
                             )}
                         </div>
@@ -165,10 +214,10 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 !text-3xl">route</span>
                         </div>
                         <p className="text-sm font-bold text-slate-400 dark:text-slate-500">
-                            No trips recorded yet.
+                            {t.noTrips}
                         </p>
                         <p className="text-[11px] text-slate-400/70 mt-1 uppercase tracking-wider">
-                            Drag between stations to record!
+                            {t.dragToRecord}
                         </p>
                     </div>
                 ) : (
@@ -178,9 +227,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
                         const getStationFullInfo = (station: (Station & { lines?: string[] }) | undefined, id: string) => {
                             if (!station) return {
-                                nameJa: id, nameEn: '', companyJa: 'Unknown', companyEn: '',
-                                lineJa: 'Unknown', lineEn: '', lineColor: '#primary',
-                                prefJa: '', prefEn: '', cityJa: '', cityEn: ''
+                                nameJa: id, nameSub: '', companyJa: 'Unknown', companySub: '',
+                                lineJa: 'Unknown', lineSub: '', lineColor: '#primary',
+                                prefJa: '', prefSub: '', cityJa: '', citySub: ''
                             };
 
                             let compId = '';
@@ -202,36 +251,36 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             const comp = compId !== '' ? (railData?.companies as Record<string, Company>)?.[compId] : null;
                             const line = lineId !== '' ? (railData?.lines as Record<string, Line>)?.[lineId] : null;
 
-                            const prefecture = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id] : null;
-                            const city = station.city_id && regionNames ? regionNames.adm2[station.city_id] : null;
+                            const prefLoc = getLocalizedRegion(station.prefecture_id, 'adm1', regionNames, language);
+                            const cityLoc = getLocalizedRegion(station.city_id, 'adm2', regionNames, language);
 
                             return {
-                                nameJa: station.name,
-                                nameEn: station.name_en,
-                                companyJa: comp?.name || compId || 'Unknown',
-                                companyEn: comp?.name_en || '',
-                                lineJa: line?.name || lineId || 'Unknown',
-                                lineEn: line?.name_en || '',
+                                nameJa: getLocalizedName(station, language),
+                                nameSub: language !== 'ja' ? station.name : '',
+                                companyJa: comp ? getLocalizedName(comp, language) : (compId || 'Unknown'),
+                                companySub: (language !== 'ja' && comp?.name) ? comp.name : '',
+                                lineJa: line ? getLocalizedName(line, language) : (lineId || 'Unknown'),
+                                lineSub: (language !== 'ja' && line?.name) ? line.name : '',
                                 lineColor: line?.color || '#3b82f6',
-                                prefJa: prefecture?.shapeName || '',
-                                prefEn: prefecture?.shapeName_en || '',
-                                cityJa: city?.shapeName || '',
-                                cityEn: city?.shapeName_en || ''
+                                prefJa: prefLoc.primary,
+                                prefSub: prefLoc.sub,
+                                cityJa: cityLoc.primary,
+                                citySub: cityLoc.sub
                             };
                         };
 
                         const startInfo = getStationFullInfo(startStation, trip.start);
                         const endInfo = getStationFullInfo(endStation, trip.end);
 
-                        const linesUsedMap = new Map<number, { ja: string, en: string, color: string }>();
+                        const linesUsedMap = new Map<number, { ja: string, sub: string, color: string }>();
                         trip.sectionIds?.forEach((sid: number) => {
                             const section = railData?.sections?.sections?.find((s: Section) => s.id === sid);
                             if (section) {
                                 const lData = railData?.lines[section.line_id];
                                 if (!linesUsedMap.has(section.line_id)) {
                                     linesUsedMap.set(section.line_id, {
-                                        ja: lData?.name || section.line_id.toString(),
-                                        en: lData?.name_en || '',
+                                        ja: getLocalizedName(lData, language),
+                                        sub: language !== 'ja' ? lData?.name || '' : '',
                                         color: lData?.color || '#3b82f6'
                                     });
                                 }
@@ -262,12 +311,12 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between mb-1">
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-black text-primary uppercase tracking-wider truncate">
+                                                <span className="text-[10px] font-black text-primary uppercase tracking-wider truncate" title={startInfo.lineJa}>
                                                     {startInfo.lineJa}
                                                 </span>
-                                                {startInfo.lineEn && (
-                                                    <span className="text-[8px] font-bold text-primary/60 uppercase tracking-tight truncate leading-none mt-0.5">
-                                                        {startInfo.lineEn}
+                                                {startInfo.lineSub && (
+                                                    <span className="text-[8px] font-bold text-primary/60 uppercase tracking-tight truncate leading-none mt-0.5" title={startInfo.lineSub}>
+                                                        {startInfo.lineSub}
                                                     </span>
                                                 )}
                                             </div>
@@ -275,9 +324,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                                 <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
                                                     {startInfo.prefJa} {startInfo.cityJa}
                                                 </span>
-                                                {(startInfo.prefEn || startInfo.cityEn) && (
+                                                {(startInfo.prefSub || startInfo.citySub) && (
                                                     <span className="text-[7px] font-bold text-slate-400/50 uppercase tracking-tighter leading-none mt-0.5">
-                                                        {startInfo.prefEn} {startInfo.cityEn}
+                                                        {startInfo.prefSub} {startInfo.citySub}
                                                     </span>
                                                 )}
                                             </div>
@@ -286,7 +335,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                             {startInfo.nameJa}
                                         </h3>
                                         <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                                            {startInfo.nameEn}
+                                            {startInfo.nameSub}
                                         </p>
                                     </div>
                                 </div>
@@ -295,16 +344,25 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 <div className="relative z-10 pl-[52px] mb-6">
                                     <div className="flex flex-col gap-2">
                                         {linesUsed.map((line, idx) => (
-                                            <div key={idx} className="flex items-center gap-2">
-                                                <div className="w-2.5 h-0.5 rounded-full" style={{ backgroundColor: line.color }}></div>
-                                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{line.ja}</span>
+                                            <div key={idx} className="flex items-center gap-2 min-w-0">
+                                                <div className="w-2.5 h-0.5 rounded-full shrink-0" style={{ backgroundColor: line.color }}></div>
+                                                <div className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
+                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate" title={line.ja}>
+                                                        {line.ja}
+                                                    </span>
+                                                    {line.sub && (
+                                                        <span className="text-[9px] font-bold text-slate-400 opacity-60 truncate" title={line.sub}>
+                                                            {line.sub}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                         {trip.path.length > 2 && (
                                             <div className="flex items-center gap-1.5 opacity-60">
                                                 <span className="material-symbols-outlined !text-[14px] text-slate-400">more_vert</span>
                                                 <span className="text-[10px] font-bold text-slate-400 tracking-wider">
-                                                    {trip.path.length - 2} STATIONS
+                                                    {trip.path.length - 2} {t.stations}
                                                 </span>
                                             </div>
                                         )}
@@ -319,12 +377,12 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between mb-1">
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title={endInfo.lineJa}>
                                                     {endInfo.lineJa}
                                                 </span>
-                                                {endInfo.lineEn && (
-                                                    <span className="text-[8px] font-bold text-slate-400/60 uppercase tracking-tight truncate leading-none mt-0.5">
-                                                        {endInfo.lineEn}
+                                                {endInfo.lineSub && (
+                                                    <span className="text-[8px] font-bold text-slate-400/60 uppercase tracking-tight truncate leading-none mt-0.5" title={endInfo.lineSub}>
+                                                        {endInfo.lineSub}
                                                     </span>
                                                 )}
                                             </div>
@@ -332,9 +390,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                                 <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
                                                     {endInfo.prefJa} {endInfo.cityJa}
                                                 </span>
-                                                {(endInfo.prefEn || endInfo.cityEn) && (
+                                                {(endInfo.prefSub || endInfo.citySub) && (
                                                     <span className="text-[7px] font-bold text-slate-400/50 uppercase tracking-tighter leading-none mt-0.5">
-                                                        {endInfo.prefEn} {endInfo.cityEn}
+                                                        {endInfo.prefSub} {endInfo.citySub}
                                                     </span>
                                                 )}
                                             </div>
@@ -343,7 +401,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                             {endInfo.nameJa}
                                         </h3>
                                         <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                                            {endInfo.nameEn}
+                                            {endInfo.nameSub}
                                         </p>
                                     </div>
                                 </div>
@@ -362,7 +420,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     <button
                                         onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
                                         className="size-8 rounded-lg flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all active:scale-90 border border-transparent hover:border-rose-200"
-                                        title="Delete this record"
+                                        title={t.deleteTrip}
                                     >
                                         <span className="material-symbols-outlined !text-[20px]">delete</span>
                                     </button>

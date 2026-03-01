@@ -14,6 +14,7 @@ export interface ProcessedStation {
     centroid: [number, number];
     lines: string[];
     name_en?: string;
+    name_kr?: string;
     isJoint?: boolean;
     isUsed?: boolean;
 }

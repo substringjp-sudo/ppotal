@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google"; // Add Inter
 import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "../lib/auth-context";
+import { I18nProvider } from "../lib/i18n-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,7 +103,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
-          {children}
+          <I18nProvider>
+            {children}
+          </I18nProvider>
         </AuthProvider>
       </body>
     </html>

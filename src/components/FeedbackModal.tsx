@@ -3,13 +3,58 @@
 import React, { useState } from 'react';
 import { db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useI18n } from '../lib/i18n-context';
 
 interface FeedbackModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+const TRANSLATIONS = {
+    ko: {
+        title: '피드백 보내기',
+        desc: '제안 사항이나 버그를 발견하셨나요? 알려주세요!',
+        labelFeedback: '피드백 내용',
+        placeholderFeedback: '이런 기능이 있으면 좋겠어요...',
+        labelName: '이름 (선택 사항)',
+        placeholderName: '익명',
+        submitBtn: '피드백 제출',
+        submitting: '제출 중...',
+        errorEmpty: '피드백 내용을 입력해주세요.',
+        successMsg: '감사합니다! 피드백이 성공적으로 제출되었습니다.',
+        errorMsg: '오류가 발생했습니다. 다시 시도해주세요.'
+    },
+    en: {
+        title: 'Submit Feedback',
+        desc: 'Have a suggestion or found a bug? Let us know!',
+        labelFeedback: 'Feedback',
+        placeholderFeedback: 'I think it would be great if...',
+        labelName: 'Your Name (Optional)',
+        placeholderName: 'Anonymous',
+        submitBtn: 'Submit Feedback',
+        submitting: 'Submitting...',
+        errorEmpty: 'Feedback content cannot be empty.',
+        successMsg: 'Thank you! Your feedback has been submitted.',
+        errorMsg: 'An error occurred. Please try again.'
+    },
+    ja: {
+        title: 'フィードバックを送信',
+        desc: '提案やバグを見つけましたか？ぜひ教えてください！',
+        labelFeedback: 'フィードバック内容',
+        placeholderFeedback: 'こんな機能があったらいいな...',
+        labelName: 'お名前 (任意)',
+        placeholderName: '匿名',
+        submitBtn: 'フィードバックを送信',
+        submitting: '送信中...',
+        errorEmpty: 'フィードバック内容を入力してください。',
+        successMsg: 'ありがとうございます！フィードバックが送信されました。',
+        errorMsg: 'エラーが発生しました。もう一度お試しください。'
+    }
+};
+
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +76,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         e.preventDefault();
 
         if (!content || content.trim().length === 0) {
-            setMessage({ type: 'error', text: "Feedback content cannot be empty." });
+            setMessage({ type: 'error', text: t.errorEmpty });
             return;
         }
 
@@ -41,13 +86,13 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         try {
             await addDoc(collection(db, 'feedbacks'), {
                 content,
-                author: author || 'Anonymous',
+                author: author || t.placeholderName,
                 type: 'General',
                 createdAt: serverTimestamp(),
                 status: 'new'
             });
 
-            setMessage({ type: 'success', text: "Thank you! Your feedback has been submitted." });
+            setMessage({ type: 'success', text: t.successMsg });
             setContent('');
             setAuthor('');
             setTimeout(() => {
@@ -56,7 +101,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
             }, 2000);
         } catch (error) {
             console.error('Feedback submission error:', error);
-            setMessage({ type: 'error', text: "An error occurred. Please try again." });
+            setMessage({ type: 'error', text: t.errorMsg });
         } finally {
             setIsSubmitting(false);
         }
@@ -112,14 +157,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                     fontWeight: '700',
                     color: '#1e293b'
                 }}>
-                    Submit Feedback
+                    {t.title}
                 </h2>
                 <p id="feedback-modal-desc" style={{
                     color: '#64748b',
                     marginBottom: '24px',
                     fontSize: '15px'
                 }}>
-                    Have a suggestion or found a bug? Let us know!
+                    {t.desc}
                 </p>
 
                 <form onSubmit={handleSubmit}>
@@ -131,7 +176,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             fontSize: '14px',
                             color: '#475569'
                         }}>
-                            Feedback
+                            {t.labelFeedback}
                         </label>
                         <textarea
                             id="feedback-content"
@@ -139,7 +184,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             required
-                            placeholder="I think it would be great if..."
+                            placeholder={t.placeholderFeedback}
                             style={{
                                 width: '100%',
                                 height: '150px',
@@ -149,7 +194,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                                 fontSize: '15px',
                                 outline: 'none',
                                 resize: 'none',
-                                boxSizing: 'border-box'
+                                boxSizing: 'border-box',
+                                color: '#1e293b'
                             }}
                         />
                     </div>
@@ -162,14 +208,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             fontSize: '14px',
                             color: '#475569'
                         }}>
-                            Your Name (Optional)
+                            {t.labelName}
                         </label>
                         <input
                             id="feedback-author"
                             type="text"
                             value={author}
                             onChange={(e) => setAuthor(e.target.value)}
-                            placeholder="Anonymous"
+                            placeholder={t.placeholderName}
                             style={{
                                 width: '100%',
                                 padding: '12px 16px',
@@ -177,7 +223,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                                 border: '1px solid #e2e8f0',
                                 fontSize: '15px',
                                 outline: 'none',
-                                boxSizing: 'border-box'
+                                boxSizing: 'border-box',
+                                color: '#1e293b'
                             }}
                         />
                     </div>
@@ -214,7 +261,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
                         }}
                     >
-                        {isSubmitting ? "Submitting..." : "Submit Feedback"}
+                        {isSubmitting ? t.submitting : t.submitBtn}
                     </button>
                 </form>
             </div>

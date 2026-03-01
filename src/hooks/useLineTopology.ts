@@ -5,6 +5,7 @@ export interface TopologyNode {
     id: string;
     name: string;
     name_en?: string;
+    name_kr?: string;
     x: number;
     y: number;
     isJoint: boolean;
@@ -72,6 +73,7 @@ export function useLineTopology(
                 id,
                 name: nodeData?.name || id,
                 name_en: nodeData?.name_en,
+                name_kr: nodeData?.name_kr,
                 x,
                 y,
                 isJoint,
@@ -120,6 +122,7 @@ export function useLineTopology(
                         id: curr.id,
                         name: nodeData?.name || curr.id,
                         name_en: nodeData?.name_en,
+                        name_kr: nodeData?.name_kr,
                         x: curr.x,
                         y: curr.y,
                         isJoint,

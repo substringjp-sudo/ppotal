@@ -8,6 +8,26 @@ import { useLineTopology } from '../hooks/useLineTopology';
 import { Trip } from '../types/trip';
 import { getLineColor } from '../lib/lineColors';
 import { RailData } from '../types/railData';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
+
+const TRANSLATIONS = {
+    ko: {
+        completion: '완성도',
+        showLine: '노선 표시',
+        hideLine: '노선 숨기기',
+    },
+    en: {
+        completion: 'Completion',
+        showLine: 'Show Line',
+        hideLine: 'Hide Line',
+    },
+    ja: {
+        completion: '完乗率',
+        showLine: '路線を表示',
+        hideLine: '路線を隠す',
+    }
+};
 
 export interface LineDetailPaneProps {
     lineId: string;
@@ -27,6 +47,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     lineId, segments, nodes, visitedEdges, selectedLines, onClose, onStationClick, onToggleLine,
     getShortestPath, onRecordTrip, railData
 }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const [company, lineName] = lineId.split('::');
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
@@ -89,7 +111,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     ? 'bg-primary border-primary text-white shadow-primary/20'
                                     : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700'
                                 }`}
-                            title={selectedLines.includes(lineId) ? "Hide Line" : "Show Line"}
+                            title={selectedLines.includes(lineId) ? t.hideLine : t.showLine}
                         >
                             <span className="material-symbols-outlined text-xl sm:text-2xl">
                                 {selectedLines.includes(lineId) ? 'check' : 'add'}
@@ -99,21 +121,21 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         <div className="flex flex-col min-w-0">
                             <div className="flex items-baseline gap-1.5 sm:gap-2 m-0 overflow-hidden">
                                 <span className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
-                                    {lineData?.name || lineName}
+                                    {lineData ? getLocalizedName(lineData, language) : lineName}
                                 </span>
-                                {lineData?.name_en && (
+                                {language !== 'ja' && lineData?.name && (
                                     <span className="text-[9px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">
-                                        {lineData.name_en}
+                                        {lineData.name}
                                     </span>
                                 )}
                             </div>
                             <div className="flex items-baseline gap-1.5 sm:gap-2 mt-0 overflow-hidden">
                                 <span className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest truncate">
-                                    {companyData?.name || company}
+                                    {companyData ? getLocalizedName(companyData, language) : company}
                                 </span>
-                                {companyData?.name_en && (
+                                {language !== 'ja' && companyData?.name && (
                                     <span className="text-[7px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase truncate">
-                                        {companyData.name_en}
+                                        {companyData.name}
                                     </span>
                                 )}
                             </div>
@@ -135,7 +157,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 <div className="flex items-center justify-between gap-2 sm:gap-4 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                         <div className="flex flex-col gap-0">
-                            <div className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Completion</div>
+                            <div className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">{t.completion}</div>
                             <div className="text-sm sm:text-lg text-slate-900 dark:text-white font-black leading-none whitespace-nowrap">
                                 {stats.visited} <span className="text-[7px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold">/ {stats.total} km</span>
                             </div>

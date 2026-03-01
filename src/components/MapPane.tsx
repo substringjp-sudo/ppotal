@@ -61,6 +61,7 @@ interface MapPaneProps {
     onToggleLabels?: () => void;
     tripStartStationId?: string | null;
     onStationHover?: (id: string | null) => void;
+    onPrefectureClick?: (name: string) => void;
 }
 
 const PANE_STYLES = {
@@ -103,7 +104,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     onToggleLabels,
     tripStartStationId,
     onStationHover: onStationHoverExternal,
-    selectedStation
+    selectedStation,
+    onPrefectureClick
 }) => {
     const map = useMap();
     const [zoomLevel, setZoomLevel] = useState(5);
@@ -451,16 +453,17 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             {activePrefectures && (
                 <JapanMap
-                    key={`pref-${lodLevel}`}
+                    key={`pref-solid-${zoomLevel <= 8 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}`}
                     prefectures={activePrefectures}
                     interactive={zoomLevel <= 8}
+                    onPrefectureClick={onPrefectureClick}
                     zoom={zoomLevel}
                     pane="background"
                 />
             )}
             {zoomLevel > 8 && activeMunicipalities && (
                 <MunicipalMap
-                    key={`muni-${lodLevel}`}
+                    key={`muni-${zoomLevel <= 9 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}`}
                     municipalities={activeMunicipalities}
                     zoom={zoomLevel}
                     pane="background"
@@ -468,7 +471,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             )}
             {zoomLevel > 8 && activePrefectures && (
                 <JapanMap
-                    key={`pref-outline-${lodLevel}`}
+                    key={`pref-outline-${zoomLevel <= 8 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}`}
                     prefectures={activePrefectures}
                     outlineOnly={true}
                     interactive={false}

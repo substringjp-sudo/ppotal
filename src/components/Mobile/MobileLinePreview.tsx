@@ -5,6 +5,8 @@ import TubeMap from '../TubeMap';
 import { useLineTopology } from '../../hooks/useLineTopology';
 import { getLineColor } from '../../lib/lineColors';
 import { RailData } from '../../types/railData';
+import { useI18n } from '../../lib/i18n-context';
+import { getLocalizedName } from '../../lib/i18n-utils';
 
 export interface MobileLinePreviewProps {
     lineId: string;
@@ -27,6 +29,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     onToggleLine,
     railData
 }) => {
+    const { language } = useI18n();
     const isSelected = selectedLines.includes(lineId);
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
@@ -58,11 +61,11 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     const companyData = railData?.companies[company];
     const lineData = railData?.lines[lineName];
 
-    const cNamePrimary = companyData?.name || company;
-    const lNamePrimary = lineData?.name || lineName;
+    const cNamePrimary = getLocalizedName(companyData, language) || company;
+    const lNamePrimary = getLocalizedName(lineData, language) || lineName;
 
-    const cNameSecondary = companyData?.name_en || "";
-    const lNameSecondary = lineData?.name_en || "";
+    const cNameSecondary = language === 'ja' ? companyData?.name_en : companyData?.name;
+    const lNameSecondary = language === 'ja' ? lineData?.name_en : lineData?.name;
 
     return (
         <div className="mx-2 my-1 p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300">
@@ -74,7 +77,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                         <span className="text-xl font-black text-slate-900 dark:text-white leading-none truncate">
                             {lNamePrimary}
                         </span>
-                        {lNameSecondary && (
+                        {lNameSecondary && lNameSecondary !== lNamePrimary && (
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic truncate uppercase tracking-tight">
                                 {lNameSecondary}
                             </span>
@@ -86,7 +89,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 leading-none truncate uppercase tracking-widest">
                             {cNamePrimary}
                         </span>
-                        {cNameSecondary && (
+                        {cNameSecondary && cNameSecondary !== cNamePrimary && (
                             <span className="text-[8px] font-medium text-slate-400 dark:text-slate-600 truncate uppercase tracking-tighter">
                                 {cNameSecondary}
                             </span>

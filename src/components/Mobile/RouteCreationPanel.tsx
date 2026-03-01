@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trip } from '../../types/trip';
 import { RailData } from '../../types/railData';
+import { useI18n } from '../../lib/i18n-context';
 
 interface RouteCreationPanelProps {
     isDragging: boolean;
@@ -13,6 +14,24 @@ interface RouteCreationPanelProps {
     railData: RailData | null;
 }
 
+const TRANSLATIONS = {
+    ko: {
+        placeholder: '역을 길게 눌러 드래그하면 경로를 기록할 수 있습니다',
+        add: '기록 저장',
+        discard: '삭제'
+    },
+    en: {
+        placeholder: 'Press and drag a station to record your route',
+        add: 'Add to History',
+        discard: 'Discard'
+    },
+    ja: {
+        placeholder: '駅を長押ししてドラッグするとルートを記録できます',
+        add: '履歴に追加',
+        discard: '破棄'
+    }
+};
+
 const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = ({
     isDragging,
     tempPath,
@@ -22,6 +41,8 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
     onHeightChange,
     railData
 }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const displayPath = React.useMemo(() => {
         return isDragging ? tempPath : (draftTrip ? draftTrip.waypoints : []);
     }, [isDragging, tempPath, draftTrip]);
@@ -69,7 +90,7 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                 }}>
                     {displayPath.length === 0 ? (
                         <span style={{ color: '#555', fontSize: '14px', margin: 'auto', fontWeight: 'bold' }}>
-                            Press and drag a station to record your route
+                            {t.placeholder}
                         </span>
                     ) : (
                         displayPath.map((stationId: string, idx: number) => {
@@ -88,11 +109,11 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                                             color: '#333',
                                             fontWeight: '800'
                                         }}>
-                                            {displayName}
+                                            {language === 'ja' ? displayName : (displayNameEn || displayName)}
                                         </span>
-                                        {displayNameEn && (
+                                        {language !== 'ja' && (
                                             <span style={{ fontSize: '9px', color: '#718096', fontWeight: '500', marginTop: '1px' }}>
-                                                {displayNameEn}
+                                                {displayName}
                                             </span>
                                         )}
                                     </div>
@@ -119,7 +140,7 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                                 fontWeight: 'bold'
                             }}
                         >
-                            Add to History
+                            {t.add}
                         </button>
                         <button
                             onClick={onDiscard}
@@ -133,7 +154,7 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
                                 fontWeight: 'bold'
                             }}
                         >
-                            Discard
+                            {t.discard}
                         </button>
                     </div>
                 )}

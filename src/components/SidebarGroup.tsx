@@ -1,17 +1,19 @@
 import React, { memo } from 'react';
 import { trackEvent } from '../lib/gtag';
 import { getProgressColor } from '../lib/uiUtils';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
 
 interface SidebarGroupProps {
     title: string;
     groupKey: string;
-    companies: Record<string, Record<string, { name: string; name_en?: string; stations?: string[] }>>;
+    companies: Record<string, Record<string, { name: string; name_en?: string; name_kr?: string; stations?: string[] }>>;
     expanded: boolean;
     onToggleExpanded: (groupKey: string) => void;
     onToggleSelection: (groupKey: string) => void;
     selectedLines: string[];
     onToggleLine: (lineKey: string) => void;
-    onToggleCompany: (company: string, lines: Record<string, { name: string; name_en?: string; stations?: string[] }>) => void;
+    onToggleCompany: (company: string, lines: Record<string, { name: string; name_en?: string; name_kr?: string; stations?: string[] }>) => void;
     expandedCompanies: Record<string, boolean>;
     toggleCompany: (company: string) => void;
     lineLengths: Record<string, number>;
@@ -20,14 +22,14 @@ interface SidebarGroupProps {
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
-    companyNames: Record<string, { name: string; name_en?: string }>;
-    lineNames: Record<string, { name: string; name_en?: string }>;
+    companyNames: Record<string, { name: string; name_en?: string; name_kr?: string }>;
+    lineNames: Record<string, { name: string; name_en?: string; name_kr?: string }>;
 }
 
 const SidebarLineItem: React.FC<{
     lineId: string;
     companyId: string;
-    lineData: { name: string; name_en?: string };
+    lineData: { name: string; name_en?: string; name_kr?: string };
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
     onLineClick?: (line: string) => void;
     onToggleLine: (lineKey: string) => void;
@@ -36,8 +38,9 @@ const SidebarLineItem: React.FC<{
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
 }> = memo(({ lineId, companyId, lineData, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
-    const lName = lineData.name;
-    const lNameEn = lineData.name_en;
+    const { language } = useI18n();
+    const lName = getLocalizedName(lineData, language);
+    const lNameSub = language !== 'ja' ? lineData.name : '';
     const key = `${companyId}::${lineId}`;
     const isActive = activeLine === key;
     const isSelected = selectedLines.includes(key) || isActive;
@@ -77,9 +80,9 @@ const SidebarLineItem: React.FC<{
                                 } group-hover/line:text-primary transition-colors`}>
                                 {lName}
                             </span>
-                            {lNameEn && (
+                            {lNameSub && (
                                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">
-                                    {lNameEn}
+                                    {lNameSub}
                                 </span>
                             )}
                         </div>
@@ -126,8 +129,9 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
 
     if (Object.keys(companies).length === 0) return null;
 
+    const { language } = useI18n();
     const getCompanyName = (id: string) => companyNames[id]?.name || id;
-    const getLineName = (id: string, lineData?: { name: string; name_en?: string }) => lineData?.name || lineNames[id]?.name || id;
+    const getLineName = (id: string, lineData?: { name: string; name_en?: string; name_kr?: string }) => lineData?.name || lineNames[id]?.name || id;
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
@@ -220,8 +224,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                 {sortedCompanies.map(([companyId, lines]) => {
                     const isExpanded = expandedCompanies[companyId];
                     const companyData = companyNames[companyId];
-                    const cName = companyData?.name || companyId;
-                    const cNameEn = companyData?.name_en || "";
+                    const cName = getLocalizedName(companyData, language) || companyId;
+                    const cNameSub = (language !== 'ja' && companyData?.name) ? companyData.name : '';
 
                     const allLinesSelected = Object.keys(lines).every(lineId => selectedLines.includes(`${companyId}::${lineId}`));
                     const someLinesSelected = Object.keys(lines).some(lineId => selectedLines.includes(`${companyId}::${lineId}`));
@@ -277,9 +281,9 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                         <span className="text-[13px] font-black text-slate-800 dark:text-slate-200 truncate group-hover/company:text-primary transition-colors leading-tight">
                                             {cName}
                                         </span>
-                                        {cNameEn && (
+                                        {cNameSub && (
                                             <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold truncate tracking-tight uppercase leading-tight mt-0.5">
-                                                {cNameEn}
+                                                {cNameSub}
                                             </span>
                                         )}
                                     </div>

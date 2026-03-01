@@ -7,6 +7,53 @@ import { useRailData } from '../hooks/useRailData';
 import SidebarGroup from './SidebarGroup';
 import { useAuth } from '../lib/auth-context';
 import AuthModal from './auth/AuthModal';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
+
+const TRANSLATIONS = {
+    ko: {
+        title: '철도망 노선도',
+        subtitle: '지도의 표시할 노선을 선택하세요',
+        sortTitle: '정렬 및 구성',
+        alphabetical: '가나다순',
+        byUsage: '이용량순',
+        selection: '선택 이벤트',
+        all: '모두 선택',
+        none: '선택 해제',
+        viewGroups: '카테고리 보기',
+        expandAll: '모든 카테고리 열기',
+        collapseAll: '모든 카테고리 닫기',
+        loading: '로딩 중...',
+    },
+    en: {
+        title: 'Railroad Networks',
+        subtitle: 'Select lines to visualize on map',
+        sortTitle: 'Sort & Organize',
+        alphabetical: 'Alphabetical',
+        byUsage: 'By Usage',
+        selection: 'Selection',
+        all: 'All',
+        none: 'None',
+        viewGroups: 'View Groups',
+        expandAll: 'Expand All Categories',
+        collapseAll: 'Collapse All Categories',
+        loading: 'Loading...',
+    },
+    ja: {
+        title: '鉄道ネットワーク',
+        subtitle: '地図に表示する路線を選択してください',
+        sortTitle: 'ソートと整理',
+        alphabetical: '五十音順',
+        byUsage: '利用量順',
+        selection: '一括選択',
+        all: 'すべて選択',
+        none: '選択解除',
+        viewGroups: 'カテゴリ表示',
+        expandAll: 'すべてのカテゴリを開く',
+        collapseAll: 'すべてのカテゴリを閉じる',
+        loading: '読み込み中...',
+    }
+};
 
 export interface SidebarProps {
     selectedLines: string[];
@@ -22,6 +69,7 @@ export interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, className }) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
+    const { language } = useI18n();
 
     const effectiveLineLengths = propLineLengths && Object.keys(propLineLengths).length > 0 ? propLineLengths : hookLineLengths;
     const [sortMode, setSortMode] = useState<'ja' | 'usage'>('ja');
@@ -154,7 +202,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         lineRefs.current[key] = el;
     }, []);
 
-    if (!groupedHierarchy || !CATEGORY_MAP || !companyNames || !lineNames) return <div>Loading...</div>;
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+
+    if (!groupedHierarchy || !CATEGORY_MAP || !companyNames || !lineNames) return <div className="p-10 text-center text-slate-400 font-bold">{t.loading}</div>;
 
     const sortedCategoryIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
 
@@ -164,20 +214,20 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
-                    Railroad Networks
+                    {t.title}
                 </h2>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">Select lines to visualize on map</p>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
             </div>
 
             {/* Sidebar Controls */}
             <div className="p-3 border-b border-slate-50 dark:border-slate-800 space-y-3 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
                 {/* Sort Mode */}
                 <div>
-                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">Sort & Organize</div>
+                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">{t.sortTitle}</div>
                     <div className="flex p-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
                         {[
-                            { id: 'ja', label: 'Alphabetical', icon: 'sort_by_alpha' },
-                            { id: 'usage', label: 'By Usage', icon: 'trending_up' },
+                            { id: 'ja', label: t.alphabetical, icon: 'sort_by_alpha' },
+                            { id: 'usage', label: t.byUsage, icon: 'trending_up' },
                         ].map(opt => (
                             <button
                                 key={opt.id}
@@ -200,38 +250,38 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 {/* Bulk Actions */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">Selection</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">{t.selection}</div>
                         <div className="grid grid-cols-2 gap-1.5">
                             <button
                                 onClick={handleSelectAll}
                                 className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
-                                title="Select All Lines"
+                                title={t.all}
                             >
-                                All
+                                {t.all}
                             </button>
                             <button
                                 onClick={handleDeselectAll}
                                 className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm"
-                                title="Deselect All Lines"
+                                title={t.none}
                             >
-                                None
+                                {t.none}
                             </button>
                         </div>
                     </div>
                     <div className="space-y-1.5">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">View Groups</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">{t.viewGroups}</div>
                         <div className="grid grid-cols-2 gap-1.5">
                             <button
                                 onClick={() => handleToggleAllGroups(true)}
                                 className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
-                                title="Expand All Categories"
+                                title={t.expandAll}
                             >
                                 <span className="material-symbols-outlined text-[18px]">expand_all</span>
                             </button>
                             <button
                                 onClick={() => handleToggleAllGroups(false)}
                                 className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
-                                title="Collapse All Categories"
+                                title={t.collapseAll}
                             >
                                 <span className="material-symbols-outlined text-[18px]">collapse_all</span>
                             </button>
@@ -246,7 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                     {sortedCategoryIds.map((categoryId, index) => {
                         const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
                         if (!categoryInfo) return null;
-                        const title = categoryInfo.name || categoryInfo.name_en;
+                        const title = getLocalizedName(categoryInfo, language);
                         return (
                             <SidebarGroup
                                 key={categoryId}
@@ -274,6 +324,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                     })}
                 </div>
             </div>
+
         </div>
     );
 };

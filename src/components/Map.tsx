@@ -10,10 +10,11 @@ export interface MapProps {
 }
 
 // Shared Canvas Renderer for visual layers (padding: 2.0 means 5x5 viewport area)
-export const sharedCanvasRenderer = typeof window !== 'undefined' ? L.canvas({ padding: 2.0 }) : null;
+// We separate background and railroad to prevent Z-index fighting on the same canvas
+export const backgroundCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 1.5, pane: 'background' }) : null;
+export const railroadCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-lines' }) : null;
 
 // Shared SVG Renderer for interaction layers (Perfect hit detection)
-// Must be associated with master-interactions pane to be above visual layers
 export const sharedSvgRenderer = typeof window !== 'undefined' ? L.svg({ padding: 0.5, pane: 'master-interactions' }) : null;
 
 const Map: React.FC<MapProps> = ({ children }) => {
@@ -29,7 +30,6 @@ const Map: React.FC<MapProps> = ({ children }) => {
             minZoom={5}
             maxBounds={[[20, 120], [50, 160]]}
             worldCopyJump={true}
-            renderer={sharedCanvasRenderer || L.canvas({ padding: 1.5 })}
         >
             {children}
         </MapContainer>

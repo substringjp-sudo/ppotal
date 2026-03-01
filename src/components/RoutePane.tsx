@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { trackEvent } from '../lib/gtag';
 import { RailData } from '../types/railData';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
 
 interface Leg {
     fromStation: { id: string; name: string; name_en?: string };
@@ -27,6 +29,42 @@ interface RoutePaneProps {
     railData?: RailData | null;
 }
 
+const TRANSLATIONS = {
+    ko: {
+        title: '경로 탐색',
+        start: '출발',
+        end: '도착',
+        placeholder: '역명 입력',
+        totalDistance: '총 이동 거리',
+        transfers: (count: number) => `환승: ${count}회`,
+        transfer: '환승',
+        rail: '철도',
+        noSelection: '역을 선택하여 경로를 탐색하세요.'
+    },
+    en: {
+        title: 'Route Planner',
+        start: 'START',
+        end: 'END',
+        placeholder: 'Station Name',
+        totalDistance: 'Total Distance',
+        transfers: (count: number) => `Transfers: ${count}`,
+        transfer: 'Transfer',
+        rail: 'Rail',
+        noSelection: 'Select stations to route.'
+    },
+    ja: {
+        title: 'ルート検索',
+        start: '出発',
+        end: '到着',
+        placeholder: '駅名を入力',
+        totalDistance: '総移動距離',
+        transfers: (count: number) => `乗換: ${count}回`,
+        transfer: '乗換',
+        rail: '鉄道',
+        noSelection: '駅を選択してルートを検索してください。'
+    }
+};
+
 const RoutePane: React.FC<RoutePaneProps> = ({
     startStation,
     endStation,
@@ -36,6 +74,8 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     onSwapStations,
     railData
 }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const [startInput, setStartInput] = useState(startStation || '');
     const [endInput, setEndInput] = useState(endStation || '');
 
@@ -137,17 +177,17 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     return (
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'Pretendard, sans-serif' }}>
             <h2 style={{ fontSize: '18px', marginBottom: '15px', fontWeight: '900', color: '#2c3e50', borderBottom: '3px solid #e74c3c', paddingBottom: '8px' }}>
-                Route Planner
+                {t.title}
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
                 <div style={{ position: 'relative' }}>
-                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '4px' }}>START</label>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '4px' }}>{t.start}</label>
                     <input
                         type="text"
                         value={startInput}
                         onChange={handleStartChange}
-                        placeholder="Station Name"
+                        placeholder={t.placeholder}
                         style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', fontSize: '14px' }}
                     />
                     {startSuggestions.length > 0 && (
@@ -169,12 +209,12 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                 </div>
 
                 <div style={{ position: 'relative' }}>
-                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '4px' }}>END</label>
+                    <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#666', marginBottom: '4px' }}>{t.end}</label>
                     <input
                         type="text"
                         value={endInput}
                         onChange={handleEndChange}
-                        placeholder="Station Name"
+                        placeholder={t.placeholder}
                         style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', fontSize: '14px' }}
                     />
                     {endSuggestions.length > 0 && (
@@ -194,9 +234,9 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                 {routeResult && routeResult.legs ? (
                     <div>
                         <div style={{ marginBottom: '15px', padding: '10px', background: '#f8f9fa', borderRadius: '6px' }}>
-                            <div style={{ fontSize: '12px', color: '#666' }}>Total Distance</div>
+                            <div style={{ fontSize: '12px', color: '#666' }}>{t.totalDistance}</div>
                             <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#2c3e50' }}>{formatDistance(routeResult.totalDistance)}</div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>Transfers: {routeResult.transferCount}</div>
+                            <div style={{ fontSize: '12px', color: '#666' }}>{t.transfers(routeResult.transferCount)}</div>
                         </div>
 
                         {routeResult.legs.map((leg, idx: number) => (
@@ -204,8 +244,8 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{leg.fromStation.name}</div>
-                                        {leg.fromStation.name_en && <div style={{ fontSize: '11px', color: '#888' }}>{leg.fromStation.name_en}</div>}
+                                        <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{language === 'ja' ? leg.fromStation.name : (leg.fromStation.name_en || leg.fromStation.name)}</div>
+                                        {language !== 'ja' && <div style={{ fontSize: '11px', color: '#888' }}>{leg.fromStation.name}</div>}
                                     </div>
                                 </div>
 
@@ -217,12 +257,12 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                                 }}>
                                     {leg.type === 'TRANSFER' ? (
                                         <div style={{ fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
-                                            Transfer ({formatDistance(leg.distance)})
+                                            {t.transfer} ({formatDistance(leg.distance)})
                                         </div>
                                     ) : (
                                         <div style={{ fontSize: '12px' }}>
                                             <div style={{ fontWeight: 'bold', color: '#27ae60' }}>
-                                                {leg.lineId ? leg.lineId.split('::')[1] : 'Rail'}
+                                                {leg.lineId ? leg.lineId.split('::')[1] : t.rail}
                                             </div>
                                             <div style={{ color: '#666' }}>{formatDistance(leg.distance)}</div>
                                         </div>
@@ -233,8 +273,8 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#333', flexShrink: 0 }}></div>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{leg.toStation.name}</div>
-                                            {leg.toStation.name_en && <div style={{ fontSize: '11px', color: '#888' }}>{leg.toStation.name_en}</div>}
+                                            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{language === 'ja' ? leg.toStation.name : (leg.toStation.name_en || leg.toStation.name)}</div>
+                                            {language !== 'ja' && <div style={{ fontSize: '11px', color: '#888' }}>{leg.toStation.name}</div>}
                                         </div>
                                     </div>
                                 )}
@@ -243,7 +283,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
                     </div>
                 ) : (
                     <div style={{ textAlign: 'center', color: '#999', marginTop: '20px' }}>
-                        Select stations to route.
+                        {t.noSelection}
                     </div>
                 )}
             </div>

@@ -6,13 +6,15 @@ import { GeoJSON, useMap } from 'react-leaflet';
 import { MapStyleSettings } from './MainPageClient';
 import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
-import { sharedSvgRenderer } from './Map';
+import { sharedSvgRenderer, railroadCanvas } from './Map';
 import { RailData } from '../types/railData';
 import { getLineColor } from '../lib/lineColors';
 import { getSmartTooltipOptions } from '../lib/uiUtils';
 import { trackEvent } from '../lib/gtag';
 import { convexHull } from '../lib/geoUtils';
 import { Line } from '../types/railData';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 
 interface StationFeatureProperties {
     type: 'node' | 'platform' | 'hull';
@@ -25,10 +27,6 @@ interface StationFeatureProperties {
     color?: string;
 }
 
-interface RegionNames {
-    adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
-    adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
-}
 
 interface StationsProps {
     processedStations: Record<string, ProcessedStation> | null;
@@ -75,6 +73,7 @@ const Stations: React.FC<StationsProps> = ({
     showLabels = false,
     selectedStation = null
 }) => {
+    const { language, isKorean } = useI18n();
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
     const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
@@ -107,6 +106,9 @@ const Stations: React.FC<StationsProps> = ({
         checkPanes();
         return () => { mounted = false; };
     }, [map]);
+    const visualPathOptions = useMemo(() => ({
+        renderer: railroadCanvas || undefined
+    }), []);
 
     const allEntries = useMemo(() => {
         if (!processedStations) return [];
@@ -408,29 +410,25 @@ const Stations: React.FC<StationsProps> = ({
         const station = id ? processedStations?.[id] : null;
         if (!station) return;
 
-        const stationNameJA = station.name;
-        const stationNameEN = station.name_en || '';
+        const localizedName = getLocalizedName(station, language);
+        const nameSub = language !== 'ja' ? station.name : '';
         const rawStation = railData.stations[id];
-        const prefecture = rawStation?.prefecture_id && regionNames ? regionNames.adm1[rawStation.prefecture_id] : null;
-        const cityName = rawStation?.city_id && regionNames ? regionNames.adm2[rawStation.city_id]?.shapeName : '';
-        const regionNameJA = prefecture ? `${prefecture.shapeName}${cityName ? ' ' + cityName : ''}` : cityName;
-
-        const prefectureEn = prefecture?.shapeName_en || '';
-        const cityNameEn = rawStation?.city_id && regionNames ? regionNames.adm2[rawStation.city_id]?.shapeName_en : '';
-        const regionNameEN = prefectureEn ? `${prefectureEn}${cityNameEn ? ', ' + cityNameEn : ''}` : cityNameEn;
+        const address = getLocalizedAddress(rawStation?.prefecture_id, rawStation?.city_id, regionNames, language);
+        const addressJA = getLocalizedAddress(rawStation?.prefecture_id, rawStation?.city_id, regionNames, 'ja');
+        const nameSecondary = language !== 'ja' ? station.name : '';
 
         const lineList = station.lines.map(l => {
-            const line = l.includes('::') ? l.split('::')[1] : l;
-            const lineData = (railData.lines as Record<string, Line>)[line];
-            const dispLineJA = lineData?.name || line;
-            const dispLineEN = lineData?.name_en || (lineData?.name ? '' : line);
+            const lineId = l.includes('::') ? l.split('::')[1] : l;
+            const lineData = (railData.lines as Record<string, Line>)[lineId];
+            const lineName = getLocalizedName(lineData, language);
+            const lineSub = language !== 'ja' ? lineData.name : '';
             const color = getColor(l);
 
             return `
                 <div style="display: flex; flex-direction: column; gap: 1px; background: #f8f9fa; border-left: 4px solid ${color}; padding: 6px 10px; margin-bottom: 6px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
                     <div style="display: flex; flex-direction: column; line-height: 1.2;">
-                        <span style="font-size: 11px; color: #1a1a1a; font-weight: 800;">${dispLineJA}</span>
-                        ${dispLineEN ? `<span style="font-size: 9px; color: #718096; font-weight: 500; opacity: 0.9;">${dispLineEN}</span>` : ''}
+                        <span style="font-size: 11px; color: #1a1a1a; font-weight: 800;">${lineName}</span>
+                        ${lineSub ? `<span style="font-size: 9px; color: #718096; font-weight: 500; opacity: 0.9;">${lineSub}</span>` : ''}
                     </div>
                 </div>`;
         }).join('');
@@ -440,13 +438,13 @@ const Stations: React.FC<StationsProps> = ({
                 <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 8px; padding-bottom: 4px;">
                     <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 10px;">
                         <div style="display: flex; flex-direction: column;">
-                            <span style="font-weight: 900; font-size: 15px; color: #2c3e50;">${stationNameJA}</span>
-                            ${stationNameEN ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${stationNameEN}</span>` : ''}
+                            <span style="font-weight: 900; font-size: 15px; color: #2c3e50;">${localizedName}</span>
+                            ${nameSub ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${nameSub}</span>` : ''}
                         </div>
-                        ${regionNameJA ? `
+                        ${address ? `
                         <div style="display: flex; flex-direction: column; text-align: right; margin-top: 2px;">
-                            <span style="font-size: 10px; color: #4a5568; font-weight: 700;">${regionNameJA}</span>
-                            ${regionNameEN ? `<span style="font-size: 8px; color: #718096; font-weight: 500; margin-top: -1px;">${regionNameEN}</span>` : ''}
+                            <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
+                            ${nameSecondary ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0; margin-top: -1px;">${nameSecondary}</span>` : ''}
                         </div>` : ''}
                     </div>
                 </div>
@@ -548,8 +546,8 @@ const Stations: React.FC<StationsProps> = ({
         const draftIdsArray = Array.from(draftStationIds || []);
         const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
         const regionKey = regionNames ? 'loaded' : 'loading';
-        return `${effectiveZoom}_${allEntries.length}_${draftKey}_${regionKey}`;
-    }, [effectiveZoom, allEntries.length, draftStationIds, regionNames]);
+        return `${effectiveZoom}_${allEntries.length}_${draftKey}_${regionKey}_${language}`;
+    }, [effectiveZoom, allEntries.length, draftStationIds, regionNames, language]);
 
     const visibleLabels = useMemo(() => {
         if (!mapBounds) return [];
@@ -637,6 +635,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={hullStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'hull'}
+                pathOptions={visualPathOptions}
                 pane="railroad-glow"
             />
             <GeoJSON
@@ -645,6 +644,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={platformCasingStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'platform'}
+                pathOptions={visualPathOptions}
                 pane="railroad-casing"
             />
             <GeoJSON
@@ -653,6 +653,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={platformStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'platform'}
+                pathOptions={visualPathOptions}
                 pane="railroad-lines"
                 interactive={false}
             />

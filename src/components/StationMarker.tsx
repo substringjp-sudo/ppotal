@@ -3,6 +3,8 @@ import React, { memo, useMemo } from 'react';
 import L from 'leaflet';
 import { Marker } from 'react-leaflet';
 import { ProcessedStation } from '../types/mapTypes';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
 
 interface StationMarkerProps {
     station: ProcessedStation;
@@ -22,11 +24,14 @@ const StationMarker: React.FC<StationMarkerProps> = ({
     activeLine,
     hoveredLine,
 }) => {
+    const { language } = useI18n();
     const isSelected = useMemo(() => station.lines.some(l =>
         selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
     ), [station.lines, selectedLines, activeLine, hoveredLine]);
 
     const isHighlighted = false;
+    const localizedName = getLocalizedName(station, language);
+    const stationNameSub = language !== 'ja' ? station.name : '';
 
     return (
         <Marker
@@ -58,9 +63,9 @@ const StationMarker: React.FC<StationMarkerProps> = ({
                             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                         ">
                             <div style="font-weight: 800; font-size: 11px; line-height: 1.1; margin-bottom: 1px;">
-                                ${station.name}
+                                ${localizedName}
                             </div>
-                            ${station.name_en ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; line-height: 1;">${station.name_en}</div>` : ''}
+                            ${stationNameSub ? `<div style="font-size: 8px; font-weight: 600; opacity: 0.8; line-height: 1;">${stationNameSub}</div>` : ''}
                         </div>
                     </div>
                 `,

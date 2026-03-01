@@ -2,6 +2,14 @@ import React from 'react';
 
 import { getLineColor } from '../../lib/lineColors';
 import { RailData, Station } from '../../types/railData';
+import { useI18n } from '../../lib/i18n-context';
+import { getLocalizedName, getLocalizedAddress, RegionNames } from '../../lib/i18n-utils';
+
+const TRANSLATIONS = {
+    ko: { start: '시작', arr: '도착' },
+    en: { start: 'Start', arr: 'Arr' },
+    ja: { start: '開始', arr: '到着' }
+};
 
 export interface MobileStationPreviewProps {
     station: Station;
@@ -15,11 +23,6 @@ export interface MobileStationPreviewProps {
     onCancel?: () => void;
 }
 
-interface RegionNames {
-    adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
-    adm2: Record<string, { shapeName: string; shapeName_en?: string }>;
-}
-
 const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     station,
     lines,
@@ -31,6 +34,8 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     onEndTrip,
     onCancel
 }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
 
     React.useEffect(() => {
@@ -40,13 +45,9 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
             .catch(err => console.error("Failed to load region names:", err));
     }, []);
 
-    const prefecture = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id] : null;
-    const prefectureName = prefecture?.shapeName || '';
-    const city = station.city_id && regionNames ? regionNames.adm2[station.city_id] : null;
-    const cityName = city?.shapeName || '';
-
-    const prefectureNameEn = prefecture?.shapeName_en || '';
-    const cityNameEn = city?.shapeName_en || '';
+    const address = getLocalizedAddress(station.prefecture_id, station.city_id, regionNames, language);
+    const stationName = getLocalizedName(station, language);
+    const stationNameSecondary = language === 'ja' ? station.name_en : station.name;
 
     return (
         <div className="mx-2 my-1 px-4 py-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300 flex flex-col gap-3">
@@ -55,19 +56,17 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                 <div className="flex flex-col min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 overflow-hidden">
                         <span className="text-lg font-black text-slate-900 dark:text-white truncate">
-                            {station.name}
+                            {stationName}
                         </span>
                         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic uppercase truncate">
-                            {station.name_en}
+                            {stationNameSecondary}
                         </span>
                     </div>
 
-                    {(prefectureName || cityName) && (
+                    {address && (
                         <div className="flex items-center gap-1 mt-0.5 text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">
                             <span className="material-symbols-outlined text-[10px]">map</span>
-                            {prefectureName} {cityName}
-                            <span className="mx-0.5 opacity-30">|</span>
-                            <span className="truncate opacity-75">{prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}</span>
+                            {address}
                         </div>
                     )}
                 </div>
@@ -80,7 +79,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                             className="px-3 py-1.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-1"
                         >
                             <span className="material-symbols-outlined text-xs">play_arrow</span>
-                            Start
+                            {t.start}
                         </button>
                     ) : (
                         <div className="flex items-center gap-1.5">
@@ -90,7 +89,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                                     className="px-3 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1"
                                 >
                                     <span className="material-symbols-outlined text-xs">flag</span>
-                                    Arr
+                                    {t.arr}
                                 </button>
                             )}
                             <button
@@ -122,23 +121,19 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                             <div className="flex flex-col min-w-0 flex-1">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-xs font-black text-slate-800 dark:text-white truncate">
-                                        {lineInfo?.name || line}
+                                        {getLocalizedName(lineInfo, language) || line}
                                     </span>
-                                    {lineInfo?.name_en && (
-                                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic truncate uppercase">
-                                            {lineInfo.name_en}
-                                        </span>
-                                    )}
+                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic truncate uppercase">
+                                        {language === 'ja' ? lineInfo?.name_en : lineInfo?.name}
+                                    </span>
                                 </div>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate tracking-tight">
-                                        {companyInfo?.name || company}
+                                        {getLocalizedName(companyInfo, language) || company}
                                     </span>
-                                    {companyInfo?.name_en && (
-                                        <span className="text-[8px] font-medium text-slate-400 dark:text-slate-600 truncate uppercase">
-                                            {companyInfo.name_en}
-                                        </span>
-                                    )}
+                                    <span className="text-[8px] font-medium text-slate-400 dark:text-slate-600 truncate uppercase">
+                                        {language === 'ja' ? companyInfo?.name_en : companyInfo?.name}
+                                    </span>
                                 </div>
                             </div>
                             <span className="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>

@@ -2,18 +2,18 @@ import { useMemo } from 'react';
 import { RailData, HierarchyCompany } from '../types/railData';
 
 // 카테고리 정의 (신칸센은 별도 카테고리 '0'으로 관리)
-export const CATEGORY_MAP: Record<number, { name: string; name_en: string }> = {
-    0: { name: 'SHINKANSEN', name_en: 'SHINKANSEN' },
-    1: { name: 'JR', name_en: 'JR' },
-    2: { name: 'Major Private', name_en: 'Major Private' },
-    3: { name: 'Local Private', name_en: 'Local Private' },
-    4: { name: 'Third-Sector', name_en: 'Third-Sector' },
-    5: { name: 'Public/Municipal', name_en: 'Public/Municipal' },
-    6: { name: 'Specialized/Other', name_en: 'Specialized/Other' },
+export const CATEGORY_MAP: Record<number, { name: string; name_en: string; name_kr: string }> = {
+    0: { name: 'SHINKANSEN', name_en: 'Shinkansen', name_kr: '신칸센' },
+    1: { name: 'JR', name_en: 'JR', name_kr: 'JR' },
+    2: { name: 'Major Private', name_en: 'Major Railways', name_kr: '주요 사철' },
+    3: { name: 'Local Private', name_en: 'Local Railways', name_kr: '로컬 사철' },
+    4: { name: 'Third-Sector', name_en: 'Third-Sector', name_kr: '제3섹터' },
+    5: { name: 'Public/Municipal', name_en: 'Public/Municipal', name_kr: '공영/시영' },
+    6: { name: 'Specialized/Other', name_en: 'Others', name_kr: '기타' },
 };
 
 // 카테고리 ID를 키로 사용하는 동적 계층 구조 타입
-export type GroupedHierarchy = Record<string, Record<string, Record<string, { stations: string[]; name: string; name_en: string }>>>;
+export type GroupedHierarchy = Record<string, Record<string, Record<string, { stations: string[]; name: string; name_en: string; name_kr?: string }>>>;
 
 export const useStationHierarchy = (railData: RailData | null) => {
     const memoizedData = useMemo(() => {
@@ -54,6 +54,7 @@ export const useStationHierarchy = (railData: RailData | null) => {
                 const lineInfo = railData.lines?.[lineId];
                 const lineName = lineInfo?.name || "";
                 const lineNameEn = lineInfo?.name_en || "";
+                const lineNameKr = lineInfo?.name_kr;
 
                 // 신칸센 노선 판별 (이름에 '新幹線' 포함 여부)
                 const isShinkansen = lineName.includes('新幹線');
@@ -70,7 +71,8 @@ export const useStationHierarchy = (railData: RailData | null) => {
                 groupedHierarchy[targetCategoryId][companyId][lineId] = {
                     stations,
                     name: lineName,
-                    name_en: lineNameEn
+                    name_en: lineNameEn,
+                    name_kr: lineNameKr
                 };
             });
         });

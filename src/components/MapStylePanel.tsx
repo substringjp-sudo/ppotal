@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { MapStyleSettings, DEFAULT_STYLE_SETTINGS } from './MainPageClient';
+import { useI18n } from '../lib/i18n-context';
 
 interface MapStylePanelProps {
     settings: MapStyleSettings;
@@ -11,6 +12,52 @@ interface MapStylePanelProps {
 }
 
 const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChange, isOpen, onOpenChange }) => {
+    const { language } = useI18n();
+
+    const translations = {
+        ko: {
+            mapStyle: "지도 스타일",
+            mapStyles: "지도 스타일 설정",
+            hiddenLines: "비활성 노선 (선택 안 됨)",
+            opacity: "투명도",
+            thickness: "두께",
+            unvisitedSelected: "활성 노선 (미방문)",
+            lineWeight: "선 굵기",
+            showOutline: "외곽선 표시",
+            stationSize: "역 크기",
+            visitedRecorded: "방문 기록 (탑승함)",
+            resetToDefaults: "기본값으로 초기화"
+        },
+        en: {
+            mapStyle: "Map Style",
+            mapStyles: "Map Styles",
+            hiddenLines: "Hidden Lines (Deselected)",
+            opacity: "OPACITY",
+            thickness: "THICKNESS",
+            unvisitedSelected: "Unvisited (Selected)",
+            lineWeight: "LINE WEIGHT",
+            showOutline: "Show Line Outline",
+            stationSize: "STATION SIZE",
+            visitedRecorded: "Visited (Recorded)",
+            resetToDefaults: "RESET TO DEFAULTS"
+        },
+        ja: {
+            mapStyle: "マップスタイル",
+            mapStyles: "マップスタイル設定",
+            hiddenLines: "非表示の路線 (未選択)",
+            opacity: "不透明도",
+            thickness: "太さ",
+            unvisitedSelected: "未訪問の路線 (選択中)",
+            lineWeight: "線の太さ",
+            showOutline: "アウトラインを表示",
+            stationSize: "駅のサイズ",
+            visitedRecorded: "訪問済みの路線 (記録済み)",
+            resetToDefaults: "デフォルトに戻す"
+        }
+    };
+
+    const t = translations[language as keyof typeof translations] || translations.en;
+
     const handleChange = (category: keyof MapStyleSettings, field: string, value: number | boolean) => {
         onSettingsChange({
             ...settings,
@@ -44,7 +91,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 className="absolute top-4 right-4 z-[1000] flex items-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
             >
                 <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-500">palette</span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Map Style</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{t.mapStyle}</span>
             </button>
         );
     }
@@ -65,7 +112,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             <div className="p-5 pb-3 flex justify-between items-center border-b border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
                 <div className="flex items-center gap-2 text-primary">
                     <span className="material-symbols-outlined text-lg">settings_suggest</span>
-                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Map Styles</h3>
+                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">{t.mapStyles}</h3>
                 </div>
                 <button
                     onClick={() => onOpenChange(false)}
@@ -81,12 +128,12 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 <div className="flex flex-col gap-3 sm:gap-4">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-outlined text-slate-400 text-sm">visibility_off</span>
-                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hidden Lines (Deselected)</h4>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.hiddenLines}</h4>
                     </div>
                     <div className="flex flex-col gap-5 px-1">
                         <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
-                                <span>OPACITY</span>
+                                <span>{t.opacity}</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{Math.round(settings.unselected.opacity * 100)}%</span>
                             </div>
                             <input
@@ -98,7 +145,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                         </div>
                         <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
-                                <span>THICKNESS</span>
+                                <span>{t.thickness}</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unselected.weight.toFixed(1)}x</span>
                             </div>
                             <input
@@ -115,12 +162,12 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 <div className="flex flex-col gap-3 sm:gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-outlined text-slate-400 text-sm">map</span>
-                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unvisited (Selected)</h4>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.unvisitedSelected}</h4>
                     </div>
                     <div className="flex flex-col gap-5 px-1">
                         <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
-                                <span>LINE WEIGHT</span>
+                                <span>{t.lineWeight}</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unvisited.weight.toFixed(1)}x</span>
                             </div>
                             <input
@@ -141,12 +188,12 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                                 />
                                 <div className="w-9 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                             </div>
-                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Show Line Outline</span>
+                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{t.showOutline}</span>
                         </label>
 
                         <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
-                                <span>STATION SIZE</span>
+                                <span>{t.stationSize}</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unvisited.stationSize.toFixed(1)}x</span>
                             </div>
                             <input

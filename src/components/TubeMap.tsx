@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { TopologyNode, TopologyEdge } from '../hooks/useLineTopology';
+import { useI18n } from '../lib/i18n-context';
+import { getLocalizedName } from '../lib/i18n-utils';
 
 interface TubeMapProps {
     nodes: TopologyNode[];
@@ -28,6 +30,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
     containerHeight = 'auto',
     containerStyle = {}
 }) => {
+    const { language } = useI18n();
     const containerRef = useRef<HTMLDivElement>(null);
     const [dragStartNode, setDragStartNode] = useState<string | null>(null);
     const [mousePos, setMousePos] = useState<{ x: number, y: number } | null>(null);
@@ -452,9 +455,11 @@ const TubeMap: React.FC<TubeMapProps> = ({
                                         stroke: '#ffffff', strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round'
                                     }}
                                 >
-                                    <tspan x={node.x} dy="0">{node.name}</tspan>
-                                    {node.name_en && (
-                                        <tspan x={node.x} dy="18" style={{ fontSize: '11px', fontWeight: '700', fill: '#64748b', opacity: 0.9 }}>{node.name_en}</tspan>
+                                    <tspan x={node.x} dy="0">{getLocalizedName(node, language)}</tspan>
+                                    {language !== 'ja' && (
+                                        <tspan x={node.x} dy="18" style={{ fontSize: '11px', fontWeight: '700', fill: '#64748b', opacity: 0.9 }}>
+                                            {node.name}
+                                        </tspan>
                                     )}
                                 </text>
                             </g>

@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import React from 'react';
 
+import { LanguageSelector } from './LanguageSelector';
 import { trackEvent } from '../lib/gtag';
 import html2canvas from 'html2canvas';
 import HowToModal from './HowToModal';
@@ -12,6 +13,7 @@ import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
 import { useAuth } from '../lib/auth-context';
 import { db } from '../lib/firebase';
+import { I18nProvider, useI18n } from '../lib/i18n-context';
 import { collection, query, getDocs, setDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 
 import { Station } from '../types/railData';
@@ -84,6 +86,69 @@ const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { 
 const MobileEditLinePanelWithNoSSR = dynamic(() => import('./Mobile/MobileEditLinePanel'), { ssr: false });
 const RouteCreationPanelWithNoSSR = dynamic(() => import('./Mobile/RouteCreationPanel'), { ssr: false });
 
+const TRANSLATIONS = {
+    ko: {
+        railList: '노선 목록',
+        networkSelection: '네트워크 선택',
+        linesSelected: (count: number) => `${count}개 노선 선택됨`,
+        myTrip: '내 여정',
+        trips: '여정',
+        lines: '노선',
+        km: 'KM',
+        stations: '역',
+        information: '정보',
+        ultimateTitle: '최고의 일본 철도 노선도',
+        ultimateDesc: 'JapanRailNote는 세계에서 가장 복잡한 철도망을 탐색하기 위한 디지털 동반자입니다. 일본 전역의 모든 JR 노선, 사철, 지하철 및 노면전차를 시각화하여 제공합니다.',
+        statsOverview: '통계 개요',
+        records: '기록',
+        visitedLines: '방문 노선',
+        totalDistance: '총 이동 거리',
+        avgDistance: '평균 거리',
+        fullDirectoryDesc: (stations: number, lines: number) => `모든 ${stations}개의 역과 ${lines}개의 노선에 대한 전체 디렉토리를 보려면 데스크톱 장치에서 웹사이트를 방문해 주세요.`,
+        sendFeedback: '피드백 보내기'
+    },
+    en: {
+        railList: 'Rail List',
+        networkSelection: 'Network Selection',
+        linesSelected: (count: number) => `${count} LINES SELECTED`,
+        myTrip: 'My Trip',
+        trips: 'TRIPS',
+        lines: 'LINES',
+        km: 'KM',
+        stations: 'STATIONS',
+        information: 'Information',
+        ultimateTitle: 'Ultimate Japan Railway Map',
+        ultimateDesc: "JapanRailNote is a digital companion for navigating the world's most complex railway network. We provide visualization of every JR line, private railroad, subway system, and tramway across Japan.",
+        statsOverview: 'Stats Overview',
+        records: 'Records',
+        visitedLines: 'Visited Lines',
+        totalDistance: 'Total Distance',
+        avgDistance: 'Avg Distance',
+        fullDirectoryDesc: (stations: number, lines: number) => `For a full directory of all ${stations} stations and ${lines} lines, please visit our website on a desktop device.`,
+        sendFeedback: 'Send Feedback'
+    },
+    ja: {
+        railList: '路線一覧',
+        networkSelection: 'ネットワーク選択',
+        linesSelected: (count: number) => `${count}路線を選択中`,
+        myTrip: 'マイ・トリップ',
+        trips: '履歴',
+        lines: '路線',
+        km: 'KM',
+        stations: '駅',
+        information: '情報',
+        ultimateTitle: '究極の日本鉄道路線図',
+        ultimateDesc: 'JapanRailNoteは、世界で最も複雑な鉄道網をナビゲートするためのデジタルコンパニオンです。日本全国のすべてのJR、私鉄、地下鉄、路面電車を視覚化して提供します。',
+        statsOverview: '統計概要',
+        records: '記録',
+        visitedLines: '訪れた路線',
+        totalDistance: '総移動距離',
+        avgDistance: '平均距離',
+        fullDirectoryDesc: (stations: number, lines: number) => `${stations}の駅と${lines}の路線すべてのディレクトリを確認するには、デスクトップデバイスでウェブサイトにアクセスしてください。`,
+        sendFeedback: 'フィードバックを送信'
+    }
+};
+
 const MainPageClient = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
     const [lineLengths, setLineLengths] = React.useState<Record<string, number>>({});
@@ -117,7 +182,8 @@ const MainPageClient = () => {
     const [showLabels, setShowLabels] = React.useState(false);
     const [isMapStyleOpen, setIsMapStyleOpen] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
-
+    const { language, isKorean } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const toFirestoreTrip = (trip: Trip) => ({
         ...trip,
         geometries: JSON.stringify(trip.geometries)
@@ -298,13 +364,13 @@ const MainPageClient = () => {
     }, [user]);
 
     const toggleLine = React.useCallback((line: string) => {
-        setSelectedLines(prev => {
-            const isSelected = prev.includes(line);
-            trackEvent('line_toggle', 'interaction', line, isSelected ? 0 : 1);
-            let next = isSelected ? prev.filter(l => l !== line) : [...prev, line];
-            if (next.length > 1 && next.includes("__NONE__")) next = next.filter(l => l !== "__NONE__");
-            return next;
-        });
+        setSelectedLines(prev =>
+            prev.includes(line) ? prev.filter(l => l !== line) : [...prev, line]
+        );
+    }, []);
+
+    const handlePrefectureClick = React.useCallback((name: string) => {
+        trackEvent('prefecture_click', 'interaction', name);
     }, []);
 
     const setSelectedLinesList = React.useCallback((lines: string[]) => {
@@ -596,19 +662,22 @@ const MainPageClient = () => {
                                 onClick={() => setIsHowToOpen(true)}
                                 className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
                             >
-                                <span className="material-symbols-outlined text-lg">lightbulb</span> Tips
+                                <span className="material-symbols-outlined text-lg">lightbulb</span>
+                                {language === 'ko' ? "도움말" : language === 'ja' ? "ヘルプ" : "Tips"}
                             </button>
                             <button
                                 onClick={() => setIsFeedbackOpen(true)}
                                 className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
                             >
-                                <span className="material-symbols-outlined text-lg">chat_bubble</span> Feedback
+                                <span className="material-symbols-outlined text-lg">chat_bubble</span>
+                                {language === 'ko' ? "피드백" : language === 'ja' ? "フィードバック" : "Feedback"}
                             </button>
                             <button
                                 onClick={exportMap}
                                 className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
                             >
-                                <span className="material-symbols-outlined text-lg">download</span> Export
+                                <span className="material-symbols-outlined text-lg">download</span>
+                                {language === 'ko' ? "내보내기" : language === 'ja' ? "エクスポート" : "Export"}
                             </button>
                         </nav>
 
@@ -648,7 +717,7 @@ const MainPageClient = () => {
                                     onClick={() => setIsAuthModalOpen(true)}
                                     className="bg-primary hover:bg-primary/90 text-white px-4 md:px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm whitespace-nowrap"
                                 >
-                                    Login
+                                    {language === 'ko' ? "로그인" : language === 'ja' ? "ログイン" : "Login"}
                                 </button>
                             )}
                         </div>
@@ -742,6 +811,7 @@ const MainPageClient = () => {
                                     onTransitionStateChange={setIsMapTransitioning}
                                     tripStartStationId={tripStartStation?.id || null}
                                     onStationHover={handleStationHover}
+                                    onPrefectureClick={handlePrefectureClick}
                                 />
                             </MapWithNoSSR>
                             <MapStylePanel
@@ -812,16 +882,16 @@ const MainPageClient = () => {
                             tabs={[
                                 {
                                     id: 'sidebar',
-                                    label: 'Rail List',
+                                    label: t.railList,
                                     summary: (
                                         <div className="flex items-center justify-between w-full px-2 py-1 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/40 dark:border-white/5 py-3">
                                             <div className="flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
-                                                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Network Selection</span>
+                                                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">{t.networkSelection}</span>
                                             </div>
                                             <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
                                                 <span className="text-[10px] font-black text-primary uppercase">
-                                                    {selectedLines.filter(l => l !== "__NONE__").length} LINES SELECTED
+                                                    {t.linesSelected(selectedLines.filter(l => l !== "__NONE__").length)}
                                                 </span>
                                             </div>
                                         </div>
@@ -844,14 +914,14 @@ const MainPageClient = () => {
                                 },
                                 {
                                     id: 'mylines',
-                                    label: 'My Trip',
+                                    label: t.myTrip,
                                     summary: (
                                         <div className="grid grid-cols-4 gap-1.5 w-full">
                                             {[
-                                                { label: 'TRIPS', val: recordedTrips.length, icon: 'route' },
-                                                { label: 'LINES', val: stats.lines, icon: 'directions_railway' },
-                                                { label: 'KM', val: stats.distance, icon: 'straighten', hideLabel: true, unit: 'km' },
-                                                { label: 'STNS', val: stats.stations, icon: 'location_on' },
+                                                { label: t.trips, val: recordedTrips.length, icon: 'route' },
+                                                { label: t.lines, val: stats.lines, icon: 'directions_railway' },
+                                                { label: t.km, val: stats.distance, icon: 'straighten', hideLabel: true, unit: 'km' },
+                                                { label: t.stations, val: stats.stations, icon: 'location_on' },
                                             ].map((s, idx) => {
                                                 const fullValue = `${s.val}${s.unit || ''}`;
                                                 // Dynamic font size based on string length
@@ -917,7 +987,7 @@ const MainPageClient = () => {
             {isInfoOpen && (
                 <div className="fixed inset-0 z-[11000] bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-white text-xl font-black uppercase tracking-widest">Information</h2>
+                        <h2 className="text-white text-xl font-black uppercase tracking-widest">{t.information}</h2>
                         <button
                             onClick={() => setIsInfoOpen(false)}
                             className="text-white/60 hover:text-white transition-colors"
@@ -928,33 +998,32 @@ const MainPageClient = () => {
 
                     <div className="flex-1 overflow-y-auto space-y-6">
                         <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                            <h3 className="text-white text-lg font-black mb-3 italic">Ultimate Japan Railway Map</h3>
+                            <h3 className="text-white text-lg font-black mb-3 italic">{t.ultimateTitle}</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
-                                JapanRailNote is a digital companion for navigating the world's most complex railway network.
-                                We provide visualization of every JR line, private railroad, subway system, and tramway across Japan.
+                                {t.ultimateDesc}
                             </p>
                         </div>
 
                         <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                            <h3 className="text-white text-lg font-black mb-5">Stats Overview</h3>
+                            <h3 className="text-white text-lg font-black mb-5">{t.statsOverview}</h3>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Records</span>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">{t.records}</span>
                                     <span className="text-2xl font-black text-primary">{recordedTrips.length}</span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Visited Lines</span>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">{t.visitedLines}</span>
                                     <span className="text-2xl font-black text-primary">{stats.lines}</span>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Total Distance</span>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">{t.totalDistance}</span>
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-2xl font-black text-primary">{stats.distance}</span>
                                         <span className="text-[10px] font-bold text-slate-500 uppercase">km</span>
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Avg Distance</span>
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">{t.avgDistance}</span>
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-2xl font-black text-primary">{recordedTrips.length > 0 ? Math.round(stats.distance / recordedTrips.length) : 0}</span>
                                         <span className="text-[10px] font-bold text-slate-500 uppercase">km</span>
@@ -965,8 +1034,7 @@ const MainPageClient = () => {
 
                         <div className="px-2 text-center pb-8">
                             <p className="text-xs text-slate-500 font-bold leading-relaxed mb-6">
-                                For a full directory of all <span className="text-slate-300">{stats.stations}</span> stations and <span className="text-slate-300">{stats.lines}</span> lines,
-                                please visit our website on a desktop device.
+                                {t.fullDirectoryDesc(stats.stations, stats.lines)}
                             </p>
                             <button
                                 onClick={() => {
@@ -975,12 +1043,15 @@ const MainPageClient = () => {
                                 }}
                                 className="w-full py-4 rounded-xl border-2 border-primary/30 text-primary font-black uppercase tracking-widest text-sm hover:bg-primary/10 transition-all active:scale-95"
                             >
-                                Send Feedback
+                                {t.sendFeedback}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+            <div className="fixed bottom-0 right-0 z-[10002] p-2 sm:p-4 pointer-events-none">
+                <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />
+            </div>
         </div>
     );
 };

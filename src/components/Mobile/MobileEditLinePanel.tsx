@@ -5,6 +5,14 @@ import { useLineTopology } from '../../hooks/useLineTopology';
 
 import { getLineColor } from '../../lib/lineColors';
 import { RailData } from '../../types/railData';
+import { useI18n } from '../../lib/i18n-context';
+import { getLocalizedName } from '../../lib/i18n-utils';
+
+const TRANSLATIONS = {
+    ko: { guide: '지도의 역을 탭하여 시작점과 끝점을 지정하세요.' },
+    en: { guide: 'Tap stations on the map to specify start and end points.' },
+    ja: { guide: '地図上の駅をタップして始点と終点を指定してください。' }
+};
 
 interface MobileEditLinePanelProps {
     lineId: string;
@@ -27,6 +35,8 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
     onClose,
     railData,
 }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
     const [company, lineName] = lineId.split('::');
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
@@ -55,10 +65,10 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                         <span style={{ fontSize: '14px', color: '#888', fontWeight: '600', letterSpacing: '0.05em' }}>
-                            {railData?.companies[company]?.name_en || railData?.companies[company]?.name || company}
+                            {getLocalizedName(railData?.companies[company], language) || company}
                         </span>
                         <span style={{ fontSize: '24px', fontWeight: '900', color: '#1a1a1a' }}>
-                            {railData?.lines[lineName]?.name_en || railData?.lines[lineName]?.name || lineName}
+                            {getLocalizedName(railData?.lines[lineName], language) || lineName}
                         </span>
                     </div>
                 </div>
@@ -111,7 +121,7 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
                     fontWeight: 'bold'
                 }}>!</div>
                 <span style={{ fontSize: '13px', color: '#444' }}>
-                    Tap stations on the map to specify start and end points.
+                    {t.guide}
                 </span>
             </div>
         </div>

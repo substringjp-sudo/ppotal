@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useMap } from 'react-leaflet';
+import { useI18n } from '../lib/i18n-context';
 
 interface MapControlsProps {
     zoom: number;
@@ -19,6 +20,7 @@ const MapControls: React.FC<MapControlsProps> = ({
     onToggleLabels
 }) => {
     const map = useMap();
+    const { language } = useI18n();
 
     const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newZoom = parseInt(e.target.value);
@@ -57,7 +59,7 @@ const MapControls: React.FC<MapControlsProps> = ({
                     <button
                         onClick={handleReset}
                         className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md h-9 px-3 flex items-center justify-center rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all active:scale-95 group"
-                        title="Reset View"
+                        title={language === 'ko' ? "지도 초기화" : language === 'ja' ? "マップをリセット" : "Reset View"}
                     >
                         <span className="material-symbols-outlined !text-[20px] group-hover:rotate-[-45deg] transition-transform">restart_alt</span>
                     </button>
@@ -70,12 +72,16 @@ const MapControls: React.FC<MapControlsProps> = ({
                         : 'bg-white/95 dark:bg-slate-900/95 border-slate-200/50 dark:border-slate-700/50 text-slate-500 hover:bg-slate-50'
                         }`}
                 >
-                    <span className="text-[10px] font-black whitespace-nowrap">STATION NAMES</span>
+                    <span className="text-[10px] font-black whitespace-nowrap">
+                        {language === 'ko' ? "역 이름 표시" : language === 'ja' ? "駅名表示" : "STATION NAMES"}
+                    </span>
                     <span className={`size-1.5 rounded-full ${showLabels ? 'bg-primary animate-pulse' : 'bg-slate-300'}`}></span>
                 </button>
 
                 <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-2 w-fit">
-                    <span className="text-[10px] font-bold text-slate-500">ZOOM</span>
+                    <span className="text-[10px] font-bold text-slate-500">
+                        {language === 'ko' ? "확대" : language === 'ja' ? "ズーム" : "ZOOM"}
+                    </span>
                     <span className="text-[10px] font-black text-primary">{zoom.toFixed(1)}</span>
                 </div>
             </div>

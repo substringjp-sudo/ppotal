@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
-import { sharedCanvasRenderer } from './Map';
+import { backgroundCanvas } from './Map';
 
 interface MunicipalMapProps {
     municipalities: GeoJSON.FeatureCollection | GeoJSON.Feature | null;
@@ -26,7 +26,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom, pane 
     }, [zoom]);
 
     const pathOptions = useMemo(() => ({
-        renderer: sharedCanvasRenderer || undefined
+        renderer: backgroundCanvas || undefined
     }), []);
 
     if (!municipalities) {

@@ -1,16 +1,34 @@
 "use client";
 
-import React from 'react';
+import { useI18n } from '../lib/i18n-context';
 
 interface MapLoadingIndicatorProps {
     isLoading: boolean;
     isTransitioning?: boolean;
 }
 
+const TRANSLATIONS = {
+    ko: {
+        loading: '지도 데이터 로드 중...',
+        optimizing: '뷰 최적화 중...',
+    },
+    en: {
+        loading: 'Loading Map Data...',
+        optimizing: 'Optimizing View...',
+    },
+    ja: {
+        loading: '地図データを読み込み中...',
+        optimizing: 'ビューを最適化中...',
+    }
+};
+
 const MapLoadingIndicator: React.FC<MapLoadingIndicatorProps> = ({ isLoading, isTransitioning }) => {
+    const { language } = useI18n();
+    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+
     if (!isLoading && !isTransitioning) return null;
 
-    const message = isLoading ? "Loading Map Data..." : "Optimizing View...";
+    const message = isLoading ? t.loading : t.optimizing;
 
     // Position differs based on state
     const containerStyle: React.CSSProperties = isLoading ? {

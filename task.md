@@ -37,3 +37,29 @@
 - [x] ARIA Dialog patterns and `Escape` key close listener for `HowToModal.tsx` and `FeedbackModal.tsx`
 - [x] Managed initial focus for modals
 - [x] Lighthouse accessibility audit resolution
+
+<hr>
+
+# Map Data Loading & Integrity Fix
+## 완료된 작업 (Completed Tasks)
+- [x] `adm2_low.geojson` 파일 무결성 확인 및 전체 일본 지역 포함 여부 검증
+- [x] `MapPane.tsx`: 줌 레벨에 따른 LOD(Level of Detail) 전환 시 렌더링 신뢰성을 위해 고유 Key 적용
+- [x] `JapanMap.tsx`: 도부현(Prefecture) 클릭 인터랙션 지원 (`onPrefectureClick`)
+- [x] `MainPageClient.tsx`: 도부현 클릭 핸들러 추가 및 이벤트 추적 연동
+- [x] `MainPageClient.tsx`: 중복된 `handleLineClick` 함수 제거 및 코드 정리
+
+<hr>
+
+# Multi-language Localization (진행 중)
+## 완료된 작업 (Completed Tasks)
+- [x] `MainPageClient.tsx`: 헤더 버튼(도움말, 피드백, 내보내기, 로그인) 다국어화
+- [x] `MapControls.tsx`: 지도 컨트롤(재설정, 역 이름, 줌) 다국어화
+- [x] `MapStylePanel.tsx`: 지도 스타일 설정 레이블 다국어화
+- [x] `HowToModal.tsx`: 도움말 내용 다국어화 (KO, EN, JA)
+- [x] `FeedbackModal.tsx`: 피드백 폼 다국어화
+- [x] `AuthModal.tsx`: 인증 폼 다국어화
+- [x] `SEOContent.tsx`: 정적 콘텐츠 다국어화
+- [x] `Sidebar.tsx`, `LineDetailPane.tsx`, `StationDetailPane.tsx`: UI 요소 다국어화 (KO, EN, JA)
+
+## 예정된 작업 (Planned Tasks)
+- [ ] 다국어 지원 QA 및 안정화 (언어 전환 시 모든 UI가 올바르게 업데이트되는지 확인)

@@ -3,7 +3,7 @@
 import React, { useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import { GeoJSON } from 'react-leaflet';
-import { sharedCanvasRenderer } from './Map';
+import { backgroundCanvas } from './Map';
 
 interface JapanMapProps {
     prefectures: GeoJSON.FeatureCollection | GeoJSON.Feature;
@@ -59,7 +59,7 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
     };
 
     const pathOptions = useMemo(() => ({
-        renderer: sharedCanvasRenderer || undefined
+        renderer: backgroundCanvas || undefined
     }), []);
 
     if (!prefectures) {
