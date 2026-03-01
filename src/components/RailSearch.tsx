@@ -130,7 +130,7 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
                                         <span className="material-symbols-outlined text-sm">train</span>
                                         Stations ({results.stations.length})
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-0.5">
                                         {results.stations.map(station => {
                                             const lines = getStationLines(station);
                                             const address = getStationAddress(station);
@@ -143,29 +143,38 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
                                                         setIsOpen(false);
                                                         setQuery('');
                                                     }}
-                                                    className="w-full text-left p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group/item"
+                                                    className="w-full text-left p-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-primary/5 transition-all group/item border border-transparent hover:border-primary/10"
                                                 >
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <span className="font-black text-slate-800 dark:text-slate-100 group-hover/item:text-primary transition-colors">
-                                                            {station.name}
-                                                        </span>
-                                                        {hasAddress && address.ja && (
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight text-right shrink-0 ml-4">
-                                                                {address.ja}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-[11px] text-slate-500 font-medium mb-2">
-                                                        {station.name_en}
-                                                        {hasAddress && address.en && <span className="text-slate-400"> · {address.en}</span>}
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {lines.map((l, idx) => (
-                                                            <div key={idx} className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700/50">
-                                                                <div className="size-1.5 rounded-full" style={{ backgroundColor: l.color }}></div>
-                                                                <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400">{l.name}</span>
+                                                    <div className="flex justify-between items-start gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-baseline gap-2 mb-0.5">
+                                                                <h3 className="text-[15px] font-black text-slate-950 dark:text-white group-hover/item:text-primary transition-colors truncate">
+                                                                    {station.name}
+                                                                </h3>
+                                                                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate">
+                                                                    {station.name_en}
+                                                                </span>
                                                             </div>
-                                                        ))}
+                                                            {hasAddress && (address.ja || address.en) && (
+                                                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-tight">
+                                                                    <span className="material-symbols-outlined text-[12px]">location_on</span>
+                                                                    <span className="truncate">{address.ja || address.en}</span>
+                                                                    {address.en && address.ja && <span className="text-slate-200 dark:text-slate-700">|</span>}
+                                                                    {address.en && <span className="truncate opacity-70 italic">{address.en}</span>}
+                                                                </div>
+                                                            )}
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {lines.map((l, idx) => (
+                                                                    <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+                                                                        <div className="size-2 rounded-full shadow-inner" style={{ backgroundColor: l.color }}></div>
+                                                                        <span className="text-[9px] font-extrabold text-slate-600 dark:text-slate-300 tracking-tight">{l.name}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div className="shrink-0 size-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                            <span className="material-symbols-outlined text-primary text-xl">near_me</span>
+                                                        </div>
                                                     </div>
                                                 </button>
                                             );
@@ -186,9 +195,10 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
                                         <span className="material-symbols-outlined text-sm">route</span>
                                         Lines ({results.lines.length})
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-0.5">
                                         {results.lines.map(line => {
                                             const company = getLineCompany(line);
+                                            const lineColor = line.color || '#3b82f6';
                                             return (
                                                 <button
                                                     key={line.id}
@@ -198,24 +208,43 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
                                                         setIsOpen(false);
                                                         setQuery('');
                                                     }}
-                                                    className="w-full text-left p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group/item flex items-center gap-4"
+                                                    className="w-full text-left p-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-primary/5 transition-all group/item flex items-center gap-4 border border-transparent hover:border-primary/10"
                                                 >
-                                                    <div className="size-10 rounded-xl flex items-center justify-center shrink-0 border-2" style={{ borderColor: line.color || '#3b82f6', backgroundColor: (line.color || '#3b82f6') + '10' }}>
-                                                        <span className="material-symbols-outlined" style={{ color: line.color || '#3b82f6' }}>subway</span>
+                                                    <div
+                                                        className="size-11 rounded-xl flex items-center justify-center shrink-0 border-2 shadow-inner relative"
+                                                        style={{
+                                                            borderColor: lineColor,
+                                                            backgroundColor: lineColor + '15'
+                                                        }}
+                                                    >
+                                                        <span className="material-symbols-outlined text-2xl" style={{ color: lineColor }}>subway</span>
+                                                        <div className="absolute -bottom-1 -right-1 size-4 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                                                            <div className="size-2 rounded-full" style={{ backgroundColor: lineColor }}></div>
+                                                        </div>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex justify-between items-center mb-0.5">
-                                                            <span className="font-black text-slate-800 dark:text-slate-100 group-hover/item:text-primary transition-colors truncate">
+                                                        <div className="flex justify-between items-center mb-0.5 gap-2">
+                                                            <h3 className="text-[15px] font-black text-slate-950 dark:text-white group-hover/item:text-primary transition-colors truncate">
                                                                 {line.name}
-                                                            </span>
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                                                                {company?.name}
-                                                            </span>
+                                                            </h3>
+                                                            {company?.name && (
+                                                                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">
+                                                                    {company.name}
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                        <div className="text-[11px] text-slate-500 font-medium truncate">
-                                                            {line.name_en}
-                                                            {company?.name_en && <span className="text-slate-400"> · {company.name_en}</span>}
+                                                        <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                                                            <span className="truncate">{line.name_en}</span>
+                                                            {company?.name_en && (
+                                                                <>
+                                                                    <span className="text-slate-300 dark:text-slate-700 ml-1">·</span>
+                                                                    <span className="text-slate-400 truncate italic">{company.name_en}</span>
+                                                                </>
+                                                            )}
                                                         </div>
+                                                    </div>
+                                                    <div className="shrink-0 size-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                        <span className="material-symbols-outlined text-primary text-xl">map</span>
                                                     </div>
                                                 </button>
                                             );

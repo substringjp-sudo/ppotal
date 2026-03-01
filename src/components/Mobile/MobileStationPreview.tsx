@@ -42,158 +42,106 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
 
     const prefecture = station.prefecture_id && regionNames ? regionNames.adm1[station.prefecture_id] : null;
     const prefectureName = prefecture?.shapeName || '';
-    const prefectureNameEn = prefecture?.shapeName_en || '';
-
     const city = station.city_id && regionNames ? regionNames.adm2[station.city_id] : null;
     const cityName = city?.shapeName || '';
+
+    const prefectureNameEn = prefecture?.shapeName_en || '';
     const cityNameEn = city?.shapeName_en || '';
 
     return (
-        <div style={{
-            padding: '16px',
-            backgroundColor: '#fff',
-            borderBottom: '1px solid #ddd',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-            zIndex: 1000,
-            overflowX: 'auto'
-        }}>
-            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '16px' }}>
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '20px', fontWeight: '900', color: '#1a202c' }}>
+        <div className="mx-2 my-1 px-4 py-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300 flex flex-col gap-3">
+            {/* Header: Name and Trip Control */}
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 overflow-hidden">
+                        <span className="text-lg font-black text-slate-900 dark:text-white truncate">
                             {station.name}
                         </span>
-                        {(prefectureName || cityName) && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0px', marginTop: '4px' }}>
-                                <span style={{ fontSize: '12px', color: '#4a5568', fontWeight: '700' }}>
-                                    {prefectureName}{prefectureName && cityName ? ' ' : ''}{cityName}
-                                </span>
-                                {(prefectureNameEn || cityNameEn) && (
-                                    <span style={{ fontSize: '10px', color: '#718096', fontWeight: '500', marginTop: '-2px' }}>
-                                        {prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}
-                                    </span>
-                                )}
-                            </div>
-                        )}
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic uppercase truncate">
+                            {station.name_en}
+                        </span>
                     </div>
-                    <span style={{ fontSize: '12px', color: '#718096', fontWeight: '500', display: 'block' }}>
-                        {station.name_en}
-                    </span>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', alignItems: 'flex-start' }}>
-                        {!isTripInProgress ? (
-                            <button
-                                onClick={() => onStartTrip && onStartTrip(station)}
-                                style={{
-                                    padding: '8px 20px',
-                                    borderRadius: '24px',
-                                    backgroundColor: '#3182ce',
-                                    color: 'white',
-                                    border: 'none',
-                                    fontSize: '13px',
-                                    fontWeight: '800',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 4px 12px rgba(49,130,206,0.25)',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                Start Trip
-                            </button>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '140px' }}>
-                                {tripStartStationId !== station.id && (
-                                    <button
-                                        onClick={() => onEndTrip && onEndTrip(station)}
-                                        style={{
-                                            padding: '8px 16px',
-                                            borderRadius: '24px',
-                                            backgroundColor: '#38a169',
-                                            color: 'white',
-                                            border: 'none',
-                                            fontSize: '13px',
-                                            fontWeight: '800',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 4px 12px rgba(56,161,105,0.25)',
-                                            whiteSpace: 'nowrap',
-                                            width: '100%'
-                                        }}
-                                    >
-                                        End Trip
-                                    </button>
-                                )}
+                    {(prefectureName || cityName) && (
+                        <div className="flex items-center gap-1 mt-0.5 text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">
+                            <span className="material-symbols-outlined text-[10px]">map</span>
+                            {prefectureName} {cityName}
+                            <span className="mx-0.5 opacity-30">|</span>
+                            <span className="truncate opacity-75">{prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Trip Toggle Section: Top Right */}
+                <div className="flex-shrink-0">
+                    {!isTripInProgress ? (
+                        <button
+                            onClick={() => onStartTrip && onStartTrip(station)}
+                            className="px-3 py-1.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-1"
+                        >
+                            <span className="material-symbols-outlined text-xs">play_arrow</span>
+                            Start
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-1.5">
+                            {tripStartStationId !== station.id && (
                                 <button
-                                    onClick={() => onCancel && onCancel()}
-                                    style={{
-                                        padding: '8px 16px',
-                                        borderRadius: '24px',
-                                        backgroundColor: '#edf2f7',
-                                        color: '#4a5568',
-                                        border: '1px solid #e2e8f0',
-                                        fontSize: '13px',
-                                        fontWeight: '800',
-                                        cursor: 'pointer',
-                                        whiteSpace: 'nowrap',
-                                        width: '100%'
-                                    }}
+                                    onClick={() => onEndTrip && onEndTrip(station)}
+                                    className="px-3 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1"
                                 >
-                                    Cancel
+                                    <span className="material-symbols-outlined text-xs">flag</span>
+                                    Arr
                                 </button>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                            <button
+                                onClick={() => onCancel && onCancel()}
+                                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center active:scale-95 transition-all"
+                            >
+                                <span className="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {/* Lines List: Vertical List */}
+            <div className="flex flex-col gap-1.5 px-0.5 max-h-[160px] overflow-y-auto no-scrollbar">
                 {lines.map(lineId => {
                     const [company, line] = lineId.split('::');
-                    const color = getLineColor(lineId, railData) || '#999';
-
-                    const corpInfo = railData?.companies[company];
+                    const companyInfo = railData?.companies[company];
                     const lineInfo = railData?.lines[line];
-
-                    const corpDisplayName = corpInfo?.name || company;
-                    const lineDisplayName = lineInfo?.name || line;
-
-                    const corpSecondaryName = corpInfo?.name_en || "";
-                    const lineSecondaryName = lineInfo?.name_en || "";
+                    const color = lineInfo?.color || getLineColor(lineId, railData) || '#999';
 
                     return (
                         <div
                             key={lineId}
                             onClick={() => onLineClick && onLineClick(lineId)}
-                            style={{
-                                padding: '6px 12px',
-                                borderRadius: '12px',
-                                backgroundColor: '#f9f9f9',
-                                borderLeft: `4px solid ${color}`,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0px',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                                border: '1px solid #eee',
-                                borderLeftWidth: '4px'
-                            }}
+                            className="flex items-center gap-3 bg-slate-50/50 dark:bg-slate-800/40 p-2 rounded-xl border border-slate-100 dark:border-slate-800/50 active:scale-[0.98] transition-all"
+                            style={{ borderLeft: `3px solid ${color}` }}
                         >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                                    <span style={{ fontSize: '13px', color: '#2d3748', fontWeight: '900', whiteSpace: 'nowrap' }}>
-                                        {lineDisplayName}
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xs font-black text-slate-800 dark:text-white truncate">
+                                        {lineInfo?.name || line}
                                     </span>
-                                    <span style={{ fontSize: '10px', color: '#718096', fontWeight: '500', whiteSpace: 'nowrap' }}>
-                                        {lineSecondaryName}
-                                    </span>
+                                    {lineInfo?.name_en && (
+                                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic truncate uppercase">
+                                            {lineInfo.name_en}
+                                        </span>
+                                    )}
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                                    <span style={{ fontSize: '11px', color: '#4a5568', fontWeight: '700', whiteSpace: 'nowrap' }}>
-                                        {corpDisplayName}
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate tracking-tight">
+                                        {companyInfo?.name || company}
                                     </span>
-                                    <span style={{ fontSize: '9px', color: '#a0aec0', fontWeight: '500', whiteSpace: 'nowrap' }}>
-                                        {corpSecondaryName}
-                                    </span>
+                                    {companyInfo?.name_en && (
+                                        <span className="text-[8px] font-medium text-slate-400 dark:text-slate-600 truncate uppercase">
+                                            {companyInfo.name_en}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
+                            <span className="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
                         </div>
                     );
                 })}

@@ -6,11 +6,11 @@ import { MapStyleSettings, DEFAULT_STYLE_SETTINGS } from './MainPageClient';
 interface MapStylePanelProps {
     settings: MapStyleSettings;
     onSettingsChange: (settings: MapStyleSettings) => void;
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
 }
 
-const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChange }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-
+const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChange, isOpen, onOpenChange }) => {
     const handleChange = (category: keyof MapStyleSettings, field: string, value: number | boolean) => {
         onSettingsChange({
             ...settings,
@@ -34,7 +34,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    setIsOpen(true);
+                    onOpenChange(true);
                 }}
                 onMouseDown={stopPropagation}
                 onMouseUp={stopPropagation}
@@ -59,7 +59,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             onTouchStart={stopPropagation}
             onTouchMove={stopPropagation}
             onTouchEnd={stopPropagation}
-            className="absolute top-4 right-4 z-[1000] w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/20 dark:border-slate-800/50 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] animate-in slide-in-from-right-4 fade-in duration-300 overflow-hidden shadow-primary/5"
+            className="absolute top-4 right-4 z-[1000] w-64 sm:w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/20 dark:border-slate-800/50 rounded-3xl shadow-2xl flex flex-col max-h-[60vh] sm:max-h-[85vh] animate-in slide-in-from-right-4 fade-in duration-300 overflow-hidden shadow-primary/5"
         >
             {/* Header: Sticky */}
             <div className="p-5 pb-3 flex justify-between items-center border-b border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
@@ -68,7 +68,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                     <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Map Styles</h3>
                 </div>
                 <button
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => onOpenChange(false)}
                     className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors"
                 >
                     <span className="material-symbols-outlined text-lg">close</span>
@@ -76,15 +76,15 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             </div>
 
             {/* Content: Scrollable */}
-            <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 custom-scrollbar">
                 {/* Section: Unselected */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 sm:gap-4">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-outlined text-slate-400 text-sm">visibility_off</span>
                         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hidden Lines (Deselected)</h4>
                     </div>
                     <div className="flex flex-col gap-5 px-1">
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
                                 <span>OPACITY</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{Math.round(settings.unselected.opacity * 100)}%</span>
@@ -96,7 +96,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                                 className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
                                 <span>THICKNESS</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unselected.weight.toFixed(1)}x</span>
@@ -112,13 +112,13 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 </div>
 
                 {/* Section: Unvisited */}
-                <div className="flex flex-col gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                <div className="flex flex-col gap-3 sm:gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-outlined text-slate-400 text-sm">map</span>
                         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unvisited (Selected)</h4>
                     </div>
                     <div className="flex flex-col gap-5 px-1">
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
                                 <span>LINE WEIGHT</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unvisited.weight.toFixed(1)}x</span>
@@ -144,7 +144,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">Show Line Outline</span>
                         </label>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
                                 <span>STATION SIZE</span>
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">{settings.unvisited.stationSize.toFixed(1)}x</span>
@@ -160,13 +160,13 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 </div>
 
                 {/* Section: Visited */}
-                <div className="flex flex-col gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                <div className="flex flex-col gap-3 sm:gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-outlined text-emerald-500 text-sm">verified</span>
                         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Visited (Recorded)</h4>
                     </div>
                     <div className="flex flex-col gap-5 px-1">
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
                                 <span>LINE WEIGHT</span>
                                 <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">{settings.visited.weight.toFixed(1)}x</span>
@@ -192,7 +192,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-emerald-500 transition-colors">Show Line Outline</span>
                         </label>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1 sm:space-y-2">
                             <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 dark:text-slate-400 px-0.5">
                                 <span>STATION SIZE</span>
                                 <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md">{settings.visited.stationSize.toFixed(1)}x</span>

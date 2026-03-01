@@ -74,11 +74,11 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
 
     return (
-        <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out">
+        <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] sm:max-h-[60vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col p-3 sm:p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[24px] sm:rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out">
             {/* Header with Title and Stats */}
-            <div className="flex flex-col gap-4 mb-6 flex-shrink-0">
+            <div className="flex flex-col gap-2 sm:gap-4 mb-2 sm:mb-6 flex-shrink-0">
                 {/* Primary Row: Title and Close Button */}
-                <div className="flex justify-between items-start gap-4">
+                <div className="flex justify-between items-start gap-1.5 sm:gap-4">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                         <button
                             onClick={() => {
@@ -97,22 +97,22 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         </button>
 
                         <div className="flex flex-col min-w-0">
-                            <div className="flex items-baseline gap-2 overflow-hidden">
-                                <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
+                            <div className="flex items-baseline gap-1.5 sm:gap-2 m-0 overflow-hidden">
+                                <span className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
                                     {lineData?.name || lineName}
                                 </span>
                                 {lineData?.name_en && (
-                                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">
+                                    <span className="text-[9px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">
                                         {lineData.name_en}
                                     </span>
                                 )}
                             </div>
-                            <div className="flex items-baseline gap-2 mt-0.5 overflow-hidden">
-                                <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-black uppercase tracking-widest truncate">
+                            <div className="flex items-baseline gap-1.5 sm:gap-2 mt-0 overflow-hidden">
+                                <span className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest truncate">
                                     {companyData?.name || company}
                                 </span>
                                 {companyData?.name_en && (
-                                    <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase truncate">
+                                    <span className="text-[7px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase truncate">
                                         {companyData.name_en}
                                     </span>
                                 )}
@@ -132,15 +132,15 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 </div>
 
                 {/* Secondary Row: Stats and Minimap */}
-                <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-4 sm:gap-6 shrink-0">
-                        <div className="flex flex-col gap-0.5">
-                            <div className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Completion</div>
-                            <div className="text-base sm:text-lg text-slate-900 dark:text-white font-black leading-none whitespace-nowrap">
-                                {stats.visited} <span className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold">/ {stats.total} km</span>
+                <div className="flex items-center justify-between gap-2 sm:gap-4 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+                        <div className="flex flex-col gap-0">
+                            <div className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Completion</div>
+                            <div className="text-sm sm:text-lg text-slate-900 dark:text-white font-black leading-none whitespace-nowrap">
+                                {stats.visited} <span className="text-[7px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold">/ {stats.total} km</span>
                             </div>
                         </div>
-                        <div className="relative size-10 sm:size-12 shrink-0">
+                        <div className="relative size-8 sm:size-12 shrink-0">
                             <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
                                 <path
                                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -153,7 +153,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                     strokeLinecap="round"
                                 />
                             </svg>
-                            <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">
+                            <div className="absolute inset-0 flex items-center justify-center text-[8px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">
                                 {stats.percent}%
                             </div>
                         </div>

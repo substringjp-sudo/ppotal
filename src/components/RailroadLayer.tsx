@@ -4,6 +4,8 @@ import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { getLineColor } from '../lib/lineColors';
+import { getSmartTooltipOptions } from '../lib/uiUtils';
+import { trackEvent } from '../lib/gtag';
 import { RailData, Section } from '../types/railData';
 import { sharedCanvasRenderer, sharedSvgRenderer } from './Map';
 
@@ -272,18 +274,18 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             else if (isHovered) color = '#FFD60A';
             else if (isUsed) color = '#2ecc71';
         } else if (isUsed) {
-            color = '#000000';
-            opacity = 0.5;
+            color = '#2ecc71';
+            opacity = 0.8;
         }
 
         // Standardized border thickness - based on settings weight
         let targetWeight = isUsed ? settings.visited.weight : settings.unvisited.weight;
         if (!isVisible && !isUsed) targetWeight = settings.unselected.weight;
 
-        let baseWeight = targetWeight + 2.0;
+        let baseWeight = targetWeight + (isUsed ? 3.5 : 2.2);
         const z = Math.round(zoomLevel);
-        if (z <= 11) baseWeight = targetWeight + 1.2;
-        else if (z <= 13) baseWeight = targetWeight + 1.5;
+        if (z <= 11) baseWeight = targetWeight + (isUsed ? 2.5 : 1.5);
+        else if (z <= 13) baseWeight = targetWeight + (isUsed ? 3.0 : 1.8);
 
         const factor = isMobile ? 1.4 : 1.0;
         const emphasisOffset = showEmphasis ? (z >= 14 ? 4.0 : 2.5) : 0;
@@ -385,14 +387,55 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 onRailroadClick(props.id);
                 lastMouseDownPos.current = null;
             },
-            mouseover: () => {
+            mouseover: (e: any) => {
                 if (!isMobile && !isMoving && !isDragging) {
+                    const { clientX: x, clientY: y } = e.originalEvent;
+                    const container = layer.getPane()?.closest('.leaflet-container');
+                    if (!container) return;
+
+                    const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
+                    const tooltip = (layer as any).getTooltip();
+                    if (tooltip) {
+                        try {
+                            if (typeof (tooltip as any).setOptions === 'function') {
+                                (tooltip as any).setOptions({ direction, offset });
+                            } else {
+                                tooltip.options.direction = direction;
+                                tooltip.options.offset = offset;
+                            }
+                        } catch (err) {
+                            console.warn("Could not update tooltip options dynamically", err);
+                        }
+                    }
+
                     if (tooltipTimeout) clearTimeout(tooltipTimeout);
                     tooltipTimeout = setTimeout(() => {
                         onRailroadHover(props.id);
                         layer.openTooltip();
                         tooltipTimeout = null;
                     }, 50);
+                }
+            },
+            mousemove: (e: any) => {
+                if (!isMobile && !isMoving && !isDragging) {
+                    const { clientX: x, clientY: y } = e.originalEvent;
+                    const container = layer.getPane()?.closest('.leaflet-container');
+                    if (!container) return;
+
+                    const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
+                    const tooltip = (layer as any).getTooltip();
+                    if (tooltip) {
+                        try {
+                            if (typeof (tooltip as any).setOptions === 'function') {
+                                (tooltip as any).setOptions({ direction, offset });
+                            } else {
+                                tooltip.options.direction = direction;
+                                tooltip.options.offset = offset;
+                            }
+                        } catch (err) {
+                            // Silently ignore or catch
+                        }
+                    }
                 }
             },
             mouseout: () => {

@@ -11,6 +11,7 @@ export interface MyLinesPaneProps {
     railData: RailData | null;
     lineLengths?: Record<string, number>;
     visitedLineLengths?: Record<string, number>;
+    className?: string;
 }
 
 interface RegionNames {
@@ -24,9 +25,18 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     onResetTrips,
     railData,
     lineLengths = {},
-    visitedLineLengths = {}
+    visitedLineLengths = {},
+    className
 }) => {
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
+    const [isResetConfirming, setIsResetConfirming] = React.useState(false);
+
+    React.useEffect(() => {
+        // Reset confirming state if recorded trips become zero
+        if (recordedTrips.length === 0) {
+            setIsResetConfirming(false);
+        }
+    }, [recordedTrips.length]);
 
     React.useEffect(() => {
         fetch('/data/region_names.json')
@@ -41,14 +51,14 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
 
     return (
-        <div className="flex flex-col h-full bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <div className={`flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-display ${className || ""}`}>
             {/* Header */}
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary text-xl">history</span>
-                    My History
+                    MY HISTORY
                 </h2>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">Track your Japanese rail journey records.</p>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">Your Japanese rail journey records</p>
             </div>
 
             <div className="px-5 py-4">
@@ -88,23 +98,61 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     );
                 })()}
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between px-1">
                     <div className="flex items-center gap-2">
                         <span className="text-xl font-black text-slate-800 dark:text-slate-100">
                             {recordedTrips.length}
                         </span>
                         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                            Trip Records
+                            Trip Record{recordedTrips.length !== 1 ? 's' : ''}
                         </span>
                     </div>
                     {recordedTrips.length > 0 && (
-                        <button
-                            onClick={() => onResetTrips && onResetTrips()}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-100 dark:border-rose-900/30 transition-all duration-200 active:scale-95 shadow-sm"
-                        >
-                            <span className="material-symbols-outlined !text-[14px]">delete_sweep</span>
-                            Delete All
-                        </button>
+                        <div className="flex items-center">
+                            {isResetConfirming ? (
+                                <div className="flex items-center gap-2 animate-in slide-in-from-right-2 fade-in duration-200">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            setIsResetConfirming(false);
+                                        }}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onMouseUp={(e) => e.stopPropagation()}
+                                        className="px-2 py-1 rounded-lg text-[9px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            onResetTrips && onResetTrips();
+                                            setIsResetConfirming(false);
+                                        }}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onMouseUp={(e) => e.stopPropagation()}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-500 text-white shadow-lg shadow-rose-500/20 active:scale-95 transition-all"
+                                    >
+                                        Confirm
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        setIsResetConfirming(true);
+                                    }}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onMouseUp={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider text-rose-500 hover:text-white hover:bg-rose-500 border border-rose-100 dark:border-rose-900/10 transition-all duration-200 active:scale-95 shadow-sm active:bg-rose-600 group/reset"
+                                >
+                                    <span className="material-symbols-outlined !text-[13px] group-hover/reset:rotate-12 transition-transform">delete_sweep</span>
+                                    Delete All
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
@@ -194,9 +242,17 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                         return (
                             <div
                                 key={trip.id}
-                                className="group relative bg-white dark:bg-slate-800/40 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800/50 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300"
+                                className="group relative bg-white dark:bg-slate-800/40 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800/50 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden"
                             >
-                                <div className="absolute left-[38px] top-[40px] bottom-[110px] w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-700"></div>
+                                {/* Connection Line (Dotted) */}
+                                <div
+                                    className="absolute left-[38px] top-[38px] bottom-[145px] w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-700/50 pointer-events-none z-0"
+                                    style={{
+                                        // Dynamic adjustment if possible, but 145px is a better estimate for the footer offset
+                                        maskImage: 'linear-gradient(to bottom, transparent 15px, black 25px, black calc(100% - 25px), transparent calc(100% - 15px))',
+                                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 15px, black 30px, black calc(100% - 30px), transparent calc(100% - 15px))'
+                                    }}
+                                ></div>
 
                                 {/* Start Station */}
                                 <div className="relative z-10 flex gap-4 mb-6">
@@ -305,9 +361,10 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     </div>
                                     <button
                                         onClick={() => onDeleteTrip && onDeleteTrip(trip.id)}
-                                        className="size-8 rounded-lg flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all active:scale-90"
+                                        className="size-8 rounded-lg flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all active:scale-90 border border-transparent hover:border-rose-200"
+                                        title="Delete this record"
                                     >
-                                        <span className="material-symbols-outlined !text-[18px]">delete</span>
+                                        <span className="material-symbols-outlined !text-[20px]">delete</span>
                                     </button>
                                 </div>
                             </div>

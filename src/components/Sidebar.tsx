@@ -16,9 +16,10 @@ export interface SidebarProps {
     visitedLineLengths?: Record<string, number>;
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
+    className?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, className }) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
 
@@ -158,7 +159,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     const sortedCategoryIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-display">
+        <div className={`flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-display ${className || ""}`}>
             {/* Sidebar Header & Progress Card */}
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">

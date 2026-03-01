@@ -115,6 +115,7 @@ const MainPageClient = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
     const [showLabels, setShowLabels] = React.useState(false);
+    const [isMapStyleOpen, setIsMapStyleOpen] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
 
     const toFirestoreTrip = (trip: Trip) => ({
@@ -446,44 +447,43 @@ const MainPageClient = () => {
     const handleResetTrips = React.useCallback(async () => {
         if (recordedTrips.length === 0) return;
 
-        if (window.confirm('Are you sure you want to delete all trip records?')) {
-            setRecordedTrips([]);
-            setVisitedLineLengths({});
-            localStorage.removeItem('jprail_trips');
-            trackEvent('reset_all_trips', 'engagement', 'confirm');
+        setRecordedTrips([]);
+        setVisitedLineLengths({});
+        localStorage.removeItem('jprail_trips');
+        trackEvent('reset_all_trips', 'engagement', 'confirm');
 
-            if (user) {
-                try {
-                    const batch = writeBatch(db);
-                    const tripsRef = collection(db, `users/${user.uid}/trips`);
-                    const querySnapshot = await getDocs(query(tripsRef));
-                    querySnapshot.forEach((doc) => {
-                        batch.delete(doc.ref);
-                    });
-                    await batch.commit();
-                } catch (e) {
-                    console.error("Cloud reset failed", e);
-                }
+        if (user) {
+            try {
+                const batch = writeBatch(db);
+                // In some versions it was users/${user.uid}/trips, let's keep it consistent
+                const tripsRef = collection(db, `users/${user.uid}/trips`);
+                const querySnapshot = await getDocs(query(tripsRef));
+                querySnapshot.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+            } catch (e) {
+                console.error("Cloud reset failed", e);
             }
         }
     }, [recordedTrips.length, user]);
 
-    const setLineIdMapping = React.useCallback(() => {
-    }, []);
-
     const stats = React.useMemo(() => {
         const visitedLineIds = Object.keys(visitedLineLengths);
         const lineCount = visitedLineIds.length;
-        const distanceCount = Math.round(Object.values(visitedLineLengths).reduce((sum, val) => sum + val, 0) * 10) / 10;
+        const distanceCount = Math.round(Object.values(visitedLineLengths).reduce((sum, val) => (sum as number) + (val as number), 0) * 10) / 10;
+
         const companySet = new Set<string>();
         visitedLineIds.forEach(id => {
             const company = id.split('::')[0];
             if (company) companySet.add(company);
         });
+
         const stationSet = new Set<string>();
         recordedTrips.forEach(trip => {
             if (trip.path) trip.path.forEach((sid: string) => stationSet.add(sid));
         });
+
         return {
             lines: lineCount,
             stations: stationSet.size,
@@ -508,6 +508,7 @@ const MainPageClient = () => {
     const [isMobileSheetOpen, setIsMobileSheetOpen] = React.useState(false);
 
     const handleMapClick = React.useCallback(() => {
+        setIsMapStyleOpen(false);
         if (isEditMode) return;
         setSelectedStation(null);
         setActiveLine(null);
@@ -535,7 +536,7 @@ const MainPageClient = () => {
                 ...pathData,
                 waypoints: [startId, endId]
             };
-            setDraftTrip(trip);
+            setDraftTrip(trip as any);
             setTempPath([]);
         }
     }, [lineDetailData, activeLine]);
@@ -543,14 +544,17 @@ const MainPageClient = () => {
     const mobilePreviewLines = React.useMemo(() => {
         if (!selectedStation || !railData?.platforms || !railData.lines) return [];
         const lineIds = selectedStation.platform_ids
-            .map(platformId => railData.platforms[platformId]?.line)
-            .filter((lineId, index, self) => lineId !== undefined && self.indexOf(lineId) === index);
+            .map(platformId => String(railData.platforms[platformId]?.line))
+            .filter((lineId, index, self) => lineId !== "undefined" && self.indexOf(lineId) === index);
+
         return lineIds.map(lineId => {
             const line = railData.lines[lineId];
             if (!line) return null;
             return `${line.corp_id}::${line.id}`;
         }).filter((id): id is string => !!id);
     }, [selectedStation, railData]);
+
+    const setLineIdMapping = React.useCallback(() => { }, []);
 
     return (
         <div className="flex flex-col bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]">
@@ -654,9 +658,9 @@ const MainPageClient = () => {
                 <main id="main-content" className="flex-1 flex relative overflow-hidden focus:outline-none" tabIndex={-1}>
 
                     {isMobile && !isEditMode && (
-                        <div className="absolute top-0 left-0 right-0 z-[1100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-lg">
+                        <div className="absolute top-0 left-0 right-0 z-[1100] pointer-events-none p-0 bg-transparent">
                             {selectedStation && railData ? (
-                                <div className="p-2.5">
+                                <div className="p-2.5 pointer-events-auto">
                                     <MobileStationPreviewWithNoSSR
                                         station={selectedStation}
                                         lines={mobilePreviewLines}
@@ -675,7 +679,7 @@ const MainPageClient = () => {
                                     />
                                 </div>
                             ) : activeLine && lineDetailData && railData ? (
-                                <div className="p-0 max-h-[30vh] overflow-hidden">
+                                <div className="p-0 max-h-[70vh] overflow-y-auto pointer-events-auto custom-scrollbar">
                                     <MobileLinePreviewWithNoSSR
                                         lineId={activeLine}
                                         visitedEdges={lineDetailData.visitedEdges}
@@ -688,6 +692,13 @@ const MainPageClient = () => {
                                     />
                                 </div>
                             ) : null}
+
+                            {/* Floating portal for TubeMap minimap on mobile - Placed directly below the panel */}
+                            {isMobile && activeLine && (
+                                <div className="mt-2.5 flex justify-center pointer-events-auto animate-in fade-in zoom-in duration-500 delay-150">
+                                    <div id="tube-minimap-portal" className="bg-white/40 dark:bg-slate-950/40 backdrop-blur-md rounded-2xl p-1.5 shadow-xl border border-white/20 dark:border-slate-800/30 min-h-[44px]" />
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -700,7 +711,7 @@ const MainPageClient = () => {
                     )}
 
                     <div className="flex-1 relative flex flex-col min-w-0">
-                        <section className="flex-1 relative overflow-hidden">
+                        <section className="flex-1 relative overflow-hidden select-none">
                             <MapWithNoSSR>
                                 <MapPaneWithNoSSR
                                     selectedLines={selectedLines}
@@ -733,7 +744,12 @@ const MainPageClient = () => {
                                     onStationHover={handleStationHover}
                                 />
                             </MapWithNoSSR>
-                            <MapStylePanel settings={styleSettings} onSettingsChange={setStyleSettings} />
+                            <MapStylePanel
+                                settings={styleSettings}
+                                onSettingsChange={setStyleSettings}
+                                isOpen={isMapStyleOpen}
+                                onOpenChange={setIsMapStyleOpen}
+                            />
                             <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
                         </section>
                         {!isMobile && lineDetailData && activeLine && railData && (
@@ -796,10 +812,18 @@ const MainPageClient = () => {
                             tabs={[
                                 {
                                     id: 'sidebar',
-                                    label: 'Line List',
+                                    label: 'Rail List',
                                     summary: (
-                                        <div style={{ textAlign: 'center', color: '#666', fontSize: '14px', fontWeight: '500' }}>
-                                            Select Lines to Display
+                                        <div className="flex items-center justify-between w-full px-2 py-1 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/40 dark:border-white/5 py-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
+                                                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Network Selection</span>
+                                            </div>
+                                            <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+                                                <span className="text-[10px] font-black text-primary uppercase">
+                                                    {selectedLines.filter(l => l !== "__NONE__").length} LINES SELECTED
+                                                </span>
+                                            </div>
                                         </div>
                                     ),
                                     content: (
@@ -814,17 +838,45 @@ const MainPageClient = () => {
                                                 handleLineClick(line);
                                                 if (isMobile) setIsMobileSheetOpen(false);
                                             }}
+                                            className="bg-transparent border-none shadow-none"
                                         />
                                     )
                                 },
                                 {
                                     id: 'mylines',
-                                    label: 'Usage History',
+                                    label: 'My Trip',
                                     summary: (
-                                        <div style={{ display: 'flex', justifyContent: 'space-around', width: '100%', fontWeight: 'bold', color: '#555' }}>
-                                            <span>{stats.lines} Lines</span>
-                                            <span>{stats.distance} km</span>
-                                            <span>{stats.stations} Stns</span>
+                                        <div className="grid grid-cols-4 gap-1.5 w-full">
+                                            {[
+                                                { label: 'TRIPS', val: recordedTrips.length, icon: 'route' },
+                                                { label: 'LINES', val: stats.lines, icon: 'directions_railway' },
+                                                { label: 'KM', val: stats.distance, icon: 'straighten', hideLabel: true, unit: 'km' },
+                                                { label: 'STNS', val: stats.stations, icon: 'location_on' },
+                                            ].map((s, idx) => {
+                                                const fullValue = `${s.val}${s.unit || ''}`;
+                                                // Dynamic font size based on string length
+                                                const getFontSize = (len: number) => {
+                                                    if (len <= 4) return 'text-xs'; // Default (12px)
+                                                    if (len <= 6) return 'text-[10px]';
+                                                    return 'text-[8.5px]';
+                                                };
+
+                                                return (
+                                                    <div key={idx} className="flex flex-col items-center justify-center py-2 px-1 bg-white/40 dark:bg-black/20 backdrop-blur-md rounded-xl border border-white/40 dark:border-white/5 overflow-hidden">
+                                                        <span className="material-symbols-outlined text-[11px] text-slate-400 dark:text-slate-500 mb-0.5">{s.icon}</span>
+                                                        <div className="flex items-baseline gap-1 min-w-0 w-full justify-center">
+                                                            <span className={`${getFontSize(fullValue.length)} font-black text-slate-900 dark:text-white leading-none whitespace-nowrap`}>
+                                                                {fullValue}
+                                                            </span>
+                                                            {!s.hideLabel && (
+                                                                <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter shrink-0">
+                                                                    {s.label}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     ),
                                     content: (
@@ -835,6 +887,7 @@ const MainPageClient = () => {
                                             railData={railData}
                                             lineLengths={lineLengths}
                                             visitedLineLengths={visitedLineLengths}
+                                            className="bg-transparent border-none shadow-none"
                                         />
                                     )
                                 }

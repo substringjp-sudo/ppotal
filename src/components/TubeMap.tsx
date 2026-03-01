@@ -13,6 +13,8 @@ interface TubeMapProps {
     lineColor: string;
     onStationClick?: (id: string) => void;
     onPathCreate?: (startId: string, endId: string) => void;
+    containerHeight?: string | number;
+    containerStyle?: React.CSSProperties;
 }
 
 const TubeMap: React.FC<TubeMapProps> = ({
@@ -22,7 +24,9 @@ const TubeMap: React.FC<TubeMapProps> = ({
     nodesById,
     lineColor,
     onStationClick,
-    onPathCreate
+    onPathCreate,
+    containerHeight = 'auto',
+    containerStyle = {}
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dragStartNode, setDragStartNode] = useState<string | null>(null);
@@ -56,7 +60,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const ys = nodes.map(n => n.y);
     const minX = xs.length > 0 ? Math.min(...xs) - 40 : 0;
     const maxX = xs.length > 0 ? Math.max(...xs) + 40 : 1000;
-    const minY = ys.length > 0 ? Math.min(...ys) - 60 : 0;
+    const minY = ys.length > 0 ? Math.min(...ys) - 40 : 0;
     const maxY = ys.length > 0 ? Math.max(...ys) + 120 : 350;
 
     const svgWidth = Math.max(maxX - minX, 800);
@@ -208,7 +212,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
     }, [updateScrollState]);
 
-    const showMinimap = scrollState.scrollWidth > scrollState.width * 1.5;
+    const showMinimap = scrollState.scrollWidth > scrollState.width * 1.5 || scrollState.scrollHeight > scrollState.height * 1.5;
 
     const [portalNode, setPortalNode] = useState<HTMLElement | null>(null);
 
@@ -225,20 +229,27 @@ const TubeMap: React.FC<TubeMapProps> = ({
         const minimap = e.currentTarget as HTMLElement;
         const rect = minimap.getBoundingClientRect();
         let clientX: number | undefined;
+        let clientY: number | undefined;
 
         if ('clientX' in e) {
             clientX = e.clientX;
+            clientY = e.clientY;
         } else if ('touches' in e && e.touches.length > 0) {
             clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
         }
-        if (clientX === undefined) return;
+        if (clientX === undefined || clientY === undefined) return;
 
         const x = clientX - rect.left;
-        const ratio = x / rect.width;
+        const y = clientY - rect.top;
+        const ratioX = x / rect.width;
+        const ratioY = y / rect.height;
 
         if (containerRef.current) {
-            const targetScroll = ratio * scrollState.scrollWidth - scrollState.width / 2;
-            containerRef.current.scrollLeft = targetScroll;
+            const targetScrollX = ratioX * scrollState.scrollWidth - scrollState.width / 2;
+            const targetScrollY = ratioY * scrollState.scrollHeight - scrollState.height / 2;
+            containerRef.current.scrollLeft = targetScrollX;
+            containerRef.current.scrollTop = targetScrollY;
         }
     }, [scrollState]);
 
@@ -254,16 +265,23 @@ const TubeMap: React.FC<TubeMapProps> = ({
                 if (minimap) {
                     const rect = minimap.getBoundingClientRect();
                     let clientX: number;
+                    let clientY: number;
                     if ('clientX' in e) {
-                        clientX = e.clientX;
+                        clientX = (e as MouseEvent).clientX;
+                        clientY = (e as MouseEvent).clientY;
                     } else {
-                        clientX = e.touches[0].clientX;
+                        clientX = (e as TouchEvent).touches[0].clientX;
+                        clientY = (e as TouchEvent).touches[0].clientY;
                     }
                     const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-                    const ratio = x / rect.width;
+                    const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+                    const ratioX = x / rect.width;
+                    const ratioY = y / rect.height;
                     if (containerRef.current) {
-                        const targetScroll = ratio * scrollState.scrollWidth - scrollState.width / 2;
-                        containerRef.current.scrollLeft = targetScroll;
+                        const targetScrollX = ratioX * scrollState.scrollWidth - scrollState.width / 2;
+                        const targetScrollY = ratioY * scrollState.scrollHeight - scrollState.height / 2;
+                        containerRef.current.scrollLeft = targetScrollX;
+                        containerRef.current.scrollTop = targetScrollY;
                     }
                 }
             };
@@ -285,16 +303,16 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const startNodeObj = nodes.find(n => n.id === dragStartNode);
 
     return (
-        <div style={{ position: 'relative', width: '100%' }}>
+        <div style={{ position: 'relative', width: '100%', height: containerHeight }}>
             <div
                 ref={containerRef}
                 onMouseMove={handleMove}
                 onTouchMove={handleMove}
                 style={{
                     width: '100%',
-                    height: 'auto',
+                    height: '100%',
                     overflowX: 'auto',
-                    overflowY: 'hidden',
+                    overflowY: 'auto',
                     backgroundColor: '#ffffff',
                     borderRadius: '16px',
                     border: '1px solid #e0e0e0',
@@ -302,7 +320,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
                     WebkitOverflowScrolling: 'touch',
                     cursor: dragStartNode ? 'grabbing' : 'default',
-                    userSelect: 'none'
+                    userSelect: 'none',
+                    ...containerStyle
                 }}
             >
                 <svg
@@ -502,11 +521,13 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     </svg>
                     <div style={{
                         position: 'absolute',
-                        top: 0,
+                        top: `${(scrollState.top / scrollState.scrollHeight) * 100}%`,
                         left: `${(scrollState.left / scrollState.scrollWidth) * 100}%`,
                         width: `${(scrollState.width / scrollState.scrollWidth) * 100}%`,
-                        height: '100%',
-                        backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                        height: `${(scrollState.height / scrollState.scrollHeight) * 100}%`,
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        border: '1.5px solid rgba(52, 152, 219, 0.5)',
+                        borderRadius: '2px',
                         pointerEvents: 'none'
                     }} />
                 </div>,
@@ -571,11 +592,13 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     </svg>
                     <div style={{
                         position: 'absolute',
-                        top: 0,
+                        top: `${(scrollState.top / scrollState.scrollHeight) * 100}%`,
                         left: `${(scrollState.left / scrollState.scrollWidth) * 100}%`,
                         width: `${(scrollState.width / scrollState.scrollWidth) * 100}%`,
-                        height: '100%',
-                        backgroundColor: 'rgba(0, 122, 255, 0.2)',
+                        height: `${(scrollState.height / scrollState.scrollHeight) * 100}%`,
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        border: '1.5px solid rgba(52, 152, 219, 0.5)',
+                        borderRadius: '2px',
                         pointerEvents: 'none'
                     }} />
                 </div>

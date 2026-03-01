@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import styles from './StationDetailPane.module.css';
 import { Station, RailData, Platform } from '../types/railData';
+import { getLineColor } from '../lib/lineColors';
 
 interface RegionNames {
   adm1: Record<string, { shapeName: string; shapeName_en?: string }>;
@@ -126,64 +126,65 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   return (
     <div className="absolute bottom-0 left-0 right-0 max-h-[50vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.15)] rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out font-display">
       {/* Premium Header Section */}
-      <div className="flex-shrink-0 px-6 py-5 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/50 rounded-t-[32px] flex items-center justify-between">
-        <div className="flex items-center gap-5">
-          <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-2xl">location_on</span>
+      <div className="flex-shrink-0 px-3 sm:px-6 py-3 sm:py-5 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/50 rounded-t-[24px] sm:rounded-t-[32px] flex flex-row items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-5 min-w-0 flex-1">
+          <div className="size-8 sm:size-12 rounded-lg sm:rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+            <span className="material-symbols-outlined text-lg sm:text-2xl">location_on</span>
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-3">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{station.name}</h2>
-              <span className="text-sm font-bold text-slate-400 dark:text-slate-500 italic uppercase tracking-wider">{station.name_en}</span>
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate max-w-[120px] sm:max-w-none">{station.name}</h2>
+              <span className="text-[10px] sm:text-sm font-bold text-slate-400 dark:text-slate-500 italic uppercase tracking-wider truncate max-w-[80px] sm:max-w-none">{station.name_en}</span>
+
+              {/* Trip Buttons - Moved next to name for mobile accessibility */}
+              <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+                {isTripInProgress ? (
+                  <div className="flex items-center gap-1.5">
+                    {station.id !== tripStartStationId && (
+                      <button
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[8px] sm:text-[10px] shadow-lg shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-1"
+                        onClick={() => onEndTrip(station)}
+                      >
+                        <span className="material-symbols-outlined text-[10px]">flag</span>
+                        Arr
+                      </button>
+                    )}
+                    <button
+                      className="px-2 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-[8px] sm:text-[10px] hover:bg-slate-300 dark:hover:bg-slate-600 transition-all active:scale-95"
+                      onClick={() => onCancel && onCancel()}
+                    >
+                      <span className="material-symbols-outlined text-[10px] sm:hidden">close</span>
+                      <span className="hidden sm:inline">Cancel</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="px-2.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[8px] sm:text-[10px] shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-1.5 group"
+                    onClick={() => onStartTrip(station)}
+                  >
+                    <span className="material-symbols-outlined text-[10px]">play_arrow</span>
+                    Start
+                  </button>
+                )}
+              </div>
             </div>
             {(prefectureName || cityName) && (
-              <div className="flex items-center gap-1.5 mt-1 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                <span className="material-symbols-outlined text-xs">map</span>
+              <div className="flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">
+                <span className="material-symbols-outlined text-[10px] sm:text-xs">map</span>
                 {prefectureName} {cityName}
                 <span className="mx-1 text-slate-300 dark:text-slate-700">|</span>
-                <span className="text-slate-400 dark:text-slate-500">{prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}</span>
+                <span className="text-slate-400 dark:text-slate-500 truncate">{prefectureNameEn}{prefectureNameEn && cityNameEn ? ', ' : ''}{cityNameEn}</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700 mr-1">
-            {isTripInProgress ? (
-              <div className="flex items-center gap-2">
-                {station.id !== tripStartStationId && (
-                  <button
-                    className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/20 transition-all active:scale-95 flex items-center gap-1.5"
-                    onClick={() => onEndTrip(station)}
-                  >
-                    <span className="material-symbols-outlined text-sm">flag</span>
-                    Arrival
-                  </button>
-                )}
-                <button
-                  className="px-3 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-[10px] hover:bg-slate-300 dark:hover:bg-slate-600 transition-all active:scale-95"
-                  onClick={() => onCancel && onCancel()}
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center gap-2 group"
-                onClick={() => onStartTrip(station)}
-              >
-                <div className="size-5 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined text-sm">play_arrow</span>
-                </div>
-                Departure
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center active:scale-90"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center active:scale-90"
           >
-            <span className="material-symbols-outlined text-2xl">close</span>
+            <span className="material-symbols-outlined text-xl sm:text-2xl">close</span>
           </button>
         </div>
       </div>
@@ -194,10 +195,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
             const line = lines[p.line];
             if (!line) return null;
 
-            const company = companies && companies[line.corp_id];
-            const lineColor = formatColor(line.color);
-            const companyColor = company ? formatColor(company.color) : null;
-            const finalColor = lineColor || companyColor || '#000000';
+            const finalColor = line.color || getLineColor(`${line.corp_id}::${p.line}`, railData) || '#3498db';
 
             const { left, right } = getDirectionalNeighbors(p);
             const maxNeighbors = Math.max(left.length, right.length);

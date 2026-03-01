@@ -65,54 +65,67 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     const lNameSecondary = lineData?.name_en || "";
 
     return (
-        <div style={{
-            padding: '20px',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '24px',
-            margin: '10px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: '900', color: '#1a1a1a' }}>
+        <div className="mx-2 my-1 p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300">
+            {/* Header: Line & Stats */}
+            <div className="flex justify-between items-start gap-3 mb-2">
+                <div className="flex flex-col min-w-0 flex-1">
+                    {/* Line Name Section */}
+                    <div className="flex items-baseline gap-2 overflow-hidden">
+                        <span className="text-xl font-black text-slate-900 dark:text-white leading-none truncate">
                             {lNamePrimary}
                         </span>
-                        <span style={{ fontSize: '12px', color: '#718096', fontWeight: '500' }}>
-                            {lNameSecondary}
-                        </span>
+                        {lNameSecondary && (
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic truncate uppercase tracking-tight">
+                                {lNameSecondary}
+                            </span>
+                        )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#4a5568' }}>
+
+                    {/* Company Name Section */}
+                    <div className="flex items-baseline gap-1.5 mt-0.5 overflow-hidden">
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 leading-none truncate uppercase tracking-widest">
                             {cNamePrimary}
                         </span>
-                        <span style={{ fontSize: '10px', color: '#a0aec0', fontWeight: '500' }}>
-                            {cNameSecondary}
-                        </span>
+                        {cNameSecondary && (
+                            <span className="text-[8px] font-medium text-slate-400 dark:text-slate-600 truncate uppercase tracking-tighter">
+                                {cNameSecondary}
+                            </span>
+                        )}
                     </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#333' }}>{stats.percent}%</div>
-                    <div style={{ fontSize: '12px', color: '#999' }}>{stats.visited} / {stats.total} km</div>
+
+                {/* Compact Stats Info */}
+                <div className="flex flex-col items-end shrink-0 bg-slate-50/50 dark:bg-slate-800/40 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-white/50 dark:border-slate-700/30 shadow-sm">
+                    <div className="text-2xl font-black text-primary leading-tight">
+                        {stats.percent}%
+                    </div>
+                    <div className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none uppercase tracking-tighter">
+                        {stats.visited}<span className="text-slate-300 dark:text-slate-700 mx-0.5">/</span>{stats.total} km
+                    </div>
                 </div>
             </div>
 
-            <div style={{ marginTop: '20px', marginBottom: '30px' }}>
-                <TubeMap
-                    nodes={topology.nodes}
-                    edges={topology.edges}
-                    visitedStations={visitedStations}
-                    visitedEdges={visitedEdges}
-                    lineColor={lineColor}
-                />
-                <div id="tube-minimap-portal" style={{
-                    marginTop: '12px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    minHeight: '60px'
-                }} />
+            {/* Route Map Area */}
+            <div
+                className="relative mt-2 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/60 dark:border-slate-700/40 overflow-hidden shadow-inner"
+                style={{ height: '240px', display: 'flex', flexDirection: 'column' }}
+            >
+                <div className="flex-1 min-h-0 overflow-hidden relative">
+                    <TubeMap
+                        nodes={topology.nodes}
+                        edges={topology.edges}
+                        visitedStations={visitedStations}
+                        visitedEdges={visitedEdges}
+                        lineColor={lineColor}
+                        containerHeight="100%"
+                        containerStyle={{ backgroundColor: 'transparent', border: 'none', boxShadow: 'none' }}
+                    />
+                </div>
+            </div>
+
+            {/* Bottom Indicator for interactivity */}
+            <div className="mt-2 flex justify-center">
+                <div className="w-8 h-1 rounded-full bg-slate-200 dark:bg-slate-700/50" />
             </div>
         </div>
     );

@@ -186,14 +186,10 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                             }}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                // Prevent default checkbox behavior to handle it completely in our handler
-                                // and avoid weird dual-triggering in details/summary
-                            }}
-                            onChange={(e) => {
-                                e.stopPropagation();
                                 onToggleSelection(groupKey);
                                 trackEvent('category_toggle', 'interaction', groupKey);
                             }}
+                            onChange={() => { }} // Controlled component needs onChange
                             className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                         <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
@@ -205,7 +201,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                     </div>
                     <div className="flex items-center gap-2 min-w-0">
                         <span className="material-symbols-outlined text-slate-400 text-lg group-open/details:text-primary transition-colors">
-                            {groupKey === '1' ? 'speed' : groupKey === '2' ? 'tram' : groupKey === '3' ? 'subway' : 'train'}
+                            {groupKey === '0' ? 'speed' : groupKey === '1' ? 'train' : groupKey === '2' ? 'tram' : groupKey === '3' ? 'train' : groupKey === '5' ? 'subway' : 'train'}
                         </span>
                         <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate group-open/details:text-slate-900 dark:group-open/details:text-white">
                             {title}
@@ -256,12 +252,12 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                                 input.indeterminate = someLinesSelected && !allLinesSelected;
                                             }
                                         }}
-                                        onClick={(e) => e.stopPropagation()}
-                                        onChange={(e) => {
+                                        onClick={(e) => {
                                             e.stopPropagation();
                                             onToggleCompany(companyId, lines);
                                             trackEvent('company_toggle_selection', 'interaction', companyId);
                                         }}
+                                        onChange={() => { }} // Controlled component needs onChange
                                         className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
                                     />
                                     <span className="material-symbols-outlined absolute pointer-events-none text-[10px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">

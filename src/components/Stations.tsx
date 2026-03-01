@@ -8,6 +8,9 @@ import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
 import { sharedSvgRenderer } from './Map';
 import { RailData } from '../types/railData';
+import { getLineColor } from '../lib/lineColors';
+import { getSmartTooltipOptions } from '../lib/uiUtils';
+import { trackEvent } from '../lib/gtag';
 import { convexHull } from '../lib/geoUtils';
 import { Line } from '../types/railData';
 
@@ -477,9 +480,30 @@ const Stations: React.FC<StationsProps> = ({
                     handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
                 }
             },
-            mouseover: () => {
+            mouseover: (e: any) => {
+                const { clientX: x, clientY: y } = e.originalEvent;
+                const container = layer.getPane()?.closest('.leaflet-container');
+                if (!container) return;
+
+                const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
+                const tooltip = (layer as any).getTooltip();
+                if (tooltip) {
+                    L.setOptions(tooltip, { direction, offset });
+                }
+
                 setLocalHoveredStation(id);
                 if (onStationHover) onStationHover(id);
+            },
+            mousemove: (e: any) => {
+                const { clientX: x, clientY: y } = e.originalEvent;
+                const container = layer.getPane()?.closest('.leaflet-container');
+                if (!container) return;
+
+                const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
+                const tooltip = (layer as any).getTooltip();
+                if (tooltip) {
+                    L.setOptions(tooltip, { direction, offset });
+                }
             },
             mouseout: () => {
                 setLocalHoveredStation(null);
