@@ -113,8 +113,10 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [mapReady, setMapReady] = useState(false);
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
     const [isMoving, setIsMoving] = useState(false);
+    const [isZooming, setIsZooming] = useState(false);
     const [isPending, startTransition] = React.useTransition();
     const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const zoomEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         onTransitionStateChange?.(isPending);
@@ -281,26 +283,70 @@ const MapPane: React.FC<MapPaneProps> = ({
         return () => clearTimeout(timer);
     }, [lodLevel]);
 
-    const isInteractionHidden = isMoving || isLODChanging;
+    // Transition State: Covers moving, zooming, LOD switches, and React's pending state
+    const isInteractionHidden = isMoving || isZooming || isLODChanging || isPending;
+
+    // Internal state to manage the visual "reveal" of the map after transformations
+    const [isSettled, setIsSettled] = useState(true);
+
+    useEffect(() => {
+        if (isInteractionHidden) {
+            setIsSettled(false);
+        } else {
+            // Force a Canvas clear to prevent ghosting from previous frames
+            const panesToClear = ['station-labels', 'railroad-lines', 'railroad-casing', 'railroad-glow'];
+            panesToClear.forEach(p => {
+                const pane = map.getPane(p);
+                const canvas = pane?.querySelector('canvas');
+                if (canvas instanceof HTMLCanvasElement) {
+                    const ctx = canvas.getContext('2d');
+                    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            });
+
+            // Wait until React transitions and Canvas redraw have likely stabilized
+            const timer = setTimeout(() => {
+                setIsSettled(true);
+            }, 120); // Settle time (roughly 2-3 frames + buffer)
+            return () => clearTimeout(timer);
+        }
+    }, [isInteractionHidden, map]);
+
+    const isVisibleToUser = !isInteractionHidden && isSettled;
 
     useEffect(() => {
         if (map) {
-            const panes = ['station-labels', 'railroad-lines', 'railroad-casing', 'railroad-glow'];
+            const panes = ['station-labels', 'railroad-lines', 'railroad-casing', 'railroad-glow', 'top-tooltips'];
             panes.forEach(p => {
                 const pane = map.getPane(p);
                 if (pane) {
-                    pane.style.transition = 'opacity 0.2s ease-in-out';
-                    // We don't hide railroad lines during normal movement, only during LOD switch for stability
-                    if (p === 'station-labels') {
-                        pane.style.opacity = isInteractionHidden ? '0' : '1';
-                        pane.style.visibility = isInteractionHidden ? 'hidden' : 'visible';
+                    if (p === 'station-labels' || p === 'top-tooltips') {
+                        // Strictly hide station dots, labels, and tooltips during any movement
+                        if (!isVisibleToUser) {
+                            pane.style.transition = 'none';
+                            pane.style.opacity = '0';
+                            pane.style.visibility = 'hidden';
+                        } else {
+                            pane.style.transition = 'opacity 0.2s ease-out';
+                            pane.style.opacity = '1';
+                            pane.style.visibility = 'visible';
+                        }
                     } else {
-                        pane.style.opacity = isLODChanging ? '0.3' : '1';
+                        // Keep railroad lines/casing/glow visible but dimmed during transformations
+                        // This provides moving context as the user requested
+                        if (isInteractionHidden) {
+                            pane.style.transition = 'opacity 0.1s ease-out';
+                            pane.style.opacity = '0.4';
+                        } else {
+                            pane.style.transition = 'opacity 0.3s ease-out';
+                            pane.style.opacity = '1';
+                        }
+                        pane.style.visibility = 'visible';
                     }
                 }
             });
         }
-    }, [map, isInteractionHidden, isLODChanging]);
+    }, [map, isVisibleToUser, isInteractionHidden]);
 
     useEffect(() => {
         if (map) {
@@ -340,23 +386,36 @@ const MapPane: React.FC<MapPaneProps> = ({
             if (onSetActiveLine) onSetActiveLine(null);
             if (onMapClick) onMapClick();
         },
-        zoomstart: () => setIsMoving(true),
+        zoomstart: () => {
+            setIsMoving(true);
+            setIsZooming(true);
+        },
         zoomend: (e) => {
             const newZoom = e.target.getZoom();
             startTransition(() => {
                 setZoomLevel(newZoom);
             });
-            setIsMoving(false);
+
+            if (zoomEndTimeoutRef.current) clearTimeout(zoomEndTimeoutRef.current);
+            zoomEndTimeoutRef.current = setTimeout(() => {
+                setIsMoving(false);
+                setIsZooming(false);
+            }, 400); // Further increased grace period for stable redraw
         },
-        movestart: () => setIsMoving(true),
+        movestart: () => {
+            setIsMoving(true);
+        },
         move: () => { },
         moveend: (e) => {
             const newBounds = e.target.getBounds();
             startTransition(() => {
                 setMapBounds(newBounds);
-                setIsMoving(false);
             });
+
             if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
+            moveEndTimeoutRef.current = setTimeout(() => {
+                setIsMoving(false);
+            }, 100);
         }
     });
 
@@ -441,6 +500,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         onZoomComplete?.();
     }, [zoomTarget, mapReady, map, graph, onZoomComplete, railData]);
 
+    const isTransforming = isMoving || isZooming || isLODChanging || isPending || !!dragStartStation;
+
     if (!mapReady) return null;
 
     return (
@@ -480,26 +541,26 @@ const MapPane: React.FC<MapPaneProps> = ({
                 />
             )}
 
-            {railDataForMap && <RailroadLayer
-                key={`rail-lod-${lodLevel}`}
-                railroadNetwork={railDataForMap}
-                selectedLines={selectedLines}
-                hoveredLine={hoveredLine}
-                activeLine={activeLine}
-                onRailroadClick={onRailroadClick || (() => { })}
-                onRailroadHover={setHoveredLine}
-                zoomLevel={zoomLevel}
-                isMobile={isMobile}
-                isMoving={isMoving || !!dragStartStation}
-                isDragging={!!dragStartStation}
-                usedSectionIds={visitedSectionIds}
-                draftSectionIds={draftSectionIds}
-                settings={styleSettings}
-            />}
+            {railDataForMap && (
+                <RailroadLayer
+                    railroadNetwork={railDataForMap}
+                    selectedLines={selectedLines}
+                    hoveredLine={hoveredLine}
+                    activeLine={activeLine}
+                    onRailroadClick={onRailroadClick || (() => { })}
+                    onRailroadHover={setHoveredLine}
+                    zoomLevel={zoomLevel}
+                    isMobile={isMobile}
+                    isMoving={isTransforming}
+                    isDragging={!!dragStartStation}
+                    usedSectionIds={visitedSectionIds}
+                    draftSectionIds={draftSectionIds}
+                    settings={styleSettings}
+                />
+            )}
 
             {visibleStations && railData &&
                 <Stations
-                    key={`stations-lod-${lodLevel}`}
                     processedStations={visibleStations}
                     effectiveZoom={effectiveZoom}
                     realZoom={zoomLevel}
@@ -511,7 +572,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     settings={styleSettings}
                     isMobile={isMobile}
                     showLabels={showLabels}
-                    isMoving={isMoving || !!dragStartStation}
+                    isMoving={isTransforming}
                     railData={railData}
                     mapBounds={mapBounds}
                     handleStationClick={handleStationClick}

@@ -9,10 +9,13 @@ export interface MapProps {
     children: React.ReactNode;
 }
 
-// Shared Canvas Renderer for visual layers (padding: 2.0 means 5x5 viewport area)
-// We separate background and railroad to prevent Z-index fighting on the same canvas
+// Shared Canvas Renderer for visual layers
+// We separate renderers by pane so we can control their visibility/opacity independently via CSS on the pane
 export const backgroundCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 1.5, pane: 'background' }) : null;
+export const glowCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-glow' }) : null;
+export const casingCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-casing' }) : null;
 export const railroadCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-lines' }) : null;
+export const stationCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'station-labels' }) : null;
 
 // Shared SVG Renderer for interaction layers (Perfect hit detection)
 export const sharedSvgRenderer = typeof window !== 'undefined' ? L.svg({ padding: 0.5, pane: 'master-interactions' }) : null;

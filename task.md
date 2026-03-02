@@ -64,6 +64,7 @@
 - [x] **번역 데이터 최적화**: `MAIN_PAGE_TRANSLATIONS`와 `SEO_TRANSLATIONS` 통합 및 중복 제거
 
 - [x] 다국어 지원 QA 및 안정화 (언어 전환 시 모든 UI가 올바르게 업데이트되는지 확인)
+- [x] **지도 렌더링 동기화**: 줌(Zoom) 전환 시 플랫폼 및 역 표시 타이밍 동기화 (잔상 제거 및 개별 Canvas Renderer 적용)
 
 ## 예정된 작업 (Planned Tasks)
 - [ ] 신규 기능 개발 시 중앙 집중화된 번역 시스템 활용

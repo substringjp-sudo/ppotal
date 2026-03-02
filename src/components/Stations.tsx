@@ -6,7 +6,7 @@ import { GeoJSON, useMap } from 'react-leaflet';
 import { MapStyleSettings } from './MainPageClient';
 import { ProcessedStation } from '../types/mapTypes';
 import StationMarker from './StationMarker';
-import { sharedSvgRenderer, railroadCanvas } from './Map';
+import { sharedSvgRenderer, railroadCanvas, glowCanvas, casingCanvas, stationCanvas } from './Map';
 import { RailData } from '../types/railData';
 import { getLineColor } from '../lib/lineColors';
 import { getSmartTooltipOptions } from '../lib/uiUtils';
@@ -69,6 +69,7 @@ const Stations: React.FC<StationsProps> = ({
     handleStationMouseUp,
     onStationHover,
     dragStartStation,
+    settings,
     draftStationIds = new Set(),
     showLabels = false,
     selectedStation = null
@@ -106,8 +107,17 @@ const Stations: React.FC<StationsProps> = ({
         checkPanes();
         return () => { mounted = false; };
     }, [map]);
-    const visualPathOptions = useMemo(() => ({
+    const platformPathOptions = useMemo(() => ({
         renderer: railroadCanvas || undefined
+    }), []);
+    const casingPathOptions = useMemo(() => ({
+        renderer: casingCanvas || undefined
+    }), []);
+    const glowPathOptions = useMemo(() => ({
+        renderer: glowCanvas || undefined
+    }), []);
+    const stationPathOptions = useMemo(() => ({
+        renderer: stationCanvas || undefined
     }), []);
 
     const allEntries = useMemo(() => {
@@ -209,16 +219,19 @@ const Stations: React.FC<StationsProps> = ({
     const nodeStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
         const props = feature.properties as StationFeatureProperties;
-        const { isTransfer, isDraft } = props;
+        const { isTransfer, isDraft, isUsed } = props;
+
+        // Use settings for base radius
+        const sizeMultiplier = isUsed ? settings.visited.stationSize : settings.unvisited.stationSize;
 
         // Base radii adjusted to ensure white fill Visibility at low zoom
-        let radius = 2.0; // Increased from 1.7 to make it visible
-        if (realZoom >= 10) radius = 2.7;
-        if (realZoom >= 12) radius = 3.3;
-        if (realZoom >= 14) radius = 4.0;
+        let radius = 2.0 * sizeMultiplier;
+        if (realZoom >= 10) radius = 2.7 * sizeMultiplier;
+        if (realZoom >= 12) radius = 3.3 * sizeMultiplier;
+        if (realZoom >= 14) radius = 4.0 * sizeMultiplier;
 
         if (isTransfer) {
-            radius *= 1.4; // Slightly increased for more prominence
+            radius *= 1.4;
         }
 
         // Only show nodes when zoomed in enough or if it's a transfer/draft
@@ -239,7 +252,7 @@ const Stations: React.FC<StationsProps> = ({
         }
 
         const minVisibleZoom = isTransfer ? 7 : 10;
-        const isVisible = realZoom >= minVisibleZoom || isDraft;
+        const isVisible = (realZoom >= minVisibleZoom || isDraft) && !isMoving;
 
         return {
             radius: radius,
@@ -251,7 +264,7 @@ const Stations: React.FC<StationsProps> = ({
             opacity: isVisible ? 1.0 : 0,
             pane: 'station-labels'
         };
-    }, [realZoom, localHoveredStation, selectedStation]);
+    }, [realZoom, localHoveredStation, selectedStation, settings, isMoving]);
 
     const hullStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
@@ -281,11 +294,11 @@ const Stations: React.FC<StationsProps> = ({
 
         return {
             fillColor: color,
-            fillOpacity: 0.25,
+            fillOpacity: isMoving ? 0 : 0.25,
             stroke: false,
             interactive: false
         };
-    }, [hoveredLine, activeLine, localHoveredStation]);
+    }, [hoveredLine, activeLine, localHoveredStation, isMoving]);
 
     const platformStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature) return { opacity: 0, interactive: false };
@@ -299,24 +312,25 @@ const Stations: React.FC<StationsProps> = ({
             selectedLines.includes(l) || (activeLine === l) || (hoveredLine === l)
         ) || (localHoveredStation === stationId);
 
+        const isUsed = props.isUsed;
         const baseColor = getColor(lineKey);
         const color = isFilterActive && !isSelected ? '#dddddd' : baseColor;
 
-        // Weights reduced by ~2/3 from [8.0, 4.5, 6.5]
-        let weight = 5.3;
-        if (effectiveZoom <= 11) weight = 3.0;
-        else if (effectiveZoom <= 13) weight = 4.3;
+        const baseWeight = isUsed ? settings.visited.weight : settings.unvisited.weight;
+
+        // Synchronize with RailroadLayer weight scaling (2/3 scale roughly)
+        let weight = baseWeight * 2.1; // Platforms are naturally thicker
+        if (effectiveZoom <= 11) weight = baseWeight * 1.2;
+        else if (effectiveZoom <= 13) weight = baseWeight * 1.7;
 
         const isHoveredLocal = localHoveredStation === stationId;
         const isSelectedLocal = selectedStation === stationId;
 
-        // Add special weight or styling for hovered/selected platform
         if (isHoveredLocal || isSelectedLocal) {
             weight += 2.0;
         }
 
         const isDimmed = isFilterActive && !isSelected;
-
         return {
             color: color,
             weight: isMobile ? weight * 1.3 : weight,
@@ -324,9 +338,9 @@ const Stations: React.FC<StationsProps> = ({
             pane: 'railroad-lines',
             interactive: false,
             lineCap: 'butt' as const,
-            lineJoin: 'miter' as const,
+            lineJoin: 'round' as const,
         } as L.PathOptions;
-    }, [selectedLines, activeLine, hoveredLine, localHoveredStation, selectedStation, effectiveZoom, getColor, isMobile]);
+    }, [selectedLines, activeLine, hoveredLine, localHoveredStation, selectedStation, effectiveZoom, getColor, isMobile, settings]);
 
     const platformCasingStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
@@ -341,12 +355,15 @@ const Stations: React.FC<StationsProps> = ({
         const isDragStart = dragStartStation === stationId;
 
         const isEmphasis = isClicked || isHovered || isDragStart || isUsed || isDraft;
-        const showEmphasis = isEmphasis && !isMoving;
+        const showEmphasis = isEmphasis; // We keep it visible during move if isEmphasis is true
 
         // Weights reduced by ~2/3 from [12.0, 7.0, 9.5]
-        let weight = 8.0;
-        if (effectiveZoom <= 11) weight = 4.7;
-        else if (effectiveZoom <= 13) weight = 6.3;
+        // Synchronize target weight with settings
+        const targetWeight = isUsed ? settings.visited.weight : settings.unvisited.weight;
+
+        let weight = targetWeight * 2.1 + (isUsed ? 3.5 : 2.2);
+        if (effectiveZoom <= 11) weight = targetWeight * 1.2 + (isUsed ? 2.5 : 1.5);
+        else if (effectiveZoom <= 13) weight = targetWeight * 1.7 + (isUsed ? 3.0 : 1.8);
 
         if (isHovered || isClicked) {
             weight += 2.0;
@@ -363,7 +380,7 @@ const Stations: React.FC<StationsProps> = ({
         return {
             color: color,
             weight: weight,
-            opacity: showEmphasis ? 1.0 : 0.4,
+            opacity: showEmphasis ? 1.0 : 0.1,
             pane: 'railroad-casing',
             interactive: false,
             lineCap: 'butt' as const,
@@ -506,7 +523,7 @@ const Stations: React.FC<StationsProps> = ({
             mouseout: () => {
                 setLocalHoveredStation(null);
                 if (onStationHover) onStationHover(null);
-                layer.closeTooltip();
+                layer?.closeTooltip?.();
             },
             mouseup: (e) => {
                 L.DomEvent.stopPropagation(e);
@@ -529,6 +546,7 @@ const Stations: React.FC<StationsProps> = ({
         if (nodeRef.current) nodeRef.current.setStyle(nodeStyle as L.PathOptions);
         if (platformCasingRef.current) platformCasingRef.current.setStyle(platformCasingStyle as L.PathOptions);
         if (interactionRef.current) interactionRef.current.setStyle(stationInteractionStyle);
+
     }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, stationInteractionStyle, localHoveredStation, selectedStation, effectiveZoom]);
 
     // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
@@ -635,7 +653,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={hullStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'hull'}
-                pathOptions={visualPathOptions}
+                pathOptions={glowPathOptions}
                 pane="railroad-glow"
             />
             <GeoJSON
@@ -644,7 +662,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={platformCasingStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'platform'}
-                pathOptions={visualPathOptions}
+                pathOptions={casingPathOptions}
                 pane="railroad-casing"
             />
             <GeoJSON
@@ -653,7 +671,7 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={platformStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'platform'}
-                pathOptions={visualPathOptions}
+                pathOptions={platformPathOptions}
                 pane="railroad-lines"
                 interactive={false}
             />
@@ -663,7 +681,11 @@ const Stations: React.FC<StationsProps> = ({
                 data={visualsGeoJson as GeoJSON.FeatureCollection}
                 style={nodeStyle as L.PathOptions}
                 filter={(feature) => feature.properties?.type === 'node'}
-                pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, nodeStyle(feature) as L.CircleMarkerOptions)}
+                pointToLayer={(feature: GeoJSON.Feature, latlng: L.LatLng) => L.circleMarker(latlng, {
+                    ...nodeStyle(feature) as L.CircleMarkerOptions,
+                    renderer: stationCanvas || undefined
+                })}
+                pathOptions={stationPathOptions}
                 pane="station-labels"
                 interactive={false}
             />
@@ -679,7 +701,8 @@ const Stations: React.FC<StationsProps> = ({
                         fillOpacity: baseStyle.fillOpacity,
                         stroke: false,
                         pane: 'station-labels',
-                        interactive: false
+                        interactive: false,
+                        renderer: stationCanvas || undefined
                     });
                 }}
             />

@@ -9,7 +9,7 @@ import { trackEvent } from '../lib/gtag';
 import { RailData, Section } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
-import { railroadCanvas, sharedSvgRenderer } from './Map';
+import { glowCanvas, casingCanvas, railroadCanvas, sharedSvgRenderer } from './Map';
 
 interface RailroadLayerProps {
     railroadNetwork: RailData | null;
@@ -46,8 +46,11 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
 
-    const pathOptions = useMemo(() => ({
+    const mainPathOptions = useMemo(() => ({
         renderer: railroadCanvas || undefined
+    }), []);
+    const glowPathOptions = useMemo(() => ({
+        renderer: glowCanvas || undefined
     }), []);
 
     useEffect(() => {
@@ -266,7 +269,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // Determine if we should show the outline/glow
         const showOutline = (isUsed && settings.visited.showOutline) ||
             (isVisible && !isUsed && settings.unvisited.showOutline);
-        const showEmphasis = isDraft || (!isMoving && (isHovered || isClicked));
+        const showEmphasis = isDraft || (isHovered || isClicked);
 
         if (!showOutline && !showEmphasis) return { opacity: 0, interactive: false };
 
@@ -451,7 +454,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         tooltipTimeout = null;
                     }
                     onRailroadHover(null);
-                    layer.closeTooltip();
+                    layer?.closeTooltip?.();
                 }
             }
         });
@@ -466,6 +469,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         if (mainLayerRef.current) mainLayerRef.current.setStyle(unifiedStyle);
         if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
         if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+
     }, [activeLine, hoveredLine, isMoving, isDragging, unifiedStyle, glowStyle, interactionStyle]);
 
     // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
@@ -499,7 +503,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     style={glowStyle}
                     interactive={false}
                     pane="railroad-glow"
-                    pathOptions={pathOptions}
+                    pathOptions={glowPathOptions}
                 />
             )}
 
@@ -512,7 +516,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     style={unifiedStyle}
                     interactive={false}
                     pane="railroad-lines"
-                    pathOptions={pathOptions}
+                    pathOptions={mainPathOptions}
                 />
             )}
 
