@@ -60,7 +60,7 @@ export const useRailData = () => {
                         ] = jsonData;
 
                         // Reconstruct Platforms
-                        const platforms: Record<string, any> = {};
+                        const platforms: Record<string, { geometries: number[][][];[key: string]: any }> = {};
                         for (const id in platformsMeta) {
                             platforms[id] = {
                                 ...platformsMeta[id],

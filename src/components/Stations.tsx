@@ -523,13 +523,13 @@ const Stations: React.FC<StationsProps> = ({
                     handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
                 }
             },
-            mouseover: (e: any) => {
+            mouseover: (e: L.LeafletMouseEvent) => {
                 if (isMovingRef.current) return;
-                const { clientX: x, clientY: y } = e.originalEvent;
+                const { clientX, clientY } = (e as any).originalEvent;
                 const container = layer.getPane()?.closest('.leaflet-container');
                 if (!container) return;
 
-                const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
+                const { direction, offset } = getSmartTooltipOptions(clientX, clientY, container.clientWidth, container.clientHeight);
                 const tooltip = (layer as any).getTooltip();
                 if (tooltip) {
                     L.setOptions(tooltip, { direction, offset });
@@ -538,13 +538,13 @@ const Stations: React.FC<StationsProps> = ({
                 setLocalHoveredStation(id);
                 if (onStationHover) onStationHover(id);
             },
-            mousemove: (e: any) => {
+            mousemove: (e: L.LeafletMouseEvent) => {
                 if (isMovingRef.current) return;
-                const { clientX: x, clientY: y } = e.originalEvent;
+                const { clientX, clientY } = (e as any).originalEvent;
                 const container = layer.getPane()?.closest('.leaflet-container');
                 if (!container) return;
 
-                const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
+                const { direction, offset } = getSmartTooltipOptions(clientX, clientY, container.clientWidth, container.clientHeight);
                 const tooltip = (layer as any).getTooltip();
                 if (tooltip) {
                     L.setOptions(tooltip, { direction, offset });
@@ -557,7 +557,7 @@ const Stations: React.FC<StationsProps> = ({
                     layer?.closeTooltip?.();
                 } catch (err) { /* ignore */ }
             },
-            mouseup: (e) => {
+            mouseup: (e: L.LeafletMouseEvent) => {
                 L.DomEvent.stopPropagation(e);
                 if (isStationActive && handleStationMouseUp) {
                     handleStationMouseUp(id);

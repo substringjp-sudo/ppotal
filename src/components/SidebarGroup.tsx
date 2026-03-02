@@ -129,12 +129,13 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
 
     const { language } = useI18n();
     if (Object.keys(companies).length === 0) return null;
+
     const getCompanyName = (id: string) => companyNames[id]?.name || id;
     const getLineName = (id: string, lineData?: { name: string; name_en?: string; name_kr?: string }) => lineData?.name || lineNames[id]?.name || id;
 
     const sortedCompanies = Object.entries(companies).sort((a, b) => {
         if (sortMode === 'usage') {
-            const getCompanyUsage = ([compId, lines]: [string, Record<string, any>]) => {
+            const getCompanyUsage = ([compId, lines]: [string, Record<string, { name: string; name_en?: string; name_kr?: string; stations?: string[] }>]) => {
                 let total = 0;
                 let visited = 0;
                 Object.keys(lines).forEach(lineId => {

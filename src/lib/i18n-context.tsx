@@ -13,23 +13,19 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [language, setLanguageState] = useState<Language>(() => {
-        if (typeof window === 'undefined') return 'ja';
-
-        // 1. Check saved preference
-        const savedLang = localStorage.getItem('pref-lang') as Language;
-        if (savedLang === 'ko' || savedLang === 'en' || savedLang === 'ja') return savedLang;
-
-        // 2. Detect browser language
-        const browserLang = navigator.language.split('-')[0];
-        if (browserLang === 'ko') return 'ko';
-        if (browserLang === 'ja') return 'ja';
-
-        return 'ja' as Language;
-    });
+    const [language, setLanguageState] = useState<Language>('ja');
 
     useEffect(() => {
-        // Initialization handled in useState lazy initializer
+        // Hydration check: detect and set correct language after mount
+        const savedLang = localStorage.getItem('pref-lang') as Language;
+        if (savedLang === 'ko' || savedLang === 'en' || savedLang === 'ja') {
+            if (savedLang !== 'ja') setLanguageState(savedLang);
+        } else {
+            const browserLang = navigator.language.split('-')[0];
+            if (browserLang === 'ko') setLanguageState('ko');
+            else if (browserLang === 'ja') setLanguageState('ja');
+            else setLanguageState('en');
+        }
     }, []);
 
     const setLanguage = (lang: Language) => {
