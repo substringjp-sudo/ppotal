@@ -78,7 +78,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
         };
     }, [segments, visitedEdges, lineData]);
 
-    const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges);
+    const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges, railData);
 
     return (
         <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] sm:max-h-[60vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col p-3 sm:p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[24px] sm:rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out">

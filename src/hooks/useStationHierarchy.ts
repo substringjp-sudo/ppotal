@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { RailData, HierarchyCompany } from '../types/railData';
+import { RailData, HierarchyCompany, HierarchyLine } from '../types/railData';
 
 // 카테고리 정의 (신칸센은 별도 카테고리 '0'으로 관리)
 export const CATEGORY_MAP: Record<number, { name: string; name_en: string; name_kr: string }> = {
@@ -31,11 +31,24 @@ export const useStationHierarchy = (railData: RailData | null) => {
         const companyNames = railData.companies || {};
         const lineNames = railData.lines || {};
 
-        // 노선 길이 미리 계산
+        // 노선 길이 미리 계산 (Accuracy update: Summing sections instead of relying on total_length)
         const lineLengths: Record<string, number> = {};
-        if (railData.lines) {
+        if (railData.sections?.sections) {
+            const linePhysicalConnections = new Map<string, Set<string>>();
+            railData.sections.sections.forEach((section) => {
+                const lineId = `${section.company_id}::${section.line_id}`;
+                if (!linePhysicalConnections.has(lineId)) linePhysicalConnections.set(lineId, new Set());
+
+                const connectionKey = [section.start, section.end].sort().join('<->');
+                if (!linePhysicalConnections.get(lineId)!.has(connectionKey)) {
+                    lineLengths[lineId] = (lineLengths[lineId] || 0) + (section.length / 1000);
+                    linePhysicalConnections.get(lineId)!.add(connectionKey);
+                }
+            });
+        } else if (railData.lines) {
             Object.values(railData.lines).forEach((line) => {
-                lineLengths[`${line.corp_id}::${line.id}`] = line.total_length || 0;
+                // If section data is not available, fall back to total_length (convert meters to km)
+                lineLengths[`${line.corp_id}::${line.id}`] = (line.total_length || 0) / 1000;
             });
         }
 
@@ -50,7 +63,14 @@ export const useStationHierarchy = (railData: RailData | null) => {
             // Handle nested 'lines' if it exists, otherwise use companyObj directly
             const lines = (companyObj as HierarchyCompany).lines || companyObj;
 
-            Object.entries(lines as Record<string, string[]>).forEach(([lineId, stations]) => {
+            Object.entries(lines as Record<string, string[] | HierarchyLine>).forEach(([lineId, lineDataOrStations]) => {
+                let stations: string[] = [];
+                if (Array.isArray(lineDataOrStations)) {
+                    stations = lineDataOrStations;
+                } else if (lineDataOrStations && lineDataOrStations.platforms) {
+                    stations = lineDataOrStations.platforms.map((p: any) => p.station_id);
+                }
+
                 const lineInfo = railData.lines?.[lineId];
                 const lineName = lineInfo?.name || "";
                 const lineNameEn = lineInfo?.name_en || "";

@@ -1,6 +1,28 @@
 import { useState, useEffect } from 'react';
-import { RailData } from '../types/railData';
+import { RailData, NetworkLineData, Company, HierarchyCompany } from '../types/railData';
 import { decodePolyline } from '../utils/polyline';
+
+function buildHierarchyFromLineData(
+    lineData: NetworkLineData,
+    companies: Record<string, Company>
+): { companies: Record<string, HierarchyCompany> } {
+    const result: Record<string, HierarchyCompany> = {};
+
+    Object.entries(lineData).forEach(([lineId, ld]) => {
+        const compId = String(ld.company_id);
+        if (!result[compId]) {
+            result[compId] = { id: ld.company_id, lines: {} };
+        }
+        result[compId].lines[lineId] = {
+            id: ld.line_id,
+            corp_id: ld.company_id,
+            platforms: ld.stations.map(sid => ({ station_id: sid, platform_id: sid })),
+            sections: ld.sections.map(Number)
+        };
+    });
+
+    return { companies: result };
+}
 
 let cachedRailDataPromise: Promise<RailData> | null = null;
 
@@ -26,9 +48,7 @@ export const useRailData = () => {
                             fetch('/rail/sections_geom_high.json'),
                             fetch('/rail/sections_geom_mid.json'),
                             fetch('/rail/sections_geom_low.json'),
-                            fetch('/rail/station_graph.json'),
-                            fetch('/rail/platform_graph.json'),
-                            fetch('/rail/railroad_hierarchy.json'),
+                            fetch('/rail/railroad_network.json'),
                             fetch('/rail/joints.json'),
                             fetch('/rail/stations_lod.json')
                         ]);
@@ -52,9 +72,7 @@ export const useRailData = () => {
                             sectionsGeomHigh,
                             sectionsGeomMid,
                             sectionsGeomLow,
-                            stationGraph,
-                            platformGraph,
-                            hierarchy,
+                            railroadNetwork,
                             joints,
                             stationsLod
                         ] = jsonData;
@@ -96,10 +114,10 @@ export const useRailData = () => {
                                 }
                             },
                             railroadGraph: {
-                                stationGraph,
-                                platformGraph
+                                stationGraph: railroadNetwork.station_graph
                             },
-                            hierarchy,
+                            railroadNetwork,
+                            hierarchy: buildHierarchyFromLineData(railroadNetwork.line_data, companies),
                             joints,
                             stationsLod
                         } as RailData;

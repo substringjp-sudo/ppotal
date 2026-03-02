@@ -66,41 +66,109 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   const getDirectionalNeighbors = (platform: Platform & { pid: string }) => {
     const left: { station: Station; ratio: number; skippedCount: number }[] = [];
     const right: { station: Station; ratio: number; skippedCount: number }[] = [];
-    const currentStation = station;
+    const railroadNetwork = railData.railroadNetwork;
+    if (!railroadNetwork || !railroadNetwork.station_graph) return { left, right };
 
-    const railroadGraph = railData.railroadGraph;
-    if (!railroadGraph || !railroadGraph.platformGraph) return { left, right };
+    const stationId = station.id;
+    const currentLineId = platform.line;
+    const neighborsMap = railroadNetwork.station_graph[stationId];
+    if (!neighborsMap) return { left, right };
 
-    // Try primary lookup by unique platform ID (pid), fallback to platform code
-    const platformConnections = railroadGraph.platformGraph[currentStation.id]?.[platform.pid] ||
-      railroadGraph.platformGraph[currentStation.id]?.[platform.code] || [];
+    const lineData = railroadNetwork.line_data && railroadNetwork.line_data[String(currentLineId)];
+    const lineSequence = lineData?.stations || [];
 
-    const totalPoints = platform.geometries && platform.geometries[0] ? platform.geometries[0].length : 2;
+    // 1. Group neighbors by their 'first step' from the current station.
+    // This represents a distinct physical direction/track leaving the station.
+    const groups = new Map<string, { neighborIds: string[]; avgIdx: number; avgLon: number }>();
 
-    for (const conn of platformConnections) {
-      const ratio = totalPoints > 1 ? conn.point_index / (totalPoints - 1) : 0.5;
-      for (const neighborInfo of conn.neighbors) {
-        const neighborId = neighborInfo.station_id;
-        const neighborStation = stations[neighborId];
-        if (!neighborStation) continue;
+    Object.entries(neighborsMap).forEach(([neighborId, data]) => {
+      const neighbor = stations[neighborId];
+      if (!neighbor) return;
 
-        const entry = {
-          station: neighborStation,
-          ratio,
-          skippedCount: neighborInfo.skipped?.length || 0
-        };
+      // 1. Check if the neighbor station itself belongs to the current platform's line.
+      const neighborPlatforms = (neighbor.platform_ids || []).map(pid => platforms[pid]);
+      const isNeighborOnThisLine = neighborPlatforms.some(pm => pm && String(pm.line) === String(currentLineId));
 
-        if (ratio <= 0.5) {
-          if (!left.find(e => e.station.id === neighborStation.id)) {
-            left.push(entry);
+      // 2. Find connections that explicitly match the current line ID.
+      let validConnections = data.connections.filter(c => String(c.line_id) === String(currentLineId));
+
+      // 3. Filtering logic:
+      // - If neighbor is NOT on this line, exclude even if connection.line_id matches (often data artifacts from shared tracks).
+      // - If neighbor IS on this line, but no direct line_id match exists (due to junctions or cross-line labeling), allow existing connections.
+      if (!isNeighborOnThisLine && validConnections.length > 0) {
+        // Strict platform isolation: neighbor doesn't belong to this line.
+        validConnections = [];
+      } else if (isNeighborOnThisLine && validConnections.length === 0) {
+        // Neighbor is valid for this line, but connection is labeled differently (e.g. shared track J_xx).
+        // Pick the best available connection.
+        validConnections = data.connections;
+      }
+
+      if (validConnections.length === 0) return;
+
+      const conn = validConnections[0];
+      const firstStep = (conn.via_joints && conn.via_joints.length > 0) ? conn.via_joints[0] : neighborId;
+
+      if (!groups.has(firstStep)) {
+        groups.set(firstStep, { neighborIds: [], avgIdx: 0, avgLon: 0 });
+      }
+      const g = groups.get(firstStep)!;
+      g.neighborIds.push(neighborId);
+
+      const idx = lineSequence.indexOf(neighborId);
+      g.avgIdx += idx !== -1 ? idx : lineSequence.indexOf(stationId);
+      g.avgLon += neighbor.lon;
+    });
+
+    // Finalize averages and sort groups by a stable direction (heuristic: line sequence or longitude)
+    const sortedGroups = Array.from(groups.entries()).map(([stepId, g]) => {
+      const count = g.neighborIds.length;
+      return {
+        stepId,
+        neighborIds: g.neighborIds,
+        avgIdx: g.avgIdx / count,
+        avgLon: g.avgLon / count
+      };
+    }).sort((a, b) => a.avgIdx - b.avgIdx || a.avgLon - b.avgLon);
+
+    // 2. Assign groups to Left or Right. 
+    // If only one direction (terminal), put all on one side based on lon.
+    // If multiple directions, split them to create a "balance".
+    const currentIdx = lineSequence.indexOf(stationId);
+
+    sortedGroups.forEach((group, groupIdx) => {
+      let isLeft = false;
+      if (sortedGroups.length === 1) {
+        // Terminal case: use longitude comparison.
+        isLeft = group.avgLon < station.lon;
+      } else {
+        // Multi-direction case:
+        // By default, groups with lower sequence indices go Left, higher go Right.
+        // This usually corresponds to Upstream vs Downstream.
+        if (currentIdx !== -1) {
+          isLeft = group.avgIdx < currentIdx;
+          // If all groups are on one side of currentIdx, use order in sortedGroups to split.
+          if (sortedGroups.every(g => g.avgIdx < currentIdx)) {
+            isLeft = groupIdx < Math.ceil(sortedGroups.length / 2);
+          } else if (sortedGroups.every(g => g.avgIdx > currentIdx)) {
+            isLeft = groupIdx < Math.floor(sortedGroups.length / 2);
           }
         } else {
-          if (!right.find(e => e.station.id === neighborStation.id)) {
-            right.push(entry);
-          }
+          // Fallback to purely positional split if no sequence available.
+          isLeft = groupIdx < sortedGroups.length / 2;
         }
       }
-    }
+
+      group.neighborIds.forEach(nid => {
+        const nStation = stations[nid];
+        if (nStation) {
+          const entry = { station: nStation, ratio: isLeft ? 0 : 1, skippedCount: 0 };
+          if (isLeft) left.push(entry);
+          else right.push(entry);
+        }
+      });
+    });
+
     return { left, right };
   };
 

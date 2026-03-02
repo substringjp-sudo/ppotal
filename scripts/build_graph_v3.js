@@ -1,7 +1,15 @@
 /**
  * build_graph_v3.js
  * 
- * 일본 철도망 통합 그래프 생성 스크립트 v3
+ * 일본 철도망 통합 그래프 생성 스크립트 v3.1
+ * 
+ * v3.1 변경사항:
+ *   - Phase 0 추가: 조인트 through_pairs 계산 (각도 기반)
+ *     → 각 조인트에서 어떤 section 쌍이 "직통"인지 기록
+ *   - Phase 4 수정: BFS에서 두 가지 필터 적용
+ *     ① 중간에 역(station)이 있으면 그 역에서 항상 끊기 (중간역 강제 경유)
+ *     ② 조인트 통과 시 through_pairs로 진입-이탈 방향 검사
+ *     → 시모사만스키에서 나리타를 거치지 않고 구즈미로 가는 경로 차단
  * 
  * 기능:
  *   1. sections_geom_high.json의 좌표 데이터를 기반으로 section 끝점을 역/Joint에 매핑
@@ -69,6 +77,43 @@ function haversine(c1, c2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/** 각도 정규화 (-180 ~ 180) */
+function normalizeAngle(a) {
+    while (a > 180) a -= 360;
+    while (a < -180) a += 360;
+    return a;
+}
+
+/**
+ * 조인트에서 특정 섹션이 이탈하는 방향 각도를 계산
+ * (조인트 접점 기준으로 섹션이 뻗어나가는 방향)
+ */
+function getLeavingAngle(sectionId, jointId, sectionsGeom, enhancedSections) {
+    const sec = enhancedSections[sectionId];
+    if (!sec) return null;
+    const encoded = sectionsGeom[sectionId];
+    if (!encoded) return null;
+    const coords = decodePolyline(encoded);
+    if (coords.length < 2) return null;
+
+    let pJoint, pNext;
+    if (sec.start === jointId) {
+        pJoint = coords[0];
+        // 더 먼 포인트로 방향 결정 (작은 노이즈 제거)
+        pNext = coords[Math.min(2, coords.length - 1)];
+    } else if (sec.end === jointId) {
+        pJoint = coords[coords.length - 1];
+        pNext = coords[Math.max(coords.length - 3, 0)];
+    } else {
+        return null;
+    }
+
+    const dx = pNext[0] - pJoint[0];
+    const dy = pNext[1] - pJoint[1];
+    if (dx === 0 && dy === 0) return null;
+    return Math.atan2(dy, dx) * 180 / Math.PI;
+}
+
 // ============================================================
 // 데이터 로드
 // ============================================================
@@ -93,8 +138,7 @@ console.log(`  Lines: ${Object.keys(lines).length}`);
 // ============================================================
 console.log('\n🔧 Phase 1: 좌표 인덱스 구축...');
 
-// 역에 연결 가능한 좌표들: 플랫폼 지오메트리의 양 끝점 + 플랫폼 중심 좌표 + 역 중심 좌표
-const stationCoords = {}; // stationId -> [coord1, coord2, ...]
+const stationCoords = {};
 
 Object.entries(stationsMaster).forEach(([sid, station]) => {
     const coords = [];
@@ -116,7 +160,6 @@ Object.entries(stationsMaster).forEach(([sid, station]) => {
     stationCoords[sid] = coords;
 });
 
-// Joint 좌표 인덱스
 const jointCoords = {};
 jointsData.joints.forEach(j => {
     jointCoords[j.id] = j.coordinates;
@@ -130,7 +173,7 @@ console.log(`  Joint 좌표 인덱스: ${Object.keys(jointCoords).length} 개`);
 // ============================================================
 console.log('\n🔧 Phase 2: Section 끝점 매핑 보강...');
 
-const STATION_MATCH_THRESHOLD = 800; // 역 매칭 기준 800m (큰 역 고려)
+const STATION_MATCH_THRESHOLD = 800;
 const JOINT_MATCH_THRESHOLD = 50;
 
 const enhancedSections = {};
@@ -237,12 +280,121 @@ console.log(`  노드: ${nodeCount} (역 + Joint)`);
 console.log(`  엣지: ${edgeCount} (Section)`);
 
 // ============================================================
+// Phase 3.5: 조인트 Through-Pairs 계산 (각도 기반)
+// ============================================================
+console.log('\n🔧 Phase 3.5: 조인트 Through-Pairs 계산 (각도 기반)...');
+
+/**
+ * 특정 조인트에서 어떤 섹션 쌍이 "직통(through)"인지 계산
+ *
+ * 원리:
+ *   - 열차가 직통으로 지나가면 선로가 거의 일직선 → 진입각과 이탈각 차이 ≈ 0°
+ *   - 분기선은 크게 꺾임 → 진입각과 이탈각 차이 >> 0°
+ *
+ * through 판정 기준:
+ *   섹션 A(→ 조인트 방향)와 섹션 B(조인트 → 방향)의 각도 차이가
+ *   THROUGH_ANGLE_THRESHOLD(45°) 미만이면 직통 쌍으로 기록
+ */
+const THROUGH_ANGLE_THRESHOLD = 45; // 직통 판정 각도 임계값 (도)
+
+// jointId → Set<"secA:secB"> (직통 섹션 쌍, 정렬된 순서)
+const jointThroughPairs = {};
+
+// jointId → Map<sectionId, angle> (각 조인트에서 각 섹션의 이탈 각도)
+const jointSectionAngles = {};
+
+// 모든 조인트에 연결된 섹션 목록 구축
+const jointSections = {}; // jointId → [sectionId, ...]
+Object.entries(enhancedSections).forEach(([secId, sec]) => {
+    if (sec._startType === 'unmatched' || sec._endType === 'unmatched') return;
+    [sec.start, sec.end].forEach(nodeId => {
+        if (String(nodeId).startsWith('J_')) {
+            if (!jointSections[nodeId]) jointSections[nodeId] = [];
+            if (!jointSections[nodeId].includes(secId)) {
+                jointSections[nodeId].push(secId);
+            }
+        }
+    });
+});
+
+let throughPairsCount = 0;
+let jointsWithThroughPairs = 0;
+
+Object.entries(jointSections).forEach(([jointId, secIds]) => {
+    // degree < 3 이면 분기가 없므로 through_pairs 불필요
+    if (secIds.length < 3) return;
+
+    // 각 섹션의 이탈 각도 계산
+    const angles = {};
+    secIds.forEach(sid => {
+        const a = getLeavingAngle(sid, jointId, sectionsGeom, enhancedSections);
+        if (a !== null) angles[sid] = a;
+    });
+
+    if (Object.keys(angles).length < 2) return;
+
+    const throughPairs = [];
+
+    // 모든 섹션 쌍 비교
+    const sidsWithAngles = Object.keys(angles);
+    for (let i = 0; i < sidsWithAngles.length; i++) {
+        for (let j = i + 1; j < sidsWithAngles.length; j++) {
+            const sidA = sidsWithAngles[i];
+            const sidB = sidsWithAngles[j];
+
+            // 섹션 A를 통해 조인트에 진입하는 방향 (= A 이탈각 + 180°)
+            const arrivalFromA = normalizeAngle(angles[sidA] + 180);
+            // 섹션 B로 이탈하는 방향
+            const leavingToB = angles[sidB];
+
+            const diff = Math.abs(normalizeAngle(arrivalFromA - leavingToB));
+
+            if (diff < THROUGH_ANGLE_THRESHOLD) {
+                // 직통 쌍 기록 (양방향 모두 기록: A→B, B→A)
+                throughPairs.push([sidA, sidB]);
+            }
+        }
+    }
+
+    if (throughPairs.length > 0) {
+        jointThroughPairs[jointId] = throughPairs;
+        jointSectionAngles[jointId] = angles;
+        throughPairsCount += throughPairs.length;
+        jointsWithThroughPairs++;
+    }
+});
+
+console.log(`  Through-pairs가 있는 조인트: ${jointsWithThroughPairs}`);
+console.log(`  총 Through-pair 수: ${throughPairsCount}`);
+
+// 빠른 조회를 위한 Set 구축: "jointId:secA:secB" (사전순 정렬)
+const throughPairSet = new Set(); // "jointId:minSec:maxSec"
+Object.entries(jointThroughPairs).forEach(([jointId, pairs]) => {
+    pairs.forEach(([a, b]) => {
+        const key = `${jointId}:${[a, b].sort().join(':')}`;
+        throughPairSet.add(key);
+    });
+});
+
+/**
+ * 조인트에서 prevSectionId로 진입했을 때 nextSectionId로 이탈하는 것이
+ * "직통(through)"인지 확인
+ */
+function isThroughPass(jointId, prevSectionId, nextSectionId) {
+    // degree < 3 조인트는 항상 통과 가능
+    if (!jointSections[jointId] || jointSections[jointId].length < 3) return true;
+    // through_pairs가 없는 조인트는 통과 허용 (데이터 부족 케이스)
+    if (!jointThroughPairs[jointId]) return true;
+
+    const key = `${jointId}:${[prevSectionId, nextSectionId].sort().join(':')}`;
+    return throughPairSet.has(key);
+}
+
+// ============================================================
 // Phase 4: Joint 경유 BFS로 역-역 직접 연결 그래프 생성
 // ============================================================
-console.log('\n🔧 Phase 4: 역-역 직접 연결 그래프 (BFS)...');
+console.log('\n🔧 Phase 4: 역-역 직접 연결 그래프 (BFS + 방향 필터링)...');
 
-// 각 역에서 BFS → Joint를 통과하며 다음 역까지 탐색
-// 같은 노선 ID로만 Joint를 통과 (노선 일관성 유지)
 const stationGraph = {};
 
 function isStation(nodeId) {
@@ -254,7 +406,6 @@ Object.keys(stationsMaster).forEach(startStation => {
 
     stationGraph[startStation] = {};
 
-    // BFS queue
     const visited = new Set([startStation]);
     const queue = [];
 
@@ -265,48 +416,68 @@ Object.keys(stationsMaster).forEach(startStation => {
             throughJoints: [],
             lineId: edge.lineId,
             companyId: edge.companyId,
-            totalLength: edge.length || 0
+            totalLength: edge.length || 0,
+            prevSectionId: edge.sectionId  // 이전 섹션 ID (through 판정에 사용)
         });
     });
 
     while (queue.length > 0) {
         const item = queue.shift();
-        const { currentNode, sections, throughJoints, lineId, companyId, totalLength } = item;
+        const { currentNode, sections, throughJoints, lineId, companyId, totalLength, prevSectionId } = item;
 
         if (isStation(currentNode)) {
-            // 역에 도달! 연결 기록
-            if (!stationGraph[startStation][currentNode]) {
-                stationGraph[startStation][currentNode] = { connections: [] };
+            // ==========================================================
+            // ① 역에 도달! 연결 기록
+            // ==========================================================
+            // 중간에 역을 만나면 무조건 여기서 끊김 (중간역 경유 강제)
+            // 이 역이 startStation이 아닌 경우에만 기록
+            if (currentNode !== startStation) {
+                if (!stationGraph[startStation][currentNode]) {
+                    stationGraph[startStation][currentNode] = { connections: [] };
+                }
+                stationGraph[startStation][currentNode].connections.push({
+                    line_id: lineId,
+                    company_id: companyId,
+                    section_ids: [...sections],
+                    via_joints: [...throughJoints],
+                    distance: totalLength
+                });
             }
-            stationGraph[startStation][currentNode].connections.push({
-                line_id: lineId,
-                company_id: companyId,
-                section_ids: [...sections],
-                via_joints: [...throughJoints],
-                distance: totalLength
-            });
+            // 역에서 탐색 중단 (중간역을 거쳐 더 멀리 가지 않음)
             continue;
         }
 
-        // Joint에 도달 → 같은 노선의 다음 section을 따라 계속 탐색
+        // ==========================================================
+        // ② Joint에 도달
+        // ==========================================================
         if (visited.has(currentNode)) continue;
         visited.add(currentNode);
 
-        const nextEdges = adjacency[currentNode] || [];
+        const jointId = currentNode;
+        const nextEdges = adjacency[jointId] || [];
+
         nextEdges.forEach(nextEdge => {
             // 같은 노선만 따라감
             if (nextEdge.lineId !== lineId) return;
-            if (visited.has(nextEdge.neighbor) && nextEdge.neighbor === startStation) return;
             if (sections.includes(nextEdge.sectionId)) return;
             if (sections.length >= 50) return;
+
+            // ==========================================================
+            // ③ Through-pairs 필터: 이 조인트에서 prevSection → nextSection이
+            //    직통(through)인지 확인. 분기(branch)면 진행하지 않음.
+            // ==========================================================
+            if (!isThroughPass(jointId, prevSectionId, nextEdge.sectionId)) {
+                return; // 이 방향으로는 진행 불가 (꺾이는 분기선)
+            }
 
             queue.push({
                 currentNode: nextEdge.neighbor,
                 sections: [...sections, nextEdge.sectionId],
-                throughJoints: [...throughJoints, currentNode],
+                throughJoints: [...throughJoints, jointId],
                 lineId,
                 companyId,
-                totalLength: totalLength + (nextEdge.length || 0)
+                totalLength: totalLength + (nextEdge.length || 0),
+                prevSectionId: nextEdge.sectionId
             });
         });
     }
@@ -330,29 +501,14 @@ console.log(`  총 연결 수: ${totalConnections / 2} (양방향 제거)`);
 // ============================================================
 console.log('\n🔧 Phase 4.5: 환승 및 크로스 노선 연결...');
 
-// 4.5-1: 같은 역에 속한 다른 플랫폼 간 환승 연결
-// stations_master의 platform_ids에 여러 노선이 있으면, 같은 역 내 환승 가능
 let transferEdges = 0;
-Object.entries(stationsMaster).forEach(([sid, station]) => {
-    const platLines = [];
-    (station.platform_ids || []).forEach(pid => {
-        const pm = platformsMeta[pid];
-        if (pm) platLines.push({ pid, lineId: pm.line, companyId: pm.company });
-    });
-    // 같은 역에서 여러 노선이 있으면, 각 노선 플랫폼을 가진 이웃 역들 간 환승 처리
-    // (이미 같은 역 내 그래프 엔트리가 있으므로, 여기서는 "이 역을 통하는 환승" 정보를 기록)
-    // 이건 station_graph에서 이미 같은 역 ID를 공유하므로 자연스럽게 처리됨
-});
 
-// 4.5-2: Joint를 통한 크로스 노선 연결 (다른 노선이지만 같은 Joint에서 만나는 경우)
-// 예: 府中競馬正門前 역 → J_49 → 다른 노선의 역
-// 이 경우 BFS에서 노선이 달라서 건너뛰었지만, Joint에서 다른 노선으로 갈아타는 것이 가능
-
-// Joint에 연결된 모든 역을 찾고, 직접 역-역 연결이 없는 경우 크로스 연결 추가
+// Joint를 통한 크로스 노선 연결
+// (다른 노선이지만 같은 Joint에서 바로 역과 연결되는 경우)
 Object.entries(jointCoords).forEach(([jointId, jcoord]) => {
     if (!adjacency[jointId]) return;
 
-    // 이 Joint에서 닿을 수 있는 역들 (BFS, 노선 제한 없이, 1스텝만)
+    // 이 Joint에서 1스텝으로 닿을 수 있는 역들
     const reachableStations = [];
     adjacency[jointId].forEach(edge => {
         if (isStation(edge.neighbor)) {
@@ -366,17 +522,21 @@ Object.entries(jointCoords).forEach(([jointId, jcoord]) => {
         }
     });
 
-    // 역 쌍 중에서 기존 그래프에 연결이 없는 경우 크로스 연결 추가
+    // 역 쌍에서 기존 그래프에 없는 경우 크로스 연결 추가
     for (let i = 0; i < reachableStations.length; i++) {
         for (let j = i + 1; j < reachableStations.length; j++) {
             const a = reachableStations[i];
             const b = reachableStations[j];
             if (a.stationId === b.stationId) continue;
-
-            // 기존에 이미 연결되어 있는지 확인
             if (stationGraph[a.stationId]?.[b.stationId]) continue;
 
-            // 크로스 노선 연결 추가 (양방향)
+            // Through-pairs 필터 적용: 크로스 노선 연결도 방향성 검사
+            // (단, 크로스 노선이면 다른 노선 간 연결이므로 through 필터 완화)
+            if (a.lineId === b.lineId) {
+                // 같은 노선인데 직접 연결이 없는 경우 - through filter 적용
+                if (!isThroughPass(jointId, a.sectionId, b.sectionId)) continue;
+            }
+
             if (!stationGraph[a.stationId]) stationGraph[a.stationId] = {};
             if (!stationGraph[a.stationId][b.stationId]) {
                 stationGraph[a.stationId][b.stationId] = { connections: [] };
@@ -387,7 +547,7 @@ Object.entries(jointCoords).forEach(([jointId, jcoord]) => {
                 section_ids: [a.sectionId, b.sectionId],
                 via_joints: [jointId],
                 distance: (a.length || 0) + (b.length || 0),
-                _cross_line: true // 크로스 노선 연결 표시
+                _cross_line: true
             });
 
             if (!stationGraph[b.stationId]) stationGraph[b.stationId] = {};
@@ -410,7 +570,6 @@ Object.entries(jointCoords).forEach(([jointId, jcoord]) => {
 
 console.log(`  크로스 노선 연결 추가: ${transferEdges}`);
 
-// 재계산
 graphStations = Object.keys(stationGraph).length;
 totalConnections = 0;
 Object.values(stationGraph).forEach(neighbors => {
@@ -418,6 +577,33 @@ Object.values(stationGraph).forEach(neighbors => {
 });
 console.log(`  그래프 내 역: ${graphStations}`);
 console.log(`  총 연결 수: ${totalConnections / 2} (양방향 제거)`);
+
+// ============================================================
+// Phase 4.8: 검증 - 시모사만스키(下総松崎) 사례 확인
+// ============================================================
+console.log('\n🔍 Phase 4.8: 나리타선 분기 검증...');
+
+const shimoSaId = '003071'; // 下総松崎
+const naritaId = '003161';  // 成田
+const kuzumiId = '003034';  // 久住
+const airportT2Id = '003173'; // 空港第2ビル
+
+const shimoNeighbors = stationGraph[shimoSaId] ? Object.keys(stationGraph[shimoSaId]) : [];
+console.log(`  下総松崎(${shimoSaId}) 이웃 역 수: ${shimoNeighbors.length}`);
+console.log(`  -> 나리타(${naritaId}) 연결: ${shimoNeighbors.includes(naritaId) ? '✅ 있음' : '❌ 없음 (오류!)'}`);
+console.log(`  -> 久住(${kuzumiId}) 연결: ${shimoNeighbors.includes(kuzumiId) ? '❌ 있음 (오류!)' : '✅ 없음 (올바름)'}`);
+console.log(`  -> 空港第2ビル(${airportT2Id}) 연결: ${shimoNeighbors.includes(airportT2Id) ? '❌ 있음 (오류!)' : '✅ 없음 (올바름)'}`);
+
+const naritaNeighbors = stationGraph[naritaId] ? Object.keys(stationGraph[naritaId]) : [];
+console.log(`\n  成田(${naritaId}) 이웃 역 수: ${naritaNeighbors.length}`);
+console.log(`  -> 下総松崎(${shimoSaId}) 연결: ${naritaNeighbors.includes(shimoSaId) ? '✅ 있음' : '❌ 없음 (오류!)'}`);
+console.log(`  -> 久住(${kuzumiId}) 연결: ${naritaNeighbors.includes(kuzumiId) ? '✅ 있음' : '❌ 없음 (오류!)'}`);
+console.log(`  -> 空港第2ビル(${airportT2Id}) 연결: ${naritaNeighbors.includes(airportT2Id) ? '✅ 있음' : '❌ 없음 (오류!)'}`);
+
+const kuzumiNeighbors = stationGraph[kuzumiId] ? Object.keys(stationGraph[kuzumiId]) : [];
+console.log(`\n  久住(${kuzumiId}) 이웃 역 수: ${kuzumiNeighbors.length}`);
+console.log(`  -> 成田(${naritaId}) 연결: ${kuzumiNeighbors.includes(naritaId) ? '✅ 있음' : '❌ 없음 (오류!)'}`);
+console.log(`  -> 空港第2ビル(${airportT2Id}) 연결: ${kuzumiNeighbors.includes(airportT2Id) ? '❌ 있음 (오류!)' : '✅ 없음 (올바름)'}`);
 
 // ============================================================
 // Phase 5: 연결성 검증 (Connected Components)
@@ -495,12 +681,30 @@ Object.entries(enhancedSections).forEach(([secId, sec]) => {
     if (isStation(sec.end)) lineData[lid].stations.add(sec.end);
 });
 
-// Set → Array 변환
 Object.values(lineData).forEach(ld => {
     ld.stations = [...ld.stations];
 });
 
 console.log(`  노선 수: ${Object.keys(lineData).length}`);
+
+// ============================================================
+// Phase 6.5: through_pairs를 joints에 포함하여 저장
+// (노선도 렌더링 시 분기 방향 표현에 활용)
+// ============================================================
+console.log('\n🔧 Phase 6.5: Joints에 through_pairs 메타데이터 추가...');
+
+const jointsWithPairs = jointsData.joints.map(j => {
+    const pairs = jointThroughPairs[j.id];
+    if (pairs) {
+        return { ...j, through_pairs: pairs };
+    }
+    return j;
+});
+
+const jointsOutput = { joints: jointsWithPairs };
+const jointsOutputPath = path.join(RAIL_DIR, 'joints.json');
+fs.writeFileSync(jointsOutputPath, JSON.stringify(jointsOutput, null, 1), 'utf8');
+console.log(`  ✅ joints.json 업데이트 완료 (through_pairs ${jointsWithThroughPairs}개 조인트에 추가)`);
 
 // ============================================================
 // Phase 7: 출력 파일 생성
@@ -509,7 +713,7 @@ console.log('\n📝 Phase 7: 통합 그래프 파일 생성...');
 
 const output = {
     _metadata: {
-        version: '3.0',
+        version: '3.1',
         generated: new Date().toISOString(),
         stats: {
             stations: graphStations,
@@ -517,7 +721,9 @@ const output = {
             lines: Object.keys(lineData).length,
             sections: Object.keys(enhancedSections).length,
             components: components.length,
-            cross_line_connections: transferEdges
+            cross_line_connections: transferEdges,
+            joints_with_through_pairs: jointsWithThroughPairs,
+            total_through_pairs: throughPairsCount
         }
     },
     station_graph: stationGraph,
@@ -548,15 +754,17 @@ console.log(`  ✅ 저장: ${outputPath} (${fileSizeMB} MB)`);
 // 요약 보고
 // ============================================================
 console.log('\n' + '='.repeat(60));
-console.log('📊 통합 그래프 생성 완료 요약');
+console.log('📊 통합 그래프 생성 완료 요약 (v3.1)');
 console.log('='.repeat(60));
-console.log(`  역:               ${graphStations}`);
-console.log(`  역-역 연결:       ${totalConnections / 2}`);
-console.log(`  노선:             ${Object.keys(lineData).length}`);
-console.log(`  Section:          ${Object.keys(enhancedSections).length}`);
-console.log(`  연결 컴포넌트:    ${components.length}`);
-console.log(`  크로스 노선 연결: ${transferEdges}`);
-console.log(`  Start 보정:       ${correctedStart}`);
-console.log(`  End 보정:         ${correctedEnd}`);
-console.log(`  매핑 실패:        Start ${unmatchedStart}, End ${unmatchedEnd}`);
+console.log(`  역:                     ${graphStations}`);
+console.log(`  역-역 연결:             ${totalConnections / 2}`);
+console.log(`  노선:                   ${Object.keys(lineData).length}`);
+console.log(`  Section:                ${Object.keys(enhancedSections).length}`);
+console.log(`  연결 컴포넌트:          ${components.length}`);
+console.log(`  크로스 노선 연결:       ${transferEdges}`);
+console.log(`  Through-pairs 조인트:   ${jointsWithThroughPairs}`);
+console.log(`  총 Through-pair 수:     ${throughPairsCount}`);
+console.log(`  Start 보정:             ${correctedStart}`);
+console.log(`  End 보정:               ${correctedEnd}`);
+console.log(`  매핑 실패:              Start ${unmatchedStart}, End ${unmatchedEnd}`);
 console.log('='.repeat(60));

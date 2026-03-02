@@ -70,6 +70,9 @@ export interface Joint {
     id: string;
     coordinates: [number, number];
     line_ids: number[];
+    /** 이 조인트에서 직통(through-route)으로 연결된 섹션 쌍 목록.
+     * 각 쌍 [secA, secB]는 secA로 진입 시 secB로 직통이고 그 반대도 같음. */
+    through_pairs?: [string, string][];
 }
 
 export interface SectionNeighbor {
@@ -99,6 +102,55 @@ export interface PlatformConnection {
     neighbors: SectionNeighbor[];
 }
 
+export interface NetworkConnection {
+    line_id: number;
+    company_id: number;
+    section_ids: string[];
+    via_joints: string[];
+    distance: number;
+}
+
+export interface NetworkStationGraph {
+    [stationId: string]: {
+        [neighborId: string]: {
+            connections: NetworkConnection[];
+        };
+    };
+}
+
+export interface NetworkLineData {
+    [lineId: string]: {
+        line_id: number;
+        company_id: number;
+        name: string;
+        name_en: string;
+        color: string;
+        sections: string[];
+        stations: string[];
+    };
+}
+
+export interface NetworkSection {
+    start: string;
+    end: string;
+    start_type: 'station' | 'joint';
+    end_type: 'station' | 'joint';
+    line_id: number;
+    company_id: number;
+    length: number;
+}
+
+export interface RailroadNetwork {
+    _metadata: {
+        version: string;
+        generated: string;
+        stats: Record<string, number>;
+    };
+    station_graph: NetworkStationGraph;
+    line_data: NetworkLineData;
+    sections: Record<string, NetworkSection>;
+}
+
 export interface RailData {
     companies: Record<string, Company>;
     lines: Record<string, Line>;
@@ -117,8 +169,8 @@ export interface RailData {
     };
     joints: { joints: Joint[] };
     railroadGraph?: {
-        stationGraph: Record<string, Record<string, { section_ids: number[], available_lines: number[] }>>;
-        platformGraph: Record<string, Record<string, PlatformConnection[]>>;
+        stationGraph: NetworkStationGraph | Record<string, Record<string, { section_ids: number[], available_lines: number[] }>>;
     };
+    railroadNetwork?: RailroadNetwork;
     stationsLod?: StationLod[];
 }

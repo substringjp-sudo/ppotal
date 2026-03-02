@@ -26,9 +26,10 @@ export interface Edge {
 
 export interface LineSegment {
     stations: string[];
-    edges: { from: string, to: string, distance: number }[];
+    edges: { from: string, to: string, distance: number, sectionId?: string }[];
     geometry: [number, number][];
 }
+
 
 
 

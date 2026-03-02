@@ -190,20 +190,24 @@ export const useTripRecorder = ({
                             const crowDist = haversineDistance(lastStData.centroid, currStData.centroid);
                             const railDist = pathData.distance;
 
-                            // Stricter jumping constraints
-                            // 1. Never jump more than 25km in a single swipe segment
-                            if (railDist > 25) isValid = false;
+                            // 1. Jump constraints (relaxed as per user request)
+                            // Allow if either one is reasonable (e.g., long but direct gap, or short but busy line)
+                            // We increase these to be very lenient while still preventing accidental "teleports"
+                            const isDistanceOk = railDist <= 120;
+                            const isSectionOk = (pathData.sectionIds?.length || 0) <= 50;
 
-                            // 2. Limit swipe segments to 10 sections max (User requirement)
-                            if (pathData.sectionIds && pathData.sectionIds.length > 10) isValid = false;
-
-                            // 3. If the rail route is more than 3x the crow-flies distance, it's likely a bay-crossing or accidental jump
-                            if (isValid && crowDist < 5 && (railDist / (crowDist + 0.01)) > 3.0) {
+                            if (!isDistanceOk && !isSectionOk) {
                                 isValid = false;
                             }
 
-                            // 4. Prevent extremely long "detour" jumps even for long crow distances
-                            if (isValid && railDist > crowDist * 2 + 5) {
+                            // 2. Extra safety: distance-to-displacement ratio
+                            // If the rail route is more than 5x the crow-flies distance and over 10km, block it.
+                            if (isValid && crowDist < 10 && (railDist / (crowDist + 0.01)) > 5.0) {
+                                isValid = false;
+                            }
+
+                            // 3. Prevent extreme detours
+                            if (isValid && railDist > crowDist * 3 + 10) {
                                 isValid = false;
                             }
                         }

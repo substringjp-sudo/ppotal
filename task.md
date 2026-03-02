@@ -69,3 +69,21 @@
 - [x] **7. 역 상세 정보 UI 고도화**: 다이어그램 및 레이아웃을 더 세련되고 컴팩트하게 개선
 - [x] **8. 하이드레이션 및 버그 수정**: 서버/클라이언트 불일치 문제 해결 및 타입 안정성 강화
 - [ ] `node_modules` 권한 문제 해결 (빌드 및 배포를 위해 필요 - 현재 환경 제약)
+
+<hr>
+
+# Railroad Network Migration
+## 완료된 작업 (Completed Tasks)
+- [x] `src/types/railData.ts` 인터페이스 및 타입 선언 업데이트 (`NetworkStationGraph`, `NetworkLineData` 등 추가)
+- [x] `useRailData.ts` 데이터 로딩 방식 수정 (`station_graph.json` 제거, `railroad_network.json` 추가) 및 동적 hierarchy 구축 로직(`buildHierarchyFromLineData`) 구현
+- [x] `RoutingGraph.ts` 내부 `loadGranularData` 그래프 파싱 로직 업데이트 (다중 connections 지원, distance 단위/방향 최적화 적용)
+- [x] 노선도 그리기: `getLineSegments`에서 `railroadNetwork.line_data` 직접 참조로 로직 단순화
+- [x] 역 환승역/진행방향 표시 보전을 위한 `platform_graph.json` 제거 및 `railroad_network.line_data` 기반 논리 방향 추출 로직으로 재구현 (버그 및 성능 개선)
+- [x] `useStationHierarchy.ts`와 새 구조 호환성 달성 및 배열 추출 버그 예방
+- [x] **조인트 분기 및 스케매틱 레이아웃 렌더링 (Directional Branching)**: 
+    - [x] `scripts/build_graph_v3.js`: 기하학적 각도 분석으로 `through_pairs` 추출
+    - [x] `public/rail/joints.json`: 각 조인트에 `through_pairs` 메타데이터 추가
+    - [x] `useLineTopology.ts`: Longest Simple Path 알고리즘 적용 (순환선 지원 및 라쏘 형태 캡슐 모양 자동 변환)
+    - [x] `RoutingGraph.ts`: `sectionId` 전달로 UI 방향성 판단 가능 개선
+- [x] 리팩토링 검증 (본선 강제 직진, 겹침 100% 방지, 순환선 레이아웃 완벽 지원)
+

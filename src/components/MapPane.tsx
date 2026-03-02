@@ -440,6 +440,18 @@ const MapPane: React.FC<MapPaneProps> = ({
 
         if (activeLine) {
             recordedTrips.forEach(trip => {
+                // Primary: Use sectionIds to get exact edges including joints
+                if (trip.sectionIds && trip.sectionIds.length > 0) {
+                    trip.sectionIds.forEach(sid => {
+                        const section = graph.sectionsMap.get(Number(sid));
+                        if (section) {
+                            const key = [section.start, section.end].sort().join('<->');
+                            visitedEdges.add(key);
+                        }
+                    });
+                }
+
+                // Secondary: Path-based nodes (for station stats & fallback)
                 if (trip.path) {
                     trip.path.forEach((sid: string) => {
                         const node = graph.getNode(sid);
@@ -448,9 +460,12 @@ const MapPane: React.FC<MapPaneProps> = ({
                         }
                     });
 
-                    for (let i = 0; i < trip.path.length - 1; i++) {
-                        const key = [trip.path[i], trip.path[i + 1]].sort().join('<->');
-                        visitedEdges.add(key);
+                    // Only backup if no sectionIds provided
+                    if (!trip.sectionIds || trip.sectionIds.length === 0) {
+                        for (let i = 0; i < trip.path.length - 1; i++) {
+                            const key = [trip.path[i], trip.path[i + 1]].sort().join('<->');
+                            visitedEdges.add(key);
+                        }
                     }
                 }
             });
