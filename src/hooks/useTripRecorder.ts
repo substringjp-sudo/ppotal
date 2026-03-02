@@ -18,7 +18,7 @@ interface UseTripRecorderProps {
     graph: GraphLike | null;
     visibleStations: Record<string, ProcessedStation> | null;
     onRecordTrip?: (trip: Trip) => void;
-    isEditMode?: boolean;
+
     onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
     selectedLines?: string[];
@@ -29,7 +29,7 @@ export const useTripRecorder = ({
     graph,
     visibleStations,
     onRecordTrip,
-    isEditMode = false,
+
     onDraftComplete,
     onDragUpdate,
     selectedLines = [],
@@ -300,9 +300,7 @@ export const useTripRecorder = ({
                     sectionIds: Array.from(new Set(fullSectionIds)) // Uniquify
                 };
 
-                if (isEditMode && onDraftComplete) {
-                    onDraftComplete(trip);
-                } else if (!isEditMode && onRecordTrip) {
+                if (onRecordTrip) {
                     onRecordTrip(trip);
                 }
             }
@@ -315,7 +313,7 @@ export const useTripRecorder = ({
         dragState.current = { waypoints: [], segments: [] };
         lastLayerPointRef.current = null;
         if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
-    }, [graph, isEditMode, onRecordTrip, onDraftComplete]);
+    }, [graph, onRecordTrip, onDraftComplete]);
 
     // Handle Global Mouse/Touch Move/Up
     useEffect(() => {
@@ -331,11 +329,36 @@ export const useTripRecorder = ({
                 const threshold = 70;
                 const speed = 10;
 
+                // Detect overlay panel boundaries for left/right edge panning
+                // The map extends full width behind the panels, so we need to
+                // trigger edge scrolling at the panel boundaries, not the raw container edges
+                let leftEdge = 0;
+                let rightEdge = w;
+
+                try {
+                    // Find the left sidebar (first aside with w-[350px])
+                    const leftSidebar = document.querySelector('aside.w-\\[350px\\]');
+                    if (leftSidebar) {
+                        const rect = leftSidebar.getBoundingClientRect();
+                        const mapRect = map.getContainer().getBoundingClientRect();
+                        leftEdge = rect.right - mapRect.left;
+                    }
+                    // Find the right sidebar (aside with w-[320px])
+                    const rightSidebar = document.querySelector('aside.w-\\[320px\\]');
+                    if (rightSidebar) {
+                        const rect = rightSidebar.getBoundingClientRect();
+                        const mapRect = map.getContainer().getBoundingClientRect();
+                        rightEdge = rect.left - mapRect.left;
+                    }
+                } catch {
+                    // Fallback: use raw container edges
+                }
+
                 let vx = 0;
                 let vy = 0;
 
-                if (x < threshold) vx = -speed;
-                else if (x > w - threshold) vx = speed;
+                if (x < leftEdge + threshold) vx = -speed;
+                else if (x > rightEdge - threshold) vx = speed;
 
                 if (y < threshold) vy = -speed;
                 else if (y > h - threshold) vy = speed;
@@ -353,6 +376,28 @@ export const useTripRecorder = ({
         };
 
         const onMouseUp = () => handleEnd();
+
+        // Window-level mousemove: catches mouse events even when cursor is over
+        // overlay panels (which have pointer-events-auto and block Leaflet events).
+        // This is essential for edge panning to work at panel boundaries.
+        const onWindowMouseMove = (e: MouseEvent) => {
+            if (!dragStartStationRef.current) return;
+
+            const container = map.getContainer();
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const containerPoint = L.point(x, y);
+            const latlng = map.containerPointToLatLng(containerPoint);
+            const layerPoint = map.latLngToLayerPoint(latlng);
+
+            handleMove(containerPoint, layerPoint, latlng);
+        };
+
+        const onWindowMouseUp = () => {
+            if (dragStartStationRef.current) handleEnd();
+        };
 
         const onTouchMove = (e: TouchEvent) => {
             if (dragStartStationRef.current) {
@@ -377,6 +422,10 @@ export const useTripRecorder = ({
         map.on('mousemove', onMouseMove);
         map.on('mouseup', onMouseUp);
 
+        // Window-level listeners to catch events that panels intercept
+        window.addEventListener('mousemove', onWindowMouseMove);
+        window.addEventListener('mouseup', onWindowMouseUp);
+
         // Native listeners for valid touch handling
         const container = map.getContainer();
         container.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -385,6 +434,8 @@ export const useTripRecorder = ({
         return () => {
             map.off('mousemove', onMouseMove);
             map.off('mouseup', onMouseUp);
+            window.removeEventListener('mousemove', onWindowMouseMove);
+            window.removeEventListener('mouseup', onWindowMouseUp);
             container.removeEventListener('touchmove', onTouchMove);
             container.removeEventListener('touchend', onTouchEnd);
         };

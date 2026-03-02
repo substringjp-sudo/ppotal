@@ -1,1 +1,1 @@
-export { default as RulerOverlay } from './RulerOverlay';
+// Component barrel exports

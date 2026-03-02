@@ -20,7 +20,7 @@ import { RoutingGraph } from '../lib/RoutingGraph';
 import { RailData, Section } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
-import RulerOverlay from './RulerOverlay';
+
 import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
 
@@ -51,11 +51,11 @@ interface MapPaneProps {
     selectedStation?: string;
     onMapClick?: () => void;
 
-    isEditMode?: boolean;
+
     draftTrip?: Trip | null;
     onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
-    rulerTopOffset?: number;
+
     onTransitionStateChange?: (isPending: boolean) => void;
     showLabels?: boolean;
     onToggleLabels?: () => void;
@@ -94,11 +94,11 @@ const MapPane: React.FC<MapPaneProps> = ({
     onSetActiveLine,
     isMobile,
     onMapClick,
-    isEditMode = false,
+
     draftTrip,
     onDraftComplete,
     onDragUpdate,
-    rulerTopOffset = 80,
+
     onTransitionStateChange,
     showLabels = false,
     onToggleLabels,
@@ -242,7 +242,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         graph: graph,
         visibleStations,
         onRecordTrip,
-        isEditMode,
+
         onDraftComplete,
         onDragUpdate,
         selectedLines,
@@ -625,9 +625,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 />
             )}
 
-            {isMobile && isEditMode && (
-                <RulerOverlay topOffset={rulerTopOffset} />
-            )}
+
 
             {railData && <OffScreenIndicator
                 map={map}

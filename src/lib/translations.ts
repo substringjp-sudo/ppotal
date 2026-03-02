@@ -563,24 +563,6 @@ export const RAIL_SEARCH_TRANSLATIONS = {
     }
 };
 
-export const MOBILE_ROUTE_CREATION_TRANSLATIONS = {
-    ko: {
-        placeholder: '역을 길게 눌러 드래그하면 경로를 기록할 수 있습니다',
-        add: '기록 저장',
-        discard: '삭제'
-    },
-    en: {
-        placeholder: 'Press and drag a station to record your route',
-        add: 'Add to History',
-        discard: 'Discard'
-    },
-    ja: {
-        placeholder: '駅を長押ししてドラッグするとルートを記録できます',
-        add: '履歴に追加',
-        discard: '破棄'
-    }
-};
-
 export const MOBILE_STATION_PREVIEW_TRANSLATIONS = {
     ko: {
         details: '상세 보기',
@@ -599,23 +581,7 @@ export const MOBILE_STATION_PREVIEW_TRANSLATIONS = {
     }
 };
 
-export const MOBILE_EDIT_LINE_TRANSLATIONS = {
-    ko: {
-        editMode: '편집 모드',
-        done: '완료',
-        guide: '지도의 역을 탭하여 시작점과 끝점을 지정하세요.'
-    },
-    en: {
-        editMode: 'Edit Mode',
-        done: 'Done',
-        guide: 'Tap stations on the map to specify start and end points.'
-    },
-    ja: {
-        editMode: '編集モード',
-        done: '完了',
-        guide: '地図上の駅をタップして始点と終点を指定してください。'
-    }
-};
+
 
 export const MOBILE_BOTTOM_SHEET_TRANSLATIONS = {
     ko: {

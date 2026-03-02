@@ -85,8 +85,6 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
-const MobileEditLinePanelWithNoSSR = dynamic(() => import('./Mobile/MobileEditLinePanel'), { ssr: false });
-const RouteCreationPanelWithNoSSR = dynamic(() => import('./Mobile/RouteCreationPanel'), { ssr: false });
 
 import { MAIN_PAGE_TRANSLATIONS, getTranslations } from '../lib/translations';
 
@@ -112,10 +110,8 @@ const MainPageClient = () => {
     const isTripInProgress = !!tripStartStation;
     const [isMobile, setIsMobile] = React.useState(false);
 
-    const [isEditMode, setIsEditMode] = React.useState(false);
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
     const [tempPath, setTempPath] = React.useState<string[]>([]);
-    const [editPanelHeight, setEditPanelHeight] = React.useState(72);
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
     const [isInfoOpen, setIsInfoOpen] = React.useState(false);
@@ -138,7 +134,6 @@ const MainPageClient = () => {
     React.useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth <= 768);
-            if (window.innerWidth > 768) setIsEditMode(false);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -148,13 +143,12 @@ const MainPageClient = () => {
     const exportMap = async () => {
         const mapElement = document.querySelector('.leaflet-container') as HTMLElement;
         if (!mapElement) return;
-        const controls = document.querySelectorAll('.leaflet-control, .map-custom-control, .edit-mode-ui');
+        const controls = document.querySelectorAll('.leaflet-control, .map-custom-control');
         controls.forEach(c => (c as HTMLElement).style.display = 'none');
         try {
             const canvas = await html2canvas(mapElement, {
                 useCORS: true,
-                backgroundColor: '#a0c4ff',
-                ignoreElements: (element: Element) => element.classList?.contains('edit-mode-ui') ?? false
+                backgroundColor: '#a0c4ff'
             } as Parameters<typeof html2canvas>[1]);
             const link = document.createElement('a');
             link.download = `jprail-map-${new Date().toISOString().slice(0, 10)}.png`;
@@ -379,7 +373,6 @@ const MainPageClient = () => {
     }, [isMobile]);
 
     const handleStationClick = React.useCallback((stationId: string) => {
-        if (isEditMode && tempPath.length > 0) return;
         if (!railData?.stations) return;
 
         const station = (railData.stations as { [key: string]: Station })[stationId];
@@ -415,7 +408,7 @@ const MainPageClient = () => {
                 }
             }, 0);
         }
-    }, [isMobile, isEditMode, tempPath.length, railData, tripStartStation, lineDetailData]);
+    }, [isMobile, railData, tripStartStation, lineDetailData]);
 
     const handleStationHover = React.useCallback((stationId: string | null) => {
         if (!tripStartStation || !lineDetailData || !railData?.stations) {
@@ -516,11 +509,10 @@ const MainPageClient = () => {
 
     const handleMapClick = React.useCallback(() => {
         setIsMapStyleOpen(false);
-        if (isEditMode) return;
         setSelectedStation(null);
         setActiveLine(null);
         setIsMobileSheetOpen(false);
-    }, [isEditMode]);
+    }, []);
 
     const handleDraftComplete = React.useCallback((trip: Trip) => {
         setDraftTrip(trip);
@@ -690,11 +682,9 @@ const MainPageClient = () => {
                                 onMapClick={handleMapClick}
                                 showLabels={styleSettings.showLabels}
                                 onToggleLabels={() => setStyleSettings(prev => ({ ...prev, showLabels: !prev.showLabels }))}
-                                isEditMode={isEditMode}
                                 draftTrip={draftTrip}
                                 onDraftComplete={handleDraftComplete}
                                 onDragUpdate={handleDragUpdate}
-                                rulerTopOffset={editPanelHeight}
                                 onTransitionStateChange={setIsMapTransitioning}
                                 tripStartStationId={tripStartStation?.id || null}
                                 onStationHover={handleStationHover}
@@ -704,8 +694,8 @@ const MainPageClient = () => {
                     </div>
 
                     {/* Foreground Layer: UI & Side Panels */}
-                    <div className="absolute inset-0 z-10 flex pointer-events-none h-full overflow-hidden">
-                        {isMobile && !isEditMode && (
+                    <div className="absolute inset-0 z-[5000] flex pointer-events-none h-full overflow-hidden">
+                        {isMobile && (
                             <div className="absolute top-0 left-0 right-0 z-[1100] pointer-events-none p-0 bg-transparent w-full">
                                 {selectedStation && railData ? (
                                     <div className="p-2.5 pointer-events-auto">
@@ -820,7 +810,7 @@ const MainPageClient = () => {
                         )}
                     </div>
 
-                    {isMobile && !isEditMode && (
+                    {isMobile && (
                         <MobileBottomSheet
                             isOpen={isMobileSheetOpen}
                             onToggle={setIsMobileSheetOpen}
