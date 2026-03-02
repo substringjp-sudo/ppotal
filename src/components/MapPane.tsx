@@ -385,10 +385,16 @@ const MapPane: React.FC<MapPaneProps> = ({
         click: () => {
             if (onSetActiveLine) onSetActiveLine(null);
             if (onMapClick) onMapClick();
+            try {
+                map?.closeTooltip?.();
+            } catch (err) { /* ignore */ }
         },
         zoomstart: () => {
             setIsMoving(true);
             setIsZooming(true);
+            try {
+                map?.closeTooltip?.();
+            } catch (err) { /* ignore */ }
         },
         zoomend: (e) => {
             const newZoom = e.target.getZoom();
@@ -404,6 +410,9 @@ const MapPane: React.FC<MapPaneProps> = ({
         },
         movestart: () => {
             setIsMoving(true);
+            try {
+                map?.closeTooltip?.();
+            } catch (err) { /* ignore */ }
         },
         move: () => { },
         moveend: (e) => {

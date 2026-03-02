@@ -665,19 +665,134 @@ const MainPageClient = () => {
                     </div>
                 </header>
 
-                <main id="main-content" className="flex-1 flex relative overflow-hidden focus:outline-none" tabIndex={-1}>
+                <main id="main-content" className="flex-1 relative overflow-hidden focus:outline-none" tabIndex={-1}>
+                    {/* Background Layer: The Map - Now spans full background */}
+                    <div className="absolute inset-0 z-0">
+                        <MapWithNoSSR>
+                            <MapPaneWithNoSSR
+                                selectedLines={selectedLines}
+                                recordedTrips={recordedTrips}
+                                onRecordTrip={handleRecordTrip}
+                                onRailroadClick={handleRailroadClick}
+                                onStationClick={handleStationClick}
+                                onSetSelectedLines={setSelectedLinesList}
+                                onSetActiveLine={setActiveLine}
+                                onLengthsCalculated={setLineLengths}
+                                onVisitedLengthsCalculated={setVisitedLineLengths}
+                                onLineMappingCreated={setLineIdMapping}
+                                activeLine={activeLine}
+                                onLineDetailData={setLineDetailData}
+                                zoomTarget={zoomTarget}
+                                onZoomComplete={() => setZoomTarget(null)}
+                                styleSettings={styleSettings}
+                                isMobile={isMobile}
+                                selectedStation={selectedStation?.id}
+                                onMapClick={handleMapClick}
+                                showLabels={styleSettings.showLabels}
+                                onToggleLabels={() => setStyleSettings(prev => ({ ...prev, showLabels: !prev.showLabels }))}
+                                isEditMode={isEditMode}
+                                draftTrip={draftTrip}
+                                onDraftComplete={handleDraftComplete}
+                                onDragUpdate={handleDragUpdate}
+                                rulerTopOffset={editPanelHeight}
+                                onTransitionStateChange={setIsMapTransitioning}
+                                tripStartStationId={tripStartStation?.id || null}
+                                onStationHover={handleStationHover}
+                                onPrefectureClick={handlePrefectureClick}
+                            />
+                        </MapWithNoSSR>
+                    </div>
 
-                    {isMobile && !isEditMode && (
-                        <div className="absolute top-0 left-0 right-0 z-[1100] pointer-events-none p-0 bg-transparent">
-                            {selectedStation && railData ? (
-                                <div className="p-2.5 pointer-events-auto">
-                                    <MobileStationPreviewWithNoSSR
-                                        station={selectedStation}
-                                        lines={mobilePreviewLines}
-                                        onLineClick={(lineId: string) => {
-                                            handleRailroadClick(lineId);
-                                        }}
+                    {/* Foreground Layer: UI & Side Panels */}
+                    <div className="absolute inset-0 z-10 flex pointer-events-none h-full overflow-hidden">
+                        {isMobile && !isEditMode && (
+                            <div className="absolute top-0 left-0 right-0 z-[1100] pointer-events-none p-0 bg-transparent w-full">
+                                {selectedStation && railData ? (
+                                    <div className="p-2.5 pointer-events-auto">
+                                        <MobileStationPreviewWithNoSSR
+                                            station={selectedStation}
+                                            lines={mobilePreviewLines}
+                                            onLineClick={(lineId: string) => {
+                                                handleRailroadClick(lineId);
+                                            }}
+                                            railData={railData}
+                                            isTripInProgress={isTripInProgress}
+                                            tripStartStationId={tripStartStation?.id || null}
+                                            onStartTrip={handleStartTrip}
+                                            onEndTrip={handleEndTrip}
+                                            onCancel={() => {
+                                                setTripStartStation(null);
+                                                setDraftTrip(null);
+                                            }}
+                                        />
+                                    </div>
+                                ) : activeLine && lineDetailData && railData ? (
+                                    <div className="p-0 max-h-[70vh] overflow-y-auto pointer-events-auto custom-scrollbar">
+                                        <MobileLinePreviewWithNoSSR
+                                            lineId={activeLine}
+                                            visitedEdges={lineDetailData.visitedEdges}
+                                            segments={lineDetailData.segments}
+                                            nodes={lineDetailData.nodes}
+                                            visitedStations={lineDetailData.visitedStations}
+                                            selectedLines={selectedLines}
+                                            onToggleLine={toggleLine}
+                                            railData={railData}
+                                        />
+                                    </div>
+                                ) : null}
+
+                                {/* Floating portal for TubeMap minimap on mobile - Placed directly below the panel */}
+                                {isMobile && activeLine && (
+                                    <div className="mt-2.5 flex justify-center pointer-events-auto animate-in fade-in zoom-in duration-500 delay-150">
+                                        <div id="tube-minimap-portal" className="bg-white/40 dark:bg-slate-950/40 backdrop-blur-md rounded-2xl p-1.5 shadow-xl border border-white/20 dark:border-slate-800/30 min-h-[44px]" />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {!isMobile && (
+                            <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
+                                <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                    <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
+                                </div>
+                            </aside>
+                        )}
+
+                        {/* Center Action Area - Holds details, floating controls, etc. */}
+                        <div className="flex-1 relative flex flex-col min-w-0 pointer-events-none">
+                            <div className="flex-1 overflow-hidden pointer-events-none relative">
+                                <MapStylePanel
+                                    settings={styleSettings}
+                                    onSettingsChange={setStyleSettings}
+                                    isOpen={isMapStyleOpen}
+                                    onOpenChange={setIsMapStyleOpen}
+                                />
+                                <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
+                            </div>
+
+                            {!isMobile && lineDetailData && activeLine && railData && (
+                                <div className="relative z-[1100] pointer-events-auto">
+                                    <LineDetailPaneWithNoSSR
+                                        lineId={activeLine}
+                                        segments={lineDetailData.segments}
+                                        nodes={lineDetailData.nodes}
+                                        visitedEdges={lineDetailData.visitedEdges}
+                                        selectedLines={selectedLines}
+                                        getShortestPath={lineDetailData.getShortestPath}
+                                        onRecordTrip={handleRecordTrip}
+                                        onStationClick={handleStationClick}
+                                        onClose={() => setActiveLine(null)}
+                                        onToggleLine={toggleLine}
                                         railData={railData}
+                                    />
+                                </div>
+                            )}
+                            {!isMobile && selectedStation && railData && (
+                                <div className="relative z-[1100] pointer-events-auto">
+                                    <StationDetailPaneWithNoSSR
+                                        station={selectedStation}
+                                        railData={railData}
+                                        onClose={() => setSelectedStation(null)}
                                         isTripInProgress={isTripInProgress}
                                         tripStartStationId={tripStartStation?.id || null}
                                         onStartTrip={handleStartTrip}
@@ -688,129 +803,22 @@ const MainPageClient = () => {
                                         }}
                                     />
                                 </div>
-                            ) : activeLine && lineDetailData && railData ? (
-                                <div className="p-0 max-h-[70vh] overflow-y-auto pointer-events-auto custom-scrollbar">
-                                    <MobileLinePreviewWithNoSSR
-                                        lineId={activeLine}
-                                        visitedEdges={lineDetailData.visitedEdges}
-                                        segments={lineDetailData.segments}
-                                        nodes={lineDetailData.nodes}
-                                        visitedStations={lineDetailData.visitedStations}
-                                        selectedLines={selectedLines}
-                                        onToggleLine={toggleLine}
-                                        railData={railData}
-                                    />
-                                </div>
-                            ) : null}
-
-                            {/* Floating portal for TubeMap minimap on mobile - Placed directly below the panel */}
-                            {isMobile && activeLine && (
-                                <div className="mt-2.5 flex justify-center pointer-events-auto animate-in fade-in zoom-in duration-500 delay-150">
-                                    <div id="tube-minimap-portal" className="bg-white/40 dark:bg-slate-950/40 backdrop-blur-md rounded-2xl p-1.5 shadow-xl border border-white/20 dark:border-slate-800/30 min-h-[44px]" />
-                                </div>
                             )}
                         </div>
-                    )}
 
-                    {!isMobile && (
-                        <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20">
-                            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
-                            </div>
-                        </aside>
-                    )}
-
-                    <div className="flex-1 relative flex flex-col min-w-0">
-                        <section className="flex-1 relative overflow-hidden select-none">
-                            <MapWithNoSSR>
-                                <MapPaneWithNoSSR
-                                    selectedLines={selectedLines}
+                        {!isMobile && (
+                            <aside className="w-[320px] h-full border-l border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl z-[1000] shadow-2xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col pointer-events-auto">
+                                <MyLinesPane
                                     recordedTrips={recordedTrips}
-                                    onRecordTrip={handleRecordTrip}
-                                    onRailroadClick={handleRailroadClick}
-                                    onStationClick={handleStationClick}
-                                    onSetSelectedLines={setSelectedLinesList}
-                                    onSetActiveLine={setActiveLine}
-                                    onLengthsCalculated={setLineLengths}
-                                    onVisitedLengthsCalculated={setVisitedLineLengths}
-                                    onLineMappingCreated={setLineIdMapping}
-                                    activeLine={activeLine}
-                                    onLineDetailData={setLineDetailData}
-                                    zoomTarget={zoomTarget}
-                                    onZoomComplete={() => setZoomTarget(null)}
-                                    styleSettings={styleSettings}
-                                    isMobile={isMobile}
-                                    selectedStation={selectedStation?.id}
-                                    onMapClick={handleMapClick}
-                                    showLabels={styleSettings.showLabels}
-                                    onToggleLabels={() => setStyleSettings(prev => ({ ...prev, showLabels: !prev.showLabels }))}
-                                    isEditMode={isEditMode}
-                                    draftTrip={draftTrip}
-                                    onDraftComplete={handleDraftComplete}
-                                    onDragUpdate={handleDragUpdate}
-                                    rulerTopOffset={editPanelHeight}
-                                    onTransitionStateChange={setIsMapTransitioning}
-                                    tripStartStationId={tripStartStation?.id || null}
-                                    onStationHover={handleStationHover}
-                                    onPrefectureClick={handlePrefectureClick}
-                                />
-                            </MapWithNoSSR>
-                            <MapStylePanel
-                                settings={styleSettings}
-                                onSettingsChange={setStyleSettings}
-                                isOpen={isMapStyleOpen}
-                                onOpenChange={setIsMapStyleOpen}
-                            />
-                            <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
-                        </section>
-                        {!isMobile && lineDetailData && activeLine && railData && (
-                            <div className="relative z-[1100]">
-                                <LineDetailPaneWithNoSSR
-                                    lineId={activeLine}
-                                    segments={lineDetailData.segments}
-                                    nodes={lineDetailData.nodes}
-                                    visitedEdges={lineDetailData.visitedEdges}
-                                    selectedLines={selectedLines}
-                                    getShortestPath={lineDetailData.getShortestPath}
-                                    onRecordTrip={handleRecordTrip}
-                                    onStationClick={handleStationClick}
-                                    onClose={() => setActiveLine(null)}
-                                    onToggleLine={toggleLine}
+                                    onDeleteTrip={handleDeleteTrip}
+                                    onResetTrips={handleResetTrips}
                                     railData={railData}
+                                    lineLengths={lineLengths}
+                                    visitedLineLengths={visitedLineLengths}
                                 />
-                            </div>
-                        )}
-                        {!isMobile && selectedStation && railData && (
-                            <div className="relative z-[1100]">
-                                <StationDetailPaneWithNoSSR
-                                    station={selectedStation}
-                                    railData={railData}
-                                    onClose={() => setSelectedStation(null)}
-                                    isTripInProgress={isTripInProgress}
-                                    tripStartStationId={tripStartStation?.id || null}
-                                    onStartTrip={handleStartTrip}
-                                    onEndTrip={handleEndTrip}
-                                    onCancel={() => {
-                                        setTripStartStation(null);
-                                        setDraftTrip(null);
-                                    }}
-                                />
-                            </div>
+                            </aside>
                         )}
                     </div>
-
-                    {!isMobile && (
-                        <aside className="w-[320px] h-full border-l border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-[1000] shadow-2xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col">
-                            <MyLinesPane
-                                recordedTrips={recordedTrips}
-                                onDeleteTrip={handleDeleteTrip}
-                                onResetTrips={handleResetTrips}
-                                railData={railData}
-                                lineLengths={lineLengths}
-                                visitedLineLengths={visitedLineLengths}
-                            />
-                        </aside>
-                    )}
 
                     {isMobile && !isEditMode && (
                         <MobileBottomSheet

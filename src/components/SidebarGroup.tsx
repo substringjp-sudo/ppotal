@@ -127,9 +127,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
         registerLineRef, companyNames, lineNames
     } = props;
 
-    if (Object.keys(companies).length === 0) return null;
-
     const { language } = useI18n();
+    if (Object.keys(companies).length === 0) return null;
     const getCompanyName = (id: string) => companyNames[id]?.name || id;
     const getLineName = (id: string, lineData?: { name: string; name_en?: string; name_kr?: string }) => lineData?.name || lineNames[id]?.name || id;
 

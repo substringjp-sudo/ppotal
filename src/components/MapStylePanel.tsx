@@ -102,7 +102,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 onDoubleClick={stopPropagation}
                 onWheel={stopPropagation}
                 onTouchStart={stopPropagation}
-                className="absolute top-4 right-4 z-[1000] flex items-center gap-2 px-5 py-3 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/40 dark:border-white/10 rounded-full shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:scale-105 transition-all duration-500 group"
+                className="absolute top-4 right-4 z-[1000] flex items-center gap-2 px-5 h-[44px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/40 dark:border-white/10 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:scale-105 transition-all duration-500 group"
             >
                 <span className="material-symbols-outlined text-primary group-hover:rotate-45 transition-transform duration-700">palette</span>
                 <span className="text-xs font-black text-slate-800 dark:text-white tracking-widest uppercase">{t.mapStyle}</span>
@@ -120,7 +120,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             onTouchStart={stopPropagation}
             onTouchMove={stopPropagation}
             onTouchEnd={stopPropagation}
-            className="absolute top-4 right-4 z-[1000] w-64 sm:w-72 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/40 dark:border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex flex-col max-h-[60vh] sm:max-h-[85vh] animate-in slide-in-from-right-8 fade-in duration-500 overflow-hidden"
+            className="absolute top-4 right-4 w-64 sm:w-72 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/40 dark:border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex flex-col max-h-[60vh] sm:max-h-[85vh] animate-in slide-in-from-right-8 fade-in duration-500 overflow-hidden"
         >
             {/* Header: Sticky */}
             <div className="p-6 pb-4 flex justify-between items-center bg-white/20 dark:bg-slate-900/20 backdrop-blur-md z-10 border-b border-white/10">

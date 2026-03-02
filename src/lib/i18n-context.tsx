@@ -13,23 +13,23 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [language, setLanguageState] = useState<Language>('ja'); // Default to ja for Japan rail app
+    const [language, setLanguageState] = useState<Language>(() => {
+        if (typeof window === 'undefined') return 'ja';
+
+        // 1. Check saved preference
+        const savedLang = localStorage.getItem('pref-lang') as Language;
+        if (savedLang === 'ko' || savedLang === 'en' || savedLang === 'ja') return savedLang;
+
+        // 2. Detect browser language
+        const browserLang = navigator.language.split('-')[0];
+        if (browserLang === 'ko') return 'ko';
+        if (browserLang === 'ja') return 'ja';
+
+        return 'ja' as Language;
+    });
 
     useEffect(() => {
-        // Detect browser language on mount
-        const browserLang = navigator.language.split('-')[0];
-        let initialLang: Language = 'en';
-
-        if (browserLang === 'ko') initialLang = 'ko';
-        else if (browserLang === 'ja') initialLang = 'ja';
-
-        // Check if user has a saved preference
-        const savedLang = localStorage.getItem('pref-lang') as Language;
-        if (savedLang === 'ko' || savedLang === 'en' || savedLang === 'ja') {
-            setLanguageState(savedLang);
-        } else {
-            setLanguageState(initialLang);
-        }
+        // Initialization handled in useState lazy initializer
     }, []);
 
     const setLanguage = (lang: Language) => {

@@ -58,7 +58,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 
 
     return (
-        <div className={`flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-display ${className || ""}`}>
+        <div className={`flex flex-col h-full bg-transparent overflow-hidden font-display ${className || ""}`}>
             {/* Header */}
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -82,7 +82,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     const totalPercent = totalKm > 0 ? (visitedKm / totalKm) * 100 : 0;
 
                     return (
-                        <div className="mb-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md">
+                        <div className="mb-4 p-4 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-md border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md">
                             <div className="flex justify-between items-end mb-2">
                                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{t.totalProgress}</span>
                                 <span className="text-sm font-black text-primary">{totalPercent.toFixed(1)}%</span>

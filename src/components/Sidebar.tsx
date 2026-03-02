@@ -167,7 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
     const sortedCategoryIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
 
     return (
-        <div className={`flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-display ${className || ""}`}>
+        <div className={`flex flex-col h-full bg-transparent overflow-hidden font-display ${className || ""}`}>
             {/* Sidebar Header & Progress Card */}
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
@@ -194,7 +194,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                     trackEvent('sort_mode_change', 'filter', opt.id);
                                 }}
                                 className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-bold rounded-md transition-all ${sortMode === opt.id
-                                    ? 'bg-white dark:bg-slate-600 text-primary shadow-sm'
+                                    ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                     }`}
                             >
@@ -206,42 +206,42 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 </div>
 
                 {/* Bulk Actions */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">{t.selection}</div>
-                        <div className="grid grid-cols-2 gap-1.5">
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                        <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.selection}</div>
+                        <div className="grid grid-cols-2 gap-1">
                             <button
                                 onClick={handleSelectAll}
-                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
                                 title={t.all}
                             >
                                 {t.all}
                             </button>
                             <button
                                 onClick={handleDeselectAll}
-                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm"
+                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm"
                                 title={t.none}
                             >
                                 {t.none}
                             </button>
                         </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <div className="text-[9px] font-bold text-slate-400 uppercase px-1">{t.viewGroups}</div>
-                        <div className="grid grid-cols-2 gap-1.5">
+                    <div className="space-y-1">
+                        <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.viewGroups}</div>
+                        <div className="grid grid-cols-2 gap-1">
                             <button
                                 onClick={() => handleToggleAllGroups(true)}
-                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group"
                                 title={t.expandAll}
                             >
-                                <span className="material-symbols-outlined text-[18px]">expand_all</span>
+                                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 -translate-y-[1px] -translate-x-[1px]">expand_all</span>
                             </button>
                             <button
                                 onClick={() => handleToggleAllGroups(false)}
-                                className="h-8 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group"
                                 title={t.collapseAll}
                             >
-                                <span className="material-symbols-outlined text-[18px]">collapse_all</span>
+                                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 translate-y-[1px] translate-x-[1px]">collapse_all</span>
                             </button>
                         </div>
                     </div>

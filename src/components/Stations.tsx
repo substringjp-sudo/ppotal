@@ -87,9 +87,9 @@ const Stations: React.FC<StationsProps> = ({
     }, []);
 
     useEffect(() => {
-        let mounted = true;
+        let isMounted = true;
         const checkPanes = () => {
-            if (!mounted) return;
+            if (!isMounted) return;
             const required = [
                 'railroad-glow',
                 'railroad-casing',
@@ -105,8 +105,32 @@ const Stations: React.FC<StationsProps> = ({
             }
         };
         checkPanes();
-        return () => { mounted = false; };
+        return () => { isMounted = false; };
     }, [map]);
+
+    const isMovingRef = useRef(isMoving);
+    useEffect(() => {
+        isMovingRef.current = isMoving;
+    }, [isMoving]);
+
+    const lastMouseDownPos = useRef<L.LatLng | null>(null);
+
+    const mountedRef = useRef(true);
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => { mountedRef.current = false; };
+    }, []);
+
+    // Force close tooltips when the map is moving or zooming
+    useEffect(() => {
+        if (isMoving) {
+            try {
+                map?.closeTooltip?.();
+            } catch (err) { /* ignore */ }
+            if (onStationHover) onStationHover(null);
+            setLocalHoveredStation(null);
+        }
+    }, [isMoving, map, onStationHover]);
     const platformPathOptions = useMemo(() => ({
         renderer: railroadCanvas || undefined
     }), []);
@@ -491,11 +515,16 @@ const Stations: React.FC<StationsProps> = ({
             },
             mousedown: (e) => {
                 L.DomEvent.stopPropagation(e);
+                lastMouseDownPos.current = e.latlng;
+                try {
+                    map?.closeTooltip?.();
+                } catch (err) { /* ignore */ }
                 if (isStationActive) {
                     handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
                 }
             },
             mouseover: (e: any) => {
+                if (isMovingRef.current) return;
                 const { clientX: x, clientY: y } = e.originalEvent;
                 const container = layer.getPane()?.closest('.leaflet-container');
                 if (!container) return;
@@ -510,6 +539,7 @@ const Stations: React.FC<StationsProps> = ({
                 if (onStationHover) onStationHover(id);
             },
             mousemove: (e: any) => {
+                if (isMovingRef.current) return;
                 const { clientX: x, clientY: y } = e.originalEvent;
                 const container = layer.getPane()?.closest('.leaflet-container');
                 if (!container) return;
@@ -523,7 +553,9 @@ const Stations: React.FC<StationsProps> = ({
             mouseout: () => {
                 setLocalHoveredStation(null);
                 if (onStationHover) onStationHover(null);
-                layer?.closeTooltip?.();
+                try {
+                    layer?.closeTooltip?.();
+                } catch (err) { /* ignore */ }
             },
             mouseup: (e) => {
                 L.DomEvent.stopPropagation(e);
@@ -554,7 +586,9 @@ const Stations: React.FC<StationsProps> = ({
         return () => {
             if (interactionRef.current) {
                 interactionRef.current.eachLayer((l: any) => {
-                    if (l.closeTooltip) l.closeTooltip();
+                    try {
+                        l?.closeTooltip?.();
+                    } catch (err) { /* ignore */ }
                 });
             }
         };

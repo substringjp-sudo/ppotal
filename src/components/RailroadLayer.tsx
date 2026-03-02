@@ -54,9 +54,9 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     }), []);
 
     useEffect(() => {
-        let mounted = true;
+        let isMounted = true;
         const checkPanes = () => {
-            if (!mounted) return;
+            if (!isMounted) return;
             const required = ['railroad-glow', 'railroad-lines', 'master-interactions'];
             const allReady = required.every(p => !!map.getPane(p));
             if (allReady) {
@@ -66,8 +66,34 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             }
         };
         checkPanes();
-        return () => { mounted = false; };
+        return () => { isMounted = false; };
     }, [map]);
+
+    const isMovingRef = useRef(isMoving);
+    useEffect(() => {
+        isMovingRef.current = isMoving;
+    }, [isMoving]);
+
+    const isDraggingRef = useRef(isDragging);
+    useEffect(() => {
+        isDraggingRef.current = isDragging;
+    }, [isDragging]);
+
+    const mountedRef = useRef(true);
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => { mountedRef.current = false; };
+    }, []);
+
+    // Force close tooltips when the map is moving or zooming
+    useEffect(() => {
+        if (isMoving) {
+            try {
+                map?.closeTooltip?.();
+            } catch (err) { /* ignore */ }
+            onRailroadHover(null);
+        }
+    }, [isMoving, map, onRailroadHover]);
 
     const lastMouseDownPos = useRef<L.LatLng | null>(null);
     const selectionSet = useMemo(() => new Set(selectedLines), [selectedLines]);
@@ -377,7 +403,11 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
         layer.on({
             mousedown: (e: L.LeafletMouseEvent) => {
+                L.DomEvent.stopPropagation(e);
                 lastMouseDownPos.current = e.latlng;
+                try {
+                    map?.closeTooltip?.();
+                } catch (err) { /* ignore */ }
             },
             click: (e: L.LeafletMouseEvent) => {
                 if (isDragging) return;
@@ -397,7 +427,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 lastMouseDownPos.current = null;
             },
             mouseover: (e: any) => {
-                if (!isMobile && !isMoving && !isDragging) {
+                const moving = isMovingRef.current;
+                const dragging = isDraggingRef.current;
+
+                if (!isMobile && !moving && !dragging) {
                     const { clientX: x, clientY: y } = e.originalEvent;
                     const container = layer.getPane()?.closest('.leaflet-container');
                     if (!container) return;
@@ -419,14 +452,19 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
 
                     if (tooltipTimeout) clearTimeout(tooltipTimeout);
                     tooltipTimeout = setTimeout(() => {
-                        onRailroadHover(props.id);
-                        layer.openTooltip();
+                        if (mountedRef.current && !isMovingRef.current && !isDraggingRef.current) {
+                            onRailroadHover(props.id);
+                            layer.openTooltip();
+                        }
                         tooltipTimeout = null;
                     }, 50);
                 }
             },
             mousemove: (e: any) => {
-                if (!isMobile && !isMoving && !isDragging) {
+                const moving = isMovingRef.current;
+                const dragging = isDraggingRef.current;
+
+                if (!isMobile && !moving && !dragging) {
                     const { clientX: x, clientY: y } = e.originalEvent;
                     const container = layer.getPane()?.closest('.leaflet-container');
                     if (!container) return;
@@ -454,7 +492,9 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                         tooltipTimeout = null;
                     }
                     onRailroadHover(null);
-                    layer?.closeTooltip?.();
+                    try {
+                        layer?.closeTooltip?.();
+                    } catch (err) { /* ignore */ }
                 }
             }
         });
@@ -477,7 +517,9 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         return () => {
             if (interactionLayerRef.current) {
                 interactionLayerRef.current.eachLayer((l: any) => {
-                    if (l.closeTooltip) l.closeTooltip();
+                    try {
+                        l?.closeTooltip?.();
+                    } catch (err) { /* ignore */ }
                 });
             }
         };
