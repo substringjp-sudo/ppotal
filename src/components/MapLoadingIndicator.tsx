@@ -7,24 +7,12 @@ interface MapLoadingIndicatorProps {
     isTransitioning?: boolean;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        loading: '지도 데이터 로드 중...',
-        optimizing: '뷰 최적화 중...',
-    },
-    en: {
-        loading: 'Loading Map Data...',
-        optimizing: 'Optimizing View...',
-    },
-    ja: {
-        loading: '地図データを読み込み中...',
-        optimizing: 'ビューを最適化中...',
-    }
-};
+import { MAP_LOADING_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 const MapLoadingIndicator: React.FC<MapLoadingIndicatorProps> = ({ isLoading, isTransitioning }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MAP_LOADING_TRANSLATIONS, language);
 
     if (!isLoading && !isTransitioning) return null;
 

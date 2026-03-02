@@ -6,50 +6,8 @@ import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedRegion } from '../lib/i18n-utils';
 import { Trip } from '../types/trip';
 
-const TRANSLATIONS = {
-    ko: {
-        title: '나의 기록',
-        subtitle: '일본 철도 여행 기록',
-        totalProgress: '전체 진행률',
-        lines: '개 노선',
-        tripRecord: '기록',
-        cancel: '취소',
-        confirm: '확인',
-        deleteAll: '전체 삭제',
-        noTrips: '기록된 여정이 없습니다.',
-        dragToRecord: '역 사이를 드래그하여 기록하세요!',
-        stations: '개 역',
-        deleteTrip: '이 기록 삭제',
-    },
-    en: {
-        title: 'MY HISTORY',
-        subtitle: 'Your Japanese rail journey records',
-        totalProgress: 'Total Progress',
-        lines: ' LINES',
-        tripRecord: ' Trip Record',
-        cancel: 'Cancel',
-        confirm: 'Confirm',
-        deleteAll: 'Delete All',
-        noTrips: 'No trips recorded yet.',
-        dragToRecord: 'Drag between stations to record!',
-        stations: ' STATIONS',
-        deleteTrip: 'Delete this record',
-    },
-    ja: {
-        title: 'マイ履歴',
-        subtitle: '日本の鉄道旅行の記録',
-        totalProgress: '全体進척',
-        lines: ' 路線',
-        tripRecord: '件の記録',
-        cancel: 'キャンセル',
-        confirm: '確認',
-        deleteAll: '全削除',
-        noTrips: 'まだ記録がありません。',
-        dragToRecord: '駅間をドラッグして記録しましょう！',
-        stations: ' 駅',
-        deleteTrip: 'この記録を削除',
-    }
-};
+import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 export interface MyLinesPaneProps {
     recordedTrips?: Trip[];
@@ -76,7 +34,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     className
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MY_LINES_TRANSLATIONS, language);
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
     const [isResetConfirming, setIsResetConfirming] = React.useState(false);
 

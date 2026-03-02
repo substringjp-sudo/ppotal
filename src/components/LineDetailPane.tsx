@@ -11,23 +11,8 @@ import { RailData } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 
-const TRANSLATIONS = {
-    ko: {
-        completion: '완성도',
-        showLine: '노선 표시',
-        hideLine: '노선 숨기기',
-    },
-    en: {
-        completion: 'Completion',
-        showLine: 'Show Line',
-        hideLine: 'Hide Line',
-    },
-    ja: {
-        completion: '完乗率',
-        showLine: '路線を表示',
-        hideLine: '路線を隠す',
-    }
-};
+import { LINE_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 export interface LineDetailPaneProps {
     lineId: string;
@@ -48,7 +33,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     getShortestPath, onRecordTrip, railData
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(LINE_DETAIL_TRANSLATIONS, language);
     const [company, lineName] = lineId.split('::');
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 

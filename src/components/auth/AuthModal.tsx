@@ -14,45 +14,12 @@ interface AuthModalProps {
     onClose: () => void;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        login: '로그인',
-        signup: '회원가입',
-        saveProgress: '진행 상황을 클라우드에 저장하세요.',
-        nickname: '닉네임',
-        email: '이메일',
-        password: '비밀번호',
-        authFailed: '인증에 실패했습니다.',
-        switchToSignup: '계정이 없으신가요? 회원가입',
-        switchToLogin: '이미 계정이 있으신가요? 로그인'
-    },
-    en: {
-        login: 'Login',
-        signup: 'Sign Up',
-        saveProgress: 'Save your progress to the cloud.',
-        nickname: 'Nickname',
-        email: 'Email',
-        password: 'Password',
-        authFailed: 'Authentication failed',
-        switchToSignup: "Don't have an account? Sign Up",
-        switchToLogin: "Already have an account? Login"
-    },
-    ja: {
-        login: 'ログイン',
-        signup: '新規登録',
-        saveProgress: '進行状況をクラウドに保存します。',
-        nickname: 'ニックネーム',
-        email: 'メールアドレス',
-        password: 'パスワード',
-        authFailed: '認証に失敗しました。',
-        switchToSignup: 'アカウントをお持ちでないですか？新規登録',
-        switchToLogin: 'すでにアカウントをお持ちですか？ログイン'
-    }
-};
+import { AUTH_TRANSLATIONS, getTranslations } from '../../lib/translations';
+
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(AUTH_TRANSLATIONS, language);
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

@@ -5,11 +5,8 @@ import { RailData, Station } from '../../types/railData';
 import { useI18n } from '../../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../../lib/i18n-utils';
 
-const TRANSLATIONS = {
-    ko: { start: '시작', arr: '도착' },
-    en: { start: 'Start', arr: 'Arr' },
-    ja: { start: '開始', arr: '到着' }
-};
+import { MOBILE_STATION_PREVIEW_TRANSLATIONS, getTranslations } from '../../lib/translations';
+
 
 export interface MobileStationPreviewProps {
     station: Station;
@@ -35,7 +32,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     onCancel
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MOBILE_STATION_PREVIEW_TRANSLATIONS, language);
     const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
 
     React.useEffect(() => {

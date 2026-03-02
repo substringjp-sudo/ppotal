@@ -29,41 +29,8 @@ interface RoutePaneProps {
     railData?: RailData | null;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        title: '경로 탐색',
-        start: '출발',
-        end: '도착',
-        placeholder: '역명 입력',
-        totalDistance: '총 이동 거리',
-        transfers: (count: number) => `환승: ${count}회`,
-        transfer: '환승',
-        rail: '철도',
-        noSelection: '역을 선택하여 경로를 탐색하세요.'
-    },
-    en: {
-        title: 'Route Planner',
-        start: 'START',
-        end: 'END',
-        placeholder: 'Station Name',
-        totalDistance: 'Total Distance',
-        transfers: (count: number) => `Transfers: ${count}`,
-        transfer: 'Transfer',
-        rail: 'Rail',
-        noSelection: 'Select stations to route.'
-    },
-    ja: {
-        title: 'ルート検索',
-        start: '出発',
-        end: '到着',
-        placeholder: '駅名を入力',
-        totalDistance: '総移動距離',
-        transfers: (count: number) => `乗換: ${count}回`,
-        transfer: '乗換',
-        rail: '鉄道',
-        noSelection: '駅を選択してルートを検索してください。'
-    }
-};
+import { ROUTE_PANE_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 const RoutePane: React.FC<RoutePaneProps> = ({
     startStation,
@@ -75,7 +42,7 @@ const RoutePane: React.FC<RoutePaneProps> = ({
     railData
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(ROUTE_PANE_TRANSLATIONS, language);
     const [startInput, setStartInput] = useState(startStation || '');
     const [endInput, setEndInput] = useState(endStation || '');
 

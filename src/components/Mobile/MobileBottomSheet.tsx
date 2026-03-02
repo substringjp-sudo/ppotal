@@ -1,11 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useI18n } from '../../lib/i18n-context';
 
-const TRANSLATIONS = {
-    ko: { swipe: '스와이프 ↔' },
-    en: { swipe: 'Swipe ↔' },
-    ja: { swipe: 'スワイプ ↔' }
-};
+import { MOBILE_BOTTOM_SHEET_TRANSLATIONS, getTranslations } from '../../lib/translations';
+
 
 export interface MobileSheetTab {
     id: string;
@@ -37,7 +34,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     onToggle
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MOBILE_BOTTOM_SHEET_TRANSLATIONS, language);
     const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
     const isExpanded = isOpen !== undefined ? isOpen : internalExpanded;
     const sheetRef = useRef<HTMLDivElement>(null);

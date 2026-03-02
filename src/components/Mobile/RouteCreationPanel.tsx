@@ -14,23 +14,8 @@ interface RouteCreationPanelProps {
     railData: RailData | null;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        placeholder: '역을 길게 눌러 드래그하면 경로를 기록할 수 있습니다',
-        add: '기록 저장',
-        discard: '삭제'
-    },
-    en: {
-        placeholder: 'Press and drag a station to record your route',
-        add: 'Add to History',
-        discard: 'Discard'
-    },
-    ja: {
-        placeholder: '駅を長押ししてドラッグするとルートを記録できます',
-        add: '履歴に追加',
-        discard: '破棄'
-    }
-};
+import { MOBILE_ROUTE_CREATION_TRANSLATIONS, getTranslations } from '../../lib/translations';
+
 
 const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = ({
     isDragging,
@@ -42,7 +27,7 @@ const RouteCreationPanel: React.FC<Omit<RouteCreationPanelProps, 'onFinish'>> = 
     railData
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MOBILE_ROUTE_CREATION_TRANSLATIONS, language);
     const displayPath = React.useMemo(() => {
         return isDragging ? tempPath : (draftTrip ? draftTrip.waypoints : []);
     }, [isDragging, tempPath, draftTrip]);

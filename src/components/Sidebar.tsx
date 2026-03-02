@@ -10,50 +10,8 @@ import AuthModal from './auth/AuthModal';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 
-const TRANSLATIONS = {
-    ko: {
-        title: '철도망 노선도',
-        subtitle: '지도의 표시할 노선을 선택하세요',
-        sortTitle: '정렬 및 구성',
-        alphabetical: '가나다순',
-        byUsage: '이용량순',
-        selection: '선택 이벤트',
-        all: '모두 선택',
-        none: '선택 해제',
-        viewGroups: '카테고리 보기',
-        expandAll: '모든 카테고리 열기',
-        collapseAll: '모든 카테고리 닫기',
-        loading: '로딩 중...',
-    },
-    en: {
-        title: 'Railroad Networks',
-        subtitle: 'Select lines to visualize on map',
-        sortTitle: 'Sort & Organize',
-        alphabetical: 'Alphabetical',
-        byUsage: 'By Usage',
-        selection: 'Selection',
-        all: 'All',
-        none: 'None',
-        viewGroups: 'View Groups',
-        expandAll: 'Expand All Categories',
-        collapseAll: 'Collapse All Categories',
-        loading: 'Loading...',
-    },
-    ja: {
-        title: '鉄道ネットワーク',
-        subtitle: '地図に表示する路線を選択してください',
-        sortTitle: 'ソートと整理',
-        alphabetical: '五十音順',
-        byUsage: '利用量順',
-        selection: '一括選択',
-        all: 'すべて選択',
-        none: '選択解除',
-        viewGroups: 'カテゴリ表示',
-        expandAll: 'すべてのカテゴリを開く',
-        collapseAll: 'すべてのカテゴリを閉じる',
-        loading: '読み込み中...',
-    }
-};
+import { SIDEBAR_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 export interface SidebarProps {
     selectedLines: string[];
@@ -202,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
         lineRefs.current[key] = el;
     }, []);
 
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(SIDEBAR_TRANSLATIONS, language);
 
     if (!groupedHierarchy || !CATEGORY_MAP || !companyNames || !lineNames) return <div className="p-10 text-center text-slate-400 font-bold">{t.loading}</div>;
 

@@ -10,51 +10,12 @@ interface FeedbackModalProps {
     onClose: () => void;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        title: '피드백 보내기',
-        desc: '제안 사항이나 버그를 발견하셨나요? 알려주세요!',
-        labelFeedback: '피드백 내용',
-        placeholderFeedback: '이런 기능이 있으면 좋겠어요...',
-        labelName: '이름 (선택 사항)',
-        placeholderName: '익명',
-        submitBtn: '피드백 제출',
-        submitting: '제출 중...',
-        errorEmpty: '피드백 내용을 입력해주세요.',
-        successMsg: '감사합니다! 피드백이 성공적으로 제출되었습니다.',
-        errorMsg: '오류가 발생했습니다. 다시 시도해주세요.'
-    },
-    en: {
-        title: 'Submit Feedback',
-        desc: 'Have a suggestion or found a bug? Let us know!',
-        labelFeedback: 'Feedback',
-        placeholderFeedback: 'I think it would be great if...',
-        labelName: 'Your Name (Optional)',
-        placeholderName: 'Anonymous',
-        submitBtn: 'Submit Feedback',
-        submitting: 'Submitting...',
-        errorEmpty: 'Feedback content cannot be empty.',
-        successMsg: 'Thank you! Your feedback has been submitted.',
-        errorMsg: 'An error occurred. Please try again.'
-    },
-    ja: {
-        title: 'フィードバックを送信',
-        desc: '提案やバグを見つけましたか？ぜひ教えてください！',
-        labelFeedback: 'フィードバック内容',
-        placeholderFeedback: 'こんな機能があったらいいな...',
-        labelName: 'お名前 (任意)',
-        placeholderName: '匿名',
-        submitBtn: 'フィードバックを送信',
-        submitting: '送信中...',
-        errorEmpty: 'フィードバック内容を入力してください。',
-        successMsg: 'ありがとうございます！フィードバックが送信されました。',
-        errorMsg: 'エラーが発生しました。もう一度お試しください。'
-    }
-};
+import { FEEDBACK_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(FEEDBACK_TRANSLATIONS, language);
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);

@@ -8,11 +8,8 @@ import { RailData } from '../../types/railData';
 import { useI18n } from '../../lib/i18n-context';
 import { getLocalizedName } from '../../lib/i18n-utils';
 
-const TRANSLATIONS = {
-    ko: { guide: '지도의 역을 탭하여 시작점과 끝점을 지정하세요.' },
-    en: { guide: 'Tap stations on the map to specify start and end points.' },
-    ja: { guide: '地図上の駅をタップして始点と終点を指定してください。' }
-};
+import { MOBILE_EDIT_LINE_TRANSLATIONS, getTranslations } from '../../lib/translations';
+
 
 interface MobileEditLinePanelProps {
     lineId: string;
@@ -36,7 +33,7 @@ const MobileEditLinePanel: React.FC<MobileEditLinePanelProps> = ({
     railData,
 }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MOBILE_EDIT_LINE_TRANSLATIONS, language);
     const [company, lineName] = lineId.split('::');
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 

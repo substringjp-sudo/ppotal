@@ -26,7 +26,8 @@ export const useRailData = () => {
                             fetch('/rail/sections_geom_high.json'),
                             fetch('/rail/sections_geom_mid.json'),
                             fetch('/rail/sections_geom_low.json'),
-                            fetch('/rail/railroad_graph.json'),
+                            fetch('/rail/station_graph.json'),
+                            fetch('/rail/platform_graph.json'),
                             fetch('/rail/railroad_hierarchy.json'),
                             fetch('/rail/joints.json'),
                             fetch('/rail/stations_lod.json')
@@ -51,7 +52,8 @@ export const useRailData = () => {
                             sectionsGeomHigh,
                             sectionsGeomMid,
                             sectionsGeomLow,
-                            railroadGraph,
+                            stationGraph,
+                            platformGraph,
                             hierarchy,
                             joints,
                             stationsLod
@@ -93,7 +95,10 @@ export const useRailData = () => {
                                     low: sectionsLow
                                 }
                             },
-                            railroadGraph,
+                            railroadGraph: {
+                                stationGraph,
+                                platformGraph
+                            },
                             hierarchy,
                             joints,
                             stationsLod

@@ -6,78 +6,11 @@ interface HowToModalProps {
     onClose: () => void;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        title: '사용 방법',
-        startBtn: '시작하기',
-        desktop: '데스크톱',
-        mobile: '모바일',
-        guides: {
-            desktop: [
-                { title: '노선 및 역 탐색', desc: '지도상의 노선이나 점(역)을 클릭하여 상세 정보를 확인하세요.' },
-                { title: '여정 기록', desc: '노선 상세 창에서 역을 선택하여 이동 경로를 기록하고 총 거리를 계산하세요.' },
-                { title: '사이드바 활용', desc: '왼쪽 사이드바에서 철도 회사별로 노선을 한꺼번에 켜거나 끌 수 있습니다.' },
-                { title: '경로 찾기', desc: '경로 탭에서 출발역과 도착역을 선택하여 최단 경로를 검색하세요.' },
-                { title: '지도 제어', desc: '마우스 휠로 확대/축소하고, 드래그하여 지도를 이동하세요.' }
-            ],
-            mobile: [
-                { title: '노선 및 역 터치', desc: '지도상의 노선이나 역을 가볍게 터치하여 정보를 확인하세요.' },
-                { title: '편집 모드 사용', desc: "상단의 'Edit' 버튼을 눌러 경로 기록 모드로 진입하세요." },
-                { title: '드래그로 기록', desc: '편집 모드에서 시작역을 한 번 터치한 후, 다음 역까지 손가락을 드래그하여 경로를 그립니다.' },
-                { title: '진행 상황 저장', desc: "하단 패널의 'Add'를 눌러 탑승 기록을 저장하고 통계를 업데이트하세요." },
-                { title: '지도 제어', desc: '두 손가락으로 핀치하여 확대/축소하고, 한 손가락으로 이동하세요.' }
-            ]
-        }
-    },
-    en: {
-        title: 'How to Use',
-        startBtn: 'Get Started',
-        desktop: 'Desktop',
-        mobile: 'Mobile',
-        guides: {
-            desktop: [
-                { title: 'Explore Lines & Stations', desc: 'Click on lines or dots (stations) on the map to see detailed information.' },
-                { title: 'Record Your Trip', desc: 'Select stations in the line detail window to record your route and calculate total distance.' },
-                { title: 'Use Sidebar', desc: "Enable or disable an entire company's lines from the left sidebar." },
-                { title: 'Find Routes', desc: 'Search for the shortest path by selecting start and end stations in the Route tab.' },
-                { title: 'Map Control', desc: 'Use mouse wheel to zoom in/out and drag to move the map.' }
-            ],
-            mobile: [
-                { title: 'Touch Lines & Stations', desc: 'Lightly touch lines or stations on the map to see detailed information.' },
-                { title: 'Use Edit Mode', desc: "Tap the 'Edit' button at the top to enter route recording mode." },
-                { title: 'Drag to Record', desc: 'In Edit Mode, click a starting station once, then drag your finger to the next station to draw the path.' },
-                { title: 'Save Progress', desc: "Tap 'Add' in the bottom panel to save your trip and update your stats." },
-                { title: 'Map Control', desc: 'Pinch with two fingers to zoom and move with one finger.' }
-            ]
-        }
-    },
-    ja: {
-        title: '使い方',
-        startBtn: 'はじめる',
-        desktop: 'デスクトップ',
-        mobile: 'モバイル',
-        guides: {
-            desktop: [
-                { title: '路線と駅を探索', desc: '地図上の路線や点（駅）をクリックして詳細情報を確認します。' },
-                { title: '乗車記録', desc: '路線詳細ウィンドウで駅を選択してルートを記録し、合計距離を計算します。' },
-                { title: 'サイドバーの活用', desc: '左側のサイドバーから鉄道会社ごとに路線を一括で表示・非表示にできます。' },
-                { title: 'ルート検索', desc: 'ルートタブで出発駅と到着駅を選択して最短経路を検索します。' },
-                { title: '地図の操作', desc: 'マウスホイールでズームイン/アウト、ドラッグで地図を移動します。' }
-            ],
-            mobile: [
-                { title: '路線と駅をタッチ', desc: '地図上の路線や駅を軽くタッチして情報を確認します。' },
-                { title: '編集モードの使用', desc: '上部の「Edit」ボタンをタップしてルート記録モードに入ります。' },
-                { title: 'ドラッグで記録', desc: '編集モードで開始駅を一度タップし、次の駅まで指をドラッグして経路を描きます。' },
-                { title: '進捗を保存', desc: '下部パネルの「Add」をタップして乗車記録を保存し、統計を更新します。' },
-                { title: '地図の操作', desc: '2本の指でピンチしてズーム、1本の指で移動します。' }
-            ]
-        }
-    }
-};
+import { HOW_TO_TRANSLATIONS, getTranslations } from '../lib/translations';
 
 const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
     const { language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(HOW_TO_TRANSLATIONS, language);
     const [activeTab, setActiveTab] = React.useState<'desktop' | 'mobile'>('desktop');
 
     React.useEffect(() => {

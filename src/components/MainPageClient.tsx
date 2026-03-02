@@ -86,68 +86,8 @@ const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { 
 const MobileEditLinePanelWithNoSSR = dynamic(() => import('./Mobile/MobileEditLinePanel'), { ssr: false });
 const RouteCreationPanelWithNoSSR = dynamic(() => import('./Mobile/RouteCreationPanel'), { ssr: false });
 
-const TRANSLATIONS = {
-    ko: {
-        railList: '노선 목록',
-        networkSelection: '네트워크 선택',
-        linesSelected: (count: number) => `${count}개 노선 선택됨`,
-        myTrip: '내 여정',
-        trips: '여정',
-        lines: '노선',
-        km: 'KM',
-        stations: '역',
-        information: '정보',
-        ultimateTitle: '최고의 일본 철도 노선도',
-        ultimateDesc: 'JapanRailNote는 세계에서 가장 복잡한 철도망을 탐색하기 위한 디지털 동반자입니다. 일본 전역의 모든 JR 노선, 사철, 지하철 및 노면전차를 시각화하여 제공합니다.',
-        statsOverview: '통계 개요',
-        records: '기록',
-        visitedLines: '방문 노선',
-        totalDistance: '총 이동 거리',
-        avgDistance: '평균 거리',
-        fullDirectoryDesc: (stations: number, lines: number) => `모든 ${stations}개의 역과 ${lines}개의 노선에 대한 전체 디렉토리를 보려면 데스크톱 장치에서 웹사이트를 방문해 주세요.`,
-        sendFeedback: '피드백 보내기'
-    },
-    en: {
-        railList: 'Rail List',
-        networkSelection: 'Network Selection',
-        linesSelected: (count: number) => `${count} LINES SELECTED`,
-        myTrip: 'My Trip',
-        trips: 'TRIPS',
-        lines: 'LINES',
-        km: 'KM',
-        stations: 'STATIONS',
-        information: 'Information',
-        ultimateTitle: 'Ultimate Japan Railway Map',
-        ultimateDesc: "JapanRailNote is a digital companion for navigating the world's most complex railway network. We provide visualization of every JR line, private railroad, subway system, and tramway across Japan.",
-        statsOverview: 'Stats Overview',
-        records: 'Records',
-        visitedLines: 'Visited Lines',
-        totalDistance: 'Total Distance',
-        avgDistance: 'Avg Distance',
-        fullDirectoryDesc: (stations: number, lines: number) => `For a full directory of all ${stations} stations and ${lines} lines, please visit our website on a desktop device.`,
-        sendFeedback: 'Send Feedback'
-    },
-    ja: {
-        railList: '路線一覧',
-        networkSelection: 'ネットワーク選択',
-        linesSelected: (count: number) => `${count}路線を選択中`,
-        myTrip: 'マイ・トリップ',
-        trips: '履歴',
-        lines: '路線',
-        km: 'KM',
-        stations: '駅',
-        information: '情報',
-        ultimateTitle: '究極の日本鉄道路線図',
-        ultimateDesc: 'JapanRailNoteは、世界で最も複雑な鉄道網をナビゲートするためのデジタルコンパニオンです。日本全国のすべてのJR、私鉄、地下鉄、路面電車を視覚化して提供します。',
-        statsOverview: '統計概要',
-        records: '記録',
-        visitedLines: '訪れた路線',
-        totalDistance: '総移動距離',
-        avgDistance: '平均距離',
-        fullDirectoryDesc: (stations: number, lines: number) => `${stations}の駅と${lines}の路線すべてのディレクトリを確認するには、デスクトップデバイスでウェブサイトにアクセスしてください。`,
-        sendFeedback: 'フィードバックを送信'
-    }
-};
+import { MAIN_PAGE_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 const MainPageClient = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
@@ -183,7 +123,7 @@ const MainPageClient = () => {
     const [isMapStyleOpen, setIsMapStyleOpen] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
     const { language, isKorean } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
     const toFirestoreTrip = (trip: Trip) => ({
         ...trip,
         geometries: JSON.stringify(trip.geometries)
@@ -998,9 +938,9 @@ const MainPageClient = () => {
 
                     <div className="flex-1 overflow-y-auto space-y-6">
                         <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                            <h3 className="text-white text-lg font-black mb-3 italic">{t.ultimateTitle}</h3>
+                            <h3 className="text-white text-lg font-black mb-3 italic">{t.heroTitle}</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
-                                {t.ultimateDesc}
+                                {t.heroDesc}
                             </p>
                         </div>
 

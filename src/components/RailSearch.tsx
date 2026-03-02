@@ -13,50 +13,8 @@ interface RailSearchProps {
     isMobile?: boolean;
 }
 
-const TRANSLATIONS = {
-    ko: {
-        placeholder: '역 또는 노선 검색...',
-        recentSearches: '최근 검색어',
-        clearAll: '모두 삭제',
-        station: '역',
-        line: '노선',
-        noResults: '검색 결과가 없습니다',
-        noResultsDetail: (query: string) => `"${query}"에 해당하는 역이나 노선을 찾을 수 없습니다`,
-        stationsFound: (count: number) => `역 — ${count}개 찾음`,
-        linesFound: (count: number) => `노선 — ${count}개 찾음`,
-        pressEnter: '엔터를 눌러 선택',
-        close: '닫기',
-        showOnMap: '지도에서 보기',
-    },
-    en: {
-        placeholder: 'Search stations or lines...',
-        recentSearches: 'RECENT SEARCHES',
-        clearAll: 'Clear all',
-        station: 'STATION',
-        line: 'LINE',
-        noResults: 'No results found',
-        noResultsDetail: (query: string) => `We couldn't find any stations or lines matching "${query}"`,
-        stationsFound: (count: number) => `STATIONS — ${count} FOUND`,
-        linesFound: (count: number) => `LINES — ${count} FOUND`,
-        pressEnter: 'Press enter to select',
-        close: 'CLOSE',
-        showOnMap: 'SHOW ON MAP',
-    },
-    ja: {
-        placeholder: '駅名や路線を検索...',
-        recentSearches: '最近の検索',
-        clearAll: 'すべて削除',
-        station: '駅',
-        line: '路線',
-        noResults: '検索結果がありません',
-        noResultsDetail: (query: string) => `"${query}" に一致する駅や路線は見つかりませんでした`,
-        stationsFound: (count: number) => `駅 — ${count}件`,
-        linesFound: (count: number) => `路線 — ${count}件`,
-        pressEnter: 'Enterで選択',
-        close: '閉じる',
-        showOnMap: '地図で表示',
-    }
-};
+import { RAIL_SEARCH_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 
 const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
@@ -82,7 +40,7 @@ const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
 
 const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSelectLine, isMobile }) => {
     const { isKorean, isJapanese, language } = useI18n();
-    const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+    const t = getTranslations(RAIL_SEARCH_TRANSLATIONS, language);
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [regionNames, setRegionNames] = useState<RegionNames | null>(null);

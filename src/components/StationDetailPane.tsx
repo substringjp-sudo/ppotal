@@ -5,26 +5,8 @@ import { getLineColor } from '../lib/lineColors';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 
-const TRANSLATIONS = {
-  ko: {
-    arr: '도착',
-    cancel: '취소',
-    start: '시작',
-    platform: '번 승강장',
-  },
-  en: {
-    arr: 'Arr',
-    cancel: 'Cancel',
-    start: 'Start',
-    platform: ' Platform',
-  },
-  ja: {
-    arr: '到着',
-    cancel: 'キャンセル',
-    start: '開始',
-    platform: '番線',
-  }
-};
+import { STATION_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
+
 
 export interface StationDetailPaneProps {
   station: Station;
@@ -49,7 +31,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   onCancel
 }) => {
   const { isKorean, isJapanese, language } = useI18n();
-  const t = TRANSLATIONS[language as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
+  const t = getTranslations(STATION_DETAIL_TRANSLATIONS, language);
   const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
 
   useEffect(() => {
@@ -232,7 +214,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
             };
 
             return (
-              <div key={p.pid} className="group/row relative w-full rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 p-6 transition-all hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-black/30" style={{ height: rowHeight }}>
+              <div key={p.pid} className="group/row relative w-full rounded-3xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 px-0 py-6 transition-all hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-black/30">
 
                 {/* Section Title Header: Top Left */}
                 <div className="absolute top-0 left-0 right-0 h-10 flex items-center px-6 border-b border-slate-50 dark:border-slate-800/50">
@@ -252,143 +234,128 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                   </div>
                 </div>
 
-                {/* Left Side: Next Stations */}
-                <div className="absolute top-[calc(50%+12px)] -translate-y-1/2 left-6 w-[110px] md:w-[140px] space-y-3 z-10 pointer-events-none">
-                  {left.map((entry, i) => {
-                    const yOffset = (i - (left.length - 1) / 2) * 70;
-                    return (
-                      <div
-                        key={entry.station.id}
-                        className="absolute left-0 w-full pointer-events-auto transition-transform hover:scale-105"
-                        style={{ top: '50%', transform: `translateY(calc(-50% + ${yOffset}px))` }}
+                {/* Dynamic Diagram: Truly Editor-Style Visualization */}
+                {(() => {
+                  const maxNeighbors = Math.max(left.length, right.length, 1);
+                  const vSpacing = 140;
+                  // totalHeight is dynamic based on neighbor count, but we use a constant factor for display height
+                  const totalHeight = 400 + (maxNeighbors - 1) * vSpacing;
+                  const centerY = totalHeight / 2;
+
+                  // SCALE FACTOR: This ensures that 1 unit in SVG equals 0.6px in reality across ALL cards.
+                  // This fixes "signs having different sizes" problem.
+                  const displayHeight = totalHeight * 0.6;
+
+                  const pWidth = 140;
+                  const pL = 500 - pWidth / 2;
+                  const pR = 500 + pWidth / 2;
+
+                  const platAnchorLX = pL - 50;
+                  const platAnchorRX = pR + 50;
+
+                  return (
+                    <div className="relative w-full overflow-hidden" style={{ height: `${displayHeight}px`, marginTop: '3.5rem' }}>
+                      <svg
+                        viewBox={`0 0 1000 ${totalHeight}`}
+                        className="w-full h-full"
+                        preserveAspectRatio="none" // Stretching horizontally to fill the "view 좌우 끝"
                       >
-                        <div className="group/card flex flex-col bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all">
-                          <div className="flex items-center justify-between mb-0.5 min-w-0">
-                            <span className="text-[11px] font-black text-slate-800 dark:text-white truncate leading-tight">{entry.station.name}</span>
-                            {entry.skippedCount > 0 && (
-                              <span className="text-[7px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full font-black text-slate-500 ml-1">
-                                +{entry.skippedCount}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate uppercase tracking-tight italic leading-none">
-                            {isKorean ? entry.station.name_kr || entry.station.name_en : entry.station.name_en}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Right Side: Next Stations */}
-                <div className="absolute top-[calc(50%+12px)] -translate-y-1/2 right-6 w-[110px] md:w-[140px] space-y-3 z-10 pointer-events-none">
-                  {right.map((entry, i) => {
-                    const yOffset = (i - (right.length - 1) / 2) * 70;
-                    return (
-                      <div
-                        key={entry.station.id}
-                        className="absolute right-0 w-full pointer-events-auto transition-transform hover:scale-105"
-                        style={{ top: '50%', transform: `translateY(calc(-50% + ${yOffset}px))` }}
-                      >
-                        <div className="group/card flex flex-col items-end text-right bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-2.5 shadow-sm hover:shadow-md transition-all">
-                          <div className="flex items-center justify-end mb-0.5 min-w-0 w-full">
-                            {entry.skippedCount > 0 && (
-                              <span className="text-[7px] bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full font-black text-slate-500 mr-1">
-                                +{entry.skippedCount}
-                              </span>
-                            )}
-                            <span className="text-[11px] font-black text-slate-800 dark:text-white truncate leading-tight">{entry.station.name}</span>
-                          </div>
-                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate uppercase tracking-tight italic leading-none">
-                            {isKorean ? entry.station.name_kr || entry.station.name_en : entry.station.name_en}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Connection SVG */}
-                <div className="absolute top-[20px] left-0 right-0 bottom-0 z-0">
-                  <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-                    {(() => {
-                      // Internal coordinate adjustments to account for header offset
-                      const dotLX = 150;
-                      const dotRX = 850;
-                      const baseWidth = getPlatformWidth(p) * 4;
-                      const pWidth = Math.max(120, baseWidth);
-                      const pStartX = 500 - pWidth / 2;
-                      const pEndX = 500 + pWidth / 2;
-                      const centerY = 500;
-
-                      return (
-                        <>
-                          {left.map((entry, i) => {
-                            const y = centerY + (i - (left.length - 1) / 2) * 110;
-                            const connX = pStartX + entry.ratio * pWidth;
-                            const handle = (connX - dotLX) * 0.4;
-                            const d = `M ${connX},${centerY} C ${connX - handle},${centerY} ${dotLX + handle},${y} ${dotLX},${y}`;
-                            return (
-                              <g key={entry.station.id}>
-                                <path
-                                  d={d}
-                                  stroke={finalColor}
-                                  strokeWidth="2.5"
-                                  fill="none"
-                                  className="opacity-20 transition-all group-hover/row:opacity-100"
-                                  strokeDasharray={entry.skippedCount > 0 ? "8 6" : "none"}
-                                />
-                                <circle cx={dotLX} cy={y} r="4.5" className="fill-white dark:fill-slate-900" stroke={finalColor} strokeWidth="2" />
-                              </g>
-                            );
-                          })}
-
-                          {right.map((entry, i) => {
-                            const y = centerY + (i - (right.length - 1) / 2) * 110;
-                            const connX = pStartX + entry.ratio * pWidth;
-                            const handle = (dotRX - connX) * 0.4;
-                            const d = `M ${connX},${centerY} C ${connX + handle},${centerY} ${dotRX - handle},${y} ${dotRX},${y}`;
-                            return (
-                              <g key={entry.station.id}>
-                                <path
-                                  d={d}
-                                  stroke={finalColor}
-                                  strokeWidth="2.5"
-                                  fill="none"
-                                  className="opacity-20 transition-all group-hover/row:opacity-100"
-                                  strokeDasharray={entry.skippedCount > 0 ? "8 6" : "none"}
-                                />
-                                <circle cx={dotRX} cy={y} r="4.5" className="fill-white dark:fill-slate-900" stroke={finalColor} strokeWidth="2" />
-                              </g>
-                            );
-                          })}
-
-                          {/* Center Platform Bar */}
+                        {/* 1. Center Platform (Sharp Rectangle) */}
+                        <g>
                           <rect
-                            x={pStartX}
-                            y={centerY - 15}
-                            width={pWidth}
-                            height={30}
-                            rx={15}
-                            className="fill-white dark:fill-slate-800 shadow-xl shadow-black/10"
-                            stroke={finalColor}
-                            strokeWidth="4"
+                            x={pL} y={centerY - 25} width={pWidth} height={50}
+                            fill="black" className="dark:fill-white"
                           />
-                          {/* Inner Platform Decoration */}
                           <rect
-                            x={pStartX + 8}
-                            y={centerY - 4}
-                            width={pWidth - 16}
-                            height={8}
-                            rx={4}
+                            x={pL} y={centerY - 4} width={pWidth} height={8}
                             fill={finalColor}
-                            opacity="0.15"
                           />
-                        </>
-                      );
-                    })()}
-                  </svg>
-                </div>
+                        </g>
+
+                        {/* 2. Main Connection Lines & Stations */}
+                        {left.map((entry, i) => {
+                          const y = centerY + (i - (left.length - 1) / 2) * vSpacing;
+                          const signW = 200;
+                          const signH = 90;
+                          const signX = 0;
+                          const anchorX = signX + signW + 60;
+
+                          const handle = (platAnchorLX - anchorX) * 0.55;
+                          const d = `M ${anchorX},${y} C ${anchorX + handle},${y} ${platAnchorLX - handle},${centerY} ${platAnchorLX},${centerY}`;
+
+                          return (
+                            <g key={entry.station.id} className="group/station">
+                              <path d={d} stroke={finalColor} strokeWidth="10" fill="none" opacity="0.2" className="transition-opacity group-hover/station:opacity-100" strokeLinecap="round" />
+
+                              <circle cx={platAnchorLX} cy={centerY} r="16" fill="white" stroke={finalColor} strokeWidth="4" />
+                              <circle cx={platAnchorLX} cy={centerY} r="6" fill={finalColor} />
+
+                              <circle cx={anchorX} cy={y} r="16" fill="white" stroke={finalColor} strokeWidth="4" />
+                              <circle cx={anchorX} cy={y} r="6" fill={finalColor} />
+
+                              {/* Station Sign */}
+                              <g transform={`translate(${signX}, ${y - signH / 2})`}>
+                                <rect x="2" y="2" width={signW - 4} height={signH - 4} fill="white" stroke="black" strokeWidth="4" />
+                                <text x={signW / 2} y={35} textAnchor="middle" fontSize="28" fontWeight="900" fill="black" fontFamily="Pretendard">
+                                  {entry.station.name}
+                                </text>
+                                <text x={signW / 2} y={70} textAnchor="middle" fontSize="14" fontWeight="700" fill="#666" fontFamily="Pretendard">
+                                  {isKorean ? entry.station.name_kr || entry.station.name_en : entry.station.name_en}
+                                </text>
+                                {entry.skippedCount > 0 && (
+                                  <g transform={`translate(${signW - 35}, 5)`}>
+                                    <rect width={30} height={20} fill="#f0f0f0" stroke="black" strokeWidth="1" />
+                                    <text x="15" y="15" textAnchor="middle" fontSize="12" fontWeight="900" fill="#cc0000">+{entry.skippedCount}</text>
+                                  </g>
+                                )}
+                              </g>
+                            </g>
+                          );
+                        })}
+
+                        {right.map((entry, i) => {
+                          const y = centerY + (i - (right.length - 1) / 2) * vSpacing;
+                          const signW = 200;
+                          const signH = 90;
+                          const signX = 1000 - signW;
+                          const anchorX = signX - 60;
+
+                          const handle = (anchorX - platAnchorRX) * 0.55;
+                          const d = `M ${platAnchorRX},${centerY} C ${platAnchorRX + handle},${centerY} ${anchorX - handle},${y} ${anchorX},${y}`;
+
+                          return (
+                            <g key={entry.station.id} className="group/station">
+                              <path d={d} stroke={finalColor} strokeWidth="10" fill="none" opacity="0.2" className="transition-opacity group-hover/station:opacity-100" strokeLinecap="round" />
+
+                              <circle cx={platAnchorRX} cy={centerY} r="16" fill="white" stroke={finalColor} strokeWidth="4" />
+                              <circle cx={platAnchorRX} cy={centerY} r="6" fill={finalColor} />
+
+                              <circle cx={anchorX} cy={y} r="16" fill="white" stroke={finalColor} strokeWidth="4" />
+                              <circle cx={anchorX} cy={y} r="6" fill={finalColor} />
+
+                              {/* Station Sign */}
+                              <g transform={`translate(${signX}, ${y - signH / 2})`}>
+                                <rect x="2" y="2" width={signW - 4} height={signH - 4} fill="white" stroke="black" strokeWidth="4" />
+                                <text x={signW / 2} y={35} textAnchor="middle" fontSize="28" fontWeight="900" fill="black" fontFamily="Pretendard">
+                                  {entry.station.name}
+                                </text>
+                                <text x={signW / 2} y={70} textAnchor="middle" fontSize="14" fontWeight="700" fill="#666" fontFamily="Pretendard">
+                                  {isKorean ? entry.station.name_kr || entry.station.name_en : entry.station.name_en}
+                                </text>
+                                {entry.skippedCount > 0 && (
+                                  <g transform={`translate(${signW - 35}, 5)`}>
+                                    <rect width={30} height={20} fill="#f0f0f0" stroke="black" strokeWidth="1" />
+                                    <text x="15" y="15" textAnchor="middle" fontSize="12" fontWeight="900" fill="#cc0000">+{entry.skippedCount}</text>
+                                  </g>
+                                )}
+                              </g>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
