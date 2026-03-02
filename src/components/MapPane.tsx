@@ -508,8 +508,6 @@ const MapPane: React.FC<MapPaneProps> = ({
         <>
             {!isMobile && <MapControls
                 zoom={zoomLevel}
-                showLabels={showLabels}
-                onToggleLabels={onToggleLabels}
             />}
 
             {activePrefectures && (

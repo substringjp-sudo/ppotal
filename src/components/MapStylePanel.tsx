@@ -26,6 +26,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             showOutline: "외곽선 표시",
             stationSize: "역 크기",
             visitedRecorded: "방문 기록 (탑승함)",
+            showStationNames: "역 이름 표시",
             resetToDefaults: "기본값으로 초기화"
         },
         en: {
@@ -39,6 +40,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             showOutline: "Show Line Outline",
             stationSize: "STATION SIZE",
             visitedRecorded: "Visited (Recorded)",
+            showStationNames: "Show Station Names",
             resetToDefaults: "RESET TO DEFAULTS"
         },
         ja: {
@@ -52,20 +54,32 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             showOutline: "アウトラインを表示",
             stationSize: "駅のサイズ",
             visitedRecorded: "訪問済みの路線 (記録済み)",
+            showStationNames: "駅名を表示",
             resetToDefaults: "デフォルトに戻す"
         }
     };
 
     const t = translations[language as keyof typeof translations] || translations.en;
 
-    const handleChange = (category: keyof MapStyleSettings, field: string, value: number | boolean) => {
-        onSettingsChange({
-            ...settings,
-            [category]: {
-                ...settings[category],
-                [field]: value
-            }
-        });
+    const handleChange = (category: keyof MapStyleSettings, field: string | null, value: number | boolean) => {
+        if (category === 'showLabels') {
+            onSettingsChange({
+                ...settings,
+                showLabels: value as boolean
+            });
+            return;
+        }
+
+        const currentCategory = settings[category];
+        if (typeof currentCategory === 'object' && currentCategory !== null) {
+            onSettingsChange({
+                ...settings,
+                [category]: {
+                    ...(currentCategory as any),
+                    [field!]: value
+                }
+            });
+        }
     };
 
     const handleReset = () => {
@@ -88,10 +102,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                 onDoubleClick={stopPropagation}
                 onWheel={stopPropagation}
                 onTouchStart={stopPropagation}
-                className="absolute top-4 right-4 z-[1000] flex items-center gap-2 px-4 py-2.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group"
+                className="absolute top-4 right-4 z-[1000] flex items-center gap-2 px-5 py-3 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/40 dark:border-white/10 rounded-full shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] hover:scale-105 transition-all duration-500 group"
             >
-                <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:rotate-45 transition-transform duration-500">palette</span>
-                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{t.mapStyle}</span>
+                <span className="material-symbols-outlined text-primary group-hover:rotate-45 transition-transform duration-700">palette</span>
+                <span className="text-xs font-black text-slate-800 dark:text-white tracking-widest uppercase">{t.mapStyle}</span>
             </button>
         );
     }
@@ -106,10 +120,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             onTouchStart={stopPropagation}
             onTouchMove={stopPropagation}
             onTouchEnd={stopPropagation}
-            className="absolute top-4 right-4 z-[1000] w-64 sm:w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/20 dark:border-slate-800/50 rounded-3xl shadow-2xl flex flex-col max-h-[60vh] sm:max-h-[85vh] animate-in slide-in-from-right-4 fade-in duration-300 overflow-hidden shadow-primary/5"
+            className="absolute top-4 right-4 z-[1000] w-64 sm:w-72 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/40 dark:border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex flex-col max-h-[60vh] sm:max-h-[85vh] animate-in slide-in-from-right-8 fade-in duration-500 overflow-hidden"
         >
             {/* Header: Sticky */}
-            <div className="p-5 pb-3 flex justify-between items-center border-b border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
+            <div className="p-6 pb-4 flex justify-between items-center bg-white/20 dark:bg-slate-900/20 backdrop-blur-md z-10 border-b border-white/10">
                 <div className="flex items-center gap-2 text-primary">
                     <span className="material-symbols-outlined text-lg">settings_suggest</span>
                     <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">{t.mapStyles}</h3>
@@ -156,6 +170,26 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                             />
                         </div>
                     </div>
+                </div>
+
+                {/* Section: Labels Visibility (Moved Here) */}
+                <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-primary text-sm">label</span>
+                        <h4 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Visibility</h4>
+                    </div>
+                    <label className="flex justify-between items-center cursor-pointer group px-1 py-1">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">{t.showStationNames}</span>
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={settings.showLabels}
+                                onChange={(e) => handleChange('showLabels', null, e.target.checked)}
+                            />
+                            <div className="w-10 h-6 bg-slate-300/50 dark:bg-slate-700/50 backdrop-blur-sm peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                        </div>
+                    </label>
                 </div>
 
                 {/* Section: Unvisited */}
@@ -256,13 +290,13 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             </div>
 
             {/* Footer: Sticky */}
-            <div className="p-5 pt-3 border-t border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-10">
+            <div className="p-6 pt-4 bg-white/20 dark:bg-slate-900/20 backdrop-blur-md z-10 border-t border-white/10">
                 <button
                     onClick={handleReset}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] font-black tracking-widest transition-all active:scale-95"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-white/30 dark:bg-slate-800/40 hover:bg-white/50 dark:hover:bg-slate-700/60 text-slate-800 dark:text-slate-100 border border-white/40 dark:border-white/10 rounded-2xl text-[10px] font-black tracking-widest transition-all active:scale-95 shadow-lg"
                 >
                     <span className="material-symbols-outlined text-sm">restart_alt</span>
-                    RESET TO DEFAULTS
+                    {t.resetToDefaults}
                 </button>
             </div>
         </div>

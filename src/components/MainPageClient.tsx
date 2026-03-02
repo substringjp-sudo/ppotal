@@ -63,6 +63,7 @@ export interface MapStyleSettings {
         showOutline: boolean;
         stationSize: number;
     };
+    showLabels: boolean;
 }
 
 export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
@@ -79,7 +80,8 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
         weight: 3.5,
         showOutline: true,
         stationSize: 1.2,
-    }
+    },
+    showLabels: false
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
@@ -119,7 +121,6 @@ const MainPageClient = () => {
     const [isInfoOpen, setIsInfoOpen] = React.useState(false);
     const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
-    const [showLabels, setShowLabels] = React.useState(false);
     const [isMapStyleOpen, setIsMapStyleOpen] = React.useState(false);
     const { user, loading: authLoading } = useAuth();
     const { language, isKorean } = useI18n();
@@ -741,8 +742,8 @@ const MainPageClient = () => {
                                     isMobile={isMobile}
                                     selectedStation={selectedStation?.id}
                                     onMapClick={handleMapClick}
-                                    showLabels={showLabels}
-                                    onToggleLabels={() => setShowLabels(prev => !prev)}
+                                    showLabels={styleSettings.showLabels}
+                                    onToggleLabels={() => setStyleSettings(prev => ({ ...prev, showLabels: !prev.showLabels }))}
                                     isEditMode={isEditMode}
                                     draftTrip={draftTrip}
                                     onDraftComplete={handleDraftComplete}
