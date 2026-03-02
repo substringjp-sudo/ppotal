@@ -60,6 +60,11 @@
 - [x] `AuthModal.tsx`: 인증 폼 다국어화
 - [x] `SEOContent.tsx`: 정적 콘텐츠 다국어화
 - [x] `Sidebar.tsx`, `LineDetailPane.tsx`, `StationDetailPane.tsx`: UI 요소 다국어화 (KO, EN, JA)
+- [x] **번역 데이터 중앙 집중화**: 모든 컴포넌트의 `TRANSLATIONS`을 `src/lib/translations.ts`로 통합
+- [x] **번역 데이터 최적화**: `MAIN_PAGE_TRANSLATIONS`와 `SEO_TRANSLATIONS` 통합 및 중복 제거
+
+- [x] 다국어 지원 QA 및 안정화 (언어 전환 시 모든 UI가 올바르게 업데이트되는지 확인)
 
 ## 예정된 작업 (Planned Tasks)
-- [ ] 다국어 지원 QA 및 안정화 (언어 전환 시 모든 UI가 올바르게 업데이트되는지 확인)
+- [ ] 신규 기능 개발 시 중앙 집중화된 번역 시스템 활용
+- [ ] `node_modules` 권한 문제 해결 (빌드 및 배포를 위해 필요)
