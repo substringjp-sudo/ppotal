@@ -22,6 +22,8 @@ import MapLoadingIndicator from './MapLoadingIndicator';
 import FeedbackModal from './FeedbackModal';
 import AuthModal from './auth/AuthModal';
 import ExportModal from './ExportModal';
+import UpdateNoticeModal from './UpdateNoticeModal';
+
 
 
 const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
@@ -984,6 +986,9 @@ const MainPageClient = () => {
                 imageData={exportImageData}
                 stats={stats}
             />
+
+            <UpdateNoticeModal />
+
 
             {/* Info Modal for Mobile */}
 

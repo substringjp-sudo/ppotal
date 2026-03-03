@@ -421,18 +421,19 @@ export const HOW_TO_TRANSLATIONS = {
         mobile: '모바일',
         guides: {
             desktop: [
-                { title: '노선 및 역 탐색', desc: '지도상의 노선이나 점(역)을 클릭하여 상세 정보를 확인하세요.' },
-                { title: '여정 기록', desc: '노선 상세 창에서 역을 선택하여 이동 경로를 기록하고 총 거리를 계산하세요.' },
-                { title: '사이드바 활용', desc: '왼쪽 사이드바에서 철도 회사별로 노선을 한꺼번에 켜거나 끌 수 있습니다.' },
-                { title: '경로 찾기', desc: '경로 탭에서 출발역과 도착역을 선택하여 최단 경로를 검색하세요.' },
-                { title: '지도 제어', desc: '마우스 휠로 확대/축소하고, 드래그하여 지도를 이동하세요.' }
+                { title: '드래그로 바로 기록', desc: '지도 위에서 역을 클릭한 채로 다른 역까지 **노선을 따라 드래그**하면 이동 경로가 즉시 계산되고 기록됩니다.' },
+                { title: '노선 및 역 검색', desc: '상단 검색창에서 역 이름이나 노선명을 입력하여 빠르게 이동하세요. 엔터 키로 선택할 수 있습니다.' },
+                { title: '여정 관리 및 동기화', desc: '로그인 후 여정을 기록하면 클라우드에 자동 저장되어 모바일 등 다른 기기에서도 이어서 볼 수 있습니다.' },
+                { title: '지도 스타일 설정', desc: '우측 하단 아이콘을 통해 노선 굵기, 불투명도, 역 이름 표시 여부 등을 세밀하게 조절할 수 있습니다.' },
+                { title: '고화질 내보내기', desc: '카메라 아이콘을 클릭하여 현재 지도를 고화질 이미지로 저장하거나 트위터(X)에 방문 통계와 함께 공유하세요.' },
+                { title: '사이드바 노선 필터', desc: '왼쪽 사이드바에서 철도 회사나 지역별로 노선을 분류하여 한꺼번에 켜거나 끌 수 있습니다.' }
             ],
             mobile: [
-                { title: '노선 및 역 터치', desc: '지도상의 노선이나 역을 가볍게 터치하여 정보를 확인하세요.' },
-                { title: '편집 모드 사용', desc: "상단의 'Edit' 버튼을 눌러 경로 기록 모드로 진입하세요." },
-                { title: '드래그로 기록', desc: '편집 모드에서 시작역을 한 번 터치한 후, 다음 역까지 손가락을 드래그하여 경로를 그립니다.' },
-                { title: '진행 상황 저장', desc: "하단 패널의 'Add'를 눌러 탑승 기록을 저장하고 통계를 업데이트하세요." },
-                { title: '지도 제어', desc: '두 손가락으로 핀치하여 확대/축소하고, 한 손가락으로 이동하세요.' }
+                { title: '드래그로 그리기', desc: "상단의 'Edit' 버튼을 누른 뒤, 시작역에서 다음 역까지 손가락으로 드래그하여 경로를 그릴 수 있습니다." },
+                { title: '터치하여 탐색', desc: '지도상의 노선이나 역을 가볍게 터치하면 하단 패널에 상세 정보와 주변 노선 정보가 표시됩니다.' },
+                { title: '검색 기능', desc: '돋보기 아이콘을 터치하여 찾고 싶은 역이나 노선을 검색하세요.' },
+                { title: '이미지 공유', desc: "메뉴에서 '내보내기'를 선택하여 나의 여행 기록이 담긴 지도를 친구들에게 공유할 수 있습니다." },
+                { title: '지도 조작', desc: '두 손가락으로 핀치하여 확대/축소하고, 한 손가락으로 드래그하여 이동합니다.' }
             ]
         }
     },
@@ -443,18 +444,19 @@ export const HOW_TO_TRANSLATIONS = {
         mobile: 'Mobile',
         guides: {
             desktop: [
-                { title: 'Explore Lines & Stations', desc: 'Click on lines or dots (stations) on the map to see detailed information.' },
-                { title: 'Record Your Trip', desc: 'Select stations in the line detail window to record your route and calculate total distance.' },
-                { title: 'Use Sidebar', desc: "Enable or disable an entire company's lines from the left sidebar." },
-                { title: 'Find Routes', desc: 'Search for the shortest path by selecting start and end stations in the Route tab.' },
-                { title: 'Map Control', desc: 'Use mouse wheel to zoom in/out and drag to move the map.' }
+                { title: 'Instant Drag Recording', desc: 'Click a station and **drag along the line** to another station to instantly calculate and record your path.' },
+                { title: 'Search Stations & Lines', desc: 'Quickly find what you need using the search bar at the top. Use Enter to select and move to the location.' },
+                { title: 'Cloud Sync & Saving', desc: 'Log in to save your journeys to the cloud. Access your records from any device including mobile.' },
+                { title: 'Map Style Customization', desc: 'Use the style icon on the bottom right to adjust line thickness, opacity, and toggle station labels.' },
+                { title: 'High-Quality Export', desc: 'Click the camera icon to export your map as a high-quality image or share it on X (Twitter) with your stats.' },
+                { title: 'Sidebar Filters', desc: 'Enable or disable multiple lines at once by company or group using the left sidebar.' }
             ],
             mobile: [
-                { title: 'Touch Lines & Stations', desc: 'Lightly touch lines or stations on the map to see detailed information.' },
-                { title: 'Use Edit Mode', desc: "Tap the 'Edit' button at the top to enter route recording mode." },
-                { title: 'Drag to Record', desc: 'In Edit Mode, click a starting station once, then drag your finger to the next station to draw the path.' },
-                { title: 'Save Progress', desc: "Tap 'Add' in the bottom panel to save your trip and update your stats." },
-                { title: 'Map Control', desc: 'Pinch with two fingers to zoom and move with one finger.' }
+                { title: 'Drag to Draw', desc: "Tap 'Edit' at the top, then drag your finger from a start station to an end station to draw your path." },
+                { title: 'Touch Navigation', desc: 'Tap lines or stations to see detailed info and connected lines in the bottom sheet.' },
+                { title: 'Search Tool', desc: 'Tap the magnifying glass icon to search for specific stations or railway lines.' },
+                { title: 'Share Your Map', desc: "Select 'Export' from the menu to share your personalized travel map with friends." },
+                { title: 'Map Gestures', desc: 'Pinch with two fingers to zoom in/out, and drag with one finger to move.' }
             ]
         }
     },
@@ -465,18 +467,19 @@ export const HOW_TO_TRANSLATIONS = {
         mobile: 'モバイル',
         guides: {
             desktop: [
-                { title: '路線と駅の探索', desc: '地図上の路線や点（駅）をクリックして詳細情報を確認します。' },
-                { title: '履歴の記録', desc: '路線詳細ウィンドウで駅を選択して、移動ルートを記録し総距離を計算します。' },
-                { title: 'サイドバーの活用', desc: '左側のサイドバーから、鉄道会社ごとに路線を一括で表示・非表示にできます。' },
-                { title: 'ルート検索', desc: 'ルートタブで出発駅と到着駅を選択して、最短ルートを検索します。' },
-                { title: '地図の操作', desc: 'マウスホイールで拡大・縮小、ドラッグで地図を移動します。' }
+                { title: 'ドラッグで即時記録', desc: '地図上の駅をクリックしたまま別の駅まで**路線に沿ってドラッグ**すると、移動経路が即座に計算され記録されます。' },
+                { title: '駅・路線の検索', desc: '上部の検索バーから駅名や路線名を入力して素早く移動できます。Enterキーで選択可能です。' },
+                { title: '同期と保存', desc: 'ログインして履歴を記録すると、クラウドに自動保存され、モバイルなど他のデバイスでも確認できます。' },
+                { title: 'マップスタイルの設定', desc: '右下のアイコンから、路線の太さ、不透明度、駅名の表示・非表示などを細かく調整できます。' },
+                { title: '高画質エクスポート', desc: 'カメラアイコンをクリックして、現在の地図を高画質画像として保存したり、X（Twitter）に共有したりできます。' },
+                { title: 'サイドバーのフィルタ', desc: '左側のサイドバーで鉄道会社や地域ごとに路線を分類し、一괄で表示・非表示を切り替えられます。' }
             ],
             mobile: [
-                { title: '路線と駅のタッチ', desc: '地図上の路線や駅を軽くタッチして情報を確認します。' },
-                { title: '편집 모드 사용', desc: '上部の「Edit」ボタンを押してルート記録モードに入ります。' },
-                { title: '드래그로 기록', desc: '편집 모드で開始駅を一度タッチした後、次の駅まで指をドラッグしてルートを描きます。' },
-                { title: '진행 상황 저장', desc: '下部パネルの「Add」をタップして、乗車履歴を保存し統計を更新します。' },
-                { title: '지도 제어', desc: '2本の指でピンチして拡大・縮小、1本の指で移動します。' }
+                { title: 'ドラッグで描く', desc: '上部の「Edit」ボタンをタップした後、開始駅から次の駅まで指をドラッグしてルートを描画できます。' },
+                { title: 'タッチで探索', desc: '地図上の路線や駅をタップすると、下部パネルに詳細情報や乗り換え路線が表示されます。' },
+                { title: '検索機能', desc: '虫眼鏡アイコンをタップして、目的の駅や路線を検索してください。' },
+                { title: '画像の共有', desc: 'メニューから「エクスポート」を選択して、自分の旅行記録が入った地図を友人に共有できます。' },
+                { title: '地図の操作', desc: '2本の指でピンチして拡大・縮小、1本の指でドラッグして移動します。' }
             ]
         }
     }
@@ -643,6 +646,30 @@ export const EXPORT_TRANSLATIONS = {
             `JapanRailNoteで日本鉄道旅行を記録しましょう！${stations}駅 ${lines}路線 合計 ${distance}kmを利用しました。 jprail.web.app #Japan #Rail #JapanRailNote`,
         saveFile: 'ファイルとして保存',
         shareTwitter: 'Twitterで共有',
+    }
+};
+
+export const UPDATE_NOTICE_TRANSLATIONS = {
+    ko: {
+        title: "업데이트 소식",
+        subtitle: (version: string) => `JapanRailNote가 더 새로워졌습니다! (v${version})`,
+        previousUpdates: "이전 업데이트",
+        dontShowAgain: "다음 업데이트 전까지 다시 보지 않기",
+        ok: "확인",
+    },
+    en: {
+        title: "Update News",
+        subtitle: (version: string) => `JapanRailNote has been updated! (v${version})`,
+        previousUpdates: "Previous Updates",
+        dontShowAgain: "Don't show again until next update",
+        ok: "Got it",
+    },
+    ja: {
+        title: "アップデート情報",
+        subtitle: (version: string) => `JapanRailNoteがアップデートされました！ (v${version})`,
+        previousUpdates: "以前のアップデート",
+        dontShowAgain: "次のアップデートまで表示しない",
+        ok: "確認",
     }
 };
 

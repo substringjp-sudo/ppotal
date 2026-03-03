@@ -82,7 +82,12 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
                                 {idx + 1}. {item.title}
                             </h4>
                             <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6' }}>
-                                {item.desc}
+                                {item.desc.split(/(\*\*.*?\*\*)/).map((part: string, i: number) => {
+                                    if (part.startsWith('**') && part.endsWith('**')) {
+                                        return <strong key={i} style={{ color: '#2c3e50', fontWeight: '900' }}>{part.slice(2, -2)}</strong>;
+                                    }
+                                    return part;
+                                })}
                             </p>
                         </div>
                     ))}
