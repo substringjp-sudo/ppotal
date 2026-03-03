@@ -33,7 +33,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     const isSelected = selectedLines.includes(lineId);
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
 
-    const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges);
+    const topology = useLineTopology(lineId, segments, nodes, visitedStations, visitedEdges, railData);
 
     const stats = useMemo(() => {
         let totalDistance = 0;

@@ -30,8 +30,9 @@ const Map: React.FC<MapProps> = ({ children }) => {
             zoomControl={false}
             zoomSnap={0.5}
             zoomDelta={0.5}
-            minZoom={5}
-            maxBounds={[[20, 120], [50, 160]]}
+            minZoom={4}
+            maxBounds={[[5, 100], [65, 185]]}
+
             worldCopyJump={true}
         >
             {children}

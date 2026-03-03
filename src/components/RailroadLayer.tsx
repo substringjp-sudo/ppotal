@@ -25,7 +25,9 @@ interface RailroadLayerProps {
     isDragging?: boolean;
     draftSectionIds?: Set<number>;
     settings: import('./MainPageClient').MapStyleSettings;
+    onTooltipUpdate?: (content: string | null, x: number, y: number) => void;
 }
+
 
 const RailroadLayer: React.FC<RailroadLayerProps> = ({
     railroadNetwork,
@@ -40,8 +42,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     usedSectionIds = new Set(),
     isDragging = false,
     draftSectionIds = new Set(),
-    settings
+    settings,
+    onTooltipUpdate
 }) => {
+
     const { language } = useI18n();
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
@@ -369,12 +373,12 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const secondaryCorp = language !== 'ja' ? props.company : '';
 
         const tooltipContent = `
-            <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif; max-height: 300px; display: flex; flex-direction: column; border-left: 4px solid ${feature.properties.color || '#999'}; padding-left: 8px;">
-                <div style="display: flex; flex-direction: column; border-bottom: 2px solid ${feature.properties.color || '#999'}; margin-bottom: 8px; padding-bottom: 4px;">
+            <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif; display: flex; flex-direction: column; border-left: 4px solid ${feature.properties?.color || '#999'}; padding-left: 8px;">
+                <div style="display: flex; flex-direction: column; border-bottom: 2px solid ${feature.properties?.color || '#999'}; margin-bottom: 8px; padding-bottom: 4px;">
                     <span style="font-weight: 900; font-size: 14px; color: #2c3e50;">${primaryLine}</span>
                     ${secondaryLine ? `<span style="font-weight: 600; font-size: 10px; color: #718096; margin-top: -2px;">${secondaryLine}</span>` : ''}
                 </div>
-                <div style="flex: 1; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">
+                <div style="flex: 1;">
                     <div style="font-size: 11px; font-weight: 700; color: #4a5568; line-height: 1.4;">
                         ${primaryCorp}
                     </div>
@@ -388,116 +392,54 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             </div>
         `;
 
-        if (!isMobile) {
-            layer.bindTooltip(tooltipContent, {
-                sticky: true,
-                direction: 'auto',
-                offset: [15, 0],
-                opacity: 0.9,
-                className: 'railroad-tooltip',
-                pane: 'top-tooltips'
-            });
-        }
+
+        // FloatingTooltip handles the display now, so we don't bind a Leaflet tooltip
+
 
         let tooltipTimeout: NodeJS.Timeout | null = null;
 
         layer.on({
-            mousedown: (e: L.LeafletMouseEvent) => {
-                L.DomEvent.stopPropagation(e);
-                lastMouseDownPos.current = e.latlng;
-                try {
-                    map?.closeTooltip?.();
-                } catch (err) { /* ignore */ }
+            mousedown: (em: L.LeafletMouseEvent) => {
+                L.DomEvent.stopPropagation(em);
+                lastMouseDownPos.current = em.latlng;
+                onTooltipUpdate?.(null, 0, 0);
             },
-            click: (e: L.LeafletMouseEvent) => {
+            click: (ec: L.LeafletMouseEvent) => {
                 if (isDragging) return;
-
-                // 마우스가 눌렸을 때와 뗐을 때의 거리를 체크하여 '진짜 클릭'인지 판별
                 if (lastMouseDownPos.current) {
-                    const distance = e.latlng.distanceTo(lastMouseDownPos.current);
-                    // 5미터 이상 이동했다면 드래그로 간주하고 무시 (클릭 판정 거리)
+                    const distance = ec.latlng.distanceTo(lastMouseDownPos.current);
                     if (distance > 5) {
                         lastMouseDownPos.current = null;
                         return;
                     }
                 }
-
-                L.DomEvent.stopPropagation(e);
+                L.DomEvent.stopPropagation(ec);
                 onRailroadClick(props.id);
                 lastMouseDownPos.current = null;
             },
-            mouseover: (e: any) => {
-                const moving = isMovingRef.current;
-                const dragging = isDraggingRef.current;
-
-                if (!isMobile && !moving && !dragging) {
-                    const { clientX: x, clientY: y } = e.originalEvent;
-                    const container = layer.getPane()?.closest('.leaflet-container');
-                    if (!container) return;
-
-                    const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
-                    const tooltip = (layer as any).getTooltip();
-                    if (tooltip) {
-                        try {
-                            if (typeof (tooltip as any).setOptions === 'function') {
-                                (tooltip as any).setOptions({ direction, offset });
-                            } else {
-                                tooltip.options.direction = direction;
-                                tooltip.options.offset = offset;
-                            }
-                        } catch (err) {
-                            console.warn("Could not update tooltip options dynamically", err);
-                        }
-                    }
-
-                    if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                    tooltipTimeout = setTimeout(() => {
-                        if (mountedRef.current && !isMovingRef.current && !isDraggingRef.current) {
-                            onRailroadHover(props.id);
-                            layer.openTooltip();
-                        }
-                        tooltipTimeout = null;
-                    }, 50);
+            mouseover: (eo: any) => {
+                const isMov = isMovingRef.current;
+                const isDrag = isDraggingRef.current;
+                if (!isMobile && !isMov && !isDrag) {
+                    const { clientX, clientY } = eo.originalEvent;
+                    onTooltipUpdate?.(tooltipContent, clientX, clientY);
+                    onRailroadHover(props.id);
                 }
             },
-            mousemove: (e: any) => {
-                const moving = isMovingRef.current;
-                const dragging = isDraggingRef.current;
-
-                if (!isMobile && !moving && !dragging) {
-                    const { clientX: x, clientY: y } = e.originalEvent;
-                    const container = layer.getPane()?.closest('.leaflet-container');
-                    if (!container) return;
-
-                    const { direction, offset } = getSmartTooltipOptions(x, y, container.clientWidth, container.clientHeight);
-                    const tooltip = (layer as any).getTooltip();
-                    if (tooltip) {
-                        try {
-                            if (typeof (tooltip as any).setOptions === 'function') {
-                                (tooltip as any).setOptions({ direction, offset });
-                            } else {
-                                tooltip.options.direction = direction;
-                                tooltip.options.offset = offset;
-                            }
-                        } catch (err) {
-                            // Silently ignore or catch
-                        }
-                    }
+            mousemove: (em: any) => {
+                const isMov = isMovingRef.current;
+                const isDrag = isDraggingRef.current;
+                if (!isMobile && !isMov && !isDrag) {
+                    const { clientX, clientY } = em.originalEvent;
+                    onTooltipUpdate?.(tooltipContent, clientX, clientY);
                 }
             },
             mouseout: () => {
-                if (!isMobile) {
-                    if (tooltipTimeout) {
-                        clearTimeout(tooltipTimeout);
-                        tooltipTimeout = null;
-                    }
-                    onRailroadHover(null);
-                    try {
-                        layer?.closeTooltip?.();
-                    } catch (err) { /* ignore */ }
-                }
+                onTooltipUpdate?.(null, 0, 0);
+                onRailroadHover(null);
             }
         });
+
     };
 
     const mainLayerRef = useRef<L.GeoJSON>(null);

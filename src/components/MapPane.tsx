@@ -14,12 +14,15 @@ import { MapStyleSettings } from './MainPageClient';
 import { trackEvent } from '../lib/gtag';
 import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
+import FloatingTooltip from './FloatingTooltip';
+
 
 import { useRailData } from '../hooks/useRailData';
 import { RoutingGraph } from '../lib/RoutingGraph';
 import { RailData, Section } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
+import { usePassengerGrid } from '../hooks/usePassengerGrid';
 
 import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
@@ -112,6 +115,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
     const [mapReady, setMapReady] = useState(false);
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
+    const [floatingTooltip, setFloatingTooltip] = useState<{ content: string | null; x: number; y: number; visible: boolean }>({ content: null, x: 0, y: 0, visible: false });
     const [isMoving, setIsMoving] = useState(false);
     const [isZooming, setIsZooming] = useState(false);
     const [isPending, startTransition] = React.useTransition();
@@ -226,11 +230,14 @@ const MapPane: React.FC<MapPaneProps> = ({
         return municipalities.high;
     }, [municipalities, zoomLevel]);
 
+    const passengerGrid = usePassengerGrid();
+
     const { visibleStations, effectiveZoom } = useVisibleStations({
         railroadNetwork: railData,
         mapBounds,
         zoomLevel,
-        usedStationIds: visitedStations
+        usedStationIds: visitedStations,
+        passengerGrid,
     });
 
     const {
@@ -252,9 +259,15 @@ const MapPane: React.FC<MapPaneProps> = ({
     const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
         if (onSetActiveLine) onSetActiveLine(null);
         setHoveredLine(null);
+        setFloatingTooltip(prev => ({ ...prev, visible: false }));
 
         rawHandleStationMouseDown(id, coords);
     }, [rawHandleStationMouseDown, onSetActiveLine]);
+
+    const handleTooltipUpdate = useCallback((content: string | null, x: number, y: number) => {
+        setFloatingTooltip({ content, x, y, visible: !!content });
+    }, []);
+
 
     useEffect(() => {
         if (onLengthsCalculated) {
@@ -578,7 +591,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     usedSectionIds={visitedSectionIds}
                     draftSectionIds={draftSectionIds}
                     settings={styleSettings}
+                    onTooltipUpdate={handleTooltipUpdate}
                 />
+
             )}
 
             {visibleStations && railData &&
@@ -608,7 +623,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     dragStartStation={dragStartStation || tripStartStationId || null}
                     draftStationIds={draftStationIds}
                     selectedStation={selectedStation}
+                    onTooltipUpdate={handleTooltipUpdate}
                 />
+
             }
 
             {dragPath && dragPath.length > 0 && (
@@ -647,8 +664,12 @@ const MapPane: React.FC<MapPaneProps> = ({
                 mapBounds={mapBounds}
                 dragStartStation={dragStartStation}
                 visibleStations={visibleStations}
-            />}
+            />
+            }
+
+            <FloatingTooltip {...floatingTooltip} />
         </>
+
     );
 };
 

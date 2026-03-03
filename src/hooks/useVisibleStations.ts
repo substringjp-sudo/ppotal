@@ -2,12 +2,14 @@ import { useMemo } from 'react';
 import { LatLngBounds } from 'leaflet';
 import { ProcessedStation, StaticNode } from '../types/mapTypes';
 import { RailData, Station, Joint } from '../types/railData';
+import { PassengerGridData, getGridRepresentativeStations } from './usePassengerGrid';
 
 interface VisibleStationsProps {
     railroadNetwork: RailData | null;
     mapBounds: LatLngBounds | null;
     zoomLevel: number;
     usedStationIds: Set<string>;
+    passengerGrid?: PassengerGridData | null;
 }
 
 // Spatial Grid Constants
@@ -17,7 +19,8 @@ export const useVisibleStations = ({
     railroadNetwork,
     mapBounds,
     zoomLevel,
-    usedStationIds
+    usedStationIds,
+    passengerGrid = null,
 }: VisibleStationsProps) => {
 
     // 1. Build Spatial Index Once
@@ -73,14 +76,22 @@ export const useVisibleStations = ({
                 candidates = candidates.filter(s => padded.contains(s.c as [number, number]));
             }
 
-            // 2. Sort by importance (used > transfer > lines count > data Z)
+            // 2. 격자 기반 대표역 필터링
+            // zoom 8 이상에서 격자 대표역 우선 표시, 단 방문/환승역은 항상 표시
+            const gridReps = zoomLevel >= 5 && zoomLevel < 12
+                ? getGridRepresentativeStations(zoomLevel, passengerGrid)
+                : null;
+
+            // 3. Sort by importance (격자 대표 > used > transfer > lines count > data Z)
             const sortedCandidates = [...candidates].sort((a, b) => {
                 const getPriority = (item: typeof a) => {
                     const isUsed = item.nodes.some(n => usedStationIds.has(n.id));
                     const isTransfer = item.lines.length > 1;
+                    const isGridRep = gridReps ? gridReps.has(item.id) : true;
                     let p = 0;
                     if (isUsed) p += 10000;
                     if (isTransfer) p += 1000;
+                    if (isGridRep) p += 500;
                     p += item.lines.length * 50;
                     p -= item.z * 10;
                     return p;
@@ -88,7 +99,7 @@ export const useVisibleStations = ({
                 return getPriority(b) - getPriority(a);
             });
 
-            // 3. Smart Filtering Logic
+            // 4. Smart Filtering Logic
             const accepted: typeof sortedCandidates = [];
             // Zoom-dependent collision thresholds (in degrees)
             const threshold = Math.pow(2, 9 - zoomLevel) * 0.025;
@@ -109,6 +120,10 @@ export const useVisibleStations = ({
                     isVisible = true;
                 } else if (zoomLevel >= 12) {
                     isVisible = true;
+                } else if (gridReps !== null) {
+                    // 격자 모드: 대표역(이용객 최다) 또는 환승역만 표시
+                    const isGridRep = gridReps.has(c.id);
+                    isVisible = (isGridRep || isTransfer) && !hasCollision;
                 } else {
                     const baseVisible = zoomLevel >= c.z;
                     if (baseVisible) {

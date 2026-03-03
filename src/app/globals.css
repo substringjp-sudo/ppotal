@@ -137,15 +137,13 @@ textarea::selection {
 }
 
 /* Tooltip Enhancements */
+/* Hide all native Leaflet tooltips as we move to a React-based FloatingTooltip layer */
+.leaflet-tooltip,
+.leaflet-tooltip-pane,
 .railroad-tooltip {
+  display: none !important;
+  visibility: hidden !important;
   pointer-events: none !important;
-  max-width: 280px !important;
-  white-space: normal !important;
-  word-break: break-all !important;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
-  border: none !important;
-  border-radius: 8px !important;
-  z-index: 10002 !important;
 }
 
 .leaflet-tooltip-top:before,
@@ -153,5 +151,4 @@ textarea::selection {
 .leaflet-tooltip-left:before,
 .leaflet-tooltip-right:before {
   display: none !important;
-  /* Remove the default arrow which can look bad when flipped */
 }

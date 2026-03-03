@@ -5,7 +5,7 @@ import React from 'react';
 
 import { LanguageSelector } from './LanguageSelector';
 import { trackEvent } from '../lib/gtag';
-import html2canvas from 'html2canvas';
+
 import HowToModal from './HowToModal';
 import { useRailData } from '../hooks/useRailData';
 import { useMapData } from '../hooks/useMapData';
@@ -21,6 +21,8 @@ import { MapProps } from './Map';
 import MapLoadingIndicator from './MapLoadingIndicator';
 import FeedbackModal from './FeedbackModal';
 import AuthModal from './auth/AuthModal';
+import ExportModal from './ExportModal';
+
 
 const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
     ssr: false,
@@ -118,6 +120,8 @@ const MainPageClient = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
     const [isMapTransitioning, setIsMapTransitioning] = React.useState(false);
     const [isMapStyleOpen, setIsMapStyleOpen] = React.useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
+    const [exportImageData, setExportImageData] = React.useState<string | null>(null);
     const { user, loading: authLoading } = useAuth();
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
@@ -143,22 +147,74 @@ const MainPageClient = () => {
     const exportMap = async () => {
         const mapElement = document.querySelector('.leaflet-container') as HTMLElement;
         if (!mapElement) return;
-        const controls = document.querySelectorAll('.leaflet-control, .map-custom-control');
-        controls.forEach(c => (c as HTMLElement).style.display = 'none');
+
+        setIsExportModalOpen(true);
+        setExportImageData(null);
+
         try {
-            const canvas = await html2canvas(mapElement, {
-                useCORS: true,
-                backgroundColor: '#a0c4ff'
-            } as Parameters<typeof html2canvas>[1]);
-            const link = document.createElement('a');
-            link.download = `jprail-map-${new Date().toISOString().slice(0, 10)}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
-            trackEvent('export_map', 'engagement', 'png');
+            const mapRect = mapElement.getBoundingClientRect();
+            const exportScale = 2;
+            const outputWidth = Math.round(mapRect.width * exportScale);
+            const outputHeight = Math.round(mapRect.height * exportScale);
+
+            // 최종 합성용 캔버스 생성
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = outputWidth;
+            outputCanvas.height = outputHeight;
+            const ctx = outputCanvas.getContext('2d')!;
+
+            // 배경색 (바다색) 채우기
+            ctx.fillStyle = '#a0c4ff';
+            ctx.fillRect(0, 0, outputWidth, outputHeight);
+
+            const dpr = window.devicePixelRatio || 1;
+
+            // 지도 경계 클리핑 설정 (전체 그리기 동안 유지)
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, outputWidth, outputHeight);
+            ctx.clip();
+
+            // Leaflet Canvas pane들을 z-index 순서대로 합성
+            // SVG pane은 상호작용 전용이므로 제외 (oklab 색상 파싱 에러 방지)
+            const paneNames = ['background', 'railroad-glow', 'railroad-casing', 'railroad-lines', 'station-labels'];
+
+            for (const paneName of paneNames) {
+                const pane = mapElement.querySelector(`.leaflet-${paneName}-pane`) as HTMLElement | null;
+                if (!pane) continue;
+
+                const canvases = pane.querySelectorAll('canvas');
+                for (const canvas of Array.from(canvases)) {
+                    if (canvas.width === 0 || canvas.height === 0) continue;
+
+                    try {
+                        const canvasRect = canvas.getBoundingClientRect();
+                        const offsetX = canvasRect.left - mapRect.left;
+                        const offsetY = canvasRect.top - mapRect.top;
+                        // canvas.width는 dpr 반영된 실제 픽셀, CSS 크기 = canvas.width / dpr
+                        const cssW = canvas.width / dpr;
+                        const cssH = canvas.height / dpr;
+
+                        ctx.drawImage(
+                            canvas,
+                            0, 0, canvas.width, canvas.height,
+                            offsetX * exportScale, offsetY * exportScale,
+                            cssW * exportScale, cssH * exportScale
+                        );
+                    } catch (canvasErr) {
+                        console.warn('[Export] canvas draw skipped:', canvasErr);
+                    }
+                }
+            }
+
+            ctx.restore();
+
+            const dataUrl = outputCanvas.toDataURL('image/png');
+            setExportImageData(dataUrl);
+            trackEvent('export_map_preview', 'engagement', 'png');
         } catch (err) {
-            console.error('Export failed:', err);
-        } finally {
-            controls.forEach(c => (c as HTMLElement).style.display = '');
+            console.error('[Export] Export failed:', err);
+            setIsExportModalOpen(false);
         }
     };
 
@@ -922,7 +978,15 @@ const MainPageClient = () => {
                 onClose={() => setIsAuthModalOpen(false)}
             />
 
+            <ExportModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                imageData={exportImageData}
+                stats={stats}
+            />
+
             {/* Info Modal for Mobile */}
+
             {isInfoOpen && (
                 <div className="fixed inset-0 z-[11000] bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="flex justify-between items-center mb-6">

@@ -50,7 +50,9 @@ interface StationsProps {
     draftStationIds?: Set<string>;
     showLabels?: boolean;
     selectedStation?: string | null;
+    onTooltipUpdate?: (content: string | null, x: number, y: number) => void;
 }
+
 
 const Stations: React.FC<StationsProps> = ({
     processedStations,
@@ -72,8 +74,10 @@ const Stations: React.FC<StationsProps> = ({
     settings,
     draftStationIds = new Set(),
     showLabels = false,
-    selectedStation = null
+    selectedStation = null,
+    onTooltipUpdate
 }) => {
+
     const { language, isKorean } = useI18n();
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
@@ -492,15 +496,8 @@ const Stations: React.FC<StationsProps> = ({
                 <div style="display: flex; flex-direction: column; max-height: 250px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">${lineList}</div>
             </div>`;
 
-        if (!isMobile) {
-            layer.bindTooltip(tooltipContent, {
-                sticky: true,
-                direction: 'auto',
-                offset: [15, 0],
-                opacity: 0.9,
-                pane: 'top-tooltips'
-            });
-        }
+        // FloatingTooltip handles the display now, so we don't bind a Leaflet tooltip
+
 
         const isNoneExplicitlySelected = selectedLines.includes("__NONE__");
         const isFilterActive = isNoneExplicitlySelected || selectedLines.length > 0;
@@ -509,61 +506,44 @@ const Stations: React.FC<StationsProps> = ({
         );
 
         layer.on({
-            click: (e) => {
-                L.DomEvent.stopPropagation(e);
+            click: (eValue: L.LeafletMouseEvent) => {
+                L.DomEvent.stopPropagation(eValue);
                 handleStationClick(id);
             },
-            mousedown: (e) => {
-                L.DomEvent.stopPropagation(e);
-                lastMouseDownPos.current = e.latlng;
-                try {
-                    map?.closeTooltip?.();
-                } catch (err) { /* ignore */ }
+            mousedown: (eValue: L.LeafletMouseEvent) => {
+                L.DomEvent.stopPropagation(eValue);
+                lastMouseDownPos.current = eValue.latlng;
+                onTooltipUpdate?.(null, 0, 0);
                 if (isStationActive) {
-                    handleStationMouseDown(id, [e.latlng.lat, e.latlng.lng]);
+                    handleStationMouseDown(id, [eValue.latlng.lat, eValue.latlng.lng]);
                 }
             },
-            mouseover: (e: L.LeafletMouseEvent) => {
+            mouseover: (eValue: L.LeafletMouseEvent) => {
                 if (isMovingRef.current) return;
-                const { clientX, clientY } = (e as any).originalEvent;
-                const container = layer.getPane()?.closest('.leaflet-container');
-                if (!container) return;
+                const { clientX, clientY } = (eValue as any).originalEvent;
 
-                const { direction, offset } = getSmartTooltipOptions(clientX, clientY, container.clientWidth, container.clientHeight);
-                const tooltip = (layer as any).getTooltip();
-                if (tooltip) {
-                    L.setOptions(tooltip, { direction, offset });
-                }
-
+                onTooltipUpdate?.(tooltipContent, clientX, clientY);
                 setLocalHoveredStation(id);
                 if (onStationHover) onStationHover(id);
             },
-            mousemove: (e: L.LeafletMouseEvent) => {
+            mousemove: (eValue: L.LeafletMouseEvent) => {
                 if (isMovingRef.current) return;
-                const { clientX, clientY } = (e as any).originalEvent;
-                const container = layer.getPane()?.closest('.leaflet-container');
-                if (!container) return;
-
-                const { direction, offset } = getSmartTooltipOptions(clientX, clientY, container.clientWidth, container.clientHeight);
-                const tooltip = (layer as any).getTooltip();
-                if (tooltip) {
-                    L.setOptions(tooltip, { direction, offset });
-                }
+                const { clientX, clientY } = (eValue as any).originalEvent;
+                onTooltipUpdate?.(tooltipContent, clientX, clientY);
             },
             mouseout: () => {
+                onTooltipUpdate?.(null, 0, 0);
                 setLocalHoveredStation(null);
                 if (onStationHover) onStationHover(null);
-                try {
-                    layer?.closeTooltip?.();
-                } catch (err) { /* ignore */ }
             },
-            mouseup: (e: L.LeafletMouseEvent) => {
-                L.DomEvent.stopPropagation(e);
+            mouseup: (eValue: L.LeafletMouseEvent) => {
+                L.DomEvent.stopPropagation(eValue);
                 if (isStationActive && handleStationMouseUp) {
                     handleStationMouseUp(id);
                 }
             }
         });
+
     };
 
     const hullRef = useRef<L.GeoJSON>(null);
