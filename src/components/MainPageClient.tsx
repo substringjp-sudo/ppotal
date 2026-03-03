@@ -676,13 +676,16 @@ const MainPageClient = () => {
 
                         <div className="flex items-center gap-2 md:gap-4">
                             {isMobile && (
-                                <button
-                                    onClick={() => setIsInfoOpen(true)}
-                                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
-                                    aria-label="Info"
-                                >
-                                    <span className="material-symbols-outlined text-xl">info</span>
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <LanguageSelector variant="dropdown" className="pointer-events-auto" />
+                                    <button
+                                        onClick={() => setIsInfoOpen(true)}
+                                        className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
+                                        aria-label="Info"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">info</span>
+                                    </button>
+                                </div>
                             )}
 
                             {!isMobile && (
@@ -1057,9 +1060,11 @@ const MainPageClient = () => {
                     </div>
                 </div>
             )}
-            <div className="fixed bottom-0 right-0 z-[10002] p-2 sm:p-4 pointer-events-none">
-                <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />
-            </div>
+            {!isMobile && (
+                <div className="fixed bottom-0 right-0 z-[10002] p-2 sm:p-4 pointer-events-none">
+                    <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />
+                </div>
+            )}
         </div>
     );
 };

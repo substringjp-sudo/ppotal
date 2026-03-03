@@ -429,7 +429,7 @@ export const HOW_TO_TRANSLATIONS = {
                 { title: '사이드바 노선 필터', desc: '왼쪽 사이드바에서 철도 회사나 지역별로 노선을 분류하여 한꺼번에 켜거나 끌 수 있습니다.' }
             ],
             mobile: [
-                { title: '드래그로 그리기', desc: "상단의 'Edit' 버튼을 누른 뒤, 시작역에서 다음 역까지 손가락으로 드래그하여 경로를 그릴 수 있습니다." },
+                { title: '터치 드래그로 기록', desc: '지도 위에서 **역을 터치한 채로** 다음 역까지 노선을 따라 드래그하면 이동 경로가 즉시 기록됩니다.' },
                 { title: '터치하여 탐색', desc: '지도상의 노선이나 역을 가볍게 터치하면 하단 패널에 상세 정보와 주변 노선 정보가 표시됩니다.' },
                 { title: '검색 기능', desc: '돋보기 아이콘을 터치하여 찾고 싶은 역이나 노선을 검색하세요.' },
                 { title: '이미지 공유', desc: "메뉴에서 '내보내기'를 선택하여 나의 여행 기록이 담긴 지도를 친구들에게 공유할 수 있습니다." },
@@ -452,7 +452,7 @@ export const HOW_TO_TRANSLATIONS = {
                 { title: 'Sidebar Filters', desc: 'Enable or disable multiple lines at once by company or group using the left sidebar.' }
             ],
             mobile: [
-                { title: 'Drag to Draw', desc: "Tap 'Edit' at the top, then drag your finger from a start station to an end station to draw your path." },
+                { title: 'Touch & Drag Recording', desc: 'Touch and **hold a station, then drag** along the line to another station to record your path instantly.' },
                 { title: 'Touch Navigation', desc: 'Tap lines or stations to see detailed info and connected lines in the bottom sheet.' },
                 { title: 'Search Tool', desc: 'Tap the magnifying glass icon to search for specific stations or railway lines.' },
                 { title: 'Share Your Map', desc: "Select 'Export' from the menu to share your personalized travel map with friends." },
@@ -472,10 +472,10 @@ export const HOW_TO_TRANSLATIONS = {
                 { title: '同期と保存', desc: 'ログインして履歴を記録すると、クラウドに自動保存され、モバイルなど他のデバイスでも確認できます。' },
                 { title: 'マップスタイルの設定', desc: '右下のアイコンから、路線の太さ、不透明度、駅名の表示・非表示などを細かく調整できます。' },
                 { title: '高画質エクスポート', desc: 'カメラアイコンをクリックして、現在の地図を高画質画像として保存したり、X（Twitter）に共有したりできます。' },
-                { title: 'サイドバーのフィルタ', desc: '左側のサイドバーで鉄道会社や地域ごとに路線を分類し、一괄で表示・非表示を切り替えられます。' }
+                { title: 'サイドバーのフィルタ', desc: '左側のサイドバーで鉄道会社や地域ごとに路線を分類し、一括で表示・非表示を切り替えられます。' }
             ],
             mobile: [
-                { title: 'ドラッグで描く', desc: '上部の「Edit」ボタンをタップした後、開始駅から次の駅まで指をドラッグしてルートを描画できます。' },
+                { title: 'ドラッグで記録', desc: '駅を**タッチしたまま**次の駅まで路線に沿ってドラッグすると、移動ルートが即座に記録されます。' },
                 { title: 'タッチで探索', desc: '地図上の路線や駅をタップすると、下部パネルに詳細情報や乗り換え路線が表示されます。' },
                 { title: '検索機能', desc: '虫眼鏡アイコンをタップして、目的の駅や路線を検索してください。' },
                 { title: '画像の共有', desc: 'メニューから「エクスポート」を選択して、自分の旅行記録が入った地図を友人に共有できます。' },
