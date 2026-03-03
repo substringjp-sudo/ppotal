@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
@@ -12,7 +12,6 @@ import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 
 import { LINE_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
-
 
 export interface LineDetailPaneProps {
     lineId: string;
@@ -36,6 +35,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
     const t = getTranslations(LINE_DETAIL_TRANSLATIONS, language);
     const [company, lineName] = lineId.split('::');
     const lineColor = useMemo(() => getLineColor(lineId, railData) || '#3498db', [lineId, railData]);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const companyData = useMemo(() => {
         if (!railData || !company) return null;
@@ -47,7 +47,6 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
         return railData.lines[lineName] || null;
     }, [railData, lineName]);
 
-    // --- Stats Calculation ---
     const stats = useMemo(() => {
         let total = 0;
         let visited = 0;
@@ -170,7 +169,10 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 </div>
             </div>
 
-            <div className="flex-1 relative overflow-y-auto min-h-0 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+            <div 
+                ref={scrollContainerRef} 
+                className="flex-1 relative overflow-auto min-h-0 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/50"
+            >
                 <TubeMap
                     nodes={topology.nodes}
                     edges={topology.edges}
@@ -181,6 +183,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     visitedEdges={visitedEdges}
                     lineColor={lineColor}
                     onStationClick={onStationClick}
+                    scrollContainerRef={scrollContainerRef}
                     onPathCreate={(start, end) => {
                         if (getShortestPath && onRecordTrip) {
                             const pathData = getShortestPath(start, end, [lineId]);
