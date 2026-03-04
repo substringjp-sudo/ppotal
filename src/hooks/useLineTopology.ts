@@ -19,6 +19,14 @@ export interface TopologyEdge {
     isVisited: boolean;
 }
 
+export interface TopologyLoop {
+    cx: number;
+    cy: number;
+    a: number;  // 수평 반축
+    b: number;  // 수직 반축 (a * 0.5)
+    stationIds: Set<string>;
+}
+
 export function useLineTopology(
     lineId: string,
     segments: LineSegment[],
@@ -221,9 +229,9 @@ export function useLineTopology(
             let diff = outAngle - inAngle;
             while (diff > Math.PI) diff -= 2 * Math.PI;
             while (diff < -Math.PI) diff += 2 * Math.PI;
-            if (diff > 0.05) return -1;
-            if (diff < -0.05) return 1;
-            return 1;
+            if (diff > 0.1) return -1;
+            if (diff < -0.1) return 1;
+            return 0;
         };
 
         const getLongestSimplePath = (starts: string[], available: Set<string>): { path: string[], score: number } => {
@@ -258,6 +266,7 @@ export function useLineTopology(
         const topoNodes = new Map<string, TopologyNode>();
         const unvisited = new Set(Array.from(collapsedAdj.keys()));
         const laneUsage = new Map<number, number>();
+        const loopMetadata: TopologyLoop[] = [];
         const OCCUPATION_BUFFER = 240;
         const spacingY = 80;
         const baseY = 150;
@@ -333,11 +342,21 @@ export function useLineTopology(
             if (juncU && juncV) {
                 const uData = topoNodes.get(juncU)!;
                 startX = uData.x + calculateSpacingX(juncU, juncV);
-                const assignedNeighbors = Array.from(collapsedAdj.get(juncU) || []).filter(n => topoNodes.has(n));
-                const prevU = assignedNeighbors.find(n => topoNodes.get(n)!.x < uData.x) || assignedNeighbors[0] || null;
-                const idealOffsetDir = getBranchDirection(juncU, juncV, prevU);
-                const uLane = Math.round((uData.y - baseY) / spacingY);
-                laneOffset = findAvailableLane(startX, uLane + idealOffsetDir);
+
+                // juncU가 순환선 소속이면 → 루프 중심 높이로 본선을 직선 연장
+                const parentLoop = loopMetadata.find(lm => lm.stationIds.has(juncU));
+                if (parentLoop) {
+                    const loopCenterLane = Math.round((parentLoop.cy - baseY) / spacingY);
+                    laneOffset = loopCenterLane;
+                    // 순환선의 오른쪽 끝(cx + a)에서 적절한 간격만큼 띄웁니다.
+                    startX = Math.max(startX, parentLoop.cx + parentLoop.a + calculateSpacingX(juncU, juncV));
+                } else {
+                    const assignedNeighbors = Array.from(collapsedAdj.get(juncU) || []).filter(n => topoNodes.has(n));
+                    const prevU = assignedNeighbors.find(n => topoNodes.get(n)!.x < uData.x) || assignedNeighbors[0] || null;
+                    const idealOffsetDir = getBranchDirection(juncU, juncV, prevU);
+                    const uLane = Math.round((uData.y - baseY) / spacingY);
+                    laneOffset = findAvailableLane(startX, uLane + idealOffsetDir);
+                }
             } else {
                 if (topoNodes.size > 0) {
                     let maxLane = 0;
@@ -352,39 +371,65 @@ export function useLineTopology(
             const isLoop = N > 3 && collapsedAdj.get(basePath[N - 1])?.has(basePath[0]);
 
             if (isLoop) {
-                let L_total = 0;
-                const t_values: number[] = [0];
-                for (let i = 0; i < N; i++) {
-                    const nextIdx = (i + 1) % N;
-                    L_total += calculateSpacingX(basePath[i], basePath[nextIdx]);
-                    if (i < N - 1) t_values.push(L_total);
+                // === 방향 결정 ===
+                // juncU 있음(본선 → 순환): junction은 왼쪽(angle=π), 본선이 왼쪽에 이미 있음
+                // juncU 없음(순환 → 본선): junction은 오른쪽(angle=0), 이후 본선이 오른쪽으로 연장
+                const loopFacesRight = !juncU; // true = junction이 오른쪽
+
+                // 본선 연결역(juncV) 인덱스 결정
+                let junctionIdx = 0;
+                if (juncV) {
+                    const idx = basePath.indexOf(juncV);
+                    if (idx !== -1) junctionIdx = idx;
+                } else {
+                    // 독립 순환선: 이미 배치된 노드와 연결되는 역을 junction으로
+                    for (let i = 0; i < N; i++) {
+                        const ext = Array.from(collapsedAdj.get(basePath[i]) || [])
+                            .filter(n => !basePath.includes(n) && topoNodes.has(n));
+                        if (ext.length > 0) { junctionIdx = i; break; }
+                    }
                 }
-                let R = 150, D = 0;
-                if (L_total >= 2 * Math.PI * R) D = (L_total - 2 * Math.PI * R) / 2;
-                else R = L_total / (2 * Math.PI);
-                const cx1 = startX, cy = currentY + R, cx2 = cx1 + D;
-                const getLoopXY = (t: number) => {
-                    if (t < D) return { x: cx1 + t, y: cy - R };
-                    if (t < D + Math.PI * R) { const th = -Math.PI / 2 + (t - D) / R; return { x: cx2 + R * Math.cos(th), y: cy + R * Math.sin(th) }; }
-                    if (t < 2 * D + Math.PI * R) return { x: cx2 - (t - (D + Math.PI * R)), y: cy + R };
-                    const th = Math.PI / 2 + (t - (2 * D + Math.PI * R)) / R;
-                    return { x: cx1 + R * Math.cos(th), y: cy + R * Math.sin(th) };
-                };
+
+                // 타원 크기: 역 간 최소 180px 확보
+                const VR = 0.5; // 수직 반축 비율 (위아래 줄인 타원)
+                const factor = 2 * Math.PI * Math.sqrt((1 + VR ** 2) / 2);
+                const a = Math.max(180, (N * 180) / factor);
+                const b = a * VR;
+
+                // 타원 중심 위치
+                // 루프가 먼저 그려지든 나중에 그려지든, 현재의 startX(여유 공간 시작점)의 오른쪽에
+                // 그려져야 하므로 cx는 항상 startX + a 입니다.
+                const cx = startX + a;
+                const cy = currentY;
+
+                // junction 기준 각도: 오른쪽이면 0, 왼쪽이면 π
+                const junctionAngle = loopFacesRight ? 0 : Math.PI;
+
                 for (let i = 0; i < N; i++) {
+                    const relIdx = (i - junctionIdx + N) % N;
+                    // 시계 방향으로 배열
+                    const angle = junctionAngle - relIdx * (2 * Math.PI / N);
+                    const x = cx + a * Math.cos(angle);
+                    const y = cy + b * Math.sin(angle);
+
                     const node = basePath[i];
-                    const pos = getLoopXY(t_values[i]);
                     const nodeData = nodes.get(node);
                     topoNodes.set(node, {
                         id: node, name: nodeData?.name || node,
                         name_en: nodeData?.name_en, name_kr: nodeData?.name_kr,
-                        x: pos.x, y: pos.y, isJoint: false,
+                        x, y, isJoint: false,
                         isVisited: nodeData ? visitedStations.has(node) : false
                     });
                     unvisited.delete(node);
                 }
-                const endLane = laneOffset + Math.ceil(2 * R / spacingY);
-                const loopMaxX = cx2 + R + OCCUPATION_BUFFER;
-                for (let l = laneOffset; l <= endLane; l++) laneUsage.set(l, Math.max(laneUsage.get(l) || 0, loopMaxX));
+
+                loopMetadata.push({ cx, cy, a, b, stationIds: new Set(basePath) });
+
+                const topLane = Math.floor((cy - b - baseY) / spacingY);
+                const bottomLane = Math.ceil((cy + b - baseY) / spacingY);
+                for (let l = topLane; l <= bottomLane; l++) {
+                    laneUsage.set(l, Math.max(laneUsage.get(l) || 0, Math.abs(cx) + a + OCCUPATION_BUFFER));
+                }
             } else {
                 let currX = startX;
                 for (let i = 0; i < basePath.length; i++) {
@@ -418,7 +463,8 @@ export function useLineTopology(
             edges: finalEdges,
             adj: collapsedAdj,
             nodesById: topoNodes,
-            edgeInfos: finalEdgeInfos
+            edgeInfos: finalEdgeInfos,
+            loops: loopMetadata,
         };
     }, [segments, nodes, visitedStations, visitedEdges, railData, lineId]);
 }

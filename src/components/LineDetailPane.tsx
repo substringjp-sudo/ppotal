@@ -169,8 +169,8 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 </div>
             </div>
 
-            <div 
-                ref={scrollContainerRef} 
+            <div
+                ref={scrollContainerRef}
                 className="flex-1 relative overflow-auto min-h-0 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/50"
             >
                 <TubeMap
@@ -184,6 +184,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     lineColor={lineColor}
                     onStationClick={onStationClick}
                     scrollContainerRef={scrollContainerRef}
+                    loops={topology.loops}
                     onPathCreate={(start, end) => {
                         if (getShortestPath && onRecordTrip) {
                             const pathData = getShortestPath(start, end, [lineId]);

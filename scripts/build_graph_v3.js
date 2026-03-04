@@ -293,9 +293,9 @@ console.log('\n🔧 Phase 3.5: 조인트 Through-Pairs 계산 (각도 기반)...
  *
  * through 판정 기준:
  *   섹션 A(→ 조인트 방향)와 섹션 B(조인트 → 방향)의 각도 차이가
- *   THROUGH_ANGLE_THRESHOLD(45°) 미만이면 직통 쌍으로 기록
+ *   THROUGH_ANGLE_THRESHOLD(60°) 미만이면 직통 쌍으로 기록
  */
-const THROUGH_ANGLE_THRESHOLD = 45; // 직통 판정 각도 임계값 (도)
+const THROUGH_ANGLE_THRESHOLD = 60; // 직통 판정 각도 임계값 (도)
 
 // jointId → Set<"secA:secB"> (직통 섹션 쌍, 정렬된 순서)
 const jointThroughPairs = {};

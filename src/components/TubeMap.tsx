@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { TopologyNode, TopologyEdge } from '../hooks/useLineTopology';
+import { TopologyNode, TopologyEdge, TopologyLoop } from '../hooks/useLineTopology';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 
@@ -16,6 +16,7 @@ interface TubeMapProps {
     onStationClick?: (id: string) => void;
     onPathCreate?: (startId: string, endId: string) => void;
     scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+    loops?: TopologyLoop[];
 }
 
 const TubeMap: React.FC<TubeMapProps> = ({
@@ -27,6 +28,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
     onStationClick,
     onPathCreate,
     scrollContainerRef,
+    loops,
 }) => {
     const { language } = useI18n();
     const svgContainerRef = useRef<HTMLDivElement>(null);
@@ -423,35 +425,60 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     const strokeWidth = edge.isVisited ? 12 : 6;
                     const opacity = edge.isVisited ? 1.0 : 0.3;
 
-                    // 같은 행(Y 레벨)에서 두 노드 사이에 끼어있는 노드 감지
-                    const ROW_THRESHOLD = 20; // px 이내면 같은 행으로 간주
-                    const sameRowNodes = nodes.filter(n =>
+                    // 1. 루프 경계를 가로지르는 엣지 → 바깥 방향 곡선
+                    if (loops) {
+                        for (const loop of loops) {
+                            const fromInLoop = loop.stationIds.has(fromNode.id);
+                            const toInLoop = loop.stationIds.has(toNode.id);
+                            if ((fromInLoop && !toInLoop) || (!fromInLoop && toInLoop)) {
+                                const loopNode = fromInLoop ? fromNode : toNode;
+                                const extNode = fromInLoop ? toNode : fromNode;
+                                // 중점이 타원 내부인지 확인
+                                const mx = (loopNode.x + extNode.x) / 2;
+                                const my = (loopNode.y + extNode.y) / 2;
+                                const inside = ((mx - loop.cx) / loop.a) ** 2 + ((my - loop.cy) / loop.b) ** 2 < 0.9;
+                                if (inside) {
+                                    // 컨트롤 포인트: 루프 역에서 타원 중심 반대 방향(바깥)으로
+                                    const odx = loopNode.x - loop.cx;
+                                    const ody = loopNode.y - loop.cy;
+                                    const olen = Math.sqrt(odx ** 2 + ody ** 2) || 1;
+                                    const cpX = loopNode.x + (odx / olen) * 100;
+                                    const cpY = loopNode.y + (ody / olen) * 100;
+                                    const d = `M ${fromNode.x} ${fromNode.y} Q ${cpX} ${cpY} ${toNode.x} ${toNode.y}`;
+                                    return (
+                                        <path
+                                            key={`edge-${i}`}
+                                            d={d} fill="none"
+                                            stroke={stroke} strokeWidth={strokeWidth}
+                                            strokeLinecap="round"
+                                            style={{ opacity, transition: 'all 0.3s ease' }}
+                                        />
+                                    );
+                                }
+                            }
+                        }
+                    }
+
+                    // 2. 같은 행에서 다른 역을 건너뛰는 엣지 → 위쪽 호 곡선
+                    const ROW_THRESHOLD = 20;
+                    const skippedNodes = nodes.filter(n =>
                         n.id !== fromNode.id && n.id !== toNode.id && !n.isJoint &&
                         Math.abs(n.y - fromNode.y) < ROW_THRESHOLD &&
-                        Math.abs(n.y - toNode.y) < ROW_THRESHOLD
+                        Math.abs(n.y - toNode.y) < ROW_THRESHOLD &&
+                        n.x > Math.min(fromNode.x, toNode.x) + 10 &&
+                        n.x < Math.max(fromNode.x, toNode.x) - 10
                     );
-                    const skippedNodes = sameRowNodes.filter(n => {
-                        const minX = Math.min(fromNode.x, toNode.x);
-                        const maxX = Math.max(fromNode.x, toNode.x);
-                        return n.x > minX + 10 && n.x < maxX - 10;
-                    });
-
-                    const isSkipping = skippedNodes.length > 0 &&
-                        Math.abs(fromNode.y - toNode.y) < ROW_THRESHOLD;
+                    const isSkipping = skippedNodes.length > 0 && Math.abs(fromNode.y - toNode.y) < ROW_THRESHOLD;
 
                     if (isSkipping) {
-                        // 건너뛰는 노드 수에 비례한 호 높이 (위쪽으로 곡선)
                         const arcHeight = 40 + skippedNodes.length * 25;
                         const mx = (fromNode.x + toNode.x) / 2;
                         const my = Math.min(fromNode.y, toNode.y) - arcHeight;
-                        const d = `M ${fromNode.x} ${fromNode.y} Q ${mx} ${my} ${toNode.x} ${toNode.y}`;
                         return (
                             <path
                                 key={`edge-${i}`}
-                                d={d}
-                                fill="none"
-                                stroke={stroke}
-                                strokeWidth={strokeWidth}
+                                d={`M ${fromNode.x} ${fromNode.y} Q ${mx} ${my} ${toNode.x} ${toNode.y}`}
+                                fill="none" stroke={stroke} strokeWidth={strokeWidth}
                                 strokeLinecap="round"
                                 style={{ opacity, transition: 'all 0.3s ease' }}
                             />
@@ -461,12 +488,9 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     return (
                         <line
                             key={`edge-${i}`}
-                            x1={fromNode.x}
-                            y1={fromNode.y}
-                            x2={toNode.x}
-                            y2={toNode.y}
-                            stroke={stroke}
-                            strokeWidth={strokeWidth}
+                            x1={fromNode.x} y1={fromNode.y}
+                            x2={toNode.x} y2={toNode.y}
+                            stroke={stroke} strokeWidth={strokeWidth}
                             strokeLinecap="round"
                             style={{ opacity, transition: 'all 0.3s ease' }}
                         />
