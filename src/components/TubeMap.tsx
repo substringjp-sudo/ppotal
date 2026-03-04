@@ -15,7 +15,7 @@ interface TubeMapProps {
     lineColor: string;
     onStationClick?: (id: string) => void;
     onPathCreate?: (startId: string, endId: string) => void;
-    scrollContainerRef: React.RefObject<HTMLDivElement>;
+    scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 const TubeMap: React.FC<TubeMapProps> = ({
@@ -30,15 +30,18 @@ const TubeMap: React.FC<TubeMapProps> = ({
 }) => {
     const { language } = useI18n();
     const svgContainerRef = useRef<HTMLDivElement>(null);
+    const fallbackRef = useRef<HTMLDivElement>(null);
+    // scrollContainerRef가 없으면 내부 fallback ref 사용
+    const scrollRef = scrollContainerRef ?? fallbackRef;
+
     const [dragStartNode, setDragStartNode] = useState<string | null>(null);
     const [mousePos, setMousePos] = useState<{ x: number, y: number } | null>(null);
     const [nearestNode, setNearestNode] = useState<string | null>(null);
 
     const handleWheel = (e: React.WheelEvent) => {
-        if (scrollContainerRef.current) {
-            const { deltaY, deltaX } = e;
-            scrollContainerRef.current.scrollLeft += deltaX;
-            scrollContainerRef.current.scrollTop += deltaY;
+        if (scrollRef.current) {
+            scrollRef.current.scrollLeft += e.deltaX;
+            scrollRef.current.scrollTop += e.deltaY;
         }
     };
 
@@ -76,7 +79,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const svgHeight = maxY - minY;
 
     const getSvgCoord = useCallback((e: React.MouseEvent | React.TouchEvent | MouseEvent | TouchEvent) => {
-        if (!svgContainerRef.current || !scrollContainerRef.current) return { x: 0, y: 0 };
+        if (!svgContainerRef.current || !scrollRef.current) return { x: 0, y: 0 };
         const rect = svgContainerRef.current.getBoundingClientRect();
 
         let clientX, clientY;
@@ -91,8 +94,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
             return { x: 0, y: 0 };
         }
 
-        const x = clientX - rect.left + scrollContainerRef.current.scrollLeft;
-        const y = clientY - rect.top + scrollContainerRef.current.scrollTop;
+        const x = clientX - rect.left + scrollRef.current.scrollLeft;
+        const y = clientY - rect.top + scrollRef.current.scrollTop;
 
         return { x: minX + x, y: minY + y };
     }, [minX, minY, scrollContainerRef]);
@@ -121,8 +124,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
             });
             setNearestNode(found);
 
-            if (scrollContainerRef.current) {
-                const scrollable = scrollContainerRef.current;
+            if (scrollRef.current) {
+                const scrollable = scrollRef.current;
                 const rect = scrollable.getBoundingClientRect();
                 let clientX: number | undefined;
                 if ('clientX' in e) {
@@ -138,11 +141,11 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     if (scrollIntervalRef.current) clearInterval(scrollIntervalRef.current);
 
                     scrollIntervalRef.current = setInterval(() => {
-                        if (scrollContainerRef.current && clientX !== undefined) {
+                        if (scrollRef.current && clientX !== undefined) {
                             if (clientX < rect.left + threshold) {
-                                scrollContainerRef.current.scrollLeft -= speed;
+                                scrollRef.current.scrollLeft -= speed;
                             } else if (clientX > rect.right - threshold) {
-                                scrollContainerRef.current.scrollLeft += speed;
+                                scrollRef.current.scrollLeft += speed;
                             } else {
                                 if (scrollIntervalRef.current) {
                                     clearInterval(scrollIntervalRef.current);
@@ -202,14 +205,14 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const [scrollState, setScrollState] = useState({ left: 0, top: 0, width: 0, height: 0, scrollWidth: 0, scrollHeight: 0 });
 
     const updateScrollState = useCallback(() => {
-        if (scrollContainerRef.current) {
-            const { scrollLeft, scrollTop, clientWidth, clientHeight, scrollWidth, scrollHeight } = scrollContainerRef.current;
+        if (scrollRef.current) {
+            const { scrollLeft, scrollTop, clientWidth, clientHeight, scrollWidth, scrollHeight } = scrollRef.current;
             setScrollState({ left: scrollLeft, top: scrollTop, width: clientWidth, height: clientHeight, scrollWidth, scrollHeight });
         }
     }, [scrollContainerRef]);
 
     useEffect(() => {
-        const container = scrollContainerRef.current;
+        const container = scrollRef.current;
         if (container) {
             container.addEventListener('scroll', updateScrollState);
             const observer = new ResizeObserver(updateScrollState);
@@ -257,14 +260,14 @@ const TubeMap: React.FC<TubeMapProps> = ({
         const ratioX = x / rect.width;
         const ratioY = y / rect.height;
 
-        if (scrollContainerRef.current) {
+        if (scrollRef.current) {
             const targetScrollX = ratioX * scrollState.scrollWidth - scrollState.width / 2;
             const targetScrollY = ratioY * scrollState.scrollHeight - scrollState.height / 2;
-            scrollContainerRef.current.scrollLeft = targetScrollX;
-            scrollContainerRef.current.scrollTop = targetScrollY;
+            scrollRef.current.scrollLeft = targetScrollX;
+            scrollRef.current.scrollTop = targetScrollY;
         }
     }, [scrollState, scrollContainerRef]);
-    
+
     const handleMinimapStart = (e: React.MouseEvent | React.TouchEvent) => {
         setIsMinimapDragging(true);
         handleMinimapInteraction(e);
@@ -274,7 +277,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
         if (isMinimapDragging) {
             const handleGlobalMove = (e: MouseEvent | TouchEvent) => {
                 const minimap = document.getElementById('tube-minimap');
-                if (minimap && scrollContainerRef.current) {
+                if (minimap && scrollRef.current) {
                     const rect = minimap.getBoundingClientRect();
                     let clientX: number;
                     let clientY: number;
@@ -289,11 +292,11 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
                     const ratioX = x / rect.width;
                     const ratioY = y / rect.height;
-                    
+
                     const targetScrollX = ratioX * scrollState.scrollWidth - scrollState.width / 2;
                     const targetScrollY = ratioY * scrollState.scrollHeight - scrollState.height / 2;
-                    scrollContainerRef.current.scrollLeft = targetScrollX;
-                    scrollContainerRef.current.scrollTop = targetScrollY;
+                    scrollRef.current.scrollLeft = targetScrollX;
+                    scrollRef.current.scrollTop = targetScrollY;
                 }
             };
             const handleGlobalEnd = () => setIsMinimapDragging(false);
@@ -416,6 +419,45 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     const toNode = nodes.find(n => n.id === edge.to);
                     if (!fromNode || !toNode) return null;
 
+                    const stroke = edge.isVisited ? '#2ecc71' : lineColor;
+                    const strokeWidth = edge.isVisited ? 12 : 6;
+                    const opacity = edge.isVisited ? 1.0 : 0.3;
+
+                    // 같은 행(Y 레벨)에서 두 노드 사이에 끼어있는 노드 감지
+                    const ROW_THRESHOLD = 20; // px 이내면 같은 행으로 간주
+                    const sameRowNodes = nodes.filter(n =>
+                        n.id !== fromNode.id && n.id !== toNode.id && !n.isJoint &&
+                        Math.abs(n.y - fromNode.y) < ROW_THRESHOLD &&
+                        Math.abs(n.y - toNode.y) < ROW_THRESHOLD
+                    );
+                    const skippedNodes = sameRowNodes.filter(n => {
+                        const minX = Math.min(fromNode.x, toNode.x);
+                        const maxX = Math.max(fromNode.x, toNode.x);
+                        return n.x > minX + 10 && n.x < maxX - 10;
+                    });
+
+                    const isSkipping = skippedNodes.length > 0 &&
+                        Math.abs(fromNode.y - toNode.y) < ROW_THRESHOLD;
+
+                    if (isSkipping) {
+                        // 건너뛰는 노드 수에 비례한 호 높이 (위쪽으로 곡선)
+                        const arcHeight = 40 + skippedNodes.length * 25;
+                        const mx = (fromNode.x + toNode.x) / 2;
+                        const my = Math.min(fromNode.y, toNode.y) - arcHeight;
+                        const d = `M ${fromNode.x} ${fromNode.y} Q ${mx} ${my} ${toNode.x} ${toNode.y}`;
+                        return (
+                            <path
+                                key={`edge-${i}`}
+                                d={d}
+                                fill="none"
+                                stroke={stroke}
+                                strokeWidth={strokeWidth}
+                                strokeLinecap="round"
+                                style={{ opacity, transition: 'all 0.3s ease' }}
+                            />
+                        );
+                    }
+
                     return (
                         <line
                             key={`edge-${i}`}
@@ -423,16 +465,14 @@ const TubeMap: React.FC<TubeMapProps> = ({
                             y1={fromNode.y}
                             x2={toNode.x}
                             y2={toNode.y}
-                            stroke={edge.isVisited ? '#2ecc71' : lineColor}
-                            strokeWidth={edge.isVisited ? 12 : 6}
+                            stroke={stroke}
+                            strokeWidth={strokeWidth}
                             strokeLinecap="round"
-                            style={{
-                                opacity: edge.isVisited ? 1.0 : 0.3,
-                                transition: 'all 0.3s ease'
-                            }}
+                            style={{ opacity, transition: 'all 0.3s ease' }}
                         />
                     );
                 })}
+
 
                 {dragStartNode && previewPath.length > 1 && nodesById && (
                     <g style={{ pointerEvents: 'none' }}>

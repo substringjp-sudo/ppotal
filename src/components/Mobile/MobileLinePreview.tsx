@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { StationNode, LineSegment } from '../../lib/graphUtils';
 
 import TubeMap from '../TubeMap';
@@ -120,8 +120,7 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                         visitedStations={visitedStations}
                         visitedEdges={visitedEdges}
                         lineColor={lineColor}
-                        containerHeight="100%"
-                        containerStyle={{ backgroundColor: 'transparent', border: 'none', boxShadow: 'none' }}
+                        scrollContainerRef={useRef<HTMLDivElement>(null)}
                     />
                 </div>
             </div>
