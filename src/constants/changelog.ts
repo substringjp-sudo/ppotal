@@ -11,6 +11,38 @@ export interface VersionUpdate {
 
 export const CHANGELOG: VersionUpdate[] = [
     {
+        version: "1.2.0",
+        date: "2024-03-05",
+        title: {
+            ko: "노선도 스케일 최적화 및 인텔리전트 경로 기록",
+            en: "Tube Map Scaling & Intelligent Route Recording",
+            ja: "路線図のスケーリング最適化とインテリジェント経路記録"
+        },
+        changes: {
+            ko: [
+                "**노선도 시각적 최적화 (50% 축소)**: 노선도(Tube Map)의 전체 스케일을 절반으로 조정하여 한 화면에서 더 넓은 철도망을 한눈에 확인할 수 있습니다.",
+                "**지능형 경로 그리기 (Snake Update)**: 노선도 위에서 마우스를 따라가는 지능형 자석 스냅 기능을 통해 더욱 정확하고 부드럽게 여행 경로를 기록할 수 있습니다.",
+                "**가이드라인 시각화 개선**: 경로를 그릴 때 다음 역으로의 연결을 실제 곡선 궤적(Arc)에 맞춰 미리 보여주어 조작의 정확도를 높였습니다.",
+                "**방문 역 밀도 기반 필터링**: 지도를 축소했을 때 방문한 역들이 너무 겹쳐 보이지 않도록, 이용객 수 데이터를 기반으로 대표역만 노출하는 지능형 필터링을 적용했습니다.",
+                "**툴팁 및 사용자 경험 개선**: 역 정보 툴팁의 가독성을 높이고, 한국어/일본어 주소가 올바르게 병기되도록 수정했습니다."
+            ],
+            en: [
+                "**Tube Map Visual Optimization (50% Scale)**: Adjusted the overall scale of the Tube Map to half, allowing you to see a wider railroad network at a glance.",
+                "**Intelligent Path Drawing (Snake Update)**: Enhanced the interactive path recording with a 'snake' update logic that snaps to stations more accurately as you drag.",
+                "**Improved Guideline Visualization**: Preview lines now follow the actual curved track geometry (Arcs) during path drawing for better precision.",
+                "**Smart Station Density Filtering**: Applied intelligent filtering based on passenger usage to visited stations, preventing clutter when zoomed out.",
+                "**Tooltip & UX Improvements**: Refined station information tooltips with better padding and fixed localization issues for dual-language addresses."
+            ],
+            ja: [
+                "**路線図の視覚的最適化 (50% 縮小)**: 路線図（Tube Map）全体のスケールを半分に調整し、一画面でより広い鉄道網を一目で確認できるようになりました。",
+                "**インテリジェント経路描画 (Snake Update)**: マウスの動きに合わせて駅に吸い付く「スネークアップデート」ロジックにより、より正確かつスムーズに旅行経路を記録できます。",
+                "**ガイドラインの可視化改善**: 経路描画中、次の駅への接続を実際の曲線軌道（アーク）に合わせてプレビュー表示し、操作の正確性を高めました。",
+                "**訪問駅の密度ベースフィルタリング**: 地図を縮小した際、訪問した駅が重なりすぎないよう、利用者数データに基づいて代表駅のみを表示するフィルタリングを適用しました。",
+                "**ツールチップとUXの改善**: 駅情報ツールチップの視認性を向上させ、韓国語と日本語の住所が正しく併記されるよう修正しました。"
+            ]
+        }
+    },
+    {
         version: "1.1.0",
         date: "2024-03-04",
         isMajor: true,

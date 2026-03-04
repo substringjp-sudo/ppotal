@@ -82,16 +82,16 @@ export const useVisibleStations = ({
                 ? getGridRepresentativeStations(zoomLevel, passengerGrid)
                 : null;
 
-            // 3. Sort by importance (격자 대표 > used > transfer > lines count > data Z)
+            // 3. Sort by importance (Priority for grid reps and transfers, with slight boost for used)
             const sortedCandidates = [...candidates].sort((a, b) => {
                 const getPriority = (item: typeof a) => {
                     const isUsed = item.nodes.some(n => usedStationIds.has(n.id));
                     const isTransfer = item.lines.length > 1;
                     const isGridRep = gridReps ? gridReps.has(item.id) : true;
                     let p = 0;
-                    if (isUsed) p += 10000;
-                    if (isTransfer) p += 1000;
-                    if (isGridRep) p += 500;
+                    if (isTransfer) p += 2000;
+                    if (isGridRep) p += 1000;
+                    if (isUsed) p += 500; // Slight boost for visited stations, but not enough to override transfers
                     p += item.lines.length * 50;
                     p -= item.z * 10;
                     return p;
@@ -120,16 +120,17 @@ export const useVisibleStations = ({
                     isVisible = true;
                 } else if (gridReps !== null) {
                     // 격자 모드: 대표역(이용객 최다) 또는 환승역만 표시
-                    // 방문한 역(isExplicitlyUsed)도 격자 모드에서는 대표역이거나 환승역일 때만 표시하도록 제한 (선택 사항)
+                    // 이동한 내역이 있는 역도 동일한 기준으로 표시 (사용자 요청 #5)
                     const isGridRep = gridReps.has(c.id);
-                    isVisible = (isGridRep || isTransfer || isExplicitlyUsed) && !hasCollision;
+                    isVisible = (isGridRep || isTransfer) && !hasCollision;
                 } else {
-                    const baseVisible = zoomLevel >= c.z || isExplicitlyUsed;
+                    const baseVisible = zoomLevel >= c.z;
                     if (baseVisible) {
-                        // Dense Area Guard: Hide colliding stations unless they are very important
                         isVisible = !hasCollision;
+                    } else if (isExplicitlyUsed) {
+                        // Even if visited, we apply collision guard at low zoom
+                        isVisible = !hasCollision && zoomLevel >= 8;
                     } else if (!isTransfer && !hasCollision && zoomLevel >= c.z - 2 && !isVeryFarZoom && zoomLevel >= 8) {
-                        // Sparse Area Boost: Show isolated rural stations earlier (at lower zoom)
                         isVisible = true;
                     }
                 }

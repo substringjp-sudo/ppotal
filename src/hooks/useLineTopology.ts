@@ -176,12 +176,12 @@ export function useLineTopology(
         const getLabelWidth = (nodeId: string) => {
             const node = nodes.get(nodeId);
             if (!node) return 0;
-            return Math.max((node.name || "").length * 18, (node.name_en || "").length * 9);
+            return Math.max((node.name || "").length * 9, (node.name_en || "").length * 4.5);
         };
 
         const calculateSpacingX = (idA: string, idB: string) => {
-            const gap = (getLabelWidth(idA) + getLabelWidth(idB)) / 2 + 70;
-            return Math.max(160, gap);
+            const gap = (getLabelWidth(idA) + getLabelWidth(idB)) / 2 + 35;
+            return Math.max(80, gap);
         };
 
         // 분기 방향 계산: 실제 역 좌표(coords) 또는 joint 좌표(jointCoords)를 이용
@@ -267,9 +267,9 @@ export function useLineTopology(
         const unvisited = new Set(Array.from(collapsedAdj.keys()));
         const laneUsage = new Map<number, number>();
         const loopMetadata: TopologyLoop[] = [];
-        const OCCUPATION_BUFFER = 240;
-        const spacingY = 80;
-        const baseY = 150;
+        const OCCUPATION_BUFFER = 120;
+        const spacingY = 40;
+        const baseY = 75;
 
         const findAvailableLane = (startX: number, preferredOffset: number): number => {
             let offset = preferredOffset;
@@ -337,7 +337,7 @@ export function useLineTopology(
             }
 
             let laneOffset = 0;
-            let startX = 50;
+            let startX = 25;
 
             if (juncU && juncV) {
                 const uData = topoNodes.get(juncU)!;
@@ -363,7 +363,7 @@ export function useLineTopology(
                     for (const l of laneUsage.keys()) maxLane = Math.max(maxLane, Math.abs(l));
                     laneOffset = maxLane + 2;
                 }
-                startX = 50;
+                startX = 25;
             }
 
             const currentY = baseY + laneOffset * spacingY;
@@ -393,7 +393,7 @@ export function useLineTopology(
                 // 타원 크기: 역 간 최소 180px 확보
                 const VR = 0.5; // 수직 반축 비율 (위아래 줄인 타원)
                 const factor = 2 * Math.PI * Math.sqrt((1 + VR ** 2) / 2);
-                const a = Math.max(180, (N * 180) / factor);
+                const a = Math.max(90, (N * 90) / factor);
                 const b = a * VR;
 
                 // 타원 중심 위치

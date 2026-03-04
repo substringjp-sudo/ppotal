@@ -185,19 +185,40 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     onStationClick={onStationClick}
                     scrollContainerRef={scrollContainerRef}
                     loops={topology.loops}
-                    onPathCreate={(start, end) => {
-                        if (getShortestPath && onRecordTrip) {
-                            const pathData = getShortestPath(start, end, [lineId]);
-                            if (pathData) {
+                    onPathCreate={(path) => {
+                        if (getShortestPath && onRecordTrip && path.length > 1) {
+                            const start = path[0];
+                            const end = path[path.length - 1];
+
+                            // Combine segments for each pair in the drawn path to respect the user's choices
+                            const combinedPath: string[] = [path[0]];
+                            let combinedDistance = 0;
+                            const combinedGeometries: [number, number][][] = [];
+                            const combinedSectionIds: number[] = [];
+
+                            for (let i = 0; i < path.length - 1; i++) {
+                                const segmentData = getShortestPath(path[i], path[i + 1], [lineId]);
+                                if (segmentData) {
+                                    // segmentData.path[0] should be path[i]
+                                    combinedPath.push(...segmentData.path.slice(1));
+                                    combinedDistance += segmentData.distance;
+                                    combinedGeometries.push(...segmentData.geometries);
+                                    combinedSectionIds.push(...segmentData.sectionIds);
+                                }
+                            }
+
+                            if (combinedSectionIds.length > 0) {
                                 onRecordTrip({
                                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                                     start: start,
                                     end: end,
                                     startId: start,
                                     endId: end,
-                                    ...pathData,
-                                    waypoints: [start, end],
-                                    sectionIds: pathData.sectionIds || []
+                                    path: combinedPath,
+                                    distance: combinedDistance,
+                                    geometries: combinedGeometries,
+                                    sectionIds: combinedSectionIds,
+                                    waypoints: path
                                 });
                             }
                         }

@@ -479,17 +479,19 @@ const Stations: React.FC<StationsProps> = ({
         }).join('');
 
         const tooltipContent = `
-            <div style="padding: 8px; min-width: 180px; font-family: Pretendard, sans-serif;">
-                <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 8px; padding-bottom: 6px;">
-                    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 12px;">
+            <div style="padding: 12px 16px; min-width: 200px; font-family: Pretendard, sans-serif;">
+                <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 12px; padding-bottom: 8px;">
+                    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 16px;">
                         <div style="display: flex; flex-direction: column;">
-                            <span style="font-weight: 900; font-size: 15px; color: #2c3e50;">${localizedName}</span>
-                            ${nameSub ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${nameSub}</span>` : ''}
+                            <span style="font-weight: 900; font-size: 16px; color: #2c3e50; line-height: 1.2;">${localizedName}</span>
+                            ${nameSub ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: 2px;">${nameSub}</span>` : ''}
                         </div>
                         ${address ? `
                         <div style="display: flex; flex-direction: column; text-align: right; margin-top: 2px;">
-                            <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
-                            ${addressJA ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0; margin-top: -1px;">${addressJA}</span>` : ''}
+                            <div style="display: flex; flex-direction: column; gap: 1px;">
+                                <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
+                                ${(addressJA && addressJA !== address) ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0;">${addressJA}</span>` : ''}
+                            </div>
                         </div>` : ''}
                     </div>
                 </div>

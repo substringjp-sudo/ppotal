@@ -396,7 +396,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // FloatingTooltip handles the display now, so we don't bind a Leaflet tooltip
 
 
-        let tooltipTimeout: NodeJS.Timeout | null = null;
+        const tooltipTimeout: NodeJS.Timeout | null = null;
 
         layer.on({
             mousedown: (em: L.LeafletMouseEvent) => {
