@@ -116,16 +116,15 @@ export const useVisibleStations = ({
                 });
 
                 let isVisible = false;
-                if (isExplicitlyUsed) {
-                    isVisible = true;
-                } else if (zoomLevel >= 12) {
+                if (zoomLevel >= 12) {
                     isVisible = true;
                 } else if (gridReps !== null) {
                     // 격자 모드: 대표역(이용객 최다) 또는 환승역만 표시
+                    // 방문한 역(isExplicitlyUsed)도 격자 모드에서는 대표역이거나 환승역일 때만 표시하도록 제한 (선택 사항)
                     const isGridRep = gridReps.has(c.id);
-                    isVisible = (isGridRep || isTransfer) && !hasCollision;
+                    isVisible = (isGridRep || isTransfer || isExplicitlyUsed) && !hasCollision;
                 } else {
-                    const baseVisible = zoomLevel >= c.z;
+                    const baseVisible = zoomLevel >= c.z || isExplicitlyUsed;
                     if (baseVisible) {
                         // Dense Area Guard: Hide colliding stations unless they are very important
                         isVisible = !hasCollision;

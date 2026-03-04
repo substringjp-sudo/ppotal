@@ -141,6 +141,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         }
 
         const newVisitedLineLengths: Record<string, number> = {};
+        const visitedLinePhysicalConnections = new Map<string, Set<string>>();
 
         const uniqueSectionIds = new Set<number>();
         recordedTrips.forEach(trip => {
@@ -154,7 +155,19 @@ const MapPane: React.FC<MapPaneProps> = ({
             const section = rawSections.find((s: Section) => s.id === sid);
             if (section) {
                 const lineId = `${section.company_id}::${section.line_id}`;
-                newVisitedLineLengths[lineId] = (newVisitedLineLengths[lineId] || 0) + (section.length / 1000);
+                const pairKey = [section.start, section.end].sort().join('<->');
+
+                if (!newVisitedLineLengths[lineId]) {
+                    newVisitedLineLengths[lineId] = 0;
+                }
+                if (!visitedLinePhysicalConnections.get(lineId)) {
+                    visitedLinePhysicalConnections.set(lineId, new Set());
+                }
+
+                if (!visitedLinePhysicalConnections.get(lineId)!.has(pairKey)) {
+                    newVisitedLineLengths[lineId] += (section.length / 1000);
+                    visitedLinePhysicalConnections.get(lineId)!.add(pairKey);
+                }
             }
         });
 
@@ -335,7 +348,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 if (pane) {
                     if (p === 'station-labels' || p === 'top-tooltips') {
                         // Strictly hide station dots, labels, and tooltips during any movement
-                        if (!isVisibleToUser) {
+                        // But keep them visible if we are currently dragging to draw a route
+                        if (!isVisibleToUser && !dragStartStation) {
                             pane.style.transition = 'none';
                             pane.style.opacity = '0';
                             pane.style.visibility = 'hidden';
@@ -609,7 +623,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     settings={styleSettings}
                     isMobile={isMobile}
                     showLabels={showLabels}
-                    isMoving={isTransforming}
+                    isMoving={isInteractionHidden}
                     railData={railData}
                     mapBounds={mapBounds}
                     handleStationClick={handleStationClick}

@@ -9,6 +9,7 @@ export interface RouteEdge {
     type: 'RAIL' | 'TRANSFER';
     geometry?: [number, number][];
     sectionIds?: number[];
+    parallelSectionIds?: number[];
 }
 
 export class RoutingGraph {
@@ -225,7 +226,9 @@ export class RoutingGraph {
                             }
                         });
 
-                        const edge: RouteEdge = { from: sourceId, to: targetId, distance, lineId, type: 'RAIL', geometry: combinedGeometry, sectionIds };
+                        const parallelSectionIds = conn.parallel_section_ids ? conn.parallel_section_ids.map(Number) : undefined;
+
+                        const edge: RouteEdge = { from: sourceId, to: targetId, distance, lineId, type: 'RAIL', geometry: combinedGeometry, sectionIds, parallelSectionIds };
                         if (!this.adj.has(sourceId)) this.adj.set(sourceId, []);
                         this.adj.get(sourceId)?.push(edge);
                     });
@@ -421,7 +424,13 @@ export class RoutingGraph {
                 }
             }
             if (edge.sectionIds) {
-                SID.unshift(...edge.sectionIds);
+                // Return parallelSectionIds alongside sectionIds or just include them in SID directly!
+                // Best is to push parallel ones to SID to ensure they all get marked as visited!
+                if (edge.parallelSectionIds && edge.parallelSectionIds.length > 0) {
+                    SID.unshift(...edge.parallelSectionIds);
+                } else {
+                    SID.unshift(...edge.sectionIds);
+                }
             }
             u = p.node;
         }

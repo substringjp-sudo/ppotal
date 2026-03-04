@@ -497,6 +497,138 @@ console.log(`  그래프 내 역: ${graphStations}`);
 console.log(`  총 연결 수: ${totalConnections / 2} (양방향 제거)`);
 
 // ============================================================
+// Phase 4.2: 그래프 정제 (단일화 및 급행 우회선 소거)
+// ============================================================
+console.log('\n🔧 Phase 4.2: 그래프 정제 (다중 선로 단일화 및 급행 우회선 소거)...');
+
+let removedDuplicateEdges = 0;
+let removedBypassEdges = 0;
+
+// 1. 다중 선로 단일화 (동일 노선의 A-B 중복 Edge 제거)
+Object.keys(stationGraph).forEach(stationA => {
+    Object.keys(stationGraph[stationA]).forEach(stationB => {
+        const connections = stationGraph[stationA][stationB].connections;
+
+        const lineGroups = {};
+        connections.forEach(conn => {
+            if (!lineGroups[conn.line_id]) lineGroups[conn.line_id] = [];
+            lineGroups[conn.line_id].push(conn);
+        });
+
+        const newConnections = [];
+        Object.keys(lineGroups).forEach(lineId => {
+            const grouped = lineGroups[lineId];
+            if (grouped.length > 1) {
+                // 거리가 짧은 것을 우선
+                grouped.sort((a, b) => a.distance - b.distance);
+                const primaryConn = grouped[0];
+                const allParallelSections = new Set(primaryConn.parallel_section_ids || []);
+                grouped.forEach(g => g.section_ids.forEach(sid => allParallelSections.add(sid)));
+                primaryConn.parallel_section_ids = Array.from(allParallelSections);
+
+                newConnections.push(primaryConn);
+                removedDuplicateEdges++; // 양방향으로 각각 잡히므로 나중에 /2 처리
+            } else {
+                newConnections.push(grouped[0]);
+            }
+        });
+
+        stationGraph[stationA][stationB].connections = newConnections;
+    });
+});
+
+// 2. 급행 패스(Bypass) 엣지 소거 (A -> B -> C 가 있을 때 A -> C 다이렉트 엣지 제거)
+// 제거할 엣지를 배열에 모은 뒤 일괄 삭제하여 반복문(iterator) 오작동 방지
+const bypassEdgesToRemove = [];
+const stations = Object.keys(stationGraph);
+
+stations.forEach(stationA => {
+    const neighborsA = stationGraph[stationA];
+    if (!neighborsA) return;
+
+    Object.keys(neighborsA).forEach(stationB => {
+        const connsAB = neighborsA[stationB]?.connections;
+        if (!connsAB) return;
+
+        const neighborsB = stationGraph[stationB];
+        if (!neighborsB) return;
+
+        Object.keys(neighborsB).forEach(stationC => {
+            if (stationA === stationC) return;
+
+            const connsBC = neighborsB[stationC]?.connections;
+            if (!connsBC) return;
+
+            // A -> C 직통 엣지가 있는지 판별
+            if (stationGraph[stationA][stationC]) {
+                const connsAC = stationGraph[stationA][stationC].connections;
+
+                connsAC.forEach(connAC => {
+                    // 동일한 노선으로 A->B 와 B->C 가 이어져 있는지 확인
+                    const connAB = connsAB.find(c => c.line_id === connAC.line_id);
+                    const connBC = connsBC.find(c => c.line_id === connAC.line_id);
+
+                    if (connAB && connBC) {
+                        const distABC = connAB.distance + connBC.distance;
+                        const distAC = connAC.distance;
+
+                        // A-C 다이렉트 거리가 A-B-C 우회 거리합의 1.8배 이하이면, 급행/통과선으로 간주
+                        // (별도의 우회 노선이라기보다 같은 선형을 따른다고 판단)
+                        if (distAC <= distABC * 1.8) {
+                            bypassEdgesToRemove.push({ a: stationA, b: stationB, c: stationC, lineId: connAC.line_id, connAC: connAC });
+                        }
+                    }
+                });
+            }
+        });
+    });
+});
+
+// 수집된 급행선(Bypass 엣지) 일괄 삭제
+bypassEdgesToRemove.forEach(({ a, b, c, lineId, connAC }) => {
+    // A -> B 와 B -> C 에 A -> C 의 section_id들을 병합 (화면에 표시할 수 있도록)
+    if (stationGraph[a] && stationGraph[a][b]) {
+        const connAB = stationGraph[a][b].connections.find(c => c.line_id === lineId);
+        if (connAB) {
+            if (!connAB.parallel_section_ids) connAB.parallel_section_ids = [];
+            const pSet = new Set([...connAB.parallel_section_ids, ...connAC.section_ids]);
+            connAB.parallel_section_ids = Array.from(pSet);
+        }
+    }
+    if (stationGraph[b] && stationGraph[b][c]) {
+        const connBC = stationGraph[b][c].connections.find(c => c.line_id === lineId);
+        if (connBC) {
+            if (!connBC.parallel_section_ids) connBC.parallel_section_ids = [];
+            const pSet = new Set([...connBC.parallel_section_ids, ...connAC.section_ids]);
+            connBC.parallel_section_ids = Array.from(pSet);
+        }
+    }
+
+    if (stationGraph[a] && stationGraph[a][c]) {
+        const conns = stationGraph[a][c].connections;
+        const initLen = conns.length;
+        stationGraph[a][c].connections = conns.filter(conn => conn.line_id !== lineId);
+        if (initLen > stationGraph[a][c].connections.length) {
+            removedBypassEdges++;
+            if (stationGraph[a][c].connections.length === 0) {
+                delete stationGraph[a][c];
+            }
+        }
+    }
+});
+
+console.log(`  다중 선로 단일화(중복 제거): ${Math.floor(removedDuplicateEdges / 2)} 건`);
+console.log(`  급행/통과선(Bypass) 제거: ${Math.floor(removedBypassEdges / 2)} 건`);
+
+graphStations = Object.keys(stationGraph).length;
+totalConnections = 0;
+Object.values(stationGraph).forEach(neighbors => {
+    totalConnections += Object.keys(neighbors).length;
+});
+console.log(`  정제 후 그래프 역: ${graphStations}`);
+console.log(`  정제 후 총 연결 수: ${totalConnections / 2} (양방향 제거)`);
+
+// ============================================================
 // Phase 4.5: 환승 연결 + Joint 크로스 노선 연결
 // ============================================================
 console.log('\n🔧 Phase 4.5: 환승 및 크로스 노선 연결...');

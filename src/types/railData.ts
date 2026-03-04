@@ -108,6 +108,7 @@ export interface NetworkConnection {
     section_ids: string[];
     via_joints: string[];
     distance: number;
+    parallel_section_ids?: string[];
 }
 
 export interface NetworkStationGraph {

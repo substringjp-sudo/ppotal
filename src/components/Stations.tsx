@@ -280,7 +280,7 @@ const Stations: React.FC<StationsProps> = ({
         }
 
         const minVisibleZoom = isTransfer ? 7 : 10;
-        const isVisible = (realZoom >= minVisibleZoom || isDraft) && !isMoving;
+        const isVisible = (realZoom >= minVisibleZoom || isDraft) && (!isMoving || !!dragStartStation);
 
         return {
             radius: radius,
@@ -322,7 +322,7 @@ const Stations: React.FC<StationsProps> = ({
 
         return {
             fillColor: color,
-            fillOpacity: isMoving ? 0 : 0.25,
+            fillOpacity: (isMoving && !dragStartStation) ? 0 : 0.25,
             stroke: false,
             interactive: false
         };
@@ -479,9 +479,9 @@ const Stations: React.FC<StationsProps> = ({
         }).join('');
 
         const tooltipContent = `
-            <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif;">
-                <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 8px; padding-bottom: 4px;">
-                    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div style="padding: 8px; min-width: 180px; font-family: Pretendard, sans-serif;">
+                <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 8px; padding-bottom: 6px;">
+                    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 12px;">
                         <div style="display: flex; flex-direction: column;">
                             <span style="font-weight: 900; font-size: 15px; color: #2c3e50;">${localizedName}</span>
                             ${nameSub ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: -2px;">${nameSub}</span>` : ''}
@@ -489,7 +489,7 @@ const Stations: React.FC<StationsProps> = ({
                         ${address ? `
                         <div style="display: flex; flex-direction: column; text-align: right; margin-top: 2px;">
                             <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
-                            ${nameSecondary ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0; margin-top: -1px;">${nameSecondary}</span>` : ''}
+                            ${addressJA ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0; margin-top: -1px;">${addressJA}</span>` : ''}
                         </div>` : ''}
                     </div>
                 </div>
@@ -519,7 +519,7 @@ const Stations: React.FC<StationsProps> = ({
                 }
             },
             mouseover: (eValue: L.LeafletMouseEvent) => {
-                if (isMovingRef.current) return;
+                if (isMovingRef.current && !dragStartStation) return;
                 const { clientX, clientY } = (eValue as any).originalEvent;
 
                 onTooltipUpdate?.(tooltipContent, clientX, clientY);
@@ -527,7 +527,7 @@ const Stations: React.FC<StationsProps> = ({
                 if (onStationHover) onStationHover(id);
             },
             mousemove: (eValue: L.LeafletMouseEvent) => {
-                if (isMovingRef.current) return;
+                if (isMovingRef.current && !dragStartStation) return;
                 const { clientX, clientY } = (eValue as any).originalEvent;
                 onTooltipUpdate?.(tooltipContent, clientX, clientY);
             },
