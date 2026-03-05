@@ -1,5 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Privacy Policy — JapanRailNote | 개인정보처리방침 | プライバシーポリシー',
+    description: 'Privacy policy for JapanRailNote — how we handle your data with Google Analytics and AdSense.',
+    robots: {
+        index: true,
+        follow: true,
+    },
+    other: {
+        'google': 'nositelinkssearchbox',
+    },
+};
+
 
 export default function PrivacyPage() {
     return (

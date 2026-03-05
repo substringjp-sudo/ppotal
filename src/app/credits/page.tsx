@@ -1,5 +1,20 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'About JapanRailNote — Credits & Project Information | 프로젝트 소개 | プロジェクトについて',
+    description: 'JapanRailNote is an interactive Japan railway map service. Learn about data sources, attribution, and the project.',
+    robots: {
+        index: true,
+        follow: true,
+    },
+    other: {
+        // Tell AdSense not to serve ads on this utility/about page
+        'google': 'nositelinkssearchbox',
+    },
+};
+
 
 const CreditsPage = () => {
     return (
