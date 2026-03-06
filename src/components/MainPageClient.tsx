@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import React from 'react';
+import Link from 'next/link';
 
 import { LanguageSelector } from './LanguageSelector';
 import { trackEvent } from '../lib/gtag';
@@ -663,6 +664,13 @@ const MainPageClient = () => {
                                 <span className="material-symbols-outlined text-lg">chat_bubble</span>
                                 {language === 'ko' ? "피드백" : language === 'ja' ? "フィードバック" : "Feedback"}
                             </button>
+                            <Link
+                                href="/directory"
+                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-lg">list_alt</span>
+                                {language === 'ko' ? "디렉토리" : language === 'ja' ? "路線一覧" : "Directory"}
+                            </Link>
                             <button
                                 onClick={exportMap}
                                 className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
@@ -1008,11 +1016,17 @@ const MainPageClient = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto space-y-6">
-                        <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                            <h3 className="text-white text-lg font-black mb-3 italic">{t.heroTitle}</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed">
-                                {t.heroDesc}
-                            </p>
+                        <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex flex-col gap-4">
+                            <div>
+                                <h3 className="text-white text-lg font-black mb-3 italic">{t.heroTitle}</h3>
+                                <p className="text-slate-400 text-sm leading-relaxed">
+                                    {t.heroDesc}
+                                </p>
+                            </div>
+                            <Link href="/directory" className="inline-flex items-center gap-2 px-4 py-2 mt-2 border border-primary/40 rounded-lg text-primary text-sm font-bold uppercase tracking-wider hover:bg-primary/10 transition-colors w-fit">
+                                <span className="material-symbols-outlined text-lg">list_alt</span>
+                                {language === 'ko' ? "일본 철도 노선 디렉토리" : language === 'ja' ? "日本鉄道路線一覧" : "Japan Railway Directory"}
+                            </Link>
                         </div>
 
                         <div className="bg-white/5 rounded-2xl p-6 border border-white/10">

@@ -39,39 +39,36 @@ const RailwayDirectory = ({ data }: { data: SEOData | null }) => {
                     if (!companyData) return null;
 
                     return (
-                        <details key={comp.id} style={{
+                        <div key={comp.id} style={{
                             backgroundColor: '#25282c',
                             borderRadius: '8px',
                             overflow: 'hidden',
                             border: '1px solid #333'
                         }}>
-                            <summary style={{
+                            <div style={{
                                 padding: '12px 16px',
-                                cursor: 'pointer',
                                 fontWeight: 'bold',
                                 color: '#eee',
                                 backgroundColor: '#2d3136',
-                                userSelect: 'none',
-                                outline: 'none'
+                                userSelect: 'none'
                             }}>
                                 {companyData.name} ({companyData.name_en})
-                            </summary>
+                            </div>
                             <div style={{ padding: '10px 16px' }}>
                                 {Object.values(comp.lines).map((line: HierarchyLine) => {
                                     const lineData = lines[line.id];
                                     if (!lineData) return null;
 
                                     return (
-                                        <details key={line.id} style={{ marginBottom: '8px', marginLeft: '10px' }}>
-                                            <summary style={{
+                                        <div key={line.id} style={{ marginBottom: '16px', marginLeft: '10px' }}>
+                                            <div style={{
                                                 padding: '6px 0',
-                                                cursor: 'pointer',
-                                                fontSize: '13px',
-                                                color: '#ccc',
-                                                outline: 'none'
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                color: '#e0e0e0',
                                             }}>
                                                 {lineData.name} ({lineData.name_en})
-                                            </summary>
+                                            </div>
                                             <div style={{
                                                 padding: '8px 10px',
                                                 fontSize: '12px',
@@ -92,11 +89,11 @@ const RailwayDirectory = ({ data }: { data: SEOData | null }) => {
                                                     );
                                                 })}
                                             </div>
-                                        </details>
+                                        </div>
                                     );
                                 })}
                             </div>
-                        </details>
+                        </div>
                     );
                 })}
             </div>
