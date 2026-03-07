@@ -277,7 +277,7 @@ export const useVisibleStations = ({
             }
         });
         return data;
-    }, [railroadNetwork, spatialIndex, usedStationIds, mapBounds, zoomLevel, effectiveZoom]);
+    }, [railroadNetwork, spatialIndex, usedStationIds, mapBounds, zoomLevel, effectiveZoom, passengerGrid]);
 
     return { visibleStations, effectiveZoom };
 };

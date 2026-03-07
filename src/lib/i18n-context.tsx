@@ -23,10 +23,10 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (savedLang !== 'ja') setLanguageState(savedLang);
         } else {
             const browserLang = navigator.language.split('-')[0];
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             if (browserLang === 'ko') setLanguageState('ko');
             else if (browserLang === 'ja') setLanguageState('ja');
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+             
             else setLanguageState('en');
         }
     }, []);

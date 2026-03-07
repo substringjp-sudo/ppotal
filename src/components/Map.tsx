@@ -12,6 +12,7 @@ export interface MapProps {
 // Shared Canvas Renderer for visual layers
 // We separate renderers by pane so we can control their visibility/opacity independently via CSS on the pane
 export const backgroundCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 1.5, pane: 'background' }) : null;
+export const airportCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 1.5, pane: 'airports' }) : null;
 export const glowCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-glow' }) : null;
 export const casingCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-casing' }) : null;
 export const railroadCanvas = typeof window !== 'undefined' ? L.canvas({ padding: 2.0, pane: 'railroad-lines' }) : null;

@@ -5,7 +5,7 @@
  * 각 격자 셀에서 가장 이용객이 많은 역 ID를 빠르게 조회할 수 있습니다.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PassengerGridData {
     passengers: Record<string, number>;        // stationId -> 일평균 이용객 수
@@ -36,13 +36,11 @@ export function usePassengerGrid() {
     const [data, setData] = useState<PassengerGridData | null>(cachedData);
 
     useEffect(() => {
-        if (cachedData) {
-            setData(cachedData);
-            return;
+        if (!cachedData) {
+            fetchPassengerGrid()
+                .then(setData)
+                .catch(err => console.warn('[usePassengerGrid] load failed:', err));
         }
-        fetchPassengerGrid()
-            .then(setData)
-            .catch(err => console.warn('[usePassengerGrid] load failed:', err));
     }, []);
 
     return data;

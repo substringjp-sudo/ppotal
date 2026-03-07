@@ -50,7 +50,7 @@ interface StationsProps {
     draftStationIds?: Set<string>;
     showLabels?: boolean;
     selectedStation?: string | null;
-    onTooltipUpdate?: (content: string | null, x: number, y: number) => void;
+    onTooltipUpdate?: (content: string | null, x: number, y: number, priority?: 'low' | 'high') => void;
 }
 
 
@@ -478,20 +478,27 @@ const Stations: React.FC<StationsProps> = ({
                 </div>`;
         }).join('');
 
+        const addressSection = address ? `
+            <div class="station-address" style="display: flex; flex-direction: column; text-align: right; margin-top: 2px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;">
+                <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
+                ${(addressJA && addressJA !== address) ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0;">${addressJA}</span>` : ''}
+            </div>` : '';
+
         const tooltipContent = `
             <div style="padding: 12px 16px; min-width: 200px; font-family: Pretendard, sans-serif;">
-                <div style="display: flex; flex-direction: column; border-bottom: 2px solid #3498db; margin-bottom: 12px; padding-bottom: 8px;">
+                <div style="display: flex; flex-direction: column; border-bottom: 2px solid #2d3748; margin-bottom: 12px; padding-bottom: 8px;">
                     <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 16px;">
-                        <div style="display: flex; flex-direction: column;">
-                            <span style="font-weight: 900; font-size: 16px; color: #2c3e50; line-height: 1.2;">${localizedName}</span>
-                            ${nameSub ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: 2px;">${nameSub}</span>` : ''}
+                        <div style="display: flex; flex-direction: row; align-items: baseline; gap: 8px;">
+                            <span class="material-symbols-outlined" style="font-size: 20px; color: #2d3748; align-self: center;">subway</span>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 900; font-size: 16px; color: #1a202c; line-height: 1.2;">${localizedName}</span>
+                                ${nameSub ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: 2px;">${nameSub}</span>` : ''}
+                            </div>
                         </div>
                         ${address ? `
                         <div style="display: flex; flex-direction: column; text-align: right; margin-top: 2px;">
-                            <div style="display: flex; flex-direction: column; gap: 1px;">
-                                <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
-                                ${(addressJA && addressJA !== address) ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0;">${addressJA}</span>` : ''}
-                            </div>
+                            <span style="font-size: 10px; font-weight: 700; color: #4a5568; letter-spacing: -0.01em;">${address}</span>
+                            ${(addressJA && addressJA !== address) ? `<span style="font-size: 9px; font-weight: 500; color: #a0aec0;">${addressJA}</span>` : ''}
                         </div>` : ''}
                     </div>
                 </div>

@@ -19,8 +19,8 @@ interface UseTripRecorderProps {
     visibleStations: Record<string, ProcessedStation> | null;
     onRecordTrip?: (trip: Trip) => void;
 
-    onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
+    onDraftComplete?: (trip: Trip) => void;
     selectedLines?: string[];
     activeLine?: string | null;
 }
@@ -30,8 +30,8 @@ export const useTripRecorder = ({
     visibleStations,
     onRecordTrip,
 
-    onDraftComplete,
     onDragUpdate,
+    onDraftComplete,
     selectedLines = [],
     activeLine = null
 }: UseTripRecorderProps) => {
@@ -306,6 +306,9 @@ export const useTripRecorder = ({
 
                 if (onRecordTrip) {
                     onRecordTrip(trip);
+                }
+                if (onDraftComplete) {
+                    onDraftComplete(trip);
                 }
             }
         }

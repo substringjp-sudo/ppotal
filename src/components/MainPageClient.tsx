@@ -116,6 +116,7 @@ const MainPageClient = () => {
     const [tripStartStation, setTripStartStation] = React.useState<Station | null>(null);
     const isTripInProgress = !!tripStartStation;
     const [isMobile, setIsMobile] = React.useState(false);
+    const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
     const [tempPath, setTempPath] = React.useState<string[]>([]);
@@ -141,12 +142,14 @@ const MainPageClient = () => {
     });
 
     React.useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
+        const handleResize = () => {
+            const width = window.innerWidth;
+            setWindowWidth(width);
+            setIsMobile(width <= 768);
         };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const exportMap = async () => {
@@ -760,6 +763,8 @@ const MainPageClient = () => {
                                 tripStartStationId={tripStartStation?.id || null}
                                 onStationHover={handleStationHover}
                                 onPrefectureClick={handlePrefectureClick}
+                                leftBound={isMobile ? 0 : 350}
+                                rightBound={isMobile ? windowWidth : windowWidth - 320}
                             />
                         </MapWithNoSSR>
                     </div>

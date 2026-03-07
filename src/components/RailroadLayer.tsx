@@ -25,7 +25,7 @@ interface RailroadLayerProps {
     isDragging?: boolean;
     draftSectionIds?: Set<number>;
     settings: import('./MainPageClient').MapStyleSettings;
-    onTooltipUpdate?: (content: string | null, x: number, y: number) => void;
+    onTooltipUpdate?: (content: string | null, x: number, y: number, priority?: 'low' | 'high') => void;
 }
 
 
@@ -373,18 +373,22 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const secondaryCorp = language !== 'ja' ? props.company : '';
 
         const tooltipContent = `
-            <div style="padding: 2px; min-width: 160px; font-family: Pretendard, sans-serif; display: flex; flex-direction: column; border-left: 4px solid ${feature.properties?.color || '#999'}; padding-left: 8px;">
-                <div style="display: flex; flex-direction: column; border-bottom: 2px solid ${feature.properties?.color || '#999'}; margin-bottom: 8px; padding-bottom: 4px;">
-                    <span style="font-weight: 900; font-size: 14px; color: #2c3e50;">${primaryLine}</span>
-                    ${secondaryLine ? `<span style="font-weight: 600; font-size: 10px; color: #718096; margin-top: -2px;">${secondaryLine}</span>` : ''}
+            <div style="padding: 12px 16px; min-width: 180px; font-family: Pretendard, sans-serif; display: flex; flex-direction: column;">
+                <div style="display: flex; flex-direction: row; align-items: baseline; gap: 10px; border-bottom: 2px solid ${feature.properties?.color || '#999'}; margin-bottom: 12px; padding-bottom: 8px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px; color: ${feature.properties?.color || '#999'}; align-self: center;">directions_railway</span>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 900; font-size: 16px; color: #1a202c; line-height: 1.2;">${primaryLine}</span>
+                        ${secondaryLine ? `<span style="font-weight: 600; font-size: 11px; color: #718096; margin-top: 2px;">${secondaryLine}</span>` : ''}
+                    </div>
                 </div>
                 <div style="flex: 1;">
-                    <div style="font-size: 11px; font-weight: 700; color: #4a5568; line-height: 1.4;">
+                    <div style="font-size: 12px; font-weight: 700; color: #4a5568; line-height: 1.4;">
                         ${primaryCorp}
                     </div>
-                    ${secondaryCorp ? `<div style="font-size: 9px; font-weight: 600; color: #718096; margin-bottom: 4px;">${secondaryCorp}</div>` : ''}
+                    ${secondaryCorp ? `<div style="font-size: 10px; font-weight: 600; color: #a0aec0; margin-bottom: 6px;">${secondaryCorp}</div>` : ''}
                     ${endpoints ? `
-                        <div style="font-size: 9px; color: #cbd5e0; margin-top: 4px; border-top: 1px solid #edf2f7; padding-top: 4px; font-style: italic;">
+                        <div style="font-size: 10px; color: #a0aec0; margin-top: 8px; border-top: 1px solid #edf2f7; padding-top: 8px; font-style: italic;">
+                            <span class="material-symbols-outlined" style="font-size: 12px; vertical-align: middle; margin-right: 4px;">alt_route</span>
                             ${endpoints}
                         </div>
                     ` : ''}

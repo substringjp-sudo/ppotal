@@ -7,9 +7,11 @@ interface FloatingTooltipProps {
     visible: boolean;
     x: number;
     y: number;
+    leftBound?: number;
+    rightBound?: number;
 }
 
-const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, y }) => {
+const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, y, leftBound = 0, rightBound }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const [style, setStyle] = useState<React.CSSProperties>({
         position: 'fixed',
@@ -31,14 +33,23 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
         const tooltipHeight = tooltipRef.current.offsetHeight;
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
+        const effectiveRightBound = rightBound ?? windowWidth;
 
         let finalX = x + 20;
         let finalY = y + 20;
 
-        // Boundary checks
-        if (finalX + tooltipWidth > windowWidth - 20) {
+        // Boundary checks - Horizontal
+        if (finalX + tooltipWidth > effectiveRightBound - 20) {
+            // Flip to left side
             finalX = x - tooltipWidth - 20;
+
+            // If still goes off left bound, nudge it
+            if (finalX < leftBound + 10) {
+                finalX = leftBound + 10;
+            }
         }
+
+        // Boundary checks - Vertical
         if (finalY + tooltipHeight > windowHeight - 20) {
             finalY = y - tooltipHeight - 20;
         }
@@ -52,7 +63,7 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
             opacity: 1,
             transform: 'translate3d(0, 0, 0)', // Optimize for performance
         });
-    }, [visible, content, x, y]);
+    }, [visible, content, x, y, leftBound, rightBound]);
 
     if (!content) return null;
 

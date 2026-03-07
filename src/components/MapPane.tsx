@@ -66,18 +66,22 @@ interface MapPaneProps {
     tripStartStationId?: string | null;
     onStationHover?: (id: string | null) => void;
     onPrefectureClick?: (name: string) => void;
+    leftBound?: number;
+    rightBound?: number;
 }
 
 const PANE_STYLES = {
     topTooltips: { zIndex: 1000, pointerEvents: 'none' as const, overflow: 'visible' },
-    masterInteractions: { zIndex: 950, overflow: 'visible' },
-    globalInteraction: { zIndex: 940, overflow: 'visible' },
+    masterInteractions: { zIndex: 950, pointerEvents: 'none' as const, overflow: 'visible' },
+    globalInteraction: { zIndex: 940, pointerEvents: 'none' as const, overflow: 'visible' },
     stationLabels: { zIndex: 880, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadLines: { zIndex: 820, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadGlow: { zIndex: 810, pointerEvents: 'none' as const, overflow: 'visible' },
     uiElements: { zIndex: 900, pointerEvents: 'none' as const, overflow: 'visible' },
-    background: { zIndex: 100, overflow: 'visible' },
+    airportIcons: { zIndex: 870, pointerEvents: 'auto' as const, overflow: 'visible' },
+    airports: { zIndex: 450, pointerEvents: 'auto' as const, overflow: 'visible' },
+    background: { zIndex: 100, pointerEvents: 'none' as const, overflow: 'visible' },
 };
 
 const MapPane: React.FC<MapPaneProps> = ({
@@ -109,14 +113,22 @@ const MapPane: React.FC<MapPaneProps> = ({
     tripStartStationId,
     onStationHover: onStationHoverExternal,
     selectedStation,
-    onPrefectureClick
+    onPrefectureClick,
+    leftBound,
+    rightBound
 }) => {
     const map = useMap();
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
     const [mapReady, setMapReady] = useState(false);
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
-    const [floatingTooltip, setFloatingTooltip] = useState<{ content: string | null; x: number; y: number; visible: boolean }>({ content: null, x: 0, y: 0, visible: false });
+    const [floatingTooltip, setFloatingTooltip] = useState<{
+        content: string | null;
+        x: number;
+        y: number;
+        visible: boolean;
+        priority: 'low' | 'high';
+    }>({ content: null, x: 0, y: 0, visible: false, priority: 'low' });
     const [isMoving, setIsMoving] = useState(false);
     const [isZooming, setIsZooming] = useState(false);
     const [isPending, startTransition] = React.useTransition();
@@ -278,8 +290,19 @@ const MapPane: React.FC<MapPaneProps> = ({
         rawHandleStationMouseDown(id, coords);
     }, [rawHandleStationMouseDown, onSetActiveLine]);
 
-    const handleTooltipUpdate = useCallback((content: string | null, x: number, y: number) => {
-        setFloatingTooltip({ content, x, y, visible: !!content });
+    const handleTooltipUpdate = useCallback((content: string | null, x: number, y: number, priority: 'low' | 'high' = 'high') => {
+        setFloatingTooltip(prev => {
+            if (!content) {
+                if (prev.visible && prev.priority === 'high' && priority === 'low') {
+                    return prev;
+                }
+                return { ...prev, content: null, visible: false, priority: 'low' };
+            }
+            if (prev.visible && prev.priority === 'high' && priority === 'low') {
+                return prev;
+            }
+            return { content, x, y, visible: true, priority };
+        });
     }, []);
 
 
@@ -392,6 +415,8 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             ensurePane('top-tooltips', PANE_STYLES.topTooltips);
             ensurePane('background', PANE_STYLES.background);
+            ensurePane('airports', PANE_STYLES.airports);
+            ensurePane('airportIcons', PANE_STYLES.airportIcons);
             ensurePane('railroad-glow', PANE_STYLES.railroadGlow);
             ensurePane('railroad-casing', PANE_STYLES.railroadCasing);
             ensurePane('railroad-lines', PANE_STYLES.railroadLines);
@@ -586,7 +611,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                 <AirportLayer
                     data={airports}
                     zoom={zoomLevel}
-                    pane="background"
+                    pane="airports"
+                    onTooltipUpdate={handleTooltipUpdate}
                 />
             )}
             {zoomLevel > 8 && activePrefectures && (
@@ -691,7 +717,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             />
             }
 
-            <FloatingTooltip {...floatingTooltip} />
+            <FloatingTooltip {...floatingTooltip} leftBound={leftBound} rightBound={rightBound} />
         </>
 
     );

@@ -176,6 +176,17 @@ const SEOContent = ({ data }: { data: SEOData | null }) => {
                             지도 위에서 직접 경로를 그리고, 방문한 구간과 미방문 구간을 한눈에 확인하세요.
                         </p>
                     </article>
+
+                    <article>
+                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
+                            The Art of "Noritsubushi" / 乗りつぶしの美学 / 노리츠부시의 미학
+                        </h3>
+                        <p style={{ fontSize: '15px' }}>
+                            "Noritsubushi" is the unique Japanese culture of riding every single railway line to completion. JapanRailNote is built specifically for these enthusiasts, providing the tools needed to document and share your progress towards 100% completion of Japan's 27,000+ kilometers of iron roads.
+                            「乗りつぶし」は、日本全国の全路線を完乗することを目指す独自の鉄道文化です。JapanRailNoteは、この情熱的な趣味をサポートするために設計されており、27,000km以上に及ぶ日本の鉄道網の記録を可能にします。
+                            "노리츠부시"는 일본 전역의 모든 철도 노선을 완주하는 것을 목표로 하는 독특한 철도 문화입니다. JapanRailNote는 이러한 열정적인 취미를 지원하기 위해 설계되었으며, 27,000km가 넘는 일본의 방대한 철도망 완주 기록을 돕습니다.
+                        </p>
+                    </article>
                 </div>
 
                 {/* FAQ - multilingual */}

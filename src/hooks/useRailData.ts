@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { RailData, NetworkLineData, Company, HierarchyCompany } from '../types/railData';
+import { RailData, NetworkLineData, HierarchyCompany, Platform } from '../types/railData';
 import { decodePolyline } from '../utils/polyline';
 
 function buildHierarchyFromLineData(
-    lineData: NetworkLineData,
-    companies: Record<string, Company>
+    lineData: NetworkLineData
 ): { companies: Record<string, HierarchyCompany> } {
     const result: Record<string, HierarchyCompany> = {};
 
@@ -78,12 +77,12 @@ export const useRailData = () => {
                         ] = jsonData;
 
                         // Reconstruct Platforms
-                        const platforms: Record<string, { geometries: number[][][];[key: string]: any }> = {};
+                        const platforms: Record<string, Platform> = {};
                         for (const id in platformsMeta) {
                             platforms[id] = {
                                 ...platformsMeta[id],
                                 geometries: (platformsGeom[id] || []).map((poly: string) => decodePolyline(poly))
-                            };
+                            } as unknown as Platform;
                         }
 
                         // Reconstruct Sections
@@ -117,7 +116,7 @@ export const useRailData = () => {
                                 stationGraph: railroadNetwork.station_graph
                             },
                             railroadNetwork,
-                            hierarchy: buildHierarchyFromLineData(railroadNetwork.line_data, companies),
+                            hierarchy: buildHierarchyFromLineData(railroadNetwork.line_data),
                             joints,
                             stationsLod
                         } as RailData;

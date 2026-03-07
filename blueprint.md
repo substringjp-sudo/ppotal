@@ -17,30 +17,18 @@ JapanRailNote is a web application for recording and visualizing Japanese railro
 - **Intelligent Path Recording**: Added "Snake Update" logic for smoother station snapping and a multi-segment pathfinding algorithm to accurately record express routes and complex connections.
 - **Firebase Integration**: Authenticated users can sync their trip data to the cloud.
 - **Hydration & Reliability**: Resolved server/client mismatch issues in the i18n system. Enhanced type safety across core components and fixed various runtime TypeErrors in map interactions.
+- **Enhanced Tooltips**: All map tooltips (Airports, Lines, Stations) now feature distinct icon identifiers and boundary-aware positioning that intelligently adjusts to sidebar visibility.
 
-## Recent Changes & Bug Fixes (v1.3.0)
-- **Airport Visualization**:
-    - Integrated `C28-21_Airport.geojson` data.
-    - Created `AirportLayer` for polygon rendering.
-    - Added "Show Airports" (공항 표시) toggle in Map Style settings.
-    - Implemented multi-language terminal labels (KR/EN/JA) visible at high zoom levels.
-- **Map Scale Reduction (50%)**: Halved `OCCUPATION_BUFFER`, `spacingY`, `baseY`, and other layout constants for a more efficient view.
-- **Path Drawing Guidelines**: 
-    - Fixed resetting issues; guidelines now correctly anchor to the last recorded station.
-    - Guidelines follow curved track geometry (arcs) for matched visual feedback.
-    - Added snapping line to cursor and dashed preview connections.
-- **Intelligent Route Recording**:
-    - Implemented logic in `LineDetailPane.tsx` to combine multi-segment shortest paths, ensuring express routes and skipped stations are recorded correctly.
-- **Station Visibility Refinement**:
-    - Visited stations now undergo passenger density filtering to avoid clutter at lower zoom levels.
-- **Tooltip & Localization Fixes**:
-    - Increased tooltip padding and fixed the localized/Japanese address display overlap bug.
-- **Station Detail UI Renewal**:
-    - Completely overhauled for a professional and compact aesthetic.
-    - Reduced font sizes for a more premium "Apple-like" feel.
-    - Redesigned the connection diagram using smaller, cleaner SVG elements that handle multiple adjacent stations without excessive clutter.
+- **Tooltip & Icon Enhancements (v1.4.0)**:
+    - Adjusted padding and layout for all map tooltips for a cleaner, more spacious look.
+    - Added distinct Material Symbols icons to tooltips: `local_airport` (Airports), `directions_railway` (Lines), and `subway` (Stations).
+    - Implemented smart positioning for `FloatingTooltip` to prevent clipping by sidebars and screen edges.
+    - Refined station tooltip to show localized addresses and a refined line list layout.
+- **Trip Recorder Logic Fix**:
+    - Fixed the `onDraftComplete` callback in `useTripRecorder.ts` to correctly finalize trip drafts.
 
 ## History
+- **v1.4.0 (2026-03-08)**: Tooltip boundary awareness and Icon integration.
 - **v1.3.0 (2025-03-05)**: Airport Data Integration & Map Style Enhancements.
 - **v1.2.0 (2024-03-04)**: Tube Map Scale & Path Logic refinement.
 - **v1.1.0 (2024-03-04)**: Twitter Sharing & 2024 N02-24 Data update.
