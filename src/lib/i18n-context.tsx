@@ -19,11 +19,14 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Hydration check: detect and set correct language after mount
         const savedLang = localStorage.getItem('pref-lang') as Language;
         if (savedLang === 'ko' || savedLang === 'en' || savedLang === 'ja') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             if (savedLang !== 'ja') setLanguageState(savedLang);
         } else {
             const browserLang = navigator.language.split('-')[0];
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             if (browserLang === 'ko') setLanguageState('ko');
             else if (browserLang === 'ja') setLanguageState('ja');
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             else setLanguageState('en');
         }
     }, []);

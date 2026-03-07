@@ -305,6 +305,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     // Hide labels and show subtle fade when moving or switching LOD
     const [isLODChanging, setIsLODChanging] = useState(false);
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsLODChanging(true);
         const timer = setTimeout(() => setIsLODChanging(false), 300);
         return () => clearTimeout(timer);
@@ -318,6 +319,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     useEffect(() => {
         if (isInteractionHidden) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsSettled(false);
         } else {
             // Force a Canvas clear to prevent ghosting from previous frames

@@ -78,7 +78,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             onSettingsChange({
                 ...settings,
                 [category]: {
-                    ...(currentCategory as any),
+                    ...(settings[category] as Record<string, number | boolean>),
                     [field!]: value
                 }
             });
