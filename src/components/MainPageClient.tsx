@@ -69,6 +69,7 @@ export interface MapStyleSettings {
         stationSize: number;
     };
     showLabels: boolean;
+    showAirports: boolean;
 }
 
 export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
@@ -86,7 +87,8 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
         showOutline: true,
         stationSize: 1.2,
     },
-    showLabels: false
+    showLabels: false,
+    showAirports: true
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });

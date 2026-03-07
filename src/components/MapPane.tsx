@@ -6,6 +6,7 @@ import L, { LatLngBounds, LatLngExpression } from 'leaflet';
 
 import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
+import AirportLayer from './AirportLayer';
 import Stations from './Stations';
 import RailroadLayer from './RailroadLayer';
 import { StationNode, LineSegment } from '../lib/graphUtils';
@@ -126,7 +127,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         onTransitionStateChange?.(isPending);
     }, [isPending, onTransitionStateChange]);
 
-    const { prefectures, municipalities } = useMapData();
+    const { prefectures, municipalities, airports } = useMapData();
     const { railData } = useRailData();
 
     const graph: RoutingGraph | null = useMemo(() => (railData ? new RoutingGraph(railData) : null), [railData]);
@@ -575,6 +576,13 @@ const MapPane: React.FC<MapPaneProps> = ({
                 <MunicipalMap
                     key={`muni-${zoomLevel <= 9 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}`}
                     municipalities={activeMunicipalities}
+                    zoom={zoomLevel}
+                    pane="background"
+                />
+            )}
+            {styleSettings.showAirports && airports && (
+                <AirportLayer
+                    data={airports}
                     zoom={zoomLevel}
                     pane="background"
                 />

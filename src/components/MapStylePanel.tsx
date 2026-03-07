@@ -27,6 +27,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             stationSize: "역 크기",
             visitedRecorded: "방문 기록 (탑승함)",
             showStationNames: "역 이름 표시",
+            showAirports: "공항 표시",
             resetToDefaults: "기본값으로 초기화"
         },
         en: {
@@ -41,6 +42,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             stationSize: "STATION SIZE",
             visitedRecorded: "Visited (Recorded)",
             showStationNames: "Show Station Names",
+            showAirports: "Show Airports",
             resetToDefaults: "RESET TO DEFAULTS"
         },
         ja: {
@@ -55,6 +57,7 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
             stationSize: "駅のサイズ",
             visitedRecorded: "訪問済みの路線 (記録済み)",
             showStationNames: "駅名を表示",
+            showAirports: "空港を表示",
             resetToDefaults: "デフォルトに戻す"
         }
     };
@@ -62,10 +65,10 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
     const t = translations[language as keyof typeof translations] || translations.en;
 
     const handleChange = (category: keyof MapStyleSettings, field: string | null, value: number | boolean) => {
-        if (category === 'showLabels') {
+        if (category === 'showLabels' || category === 'showAirports') {
             onSettingsChange({
                 ...settings,
-                showLabels: value as boolean
+                [category]: value as boolean
             });
             return;
         }
@@ -186,6 +189,18 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
                                 className="sr-only peer"
                                 checked={settings.showLabels}
                                 onChange={(e) => handleChange('showLabels', null, e.target.checked)}
+                            />
+                            <div className="w-10 h-6 bg-slate-300/50 dark:bg-slate-700/50 backdrop-blur-sm peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                        </div>
+                    </label>
+                    <label className="flex justify-between items-center cursor-pointer group px-1 py-1">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">{t.showAirports}</span>
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={settings.showAirports}
+                                onChange={(e) => handleChange('showAirports', null, e.target.checked)}
                             />
                             <div className="w-10 h-6 bg-slate-300/50 dark:bg-slate-700/50 backdrop-blur-sm peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
                         </div>

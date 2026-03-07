@@ -7,11 +7,18 @@ export interface BoundaryLOD {
     high: FeatureCollection | null;
 }
 
-let cachedMapDataPromise: Promise<{ prefectures: BoundaryLOD, municipalities: BoundaryLOD }> | null = null;
+export interface MapData {
+    prefectures: BoundaryLOD;
+    municipalities: BoundaryLOD;
+    airports: FeatureCollection | null;
+}
+
+let cachedMapDataPromise: Promise<MapData> | null = null;
 
 export const useMapData = () => {
     const [prefectures, setPrefectures] = useState<BoundaryLOD | null>(null);
     const [municipalities, setMunicipalities] = useState<BoundaryLOD | null>(null);
+    const [airports, setAirports] = useState<FeatureCollection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -21,18 +28,20 @@ export const useMapData = () => {
 
                 if (!cachedMapDataPromise) {
                     cachedMapDataPromise = (async () => {
-                        const [pLow, pMid, pHigh, mLow, mMid, mHigh] = await Promise.all([
+                        const [pLow, pMid, pHigh, mLow, mMid, mHigh, airportData] = await Promise.all([
                             fetch('/data/adm1_low.geojson').then(res => res.json()),
                             fetch('/data/adm1_mid.geojson').then(res => res.json()),
                             fetch('/data/geoBoundaries-JPN-ADM1_simplified.geojson').then(res => res.json()),
                             fetch('/data/adm2_low.geojson').then(res => res.json()),
                             fetch('/data/adm2_mid.geojson').then(res => res.json()),
                             fetch('/data/geoBoundaries-JPN-ADM2_simplified.geojson').then(res => res.json()),
+                            fetch('/data/C28-21_Airport.geojson').then(res => res.json()),
                         ]);
 
                         return {
                             prefectures: { low: pLow, mid: pMid, high: pHigh },
-                            municipalities: { low: mLow, mid: mMid, high: mHigh }
+                            municipalities: { low: mLow, mid: mMid, high: mHigh },
+                            airports: airportData
                         };
                     })();
                 }
@@ -40,6 +49,7 @@ export const useMapData = () => {
                 const data = await cachedMapDataPromise;
                 setPrefectures(data.prefectures);
                 setMunicipalities(data.municipalities);
+                setAirports(data.airports);
             } catch (err) {
                 console.error("Error loading map data:", err);
                 cachedMapDataPromise = null;
@@ -54,6 +64,7 @@ export const useMapData = () => {
     return {
         prefectures,
         municipalities,
+        airports,
         isLoading
     };
 };
