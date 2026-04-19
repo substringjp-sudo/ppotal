@@ -47,7 +47,7 @@ export const useRailData = () => {
                             fetch('/rail/sections_geom_high.json'),
                             fetch('/rail/sections_geom_mid.json'),
                             fetch('/rail/sections_geom_low.json'),
-                            fetch('/rail/railroad_network.json'),
+                            fetch('/rail/railroad_network_lite.json'), // 경량화된 파일 사용
                             fetch('/rail/joints.json'),
                             fetch('/rail/stations_lod.json')
                         ]);
@@ -71,7 +71,7 @@ export const useRailData = () => {
                             sectionsGeomHigh,
                             sectionsGeomMid,
                             sectionsGeomLow,
-                            railroadNetwork,
+                            railroadNetworkLite,
                             joints,
                             stationsLod
                         ] = jsonData;
@@ -112,11 +112,9 @@ export const useRailData = () => {
                                     low: sectionsLow
                                 }
                             },
-                            railroadGraph: {
-                                stationGraph: railroadNetwork.station_graph
-                            },
-                            railroadNetwork,
-                            hierarchy: buildHierarchyFromLineData(railroadNetwork.line_data),
+                            // railroadGraph는 서버에서 처리하므로 제거
+                            railroadNetwork: railroadNetworkLite,
+                            hierarchy: buildHierarchyFromLineData(railroadNetworkLite.line_data),
                             joints,
                             stationsLod
                         } as RailData;

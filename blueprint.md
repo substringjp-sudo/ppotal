@@ -1,44 +1,44 @@
-# Project Blueprint - JapanRailNote
+# JPRail 프로젝트 청사진 (Blueprint)
 
-## Overview
-JapanRailNote is a web application for recording and visualizing Japanese railroad travel. It features an interactive map, station details, and line information.
+## 1. 프로젝트 개요
+JPRail은 일본의 철도 데이터를 시각화하고 사용자에게 최적의 경로를 제공하는 웹 애플리케이션입니다.
 
-## Current Project State (Design & Features)
-- **Interactive Map**: Displays Japanese railroad networks with dynamic styling.
-- **Tube Map Scale Optimization**: The scale of all elements (stations, lines, text) has been reduced by 50% for a cleaner, more efficient layout.
-- **Station Detail Pane**: Shows detailed information about a station. Recently redesigned for a premium, compact look. Features a sophisticated SVG connection diagram that scales gracefully with many connections, smaller elegant typography, and refined spacing.
-- **Trip Recording**: Real-time travel path recording. Features visual path preview (Blue path) on hover and click, with path guidelines now following curved track geometry (arcs).
-- **Density-Filtered Visited Stations**: Visited stations are now subject to passenger-grid-based filtering, preventing clutter while maintaining context.
-- **My Lines Pane**: Lists recorded trips and travel statistics.
-- **Responsive Design**: Support for both desktop and mobile views.
-- **Integrated Map Layers**: High-resolution geographical boundaries for prefectures and municipalities.
-- **Airport Data Integration**: Renders Japanese airport polygons using GeoJSON data. Includes multi-language terminal labels and visibility toggles.
-- **Tube Map Scale Optimization**: The scale of all elements (stations, lines, text) has been reduced by 50% for a cleaner, more efficient layout.
-- **Intelligent Path Recording**: Added "Snake Update" logic for smoother station snapping and a multi-segment pathfinding algorithm to accurately record express routes and complex connections.
-- **Firebase Integration**: Authenticated users can sync their trip data to the cloud.
-- **Hydration & Reliability**: Resolved server/client mismatch issues in the i18n system. Enhanced type safety across core components and fixed various runtime TypeErrors in map interactions.
-- **Enhanced Tooltips**: All map tooltips (Airports, Lines, Stations) now feature distinct icon identifiers and boundary-aware positioning that intelligently adjusts to sidebar visibility.
+### 핵심 목표
+- **DB 기반 데이터 관리:** 대용량 JSON 파일을 탈피하여 Firestore 기반의 효율적 데이터 관리 체계 구축.
+- **서버 사이드 연산:** 복잡한 경로 탐색 로직을 Cloud Functions로 이관하여 성능 최적화.
+- **실시간성:** 데이터 수정 시 배포 없이 즉시 반영되는 시스템 구축.
 
-- **Tooltip & Icon Enhancements (v1.4.0)**:
-    - Adjusted padding and layout for all map tooltips for a cleaner, more spacious look.
-    - Added distinct Material Symbols icons to tooltips: `local_airport` (Airports), `directions_railway` (Lines), and `subway` (Stations).
-    - Implemented smart positioning for `FloatingTooltip` to prevent clipping by sidebars and screen edges.
-    - Refined station tooltip to show localized addresses and a refined line list layout.
-- **Trip Recorder Logic Fix**:
-    - Fixed the `onDraftComplete` callback in `useTripRecorder.ts` to correctly finalize trip drafts.
+## 2. 시스템 아키텍처 (개편안)
 
-## History
-- **v1.4.0 (2026-03-08)**: Tooltip boundary awareness and Icon integration.
-- **v1.3.0 (2025-03-05)**: Airport Data Integration & Map Style Enhancements.
-- **v1.2.0 (2024-03-04)**: Tube Map Scale & Path Logic refinement.
-- **v1.1.0 (2024-03-04)**: Twitter Sharing & 2024 N02-24 Data update.
-- **v1.0.0 (2024-02-28)**: Schematic Engine & Responsive UI overhaul.
+### 데이터 계층 (Firestore)
+- `stations`: 역 정보 (이름, 언어별 명칭, 좌표)
+- `lines`: 노선 정보 (회사, 이름, 색상)
+- `sections`: 물리적 연결 구간 및 거리, 지오메트리
+- `platforms`: 역과 노선의 교차 정보
 
-## Plan for Current Task
-1. [DONE] Fetch and load airport GeoJSON data.
-2. [DONE] Create `AirportLayer` component.
-3. [DONE] Add `showAirports` setting to `MapStyleSettings` and `MapStylePanel`.
-4. [DONE] Integrate `AirportLayer` into `MapPane`.
-5. [DONE] Fix lint errors and resolve type safety issues.
-6. [DONE] Build and verify in browser.
-7. [TODO] Git commit and deploy.
+### 비즈니스 로직 계층 (Cloud Functions)
+- `findPath`: 출발/도착역 ID를 입력받아 최단 경로 계산 (Dijkstra)
+- `getLineInfo`: 노선 상세 정보 및 소속 역 목록 반환
+- `getStationInfo`: 특정 역의 상세 메타데이터 반환
+
+### 프론트엔드 계층 (Next.js)
+- 대용량 데이터 로직 제거 및 API 기반 데이터 페칭.
+- 서버에서 계산된 결과값만을 시각화하는 경량 브라우저 렌더링.
+
+## 3. 현재 작업 계획 (Current Tasks)
+
+### 1단계: Firebase 환경 고도화
+- [ ] `firebase init functions` 실행 및 개발 환경 구축
+- [ ] Firestore 보안 규칙(`firestore.rules`) 업데이트
+
+### 2단계: 데이터 마이그레이션
+- [ ] `scripts/migrate-to-firestore.ts` 작성 및 실행
+- [ ] 대용량 GeoJSON 데이터의 Firestore 저장 최적화 (Chunking 또는 Storage 연동)
+
+### 3단계: Cloud Functions 구현 및 배포
+- [ ] `src/lib/RoutingGraph.ts` 로직을 서버용으로 마이그레이션
+- [ ] 경로 탐색 API 구현 및 배포
+
+### 4단계: 클라이언트 연동
+- [ ] 기존 로컬 데이터 로드 로직 제거
+- [ ] API 인터페이스 연결 및 성능 테스트

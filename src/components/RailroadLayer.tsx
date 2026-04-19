@@ -471,12 +471,16 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         };
     }, []);
 
-    // Stable key: only re-render on data or major zoom changes
+    // Stable key: re-render on data, major zoom changes, or when the set of used sections actually changes
     const layerKey = useMemo(() => {
         const draftIdsArray = Array.from(draftSectionIds || []);
         const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
-        return `${zoomGroup}_${usedSectionIds.size}_${selectionSet.size}_${draftKey}_${language}`;
-    }, [zoomGroup, usedSectionIds.size, selectionSet.size, draftSectionIds, language]);
+        
+        // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라 
+        // 데이터의 특징적인 값(해시 대용)을 포함합니다.
+        const usedIdsHash = Array.from(usedSectionIds).slice(-10).join(',');
+        return `${zoomGroup}_${usedSectionIds.size}_${usedIdsHash}_${selectionSet.size}_${draftKey}_${language}`;
+    }, [zoomGroup, usedSectionIds, selectionSet.size, draftSectionIds, language]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 

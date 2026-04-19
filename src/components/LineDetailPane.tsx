@@ -10,7 +10,6 @@ import { getLineColor } from '../lib/lineColors';
 import { RailData } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
-
 import { LINE_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
 
 export interface LineDetailPaneProps {
@@ -20,7 +19,7 @@ export interface LineDetailPaneProps {
     visitedEdges: Set<string>;
     selectedLines: string[];
     onRecordTrip?: (trip: Trip) => void;
-    getShortestPath?: (start: string, end: string, lines: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null;
+    getShortestPath?: (start: string, end: string, lines: string[]) => Promise<{ path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null>;
     onStationClick?: (id: string) => void;
     onClose: () => void;
     onToggleLine?: (lineId: string) => void;
@@ -57,7 +56,6 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 segment.edges.forEach((edge) => {
                     total += edge.distance;
                     const edgeKey = [edge.from, edge.to].sort().join('<->');
-
                     if (visitedEdges.has(edgeKey)) {
                         visited += edge.distance;
                         visitedStationsSet.add(edge.from);
@@ -66,9 +64,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                 });
             });
         }
-
         const totalDist = total > 0 ? total : (lineData?.total_length ? lineData.total_length / 1000 : 0);
-
         return {
             total: Math.round(totalDist * 10) / 10,
             visited: Math.round(visited * 10) / 10,
@@ -81,15 +77,11 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
 
     return (
         <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] sm:max-h-[60vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col p-3 sm:p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[24px] sm:rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out">
-            {/* Header with Title and Stats */}
             <div className="flex flex-col gap-2 sm:gap-4 mb-2 sm:mb-6 flex-shrink-0">
-                {/* Primary Row: Title and Close Button */}
                 <div className="flex justify-between items-start gap-1.5 sm:gap-4">
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                         <button
-                            onClick={() => {
-                                if (onToggleLine) onToggleLine(lineId);
-                            }}
+                            onClick={() => onToggleLine?.(lineId)}
                             className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl border flex items-center justify-center transition-all duration-300 shadow-sm shrink-0
                                 ${selectedLines.includes(lineId)
                                     ? 'bg-primary border-primary text-white shadow-primary/20'
@@ -101,125 +93,77 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                 {selectedLines.includes(lineId) ? 'check' : 'add'}
                             </span>
                         </button>
-
                         <div className="flex flex-col min-w-0">
                             <div className="flex items-baseline gap-1.5 sm:gap-2 m-0 overflow-hidden">
                                 <span className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
                                     {lineData ? getLocalizedName(lineData, language) : lineName}
                                 </span>
                                 {language !== 'ja' && lineData?.name && (
-                                    <span className="text-[9px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">
-                                        {lineData.name}
-                                    </span>
+                                    <span className="text-[9px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">{lineData.name}</span>
                                 )}
                             </div>
                             <div className="flex items-baseline gap-1.5 sm:gap-2 mt-0 overflow-hidden">
                                 <span className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest truncate">
                                     {companyData ? getLocalizedName(companyData, language) : company}
                                 </span>
-                                {language !== 'ja' && companyData?.name && (
-                                    <span className="text-[7px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase truncate">
-                                        {companyData.name}
-                                    </span>
-                                )}
                             </div>
                         </div>
                     </div>
-
                     <button
-                        onClick={() => {
-                            onClose();
-                            trackEvent('close_line_detail', 'ui_interaction', lineId);
-                        }}
-                        className="w-10 h-10 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center active:scale-90"
+                        onClick={() => { onClose(); trackEvent('close_line_detail', 'ui_interaction', lineId); }}
+                        className="w-10 h-10 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 transition-all flex items-center justify-center active:scale-90"
                     >
                         <span className="material-symbols-outlined text-2xl">close</span>
                     </button>
                 </div>
-
-                {/* Secondary Row: Stats and Minimap */}
-                <div className="flex items-center justify-between gap-2 sm:gap-4 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+                <div className="flex items-center justify-between gap-2 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3 shrink-0">
                         <div className="flex flex-col gap-0">
-                            <div className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">{t.completion}</div>
-                            <div className="text-sm sm:text-lg text-slate-900 dark:text-white font-black leading-none whitespace-nowrap">
-                                {stats.visited} <span className="text-[7px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold">/ {stats.total} km</span>
-                            </div>
-                        </div>
-                        <div className="relative size-8 sm:size-12 shrink-0">
-                            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                                <path
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    className="fill-none stroke-slate-200 dark:stroke-slate-800 stroke-[3]"
-                                />
-                                <path
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                    className="fill-none stroke-emerald-500 stroke-[3] transition-all duration-1000 ease-in-out"
-                                    strokeDasharray={`${stats.percent}, 100`}
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center text-[8px] sm:text-[11px] font-black text-emerald-600 dark:text-emerald-400">
-                                {stats.percent}%
+                            <div className="text-[8px] sm:text-[9px] text-slate-400 font-black uppercase tracking-widest">{t.completion}</div>
+                            <div className="text-sm sm:text-lg text-slate-900 dark:text-white font-black leading-none">
+                                {stats.visited} <span className="text-[7px] text-slate-400">/ {stats.total} km</span>
                             </div>
                         </div>
                     </div>
-
-                    <div id="tube-minimap-portal" className="shrink-0 ml-auto sm:ml-0"></div>
+                    <div id="tube-minimap-portal" className="shrink-0"></div>
                 </div>
             </div>
-
-            <div
-                ref={scrollContainerRef}
-                className="flex-1 relative overflow-auto min-h-0 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/50"
-            >
+            <div ref={scrollContainerRef} className="flex-1 relative overflow-auto min-h-0 bg-slate-50 dark:bg-slate-950/20 rounded-2xl border border-slate-100 dark:border-slate-800/50">
                 <TubeMap
-                    nodes={topology.nodes}
-                    edges={topology.edges}
-                    adj={topology.adj}
-                    nodesById={topology.nodesById}
-                    edgeInfos={topology.edgeInfos}
-                    visitedStations={stats.visitedStations}
-                    visitedEdges={visitedEdges}
-                    lineColor={lineColor}
-                    onStationClick={onStationClick}
-                    scrollContainerRef={scrollContainerRef}
-                    loops={topology.loops}
-                    onPathCreate={(path) => {
+                    nodes={topology.nodes} edges={topology.edges} adj={topology.adj}
+                    nodesById={topology.nodesById} edgeInfos={topology.edgeInfos}
+                    visitedStations={stats.visitedStations} visitedEdges={visitedEdges}
+                    lineColor={lineColor} onStationClick={onStationClick}
+                    scrollContainerRef={scrollContainerRef} loops={topology.loops}
+                    onPathCreate={async (path) => {
                         if (getShortestPath && onRecordTrip && path.length > 1) {
                             const start = path[0];
                             const end = path[path.length - 1];
-
-                            // Combine segments for each pair in the drawn path to respect the user's choices
                             const combinedPath: string[] = [path[0]];
                             let combinedDistance = 0;
                             const combinedGeometries: [number, number][][] = [];
                             const combinedSectionIds: number[] = [];
 
-                            for (let i = 0; i < path.length - 1; i++) {
-                                const segmentData = getShortestPath(path[i], path[i + 1], [lineId]);
-                                if (segmentData) {
-                                    // segmentData.path[0] should be path[i]
-                                    combinedPath.push(...segmentData.path.slice(1));
-                                    combinedDistance += segmentData.distance;
-                                    combinedGeometries.push(...segmentData.geometries);
-                                    combinedSectionIds.push(...segmentData.sectionIds);
+                            try {
+                                for (let i = 0; i < path.length - 1; i++) {
+                                    const segmentData = await getShortestPath(path[i], path[i + 1], [lineId]);
+                                    if (segmentData) {
+                                        combinedPath.push(...segmentData.path.slice(1));
+                                        combinedDistance += segmentData.distance;
+                                        combinedGeometries.push(...segmentData.geometries);
+                                        combinedSectionIds.push(...segmentData.sectionIds);
+                                    }
                                 }
-                            }
-
-                            if (combinedSectionIds.length > 0) {
-                                onRecordTrip({
-                                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                    start: start,
-                                    end: end,
-                                    startId: start,
-                                    endId: end,
-                                    path: combinedPath,
-                                    distance: combinedDistance,
-                                    geometries: combinedGeometries,
-                                    sectionIds: combinedSectionIds,
-                                    waypoints: path
-                                });
+                                if (combinedSectionIds.length > 0) {
+                                    onRecordTrip({
+                                        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                                        start, end, startId: start, endId: end,
+                                        path: combinedPath, distance: combinedDistance,
+                                        geometries: combinedGeometries, sectionIds: combinedSectionIds, waypoints: path
+                                    });
+                                }
+                            } catch (err) {
+                                console.error("LineDetail remote search failed:", err);
                             }
                         }
                     }}

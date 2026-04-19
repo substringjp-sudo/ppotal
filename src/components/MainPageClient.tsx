@@ -108,7 +108,7 @@ const MainPageClient = () => {
         visitedEdges: Set<string>,
         visitedStations: Set<string>,
         nodes: Map<string, StationNode>,
-        getShortestPath: (start: string, end: string, lines?: string[]) => { path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null
+        getShortestPath: (start: string, end: string, lines?: string[]) => Promise<{ path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null>
     } | null>(null);
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
     const [selectedStation, setSelectedStation] = React.useState<Station | null>(null);
@@ -307,41 +307,45 @@ const MainPageClient = () => {
         trackEvent('start_trip', 'interaction', station.name);
     }, []);
 
-    const handleEndTrip = React.useCallback((endStation: Station) => {
+    const handleEndTrip = React.useCallback(async (endStation: Station) => {
         if (!tripStartStation || !lineDetailData) return;
 
-        // Use RoutingGraph to calculate path
-        const pathResult = lineDetailData.getShortestPath(tripStartStation.id, endStation.id, undefined);
+        // Use RoutingGraph to calculate path (Async)
+        try {
+            const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, endStation.id, undefined);
 
-        if (pathResult) {
-            const newTrip: Trip = {
-                id: `trip-${Date.now()}`,
-                name: `${tripStartStation.name} → ${endStation.name}`,
-                start: tripStartStation.name,
-                end: endStation.name,
-                startId: tripStartStation.id,
-                endId: endStation.id,
-                path: pathResult.path,
-                waypoints: [tripStartStation.id, endStation.id],
-                geometries: pathResult.geometries,
-                distance: pathResult.distance,
-                sectionIds: pathResult.sectionIds,
-                createdAt: new Date().toISOString()
-            };
+            if (pathResult) {
+                const newTrip: Trip = {
+                    id: `trip-${Date.now()}`,
+                    name: `${tripStartStation.name} → ${endStation.name}`,
+                    start: tripStartStation.name,
+                    end: endStation.name,
+                    startId: tripStartStation.id,
+                    endId: endStation.id,
+                    path: pathResult.path,
+                    waypoints: [tripStartStation.id, endStation.id],
+                    geometries: pathResult.geometries,
+                    distance: pathResult.distance,
+                    sectionIds: pathResult.sectionIds,
+                    createdAt: new Date().toISOString()
+                };
 
-            setRecordedTrips(prev => [...prev, newTrip]);
-            trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
+                setRecordedTrips(prev => [...prev, newTrip]);
+                trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
 
-            // Sync with Firebase if user logged in
-            if (user) {
-                setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip))
-                    .catch(e => console.error("Cloud sync failed", e));
+                // Sync with Firebase if user logged in
+                if (user) {
+                    setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip))
+                        .catch(e => console.error("Cloud sync failed", e));
+                }
+
+                // Reset
+                setTripStartStation(null);
+                setDraftTrip(null);
+                setSelectedStation(null);
             }
-
-            // Reset
-            setTripStartStation(null);
-            setDraftTrip(null);
-            setSelectedStation(null);
+        } catch (err) {
+            console.error("End trip remote search failed:", err);
         }
     }, [tripStartStation, lineDetailData, user]);
 
@@ -350,6 +354,7 @@ const MainPageClient = () => {
             if (prev.find(t => t.id === trip.id)) return prev;
             return [...prev, trip];
         });
+        setDraftTrip(null);
 
         trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
 
@@ -445,7 +450,7 @@ const MainPageClient = () => {
             // Close any existing popups by temporarily setting to null
             setSelectedStation(null);
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 setSelectedStation(station);
                 setActiveLine(null);
                 if (isMobile) {
@@ -455,7 +460,48 @@ const MainPageClient = () => {
 
                 // Preview trip path if one is in progress
                 if (tripStartStation && lineDetailData) {
-                    const pathResult = lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
+                    try {
+                        const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
+                        if (pathResult) {
+                            const previewTrip: Trip = {
+                                id: 'preview',
+                                start: tripStartStation.name,
+                                end: station.name,
+                                path: pathResult.path,
+                                waypoints: [tripStartStation.id, station.id],
+                                geometries: pathResult.geometries,
+                                distance: pathResult.distance,
+                                sectionIds: pathResult.sectionIds,
+                            };
+                            setDraftTrip(previewTrip);
+                        }
+                    } catch (err) {
+                        console.error("Station click remote search failed:", err);
+                    }
+                }
+            }, 0);
+        }
+    }, [isMobile, railData, tripStartStation, lineDetailData]);
+
+    const hoverRequestRef = React.useRef<number>(0);
+
+    const handleStationHover = React.useCallback(async (stationId: string | null) => {
+        if (!tripStartStation || !lineDetailData || !railData?.stations) {
+            return;
+        }
+
+        const targetStationId = stationId || (selectedStation?.id !== tripStartStation.id ? selectedStation?.id : null);
+
+        if (targetStationId) {
+            const station = (railData.stations as Record<string, Station>)[targetStationId];
+            if (station && station.id !== tripStartStation.id) {
+                const requestId = ++hoverRequestRef.current;
+                try {
+                    const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
+                    
+                    // 현재 호버 중인 역이 여전히 동일한지 확인
+                    if (requestId !== hoverRequestRef.current) return;
+
                     if (pathResult) {
                         const previewTrip: Trip = {
                             id: 'preview',
@@ -468,37 +514,14 @@ const MainPageClient = () => {
                             sectionIds: pathResult.sectionIds,
                         };
                         setDraftTrip(previewTrip);
+                    } else {
+                        setDraftTrip(null);
                     }
-                }
-            }, 0);
-        }
-    }, [isMobile, railData, tripStartStation, lineDetailData]);
-
-    const handleStationHover = React.useCallback((stationId: string | null) => {
-        if (!tripStartStation || !lineDetailData || !railData?.stations) {
-            return;
-        }
-
-        const targetStationId = stationId || (selectedStation?.id !== tripStartStation.id ? selectedStation?.id : null);
-
-        if (targetStationId) {
-            const station = (railData.stations as Record<string, Station>)[targetStationId];
-            if (station && station.id !== tripStartStation.id) {
-                const pathResult = lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
-                if (pathResult) {
-                    const previewTrip: Trip = {
-                        id: 'preview',
-                        start: tripStartStation.name,
-                        end: station.name,
-                        path: pathResult.path,
-                        waypoints: [tripStartStation.id, station.id],
-                        geometries: pathResult.geometries,
-                        distance: pathResult.distance,
-                        sectionIds: pathResult.sectionIds,
-                    };
-                    setDraftTrip(previewTrip);
-                } else {
-                    setDraftTrip(null);
+                } catch (err) {
+                    if (requestId === hoverRequestRef.current) {
+                        console.error("Hover remote search failed:", err);
+                        setDraftTrip(null);
+                    }
                 }
             } else if (station && station.id === tripStartStation.id) {
                 setDraftTrip(null);
@@ -587,20 +610,24 @@ const MainPageClient = () => {
         setTempPath(waypoints);
     }, []);
 
-    const handleStationPathCreate = React.useCallback((startId: string, endId: string) => {
+    const handleStationPathCreate = React.useCallback(async (startId: string, endId: string) => {
         if (!lineDetailData?.getShortestPath || !activeLine) return;
 
-        const pathData = lineDetailData.getShortestPath(startId, endId, [activeLine]);
-        if (pathData) {
-            const trip = {
-                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                start: lineDetailData.nodes.get(startId)?.name || startId,
-                end: lineDetailData.nodes.get(endId)?.name || endId,
-                ...pathData,
-                waypoints: [startId, endId]
-            };
-            setDraftTrip(trip as any);
-            setTempPath([]);
+        try {
+            const pathData = await lineDetailData.getShortestPath(startId, endId, [activeLine]);
+            if (pathData) {
+                const trip = {
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    start: lineDetailData.nodes.get(startId)?.name || startId,
+                    end: lineDetailData.nodes.get(endId)?.name || endId,
+                    ...pathData,
+                    waypoints: [startId, endId]
+                };
+                setDraftTrip(trip as any);
+                setTempPath([]);
+            }
+        } catch (err) {
+            console.error("Direct path remote search failed:", err);
         }
     }, [lineDetailData, activeLine]);
 

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAvyFrKYZXqPo2_O6nTTDtpPCm4N4sWHfQ",
@@ -15,5 +16,6 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
+const functions = getFunctions(app, "asia-northeast1"); // 도쿄 리전 사용 권장
 
-export { app, db, auth };
+export { app, db, auth, functions };

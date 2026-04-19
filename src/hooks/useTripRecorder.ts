@@ -1,24 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { haversineDistance } from '../lib/graphUtils';
 import { ProcessedStation } from '../types/mapTypes';
 import { Trip } from '../types/trip';
-
-interface GraphLike {
-    getShortestPath(startId: string, endId: string, allowedLines?: string[]): {
-        path: string[],
-        sectionIds: number[],
-        distance: number,
-        geometries: [number, number][][]
-    } | null;
-}
+import { findRouteRemote } from '../lib/rail-api';
 
 interface UseTripRecorderProps {
-    graph: GraphLike | null;
+    graph?: any; // 레거시 호환용 (사용 안함)
     visibleStations: Record<string, ProcessedStation> | null;
     onRecordTrip?: (trip: Trip) => void;
-
     onDragUpdate?: (waypoints: string[]) => void;
     onDraftComplete?: (trip: Trip) => void;
     selectedLines?: string[];
@@ -26,10 +16,8 @@ interface UseTripRecorderProps {
 }
 
 export const useTripRecorder = ({
-    graph,
     visibleStations,
     onRecordTrip,
-
     onDragUpdate,
     onDraftComplete,
     selectedLines = [],
@@ -39,89 +27,87 @@ export const useTripRecorder = ({
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
     const [dragStartCoords, setDragStartCoords] = useState<[number, number] | null>(null);
     const [dragPath, setDragPath] = useState<[number, number][][]>([]);
+    
+    // 비동기 상태 관리
+    const [isCalculating, setIsCalculating] = useState(false);
+    const lastRequestRef = useRef<number>(0);
 
     const dragStartStationRef = useRef(dragStartStation);
     const visibleStationsRef = useRef(visibleStations);
 
-    // Auto-scroll refs
     const scrollVelocityRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
     const lastContainerPointRef = useRef<L.Point | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const lastLayerPointRef = useRef<L.Point | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
 
-    // Drag State for Snake Logic
     const dragState = useRef<{
         waypoints: string[];
         segments: { path: string[], geometries: [number, number][][], distance: number, sectionIds: number[] }[];
     }>({ waypoints: [], segments: [] });
 
-    useEffect(() => {
-        dragStartStationRef.current = dragStartStation;
-    }, [dragStartStation]);
-
-    useEffect(() => {
-        visibleStationsRef.current = visibleStations;
-    }, [visibleStations]);
-
+    useEffect(() => { dragStartStationRef.current = dragStartStation; }, [dragStartStation]);
+    useEffect(() => { visibleStationsRef.current = visibleStations; }, [visibleStations]);
     useEffect(() => { if (map) mapInstanceRef.current = map; }, [map]);
 
-    // Disable map dragging during station drag
     useEffect(() => {
         if (!map || !map.dragging) return;
-        if (dragStartStation) {
-            map.dragging.disable();
-        } else {
-            map.dragging.enable();
-        }
+        if (dragStartStation) map.dragging.disable();
+        else map.dragging.enable();
     }, [map, dragStartStation]);
 
     const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
-        // Validation: Only allow starting from visible lines
         const stations = visibleStationsRef.current;
         if (stations && stations[id]) {
             const data = stations[id];
             const selectionSet = new Set(selectedLines);
-            const isNoneExplicitlySelected = selectionSet.has("__NONE__");
-            const isFilterActive = isNoneExplicitlySelected || selectionSet.size > 0;
-
+            const isFilterActive = selectionSet.has("__NONE__") || selectionSet.size > 0;
             const isStationVisible = data.lines?.some((l: string) =>
                 selectionSet.has(l) || activeLine === l || !isFilterActive
             );
-
             if (!isStationVisible && !data.isJoint) return;
         }
 
+        // 즉시 동기적으로 Ref 업데이트
+        dragStartStationRef.current = id;
+        
         setDragStartStation(id);
         setDragStartCoords(coords);
         setDragPath([]);
-
-        dragStartStationRef.current = id;
-
-        dragState.current = {
-            waypoints: [id],
-            segments: []
-        };
+        dragState.current = { waypoints: [id], segments: [] };
 
         if (onDragUpdate) onDragUpdate([id]);
-
         if (map) {
             map.dragging.disable();
-            const latLng = L.latLng(coords[0], coords[1]);
-            try {
-                lastLayerPointRef.current = map.latLngToLayerPoint(latLng);
-            } catch (e) {
-                console.warn("Failed to project initial point", e);
-            }
+            lastLayerPointRef.current = map.latLngToLayerPoint(L.latLng(coords[0], coords[1]));
         }
     }, [map, onDragUpdate, selectedLines, activeLine]);
 
-    const updateDragPath = useCallback((mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
+    const updateDragPath = useCallback(async (mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
         const currentDragStation = dragStartStationRef.current;
         const prevLayerPoint = lastLayerPointRef.current;
         const stations = visibleStationsRef.current;
 
-        if (currentDragStation && graph && prevLayerPoint && stations) {
+        if (currentDragStation && prevLayerPoint && stations) {
+            // 항상 지시선(Stretchy line) 업데이트를 위해 마지막 지점 저장
+            let allGeoms = dragState.current.segments.flatMap((s: any) => s.geometries);
+            const waypoints = dragState.current.waypoints;
+            const lastWaypoint = waypoints[waypoints.length - 1];
+            
+            if (stations[lastWaypoint]) {
+                const startCoords = stations[lastWaypoint].centroid;
+                // 현재 마우스 위치까지 잇는 실시간 지시선 추가
+                allGeoms = [...allGeoms, [[startCoords[1], startCoords[0]], [currentLatLng.lng, currentLatLng.lat]]];
+            }
+
+            // 레이스가 발생했는지 마지막으로 한 번 더 체크
+            if (dragStartStationRef.current) {
+                setDragPath(allGeoms);
+            }
+
+            // 이미 계산 중이면 역 인식 로직은 건너뜀 (성능 및 안정성)
+            if (isCalculating) return;
+
             const candidates: { id: string, dist: number, projDist: number }[] = [];
             const padding = 30;
             const minX = Math.min(prevLayerPoint.x, currentLayerPoint.x) - padding;
@@ -130,329 +116,209 @@ export const useTripRecorder = ({
             const maxY = Math.max(prevLayerPoint.y, currentLayerPoint.y) + padding;
 
             Object.entries(stations).forEach(([id, data]) => {
-                const stLatLng = L.latLng(data.centroid[0], data.centroid[1]);
-                const stPoint = mapInstance.latLngToLayerPoint(stLatLng);
-
+                const stPoint = mapInstance.latLngToLayerPoint(L.latLng(data.centroid[0], data.centroid[1]));
                 if (stPoint.x >= minX && stPoint.x <= maxX && stPoint.y >= minY && stPoint.y <= maxY) {
-                    // Filter: Only allow stations that are on visible lines
                     const selectionSet = new Set(selectedLines);
-                    const isNoneExplicitlySelected = selectionSet.has("__NONE__");
-                    const isFilterActive = isNoneExplicitlySelected || selectionSet.size > 0;
-
+                    const isFilterActive = selectionSet.has("__NONE__") || selectionSet.size > 0;
                     const isStationVisible = data.lines?.some((l: string) =>
                         selectionSet.has(l) || activeLine === l || !isFilterActive
                     );
-
-                    if (!isStationVisible && !data.isJoint) return;
-
-                    const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
-                    if (d < 20) {
-                        const distFromStart = prevLayerPoint.distanceTo(stPoint);
-                        candidates.push({ id, dist: d, projDist: distFromStart });
+                    if (isStationVisible || data.isJoint) {
+                        const d = L.LineUtil.pointToSegmentDistance(stPoint, prevLayerPoint, currentLayerPoint);
+                        if (d < 20) candidates.push({ id, dist: d, projDist: prevLayerPoint.distanceTo(stPoint) });
                     }
                 }
             });
 
             candidates.sort((a, b) => a.projDist - b.projDist);
-
-            const { waypoints, segments } = dragState.current;
-            if (waypoints.length === 0) waypoints.push(currentDragStation);
-
+            const ds = dragState.current;
             let changed = false;
 
-            candidates.forEach(c => {
-                const lastWaypoint = waypoints[waypoints.length - 1];
-                if (c.id === lastWaypoint) return;
+            for (const c of candidates) {
+                const lastWP = ds.waypoints[ds.waypoints.length - 1];
+                if (c.id === lastWP) continue;
 
-                const existingIndex = waypoints.indexOf(c.id);
-                if (existingIndex !== -1 && existingIndex < waypoints.length - 1) {
-                    // Backtracking: Scrub everything after the first occurrence of this station
-                    // This creates an "eraser" effect when moving the cursor back over the path
-                    const popCount = waypoints.length - 1 - existingIndex;
+                const existingIndex = ds.waypoints.indexOf(c.id);
+                if (existingIndex !== -1 && existingIndex < ds.waypoints.length - 1) {
+                    const popCount = ds.waypoints.length - 1 - existingIndex;
                     for (let k = 0; k < popCount; k++) {
-                        waypoints.pop();
-                        segments.pop();
+                        ds.waypoints.pop();
+                        ds.segments.pop();
                     }
                     changed = true;
                 } else {
-                    const lastStData = stations[lastWaypoint];
-                    const currStData = stations[c.id];
-                    const pathData = graph.getShortestPath(
-                        lastWaypoint,
-                        c.id,
-                        selectedLines
-                    );
-
-                    if (pathData) {
-                        let isValid = true;
-
-                        if (lastStData && currStData) {
-                            const crowDist = haversineDistance(lastStData.centroid, currStData.centroid);
-                            const railDist = pathData.distance;
-
-                            // 1. Jump constraints (relaxed as per user request)
-                            // Allow if either one is reasonable (e.g., long but direct gap, or short but busy line)
-                            // We increase these to be very lenient while still preventing accidental "teleports"
-                            const isDistanceOk = railDist <= 120;
-                            const isSectionOk = (pathData.sectionIds?.length || 0) <= 50;
-
-                            if (!isDistanceOk && !isSectionOk) {
-                                isValid = false;
-                            }
-
-                            // 2. Extra safety: distance-to-displacement ratio
-                            // If the rail route is more than 5x the crow-flies distance and over 10km, block it.
-                            if (isValid && crowDist < 10 && (railDist / (crowDist + 0.01)) > 5.0) {
-                                isValid = false;
-                            }
-
-                            // 3. Prevent extreme detours
-                            if (isValid && railDist > crowDist * 3 + 10) {
-                                isValid = false;
-                            }
+                    const requestId = ++lastRequestRef.current;
+                    setIsCalculating(true);
+                    try {
+                        const pathData = await findRouteRemote(lastWP, c.id, selectedLines);
+                        if (requestId !== lastRequestRef.current || !dragStartStationRef.current) {
+                            setIsCalculating(false);
+                            return;
                         }
 
-                        if (isValid) {
-                            waypoints.push(c.id);
-                            segments.push({
+                        if (pathData && pathData.path && pathData.path.length > 0) {
+                            ds.waypoints.push(c.id);
+                            ds.segments.push({
                                 path: pathData.path,
-                                geometries: pathData.geometries,
+                                geometries: pathData.decodedGeometries || [],
                                 distance: pathData.distance,
                                 sectionIds: pathData.sectionIds
                             });
                             changed = true;
                         }
+                    } catch (err) {
+                        console.error("Remote pathfinding failed:", err);
+                    } finally {
+                        setIsCalculating(false);
                     }
                 }
-            });
-
-            if (changed && onDragUpdate) {
-                onDragUpdate([...waypoints]);
+                
+                // 역이 하나라도 추가/삭제되면 루프 중단하고 다음 프레임에서 처리하도록 함 (안정성)
+                if (changed) break;
             }
 
-            let allGeoms = segments.flatMap((s: { geometries: [number, number][][] }) => s.geometries);
-            const lastWaypoint = waypoints[waypoints.length - 1];
-            if (stations[lastWaypoint]) {
-                const startCoords = stations[lastWaypoint].centroid; // [lat, lon]
-                const cursorCoords: [number, number] = [currentLatLng.lat, currentLatLng.lng];
-
-                // Store as [lon, lat] to match graph geometries for MapPane.tsx polyline mapping
-                allGeoms = [...allGeoms, [[startCoords[1], startCoords[0]], [cursorCoords[1], cursorCoords[0]]]];
-            }
-
-            setDragPath(allGeoms);
+            if (changed && onDragUpdate) onDragUpdate([...ds.waypoints]);
+            
+            lastLayerPointRef.current = currentLayerPoint;
         }
+    }, [selectedLines, activeLine, onDragUpdate, isCalculating]);
 
-        lastLayerPointRef.current = currentLayerPoint;
-    }, [graph, selectedLines, activeLine, onDragUpdate]);
-
-    // Auto-scroll Loop
     useEffect(() => {
         if (!dragStartStation) return;
-
         const loop = () => {
             const velocity = scrollVelocityRef.current;
             if ((velocity.x !== 0 || velocity.y !== 0) && map && lastContainerPointRef.current) {
                 map.panBy([velocity.x, velocity.y], { animate: false });
-
-                const containerPoint = lastContainerPointRef.current;
-                const newLatLng = map.containerPointToLatLng(containerPoint);
-                const newLayerPoint = map.latLngToLayerPoint(newLatLng);
-
-                updateDragPath(map, newLayerPoint, newLatLng);
+                const latlng = map.containerPointToLatLng(lastContainerPointRef.current);
+                updateDragPath(map, map.latLngToLayerPoint(latlng), latlng);
             }
             animationFrameRef.current = requestAnimationFrame(loop);
         };
         animationFrameRef.current = requestAnimationFrame(loop);
-        return () => {
-            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-        };
+        return () => { if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current); };
     }, [map, dragStartStation, updateDragPath]);
 
     const handleEnd = useCallback(() => {
-        const currentDragStation = dragStartStationRef.current;
-        if (currentDragStation && graph) {
-            const { waypoints, segments } = dragState.current;
-            const lastWaypoint = waypoints[waypoints.length - 1];
-            const lastStData = visibleStationsRef.current?.[lastWaypoint];
-            const isEndingOnJoint = lastStData?.isJoint;
-
-            if (segments.length > 0 && !isEndingOnJoint) {
-                const fullPath: string[] = [];
-                const fullGeoms: [number, number][][] = [];
-                const fullSectionIds: number[] = [];
-                let totalDist = 0;
-
-                segments.forEach((seg, idx) => {
-                    if (idx === 0) fullPath.push(...seg.path);
-                    else fullPath.push(...seg.path.slice(1));
-                    fullGeoms.push(...seg.geometries);
-                    fullSectionIds.push(...(seg.sectionIds || []));
-                    totalDist += seg.distance;
-                });
-
-                const trip = {
-                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                    start: waypoints[0],
-                    end: waypoints[waypoints.length - 1],
-                    startId: waypoints[0],
-                    endId: waypoints[waypoints.length - 1],
-                    path: fullPath,
-                    distance: totalDist,
-                    geometries: fullGeoms,
-                    waypoints: waypoints,
-                    sectionIds: Array.from(new Set(fullSectionIds)) // Uniquify
-                };
-
-                if (onRecordTrip) {
-                    onRecordTrip(trip);
-                }
-                if (onDraftComplete) {
-                    onDraftComplete(trip);
-                }
-            }
+        // 즉시 모든 진행 중인 비동기 요청 무효화
+        lastRequestRef.current += 1;
+        dragStartStationRef.current = null;
+        
+        // 계산 중일 때 갑자기 끝나는 경우를 대비해 락 체크
+        if (isCalculating) {
+            setIsCalculating(false);
         }
 
-        // Reset State
+        const { waypoints, segments } = dragState.current;
+        
+        // 실제 저장되는 구간 수와 경유지 수가 일치하는지 확인 (검증 로직)
+        if (segments.length > 0 && segments.length === waypoints.length - 1) {
+            const fullPath: string[] = [];
+            const fullGeoms: [number, number][][] = [];
+            const fullSectionIds: number[] = [];
+            let totalDist = 0;
+
+            segments.forEach((seg, idx) => {
+                if (idx === 0) fullPath.push(...seg.path);
+                else fullPath.push(...seg.path.slice(1));
+                
+                // 지오메트리가 비어있는 경우에 대한 방어 로직 (최소한의 직선이라도 보장)
+                if (seg.geometries.length === 0 && seg.path.length >= 2) {
+                    const s1 = visibleStationsRef.current?.[seg.path[0]];
+                    const s2 = visibleStationsRef.current?.[seg.path[seg.path.length-1]];
+                    if (s1 && s2) {
+                        fullGeoms.push([[s1.centroid[1], s1.centroid[0]], [s2.centroid[1], s2.centroid[0]]]);
+                    }
+                } else {
+                    fullGeoms.push(...seg.geometries);
+                }
+
+                fullSectionIds.push(...(seg.sectionIds || []));
+                totalDist += seg.distance;
+            });
+
+            const trip: Trip = {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                start: waypoints[0],
+                end: waypoints[waypoints.length - 1],
+                startId: waypoints[0],
+                endId: waypoints[waypoints.length - 1],
+                path: fullPath,
+                distance: totalDist,
+                geometries: fullGeoms,
+                waypoints: [...waypoints],
+                sectionIds: Array.from(new Set(fullSectionIds))
+            };
+            
+            onRecordTrip?.(trip);
+            // 성공적으로 기록되었으므로, 파란색 지시선(draft)은 비워줍니다.
+            onDraftComplete?.(null as any); 
+        }
+
+        // 모든 상태를 완벽하게 클리어
         setDragStartStation(null);
         setDragStartCoords(null);
         setDragPath([]);
         dragState.current = { waypoints: [], segments: [] };
         lastLayerPointRef.current = null;
         if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
-    }, [graph, onRecordTrip, onDraftComplete]);
+    }, [onRecordTrip, onDraftComplete, isCalculating, visibleStations]);
 
-    // Handle Global Mouse/Touch Move/Up
+    const updateDragPathRef = useRef(updateDragPath);
+    const handleEndRef = useRef(handleEnd);
+    useEffect(() => { updateDragPathRef.current = updateDragPath; }, [updateDragPath]);
+    useEffect(() => { handleEndRef.current = handleEnd; }, [handleEnd]);
+
     useEffect(() => {
         if (!map) return;
-
         const handleMove = (containerPoint: L.Point, layerPoint: L.Point, latlng: L.LatLng) => {
-            const currentDragStation = dragStartStationRef.current;
             lastContainerPointRef.current = containerPoint;
-
-            if (currentDragStation) {
+            if (dragStartStationRef.current) {
                 const { x, y } = containerPoint;
                 const { x: w, y: h } = map.getSize();
-                const threshold = 70;
-                const speed = 10;
-
-                // Detect overlay panel boundaries for left/right edge panning
-                // The map extends full width behind the panels, so we need to
-                // trigger edge scrolling at the panel boundaries, not the raw container edges
-                let leftEdge = 0;
-                let rightEdge = w;
-
-                try {
-                    // Find the left sidebar (first aside with w-[350px])
-                    const leftSidebar = document.querySelector('aside.w-\\[350px\\]');
-                    if (leftSidebar) {
-                        const rect = leftSidebar.getBoundingClientRect();
-                        const mapRect = map.getContainer().getBoundingClientRect();
-                        leftEdge = rect.right - mapRect.left;
-                    }
-                    // Find the right sidebar (aside with w-[320px])
-                    const rightSidebar = document.querySelector('aside.w-\\[320px\\]');
-                    if (rightSidebar) {
-                        const rect = rightSidebar.getBoundingClientRect();
-                        const mapRect = map.getContainer().getBoundingClientRect();
-                        rightEdge = rect.left - mapRect.left;
-                    }
-                } catch {
-                    // Fallback: use raw container edges
-                }
-
-                let vx = 0;
-                let vy = 0;
-
-                if (x < leftEdge + threshold) vx = -speed;
-                else if (x > rightEdge - threshold) vx = speed;
-
-                if (y < threshold) vy = -speed;
-                else if (y > h - threshold) vy = speed;
-
+                let vx = 0, vy = 0;
+                if (x < 70) vx = -10; else if (x > w - 70) vx = 10;
+                if (y < 70) vy = -10; else if (y > h - 70) vy = 10;
                 scrollVelocityRef.current = { x: vx, y: vy };
-                if (graph) updateDragPath(map, layerPoint, latlng);
+                updateDragPathRef.current(map, layerPoint, latlng);
             } else {
                 scrollVelocityRef.current = { x: 0, y: 0 };
                 lastLayerPointRef.current = layerPoint;
             }
         };
 
-        const onMouseMove = (e: L.LeafletMouseEvent) => {
-            handleMove(e.containerPoint, e.layerPoint, e.latlng);
-        };
-
-        const onMouseUp = () => handleEnd();
-
-        // Window-level mousemove: catches mouse events even when cursor is over
-        // overlay panels (which have pointer-events-auto and block Leaflet events).
-        // This is essential for edge panning to work at panel boundaries.
-        const onWindowMouseMove = (e: MouseEvent) => {
-            if (!dragStartStationRef.current) return;
-
-            const container = map.getContainer();
-            const rect = container.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const containerPoint = L.point(x, y);
-            const latlng = map.containerPointToLatLng(containerPoint);
-            const layerPoint = map.latLngToLayerPoint(latlng);
-
-            handleMove(containerPoint, layerPoint, latlng);
-        };
-
-        const onWindowMouseUp = () => {
-            if (dragStartStationRef.current) handleEnd();
-        };
-
+        const onMouseMove = (e: L.LeafletMouseEvent) => handleMove(e.containerPoint, e.layerPoint, e.latlng);
+        const onMouseUp = () => handleEndRef.current();
         const onTouchMove = (e: TouchEvent) => {
             if (dragStartStationRef.current) {
-                // Only prevent default if we are dragging
                 e.preventDefault();
                 const touch = e.touches[0];
-                const container = map.getContainer();
-                const rect = container.getBoundingClientRect();
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-
-                const containerPoint = L.point(x, y);
-                const latlng = map.containerPointToLatLng(containerPoint);
-                const layerPoint = map.latLngToLayerPoint(latlng);
-
-                handleMove(containerPoint, layerPoint, latlng);
+                const rect = map.getContainer().getBoundingClientRect();
+                const cp = L.point(touch.clientX - rect.left, touch.clientY - rect.top);
+                const ll = map.containerPointToLatLng(cp);
+                handleMove(cp, map.latLngToLayerPoint(ll), ll);
             }
         };
 
-        const onTouchEnd = () => handleEnd();
-
         map.on('mousemove', onMouseMove);
         map.on('mouseup', onMouseUp);
-
-        // Window-level listeners to catch events that panels intercept
-        window.addEventListener('mousemove', onWindowMouseMove);
-        window.addEventListener('mouseup', onWindowMouseUp);
-
-        // Native listeners for valid touch handling
         const container = map.getContainer();
         container.addEventListener('touchmove', onTouchMove, { passive: false });
-        container.addEventListener('touchend', onTouchEnd);
+        container.addEventListener('touchend', onMouseUp);
 
         return () => {
             map.off('mousemove', onMouseMove);
             map.off('mouseup', onMouseUp);
-            window.removeEventListener('mousemove', onWindowMouseMove);
-            window.removeEventListener('mouseup', onWindowMouseUp);
             container.removeEventListener('touchmove', onTouchMove);
-            container.removeEventListener('touchend', onTouchEnd);
+            container.removeEventListener('touchend', onMouseUp);
         };
-    }, [map, graph, handleEnd, updateDragPath]);
+    }, [map]);
 
     return {
         dragStartStation,
         dragStartCoords,
         dragPath,
         handleStationMouseDown,
-        handleStationMouseUp: handleEnd
+        handleStationMouseUp: handleEnd,
+        isCalculating
     };
 };

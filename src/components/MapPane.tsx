@@ -42,7 +42,7 @@ interface MapPaneProps {
         visitedEdges: Set<string>,
         visitedStations: Set<string>,
         nodes: Map<string, StationNode>,
-        getShortestPath: (start: string, end: string, allowedLines?: string[]) => { path: string[], sectionIds: number[], distance: number, geometries: [number, number][][] } | null
+        getShortestPath: (start: string, end: string, allowedLines?: string[]) => Promise<{ path: string[], sectionIds: number[], distance: number, geometries: [number, number][][] } | null>
     } | null) => void;
     zoomTarget?: { type: 'line' | 'station', id: string } | null;
     onZoomComplete?: () => void;
@@ -678,33 +678,46 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             }
 
+            {/* 드래그 중인 경로 표시 (개별 세그먼트로 렌더링하여 강제 연결 방지) */}
             {dragPath && dragPath.length > 0 && (
-                <Polyline
-                    positions={dragPath.map(segment => segment.map(c => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
-                    pathOptions={{
-                        color: '#007AFF',
-                        weight: 12,
-                        opacity: 0.5,
-                        lineCap: 'round',
-                        lineJoin: 'round',
-                        pane: 'ui-elements'
-                    }}
-                    interactive={false}
-                />
+                <>
+                    {dragPath.map((segment, idx) => (
+                        <Polyline
+                            key={`drag-seg-${idx}`}
+                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#007AFF',
+                                weight: 12,
+                                opacity: idx === dragPath.length - 1 ? 0.3 : 0.5, // 지시선은 좀 더 투명하게
+                                lineCap: 'round',
+                                lineJoin: 'round',
+                                pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                </>
             )}
-            {draftTrip && (
-                <Polyline
-                    positions={draftTrip.geometries.map((segment: number[][]) => segment.map((c: number[]) => [c[1], c[0]] as [number, number])).flat() as LatLngExpression[]}
-                    pathOptions={{
-                        color: '#007AFF',
-                        weight: 12,
-                        opacity: 0.6,
-                        lineCap: 'round',
-                        lineJoin: 'round',
-                        pane: 'ui-elements'
-                    }}
-                    interactive={false}
-                />
+
+            {/* 클릭 프리뷰 경로 표시 (드래그 중이 아닐 때만) */}
+            {!dragStartStation && draftTrip && (
+                <>
+                    {draftTrip.geometries.map((segment: number[][], idx: number) => (
+                        <Polyline
+                            key={`draft-seg-${idx}`}
+                            positions={segment.map((c: number[]) => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#007AFF',
+                                weight: 12,
+                                opacity: 0.6,
+                                lineCap: 'round',
+                                lineJoin: 'round',
+                                pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                </>
             )}
 
 
