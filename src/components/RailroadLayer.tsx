@@ -124,7 +124,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         else if (zoomGroup === 2) weightFactor = 0.85;
 
         // Smooth transition for weight factor
-        const zoomWeight = isMoving ? 0.7 : 1.0; // Slightly thin when moving
+        const zoomWeight = 1.0; // Always full weight now for snappy feel
 
         // Discrete weights per stage
         const baseVisibilityWeight = 1.7 * weightFactor * zoomWeight;

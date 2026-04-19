@@ -21,6 +21,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://jprail.web.app'),
   title: "JapanRailNote | Interactive Japan Railway Map & Travel Tracker | 日本鉄道マップ & 乗りつぶし記録 | 일본 철도 지도 & 여행 기록",
   description: "Visualize Japan's railway network (JR, Private, Subway) and track your journeys. / 日本全国の鉄道網を網羅したインタラクティブ地図と乗りつぶし記録。 / 일본 전역의 철도 노선 시각화 및 나만의 여행 경로 기록.",
   keywords: [

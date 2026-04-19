@@ -280,7 +280,7 @@ const Stations: React.FC<StationsProps> = ({
         }
 
         const minVisibleZoom = isTransfer ? 7 : 10;
-        const isVisible = (realZoom >= minVisibleZoom || isDraft) && (!isMoving || !!dragStartStation);
+        const isVisible = (realZoom >= minVisibleZoom || isDraft);
 
         return {
             radius: radius,
@@ -322,7 +322,7 @@ const Stations: React.FC<StationsProps> = ({
 
         return {
             fillColor: color,
-            fillOpacity: (isMoving && !dragStartStation) ? 0 : 0.25,
+            fillOpacity: 0.25,
             stroke: false,
             interactive: false
         };
@@ -408,7 +408,7 @@ const Stations: React.FC<StationsProps> = ({
         return {
             color: color,
             weight: weight,
-            opacity: showEmphasis ? 1.0 : 0.1,
+            opacity: 1.0,
             pane: 'railroad-casing',
             interactive: false,
             lineCap: 'butt' as const,

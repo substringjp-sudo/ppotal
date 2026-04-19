@@ -325,24 +325,14 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [lineIdMap, onLineMappingCreated]);
 
 
-    // Hide labels and show subtle fade when moving or switching LOD
-    const [isLODChanging, setIsLODChanging] = useState(false);
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsLODChanging(true);
-        const timer = setTimeout(() => setIsLODChanging(false), 300);
-        return () => clearTimeout(timer);
-    }, [lodLevel]);
-
-    // Transition State: Covers moving, zooming, LOD switches, and React's pending state
-    const isInteractionHidden = isMoving || isZooming || isLODChanging || isPending;
+    // Transition State: Just React's pending state now
+    const isInteractionHidden = isPending;
 
     // Internal state to manage the visual "reveal" of the map after transformations
     const [isSettled, setIsSettled] = useState(true);
 
     useEffect(() => {
-        if (isInteractionHidden) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+        if (isPending) {
             setIsSettled(false);
         } else {
             // Force a Canvas clear to prevent ghosting from previous frames
@@ -579,7 +569,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         onZoomComplete?.();
     }, [zoomTarget, mapReady, map, graph, onZoomComplete, railData]);
 
-    const isTransforming = isMoving || isZooming || isLODChanging || isPending || !!dragStartStation;
+    const isTransforming = isMoving || isZooming || isPending || !!dragStartStation;
 
     if (!mapReady) return null;
 

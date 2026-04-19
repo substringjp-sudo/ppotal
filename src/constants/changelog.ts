@@ -11,6 +11,39 @@ export interface VersionUpdate {
 
 export const CHANGELOG: VersionUpdate[] = [
     {
+        version: "2.0.0",
+        date: "2026-04-19",
+        isMajor: true,
+        title: {
+            ko: "지능형 클라우드 아키텍처 및 Snappy UX 대개편",
+            en: "Intelligent Cloud Architecture & Snappy UX Overhaul",
+            ja: "インテリジェントクラウドアーキテクチャとSnappy UXの大刷新"
+        },
+        changes: {
+            ko: [
+                "**클라우드 권위적 라우팅 엔진**: 기존 로컬 JSON 연산을 Firestore와 Cloud Functions 기반으로 전환하여 비약적인 경로 탐색 속도와 정확도를 실현했습니다.",
+                "**Snappy UX (기민한 반응성)**: 지도 조작 시 발생하던 300ms의 인위적 지연과 흐림 효과를 제거하여 즉각적이고 부드러운 지도 경험을 제공합니다.",
+                "**환승 지능 고도화**: 모든 일본 노선을 유기적으로 환승 탐색할 수 있도록 서버 측 그래프 구성을 전면 재설계했습니다.",
+                "**렌더링 안정성 개선**: 환승 허브에서 발생하던 선 뒤틀림 현상(Phantom Lines)과 비동기 응답 잔상(Ghost Lines) 문제를 완벽히 해결했습니다.",
+                "**시스템 현대화**: Next.js Metadata 표준을 적용하고 인프라 설정을 최적화하여 서비스 신뢰성을 높였습니다."
+            ],
+            en: [
+                "**Cloud-Authoritative Routing Engine**: Transitioned from local JSON to Firestore and Cloud Functions for significantly faster and more accurate pathfinding.",
+                "**Snappy UX (Instant Responsiveness)**: Removed artificial 300ms delays and fade effects during map interaction for a premium, responsive feel.",
+                "**Advanced Transfer Intelligence**: Re-engineered the server-side graph to support seamless transfers across the entire Japanese rail network.",
+                "**Rendering Stability**: Resolved visual artifacts (Phantom Lines) at hubs and persistent async indicator lines (Ghost Lines).",
+                "**Infra Optimization**: Implemented standard Next.js metadata and optimized cloud resources for better reliability."
+            ],
+            ja: [
+                "**クラウド権威的ルーティングエンジン**: 従来のローカルJSON演算からFirestoreとCloud Functionsへ移行し、飛躍的な経路探索速度と正確性を実現しました。",
+                "**Snappy UX (機敏な反応性)**: 地図操作時の300msの遅延とフェ이드効果を取り除き, 即각的でスムーズな地図体験を提供します。",
+                "**乗り換え知能の高度化**: すべての日本路線を柔軟に乗り換え探索できるよう、サーバー側のグラフ構成を全面的に再設計しました。",
+                "**レン더링安定性の向上**: 乗り換えハブでの線の歪み（ファントムライン）や非同期応答の残像（ゴーストライン）の問題を完全に解決しました。",
+                "**システムの近代化**: Next.jsのメタデータ標準を適用し、インフラ設定を最適化してサービスの信頼性を高めました。"
+            ]
+        }
+    },
+    {
         version: "1.2.0",
         date: "2024-03-05",
         title: {
