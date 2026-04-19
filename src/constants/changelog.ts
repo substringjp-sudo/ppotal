@@ -5,6 +5,7 @@ export interface VersionUpdate {
     date: string;
     commit?: string;
     isMajor?: boolean;
+    imageUrl?: string;
     title: Record<Language, string>;
     changes: Record<Language, string[]>;
 }
@@ -14,6 +15,7 @@ export const CHANGELOG: VersionUpdate[] = [
         version: "2.0.0",
         date: "2026-04-19",
         isMajor: true,
+        imageUrl: "/assets/updates/v2-ui-preview.png",
         title: {
             ko: "지능형 클라우드 아키텍처 및 Snappy UX 대개편",
             en: "Intelligent Cloud Architecture & Snappy UX Overhaul",

@@ -69,6 +69,15 @@ export const UpdateNoticeModal: React.FC = () => {
                                     </span>
                                 )}
                             </div>
+                            {item.imageUrl && (
+                                <div className="mb-6 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm bg-gray-50 dark:bg-gray-900/50">
+                                    <img 
+                                        src={item.imageUrl} 
+                                        alt={item.title[language]} 
+                                        className="w-full h-auto object-cover hover:scale-[1.02] transition-transform duration-500"
+                                    />
+                                </div>
+                            )}
                             <h3 className="text-lg font-bold mb-3 text-gray-800 dark:text-gray-200">{item.title[language]}</h3>
                             <ul className="space-y-2">
                                 {item.changes[language].map((change, cIdx) => (
