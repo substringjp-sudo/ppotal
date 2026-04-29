@@ -67,6 +67,7 @@ export interface RegionVisit {
   category: VisitCategory;
   count: number;
   notes?: string;
+  updatedAt?: number; // ms since epoch — used for conflict resolution during sync
 }
 
 export interface RegionScoreBreakdown {

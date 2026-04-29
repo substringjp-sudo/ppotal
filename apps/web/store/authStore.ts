@@ -32,19 +32,43 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       return () => undefined;
     }
 
+    // Generation counter: if auth fires again before a previous async callback
+    // finishes, the stale callback detects the mismatch and aborts.
+    let gen = 0;
+
     const unsubAuth = subscribeAuthState(async (user) => {
-      const prev = get();
-      prev.syncManager?.stop();
+      const myGen = ++gen;
+
+      // Stop any previously active sync session.
+      get().syncManager?.stop();
 
       if (user) {
         const remote = createFirestoreVisitStore(user.uid);
         const syncManager = new SyncManager(remote, {
           getLocalVisits: () => useVisitStore.getState().visits,
           setVisits: (visits) => useVisitStore.setState({ visits }),
+          subscribe: (cb) =>
+            useVisitStore.subscribe((state) => cb(state.visits)),
         });
-        await syncManager.start();
+
+        try {
+          await syncManager.start();
+        } catch (err) {
+          console.error("[SyncManager] failed to start:", err);
+          if (myGen !== gen) return;
+          // Proceed as logged-in but without cloud sync.
+          set({ user, loading: false, syncManager: null });
+          return;
+        }
+
+        if (myGen !== gen) {
+          // A newer auth event arrived while we were awaiting — discard.
+          syncManager.stop();
+          return;
+        }
         set({ user, loading: false, syncManager });
       } else {
+        if (myGen !== gen) return;
         set({ user: null, loading: false, syncManager: null });
       }
     });

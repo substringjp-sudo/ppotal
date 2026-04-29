@@ -12,6 +12,9 @@ jobs:
   build_and_deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
+    # Expose service account as an env var so we can gate deploy steps on it.
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
     steps:
       - name: Checkout
@@ -41,7 +44,7 @@ jobs:
 
       # PR → preview channel (7일 유효)
       - name: Deploy preview channel (PR only)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && env.FIREBASE_SERVICE_ACCOUNT != ''
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +54,7 @@ jobs:
 
       # main 브랜치 → live 채널
       - name: Deploy to live channel (main only)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.FIREBASE_SERVICE_ACCOUNT != ''
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

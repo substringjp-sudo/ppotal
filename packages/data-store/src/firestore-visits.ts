@@ -7,10 +7,25 @@ import {
   onSnapshot,
   getDocs,
   serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 import type { RegionVisit, VisitCategory } from "@regionevel/types";
 import type { VisitDataStore } from "./types.js";
 import { getFirebaseApp } from "./firebase-app.js";
+
+function docToVisit(data: Record<string, unknown>): RegionVisit {
+  const visit: RegionVisit = {
+    regionId: data.regionId as string,
+    category: data.category as VisitCategory,
+    count: data.count as number,
+  };
+  if (data.notes) visit.notes = data.notes as string;
+  // Convert Firestore Timestamp → ms for cross-device conflict resolution.
+  if (data.updatedAt instanceof Timestamp) {
+    visit.updatedAt = data.updatedAt.toMillis();
+  }
+  return visit;
+}
 
 export function createFirestoreVisitStore(uid: string): VisitDataStore {
   const db = getFirestore(getFirebaseApp());
@@ -19,7 +34,7 @@ export function createFirestoreVisitStore(uid: string): VisitDataStore {
   return {
     async getVisits() {
       const snap = await getDocs(visitsRef());
-      return snap.docs.map((d) => d.data() as RegionVisit);
+      return snap.docs.map((d) => docToVisit(d.data() as Record<string, unknown>));
     },
 
     async upsertVisit(regionId, category, count, notes) {
@@ -30,7 +45,7 @@ export function createFirestoreVisitStore(uid: string): VisitDataStore {
         count,
         ...(notes !== undefined ? { notes } : {}),
         updatedAt: serverTimestamp(),
-      } satisfies Partial<RegionVisit> & { updatedAt: unknown });
+      });
     },
 
     async removeVisit(regionId, category) {
@@ -40,7 +55,7 @@ export function createFirestoreVisitStore(uid: string): VisitDataStore {
 
     subscribe(callback) {
       return onSnapshot(visitsRef(), (snap) => {
-        callback(snap.docs.map((d) => d.data() as RegionVisit));
+        callback(snap.docs.map((d) => docToVisit(d.data() as Record<string, unknown>)));
       });
     },
   };

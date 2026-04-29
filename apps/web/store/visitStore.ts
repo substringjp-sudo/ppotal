@@ -29,7 +29,12 @@ export const useVisitStore = create<VisitStore>()(
             (v) => !(v.regionId === regionId && v.category === category),
           );
           if (count <= 0) return { visits: filtered };
-          return { visits: [...filtered, { regionId, category, count }] };
+          return {
+            visits: [
+              ...filtered,
+              { regionId, category, count, updatedAt: Date.now() },
+            ],
+          };
         });
       },
 
