@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MapLibre GL JS base styles */
+.maplibregl-map {
+  font-family: inherit;
+}

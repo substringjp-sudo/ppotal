@@ -1,0 +1,617 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-01",
+        "shapeName": "서울특별시",
+        "shapeISO": "KOR-Seoul",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.76,
+              37.43
+            ],
+            [
+              127.18,
+              37.43
+            ],
+            [
+              127.18,
+              37.7
+            ],
+            [
+              126.76,
+              37.7
+            ],
+            [
+              126.76,
+              37.43
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-02",
+        "shapeName": "부산광역시",
+        "shapeISO": "KOR-Busan",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              128.74,
+              34.88
+            ],
+            [
+              129.31,
+              34.88
+            ],
+            [
+              129.31,
+              35.39
+            ],
+            [
+              128.74,
+              35.39
+            ],
+            [
+              128.74,
+              34.88
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-03",
+        "shapeName": "대구광역시",
+        "shapeISO": "KOR-Daegu",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              128.38,
+              35.65
+            ],
+            [
+              128.75,
+              35.65
+            ],
+            [
+              128.75,
+              36.02
+            ],
+            [
+              128.38,
+              36.02
+            ],
+            [
+              128.38,
+              35.65
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-04",
+        "shapeName": "인천광역시",
+        "shapeISO": "KOR-Incheon",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.37,
+              37.27
+            ],
+            [
+              126.79,
+              37.27
+            ],
+            [
+              126.79,
+              37.59
+            ],
+            [
+              126.37,
+              37.59
+            ],
+            [
+              126.37,
+              37.27
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-05",
+        "shapeName": "광주광역시",
+        "shapeISO": "KOR-Gwangju",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.69,
+              35.08
+            ],
+            [
+              126.97,
+              35.08
+            ],
+            [
+              126.97,
+              35.25
+            ],
+            [
+              126.69,
+              35.25
+            ],
+            [
+              126.69,
+              35.08
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-06",
+        "shapeName": "대전광역시",
+        "shapeISO": "KOR-Daejeon",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.29,
+              36.23
+            ],
+            [
+              127.55,
+              36.23
+            ],
+            [
+              127.55,
+              36.5
+            ],
+            [
+              127.29,
+              36.5
+            ],
+            [
+              127.29,
+              36.23
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-07",
+        "shapeName": "울산광역시",
+        "shapeISO": "KOR-Ulsan",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              128.96,
+              35.45
+            ],
+            [
+              129.42,
+              35.45
+            ],
+            [
+              129.42,
+              35.73
+            ],
+            [
+              128.96,
+              35.73
+            ],
+            [
+              128.96,
+              35.45
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-08",
+        "shapeName": "세종특별자치시",
+        "shapeISO": "KOR-Sejong",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.13,
+              36.44
+            ],
+            [
+              127.36,
+              36.44
+            ],
+            [
+              127.36,
+              36.65
+            ],
+            [
+              127.13,
+              36.65
+            ],
+            [
+              127.13,
+              36.44
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-09",
+        "shapeName": "경기도",
+        "shapeISO": "KOR-Gyeonggi",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.36,
+              36.93
+            ],
+            [
+              127.85,
+              36.93
+            ],
+            [
+              127.85,
+              38.28
+            ],
+            [
+              126.36,
+              38.28
+            ],
+            [
+              126.36,
+              36.93
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-10",
+        "shapeName": "강원도",
+        "shapeISO": "KOR-Gangwon",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.41,
+              36.99
+            ],
+            [
+              129.31,
+              36.99
+            ],
+            [
+              129.31,
+              38.61
+            ],
+            [
+              127.41,
+              38.61
+            ],
+            [
+              127.41,
+              36.99
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-11",
+        "shapeName": "충청북도",
+        "shapeISO": "KOR-Chungbuk",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.39,
+              36.11
+            ],
+            [
+              128.3,
+              36.11
+            ],
+            [
+              128.3,
+              37.19
+            ],
+            [
+              127.39,
+              37.19
+            ],
+            [
+              127.39,
+              36.11
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-12",
+        "shapeName": "충청남도",
+        "shapeISO": "KOR-Chungnam",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126,
+              36.08
+            ],
+            [
+              127.29,
+              36.08
+            ],
+            [
+              127.29,
+              36.97
+            ],
+            [
+              126,
+              36.97
+            ],
+            [
+              126,
+              36.08
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-13",
+        "shapeName": "전라북도",
+        "shapeISO": "KOR-Jeonbuk",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.41,
+              35.45
+            ],
+            [
+              127.74,
+              35.45
+            ],
+            [
+              127.74,
+              36.06
+            ],
+            [
+              126.41,
+              36.06
+            ],
+            [
+              126.41,
+              35.45
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-14",
+        "shapeName": "전라남도",
+        "shapeISO": "KOR-Jeonnam",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              125.98,
+              34.18
+            ],
+            [
+              127.58,
+              34.18
+            ],
+            [
+              127.58,
+              35.45
+            ],
+            [
+              125.98,
+              35.45
+            ],
+            [
+              125.98,
+              34.18
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-15",
+        "shapeName": "경상북도",
+        "shapeISO": "KOR-Gyeongbuk",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.81,
+              35.66
+            ],
+            [
+              129.56,
+              35.66
+            ],
+            [
+              129.56,
+              37.09
+            ],
+            [
+              127.81,
+              37.09
+            ],
+            [
+              127.81,
+              35.66
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-16",
+        "shapeName": "경상남도",
+        "shapeISO": "KOR-Gyeongnam",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              127.62,
+              34.62
+            ],
+            [
+              129.16,
+              34.62
+            ],
+            [
+              129.16,
+              35.69
+            ],
+            [
+              127.62,
+              35.69
+            ],
+            [
+              127.62,
+              34.62
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeID": "KOR-ADM1-17",
+        "shapeName": "제주특별자치도",
+        "shapeISO": "KOR-Jeju",
+        "shapeGroup": "KOR"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              126.15,
+              33.11
+            ],
+            [
+              126.98,
+              33.11
+            ],
+            [
+              126.98,
+              33.57
+            ],
+            [
+              126.15,
+              33.57
+            ],
+            [
+              126.15,
+              33.11
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

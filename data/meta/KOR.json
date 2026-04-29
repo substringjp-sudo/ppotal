@@ -1,0 +1,352 @@
+[
+  {
+    "id": "KOR-ADM1-01",
+    "parentId": null,
+    "name": "서울특별시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-02",
+    "parentId": null,
+    "name": "부산광역시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-03",
+    "parentId": null,
+    "name": "대구광역시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-04",
+    "parentId": null,
+    "name": "인천광역시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-05",
+    "parentId": null,
+    "name": "광주광역시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-06",
+    "parentId": null,
+    "name": "대전광역시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-07",
+    "parentId": null,
+    "name": "울산광역시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-08",
+    "parentId": null,
+    "name": "세종특별자치시",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-09",
+    "parentId": null,
+    "name": "경기도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-10",
+    "parentId": null,
+    "name": "강원도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-11",
+    "parentId": null,
+    "name": "충청북도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-12",
+    "parentId": null,
+    "name": "충청남도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-13",
+    "parentId": null,
+    "name": "전라북도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-14",
+    "parentId": null,
+    "name": "전라남도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-15",
+    "parentId": null,
+    "name": "경상북도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-16",
+    "parentId": null,
+    "name": "경상남도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM1-17",
+    "parentId": null,
+    "name": "제주특별자치도",
+    "iso3": "KOR",
+    "admLevel": 1
+  },
+  {
+    "id": "KOR-ADM2-S01",
+    "parentId": "KOR-ADM1-01",
+    "name": "종로구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S02",
+    "parentId": "KOR-ADM1-01",
+    "name": "중구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S03",
+    "parentId": "KOR-ADM1-01",
+    "name": "용산구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S04",
+    "parentId": "KOR-ADM1-01",
+    "name": "성동구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S05",
+    "parentId": "KOR-ADM1-01",
+    "name": "광진구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S06",
+    "parentId": "KOR-ADM1-01",
+    "name": "동대문구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S07",
+    "parentId": "KOR-ADM1-01",
+    "name": "중랑구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S08",
+    "parentId": "KOR-ADM1-01",
+    "name": "성북구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S09",
+    "parentId": "KOR-ADM1-01",
+    "name": "강북구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S10",
+    "parentId": "KOR-ADM1-01",
+    "name": "도봉구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S11",
+    "parentId": "KOR-ADM1-01",
+    "name": "노원구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S12",
+    "parentId": "KOR-ADM1-01",
+    "name": "은평구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S13",
+    "parentId": "KOR-ADM1-01",
+    "name": "서대문구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S14",
+    "parentId": "KOR-ADM1-01",
+    "name": "마포구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S15",
+    "parentId": "KOR-ADM1-01",
+    "name": "양천구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S16",
+    "parentId": "KOR-ADM1-01",
+    "name": "강서구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S17",
+    "parentId": "KOR-ADM1-01",
+    "name": "구로구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S18",
+    "parentId": "KOR-ADM1-01",
+    "name": "금천구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S19",
+    "parentId": "KOR-ADM1-01",
+    "name": "영등포구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S20",
+    "parentId": "KOR-ADM1-01",
+    "name": "동작구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S21",
+    "parentId": "KOR-ADM1-01",
+    "name": "관악구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S22",
+    "parentId": "KOR-ADM1-01",
+    "name": "서초구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S23",
+    "parentId": "KOR-ADM1-01",
+    "name": "강남구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S24",
+    "parentId": "KOR-ADM1-01",
+    "name": "송파구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-S25",
+    "parentId": "KOR-ADM1-01",
+    "name": "강동구",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G01",
+    "parentId": "KOR-ADM1-09",
+    "name": "수원시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G02",
+    "parentId": "KOR-ADM1-09",
+    "name": "성남시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G03",
+    "parentId": "KOR-ADM1-09",
+    "name": "안양시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G04",
+    "parentId": "KOR-ADM1-01",
+    "name": "부천시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G05",
+    "parentId": "KOR-ADM1-01",
+    "name": "고양시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G06",
+    "parentId": "KOR-ADM1-09",
+    "name": "용인시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G07",
+    "parentId": "KOR-ADM1-09",
+    "name": "화성시",
+    "iso3": "KOR",
+    "admLevel": 2
+  },
+  {
+    "id": "KOR-ADM2-G08",
+    "parentId": "KOR-ADM1-09",
+    "name": "평택시",
+    "iso3": "KOR",
+    "admLevel": 2
+  }
+]
