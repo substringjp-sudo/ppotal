@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { FirebaseProvider } from "@/components/auth/FirebaseProvider";
+import { AuthButton } from "@/components/auth/AuthButton";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,22 +17,27 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-gray-50 text-gray-900 antialiased">
-        <nav className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-          <span className="font-bold text-blue-700 text-lg tracking-tight">Regionevel</span>
-          <Link
-            href="/map"
-            className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            지도
-          </Link>
-          <Link
-            href="/list"
-            className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-          >
-            목록
-          </Link>
-        </nav>
-        <main className="flex-1">{children}</main>
+        <FirebaseProvider>
+          <nav className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+            <span className="font-bold text-blue-700 text-lg tracking-tight">Regionevel</span>
+            <Link
+              href="/map"
+              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              지도
+            </Link>
+            <Link
+              href="/list"
+              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+            >
+              목록
+            </Link>
+            <div className="ml-auto">
+              <AuthButton />
+            </div>
+          </nav>
+          <main className="flex-1">{children}</main>
+        </FirebaseProvider>
       </body>
     </html>
   );
