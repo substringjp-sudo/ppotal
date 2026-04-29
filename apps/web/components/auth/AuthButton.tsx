@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useAuthStore } from "@/store/authStore";
 import { firebaseEnabled } from "@/lib/firebase";
 
@@ -16,7 +15,8 @@ export function AuthButton() {
     return (
       <div className="flex items-center gap-2">
         {user.photoURL ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={user.photoURL}
             alt={user.displayName ?? "user"}
             width={28}

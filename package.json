@@ -7,9 +7,12 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
-    "type-check": "turbo type-check"
+    "type-check": "turbo type-check",
+    "deploy": "pnpm build && firebase deploy --only hosting",
+    "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d"
   },
   "devDependencies": {
+    "firebase-tools": "^14.5.1",
     "tsx": "^4.21.0",
     "turbo": "^2.3.3",
     "typescript": "^5.7.3"
