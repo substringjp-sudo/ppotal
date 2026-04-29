@@ -12,6 +12,7 @@
     "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d"
   },
   "devDependencies": {
+    "firebase-admin": "^13.8.0",
     "firebase-tools": "^14.5.1",
     "tsx": "^4.21.0",
     "turbo": "^2.3.3",
