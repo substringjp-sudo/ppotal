@@ -8,8 +8,10 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "type-check": "turbo type-check",
-    "deploy": "pnpm build && firebase deploy --only hosting",
-    "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d"
+    "deploy": "pnpm build && firebase deploy --only hosting,firestore:rules,storage",
+    "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage",
+    "upload:tiles": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/upload-tiles.ts"
   },
   "devDependencies": {
     "firebase-admin": "^13.8.0",
