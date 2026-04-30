@@ -10,7 +10,7 @@
     "type-check": "turbo type-check",
     "deploy": "pnpm build && firebase deploy --only hosting,firestore:rules,storage",
     "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d",
-    "deploy:rules": "firebase deploy --only firestore:rules,storage",
+    "deploy:rules": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/deploy-rules.ts",
     "upload:tiles": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/upload-tiles.ts"
   },
   "devDependencies": {
