@@ -10,6 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@regionevel/data-store": "workspace:*",
     "@regionevel/types": "workspace:*",
     "@regionevel/utils": "workspace:*",
     "maplibre-gl": "^5.5.0",

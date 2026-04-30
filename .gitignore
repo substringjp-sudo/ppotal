@@ -2,8 +2,15 @@ node_modules
 .turbo
 dist
 .next
+out
 .env
 .env.local
 .env.*.local
 data/source/
 *.pmtiles
+
+# Firebase
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+scripts/serviceAccount.json

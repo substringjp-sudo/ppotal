@@ -7,9 +7,15 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
-    "type-check": "turbo type-check"
+    "type-check": "turbo type-check",
+    "deploy": "pnpm build && firebase deploy --only hosting,firestore:rules,storage",
+    "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d",
+    "deploy:rules": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/deploy-rules.ts",
+    "upload:tiles": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/upload-tiles.ts"
   },
   "devDependencies": {
+    "firebase-admin": "^13.8.0",
+    "firebase-tools": "^14.5.1",
     "tsx": "^4.21.0",
     "turbo": "^2.3.3",
     "typescript": "^5.7.3"
