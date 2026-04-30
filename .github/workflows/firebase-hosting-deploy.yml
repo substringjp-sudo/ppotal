@@ -42,6 +42,14 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
 
+      - name: Debug — list build output
+        run: |
+          echo "=== out/ exists: $(test -d apps/web/out && echo yes || echo NO)"
+          ls apps/web/out/ 2>/dev/null | head -10 || true
+          echo "=== firebase.json ==="
+          cat firebase.json
+          echo "=== FIREBASE_SERVICE_ACCOUNT set: $([ -n "$FIREBASE_SERVICE_ACCOUNT" ] && echo yes || echo NO)"
+
       # PR → preview channel (7일 유효)
       - name: Deploy preview channel (PR only)
         if: github.event_name == 'pull_request' && env.FIREBASE_SERVICE_ACCOUNT != ''
