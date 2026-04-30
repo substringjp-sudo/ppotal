@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import Map, { Layer, Source } from "react-map-gl/maplibre";
-import type { MapMouseEvent, MapLayerMouseEvent, MapRef } from "react-map-gl/maplibre";
-import type { FeatureCollection } from "geojson";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { MapContainer, GeoJSON } from "react-leaflet";
+import type { FeatureCollection, Feature } from "geojson";
+import type { GeoJSON as LeafletGeoJSON, Layer, PathOptions } from "leaflet";
 import type { Region } from "@regionevel/types";
 import { getScoreColor } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
 import { getChildren } from "@/lib/regions";
 import { RegionTooltip } from "./RegionTooltip";
-import "maplibre-gl/dist/maplibre-gl.css";
+import "leaflet/dist/leaflet.css";
 
 const LONG_PRESS_MS = 500;
 
@@ -23,10 +23,18 @@ export function RegionMap({ regions, geojsonAdm1, geojsonAdm2 }: RegionMapProps)
   const { visits, quickIncrement, upsertVisit, getFullScore } = useVisitStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeAdmLevel, setActiveAdmLevel] = useState<1 | 2>(1);
+
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Prevent click from firing after a long-press completes
   const longPressTriggered = useRef(false);
-  const mapRef = useRef<MapRef | null>(null);
+  const geoJsonRef = useRef<LeafletGeoJSON | null>(null);
+
+  // Keep latest store callbacks in refs so we don't need to re-bind layer events
+  const quickIncrementRef = useRef(quickIncrement);
+  const upsertVisitRef = useRef(upsertVisit);
+  const visitsRef = useRef(visits);
+  useEffect(() => { quickIncrementRef.current = quickIncrement; }, [quickIncrement]);
+  useEffect(() => { upsertVisitRef.current = upsertVisit; }, [upsertVisit]);
+  useEffect(() => { visitsRef.current = visits; }, [visits]);
 
   const scoreMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -37,20 +45,24 @@ export function RegionMap({ regions, geojsonAdm1, geojsonAdm2 }: RegionMapProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regions, visits]);
 
-  const enrichedAdm1 = useMemo(
-    () => enrichGeoJSON(geojsonAdm1, scoreMap),
-    [geojsonAdm1, scoreMap],
-  );
-  const enrichedAdm2 = useMemo(
-    () => enrichGeoJSON(geojsonAdm2, scoreMap),
-    [geojsonAdm2, scoreMap],
+  const getStyle = useCallback(
+    (feature?: Feature): PathOptions => {
+      const shapeId = feature?.properties?.shapeID as string;
+      return {
+        fillColor: getScoreColor(scoreMap[shapeId] ?? 0),
+        fillOpacity: 0.65,
+        color: "#1e40af",
+        weight: 1.5,
+        opacity: 0.8,
+      };
+    },
+    [scoreMap],
   );
 
-  const selectedRegion = selectedId ? regions.find((r) => r.id === selectedId) ?? null : null;
-  const selectedScore = selectedId ? getFullScore(selectedId, regions) : null;
-  const selectedChildren = selectedId ? getChildren(regions, selectedId) : [];
-
-  // ─── Long press start (mouse + touch) ──────────────────────────────────────
+  // Update polygon fill colors in-place when scores change — no re-mount needed
+  useEffect(() => {
+    geoJsonRef.current?.setStyle(getStyle);
+  }, [getStyle]);
 
   const startLongPress = useCallback((shapeId: string) => {
     longPressTriggered.current = false;
@@ -67,53 +79,42 @@ export function RegionMap({ regions, geojsonAdm1, geojsonAdm2 }: RegionMapProps)
     }
   }, []);
 
-  // ─── Mouse events ───────────────────────────────────────────────────────────
+  const onEachFeature = useCallback(
+    (feature: Feature, layer: Layer) => {
+      const shapeId = feature.properties?.shapeID as string;
+      if (!shapeId) return;
 
-  const handleMouseDown = useCallback(
-    (e: MapLayerMouseEvent) => {
-      const shapeId = e.features?.[0]?.properties?.shapeID as string | undefined;
-      if (shapeId) startLongPress(shapeId);
+      layer.on({
+        click: () => {
+          if (longPressTriggered.current) return;
+          quickIncrementRef.current(shapeId);
+        },
+        mousedown: () => startLongPress(shapeId),
+        mouseup: cancelLongPress,
+        mouseout: cancelLongPress,
+      });
+      // touch events are not in LeafletEventHandlerFnMap — use string overload
+      layer.on("touchstart", () => startLongPress(shapeId));
+      layer.on("touchend", cancelLongPress);
+      layer.on("touchcancel", cancelLongPress);
     },
-    [startLongPress],
+    [startLongPress, cancelLongPress],
   );
 
-  const handleMouseUp = useCallback(() => cancelLongPress(), [cancelLongPress]);
+  const selectedRegion = selectedId ? regions.find((r) => r.id === selectedId) ?? null : null;
+  const selectedScore = selectedId ? getFullScore(selectedId, regions) : null;
+  const selectedChildren = selectedId ? getChildren(regions, selectedId) : [];
 
-  const handleClick = useCallback(
-    (e: MapLayerMouseEvent) => {
-      if (longPressTriggered.current) return; // swallow click after long-press
-      const shapeId = e.features?.[0]?.properties?.shapeID as string | undefined;
-      if (shapeId) quickIncrement(shapeId);
-    },
-    [quickIncrement],
-  );
-
-  // ─── Touch events (mobile long-press) ──────────────────────────────────────
-  // We query features at touch position since MapLibre doesn't expose onTouchStart
-  // with feature data in react-map-gl.
-
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      const map = mapRef.current?.getMap();
-      if (!map) return;
-      const touch = e.touches[0];
-      if (!touch) return;
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const point = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-      const layers = activeAdmLevel === 1 ? ["adm1-fill"] : ["adm2-fill"];
-      const features = map.queryRenderedFeatures(
-        [point.x, point.y],
-        { layers },
+  const handleVisitChange = useCallback(
+    (category: string, delta: number) => {
+      if (!selectedId) return;
+      const current = visitsRef.current.find(
+        (v) => v.regionId === selectedId && v.category === category,
       );
-      const shapeId = features[0]?.properties?.shapeID as string | undefined;
-      if (shapeId) startLongPress(shapeId);
+      upsertVisitRef.current(selectedId, category as never, Math.max(0, (current?.count ?? 0) + delta));
     },
-    [activeAdmLevel, startLongPress],
+    [selectedId],
   );
-
-  const handleTouchEnd = useCallback(() => cancelLongPress(), [cancelLongPress]);
-
-  // ─── Tooltip actions ────────────────────────────────────────────────────────
 
   const handleDrillDown = useCallback(
     (regionId: string) => {
@@ -125,87 +126,28 @@ export function RegionMap({ regions, geojsonAdm1, geojsonAdm2 }: RegionMapProps)
     [regions],
   );
 
-  const handleVisitChange = useCallback(
-    (category: string, delta: number) => {
-      if (!selectedId) return;
-      const current = visits.find(
-        (v) => v.regionId === selectedId && v.category === category,
-      );
-      const newCount = Math.max(0, (current?.count ?? 0) + delta);
-      upsertVisit(selectedId, category as never, newCount);
-    },
-    [selectedId, visits, upsertVisit],
-  );
-
-  const interactiveLayerIds = activeAdmLevel === 1 ? ["adm1-fill"] : ["adm2-fill"];
+  const activeGeoJSON = activeAdmLevel === 1 ? geojsonAdm1 : geojsonAdm2;
 
   return (
-    <div
-      className="relative w-full h-full"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchEnd}
-    >
-      <Map
-        ref={mapRef}
-        initialViewState={{ longitude: 127.5, latitude: 36.5, zoom: 6 }}
-        style={{ width: "100%", height: "100%" }}
-        mapStyle={{
-          version: 8,
-          sources: {
-            "osm-tiles": {
-              type: "raster",
-              tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-              tileSize: 256,
-              attribution: "© OpenStreetMap contributors",
-            },
-          },
-          layers: [{ id: "osm", type: "raster", source: "osm-tiles" }],
-        }}
-        interactiveLayerIds={interactiveLayerIds}
-        onClick={handleClick}
-        onMouseDown={handleMouseDown as unknown as (e: MapMouseEvent) => void}
-        onMouseUp={handleMouseUp}
-        cursor="pointer"
+    <div className="relative w-full h-full">
+      <MapContainer
+        center={[36.5, 127.5]}
+        zoom={6}
+        style={{ width: "100%", height: "100%", background: "#f8fafc" }}
+        attributionControl={false}
       >
-        <Source id="adm1" type="geojson" data={enrichedAdm1}>
-          <Layer
-            id="adm1-fill"
-            type="fill"
-            paint={{
-              "fill-color": fillColorExpression,
-              "fill-opacity": activeAdmLevel === 1 ? 0.55 : 0.2,
-            }}
-          />
-          <Layer
-            id="adm1-border"
-            type="line"
-            paint={{
-              "line-color": "#1e40af",
-              "line-width": activeAdmLevel === 1 ? 1.5 : 0.5,
-              "line-opacity": 0.7,
-            }}
-          />
-        </Source>
-
-        {activeAdmLevel === 2 && (
-          <Source id="adm2" type="geojson" data={enrichedAdm2}>
-            <Layer
-              id="adm2-fill"
-              type="fill"
-              paint={{ "fill-color": fillColorExpression, "fill-opacity": 0.6 }}
-            />
-            <Layer
-              id="adm2-border"
-              type="line"
-              paint={{ "line-color": "#1d4ed8", "line-width": 1, "line-opacity": 0.8 }}
-            />
-          </Source>
-        )}
-      </Map>
+        {/* key on activeAdmLevel forces GeoJSON layer swap; setStyle handles score updates */}
+        <GeoJSON
+          key={activeAdmLevel}
+          ref={geoJsonRef}
+          data={activeGeoJSON}
+          style={getStyle}
+          onEachFeature={onEachFeature}
+        />
+      </MapContainer>
 
       {/* ADM level toggle */}
-      <div className="absolute top-3 right-3 flex gap-1 bg-white rounded-lg shadow border border-gray-200 p-1 z-10">
+      <div className="absolute top-3 right-3 flex gap-1 bg-white rounded-lg shadow border border-gray-200 p-1 z-[1001]">
         {([1, 2] as const).map((lvl) => (
           <button
             key={lvl}
@@ -222,7 +164,7 @@ export function RegionMap({ regions, geojsonAdm1, geojsonAdm2 }: RegionMapProps)
       </div>
 
       {/* Quick-action hint */}
-      <div className="absolute bottom-6 left-3 bg-white/90 rounded-lg shadow border border-gray-200 px-3 py-2 z-10 text-xs text-gray-500 space-y-0.5">
+      <div className="absolute bottom-6 left-3 bg-white/90 rounded-lg shadow border border-gray-200 px-3 py-2 z-[1001] text-xs text-gray-500 space-y-0.5">
         <p><span className="font-medium">클릭</span> — 방문 단계 +1</p>
         <p><span className="font-medium">길게 누르기</span> — 상세 편집</p>
       </div>
@@ -246,7 +188,7 @@ export function RegionMap({ regions, geojsonAdm1, geojsonAdm2 }: RegionMapProps)
 function ScoreLegend() {
   const steps = [0, 20, 40, 70, 100];
   return (
-    <div className="absolute bottom-6 right-3 bg-white rounded-lg shadow border border-gray-200 px-3 py-2 z-10">
+    <div className="absolute bottom-6 right-3 bg-white rounded-lg shadow border border-gray-200 px-3 py-2 z-[1001]">
       <p className="text-xs font-semibold text-gray-500 mb-1">점수</p>
       <div className="flex flex-col gap-1">
         {steps.map((s) => (
@@ -261,31 +203,4 @@ function ScoreLegend() {
       </div>
     </div>
   );
-}
-
-const fillColorExpression = [
-  "interpolate",
-  ["linear"],
-  ["coalesce", ["get", "score"], 0],
-  0, "#f8fafc",
-  20, "#bfdbfe",
-  40, "#60a5fa",
-  70, "#2563eb",
-  100, "#1e3a8a",
-] as unknown as maplibregl.ExpressionSpecification;
-
-function enrichGeoJSON(
-  geojson: FeatureCollection,
-  scoreMap: Record<string, number>,
-): FeatureCollection {
-  return {
-    ...geojson,
-    features: geojson.features.map((f) => ({
-      ...f,
-      properties: {
-        ...f.properties,
-        score: scoreMap[f.properties?.shapeID as string] ?? 0,
-      },
-    })),
-  };
 }

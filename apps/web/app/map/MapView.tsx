@@ -1,9 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import type { FeatureCollection } from "geojson";
 import type { Region } from "@regionevel/types";
-import { RegionMap } from "@/components/map/RegionMap";
+
+// Leaflet accesses `window` at import time — load only on the client
+const RegionMap = dynamic(
+  () => import("@/components/map/RegionMap").then((m) => ({ default: m.RegionMap })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full text-gray-400">
+        지도 로딩 중…
+      </div>
+    ),
+  },
+);
 
 export function MapView() {
   const [regions, setRegions] = useState<Region[]>([]);
