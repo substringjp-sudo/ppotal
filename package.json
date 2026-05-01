@@ -10,12 +10,23 @@
     "type-check": "turbo type-check",
     "deploy": "pnpm build && firebase deploy --only hosting,firestore:rules,storage",
     "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d",
-    "deploy:rules": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/deploy-rules.ts",
-    "upload:tiles": "GOOGLE_APPLICATION_CREDENTIALS=scripts/serviceAccount.json npx tsx scripts/upload-tiles.ts"
+    "deploy:rules": "firebase deploy --only firestore:rules,storage:rules",
+    "upload:tiles": "npx tsx scripts/upload-tiles.ts",
+    "build:geo": "NODE_OPTIONS='--max-old-space-size=8192' npx tsx scripts/build-geo-tiles.ts",
+    "seed:db": "npx tsx scripts/seed-firestore.ts"
   },
   "devDependencies": {
+    "@types/stream-json": "^1.7.8",
+    "@types/topojson-specification": "^1.0.5",
+    "@regionevel/data-store": "workspace:*",
+    "@regionevel/types": "workspace:*",
+    "@regionevel/utils": "workspace:*",
     "firebase-admin": "^13.8.0",
     "firebase-tools": "^14.5.1",
+    "stream-json": "^2.1.0",
+    "topojson-client": "^3.1.0",
+    "topojson-server": "^3.0.1",
+    "topojson-simplify": "^3.0.3",
     "tsx": "^4.21.0",
     "turbo": "^2.3.3",
     "typescript": "^5.7.3"

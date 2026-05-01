@@ -3,37 +3,45 @@
 import { useEffect, useState } from "react";
 import type { Region } from "@regionevel/types";
 import { RegionList } from "@/components/list/RegionList";
+import { flattenTree } from "@/lib/regions";
 
 export function ListView() {
-  const [regions, setRegions] = useState<Region[]>([]);
+  const [allRegions, setAllRegions] = useState<Region[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/data/meta/KOR.json")
-      .then((r) => r.json() as Promise<Region[]>)
-      .then(setRegions)
-      .catch((e: unknown) => setError(String(e)));
+    fetch("/data/meta/tree.json")
+      .then((r) => r.json())
+      .then((data) => {
+        setAllRegions(flattenTree(data));
+        setLoading(false);
+      })
+      .catch((e: unknown) => {
+        setError(String(e));
+        setLoading(false);
+      });
   }, []);
 
   if (error) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-56px)] text-red-500">
-        데이터 로드 실패: {error}
+        Failed to load data: {error}
       </div>
     );
   }
 
-  if (regions.length === 0) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-56px)] text-gray-400">
-        로딩 중…
+        Loading metadata...
       </div>
     );
   }
 
   return (
     <div className="h-[calc(100vh-56px)] overflow-hidden">
-      <RegionList regions={regions} />
+      <RegionList regions={allRegions} />
     </div>
   );
 }

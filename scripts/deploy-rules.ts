@@ -7,32 +7,50 @@
  *   npx tsx scripts/deploy-rules.ts
  */
 
-import { initializeApp, cert, getApps } from "firebase-admin/app";
+import { initializeApp, getApps, applicationDefault } from "firebase-admin/app";
 import { getSecurityRules } from "firebase-admin/security-rules";
 import { readFileSync } from "fs";
-import { join } from "path";
-import serviceAccount from "./serviceAccount.json";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 if (!getApps().length) {
   initializeApp({
-    credential: cert(serviceAccount as Parameters<typeof cert>[0]),
+    credential: applicationDefault(),
   });
 }
 
 const root = new URL("..", import.meta.url).pathname;
 const rules = getSecurityRules();
 
+function getProjectId(): string {
+  if (process.env.GOOGLE_CLOUD_PROJECT) return process.env.GOOGLE_CLOUD_PROJECT;
+  
+  try {
+    const firebaserc = JSON.parse(readFileSync(join(root, ".firebaserc"), "utf8"));
+    const id = firebaserc.projects?.default;
+    if (id) return id;
+  } catch (e) {
+    // Fallback
+  }
+  
+  return (getApps()[0].options.credential as any)?.projectId || "regionevel";
+}
+
 async function deployFirestoreRules() {
   const source = readFileSync(join(root, "firestore.rules"), "utf8");
-  console.log("Deploying Firestore rules…");
+  const projectId = getProjectId();
+  console.log(`Deploying Firestore rules to project ${projectId}…`);
   await rules.releaseFirestoreRulesetFromSource(source);
   console.log("  ✓ Firestore rules deployed");
 }
 
 async function deployStorageRules() {
   const source = readFileSync(join(root, "storage.rules"), "utf8");
-  const bucket = `${serviceAccount.project_id}.firebasestorage.app`;
-  console.log("Deploying Storage rules…");
+  const projectId = getProjectId();
+  const bucket = `${projectId}.firebasestorage.app`;
+  console.log(`Deploying Storage rules for bucket ${bucket} to project ${projectId}…`);
   await rules.releaseStorageRulesetFromSource(source, bucket);
   console.log("  ✓ Storage rules deployed");
 }

@@ -10,7 +10,12 @@ export interface VisitDataStore {
 
 export interface RegionDataStore {
   getRegions(iso3: string): Promise<Region[]>;
-  seedRegions(regions: Region[]): Promise<void>;
+  getChildren(parentId: string | null): Promise<Region[]>;
+  getRegion: (id: string) => Promise<Region | null>;
+  getGeometries: (ids: string[]) => Promise<any[]>;
+  getGeometriesByParent: (parentId: string | null) => Promise<any[]>;
+  seedRegions: (regions: Region[]) => Promise<void>;
+  seedGeometries: (geometries: any[]) => Promise<void>;
 }
 
 export interface AuthUser {

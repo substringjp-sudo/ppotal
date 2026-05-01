@@ -32,7 +32,7 @@ export function AuthButton() {
           onClick={logout}
           className="text-xs text-gray-500 hover:text-gray-800 transition-colors"
         >
-          로그아웃
+          Sign Out
         </button>
       </div>
     );
@@ -44,7 +44,7 @@ export function AuthButton() {
       className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
     >
       <GoogleIcon />
-      Google로 로그인
+      Sign in with Google
     </button>
   );
 }

@@ -14,21 +14,19 @@
  *   npx tsx scripts/upload-tiles.ts --pmtiles KOR USA  # upload specific PMTiles
  */
 
-import { initializeApp, cert, getApps } from "firebase-admin/app";
+import { initializeApp, getApps, applicationDefault } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 import { createReadStream, statSync, readdirSync } from "fs";
 import { join, basename } from "path";
-import serviceAccount from "./serviceAccount.json";
-
-const PROJECT_ID = serviceAccount.project_id;
-const BUCKET = `${PROJECT_ID}.firebasestorage.app`;
 
 if (!getApps().length) {
   initializeApp({
-    credential: cert(serviceAccount as Parameters<typeof cert>[0]),
-    storageBucket: BUCKET,
+    credential: applicationDefault(),
   });
 }
+
+const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT || (getApps()[0].options.credential as any)?.projectId;
+const BUCKET = `${PROJECT_ID}.firebasestorage.app`;
 
 const bucket = getStorage().bucket();
 const root = new URL("..", import.meta.url).pathname;

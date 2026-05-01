@@ -15,7 +15,7 @@ interface VisitStore {
   removeVisit: (regionId: string, category: VisitCategory) => void;
   quickIncrement: (regionId: string) => void;
   getScore: (regionId: string) => RegionScore;
-  getFullScore: (regionId: string, allRegions: Region[]) => RegionScore;
+  getFullScore: (regionId: string, allRegions: Region[], parentIdMap?: Map<string | null, Region[]>, memo?: Map<string, any>, overrideVisits?: RegionVisit[] | Map<string, RegionVisit[]>) => RegionScore;
 }
 
 export const useVisitStore = create<VisitStore>()(
@@ -53,13 +53,13 @@ export const useVisitStore = create<VisitStore>()(
       },
 
       getScore(regionId) {
-        return getRegionScore(regionId, get().visits);
+        const { visits } = get();
+        return getRegionScore(regionId, visits);
       },
 
-      getFullScore(regionId, allRegions) {
-        const { visits } = get();
-        const childScore = getAggregatedChildScore(regionId, allRegions, visits);
-        return getRegionScore(regionId, visits, childScore);
+      getFullScore(regionId, allRegions, parentIdMap, memo, overrideVisits) {
+        const visits = overrideVisits ?? get().visits;
+        return getRegionScore(regionId, visits, allRegions, parentIdMap, memo);
       },
     }),
     {

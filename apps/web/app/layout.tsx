@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Regionevel",
-  description: "지역 방문 트래커",
+  description: "Regional Travel Tracker",
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
         <FirebaseProvider>
           <nav className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -24,13 +24,13 @@ export default function RootLayout({
               href="/map"
               className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
             >
-              지도
+              Map
             </Link>
             <Link
               href="/list"
               className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
             >
-              목록
+              List
             </Link>
             <div className="ml-auto">
               <AuthButton />

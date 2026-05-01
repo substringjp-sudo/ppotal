@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@regionevel/types": ["packages/types/src/index.ts"],
+      "@regionevel/utils": ["packages/utils/src/index.ts"],
+      "@regionevel/data-store": ["packages/data-store/src/index.ts"]
+    }
+  },
+  "include": ["scripts/**/*.ts", "packages/**/*.ts"]
+}

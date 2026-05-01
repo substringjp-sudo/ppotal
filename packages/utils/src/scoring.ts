@@ -9,12 +9,12 @@ import {
   VISIT_CONFIG,
 } from "@regionevel/types";
 
-export function calculateScore(visits: RegionVisit[]): RegionScore["breakdown"] & {
+export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { directCount: number; points: number }> & {
   directScore: number;
 } {
   const breakdown = Object.fromEntries(
-    VISIT_CATEGORY_ORDER.map((cat) => [cat, { count: 0, points: 0 }]),
-  ) as RegionScore["breakdown"];
+    VISIT_CATEGORY_ORDER.map((cat) => [cat, { directCount: 0, points: 0 }]),
+  ) as Record<VisitCategory, { directCount: number; points: number }>;
 
   let directScore = 0;
 
@@ -22,32 +22,122 @@ export function calculateScore(visits: RegionVisit[]): RegionScore["breakdown"] 
     const cfg = VISIT_CONFIG[visit.category];
     const clamped = Math.min(visit.count, cfg.maxCount);
     const points = clamped * cfg.pointsPerCount;
-    breakdown[visit.category] = { count: clamped, points };
+    breakdown[visit.category] = { directCount: clamped, points };
     directScore += points;
   }
 
   return { ...breakdown, directScore };
 }
 
+/**
+ * Returns the effective counts for a region, considering its own visits
+ * and the visits of all its descendants, capped at maxCount per category.
+ */
+export function getEffectiveCounts(
+  regionId: string,
+  allRegions: Region[],
+  allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
+  parentIdMap?: Map<string | null, Region[]>,
+  memo: Map<string, Record<VisitCategory, number>> = new Map(),
+): Record<VisitCategory, number> {
+  if (memo.has(regionId)) return memo.get(regionId)!;
+
+  const counts = Object.fromEntries(
+    VISIT_CATEGORY_ORDER.map((cat) => [cat, 0]),
+  ) as Record<VisitCategory, number>;
+
+  // 1. Add direct visits of this region
+  // Performance optimization: Use pre-grouped visits map if available
+  const directVisits = Array.isArray(allVisits) 
+    ? allVisits.filter((v) => v.regionId === regionId)
+    : allVisits.get(regionId) || [];
+
+  for (const v of directVisits) {
+    counts[v.category] += v.count;
+  }
+
+  // 2. Recursively add counts from children
+  const children = parentIdMap
+    ? parentIdMap.get(regionId) || []
+    : allRegions.filter((r) => r.parentId === regionId);
+
+  for (const child of children) {
+    const childCounts = getEffectiveCounts(
+      child.id,
+      allRegions,
+      allVisits,
+      parentIdMap,
+      memo,
+    );
+    for (const cat of VISIT_CATEGORY_ORDER) {
+      counts[cat] += childCounts[cat];
+    }
+  }
+
+  // 3. Cap each category at its maxCount
+  for (const cat of VISIT_CATEGORY_ORDER) {
+    counts[cat] = Math.min(counts[cat], VISIT_CONFIG[cat].maxCount);
+  }
+
+  memo.set(regionId, counts);
+  return counts;
+}
+
 export function getRegionScore(
   regionId: string,
-  visits: RegionVisit[],
-  aggregatedChildScore = 0,
+  allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
+  allRegions: Region[] = [],
+  parentIdMap?: Map<string | null, Region[]>,
+  memo?: Map<string, Record<VisitCategory, number>>,
 ): RegionScore {
-  const regionVisits = visits.filter((v) => v.regionId === regionId);
-  const { directScore, ...breakdown } = calculateScore(regionVisits);
+  const activeMemo = memo || new Map();
+  
+  const effectiveCounts = getEffectiveCounts(
+    regionId,
+    allRegions,
+    allVisits,
+    parentIdMap,
+    activeMemo,
+  );
+
+  // Get direct visits for this region
+  const directVisits = Array.isArray(allVisits)
+    ? allVisits.filter((v) => v.regionId === regionId)
+    : allVisits.get(regionId) || [];
+    
+  const { directScore, ...directBreakdown } = calculateScore(directVisits);
+
+  const breakdown = Object.fromEntries(
+    VISIT_CATEGORY_ORDER.map((cat) => {
+      const cfg = VISIT_CONFIG[cat];
+      const effectiveCount = effectiveCounts[cat];
+      const directCount = directBreakdown[cat].directCount;
+      return [
+        cat,
+        {
+          directCount,
+          effectiveCount,
+          points: effectiveCount * cfg.pointsPerCount,
+        },
+      ];
+    }),
+  ) as RegionScore["breakdown"];
+
+  const totalScore = VISIT_CATEGORY_ORDER.reduce(
+    (sum, cat) => sum + breakdown[cat].points,
+    0,
+  );
 
   return {
     regionId,
     directScore,
-    aggregatedChildScore,
-    totalScore: directScore + aggregatedChildScore,
-    breakdown: breakdown as RegionScore["breakdown"],
+    aggregatedChildScore: Math.max(0, totalScore - directScore),
+    totalScore,
+    breakdown,
   };
 }
 
 // Returns the next category+count to increment on a map click.
-// Finds the first category that hasn't reached maxCount.
 export function getNextIncrement(
   visits: RegionVisit[],
   regionId: string,
@@ -64,22 +154,17 @@ export function getNextIncrement(
   return null;
 }
 
-// Sums direct scores of all descendants of a region.
+// Legacy wrapper to maintain compatibility while transitioning.
+// In the new logic, "aggregatedChildScore" is derived from getRegionScore.
 export function getAggregatedChildScore(
   regionId: string,
   allRegions: Region[],
   allVisits: RegionVisit[],
+  parentIdMap?: Map<string | null, Region[]>,
+  memo?: Map<string, number>, // Unused in new logic but kept for signature
 ): number {
-  const children = allRegions.filter((r) => r.parentId === regionId);
-  if (children.length === 0) return 0;
-
-  return children.reduce((sum, child) => {
-    const directScore = calculateScore(
-      allVisits.filter((v) => v.regionId === child.id),
-    ).directScore;
-    const childAgg = getAggregatedChildScore(child.id, allRegions, allVisits);
-    return sum + directScore + childAgg;
-  }, 0);
+  const score = getRegionScore(regionId, allVisits, allRegions, parentIdMap);
+  return score.aggregatedChildScore;
 }
 
 export function getScoreColor(score: number): string {

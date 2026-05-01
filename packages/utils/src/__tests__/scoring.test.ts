@@ -88,30 +88,45 @@ describe("getNextIncrement", () => {
 
 describe("getAggregatedChildScore", () => {
   const regions: Region[] = [
-    { id: "parent", parentId: null, name: "서울", iso3: "KOR", admLevel: 1 },
+  const regions: Region[] = [
+    { id: "parent", parentId: null, name: "Seoul", iso3: "KOR", admLevel: 1 },
     {
       id: "child1",
       parentId: "parent",
-      name: "강남구",
+      name: "Gangnam",
       iso3: "KOR",
       admLevel: 2,
     },
     {
       id: "child2",
       parentId: "parent",
-      name: "종로구",
+      name: "Jongno",
       iso3: "KOR",
       admLevel: 2,
     },
   ];
 
-  it("sums child direct scores", () => {
+  it("sums child direct scores and caps at maxCount", () => {
     const visits: RegionVisit[] = [
-      { regionId: "child1", category: "passing", count: 2 },
-      { regionId: "child2", category: "transit", count: 1 },
+      { regionId: "child1", category: "passing", count: 3 },
+      { regionId: "child2", category: "passing", count: 4 },
     ];
-    // child1: 2*1=2, child2: 1*2=2 => 4
-    expect(getAggregatedChildScore("parent", regions, visits)).toBe(4);
+    // passing: 3 + 4 = 7, but capped at maxCount=5.
+    // Score should be 5 * 1 (pointsPerCount) = 5.
+    expect(getAggregatedChildScore("parent", regions, visits)).toBe(5);
+  });
+
+  it("handles mixed parent direct and child aggregated visits", () => {
+    const visits: RegionVisit[] = [
+      { regionId: "parent", category: "passing", count: 1 },
+      { regionId: "child1", category: "passing", count: 2 },
+    ];
+    // Total passing: 1 (direct) + 2 (child) = 3.
+    // 3 * 1 = 3 points.
+    const score = getRegionScore("parent", visits, regions);
+    expect(score.totalScore).toBe(3);
+    expect(score.directScore).toBe(1);
+    expect(score.aggregatedChildScore).toBe(2);
   });
 
   it("returns 0 for leaf regions", () => {

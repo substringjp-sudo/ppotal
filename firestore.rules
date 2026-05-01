@@ -5,7 +5,13 @@ service cloud.firestore {
 
     // Region metadata: public read, no client writes (seeded by admin script only)
     match /regions/{shapeId} {
-      allow read: if true;
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Geometries: public read, no client writes
+    match /geometries/{regionId} {
+      allow get, list: if true;
       allow write: if false;
     }
 

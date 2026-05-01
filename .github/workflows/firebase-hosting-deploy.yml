@@ -41,7 +41,7 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
 
-      # PR → preview channel (7일 유효)
+      # PR → preview channel (valid for 7 days)
       - name: Deploy preview channel (PR only)
         if: github.event_name == 'pull_request' && env.FIREBASE_SERVICE_ACCOUNT != ''
         run: |
@@ -53,7 +53,7 @@ jobs:
               --no-authorized-domains 2>&1
           rm -f /tmp/sa.json
 
-      # main 브랜치 → live 채널
+      # main branch → live channel
       - name: Deploy to live channel (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.FIREBASE_SERVICE_ACCOUNT != ''
         run: |

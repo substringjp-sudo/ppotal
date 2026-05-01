@@ -14,3 +14,11 @@ firebase-debug.log
 firebase-debug.*.log
 .firebase/
 scripts/serviceAccount.json
+
+# Data files
+data/raw/
+data/meta/
+public/geo/
+apps/web/public/geo/
+apps/web/public/data/meta/
+
