@@ -14,7 +14,7 @@ describe("getRegionScore", () => {
     const score = getRegionScore(REGION_ID, []);
     expect(score.directScore).toBe(0);
     expect(score.totalScore).toBe(0);
-    expect(score.breakdown.passing.count).toBe(0);
+    expect(score.breakdown.passing.directCount).toBe(0);
   });
 
   it("calculates score correctly for mixed visits", () => {
@@ -36,7 +36,7 @@ describe("getRegionScore", () => {
     const score = getRegionScore(REGION_ID, visits);
     // residence maxCount=1, pointsPerCount=40
     expect(score.directScore).toBe(40);
-    expect(score.breakdown.residence.count).toBe(1);
+    expect(score.breakdown.residence.directCount).toBe(1);
   });
 
   it("reaches 100 points at full completion", () => {
@@ -87,7 +87,6 @@ describe("getNextIncrement", () => {
 });
 
 describe("getAggregatedChildScore", () => {
-  const regions: Region[] = [
   const regions: Region[] = [
     { id: "parent", parentId: null, name: "Seoul", iso3: "KOR", admLevel: 1 },
     {

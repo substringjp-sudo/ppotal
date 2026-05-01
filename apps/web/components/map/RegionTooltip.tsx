@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
-import type { Region, RegionScore } from "@regionevel/types";
+import type { Region, RegionScore, VisitCategory } from "@regionevel/types";
 
 interface RegionTooltipProps {
   region: Region;
@@ -10,7 +10,7 @@ interface RegionTooltipProps {
   isMobile: boolean;
   onClose: () => void;
   onDrillDown: (regionId: string) => void;
-  onVisitSet: (category: string, count: number) => void;
+  onVisitSet: (category: VisitCategory, count: number) => void;
 }
 
 export const RegionTooltip = memo(function RegionTooltip({

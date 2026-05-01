@@ -388,7 +388,7 @@ export function RegionMap({ tree }: RegionMapProps) {
             setMousePos(null);
           }}
           onVisitSet={(cat, count) => {
-            upsertVisit(selectedId!, cat as any, count);
+            upsertVisit(selectedId!, cat, count);
           }}
         />
       )}

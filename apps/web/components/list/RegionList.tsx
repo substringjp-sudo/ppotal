@@ -54,9 +54,9 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
 
       setCurrentRegions(children);
 
-      const bc = [{ id: null, name: "World" }];
+      const bc: { id: string | null; name: string }[] = [{ id: null, name: "World" }];
       bc.push(...ancestors.map((a) => ({ id: a.id, name: a.name })));
-      
+
       if (currentParentId) {
         const self = await fetchRegion(currentParentId);
         if (self) {
