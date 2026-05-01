@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { VISIT_CONFIG, VISIT_CATEGORY_ORDER } from "@regionevel/types";
+import { VISIT_CONFIG, VISIT_CATEGORY_ORDER, type VisitCategory } from "@regionevel/types";
 
 interface ScoreStats {
   totalVisited: number;
@@ -23,7 +23,7 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
   isMobile,
   scoringMode 
 }: ScoreStatsBarProps) {
-  const categories = [
+  const categories: Array<{ key: VisitCategory; color: string; label: string }> = [
     { key: "passing", color: "bg-slate-400", label: "Pass" },
     { key: "transit", color: "bg-cyan-400", label: "Tran" },
     { key: "visit", color: "bg-blue-500", label: "Visit" },
@@ -50,10 +50,10 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
             <div className="flex items-center gap-1.5 mb-1">
               <div className={`w-1.5 h-1.5 rounded-full ${cat.color} group-hover:scale-125 transition-transform shadow-sm`} />
               <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter whitespace-nowrap">
-                {isMobile ? cat.label : VISIT_CONFIG[cat.key as any].label}
+                {isMobile ? cat.label : VISIT_CONFIG[cat.key].label}
               </span>
             </div>
-            <span className="text-xs font-black text-slate-700 tabular-nums">{(stats as any)[cat.key]}</span>
+            <span className="text-xs font-black text-slate-700 tabular-nums">{stats[cat.key]}</span>
           </div>
         ))}
       </div>
