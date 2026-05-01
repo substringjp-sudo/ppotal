@@ -31,7 +31,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
       const children = initialRegions.filter(r => r.parentId === currentParentId);
       setCurrentRegions(children);
       
-      const bc = [{ id: null, name: "World" }];
+      const bc: { id: string | null; name: string }[] = [{ id: null, name: "World" }];
       let tid = currentParentId;
       const ancestors: {id: string, name: string}[] = [];
       while (tid) {
@@ -54,7 +54,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
 
       setCurrentRegions(children);
 
-      const bc = [{ id: null, name: "World" }];
+      const bc: { id: string | null; name: string }[] = [{ id: null, name: "World" }];
       bc.push(...ancestors.map((a) => ({ id: a.id, name: a.name })));
       
       if (currentParentId) {

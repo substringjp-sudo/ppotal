@@ -11,6 +11,7 @@ export interface VisitDataStore {
 export interface RegionDataStore {
   getRegions(iso3: string): Promise<Region[]>;
   getChildren(parentId: string | null): Promise<Region[]>;
+  getAllRegions(): Promise<Region[]>;
   getRegion: (id: string) => Promise<Region | null>;
   getGeometries: (ids: string[]) => Promise<any[]>;
   getGeometriesByParent: (parentId: string | null) => Promise<any[]>;

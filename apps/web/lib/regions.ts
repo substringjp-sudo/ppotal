@@ -12,31 +12,33 @@ export async function loadRegions(iso3: string): Promise<Region[]> {
 }
 
 export function flattenTree(tree: any[]): Region[] {
+  if (!Array.isArray(tree)) return [];
   const regions: Region[] = [];
   for (const country of tree) {
+    if (!country || typeof country !== "object") continue;
     regions.push({
-      id: country.id,
+      id: country.id || "",
       parentId: null,
-      name: country.name,
-      iso3: country.code,
+      name: country.name || "Unknown",
+      iso3: country.code || "",
       admLevel: 0,
     });
-    if (country.prefectures) {
+    if (Array.isArray(country.prefectures)) {
       for (const pref of country.prefectures) {
         regions.push({
-          id: pref.id,
-          parentId: country.id,
-          name: pref.name,
-          iso3: country.code,
+          id: pref.id || "",
+          parentId: country.id || "",
+          name: pref.name || "Unknown",
+          iso3: country.code || "",
           admLevel: 1,
         });
-        if (pref.cities) {
+        if (Array.isArray(pref.cities)) {
           for (const city of pref.cities) {
             regions.push({
-              id: city.id,
-              parentId: pref.id,
-              name: city.name,
-              iso3: country.code,
+              id: city.id || "",
+              parentId: pref.id || "",
+              name: city.name || "Unknown",
+              iso3: country.code || "",
               admLevel: 2,
             });
           }
@@ -91,6 +93,15 @@ export async function fetchChildren(parentId: string | null): Promise<Region[]> 
     return await getStore().getChildren(parentId);
   } catch (e) {
     console.error("Failed to fetch regions from Firestore, falling back to empty", e);
+    return [];
+  }
+}
+
+export async function fetchAllRegions(): Promise<Region[]> {
+  try {
+    return await getStore().getAllRegions();
+  } catch (e) {
+    console.error("Failed to fetch all regions from Firestore", e);
     return [];
   }
 }

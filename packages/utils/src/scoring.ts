@@ -123,15 +123,17 @@ export function getRegionScore(
     }),
   ) as RegionScore["breakdown"];
 
-  const totalScore = VISIT_CATEGORY_ORDER.reduce(
-    (sum, cat) => sum + breakdown[cat].points,
-    0,
+  const totalScore = Math.min(
+    100,
+    VISIT_CATEGORY_ORDER.reduce((sum, cat) => sum + breakdown[cat].points, 0),
   );
+  
+  const finalDirectScore = Math.min(100, directScore);
 
   return {
     regionId,
-    directScore,
-    aggregatedChildScore: Math.max(0, totalScore - directScore),
+    directScore: finalDirectScore,
+    aggregatedChildScore: Math.max(0, totalScore - finalDirectScore),
     totalScore,
     breakdown,
   };
@@ -169,8 +171,29 @@ export function getAggregatedChildScore(
 
 export function getScoreColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  if (score <= 20) return "#bfdbfe";
-  if (score <= 40) return "#60a5fa";
-  if (score <= 70) return "#2563eb";
-  return "#1e3a8a";
+  if (score < 5) return "#eff6ff";   // Very light: 1-4
+  if (score < 10) return "#bfdbfe";  // Level 1: 5+
+  if (score < 30) return "#60a5fa";  // Level 2: 10+
+  if (score < 50) return "#2563eb";  // Level 3: 30+
+  if (score < 100) return "#1e3a8a"; // Level 4: 50+
+  return "#0f172a";                  // Level 5: 100 (kept as max)
+}
+
+export function getCumulativeColor(score: number, allScores: number[]): string {
+  if (score === 0) return "#f8fafc";
+  
+  // Sort scores to calculate percentiles
+  const sorted = [...allScores].filter(s => s > 0).sort((a, b) => b - a);
+  if (sorted.length === 0) return "#f8fafc";
+
+  const index = sorted.indexOf(score);
+  if (index === -1) return "#f8fafc";
+  
+  const percentile = (index / sorted.length) * 100;
+
+  if (percentile <= 1) return "#c2410c";   // Top 1% (Orange 700)
+  if (percentile <= 10) return "#f97316";  // Top 10% (Orange 500)
+  if (percentile <= 30) return "#fdba74";  // Top 30% (Orange 300)
+  if (percentile <= 50) return "#ffedd5";  // Top 50% (Orange 100)
+  return "#fff7ed";                        // Others (Orange 50)
 }

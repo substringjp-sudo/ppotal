@@ -28,6 +28,11 @@ export function createFirestoreRegionStore(): RegionDataStore {
       const snap = await getDocs(q);
       return snap.docs.map((d) => d.data() as Region);
     },
+    
+    async getAllRegions() {
+      const snap = await getDocs(regionsRef);
+      return snap.docs.map((d) => d.data() as Region);
+    },
 
     async getRegion(id) {
       const { getDoc, doc } = await import("firebase/firestore");

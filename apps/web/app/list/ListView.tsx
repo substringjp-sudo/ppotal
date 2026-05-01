@@ -11,10 +11,9 @@ export function ListView() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/data/meta/tree.json")
-      .then((r) => r.json())
+    import("@/lib/regions").then(m => m.fetchAllRegions())
       .then((data) => {
-        setAllRegions(flattenTree(data));
+        setAllRegions(data);
         setLoading(false);
       })
       .catch((e: unknown) => {

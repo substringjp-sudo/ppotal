@@ -28,11 +28,11 @@ const { feature } = require("topojson-client") as typeof import("topojson-client
 // ─── Settings ──────────────────────────────────────────────────────────────────
 const CONFIG = {
   /** World map simplification intensity (quantile). Smaller values preserve more detail. */
-  worldQuantile: 0.01,        // 0.005 -> 0.01 (User request: more simplification for world map)
+  worldQuantile: 0,
   /** Prefecture simplification intensity per country */
-  prefectureQuantile: 0.0002, // 0.0001 -> 0.0002 (slightly more simplified)
+  prefectureQuantile: 0,
   /** City simplification intensity per prefecture */
-  cityQuantile: 0.00001,      // Kept as is (highest precision)
+  cityQuantile: 0,
 };
 
 const DATA_DIR = join(process.cwd(), "data/meta");
@@ -110,6 +110,12 @@ function simplifyWithTopology(
     return fc;
   }
 
+  // If quantile is 0, bypass simplification to preserve maximum detail
+  if (quantileValue === 0) {
+    console.log(`    [${label}] Quantile is 0, bypassing simplification.`);
+    return fc;
+  }
+
   let currentQuantile = quantileValue;
   let restored: any;
   let maxRetries = 5;
@@ -117,7 +123,7 @@ function simplifyWithTopology(
 
   while (maxRetries > 0) {
     // 1. GeoJSON → TopoJSON (extract shared arcs)
-    const topo = topology({ collection: fc });
+    const topo = topology({ collection: fc }, 1e6);
     
     // 2. Topology-preserving simplification
     const presimplified = presimplify(topo);

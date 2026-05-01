@@ -5,20 +5,22 @@ import type { Region, RegionScore } from "@regionevel/types";
 interface RegionTooltipProps {
   region: Region;
   score: RegionScore;
-  children: Region[];
+  childRegions: Region[];
   mousePos: { x: number; y: number } | null;
   isMobile: boolean;
+  scoringMode: "individual" | "cumulative";
   onClose: () => void;
   onDrillDown: (regionId: string) => void;
   onVisitSet: (category: string, count: number) => void;
 }
-
+ 
 export const RegionTooltip = memo(function RegionTooltip({
   region,
   score,
-  children,
+  childRegions,
   mousePos,
   isMobile,
+  scoringMode,
   onClose,
   onDrillDown,
   onVisitSet,
@@ -28,21 +30,40 @@ export const RegionTooltip = memo(function RegionTooltip({
   const tooltipHeight = 450; 
   
   const desktopStyle: React.CSSProperties = mousePos
-    ? {
-        position: "fixed",
-        left: mousePos.x + tooltipWidth + 20 > (typeof window !== "undefined" ? window.innerWidth : 0)
-          ? mousePos.x - tooltipWidth - 20
-          : mousePos.x + 20,
-        top: mousePos.y + tooltipHeight + 20 > (typeof window !== "undefined" ? window.innerHeight : 0)
-          ? Math.max(20, mousePos.y - tooltipHeight - 20)
-          : Math.min(mousePos.y + 20, (typeof window !== "undefined" ? window.innerHeight : 0) - 100),
-        zIndex: 2000,
-      }
+    ? (() => {
+        const winW = typeof window !== "undefined" ? window.innerWidth : 0;
+        const winH = typeof window !== "undefined" ? window.innerHeight : 0;
+        
+        // Dynamic height based on content
+        const idealHeight = 580;
+        const actualHeight = Math.min(idealHeight, winH - 60);
+        
+        let left = mousePos.x + 20;
+        if (left + tooltipWidth > winW - 20) {
+          left = mousePos.x - tooltipWidth - 20;
+        }
+        left = Math.max(20, Math.min(left, winW - tooltipWidth - 20));
+
+        let top = mousePos.y + 20;
+        if (top + actualHeight > winH - 20) {
+          top = mousePos.y - actualHeight - 20;
+        }
+        top = Math.max(20, Math.min(top, winH - actualHeight - 20));
+
+        return {
+          position: "fixed",
+          left,
+          top,
+          height: actualHeight,
+          zIndex: 2000,
+        };
+      })()
     : {
         position: "fixed",
         bottom: "1.5rem",
         left: "50%",
         transform: "translateX(-50%)",
+        height: 580,
         zIndex: 2000,
       };
 
@@ -81,18 +102,38 @@ export const RegionTooltip = memo(function RegionTooltip({
           </div>
         )}
 
-        <div className={`flex items-center justify-between px-6 py-4 ${isMobile ? "bg-white" : "bg-blue-600 text-white"} shrink-0`}>
+        <div className={`flex items-center justify-between px-6 py-4 ${isMobile ? "bg-white" : scoringMode === "cumulative" ? "bg-orange-600 text-white" : "bg-blue-600 text-white"} shrink-0`}>
           <div>
             <p className={`font-black text-lg leading-tight ${isMobile ? "text-slate-900" : "text-white"}`}>{region.name}</p>
-            <p className={`text-xs mt-0.5 font-bold uppercase tracking-wider ${isMobile ? "text-slate-400" : "text-blue-200"}`}>
+            <p className={`text-xs mt-0.5 font-bold uppercase tracking-wider ${isMobile ? "text-slate-400" : scoringMode === "cumulative" ? "text-orange-200" : "text-blue-200"}`}>
               {region.iso3} · {region.admLevel === 0 ? "National" : region.admLevel === 1 ? "Regional" : "Local"}
             </p>
           </div>
           <div className="text-right flex items-center gap-3">
             <div className="flex flex-col items-end">
-              <p className={`text-3xl font-black leading-none ${isMobile ? "text-blue-600" : "text-white"}`}>{score.totalScore}</p>
-              <p className={`text-[10px] mt-1 uppercase font-black tracking-[0.2em] ${isMobile ? "text-slate-400" : "text-blue-200"}`}>Points</p>
+              <p className={`text-3xl font-black leading-none ${isMobile ? (scoringMode === "cumulative" ? "text-orange-600" : "text-blue-600") : "text-white"}`}>
+                {scoringMode === "cumulative" ? (score.cumulativeScore ?? 0) : score.totalScore}
+              </p>
+              <p className={`text-[10px] mt-1 uppercase font-black tracking-[0.2em] ${isMobile ? "text-slate-400" : scoringMode === "cumulative" ? "text-orange-200" : "text-blue-200"}`}>
+                {scoringMode === "cumulative" ? "Sub-Sum" : "Points"}
+              </p>
             </div>
+            {scoringMode === "cumulative" && (
+              <div className="flex flex-col items-end border-l border-white/20 pl-3">
+                <p className={`text-xl font-black leading-none ${isMobile ? "text-slate-400" : "text-orange-200"}`}>
+                  {score.totalScore}
+                </p>
+                <p className={`text-[8px] mt-1 uppercase font-black tracking-[0.1em] ${isMobile ? "text-slate-300" : "text-orange-100"}`}>Indiv.</p>
+              </div>
+            )}
+            {scoringMode === "individual" && (score.cumulativeScore ?? 0) > 0 && (
+              <div className="flex flex-col items-end border-l border-white/20 pl-3">
+                <p className={`text-xl font-black leading-none ${isMobile ? "text-orange-600" : "text-orange-200"}`}>
+                  {score.cumulativeScore}
+                </p>
+                <p className={`text-[8px] mt-1 uppercase font-black tracking-[0.1em] ${isMobile ? "text-slate-400" : "text-orange-100"}`}>Sub-Sum</p>
+              </div>
+            )}
             {!isMobile && (
               <button
                 onClick={onClose}
@@ -105,9 +146,9 @@ export const RegionTooltip = memo(function RegionTooltip({
           </div>
         </div>
 
-        <div className={`overflow-y-auto no-scrollbar ${isMobile ? "max-h-[60vh] px-6 pb-8" : "max-h-[400px] px-4 pb-4"}`}>
+        <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6 pb-8" : "px-4 pb-4"}`}>
           {/* Score breakdown */}
-          <div className="space-y-5 pt-2">
+          <div className="space-y-3.5 pt-2">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Visit History</p>
             {VISIT_CATEGORY_ORDER.map((cat) => {
               const cfg = VISIT_CONFIG[cat];
@@ -115,19 +156,19 @@ export const RegionTooltip = memo(function RegionTooltip({
               return (
                 <div key={cat} className="group">
                   <div className="flex items-center justify-between mb-1">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-700">{cfg.label}</span>
-                      <span className="text-[10px] text-slate-400 font-medium leading-tight">
+                    <div className="flex items-baseline gap-2 overflow-hidden mr-2">
+                      <span className="text-sm font-bold text-slate-700 whitespace-nowrap shrink-0">{cfg.label}</span>
+                      <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap truncate">
                         {cfg.description}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       {b.effectiveCount > b.directCount && (
-                        <span className="text-[9px] font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
+                        <span className={`text-[9px] font-black ${scoringMode === "cumulative" ? "text-orange-400 bg-orange-50" : "text-slate-400 bg-slate-100"} px-1.5 py-0.5 rounded-full`}>
                           +{b.effectiveCount - b.directCount} sub
                         </span>
                       )}
-                      <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                      <span className={`text-[10px] font-black ${scoringMode === "cumulative" ? "text-orange-600 bg-orange-50" : "text-blue-600 bg-blue-50"} px-2 py-0.5 rounded-full`}>
                         {b.points} pts
                       </span>
                     </div>
@@ -140,27 +181,27 @@ export const RegionTooltip = memo(function RegionTooltip({
                           onClick={() => onVisitSet(cat, i + 1 === b.directCount ? i : i + 1)}
                           className={`flex-1 h-2 rounded-full transition-all duration-300 hover:scale-y-125 ${
                             i < b.directCount 
-                              ? "bg-blue-600 shadow-sm shadow-blue-200" 
+                              ? (scoringMode === "cumulative" ? "bg-orange-600 shadow-sm shadow-orange-200" : "bg-blue-600 shadow-sm shadow-blue-200")
                               : i < b.effectiveCount
-                                ? "bg-blue-200"
+                                ? (scoringMode === "cumulative" ? "bg-orange-200" : "bg-blue-200")
                                 : "bg-slate-100"
                           }`}
                           title={`${i + 1} visits`}
                         />
                       ))}
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => onVisitSet(cat, Math.max(0, b.directCount - 1))}
                         disabled={b.directCount <= 0}
-                        className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-lg flex items-center justify-center transition-all border border-slate-100 active:scale-95"
+                        className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
                       >
                         −
                       </button>
                       <button
                         onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, b.directCount + 1))}
                         disabled={b.directCount >= cfg.maxCount}
-                        className="w-8 h-8 rounded-xl bg-blue-50 hover:bg-blue-100 disabled:opacity-20 text-blue-600 font-black text-lg flex items-center justify-center transition-all border border-blue-100 active:scale-95"
+                        className={`w-7 h-7 rounded-lg ${scoringMode === "cumulative" ? "bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-100" : "bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100"} disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
                       >
                         +
                       </button>
@@ -180,11 +221,11 @@ export const RegionTooltip = memo(function RegionTooltip({
         </div>
 
         {/* Drill down action - Always visible at bottom */}
-        {children.length > 0 && (
+        {childRegions.length > 0 && (
           <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white border-t border-gray-50" : "px-4 pb-4 pt-2"}`}>
             <button
               onClick={() => onDrillDown(region.id)}
-              className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl shadow-slate-200 active:scale-[0.98]"
+              className={`w-full py-4 ${scoringMode === "cumulative" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

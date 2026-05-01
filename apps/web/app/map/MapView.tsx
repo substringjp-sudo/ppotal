@@ -19,13 +19,12 @@ const RegionMap = dynamic(
 );
 
 export function MapView() {
-  const [tree, setTree] = useState<any[] | null>(null);
+  const [regions, setRegions] = useState<Region[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/data/meta/tree.json")
-      .then((r) => r.json())
-      .then((data) => setTree(data))
+    import("@/lib/regions").then((m) => m.fetchAllRegions())
+      .then((data) => setRegions(data))
       .catch((e: unknown) => setError(String(e)));
   }, []);
 
@@ -37,17 +36,17 @@ export function MapView() {
     );
   }
 
-  if (!tree) {
+  if (!regions) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-56px)] text-gray-400">
-        Loading metadata...
+        Loading metadata from server...
       </div>
     );
   }
 
   return (
     <div className="h-[calc(100vh-56px)]">
-      <RegionMap tree={tree} />
+      <RegionMap regions={regions} />
     </div>
   );
 }

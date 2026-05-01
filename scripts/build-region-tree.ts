@@ -26,8 +26,18 @@ const MAX_ADM = Number(process.argv[3] ?? 2) as AdmLevel;
 type Position = [number, number];
 type Ring = Position[];
 
-function centroid(polygon: { coordinates: Ring[] }): Position {
-  const ring = polygon.coordinates[0]!;
+function getFirstRing(geometry: any): Ring {
+  if (geometry.type === "Polygon") {
+    return geometry.coordinates[0];
+  } else if (geometry.type === "MultiPolygon") {
+    return geometry.coordinates[0][0];
+  }
+  return [];
+}
+
+function centroid(geometry: any): Position {
+  const ring = getFirstRing(geometry);
+  if (ring.length === 0) return [0, 0];
   let x = 0, y = 0;
   for (const [lon, lat] of ring) {
     x += lon!;
@@ -37,9 +47,13 @@ function centroid(polygon: { coordinates: Ring[] }): Position {
   return [x / n, y / n];
 }
 
-function pointInPolygon(point: Position, polygon: { coordinates: Ring[] }): boolean {
+function pointInPolygon(point: Position, geometry: any): boolean {
+  const rings = geometry.type === "Polygon" 
+    ? geometry.coordinates 
+    : geometry.coordinates.flat();
+    
   const [px, py] = point;
-  for (const ring of polygon.coordinates) {
+  for (const ring of rings) {
     let inside = false;
     for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
       const [xi, yi] = ring[i]!;
@@ -89,11 +103,28 @@ for (let lvl = 0 as AdmLevel; lvl <= MAX_ADM; lvl = (lvl + 1) as AdmLevel) {
     let parentId: string | null = null;
 
     if (parentFeatures.length > 0) {
-      const c = centroid(f.geometry as { coordinates: Ring[] });
+      const c = centroid(f.geometry);
       const parent = parentFeatures.find((pf) =>
-        pointInPolygon(c, pf.geometry as { coordinates: Ring[] }),
+        pointInPolygon(c, pf.geometry),
       );
       parentId = parent?.properties.shapeID ?? null;
+
+      if (!parentId && parentFeatures.length > 0) {
+        // Fallback: Find nearest parent by distance to centroid
+        let minDistance = Infinity;
+        let nearestParentId = null;
+
+        for (const pf of parentFeatures) {
+          const pc = centroid(pf.geometry);
+          const dist = Math.sqrt(Math.pow(c[0] - pc[0], 2) + Math.pow(c[1] - pc[1], 2));
+          if (dist < minDistance) {
+            minDistance = dist;
+            nearestParentId = pf.properties.shapeID;
+          }
+        }
+        parentId = nearestParentId;
+        console.log(`  [MATCHED] ${f.properties.shapeName} matched to nearest parent ${parentId} (dist: ${minDistance.toFixed(4)})`);
+      }
 
       if (!parentId) {
         console.warn(
