@@ -3,6 +3,7 @@ import Link from "next/link";
 import { FirebaseProvider } from "@/components/auth/FirebaseProvider";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { Footer } from "@/components/common/Footer";
+import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
