@@ -28,7 +28,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
   useEffect(() => {
     if (initialRegions.length > 0) {
       // If we have the full tree, just filter locally
-      const children = initialRegions.filter(r => r.parentId === currentParentId);
+      const children = initialRegions.filter(r => (r.parentId || null) === (currentParentId || null));
       setCurrentRegions(children);
       
       const bc: { id: string | null; name: string }[] = [{ id: null, name: "World" }];
@@ -76,9 +76,10 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
     
     const pMap = new Map<string | null, Region[]>();
     for (const r of allRegions) {
-      const list = pMap.get(r.parentId) || [];
+      const pid = r.parentId || null;
+      const list = pMap.get(pid) || [];
       list.push(r);
-      pMap.set(r.parentId, list);
+      pMap.set(pid, list);
     }
 
     const vMap = new Map<string, any[]>();
@@ -240,7 +241,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
             score={score}
             onDrillDown={handleDrillDown}
             onUpdateVisit={(cat, count) => upsertVisit(region.id, cat, count)}
-            hasChildren={region.admLevel < 2} // Approximate check for children
+            hasChildren={region.childrenCount !== undefined ? region.childrenCount > 0 : region.admLevel < 2} // Use childrenCount if available
           />
         ))}
 

@@ -71,6 +71,8 @@ export interface Region {
   name: string;
   iso3: string; // ISO 3166-1 alpha-3
   admLevel: AdmLevel;
+  childrenCount?: number;
+  code?: string;
 }
 
 export interface RegionVisit {

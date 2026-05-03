@@ -7,6 +7,7 @@ import {
   getAggregatedChildScore,
   getNextIncrement,
   getRegionScore,
+  padId,
 } from "@regionevel/utils";
 
 interface VisitStore {
@@ -31,53 +32,61 @@ export const useVisitStore = create<VisitStore>()(
       },
 
       upsertVisit(regionId, category, count) {
+        const id = padId(regionId);
         set((s) => {
           const filtered = s.visits.filter(
-            (v) => !(v.regionId === regionId && v.category === category),
+            (v) => !(v.regionId === id && v.category === category),
           );
           if (count <= 0) return { visits: filtered };
           return {
             visits: [
               ...filtered,
-              { regionId, category, count, updatedAt: Date.now() },
+              { regionId: id, category, count, updatedAt: Date.now() },
             ],
           };
         });
       },
 
       removeVisit(regionId, category) {
+        const id = padId(regionId);
         set((s) => ({
           visits: s.visits.filter(
-            (v) => !(v.regionId === regionId && v.category === category),
+            (v) => !(v.regionId === id && v.category === category),
           ),
         }));
       },
 
       quickIncrement(regionId) {
+        const id = padId(regionId);
         const { visits, upsertVisit } = get();
-        const next = getNextIncrement(visits, regionId);
-        if (next) upsertVisit(regionId, next.category, next.newCount);
+        const next = getNextIncrement(visits, id);
+        if (next) upsertVisit(id, next.category, next.newCount);
       },
 
       getScore(regionId) {
+        const id = padId(regionId);
         const { visits } = get();
-        return getRegionScore(regionId, visits);
+        return getRegionScore(id, visits);
       },
 
       getFullScore(regionId, allRegions, parentIdMap, memo, overrideVisits) {
+        const id = padId(regionId);
         const visits = overrideVisits ?? get().visits;
-        return getRegionScore(regionId, visits, allRegions, parentIdMap, memo);
+        return getRegionScore(id, visits, allRegions, parentIdMap, memo);
       },
     }),
     {
       name: "regionevel-visits",
-      version: 1,
+      version: 2,
       migrate: (persistedState: any, version: number) => {
-        if (version === 0) {
-          // 마이그레이션 로직이 필요한 경우 여기에 추가
-          return persistedState as VisitStore;
+        const state = persistedState as any;
+        if (version < 2 && state && state.visits) {
+          state.visits = state.visits.map((v: any) => ({
+            ...v,
+            regionId: padId(v.regionId),
+          }));
         }
-        return persistedState as VisitStore;
+        return state;
       },
     },
   ),

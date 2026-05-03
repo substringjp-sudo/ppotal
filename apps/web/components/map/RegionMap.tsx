@@ -13,6 +13,23 @@ import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import "leaflet/dist/leaflet.css";
 
+/**
+ * Normalizes an ID to a fixed length based on its type:
+ * - Country: 3 digits (e.g., "001")
+ * - Prefecture: 7 digits
+ * - City: 12 digits
+ */
+const padId = (id: string | number | undefined | null): string => {
+  if (id === undefined || id === null) return "";
+  const s = String(id).trim();
+  if (!/^\d+$/.test(s)) return s;
+  
+  const len = s.length;
+  if (len <= 3) return s.padStart(3, "0");
+  if (len <= 7) return s.padStart(7, "0");
+  return s.padStart(12, "0");
+};
+
 // Helper component to auto-fit bounds when GeoJSON changes
 function FitBounds({ data }: { data: FeatureCollection }) {
   const map = useMap();
@@ -44,7 +61,7 @@ export function RegionMap({ regions }: RegionMapProps) {
   const regionsByIdMap = useMemo(() => {
     const map = new Map<string, Region>();
     for (const r of regions) {
-      map.set(r.id, r);
+      map.set(padId(r.id), r);
     }
     return map;
   }, [regions]);
@@ -124,7 +141,8 @@ export function RegionMap({ regions }: RegionMapProps) {
     }
 
     for (const feature of geoData.features) {
-      const id = feature.properties?.id as string;
+      const rawId = feature.properties?.id || feature.properties?.shapeID;
+      const id = padId(rawId);
       if (id) {
         const individualScore = getFullScore(id, regions, parentMap, memo, visitsMap);
         
@@ -132,7 +150,8 @@ export function RegionMap({ regions }: RegionMapProps) {
         const children = parentMap.get(id) || [];
         let cumulativeScore = individualScore.directScore;
         for (const child of children) {
-          const childScore = getFullScore(child.id, regions, parentMap, memo, visitsMap);
+          const paddedChildId = padId(child.id);
+          const childScore = getFullScore(paddedChildId, regions, parentMap, memo, visitsMap);
           cumulativeScore += childScore.totalScore;
         }
         
@@ -228,7 +247,8 @@ export function RegionMap({ regions }: RegionMapProps) {
 
   const getStyle = useCallback(
     (feature?: Feature): PathOptions => {
-      const id = feature?.properties?.id as string;
+      const rawId = feature?.properties?.id || feature?.properties?.shapeID;
+      const id = padId(rawId);
       const scoreData = scoreMap[id];
       const score = scoringMode === "cumulative" ? scoreData?.cumulativeScore : scoreData?.totalScore;
       
@@ -285,7 +305,8 @@ export function RegionMap({ regions }: RegionMapProps) {
 
   const onEachFeature = useCallback(
     (feature: Feature, layer: Layer) => {
-      const id = feature.properties?.id as string;
+      const rawId = feature.properties?.id || feature.properties?.shapeID;
+      const id = padId(rawId);
       if (!id) return;
 
       layer.on({
@@ -412,7 +433,7 @@ export function RegionMap({ regions }: RegionMapProps) {
               <div className="h-6 w-[1px] bg-white/20 mx-1" />
               <div className="flex flex-col items-center">
                 <span className={`text-sm font-black leading-none ${scoringMode === "cumulative" ? "text-orange-400" : "text-blue-400"}`}>
-                  {scoringMode === "cumulative" ? hoveredScore.cumulativeScore : hoveredScore.totalScore}
+                  {scoringMode === "cumulative" ? hoveredScore.cumulativeScore.toFixed(1) : hoveredScore.totalScore.toFixed(1)}
                 </span>
                 <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">
                   {scoringMode === "cumulative" ? "Sum" : "Pts"}

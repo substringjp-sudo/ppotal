@@ -123,10 +123,15 @@ export async function fetchAncestors(regionId: string): Promise<Region[]> {
 export async function fetchGeometries(parentId: string | null): Promise<any[]> {
   try {
     const rawFeatures = await getStore().getGeometriesByParent(parentId);
-    return rawFeatures.map(f => ({
-      ...f,
-      geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
-    }));
+    return rawFeatures.map(f => {
+      const props = f.properties || {};
+      const id = props.id || props.shapeID || props.ID;
+      return {
+        ...f,
+        properties: { ...props, id },
+        geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
+      };
+    });
   } catch (e) {
     console.error(`Failed to fetch geometries for parent ${parentId}`, e);
     return [];
