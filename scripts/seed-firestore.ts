@@ -145,7 +145,6 @@ async function main() {
     if (existsSync(countriesDir)) {
       const countryFiles = readdirSync(countriesDir).filter(f => f.endsWith(".geojson"));
       for (const file of countryFiles) {
-        // file.replace(".geojson", "") might be "CHN", need to map it to numeric if possible
         const rawCountryId = file.replace(".geojson", "");
         let countryId = padId(rawCountryId);
         if (!/^\d+$/.test(rawCountryId)) {
@@ -154,6 +153,20 @@ async function main() {
 
         const data = JSON.parse(readFileSync(join(countriesDir, file), "utf-8"));
         await seedGeoCollection(db, data.features, countryId, isoMap);
+      }
+    }
+
+    // 3. Prefecture features (Cities)
+    const prefecturesDir = join(geoDir, "prefectures");
+    if (existsSync(prefecturesDir)) {
+      const prefectureFiles = readdirSync(prefecturesDir).filter(f => f.endsWith(".geojson"));
+      console.log(`Seeding geometries for ${prefectureFiles.length} prefectures...`);
+      for (const file of prefectureFiles) {
+        const rawPrefectureId = file.replace(".geojson", "");
+        const prefectureId = padId(rawPrefectureId);
+        
+        const data = JSON.parse(readFileSync(join(prefecturesDir, file), "utf-8"));
+        await seedGeoCollection(db, data.features, prefectureId, isoMap);
       }
     }
 

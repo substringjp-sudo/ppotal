@@ -245,6 +245,8 @@ export function RegionMap({ regions }: RegionMapProps) {
     return stats;
   }, [currentId, visits, regions, parentMap, getFullScore]);
 
+  const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
+
   const getStyle = useCallback(
     (feature?: Feature): PathOptions => {
       const rawId = feature?.properties?.id || feature?.properties?.shapeID;
@@ -444,70 +446,119 @@ export function RegionMap({ regions }: RegionMapProps) {
         </div>
       )}
 
-      {/* Breadcrumbs & Navigation */}
-      <div className={`absolute top-4 left-4 z-[1001] pointer-events-none flex flex-col gap-2 ${isMobile ? "max-w-[calc(100%-80px)]" : "right-4"}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 p-1 pointer-events-auto overflow-hidden max-w-full">
-            {history.length > 0 && (
-              <button
-                onClick={handleBack}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
-                title="Back"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+      {/* Professional Top Header (Desktop) */}
+      {!isMobile && (
+        <div className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 z-[1001] flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500">
+          {/* Breadcrumbs Section */}
+          <div className="flex items-center gap-2 h-full border-r border-slate-100 pr-4 shrink-0">
+            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-md p-1">
+              {history.length > 0 && (
+                <button
+                  onClick={handleBack}
+                  className="p-1 hover:bg-white rounded transition-all text-slate-500 border border-transparent hover:border-slate-200"
                 >
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+              <div className="flex items-center gap-1 px-1">
+                {currentPath.map((name, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    {i > 0 && <span className="text-slate-300 text-[10px]">/</span>}
+                    <span className={`text-[10px] font-black tracking-tight whitespace-nowrap ${i === currentPath.length - 1 ? "text-blue-600" : "text-slate-400 uppercase"}`}>
+                      {name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Active Region Info */}
+          <div className="flex items-center px-6 gap-6 h-full flex-1 min-w-0 overflow-hidden bg-slate-50/30">
+            {currentRegion ? (
+              <div className="flex items-center gap-6">
+                <div className="shrink-0 flex flex-col justify-center">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Active Region</span>
+                  <h3 className="text-sm font-black text-slate-800 leading-none truncate max-w-[200px]">{currentRegion.name}</h3>
+                </div>
+                <div className="flex gap-4 border-l border-slate-200 pl-6 h-8 items-center">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[8px] font-bold text-blue-500 uppercase">Exp</span>
+                    <p className="text-base font-black text-slate-800 tabular-nums leading-none">{contextStats.currentTotalScore}</p>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[8px] font-bold text-orange-500 uppercase">Cum</span>
+                    <p className="text-base font-black text-slate-800 tabular-nums leading-none">{contextStats.currentCumulativeScore}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-slate-300">
+                <span className="text-[9px] font-black uppercase tracking-widest">Select region for details</span>
+              </div>
+            )}
+          </div>
+
+          {/* Global Stats Summary */}
+          <div className="px-4 border-l border-slate-200 h-full flex items-center shrink-0">
+            <ScoreStatsBar 
+              stats={contextStats} 
+              isMobile={true} 
+              scoringMode={scoringMode} 
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Header (Sharper Style) */}
+      {isMobile && (
+        <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200">
+          <div className="flex items-center gap-2 p-2 pointer-events-auto">
+            {history.length > 0 && (
+              <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
             )}
-            <div className="flex items-center px-2 py-1 gap-1 overflow-x-auto no-scrollbar whitespace-nowrap">
+            <div className="flex items-center px-2 py-1 gap-2 overflow-x-auto no-scrollbar whitespace-nowrap bg-slate-50 border border-slate-200 rounded-md flex-1">
               {currentPath.map((name, i) => (
                 <div key={i} className="flex items-center gap-1 shrink-0">
-                  {i > 0 && <span className="text-gray-300 text-xs">/</span>}
-                  <span
-                    className={`text-sm font-medium ${
-                      i === currentPath.length - 1 ? "text-blue-600" : "text-gray-500"
-                    }`}
-                  >
+                  {i > 0 && <span className="text-slate-300 text-xs">/</span>}
+                  <span className={`text-[10px] font-black uppercase ${i === currentPath.length - 1 ? "text-blue-600" : "text-slate-400"}`}>
                     {name}
                   </span>
                 </div>
               ))}
             </div>
           </div>
- 
-          <ScoreStatsBar 
-            stats={contextStats} 
+          <div className="px-2 pb-2">
+            <ScoreStatsBar stats={contextStats} isMobile={true} scoringMode={scoringMode} />
+          </div>
+        </div>
+      )}
+
+      {/* Map Controls (Sharper Style) */}
+      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 ${isMobile ? "bottom-4 right-4" : "bottom-4 right-4"}`}>
+        {loading && (
+          <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Loading</span>
+          </div>
+        )}
+        
+        <div className="pointer-events-auto">
+          <ScoreLegend 
             isMobile={isMobile} 
             scoringMode={scoringMode} 
+            setScoringMode={setScoringMode}
           />
-
-          {loading && (
-            <div className="bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-gray-200 px-4 py-2 pointer-events-auto flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-medium text-gray-600">Loading...</span>
-            </div>
-          )}
         </div>
       </div>
- 
-      {/* Score Legend - Vertical on mobile, bottom-right on desktop */}
-      <div className={`absolute z-[1001] pointer-events-auto ${isMobile ? "top-4 right-4" : "bottom-6 right-4"}`}>
-        <ScoreLegend 
-          isMobile={isMobile} 
-          scoringMode={scoringMode} 
-          setScoringMode={setScoringMode}
-        />
-      </div>
- 
-      {/* Optimized RegionTooltip */}
+
+      {/* RegionTooltip & Hover Label */}
       {selectedRegion && selectedScore && (
         <RegionTooltip
           region={selectedRegion}
@@ -529,19 +580,6 @@ export function RegionMap({ regions }: RegionMapProps) {
             upsertVisit(selectedId!, cat, count);
           }}
         />
-      )}
-
-      {!isMobile && (
-        <div className="absolute bottom-6 left-4 bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 px-4 py-3 z-[1001] text-xs text-gray-500 space-y-1 hidden sm:block">
-          <p className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />{" "}
-            <span className="font-semibold text-gray-700">Click</span>: View Region Info
-          </p>
-          <p className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />{" "}
-            <span className="font-semibold text-gray-700">Inside Tooltip</span>: Travel log & Drill down
-          </p>
-        </div>
       )}
     </div>
   );
@@ -566,59 +604,55 @@ function ScoreLegend({
   ];
   
   return (
-    <div className={`bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200 flex flex-col overflow-hidden ${isMobile ? "w-12 p-2" : "w-32 p-3"} transition-all duration-300`}>
-      <div className="flex flex-col gap-2 mb-4">
+    <div className={`bg-white border border-slate-200 shadow-lg flex flex-col overflow-hidden transition-all duration-300 ${isMobile ? "w-11 rounded-md p-1" : "w-24 rounded-md p-1.5"}`}>
+      <div className="flex flex-col gap-1 mb-2">
         <button
           onClick={() => setScoringMode("individual")}
-          className={`px-2 py-1.5 rounded-xl text-[10px] font-black transition-all duration-200 ${
+          className={`h-7 flex items-center justify-center rounded text-[9px] font-black transition-all ${
             scoringMode === "individual" 
-              ? "bg-blue-600 text-white shadow-md shadow-blue-200" 
-              : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              ? "bg-slate-800 text-white shadow-sm" 
+              : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
           }`}
         >
-          {isMobile ? "EXP" : "EXPERIENCE"}
+          {isMobile ? "EXP" : "POINTS"}
         </button>
         <button
           onClick={() => setScoringMode("cumulative")}
-          className={`px-2 py-1.5 rounded-xl text-[10px] font-black transition-all duration-200 ${
+          className={`h-7 flex items-center justify-center rounded text-[9px] font-black transition-all ${
             scoringMode === "cumulative" 
-              ? "bg-orange-600 text-white shadow-md shadow-orange-200" 
-              : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              ? "bg-slate-800 text-white shadow-sm" 
+              : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
           }`}
         >
-          {isMobile ? "SUM" : "SUB-SUM"}
+          {isMobile ? "SUM" : "RANK"}
         </button>
       </div>
 
-      <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.15em] mb-3 text-center border-t border-gray-100 pt-3">
-        {scoringMode === "individual" ? "Points" : "Ranking"}
-      </p>
-
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-1.5 pt-1.5 border-t border-slate-100">
         {scoringMode === "individual" ? (
           individualSteps.map((s) => (
-            <div key={s} className="flex items-center gap-2.5 group">
-              <span 
-                className={`rounded-sm shadow-sm shrink-0 transition-transform group-hover:scale-110 ${isMobile ? "w-3 h-3 rounded-full" : "w-5 h-3"}`} 
+            <div key={s} className="flex items-center gap-2 px-1">
+              <div 
+                className={`rounded-sm shrink-0 ${isMobile ? "w-2 h-2" : "w-2.5 h-2.5"}`} 
                 style={{ background: getScoreColor(s) }} 
               />
               {!isMobile && (
-                <span className="font-bold text-gray-600 tracking-tighter text-xs">
-                  {s === 0 ? "Unvisited" : `${s}+`}
+                <span className="font-bold text-slate-500 text-[9px] tracking-tighter">
+                  {s === 0 ? "NONE" : `${s}+`}
                 </span>
               )}
             </div>
           ))
         ) : (
           cumulativeSteps.map((step) => (
-            <div key={step.label} className="flex items-center gap-2.5 group">
-              <span 
-                className={`rounded-sm shadow-sm shrink-0 transition-transform group-hover:scale-110 ${isMobile ? "w-3 h-3 rounded-full" : "w-5 h-3"}`} 
+            <div key={step.label} className="flex items-center gap-2 px-1">
+              <div 
+                className={`rounded-sm shrink-0 ${isMobile ? "w-2 h-2" : "w-2.5 h-2.5"}`} 
                 style={{ background: step.color }} 
               />
               {!isMobile && (
-                <span className="font-bold text-gray-600 tracking-tighter text-xs">
-                  {step.label}
+                <span className="font-bold text-slate-500 text-[9px] tracking-tighter uppercase">
+                  {step.label.replace("Top ", "")}
                 </span>
               )}
             </div>

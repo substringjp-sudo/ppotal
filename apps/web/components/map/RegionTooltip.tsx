@@ -88,61 +88,53 @@ export const RegionTooltip = memo(function RegionTooltip({
       <div
         style={isMobile ? mobileStyle : desktopStyle}
         className={`
-          bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.12)] border-t border-gray-100 overflow-hidden flex flex-col
+          bg-white shadow-2xl overflow-hidden flex flex-col border border-slate-200
           ${isMobile 
-            ? "rounded-t-[2.5rem] animate-in slide-in-from-bottom duration-300 ease-out w-full max-h-[90vh]" 
-            : "w-80 rounded-2xl border border-gray-200 animate-in fade-in zoom-in duration-200"
+            ? "rounded-t-2xl animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh]" 
+            : "w-80 rounded-lg animate-in fade-in zoom-in duration-200"
           }
         `}
       >
         {/* Mobile Handle */}
         {isMobile && (
           <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
-            <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+            <div className="w-10 h-1 bg-slate-200 rounded-full" />
           </div>
         )}
 
-        <div className={`flex items-center justify-between px-6 py-4 ${isMobile ? "bg-white" : scoringMode === "cumulative" ? "bg-orange-600 text-white" : "bg-blue-600 text-white"} shrink-0`}>
+        <div className={`flex items-center justify-between px-5 py-4 shrink-0 border-b border-slate-100 bg-slate-50/50`}>
           <div>
-            <p className={`font-black text-lg leading-tight ${isMobile ? "text-slate-900" : "text-white"}`}>{region.name}</p>
-            <p className={`text-xs mt-0.5 font-bold uppercase tracking-wider ${isMobile ? "text-slate-400" : scoringMode === "cumulative" ? "text-orange-200" : "text-blue-200"}`}>
+            <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
+            <p className="text-[9px] mt-1 font-black uppercase tracking-widest text-slate-400">
               {region.iso3} · {region.admLevel === 0 ? "National" : region.admLevel === 1 ? "Regional" : "Local"}
             </p>
           </div>
-          <div className="text-right flex items-center gap-3">
-            <div className="flex flex-col items-end">
-              <p className={`text-3xl font-black leading-none ${isMobile ? (scoringMode === "cumulative" ? "text-orange-600" : "text-blue-600") : "text-white"}`}>
-                {scoringMode === "cumulative" ? (score.cumulativeScore ?? 0) : score.totalScore}
-              </p>
-              <p className={`text-[10px] mt-1 uppercase font-black tracking-[0.2em] ${isMobile ? "text-slate-400" : scoringMode === "cumulative" ? "text-orange-200" : "text-blue-200"}`}>
-                {scoringMode === "cumulative" ? "Sub-Sum" : "Points"}
-              </p>
-            </div>
-            {scoringMode === "cumulative" && (
-              <div className="flex flex-col items-end border-l border-white/20 pl-3">
-                <p className={`text-xl font-black leading-none ${isMobile ? "text-slate-400" : "text-orange-200"}`}>
-                  {score.totalScore}
-                </p>
-                <p className={`text-[8px] mt-1 uppercase font-black tracking-[0.1em] ${isMobile ? "text-slate-300" : "text-orange-100"}`}>Indiv.</p>
-              </div>
-            )}
-            {scoringMode === "individual" && (score.cumulativeScore ?? 0) > 0 && (
-              <div className="flex flex-col items-end border-l border-white/20 pl-3">
-                <p className={`text-xl font-black leading-none ${isMobile ? "text-orange-600" : "text-orange-200"}`}>
-                  {score.cumulativeScore}
-                </p>
-                <p className={`text-[8px] mt-1 uppercase font-black tracking-[0.1em] ${isMobile ? "text-slate-400" : "text-orange-100"}`}>Sub-Sum</p>
-              </div>
-            )}
-            {!isMobile && (
-              <button
-                onClick={onClose}
-                className="ml-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            )}
+          {!isMobile && (
+            <button
+              onClick={onClose}
+              className="w-7 h-7 flex items-center justify-center rounded bg-white border border-slate-200 hover:bg-slate-50 transition-all text-slate-400"
+              aria-label="Close"
+            >
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Experience</span>
+            <p className={`text-xl font-black tabular-nums ${scoringMode === 'individual' ? 'text-blue-600' : 'text-slate-400'}`}>
+              {score.totalScore}
+            </p>
+          </div>
+          <div className="h-6 w-[1px] bg-slate-100" />
+          <div className="flex flex-col items-end">
+            <span className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Cumulative</span>
+            <p className={`text-xl font-black tabular-nums ${scoringMode === 'cumulative' ? 'text-orange-600' : 'text-slate-400'}`}>
+              {score.cumulativeScore ?? 0}
+            </p>
           </div>
         </div>
 
