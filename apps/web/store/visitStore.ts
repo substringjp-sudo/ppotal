@@ -72,6 +72,13 @@ export const useVisitStore = create<VisitStore>()(
     {
       name: "regionevel-visits",
       version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version === 0) {
+          // 마이그레이션 로직이 필요한 경우 여기에 추가
+          return persistedState as VisitStore;
+        }
+        return persistedState as VisitStore;
+      },
     },
   ),
 );

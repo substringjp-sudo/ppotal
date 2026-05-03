@@ -370,6 +370,7 @@ export function RegionMap({ regions }: RegionMapProps) {
         maxBoundsViscosity={1.0}
         style={{ width: "100%", height: "100%", background: "#e0f2fe" }}
         attributionControl={false}
+        zoomControl={false}
       >
         {geoData && (
           <>
