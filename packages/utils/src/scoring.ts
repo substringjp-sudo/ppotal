@@ -8,6 +8,7 @@ import {
   VISIT_CATEGORY_ORDER,
   VISIT_CONFIG,
 } from "@regionevel/types";
+import { padId } from "./id";
 
 export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { directCount: number; points: number }> & {
   directScore: number;
@@ -29,6 +30,8 @@ export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { d
   return { ...breakdown, directScore };
 }
 
+
+
 /**
  * Returns the effective counts for a region, considering its own visits
  * and the visits of all its descendants, capped at maxCount per category.
@@ -40,26 +43,26 @@ export function getEffectiveCounts(
   parentIdMap?: Map<string | null, Region[]>,
   memo: Map<string, Record<VisitCategory, number>> = new Map(),
 ): Record<VisitCategory, number> {
-  if (memo.has(regionId)) return memo.get(regionId)!;
+  const normalizedId = padId(regionId);
+  if (memo.has(normalizedId)) return memo.get(normalizedId)!;
 
   const counts = Object.fromEntries(
     VISIT_CATEGORY_ORDER.map((cat) => [cat, 0]),
   ) as Record<VisitCategory, number>;
 
-  // 1. Add direct visits of this region
-  // Performance optimization: Use pre-grouped visits map if available
+  // 1. Start with direct visits of this region (raw count)
   const directVisits = Array.isArray(allVisits) 
-    ? allVisits.filter((v) => v.regionId === regionId)
-    : allVisits.get(regionId) || [];
+    ? allVisits.filter((v) => padId(v.regionId) === normalizedId)
+    : allVisits.get(normalizedId) || [];
 
   for (const v of directVisits) {
-    counts[v.category] += v.count;
+    counts[v.category] = Math.min(v.count, VISIT_CONFIG[v.category].maxCount);
   }
 
-  // 2. Recursively add counts from children
+  // 2. Add 1 for each immediate child that has any effective visits in that category
   const children = parentIdMap
-    ? parentIdMap.get(regionId) || []
-    : allRegions.filter((r) => r.parentId === regionId);
+    ? parentIdMap.get(normalizedId) || []
+    : allRegions.filter((r) => padId(r.parentId) === normalizedId);
 
   for (const child of children) {
     const childCounts = getEffectiveCounts(
@@ -70,16 +73,18 @@ export function getEffectiveCounts(
       memo,
     );
     for (const cat of VISIT_CATEGORY_ORDER) {
-      counts[cat] += childCounts[cat];
+      if (childCounts[cat] > 0) {
+        counts[cat] += 1;
+      }
     }
   }
 
-  // 3. Cap each category at its maxCount
+  // 3. Cap each category at its maxCount (e.g., if passing max is 5, visiting 10 cities counts as 5)
   for (const cat of VISIT_CATEGORY_ORDER) {
     counts[cat] = Math.min(counts[cat], VISIT_CONFIG[cat].maxCount);
   }
 
-  memo.set(regionId, counts);
+  memo.set(normalizedId, counts);
   return counts;
 }
 
@@ -89,11 +94,16 @@ export function getRegionScore(
   allRegions: Region[] = [],
   parentIdMap?: Map<string | null, Region[]>,
   memo?: Map<string, Record<VisitCategory, number>>,
+  scoreMemo?: Map<string, RegionScore>,
 ): RegionScore {
+  const normalizedId = padId(regionId);
+  if (scoreMemo?.has(normalizedId)) return scoreMemo.get(normalizedId)!;
+  
   const activeMemo = memo || new Map();
+  const activeScoreMemo = scoreMemo || new Map();
   
   const effectiveCounts = getEffectiveCounts(
-    regionId,
+    normalizedId,
     allRegions,
     allVisits,
     parentIdMap,
@@ -102,8 +112,8 @@ export function getRegionScore(
 
   // Get direct visits for this region
   const directVisits = Array.isArray(allVisits)
-    ? allVisits.filter((v) => v.regionId === regionId)
-    : allVisits.get(regionId) || [];
+    ? allVisits.filter((v) => padId(v.regionId) === normalizedId)
+    : allVisits.get(normalizedId) || [];
     
   const { directScore, ...directBreakdown } = calculateScore(directVisits);
 
@@ -123,20 +133,78 @@ export function getRegionScore(
     }),
   ) as RegionScore["breakdown"];
 
-  const totalScore = Math.min(
+  const rawTotalScore = Math.min(
     100,
     VISIT_CATEGORY_ORDER.reduce((sum, cat) => sum + breakdown[cat].points, 0),
   );
   
   const finalDirectScore = Math.min(100, directScore);
 
-  return {
-    regionId,
-    directScore: finalDirectScore,
-    aggregatedChildScore: Math.max(0, totalScore - finalDirectScore),
-    totalScore,
+  const children = parentIdMap
+    ? parentIdMap.get(normalizedId) || []
+    : allRegions.filter((r) => padId(r.parentId) === normalizedId);
+
+  let childSum = 0;
+  for (const child of children) {
+    const childScore = getRegionScore(child.id, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+    childSum += childScore.totalScore;
+  }
+
+  // User's formula: (childSum) / (children.length * 50), capped at 100
+  const childMax = children.length * 50;
+  const rawRankScore = childMax > 0 ? Math.min(100, (childSum / childMax) * 100) : 0;
+  const rankScore = Math.round(rawRankScore);
+
+  // Identify the region's level
+  const region = allRegions.find(r => padId(r.id) === normalizedId);
+  const isCountry = region?.admLevel === 0;
+
+  // Rule: Countries have 0 direct score (only sub-region sum matters).
+  const effectiveDirectScore = isCountry ? 0 : finalDirectScore;
+  
+  // Rule: If there are child scores, show orange (aggregated). 
+  // Otherwise, if there is a direct score, show blue (individual).
+  const scoreType = rankScore > 0 ? "orange" : "blue";
+  
+  // Final score for display: if orange, use rankScore; if blue, use directScore.
+  const displayTotalScore = scoreType === "orange" ? rankScore : Math.round(effectiveDirectScore);
+
+  const result: RegionScore = {
+    regionId: normalizedId,
+    directScore: Math.round(effectiveDirectScore),
+    rankScore: Math.round(rankScore),
+    childSum: Math.round(childSum),
+    childMax: Math.round(childMax),
+    totalScore: displayTotalScore,
+    scoreType,
     breakdown,
   };
+
+  activeScoreMemo.set(normalizedId, result);
+  return result;
+}
+
+
+export function getMapColor(score: RegionScore): string {
+  if (score.totalScore === 0) return "#f8fafc";
+  
+  if (score.scoreType === "orange") {
+    // Orange scale for rankScore (Thresholds: 10, 30, 50, 70)
+    const s = Math.round(score.rankScore);
+    if (s < 10) return "#ffedd5";
+    if (s < 30) return "#fdba74";
+    if (s < 50) return "#f97316";
+    if (s < 70) return "#ea580c";
+    return "#c2410c";
+  } else {
+    // Blue scale for directScore (Thresholds: 10, 30, 50, 70)
+    const s = Math.round(score.directScore);
+    if (s < 10) return "#eff6ff";
+    if (s < 30) return "#bfdbfe";
+    if (s < 50) return "#60a5fa";
+    if (s < 70) return "#2563eb";
+    return "#1e3a8a";
+  }
 }
 
 // Returns the next category+count to increment on a map click.
@@ -156,44 +224,22 @@ export function getNextIncrement(
   return null;
 }
 
-// Legacy wrapper to maintain compatibility while transitioning.
-// In the new logic, "aggregatedChildScore" is derived from getRegionScore.
-export function getAggregatedChildScore(
-  regionId: string,
-  allRegions: Region[],
-  allVisits: RegionVisit[],
-  parentIdMap?: Map<string | null, Region[]>,
-  memo?: Map<string, number>, // Unused in new logic but kept for signature
-): number {
-  const score = getRegionScore(regionId, allVisits, allRegions, parentIdMap);
-  return score.aggregatedChildScore;
-}
-
 export function getScoreColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  if (score < 5) return "#eff6ff";   // Very light: 1-4
-  if (score < 10) return "#bfdbfe";  // Level 1: 5+
-  if (score < 30) return "#60a5fa";  // Level 2: 10+
-  if (score < 50) return "#2563eb";  // Level 3: 30+
-  if (score < 100) return "#1e3a8a"; // Level 4: 50+
-  return "#0f172a";                  // Level 5: 100 (kept as max)
+  if (score < 10) return "#eff6ff";
+  if (score < 30) return "#bfdbfe";
+  if (score < 50) return "#60a5fa";
+  if (score < 70) return "#2563eb";
+  return "#1e3a8a";
 }
 
-export function getCumulativeColor(score: number, allScores: number[]): string {
+export function getCumulativeColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  
-  // Sort scores to calculate percentiles
-  const sorted = [...allScores].filter(s => s > 0).sort((a, b) => b - a);
-  if (sorted.length === 0) return "#f8fafc";
-
-  const index = sorted.indexOf(score);
-  if (index === -1) return "#f8fafc";
-  
-  const percentile = (index / sorted.length) * 100;
-
-  if (percentile <= 1) return "#c2410c";   // Top 1% (Orange 700)
-  if (percentile <= 10) return "#f97316";  // Top 10% (Orange 500)
-  if (percentile <= 30) return "#fdba74";  // Top 30% (Orange 300)
-  if (percentile <= 50) return "#ffedd5";  // Top 50% (Orange 100)
-  return "#fff7ed";                        // Others (Orange 50)
+  if (score < 10) return "#ffedd5";
+  if (score < 30) return "#fdba74";
+  if (score < 50) return "#f97316";
+  if (score < 70) return "#ea580c";
+  return "#c2410c";
 }
+
+

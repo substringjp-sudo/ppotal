@@ -1,14 +1,15 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import type { Region, RegionScore, VisitCategory } from "@regionevel/types";
+import { padId } from "@regionevel/utils";
 
 interface RegionTooltipProps {
   region: Region;
   score: RegionScore;
   childRegions: Region[];
+  scoreMap: Record<string, RegionScore>;
   mousePos: { x: number; y: number } | null;
   isMobile: boolean;
-  scoringMode: "individual" | "cumulative";
   onClose: () => void;
   onDrillDown: (regionId: string) => void;
   onVisitSet: (category: VisitCategory, count: number) => void;
@@ -18,13 +19,42 @@ export const RegionTooltip = memo(function RegionTooltip({
   region,
   score,
   childRegions,
+  scoreMap,
   mousePos,
   isMobile,
-  scoringMode,
   onClose,
   onDrillDown,
   onVisitSet,
 }: RegionTooltipProps) {
+  const subRegionStats = useMemo(() => {
+    if (childRegions.length === 0) return null;
+    
+    let visitedCount = 0;
+    const categoryCounts: Record<VisitCategory, number> = {
+      transit: 0,
+      visit: 0,
+      stay: 0,
+      live: 0,
+    };
+    
+    childRegions.forEach(child => {
+      const s = scoreMap[padId(child.id)];
+      if (s && s.totalScore > 0) {
+        visitedCount++;
+        VISIT_CATEGORY_ORDER.forEach(cat => {
+          // Use effectiveCount instead of directCount to reflect sub-region visits in parent tooltips
+          categoryCounts[cat] += s.breakdown[cat].effectiveCount;
+        });
+      }
+    });
+    
+    return {
+      visitedCount,
+      totalCount: childRegions.length,
+      categoryCounts,
+    };
+  }, [childRegions, scoreMap]);
+
   // Calculate position to stay within viewport (Desktop)
   const tooltipWidth = 320;
   const tooltipHeight = 450; 
@@ -124,91 +154,203 @@ export const RegionTooltip = memo(function RegionTooltip({
 
         <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
           <div className="flex flex-col">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Experience</span>
-            <p className={`text-xl font-black tabular-nums ${scoringMode === 'individual' ? 'text-blue-600' : 'text-slate-400'}`}>
-              {score.totalScore}
-            </p>
+            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
+              {score.scoreType === "orange" ? "Ranking (from sub-regions)" : "Experience Points"}
+            </span>
+            <div className="flex items-baseline gap-2">
+              <p className={`text-2xl font-black tabular-nums ${score.scoreType === 'orange' ? 'text-orange-600' : 'text-blue-600'}`}>
+                {Math.round(score.totalScore)}
+              </p>
+                {score.scoreType === "orange" && (
+                  <div className="flex flex-col items-center ml-2 bg-orange-50 px-2 py-1 rounded-lg border border-orange-100">
+                    <span className="text-[10px] font-black text-orange-400 leading-none uppercase tracking-tighter mb-0.5">
+                      Sub-sum / Max
+                    </span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-xs font-black text-orange-600 leading-none tabular-nums">
+                        {Math.round(score.childSum)}
+                      </span>
+                      <span className="text-[10px] font-bold text-orange-300">/</span>
+                      <span className="text-[10px] font-bold text-orange-400">
+                        {score.childMax}
+                      </span>
+                    </div>
+                  </div>
+                )}
+            </div>
           </div>
-          <div className="h-6 w-[1px] bg-slate-100" />
-          <div className="flex flex-col items-end">
-            <span className="text-[8px] font-black text-orange-400 uppercase tracking-widest">Cumulative</span>
-            <p className={`text-xl font-black tabular-nums ${scoringMode === 'cumulative' ? 'text-orange-600' : 'text-slate-400'}`}>
-              {score.cumulativeScore ?? 0}
-            </p>
-          </div>
+          {score.rankScore > 0 && score.directScore > 0 && (
+            <>
+              <div className="h-6 w-[1px] bg-slate-100" />
+              <div className="flex flex-col items-end">
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Base Pts</span>
+                <p className="text-sm font-bold tabular-nums text-slate-400">
+                  {score.directScore}
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6 pb-8" : "px-4 pb-4"}`}>
+        <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6 pb-8" : "px-5 pb-4"}`}>
+          {/* Aggregated Stats for parents */}
+          {subRegionStats && (
+            <div className="pt-4 pb-2">
+               <div className="bg-slate-900 rounded-2xl p-4 text-white shadow-lg shadow-slate-200 mb-5">
+                  <div className="flex justify-between items-end mb-3">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Exploration</p>
+                      <p className="text-2xl font-black tabular-nums">
+                        {Math.round((subRegionStats.visitedCount / subRegionStats.totalCount) * 100)}<span className="text-sm font-bold text-slate-500 ml-1">%</span>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Progress</p>
+                      <p className="text-sm font-bold tabular-nums">
+                        {subRegionStats.visitedCount} / {subRegionStats.totalCount} <span className="text-[10px] font-black text-slate-500 ml-0.5">Regions</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-400 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(96,165,250,0.5)]"
+                      style={{ width: `${(subRegionStats.visitedCount / subRegionStats.totalCount) * 100}%` }}
+                    />
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-5 gap-2 mb-6">
+                 {VISIT_CATEGORY_ORDER.map(cat => {
+                   const count = subRegionStats.categoryCounts[cat];
+                   const cfg = VISIT_CONFIG[cat];
+                   return (
+                     <div key={cat} className="flex flex-col items-center">
+                       <div className={`w-full py-2 rounded-xl border ${count > 0 ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50/50 border-slate-100 opacity-40'} flex flex-col items-center transition-all`}>
+                         <span className="text-xs font-black text-slate-800 tabular-nums">{count}</span>
+                         <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{cfg.label.slice(0, 4)}</span>
+                       </div>
+                     </div>
+                   );
+                 })}
+               </div>
+            </div>
+          )}
+
           {/* Score breakdown */}
           <div className="space-y-3.5 pt-2">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Visit History</p>
-            {VISIT_CATEGORY_ORDER.map((cat) => {
-              const cfg = VISIT_CONFIG[cat];
-              const b = score.breakdown[cat];
-              return (
-                <div key={cat} className="group">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-baseline gap-2 overflow-hidden mr-2">
-                      <span className="text-sm font-bold text-slate-700 whitespace-nowrap shrink-0">{cfg.label}</span>
-                      <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap truncate">
-                        {cfg.description}
-                      </span>
+            {region.admLevel > 0 && (
+              <>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Visit History</p>
+                {VISIT_CATEGORY_ORDER.map((cat) => {
+                  const cfg = VISIT_CONFIG[cat];
+                  const b = score.breakdown[cat];
+                  return (
+                    <div key={cat} className="group">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-baseline gap-2 overflow-hidden mr-2">
+                          <span className="text-sm font-bold text-slate-700 whitespace-nowrap shrink-0">{cfg.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full`}>
+                            {b.points} pts
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 flex gap-1.5 h-4 items-center cursor-pointer">
+                          {Array.from({ length: cfg.maxCount }, (_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => onVisitSet(cat, i + 1 === b.directCount ? i : i + 1)}
+                              className={`flex-1 h-2 rounded-full transition-all duration-300 hover:scale-y-125 ${
+                                i < b.directCount 
+                                  ? "bg-blue-600 shadow-sm shadow-blue-200"
+                                  : "bg-slate-100"
+                              }`}
+                              title={`${i + 1} visits`}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => onVisitSet(cat, Math.max(0, b.directCount - 1))}
+                            disabled={b.directCount <= 0}
+                            className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
+                          >
+                            −
+                          </button>
+                          <button
+                            onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, b.directCount + 1))}
+                            disabled={b.directCount >= cfg.maxCount}
+                            className={`w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100 disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {b.effectiveCount > b.directCount && (
-                        <span className={`text-[9px] font-black ${scoringMode === "cumulative" ? "text-orange-400 bg-orange-50" : "text-slate-400 bg-slate-100"} px-1.5 py-0.5 rounded-full`}>
-                          +{b.effectiveCount - b.directCount} sub
-                        </span>
-                      )}
-                      <span className={`text-[10px] font-black ${scoringMode === "cumulative" ? "text-orange-600 bg-orange-50" : "text-blue-600 bg-blue-50"} px-2 py-0.5 rounded-full`}>
-                        {b.points} pts
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 flex gap-1.5 h-4 items-center cursor-pointer">
-                      {Array.from({ length: cfg.maxCount }, (_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => onVisitSet(cat, i + 1 === b.directCount ? i : i + 1)}
-                          className={`flex-1 h-2 rounded-full transition-all duration-300 hover:scale-y-125 ${
-                            i < b.directCount 
-                              ? (scoringMode === "cumulative" ? "bg-orange-600 shadow-sm shadow-orange-200" : "bg-blue-600 shadow-sm shadow-blue-200")
-                              : i < b.effectiveCount
-                                ? (scoringMode === "cumulative" ? "bg-orange-200" : "bg-blue-200")
-                                : "bg-slate-100"
-                          }`}
-                          title={`${i + 1} visits`}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => onVisitSet(cat, Math.max(0, b.directCount - 1))}
-                        disabled={b.directCount <= 0}
-                        className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
-                      >
-                        −
-                      </button>
-                      <button
-                        onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, b.directCount + 1))}
-                        disabled={b.directCount >= cfg.maxCount}
-                        className={`w-7 h-7 rounded-lg ${scoringMode === "cumulative" ? "bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-100" : "bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100"} disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </>
+            )}
             
-            {score.aggregatedChildScore > 0 && (
-              <div className="flex justify-between items-center bg-slate-50 rounded-2xl px-4 py-3 border border-slate-100 mt-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sub-region Weight</span>
-                <span className="text-sm font-black text-slate-800">+{score.aggregatedChildScore} pts</span>
+            {childRegions.length > 0 && (
+              <div className="space-y-3 mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Sub-region Scores</p>
+                  <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 italic">
+                    Contribution to Rank
+                  </span>
+                </div>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                  {childRegions
+                    .map(child => {
+                      const childId = padId(child.id);
+                      return {
+                        ...child,
+                        score: scoreMap[childId]
+                      };
+                    })
+                    .filter(c => c.score && c.score.totalScore > 0)
+                    .sort((a, b) => (b.score?.totalScore || 0) - (a.score?.totalScore || 0))
+                    .map(child => (
+                      <div 
+                        key={child.id} 
+                        className="flex flex-col gap-1.5 group/item p-2 rounded-lg hover:bg-slate-50 transition-all cursor-pointer border border-transparent hover:border-slate-100"
+                        onClick={() => onDrillDown(child.id)}
+                      >
+                        <div className="flex justify-between items-end px-1">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-slate-700 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 transition-colors">{child.name}</span>
+                            <span className="text-[9px] font-bold text-slate-400">Rank {child.score!.rankScore} · Direct {child.score!.directScore}</span>
+                          </div>
+                          <span className={`text-xs font-black tabular-nums ${child.score!.scoreType === 'orange' ? 'text-orange-500' : 'text-blue-500'}`}>
+                            {Math.round(child.score!.totalScore)}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden relative">
+                          <div 
+                            className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${child.score!.scoreType === 'orange' ? 'bg-orange-500' : 'bg-blue-500'}`}
+                            style={{ width: `${child.score!.totalScore}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  {childRegions.filter(child => {
+                    const childId = padId(child.id);
+                    return !scoreMap[childId] || scoreMap[childId].totalScore === 0;
+                  }).length > 0 && (
+                     <p className="text-[9px] text-slate-400 font-medium italic pt-1">
+                       + {childRegions.filter(child => {
+                         const childId = padId(child.id);
+                         return !scoreMap[childId] || scoreMap[childId].totalScore === 0;
+                       }).length} unvisited regions
+                     </p>
+                  )}
+                </div>
               </div>
             )}
+
           </div>
         </div>
 
@@ -217,7 +359,7 @@ export const RegionTooltip = memo(function RegionTooltip({
           <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white border-t border-gray-50" : "px-4 pb-4 pt-2"}`}>
             <button
               onClick={() => onDrillDown(region.id)}
-              className={`w-full py-4 ${scoringMode === "cumulative" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
+              className={`w-full py-4 ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

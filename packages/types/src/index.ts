@@ -1,9 +1,4 @@
-export type VisitCategory =
-  | "passing"
-  | "transit"
-  | "visit"
-  | "accommodation"
-  | "residence";
+export type VisitCategory = "transit" | "visit" | "stay" | "live";
 
 export interface VisitCategoryConfig {
   label: string;
@@ -14,37 +9,30 @@ export interface VisitCategoryConfig {
 }
 
 export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
-  passing: { 
-    label: "Passing", 
-    description: "Bus, Train, Car",
-    maxCount: 5, 
-    pointsPerCount: 1, 
-    maxPoints: 5 
-  },
   transit: {
     label: "Transit",
-    description: "Station, Airport",
+    description: "Passing through or short stay",
     maxCount: 5,
     pointsPerCount: 2,
     maxPoints: 10,
   },
   visit: {
     label: "Visit",
-    description: "Dining, Sightsee",
-    maxCount: 3,
-    pointsPerCount: 5,
-    maxPoints: 15,
+    description: "Sightseeing or dining",
+    maxCount: 5,
+    pointsPerCount: 4,
+    maxPoints: 20,
   },
-  accommodation: {
+  stay: {
     label: "Stay",
-    description: "Hotel, Friends",
-    maxCount: 3,
-    pointsPerCount: 10,
+    description: "Overnight stay",
+    maxCount: 5,
+    pointsPerCount: 6,
     maxPoints: 30,
   },
-  residence: {
-    label: "Residence",
-    description: "Live, Long-term",
+  live: {
+    label: "Live",
+    description: "Residence or long-term",
     maxCount: 1,
     pointsPerCount: 40,
     maxPoints: 40,
@@ -52,11 +40,10 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
 } as const;
 
 export const VISIT_CATEGORY_ORDER: VisitCategory[] = [
-  "passing",
   "transit",
   "visit",
-  "accommodation",
-  "residence",
+  "stay",
+  "live",
 ];
 
 export const MAX_TOTAL_SCORE = 100;
@@ -91,9 +78,11 @@ export interface RegionScoreBreakdown {
 
 export interface RegionScore {
   regionId: string;
-  directScore: number;
-  aggregatedChildScore: number;
-  totalScore: number;
-  cumulativeScore?: number;
+  directScore: number;     // 점수 (자체 방문)
+  rankScore: number;       // 하위 지역 합산 점수 (0-100)
+  childSum: number;        // 하위 지역 점수 총합
+  childMax: number;        // 하위 지역 가용 최대 점수
+  totalScore: number;      // 지도 표시용 최종 점수 (rankScore > 0 ? rankScore : directScore)
+  scoreType: "blue" | "orange"; // 색상 계열 결정
   breakdown: Record<VisitCategory, RegionScoreBreakdown>;
 }

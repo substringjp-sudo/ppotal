@@ -4,7 +4,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Region, RegionScore, RegionVisit, VisitCategory } from "@regionevel/types";
 import {
-  getAggregatedChildScore,
   getNextIncrement,
   getRegionScore,
   padId,
@@ -15,8 +14,6 @@ interface VisitStore {
   upsertVisit: (regionId: string, category: VisitCategory, count: number) => void;
   removeVisit: (regionId: string, category: VisitCategory) => void;
   quickIncrement: (regionId: string) => void;
-  scoringMode: "individual" | "cumulative";
-  setScoringMode: (mode: "individual" | "cumulative") => void;
   getScore: (regionId: string) => RegionScore;
   getFullScore: (regionId: string, allRegions: Region[], parentIdMap?: Map<string | null, Region[]>, memo?: Map<string, any>, overrideVisits?: RegionVisit[] | Map<string, RegionVisit[]>) => RegionScore;
 }
@@ -25,11 +22,6 @@ export const useVisitStore = create<VisitStore>()(
   persist(
     (set, get) => ({
       visits: [],
-      scoringMode: "individual",
-
-      setScoringMode(mode) {
-        set({ scoringMode: mode });
-      },
 
       upsertVisit(regionId, category, count) {
         const id = padId(regionId);
@@ -63,7 +55,7 @@ export const useVisitStore = create<VisitStore>()(
         if (next) upsertVisit(id, next.category, next.newCount);
       },
 
-      getScore(regionId) {
+      getScore(regionId: string) {
         const id = padId(regionId);
         const { visits } = get();
         return getRegionScore(id, visits);

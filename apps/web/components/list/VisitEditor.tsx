@@ -21,9 +21,9 @@ export function VisitEditor({ regionId, regionName, score, onClose }: VisitEdito
           <p className="font-semibold text-gray-800">{regionName}</p>
           <p className="text-xs text-gray-500">
             Total Score <span className="font-bold text-blue-600">{score.totalScore}</span>
-            {score.aggregatedChildScore > 0 && (
+            {score.rankScore > 0 && (
               <span className="ml-1 text-gray-400">
-                (Direct {score.directScore} + Sub {score.aggregatedChildScore})
+                (Direct {score.directScore} + Sub {score.rankScore})
               </span>
             )}
             / 100

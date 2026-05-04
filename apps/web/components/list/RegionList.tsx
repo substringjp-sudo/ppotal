@@ -300,9 +300,9 @@ function RegionListItem({
             <h3 className="font-bold text-gray-800 leading-tight">{region.name}</h3>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-xs text-blue-600 font-bold">{score.totalScore} pts</span>
-              {score.aggregatedChildScore > 0 && (
+              {score.rankScore > 0 && (
                 <span className="text-[10px] text-gray-400 font-medium">
-                  ({score.directScore} direct + {score.aggregatedChildScore} sub)
+                  ({score.directScore} direct + {score.rankScore} sub)
                 </span>
               )}
             </div>

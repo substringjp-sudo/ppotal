@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Region, RegionVisit } from "@regionevel/types";
 import {
-  getAggregatedChildScore,
   getNextIncrement,
   getRegionScore,
   getScoreColor,
-} from "../scoring.js";
+} from "../scoring";
 
 const REGION_ID = "KOR-ADM1-001";
 
@@ -14,72 +13,70 @@ describe("getRegionScore", () => {
     const score = getRegionScore(REGION_ID, []);
     expect(score.directScore).toBe(0);
     expect(score.totalScore).toBe(0);
-    expect(score.breakdown.passing.directCount).toBe(0);
+    expect(score.breakdown.transit.directCount).toBe(0);
   });
 
   it("calculates score correctly for mixed visits", () => {
     const visits: RegionVisit[] = [
-      { regionId: REGION_ID, category: "passing", count: 1 },
-      { regionId: REGION_ID, category: "accommodation", count: 1 },
+      { regionId: REGION_ID, category: "transit", count: 1 },
+      { regionId: REGION_ID, category: "stay", count: 1 },
     ];
     const score = getRegionScore(REGION_ID, visits);
-    // passing: 1, accommodation: 10 => 11
-    expect(score.directScore).toBe(11);
-    expect(score.breakdown.passing.points).toBe(1);
-    expect(score.breakdown.accommodation.points).toBe(10);
+    // transit: 1 * 2 = 2, stay: 1 * 6 = 6 => 8
+    expect(score.directScore).toBe(8);
+    expect(score.breakdown.transit.points).toBe(2);
+    expect(score.breakdown.stay.points).toBe(6);
   });
 
   it("clamps count to maxCount", () => {
     const visits: RegionVisit[] = [
-      { regionId: REGION_ID, category: "residence", count: 99 },
+      { regionId: REGION_ID, category: "live", count: 99 },
     ];
     const score = getRegionScore(REGION_ID, visits);
-    // residence maxCount=1, pointsPerCount=40
+    // live maxCount=1, pointsPerCount=40
     expect(score.directScore).toBe(40);
-    expect(score.breakdown.residence.directCount).toBe(1);
+    expect(score.breakdown.live.directCount).toBe(1);
   });
 
   it("reaches 100 points at full completion", () => {
     const visits: RegionVisit[] = [
-      { regionId: REGION_ID, category: "passing", count: 5 },
       { regionId: REGION_ID, category: "transit", count: 5 },
-      { regionId: REGION_ID, category: "visit", count: 3 },
-      { regionId: REGION_ID, category: "accommodation", count: 3 },
-      { regionId: REGION_ID, category: "residence", count: 1 },
+      { regionId: REGION_ID, category: "visit", count: 5 },
+      { regionId: REGION_ID, category: "stay", count: 5 },
+      { regionId: REGION_ID, category: "live", count: 1 },
     ];
     const score = getRegionScore(REGION_ID, visits);
-    // 5*1 + 5*2 + 3*5 + 3*10 + 1*40 = 5 + 10 + 15 + 30 + 40 = 100
+    // 5*2 + 5*4 + 5*6 + 1*40 = 10 + 20 + 30 + 40 = 100
     expect(score.directScore).toBe(100);
   });
 });
 
 describe("getNextIncrement", () => {
-  it("returns passing/1 for region with no visits", () => {
+  it("returns transit/1 for region with no visits", () => {
     const result = getNextIncrement([], REGION_ID);
-    expect(result).toEqual({ category: "passing", newCount: 1 });
+    expect(result).toEqual({ category: "transit", newCount: 1 });
   });
 
   it("moves to next category when current is maxed", () => {
     const visits: RegionVisit[] = [
-      { regionId: REGION_ID, category: "passing", count: 5 },
+      { regionId: REGION_ID, category: "transit", count: 5 },
     ];
     const result = getNextIncrement(visits, REGION_ID);
-    expect(result).toEqual({ category: "transit", newCount: 1 });
+    expect(result).toEqual({ category: "visit", newCount: 1 });
   });
 
   it("returns null when all categories maxed", () => {
     const visits: RegionVisit[] = [
-      { regionId: REGION_ID, category: "passing", count: 5 },
       { regionId: REGION_ID, category: "transit", count: 5 },
-      { regionId: REGION_ID, category: "visit", count: 3 },
-      { regionId: REGION_ID, category: "accommodation", count: 3 },
-      { regionId: REGION_ID, category: "residence", count: 1 },
+      { regionId: REGION_ID, category: "visit", count: 5 },
+      { regionId: REGION_ID, category: "stay", count: 5 },
+      { regionId: REGION_ID, category: "live", count: 1 },
     ];
     expect(getNextIncrement(visits, REGION_ID)).toBeNull();
   });
 });
 
-describe("getAggregatedChildScore", () => {
+describe("Hierarchy Scoring", () => {
   const regions: Region[] = [
     { id: "parent", parentId: null, name: "Seoul", iso3: "KOR", admLevel: 1 },
     {
@@ -98,32 +95,41 @@ describe("getAggregatedChildScore", () => {
     },
   ];
 
-  it("sums child direct scores and caps at maxCount", () => {
+  it("sums child direct scores and calculates rankScore", () => {
     const visits: RegionVisit[] = [
-      { regionId: "child1", category: "passing", count: 1 },
-      { regionId: "child2", category: "passing", count: 1 },
+      { regionId: "child1", category: "transit", count: 1 },
+      { regionId: "child2", category: "transit", count: 1 },
     ];
-    // passing: 1 + 1 = 2, but capped at maxCount=5 for child regions, however for parent aggregation it's a bit different.
-    // In this test, we have 2 children with 'passing'. Parent gets 2 points for 'passing'.
-    expect(getAggregatedChildScore("parent", regions, visits)).toBe(2);
+    // Each child: transit=1 => directScore=2, totalScore=2
+    // Parent: childSum = 2+2=4. childMax = 2*50=100.
+    // rankScore = (4/100)*100 = 4.
+    const score = getRegionScore("parent", visits, regions);
+    expect(score.rankScore).toBe(4);
+    expect(score.scoreType).toBe("orange");
+    expect(score.totalScore).toBe(4);
   });
 
   it("handles mixed parent direct and child aggregated visits", () => {
     const visits: RegionVisit[] = [
-      { regionId: "parent", category: "passing", count: 1 },
+      { regionId: "parent", category: "transit", count: 1 },
       { regionId: "child1", category: "visit", count: 1 },
     ];
-    // parent: passing (1)
-    // child1: visit (5)
-    // Total: 6
+    // parent: directScore = 2 (transit)
+    // child1: directScore = 4 (visit), rankScore = 0 => totalScore = 4
+    // parent: childSum = 4 + 0 = 4. childMax = 2 * 50 = 100.
+    // rankScore = (4 / 100) * 100 = 4.
+    // Since rankScore > 0, scoreType = orange, totalScore = rankScore = 4.
     const score = getRegionScore("parent", visits, regions);
-    expect(score.totalScore).toBe(6);
-    expect(score.directScore).toBe(1);
-    expect(score.aggregatedChildScore).toBe(5);
+    expect(score.rankScore).toBe(4);
+    expect(score.directScore).toBe(2);
+    expect(score.totalScore).toBe(4);
+    expect(score.scoreType).toBe("orange");
   });
 
-  it("returns 0 for leaf regions", () => {
-    expect(getAggregatedChildScore("child1", regions, [])).toBe(0);
+  it("returns 0 rankScore for leaf regions", () => {
+    const score = getRegionScore("child1", [], regions);
+    expect(score.rankScore).toBe(0);
+    expect(score.scoreType).toBe("blue");
   });
 });
 
@@ -131,26 +137,24 @@ describe("getScoreColor", () => {
   it("returns base color for 0 score", () => {
     expect(getScoreColor(0)).toBe("#f8fafc");
   });
-  it("returns very light blue for score < 5", () => {
-    expect(getScoreColor(3)).toBe("#eff6ff");
+  it("returns light blue for score < 10", () => {
+    expect(getScoreColor(5)).toBe("#eff6ff");
+    expect(getScoreColor(9)).toBe("#eff6ff");
   });
-  it("returns level 1 color for 5-9 score", () => {
-    expect(getScoreColor(5)).toBe("#bfdbfe");
-    expect(getScoreColor(9)).toBe("#bfdbfe");
+  it("returns medium blue for 10-29 score", () => {
+    expect(getScoreColor(10)).toBe("#bfdbfe");
+    expect(getScoreColor(29)).toBe("#bfdbfe");
   });
-  it("returns level 2 color for 10-29 score", () => {
-    expect(getScoreColor(10)).toBe("#60a5fa");
-    expect(getScoreColor(29)).toBe("#60a5fa");
+  it("returns deep blue for 30-49 score", () => {
+    expect(getScoreColor(30)).toBe("#60a5fa");
+    expect(getScoreColor(49)).toBe("#60a5fa");
   });
-  it("returns level 3 color for 30-49 score", () => {
-    expect(getScoreColor(30)).toBe("#2563eb");
-    expect(getScoreColor(49)).toBe("#2563eb");
+  it("returns very deep blue for 50-69 score", () => {
+    expect(getScoreColor(50)).toBe("#2563eb");
+    expect(getScoreColor(69)).toBe("#2563eb");
   });
-  it("returns level 4 color for 50-99 score", () => {
-    expect(getScoreColor(50)).toBe("#1e3a8a");
-    expect(getScoreColor(99)).toBe("#1e3a8a");
-  });
-  it("returns darkest color for 100 score", () => {
-    expect(getScoreColor(100)).toBe("#0f172a");
+  it("returns darkest blue for 70+ score", () => {
+    expect(getScoreColor(70)).toBe("#1e3a8a");
+    expect(getScoreColor(100)).toBe("#1e3a8a");
   });
 });

@@ -5,30 +5,14 @@ import { MapContainer, GeoJSON, useMap, useMapEvents } from "react-leaflet";
 import type { FeatureCollection, Feature } from "geojson";
 import type { GeoJSON as LeafletGeoJSON, Layer, PathOptions } from "leaflet";
 import L from "leaflet";
-import type { Region, RegionScore, RegionVisit } from "@regionevel/types";
-import { getScoreColor, getCumulativeColor } from "@regionevel/utils";
+import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, type VisitCategory } from "@regionevel/types";
+import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
 import { fetchChildren, fetchAncestors, fetchRegion, fetchGeometries, flattenTree, getChildren, getAncestors } from "@/lib/regions";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import "leaflet/dist/leaflet.css";
 
-/**
- * Normalizes an ID to a fixed length based on its type:
- * - Country: 3 digits (e.g., "001")
- * - Prefecture: 7 digits
- * - City: 12 digits
- */
-const padId = (id: string | number | undefined | null): string => {
-  if (id === undefined || id === null) return "";
-  const s = String(id).trim();
-  if (!/^\d+$/.test(s)) return s;
-  
-  const len = s.length;
-  if (len <= 3) return s.padStart(3, "0");
-  if (len <= 7) return s.padStart(7, "0");
-  return s.padStart(12, "0");
-};
 
 // Helper component to auto-fit bounds when GeoJSON changes
 function FitBounds({ data }: { data: FeatureCollection }) {
@@ -66,7 +50,7 @@ export function RegionMap({ regions }: RegionMapProps) {
     return map;
   }, [regions]);
 
-  const { visits, quickIncrement, upsertVisit, getFullScore, scoringMode, setScoringMode } = useVisitStore();
+  const { visits, quickIncrement, upsertVisit } = useVisitStore();
 
   const [level, setLevel] = useState<"world" | "country" | "prefecture">("world");
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -120,130 +104,130 @@ export function RegionMap({ regions }: RegionMapProps) {
   const parentMap = useMemo(() => {
     const map = new Map<string | null, Region[]>();
     for (const r of regions) {
-      const list = map.get(r.parentId) || [];
+      const pid = padId(r.parentId);
+      const list = map.get(pid) || [];
       list.push(r);
-      map.set(r.parentId, list);
+      map.set(pid, list);
     }
     return map;
   }, [regions]);
 
-  const { scoreMap, allScores } = useMemo(() => {
-    if (!geoData) return { scoreMap: {}, allScores: [] };
-    const map: Record<string, RegionScore & { cumulativeScore: number }> = {};
-    const memo = new Map<string, any>();
-    const scores: number[] = [];
+  // Calculate ALL scores once when visits or regions change
+  const allScores = useMemo(() => {
+    const scoreMap: Record<string, RegionScore> = {};
+    const memo = new Map<string, Record<VisitCategory, number>>();
+    const scoreMemo = new Map<string, RegionScore>();
     
     const visitsMap = new Map<string, RegionVisit[]>();
     for (const v of visits) {
-      const list = visitsMap.get(v.regionId) || [];
+      const id = padId(v.regionId);
+      const list = visitsMap.get(id) || [];
       list.push(v);
-      visitsMap.set(v.regionId, list);
+      visitsMap.set(id, list);
     }
 
+    // Calculate scores for all roots (this will recursively calculate all descendants)
+    const roots = regions.filter(r => r.parentId === null);
+    for (const root of roots) {
+      getRegionScore(root.id, visitsMap, regions, parentMap, memo, scoreMemo);
+    }
+
+    // Also ensure any region that might not be reachable via roots (orphans, shouldn't happen) is covered
+    // but primarily we want everything in scoreMemo
+    scoreMemo.forEach((score, id) => {
+      scoreMap[id] = score;
+    });
+
+    return scoreMap;
+  }, [regions, visits, parentMap]);
+
+  // Compatibility mapping for current view
+  const scoreMap = useMemo(() => {
+    if (!geoData) return {};
+    const map: Record<string, RegionScore> = {};
     for (const feature of geoData.features) {
       const rawId = feature.properties?.id || feature.properties?.shapeID;
       const id = padId(rawId);
-      if (id) {
-        const individualScore = getFullScore(id, regions, parentMap, memo, visitsMap);
-        
-        // Cumulative score: Region's own direct score + Sum of children's total scores
-        const children = parentMap.get(id) || [];
-        let cumulativeScore = individualScore.directScore;
-        for (const child of children) {
-          const paddedChildId = padId(child.id);
-          const childScore = getFullScore(paddedChildId, regions, parentMap, memo, visitsMap);
-          cumulativeScore += childScore.totalScore;
-        }
-        
-        map[id] = { ...individualScore, cumulativeScore };
-        scores.push(scoringMode === "cumulative" ? cumulativeScore : individualScore.totalScore);
+      if (id && allScores[id]) {
+        map[id] = allScores[id];
       }
     }
-    return { scoreMap: map, allScores: scores };
-  }, [geoData, regions, getFullScore, visits, parentMap, scoringMode]);
+    return map;
+  }, [geoData, allScores]);
+
 
   const contextStats = useMemo(() => {
     const stats = {
-      totalVisited: 0,
-      passing: 0,
+      visitedCountries: 0,
+      visitedPrefectures: 0,
+      visitedCities: 0,
       transit: 0,
       visit: 0,
-      accommodation: 0,
-      residence: 0,
+      stay: 0,
+      live: 0,
       currentTotalScore: 0,
-      currentCumulativeScore: 0,
+      currentRankScore: 0,
+      currentDirectScore: 0,
+      currentChildSum: 0,
+      currentChildMax: 0,
     };
 
-    // 1. Current region scores
+    // 1. Current region scores from pre-calculated allScores
     if (currentId) {
-      const memo = new Map();
-      const vMap = new Map<string, RegionVisit[]>();
-      for (const v of visits) {
-        const list = vMap.get(v.regionId) || [];
-        list.push(v);
-        vMap.set(v.regionId, list);
+      const score = allScores[padId(currentId)];
+      if (score) {
+        stats.currentTotalScore = score.totalScore;
+        stats.currentDirectScore = score.directScore;
+        stats.currentRankScore = score.rankScore;
+        stats.currentChildSum = score.childSum;
+        stats.currentChildMax = score.childMax;
       }
-      const score = getFullScore(currentId, regions, parentMap, memo, vMap);
-      stats.currentTotalScore = score.totalScore;
-      
-      const children = parentMap.get(currentId) || [];
-      let cum = score.directScore;
-      for (const child of children) {
-        cum += getFullScore(child.id, regions, parentMap, memo, vMap).totalScore;
-      }
-      stats.currentCumulativeScore = cum;
     } else {
-      // Global cumulative
+      // Global stats (World Rank)
       const countries = regions.filter(r => r.parentId === null);
-      const memo = new Map();
-      const vMap = new Map<string, RegionVisit[]>();
-      for (const v of visits) {
-        const list = vMap.get(v.regionId) || [];
-        list.push(v);
-        vMap.set(v.regionId, list);
-      }
-      let worldCum = 0;
-      let maxIndiv = 0;
+      let worldSum = 0;
+      let worldMax = 0;
       for (const country of countries) {
-        const s = getFullScore(country.id, regions, parentMap, memo, vMap).totalScore;
-        worldCum += s;
-        maxIndiv = Math.max(maxIndiv, s);
+        const s = allScores[padId(country.id)];
+        if (s) {
+          worldSum += s.totalScore;
+          worldMax += 100;
+        }
       }
-      stats.currentCumulativeScore = worldCum;
-      stats.currentTotalScore = maxIndiv;
+      stats.currentChildSum = worldSum;
+      stats.currentChildMax = worldMax;
+      stats.currentRankScore = Math.round(worldMax > 0 ? Math.min(100, (worldSum / worldMax) * 100) : 0);
+      stats.currentTotalScore = stats.currentRankScore;
     }
 
-    // 2. Aggregate stats for ALL visits in the current hierarchy
-    let targetVisits = visits;
-    if (currentId) {
-      const descendantIds = new Set<string>();
-      const collect = (id: string) => {
-        descendantIds.add(id);
-        const children = parentMap.get(id) || [];
-        for (const child of children) collect(child.id);
-      };
-      collect(currentId);
-      targetVisits = visits.filter(v => descendantIds.has(v.regionId));
+    // 2. Count visited regions
+    for (const r of regions) {
+      const s = allScores[padId(r.id)];
+      if (s && s.totalScore > 0) {
+        if (r.admLevel === 0) stats.visitedCountries++;
+        else if (r.admLevel === 1) stats.visitedPrefectures++;
+        else if (r.admLevel === 2) stats.visitedCities++;
+      }
     }
 
-    const visitedRegionIds = new Set(targetVisits.map(v => v.regionId));
-    stats.totalVisited = visitedRegionIds.size;
-    
-    // Count unique regions per category
-    const catMap = new Map<string, Set<string>>();
-    for (const v of targetVisits) {
-      if (!catMap.has(v.category)) catMap.set(v.category, new Set());
-      catMap.get(v.category)!.add(v.regionId);
+    // 3. Category counts (Number of regions visited with this category)
+    const categoryVisitedRegions = new Map<VisitCategory, Set<string>>();
+    for (const cat of VISIT_CATEGORY_ORDER) {
+      categoryVisitedRegions.set(cat, new Set());
     }
-    
-    stats.passing = catMap.get("passing")?.size ?? 0;
-    stats.transit = catMap.get("transit")?.size ?? 0;
-    stats.visit = catMap.get("visit")?.size ?? 0;
-    stats.accommodation = catMap.get("accommodation")?.size ?? 0;
-    stats.residence = catMap.get("residence")?.size ?? 0;
+
+    for (const v of visits) {
+      if (v.count > 0 && categoryVisitedRegions.has(v.category)) {
+        categoryVisitedRegions.get(v.category)!.add(padId(v.regionId));
+      }
+    }
+
+    for (const cat of VISIT_CATEGORY_ORDER) {
+      (stats as any)[cat] = categoryVisitedRegions.get(cat)!.size;
+    }
 
     return stats;
-  }, [currentId, visits, regions, parentMap, getFullScore]);
+  }, [currentId, allScores, visits, regions]);
 
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
@@ -252,11 +236,8 @@ export function RegionMap({ regions }: RegionMapProps) {
       const rawId = feature?.properties?.id || feature?.properties?.shapeID;
       const id = padId(rawId);
       const scoreData = scoreMap[id];
-      const score = scoringMode === "cumulative" ? scoreData?.cumulativeScore : scoreData?.totalScore;
       
-      const fillColor = scoringMode === "cumulative" 
-        ? getCumulativeColor(score ?? 0, allScores)
-        : getScoreColor(score ?? 0);
+      const fillColor = scoreData ? getMapColor(scoreData) : "#f8fafc";
 
       return {
         fillColor,
@@ -266,7 +247,7 @@ export function RegionMap({ regions }: RegionMapProps) {
         opacity: 0.8,
       };
     },
-    [scoreMap, scoringMode, allScores],
+    [scoreMap],
   );
 
   useEffect(() => {
@@ -434,11 +415,11 @@ export function RegionMap({ regions }: RegionMapProps) {
               </div>
               <div className="h-6 w-[1px] bg-white/20 mx-1" />
               <div className="flex flex-col items-center">
-                <span className={`text-sm font-black leading-none ${scoringMode === "cumulative" ? "text-orange-400" : "text-blue-400"}`}>
-                  {scoringMode === "cumulative" ? hoveredScore.cumulativeScore.toFixed(1) : hoveredScore.totalScore.toFixed(1)}
+                <span className={`text-sm font-black leading-none ${hoveredScore.scoreType === "orange" ? "text-orange-400" : "text-blue-400"}`}>
+                  {Math.round(hoveredScore.totalScore)}
                 </span>
                 <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">
-                  {scoringMode === "cumulative" ? "Sum" : "Pts"}
+                  {hoveredScore.scoreType === "orange" ? "Rank" : "Pts"}
                 </span>
               </div>
             </>
@@ -477,28 +458,44 @@ export function RegionMap({ regions }: RegionMapProps) {
 
           {/* Active Region Info */}
           <div className="flex items-center px-6 gap-6 h-full flex-1 min-w-0 overflow-hidden bg-slate-50/30">
-            {currentRegion ? (
-              <div className="flex items-center gap-6">
-                <div className="shrink-0 flex flex-col justify-center">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Active Region</span>
-                  <h3 className="text-sm font-black text-slate-800 leading-none truncate max-w-[200px]">{currentRegion.name}</h3>
+            <div className="flex items-center gap-6">
+              <div className="shrink-0 flex flex-col justify-center">
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                  {currentRegion ? "Active Region" : "Global Overview"}
+                </span>
+                <h3 className="text-sm font-black text-slate-800 leading-none truncate max-w-[200px]">
+                  {currentRegion ? currentRegion.name : "World"}
+                </h3>
+              </div>
+              <div className="flex gap-6 border-l border-slate-200 pl-6 h-8 items-center">
+                {currentRegion && (
+                  <div className="flex flex-col justify-center">
+                    <span className="text-[8px] font-bold text-blue-500 uppercase tracking-tighter leading-none mb-1">Direct</span>
+                    <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{contextStats.currentDirectScore}</p>
+                  </div>
+                )}
+                
+                <div className="flex flex-col justify-center">
+                  <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter leading-none mb-1">
+                    {currentRegion ? "Sub-regions" : "Countries"}
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.round(contextStats.currentChildSum)}</p>
+                    <span className="text-[10px] font-bold text-slate-400">/ {contextStats.currentChildMax}</span>
+                    {contextStats.currentChildMax > 0 && (
+                      <span className="text-[9px] font-black text-slate-400 ml-1">
+                        ({Math.round((contextStats.currentChildSum / contextStats.currentChildMax) * 100)}%)
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-4 border-l border-slate-200 pl-6 h-8 items-center">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[8px] font-bold text-blue-500 uppercase">Exp</span>
-                    <p className="text-base font-black text-slate-800 tabular-nums leading-none">{contextStats.currentTotalScore}</p>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[8px] font-bold text-orange-500 uppercase">Cum</span>
-                    <p className="text-base font-black text-slate-800 tabular-nums leading-none">{contextStats.currentCumulativeScore}</p>
-                  </div>
+
+                <div className="flex flex-col justify-center">
+                  <span className="text-[8px] font-bold text-orange-500 uppercase tracking-tighter leading-none mb-1">Rank</span>
+                  <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.round(contextStats.currentTotalScore)}</p>
                 </div>
               </div>
-            ) : (
-              <div className="flex items-center gap-2 text-slate-300">
-                <span className="text-[9px] font-black uppercase tracking-widest">Select region for details</span>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Global Stats Summary */}
@@ -506,7 +503,6 @@ export function RegionMap({ regions }: RegionMapProps) {
             <ScoreStatsBar 
               stats={contextStats} 
               isMobile={true} 
-              scoringMode={scoringMode} 
             />
           </div>
         </div>
@@ -535,7 +531,7 @@ export function RegionMap({ regions }: RegionMapProps) {
             </div>
           </div>
           <div className="px-2 pb-2">
-            <ScoreStatsBar stats={contextStats} isMobile={true} scoringMode={scoringMode} />
+            <ScoreStatsBar stats={contextStats} isMobile={true} />
           </div>
         </div>
       )}
@@ -550,11 +546,7 @@ export function RegionMap({ regions }: RegionMapProps) {
         )}
         
         <div className="pointer-events-auto">
-          <ScoreLegend 
-            isMobile={isMobile} 
-            scoringMode={scoringMode} 
-            setScoringMode={setScoringMode}
-          />
+          <ScoreLegend isMobile={isMobile} />
         </div>
       </div>
 
@@ -564,9 +556,9 @@ export function RegionMap({ regions }: RegionMapProps) {
           region={selectedRegion}
           score={selectedScore}
           childRegions={selectedChildren}
+          scoreMap={allScores}
           mousePos={mousePos}
           isMobile={isMobile}
-          scoringMode={scoringMode}
           onClose={() => {
             setSelectedId(null);
             setMousePos(null);
@@ -586,78 +578,69 @@ export function RegionMap({ regions }: RegionMapProps) {
 }
 
 function ScoreLegend({ 
-  isMobile, 
-  scoringMode, 
-  setScoringMode 
+  isMobile 
 }: { 
   isMobile: boolean;
-  scoringMode: "individual" | "cumulative";
-  setScoringMode: (mode: "individual" | "cumulative") => void;
 }) {
-  const individualSteps = [0, 5, 10, 30, 50];
-  const cumulativeSteps = [
-    { label: "Top 1%", color: "#c2410c" },
-    { label: "Top 10%", color: "#f97316" },
-    { label: "Top 30%", color: "#fdba74" },
-    { label: "Top 50%", color: "#ffedd5" },
-    { label: "Others", color: "#fff7ed" },
+  const individualSteps = [
+    { label: "< 10", color: "#eff6ff" },
+    { label: "10 - 30", color: "#bfdbfe" },
+    { label: "30 - 50", color: "#60a5fa" },
+    { label: "50 - 70", color: "#2563eb" },
+    { label: "70+", color: "#1e3a8a" },
   ];
-  
-  return (
-    <div className={`bg-white border border-slate-200 shadow-lg flex flex-col overflow-hidden transition-all duration-300 ${isMobile ? "w-11 rounded-md p-1" : "w-24 rounded-md p-1.5"}`}>
-      <div className="flex flex-col gap-1 mb-2">
-        <button
-          onClick={() => setScoringMode("individual")}
-          className={`h-7 flex items-center justify-center rounded text-[9px] font-black transition-all ${
-            scoringMode === "individual" 
-              ? "bg-slate-800 text-white shadow-sm" 
-              : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-          }`}
-        >
-          {isMobile ? "EXP" : "POINTS"}
-        </button>
-        <button
-          onClick={() => setScoringMode("cumulative")}
-          className={`h-7 flex items-center justify-center rounded text-[9px] font-black transition-all ${
-            scoringMode === "cumulative" 
-              ? "bg-slate-800 text-white shadow-sm" 
-              : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-          }`}
-        >
-          {isMobile ? "SUM" : "RANK"}
-        </button>
-      </div>
+  const rankSteps = [
+    { label: "< 10", color: "#ffedd5" },
+    { label: "10 - 30", color: "#fdba74" },
+    { label: "30 - 50", color: "#f97316" },
+    { label: "50 - 70", color: "#ea580c" },
+    { label: "70+", color: "#c2410c" },
+  ];
 
-      <div className="flex flex-col gap-1.5 pt-1.5 border-t border-slate-100">
-        {scoringMode === "individual" ? (
-          individualSteps.map((s) => (
-            <div key={s} className="flex items-center gap-2 px-1">
-              <div 
-                className={`rounded-sm shrink-0 ${isMobile ? "w-2 h-2" : "w-2.5 h-2.5"}`} 
-                style={{ background: getScoreColor(s) }} 
-              />
-              {!isMobile && (
-                <span className="font-bold text-slate-500 text-[9px] tracking-tighter">
-                  {s === 0 ? "NONE" : `${s}+`}
-                </span>
-              )}
+  if (isMobile) {
+    return (
+      <div className="bg-white/90 backdrop-blur shadow-lg border border-slate-200 p-2 rounded-xl flex gap-3">
+        <div className="flex gap-1 items-center">
+          <span className="text-[7px] font-black text-slate-400 uppercase">Pts</span>
+          {individualSteps.map(s => (
+            <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
+          ))}
+        </div>
+        <div className="w-[1px] bg-slate-100" />
+        <div className="flex gap-1 items-center">
+          <span className="text-[7px] font-black text-slate-400 uppercase">Rank</span>
+          {rankSteps.map(s => (
+            <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/90 backdrop-blur-md shadow-2xl border border-slate-200 p-3 rounded-2xl w-32 flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Points</span>
+        <div className="flex flex-col gap-1">
+          {individualSteps.map((s) => (
+            <div key={s.label} className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-sm shadow-sm" style={{ background: s.color }} />
+              <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
             </div>
-          ))
-        ) : (
-          cumulativeSteps.map((step) => (
-            <div key={step.label} className="flex items-center gap-2 px-1">
-              <div 
-                className={`rounded-sm shrink-0 ${isMobile ? "w-2 h-2" : "w-2.5 h-2.5"}`} 
-                style={{ background: step.color }} 
-              />
-              {!isMobile && (
-                <span className="font-bold text-slate-500 text-[9px] tracking-tighter uppercase">
-                  {step.label.replace("Top ", "")}
-                </span>
-              )}
+          ))}
+        </div>
+      </div>
+      <div className="h-[1px] bg-slate-100" />
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Rank</span>
+        <div className="flex flex-col gap-1">
+          {rankSteps.map((s) => (
+            <div key={s.label} className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-sm shadow-sm" style={{ background: s.color }} />
+              <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
             </div>
-          ))
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );

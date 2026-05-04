@@ -1,4 +1,5 @@
 import type { Region } from "@regionevel/types";
+import { padId } from "@regionevel/utils";
 
 const cache = new Map<string, Region[]>();
 
@@ -50,15 +51,17 @@ export function flattenTree(tree: any[]): Region[] {
 }
 
 export function getChildren(regions: Region[], parentId: string | null): Region[] {
-  return regions.filter((r) => (r.parentId || "") === (parentId || ""));
+  const paddedParentId = padId(parentId);
+  return regions.filter((r) => padId(r.parentId) === paddedParentId);
 }
 
 export function getAncestors(regions: Region[], regionId: string): Region[] {
   const result: Region[] = [];
-  let current = regions.find((r) => r.id === regionId);
+  const paddedId = padId(regionId);
+  let current = regions.find((r) => padId(r.id) === paddedId);
   while (current && current.parentId) {
-    const pId: string = current.parentId;
-    const parent = regions.find((r) => r.id === pId);
+    const pId = padId(current.parentId);
+    const parent = regions.find((r) => padId(r.id) === pId);
     if (!parent) break;
     result.unshift(parent);
     current = parent;
@@ -108,15 +111,16 @@ export async function fetchAllRegions(): Promise<Region[]> {
 
 export async function fetchAncestors(regionId: string): Promise<Region[]> {
   const result: Region[] = [];
-  let currentId: string | null = regionId;
+  let currentId: string | null = padId(regionId);
 
   while (currentId) {
     const region = await getStore().getRegion(currentId);
     if (!region || !region.parentId) break;
-    const parent = await getStore().getRegion(region.parentId);
+    const pId = padId(region.parentId);
+    const parent = await getStore().getRegion(pId);
     if (!parent) break;
     result.unshift(parent);
-    currentId = parent.id;
+    currentId = pId;
   }
   return result;
 }
