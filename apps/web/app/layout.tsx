@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FirebaseProvider } from "@/components/auth/FirebaseProvider";
 import { AuthButton } from "@/components/auth/AuthButton";
+import { ExportMapButton } from "@/components/map/ExportMapButton";
 import { Footer } from "@/components/common/Footer";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
@@ -20,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
         <FirebaseProvider>
-          <nav className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+          <nav className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-[2000]">
             <Link href="/" className="font-bold text-blue-700 text-lg tracking-tight">
               Regionevel
             </Link>
@@ -36,7 +37,8 @@ export default function RootLayout({
             >
               List
             </Link>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-3">
+              <ExportMapButton />
               <AuthButton />
             </div>
           </nav>

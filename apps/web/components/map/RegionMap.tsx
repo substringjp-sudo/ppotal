@@ -12,6 +12,7 @@ import { fetchChildren, fetchGeometries, getAncestors } from "@/lib/regions";
 import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
+import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
 
 
@@ -65,7 +66,10 @@ export function RegionMap() {
   const [isMobile, setIsMobile] = useState(false);
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRequested = useMapStore(state => state.exportRequested);
   const geoJsonRef = useRef<LeafletGeoJSON | null>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
   const hoverLabelRef = useRef<HTMLDivElement>(null);
 
   // Mobile detection
@@ -287,6 +291,47 @@ export function RegionMap() {
     setSelectedId(null);
   }, [drillUp]);
 
+  const handleExport = useCallback(async () => {
+    if (!exportRef.current) return;
+    
+    setExporting(true);
+    try {
+      // Small delay to ensure any pending UI updates are rendered
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const dataUrl = await toPng(exportRef.current, {
+        cacheBust: true,
+        backgroundColor: "#f0f9ff", // bg-sky-50 equivalent
+        filter: (node: HTMLElement) => {
+          // Exclude elements with 'no-export' class or specific Leaflet controls
+          const isExcluded = 
+            node.classList?.contains("no-export") || 
+            node.classList?.contains("leaflet-control-zoom") || 
+            node.classList?.contains("leaflet-control-attribution");
+          return !isExcluded;
+        },
+      });
+
+      const link = document.createElement("a");
+      const regionName = currentRegion ? currentRegion.name : "World";
+      link.download = `Regionevel-${regionName}-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Failed to export map:", err);
+      alert("지도 이미지를 생성하는 중 오류가 발생했습니다.");
+    } finally {
+      setExporting(false);
+    }
+  }, [currentRegion]);
+
+  // Listen for export requests from the global navigation
+  useEffect(() => {
+    if (exportRequested > 0) {
+      handleExport();
+    }
+  }, [exportRequested, handleExport]);
+
   const onEachFeature = useCallback(
     (feature: Feature, layer: Layer) => {
       const rawId = feature.properties?.id || feature.properties?.shapeID;
@@ -365,7 +410,7 @@ export function RegionMap() {
   const hoveredScore = hoveredId ? scoreMap[hoveredId] ?? null : null;
 
   return (
-    <div className="relative w-full h-full bg-sky-50 overflow-hidden">
+    <div ref={exportRef} className="relative w-full h-full bg-sky-50 overflow-hidden">
       <MapContainer
         center={[20, 0]}
         zoom={2}
@@ -458,7 +503,7 @@ export function RegionMap() {
               {history.length > 0 && (
                 <button
                   onClick={handleBack}
-                  className="p-1 hover:bg-white rounded transition-all text-slate-500 border border-transparent hover:border-slate-200"
+                  className="p-1 hover:bg-white rounded transition-all text-slate-500 border border-transparent hover:border-slate-200 no-export"
                 >
                   <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -522,7 +567,7 @@ export function RegionMap() {
         <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200">
           <div className="flex items-center gap-2 p-2 pointer-events-auto">
             {history.length > 0 && (
-              <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600">
+              <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600 no-export">
                 <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>

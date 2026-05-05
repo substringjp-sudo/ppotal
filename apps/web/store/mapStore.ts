@@ -9,6 +9,7 @@ interface MapState {
   level: MapLevel;
   currentId: string | null;
   history: Array<{ level: MapLevel; currentId: string | null }>;
+  exportRequested: number;
 }
 
 interface MapActions {
@@ -18,6 +19,7 @@ interface MapActions {
   drillDown: (level: MapLevel, id: string) => void;
   drillUp: () => void;
   reset: () => void;
+  requestExport: () => void;
 }
 
 export const useMapStore = create<MapState & MapActions>()(
@@ -26,6 +28,7 @@ export const useMapStore = create<MapState & MapActions>()(
       level: "world",
       currentId: null,
       history: [],
+      exportRequested: 0,
 
       setLevel: (level) => set({ level }),
       setCurrentId: (currentId) => set({ currentId }),
@@ -53,6 +56,7 @@ export const useMapStore = create<MapState & MapActions>()(
       },
 
       reset: () => set({ level: "world", currentId: null, history: [] }),
+      requestExport: () => set((state) => ({ exportRequested: state.exportRequested + 1 })),
     }),
     {
       name: "regionevel-map-state",

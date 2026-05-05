@@ -159,16 +159,16 @@ describe("getScoreColor", () => {
     expect(getScoreColor(0)).toBe("#f8fafc");
   });
   it("returns light blue for score < 10", () => {
-    expect(getScoreColor(5)).toBe("#eff6ff");
-    expect(getScoreColor(9)).toBe("#eff6ff");
+    expect(getScoreColor(5)).toBe("#93c5fd");
+    expect(getScoreColor(9)).toBe("#93c5fd");
   });
   it("returns medium blue for 10-29 score", () => {
-    expect(getScoreColor(10)).toBe("#bfdbfe");
-    expect(getScoreColor(29)).toBe("#bfdbfe");
+    expect(getScoreColor(10)).toBe("#60a5fa");
+    expect(getScoreColor(29)).toBe("#60a5fa");
   });
   it("returns deep blue for 30-49 score", () => {
-    expect(getScoreColor(30)).toBe("#60a5fa");
-    expect(getScoreColor(49)).toBe("#60a5fa");
+    expect(getScoreColor(30)).toBe("#3b82f6");
+    expect(getScoreColor(49)).toBe("#3b82f6");
   });
   it("returns very deep blue for 50-69 score", () => {
     expect(getScoreColor(50)).toBe("#2563eb");
