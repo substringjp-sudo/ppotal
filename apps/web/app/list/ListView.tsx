@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import type { Region } from "@regionevel/types";
 import { RegionList } from "@/components/list/RegionList";
-import { flattenTree } from "@/lib/regions";
 
 export function ListView() {
   const [allRegions, setAllRegions] = useState<Region[]>([]);
@@ -11,15 +10,9 @@ export function ListView() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    import("@/lib/regions").then(m => m.fetchAllRegions())
-      .then((data) => {
-        setAllRegions(data);
-        setLoading(false);
-      })
-      .catch((e: unknown) => {
-        setError(String(e));
-        setLoading(false);
-      });
+    // We no longer fetch ALL regions here to prevent freezing.
+    // RegionList component handles on-demand loading.
+    setLoading(false);
   }, []);
 
   if (error) {

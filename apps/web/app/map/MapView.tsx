@@ -21,12 +21,10 @@ const RegionMap = dynamic(
 );
 
 export function MapView() {
-  const [regions, setRegions] = useState<Region[] | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { visits, _hasHydrated, recalculateScores } = useVisitStore();
+  const { visits, allRegions, _hasHydrated, setRegions } = useVisitStore();
   
-  const [countries, setCountries] = useState<Region[]>([]);
   const [hasLoadedCountries, setHasLoadedCountries] = useState(false);
 
   useEffect(() => {
@@ -43,13 +41,11 @@ export function MapView() {
         try {
           const initialCountries = await fetchChildren(null);
           if (!active) return;
-          setCountries(initialCountries);
+          setRegions(initialCountries);
           setHasLoadedCountries(true);
           
           // Initial calculation with just countries if no visits
           if (visits.length === 0) {
-            recalculateScores(initialCountries);
-            setRegions(initialCountries);
             setInitialLoading(false);
             return;
           }
@@ -65,40 +61,34 @@ export function MapView() {
         const visitedIds = Array.from(new Set(visits.map(v => padId(v.regionId))));
         if (visitedIds.length === 0) {
           if (active) {
-            recalculateScores(countries);
-            setRegions(countries);
             setInitialLoading(false);
           }
           return;
         }
 
-        // Fetch all needed metadata in parallel
+        // Only fetch if we don't have them in allRegions yet
+        const existingIds = new Set(allRegions.map(r => padId(r.id)));
+        const missingIds = visitedIds.filter(id => !existingIds.has(id));
+
+        if (missingIds.length === 0) {
+          if (active) setInitialLoading(false);
+          return;
+        }
+
+        // Fetch missing metadata in parallel
         const [visitedRegions, ...ancestorResults] = await Promise.all([
-          fetchRegionsByIds(visitedIds),
-          ...visitedIds.map(id => fetchAncestors(id))
+          fetchRegionsByIds(missingIds),
+          ...missingIds.map(id => fetchAncestors(id))
         ]);
 
         if (!active) return;
 
-        const allAncestors = ancestorResults.flat();
-        
-        // Merge everything
-        const regionMap = new Map<string, Region>();
-        [...countries, ...visitedRegions, ...allAncestors].forEach(r => {
-          regionMap.set(padId(r.id), r);
-        });
-        
-        const currentRegions = Array.from(regionMap.values());
-        
-        // CRITICAL: Calculate scores BEFORE setting regions to ensure RegionMap sees them immediately
-        recalculateScores(currentRegions);
-        setRegions(currentRegions);
+        const allNewRegions = [...visitedRegions, ...ancestorResults.flat()];
+        setRegions(allNewRegions);
         setInitialLoading(false);
       } catch (e) {
         console.error("Failed to load visited metadata", e);
         if (active) {
-          recalculateScores(countries);
-          setRegions(countries);
           setInitialLoading(false);
         }
       }
@@ -106,8 +96,7 @@ export function MapView() {
 
     loadInitialData();
     return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [_hasHydrated, hasLoadedCountries]); // Removed 'visits' from dependency to avoid loop, we handle visits updates inside or via other means
+  }, [_hasHydrated, hasLoadedCountries, visits.length]); // Re-run when visits count changes
 
   if (error) {
     return (
@@ -117,7 +106,7 @@ export function MapView() {
     );
   }
 
-  if (initialLoading || !regions) {
+  if (initialLoading && allRegions.length === 0) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-56px)] text-gray-400">
         Preparing the map...
@@ -127,7 +116,7 @@ export function MapView() {
 
   return (
     <div className="h-[calc(100vh-56px)]">
-      <RegionMap regions={regions} />
+      <RegionMap />
     </div>
   );
 }

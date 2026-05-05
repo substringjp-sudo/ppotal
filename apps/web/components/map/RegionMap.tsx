@@ -8,7 +8,7 @@ import L from "leaflet";
 import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, type VisitCategory } from "@regionevel/types";
 import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
-import { fetchChildren, fetchAncestors, fetchRegion, fetchGeometries, flattenTree, getChildren, getAncestors } from "@/lib/regions";
+import { fetchChildren, fetchGeometries, getAncestors } from "@/lib/regions";
 import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
@@ -36,45 +36,27 @@ function MapEvents({ onMapClick }: { onMapClick: () => void }) {
   return null;
 }
 
-interface RegionMapProps {
-  regions: Region[];
-}
-
-export function RegionMap({ regions: initialRegions }: RegionMapProps) {
-  const [accumulatedRegions, setAccumulatedRegions] = useState<Region[]>(initialRegions);
-
-  // Sync accumulatedRegions when initialRegions prop changes (e.g. MapView loads more metadata)
-  useEffect(() => {
-    if (initialRegions.length === 0) return;
-    setAccumulatedRegions((prev) => {
-      // If we're starting from scratch or initialRegions is significantly different,
-      // it's better to trust the parent's provided regions for the initial view.
-      const existingIds = new Set(prev.map((r) => padId(r.id)));
-      const newRegions = initialRegions.filter((r) => !existingIds.has(padId(r.id)));
-      if (newRegions.length === 0) return prev;
-      return [...prev, ...newRegions];
-    });
-  }, [initialRegions]);
-
-  const { visits, scores: storeScores, quickIncrement, upsertVisit, recalculateScores } = useVisitStore();
+export function RegionMap() {
+  const { 
+    visits, 
+    scores: allScores, 
+    allRegions,
+    quickIncrement, 
+    upsertVisit, 
+    recalculateScores,
+    setRegions
+  } = useVisitStore();
 
   // O(1) lookup map for regions
   const regionsByIdMap = useMemo(() => {
     const map = new Map<string, Region>();
-    for (const r of accumulatedRegions) {
+    for (const r of allRegions) {
       map.set(padId(r.id), r);
     }
     return map;
-  }, [accumulatedRegions]);
+  }, [allRegions]);
 
-  // Only recalculate if we have regions and visits or if accumulatedRegions changed
-  useEffect(() => {
-    if (accumulatedRegions.length > 0) {
-      recalculateScores(accumulatedRegions);
-    }
-  }, [accumulatedRegions.length, visits, recalculateScores]);
-
-  const { level, currentId, history, setLevel, setCurrentId, setHistory, drillDown, drillUp } = useMapStore();
+  const { level, currentId, history, drillDown, drillUp } = useMapStore();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -124,17 +106,14 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
 
   const parentMap = useMemo(() => {
     const map = new Map<string | null, Region[]>();
-    for (const r of accumulatedRegions) {
+    for (const r of allRegions) {
       const pid = padId(r.parentId);
       const list = map.get(pid) || [];
       list.push(r);
       map.set(pid, list);
     }
     return map;
-  }, [accumulatedRegions]);
-
-  // Use scores from store instead of calculating locally
-  const allScores = storeScores;
+  }, [allRegions]);
 
   // Compatibility mapping for current view
   const scoreMap = useMemo(() => {
@@ -181,14 +160,14 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
       }
     } else {
       // Global stats (World Rate)
-      const countries = accumulatedRegions.filter(r => r.parentId === null);
+      const countries = allRegions.filter(r => r.parentId === null);
       let worldSum = 0;
       let worldMax = 0;
       for (const country of countries) {
         const s = allScores[padId(country.id)];
         if (s) {
           worldSum += s.totalScore;
-          worldMax += 50; // Traveler's max is 50 points per country
+          worldMax += 50;
         }
       }
       stats.currentChildSum = worldSum;
@@ -199,7 +178,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
     }
 
     // 2. Count visited regions
-    for (const r of accumulatedRegions) {
+    for (const r of allRegions) {
       const s = allScores[padId(r.id)];
       if (s && s.hasVisit) {
         if (r.admLevel === 0) stats.visitedCountries++;
@@ -208,7 +187,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
       }
     }
 
-    // 3. Category counts (Number of regions visited with this category)
+    // 3. Category counts
     const categoryVisitedRegions = new Map<VisitCategory, Set<string>>();
     for (const cat of VISIT_CATEGORY_ORDER) {
       categoryVisitedRegions.set(cat, new Set());
@@ -225,7 +204,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
     }
 
     return stats;
-  }, [currentId, allScores, visits, accumulatedRegions]);
+  }, [currentId, allScores, visits, allRegions]);
 
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
@@ -260,24 +239,8 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
       if (region.admLevel < 2) {
         setLoading(true);
         try {
-          // Fetch sub-region metadata
           const childMeta = await fetchChildren(id);
-          const newAccumulated = [...accumulatedRegions];
-
-          // Only add regions we don't have yet
-          let addedCount = 0;
-          for (const cm of childMeta) {
-            if (!regionsByIdMap.has(padId(cm.id))) {
-              newAccumulated.push(cm);
-              addedCount++;
-            }
-          }
-
-          if (addedCount > 0) {
-            setAccumulatedRegions(newAccumulated);
-            // Trigger store to recalculate with new regions
-            recalculateScores(newAccumulated);
-          }
+          setRegions(childMeta); // Store will handle merging and recalculation
 
           const nextLevel = region.admLevel === 0 ? "country" : "prefecture";
           drillDown(nextLevel as any, id);
@@ -291,7 +254,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         quickIncrement(id);
       }
     },
-    [regionsByIdMap, accumulatedRegions, quickIncrement, recalculateScores, drillDown],
+    [regionsByIdMap, quickIncrement, drillDown, setRegions],
   );
 
   const handleBack = useCallback(() => {
@@ -347,7 +310,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         },
       });
 
-      // Long press for mobile context
+      // Long press for mobile
       let pressTimer: ReturnType<typeof setTimeout>;
       layer.on("touchstart", (e) => {
         if (!isMobile) return;
@@ -368,10 +331,10 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
 
   const currentPath = useMemo(() => {
     if (!currentId) return ["World"];
-    const ancestors = getAncestors(accumulatedRegions, currentId);
+    const ancestors = getAncestors(allRegions, currentId);
     const self = regionsByIdMap.get(currentId);
     return ["World", ...ancestors.map((a) => a.name), self?.name].filter(Boolean) as string[];
-  }, [accumulatedRegions, currentId, regionsByIdMap]);
+  }, [allRegions, currentId, regionsByIdMap]);
 
   const hoveredRegion = hoveredId ? regionsByIdMap.get(hoveredId) ?? null : null;
   const hoveredScore = hoveredId ? scoreMap[hoveredId] ?? null : null;
@@ -528,14 +491,14 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
               stats={contextStats}
               isMobile={true}
               hideRate={!currentRegion || currentRegion?.admLevel === 2}
-              totalChildren={currentRegion ? contextStats.totalChildrenCount : accumulatedRegions.filter(r => r.admLevel === 0).length}
+              totalChildren={currentRegion ? contextStats.totalChildrenCount : allRegions.filter(r => r.admLevel === 0).length}
               admLevel={currentRegion?.admLevel ?? -1}
             />
           </div>
         </div>
       )}
 
-      {/* Mobile Header (Sharper Style) */}
+      {/* Mobile Header */}
       {isMobile && (
         <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200">
           <div className="flex items-center gap-2 p-2 pointer-events-auto">
@@ -571,8 +534,8 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         </div>
       )}
 
-      {/* Map Controls (Sharper Style) */}
-      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 ${isMobile ? "bottom-4 right-4" : "bottom-4 right-4"}`}>
+      {/* Map Controls */}
+      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4`}>
         {loading && (
           <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -589,7 +552,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         </div>
       </div>
 
-      {/* RegionTooltip & Hover Label */}
+      {/* RegionTooltip */}
       {selectedRegion && selectedScore && (
         <RegionTooltip
           region={selectedRegion}

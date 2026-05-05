@@ -10,6 +10,8 @@ import {
 } from "@regionevel/types";
 import { padId } from "./id";
 
+export const POINTS_PER_REGION = 50;
+
 export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { directCount: number; points: number }> & {
   directScore: number;
 } {
@@ -30,44 +32,46 @@ export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { d
   return { ...breakdown, directScore };
 }
 
-
-
 /**
  * Returns the raw sums of counts for a region and all its descendants.
  * Capping is handled at the scoring level, not during recursive aggregation.
  */
 export function getEffectiveCounts(
   regionId: string,
-  allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
+  allVisits: Map<string, RegionVisit[]>,
   parentIdMap: Map<string | null, Region[]>,
-  memo: Map<string, Record<VisitCategory, number>> = new Map(),
+  memo: Map<string, Record<VisitCategory, number>>,
+  affectedIds?: Set<string>,
 ): Record<VisitCategory, number> {
   const normalizedId = padId(regionId);
-  if (memo.has(normalizedId)) return memo.get(normalizedId)!;
+  const cached = memo.get(normalizedId);
+  if (cached) return cached;
 
   const counts = Object.fromEntries(
     VISIT_CATEGORY_ORDER.map((cat) => [cat, 0]),
   ) as Record<VisitCategory, number>;
 
-  // 1. Direct visits of this region
-  const directVisits = Array.isArray(allVisits) 
-    ? allVisits.filter((v) => padId(v.regionId) === normalizedId)
-    : allVisits.get(normalizedId) || [];
+  // If we know this region and its descendants have no visits, return early
+  if (affectedIds && !affectedIds.has(normalizedId)) {
+    memo.set(normalizedId, counts);
+    return counts;
+  }
 
+  // 1. Direct visits of this region
+  const directVisits = allVisits.get(normalizedId) || [];
   for (const v of directVisits) {
     counts[v.category] += v.count;
   }
 
   // 2. Add sums from children using parentIdMap (O(1) lookup)
-  const childrenFromRegions = parentIdMap.get(normalizedId) || [];
-  const allChildIds = new Set(childrenFromRegions.map(r => padId(r.id)));
-
-  for (const childId of allChildIds) {
+  const children = parentIdMap.get(normalizedId) || [];
+  for (const child of children) {
     const childCounts = getEffectiveCounts(
-      childId,
+      padId(child.id),
       allVisits,
       parentIdMap,
       memo,
+      affectedIds,
     );
     for (const cat of VISIT_CATEGORY_ORDER) {
       counts[cat] += childCounts[cat];
@@ -83,134 +87,130 @@ export function getRegionScore(
   allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
   regionMap: Map<string, Region>,
   parentIdMap: Map<string | null, Region[]>,
-  memo?: Map<string, Record<VisitCategory, number>>,
-  scoreMemo?: Map<string, RegionScore>,
+  memo: Map<string, Record<VisitCategory, number>> = new Map(),
+  scoreMemo: Map<string, RegionScore> = new Map(),
+  affectedIds?: Set<string>,
+  includeStats: boolean = false
 ): RegionScore {
   const normalizedId = padId(regionId);
-  if (scoreMemo?.has(normalizedId)) return scoreMemo.get(normalizedId)!;
-  
-  const activeMemo = memo || new Map();
-  const activeScoreMemo = scoreMemo || new Map();
-  
-  const effectiveCounts = getEffectiveCounts(
-    normalizedId,
-    allVisits,
-    parentIdMap,
-    activeMemo,
-  );
+  const cached = scoreMemo.get(normalizedId);
+  if (cached) return cached;
 
-  // Get direct visits for this region
-  const directVisits = Array.isArray(allVisits)
-    ? allVisits.filter((v) => padId(v.regionId) === normalizedId)
-    : allVisits.get(normalizedId) || [];
-    
-  const { directScore: rawDirectScore, ...directBreakdown } = calculateScore(directVisits);
-
-  // Identify the region using regionMap (O(1) lookup)
+  // Convert array to map once if needed for performance in deep recursion
+  const visitsMap = allVisits instanceof Map 
+    ? allVisits 
+    : (() => {
+        const m = new Map<string, RegionVisit[]>();
+        for (const v of allVisits) {
+          const rid = padId(v.regionId);
+          const list = m.get(rid) || [];
+          list.push(v);
+          m.set(rid, list);
+        }
+        return m;
+      })();
+  
   const region = regionMap.get(normalizedId);
-  const isCountry = region?.admLevel === 0;
-  const isPrefecture = region?.admLevel === 1;
+  const admLevel = region?.admLevel ?? 2;
+  const isCountry = admLevel === 0;
+  const isPrefecture = admLevel === 1;
 
-  // Children for aggregation (O(1) lookup)
-  const childrenFromRegions = parentIdMap.get(normalizedId) || [];
-  const allChildIds = new Set(childrenFromRegions.map(r => padId(r.id)));
-  const hasChildren = allChildIds.size > 0;
-
-  // Calculate breakdown and points
-  const breakdown = Object.fromEntries(
-    VISIT_CATEGORY_ORDER.map((cat) => {
-      const cfg = VISIT_CONFIG[cat];
-      const effectiveCount = effectiveCounts[cat];
-      
-      const pointsCount = hasChildren ? effectiveCount : directBreakdown[cat].directCount;
-      const points = Math.min(pointsCount, cfg.maxCount) * cfg.pointsPerCount;
-      
-      return [
-        cat,
-        {
-          directCount: directBreakdown[cat].directCount,
-          effectiveCount,
-          points,
-        },
-      ];
-    }),
-  ) as RegionScore["breakdown"];
-
-  const effectiveCategoryPoints = VISIT_CATEGORY_ORDER.reduce((sum, cat) => {
-    return sum + breakdown[cat].points;
-  }, 0);
-
-  // Points capped at 100
-  const displayDirectScore = Math.min(100, effectiveCategoryPoints);
-
-  // Recursively get child scores for rateScore calculation
-  let childSum = 0;
-  let hasChildVisit = false;
-  for (const childId of allChildIds) {
-    const childScore = getRegionScore(childId, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
-    childSum += childScore.totalScore;
-    if (childScore.hasVisit) hasChildVisit = true;
+  // If we know this region and its descendants have no visits, return empty score early
+  if (affectedIds && !affectedIds.has(normalizedId)) {
+    const emptyResult: RegionScore = {
+      regionId: normalizedId,
+      directScore: 0,
+      rateScore: 0,
+      childSum: 0,
+      childMax: (region?.childrenCount ?? 0) * POINTS_PER_REGION,
+      totalScore: 0,
+      scoreType: admLevel < 2 ? "orange" : "blue",
+      hasVisit: false,
+      breakdown: Object.fromEntries(
+        VISIT_CATEGORY_ORDER.map((cat) => [
+          cat,
+          { directCount: 0, effectiveCount: 0, points: 0 },
+        ]),
+      ) as RegionScore["breakdown"],
+    };
+    scoreMemo.set(normalizedId, emptyResult);
+    return emptyResult;
   }
 
-  const actualChildrenCount = region?.childrenCount ?? allChildIds.size;
+  const effectiveCounts = getEffectiveCounts(
+    normalizedId,
+    visitsMap,
+    parentIdMap,
+    memo,
+    affectedIds,
+  );
 
-  // rateScore (occupancy rate) formula: (childSum) / (children.length * 50)
-  const childMax = actualChildrenCount * 50;
+  const directVisits = visitsMap.get(normalizedId) || [];
+  const { directScore: rawDirectScore, ...directBreakdown } = calculateScore(directVisits);
+
+  const children = parentIdMap.get(normalizedId) || [];
+  const hasChildren = children.length > 0;
+
+  // Calculate breakdown and points
+  const breakdown: RegionScore["breakdown"] = {} as any;
+  for (const cat of VISIT_CATEGORY_ORDER) {
+    const cfg = VISIT_CONFIG[cat];
+    const effectiveCount = effectiveCounts[cat];
+    
+    const pointsCount = hasChildren ? effectiveCount : directBreakdown[cat].directCount;
+    const points = Math.min(pointsCount, cfg.maxCount) * cfg.pointsPerCount;
+    
+    breakdown[cat] = {
+      directCount: directBreakdown[cat].directCount,
+      effectiveCount,
+      points,
+    };
+  }
+
+  const effectiveCategoryPoints = VISIT_CATEGORY_ORDER.reduce((sum, cat) => sum + breakdown[cat].points, 0);
+  const displayDirectScore = Math.min(100, effectiveCategoryPoints);
+
+  let childSum = 0;
+  let hasChildVisit = false;
+  let visitedChildrenCount = 0;
+  let cityVisited = 0;
+  let cityTotal = 0;
+
+  for (const child of children) {
+    const childId = padId(child.id);
+    const childScore = getRegionScore(childId, visitsMap, regionMap, parentIdMap, memo, scoreMemo, affectedIds, includeStats);
+    childSum += childScore.totalScore;
+    
+    if (childScore.hasVisit) {
+      hasChildVisit = true;
+      visitedChildrenCount++;
+    }
+
+    if (includeStats) {
+      if (isPrefecture) {
+        cityTotal++;
+        if (childScore.hasVisit) cityVisited++;
+      } else if (isCountry && childScore.cityStats) {
+        cityVisited += childScore.cityStats.visitedCount;
+        cityTotal += childScore.cityStats.totalCount;
+      }
+    }
+  }
+
+  const actualChildrenCount = region?.childrenCount ?? children.length;
+  const childMax = actualChildrenCount * POINTS_PER_REGION;
   const rawRateScore = childMax > 0 ? Math.min(100, (childSum / childMax) * 100) : 0;
-  
-  // Floor at 1% if any visit exists
   const rateScore = rawRateScore > 0 ? Math.max(1, Math.ceil(rawRateScore)) : 0;
 
-  const hasDirectVisit = directVisits.some(v => v.count > 0);
-  const totalHasVisit = hasDirectVisit || hasChildVisit;
-
-  // scoreType: orange for aggregated regions (countries/prefectures), blue for individual
+  const totalHasVisit = (directVisits.length > 0 && directVisits.some(v => v.count > 0)) || hasChildVisit;
   const scoreType = (isCountry || isPrefecture) ? "orange" : "blue";
   
-  // totalScore: for countries/prefectures, we usually prefer rateScore.
   let displayTotalScore = (isCountry || isPrefecture) 
     ? (rateScore > 0 ? rateScore : Math.round(displayDirectScore))
     : Math.round(displayDirectScore);
     
-  // Final visit floor
   if (displayTotalScore === 0 && totalHasVisit) {
     displayTotalScore = 1;
-  }
-
-  // Stats for tooltips
-  let subRegionStats = undefined;
-  let cityStats = undefined;
-
-  if (isCountry) {
-    let munVisited = 0;
-    let munTotal = 0;
-    let cityVisited = 0;
-    let cityTotal = 0;
-
-    for (const munId of allChildIds) {
-      munTotal++;
-      const munScore = getRegionScore(munId, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
-      if (munScore.hasVisit) munVisited++;
-
-      const munChildren = parentIdMap.get(padId(munId)) || [];
-      for (const city of munChildren) {
-        cityTotal++;
-        const cityScore = getRegionScore(city.id, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
-        if (cityScore.hasVisit) cityVisited++;
-      }
-    }
-    subRegionStats = { visitedCount: munVisited, totalCount: munTotal };
-    cityStats = { visitedCount: cityVisited, totalCount: cityTotal };
-  } else if (isPrefecture) {
-    let cityVisited = 0;
-    let cityTotal = 0;
-    for (const cityId of allChildIds) {
-      cityTotal++;
-      const cityScore = getRegionScore(cityId, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
-      if (cityScore.hasVisit) cityVisited++;
-    }
-    subRegionStats = { visitedCount: cityVisited, totalCount: cityTotal };
-    cityStats = { visitedCount: cityVisited, totalCount: cityTotal };
   }
 
   const result: RegionScore = {
@@ -225,20 +225,21 @@ export function getRegionScore(
     breakdown,
   };
 
-  if (subRegionStats) result.subRegionStats = subRegionStats;
-  if (cityStats) result.cityStats = cityStats;
+  if (includeStats && (isCountry || isPrefecture)) {
+    result.subRegionStats = { visitedCount: visitedChildrenCount, totalCount: actualChildrenCount };
+    if (cityTotal > 0 || isCountry || isPrefecture) {
+      result.cityStats = { visitedCount: cityVisited, totalCount: cityTotal };
+    }
+  }
 
-  activeScoreMemo.set(normalizedId, result);
+  scoreMemo.set(normalizedId, result);
   return result;
 }
-
-
 
 export function getMapColor(score: RegionScore): string {
   if (score.totalScore === 0) return "#f8fafc";
   
   if (score.scoreType === "orange") {
-    // Orange scale for rateScore (Thresholds: 10, 30, 50, 70)
     const s = Math.round(score.rateScore);
     if (s < 10) return "#ffedd5";
     if (s < 30) return "#fdba74";
@@ -246,7 +247,6 @@ export function getMapColor(score: RegionScore): string {
     if (s < 70) return "#ea580c";
     return "#c2410c";
   } else {
-    // Blue scale for directScore (Thresholds: 10, 30, 50, 70)
     const s = Math.round(score.directScore);
     if (s < 10) return "#eff6ff";
     if (s < 30) return "#bfdbfe";
@@ -256,15 +256,13 @@ export function getMapColor(score: RegionScore): string {
   }
 }
 
-// Returns the next category+count to increment on a map click.
 export function getNextIncrement(
   visits: RegionVisit[],
   regionId: string,
 ): { category: VisitCategory; newCount: number } | null {
+  const rid = padId(regionId);
   for (const cat of VISIT_CATEGORY_ORDER) {
-    const existing = visits.find(
-      (v) => v.regionId === regionId && v.category === cat,
-    );
+    const existing = visits.find((v) => padId(v.regionId) === rid && v.category === cat);
     const count = existing?.count ?? 0;
     if (count < VISIT_CONFIG[cat].maxCount) {
       return { category: cat, newCount: count + 1 };
@@ -290,5 +288,30 @@ export function getCumulativeColor(score: number): string {
   if (score < 70) return "#ea580c";
   return "#c2410c";
 }
+
+/**
+ * Returns all ancestor IDs including the regionId itself, ordered from child to parent
+ */
+export function getAffectedAncestors(regionId: string, regionMap: Map<string, Region>): string[] {
+  const normalizedId = padId(regionId);
+  const affected: string[] = [normalizedId];
+  let currentId = normalizedId;
+  
+  // Use a safety counter to prevent infinite loops in case of data corruption
+  let safety = 0;
+  while (safety < 10) {
+    const region = regionMap.get(currentId);
+    if (!region || !region.parentId) break;
+    
+    const pId = padId(region.parentId);
+    if (affected.indexOf(pId) !== -1) break;
+    affected.push(pId);
+    currentId = pId;
+    safety++;
+  }
+  
+  return affected;
+}
+
 
 

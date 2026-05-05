@@ -68,7 +68,7 @@ export const Introduction: React.FC = () => {
         <div className={styles.textBlock}>
           <h2 className="!mb-0">Visit Level Scoring</h2>
           <p>
-            Every visit is different. Whether you're just passing through or living there, 
+            Every visit is different. Whether you&apos;re just passing through or living there, 
             each level adds points to your score and colors your map.
           </p>
           <p className="text-xs italic text-slate-500">

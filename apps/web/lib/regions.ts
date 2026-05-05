@@ -3,52 +3,7 @@ import { padId } from "@regionevel/utils";
 
 const cache = new Map<string, Region[]>();
 
-export async function loadRegions(iso3: string): Promise<Region[]> {
-  if (cache.has(iso3)) return cache.get(iso3)!;
-  const res = await fetch(`/data/meta/${iso3}.json`);
-  if (!res.ok) throw new Error(`Failed to load regions for ${iso3}`);
-  const data = (await res.json()) as Region[];
-  cache.set(iso3, data);
-  return data;
-}
 
-export function flattenTree(tree: any[]): Region[] {
-  if (!Array.isArray(tree)) return [];
-  const regions: Region[] = [];
-  for (const country of tree) {
-    if (!country || typeof country !== "object") continue;
-    regions.push({
-      id: country.id || "",
-      parentId: null,
-      name: country.name || "Unknown",
-      iso3: country.code || "",
-      admLevel: 0,
-    });
-    if (Array.isArray(country.prefectures)) {
-      for (const pref of country.prefectures) {
-        regions.push({
-          id: pref.id || "",
-          parentId: country.id || "",
-          name: pref.name || "Unknown",
-          iso3: country.code || "",
-          admLevel: 1,
-        });
-        if (Array.isArray(pref.cities)) {
-          for (const city of pref.cities) {
-            regions.push({
-              id: city.id || "",
-              parentId: pref.id || "",
-              name: city.name || "Unknown",
-              iso3: country.code || "",
-              admLevel: 2,
-            });
-          }
-        }
-      }
-    }
-  }
-  return regions;
-}
 
 export function getChildren(regions: Region[], parentId: string | null): Region[] {
   const paddedParentId = padId(parentId);
@@ -121,12 +76,20 @@ export async function fetchRegionsByIds(ids: string[]): Promise<Region[]> {
 export async function fetchAncestors(regionId: string): Promise<Region[]> {
   const result: Region[] = [];
   let currentId: string | null = padId(regionId);
+  const store = getStore();
+
+  // Keep track of IDs we need to fetch
+  const visited = new Set<string>();
 
   while (currentId) {
-    const region = await getStore().getRegion(currentId);
+    const region = await store.getRegion(currentId);
     if (!region || !region.parentId) break;
+    
     const pId = padId(region.parentId);
-    const parent = await getStore().getRegion(pId);
+    if (visited.has(pId)) break;
+    visited.add(pId);
+
+    const parent = await store.getRegion(pId);
     if (!parent) break;
     result.unshift(parent);
     currentId = pId;

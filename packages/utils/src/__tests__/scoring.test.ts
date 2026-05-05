@@ -133,7 +133,7 @@ describe("Hierarchy Scoring", () => {
       { regionId: "parent", category: "transit", count: 1 },
       { regionId: "child1", category: "visit", count: 1 },
     ];
-    // parent: directScore = 2 (transit)
+    // parent: directScore = 7 (parent transit 2 + child1 visit 5)
     // child1: directScore = 5 (visit), rateScore = 0 => totalScore = 5
     // parent: childSum = 5 + 0 = 5. childMax = 2 * 50 = 100.
     // rateScore = (5 / 100) * 100 = 5.
@@ -141,7 +141,7 @@ describe("Hierarchy Scoring", () => {
     const { regionMap, parentIdMap } = createMaps(regions);
     const score = getRegionScore("parent", visits, regionMap, parentIdMap);
     expect(score.rateScore).toBe(5);
-    expect(score.directScore).toBe(2);
+    expect(score.directScore).toBe(7);
     expect(score.totalScore).toBe(5);
     expect(score.scoreType).toBe("orange");
   });

@@ -4,49 +4,11 @@ import { useAuthStore } from "@/store/authStore";
 import { firebaseEnabled } from "@/lib/firebase";
 
 export function AuthButton() {
+  // Temporarily hidden as requested
+  return null;
+
   const { user, loading, login, logout } = useAuthStore();
-
-  if (!firebaseEnabled) return null;
-  if (loading) {
-    return <span className="w-7 h-7 rounded-full bg-gray-200 animate-pulse" />;
-  }
-
-  if (user) {
-    return (
-      <div className="flex items-center gap-2">
-        {user.photoURL ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.photoURL}
-            alt={user.displayName ?? "user"}
-            width={28}
-            height={28}
-            className="rounded-full"
-          />
-        ) : (
-          <span className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
-            {(user.displayName ?? user.email ?? "?")[0]?.toUpperCase()}
-          </span>
-        )}
-        <button
-          onClick={logout}
-          className="text-xs text-gray-500 hover:text-gray-800 transition-colors"
-        >
-          Sign Out
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={login}
-      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-    >
-      <GoogleIcon />
-      Sign in with Google
-    </button>
-  );
+  // ... rest of the code is preserved for easy restoration later
 }
 
 function GoogleIcon() {
