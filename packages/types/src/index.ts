@@ -87,10 +87,20 @@ export interface RegionScoreBreakdown {
 export interface RegionScore {
   regionId: string;
   directScore: number;     // 점수 (자체 방문)
-  rankScore: number;       // 하위 지역 합산 점수 (0-100)
+  rateScore: number;       // 하위 지역 합산 점수 (0-100)
   childSum: number;        // 하위 지역 점수 총합
   childMax: number;        // 하위 지역 가용 최대 점수
-  totalScore: number;      // 지도 표시용 최종 점수 (rankScore > 0 ? rankScore : directScore)
+  totalScore: number;      // 지도 표시용 최종 점수 (rateScore > 0 ? rateScore : directScore)
   scoreType: "blue" | "orange"; // 색상 계열 결정
+  hasVisit: boolean;       // 실제 방문 여부 (점수와 무관하게 카운트용)
   breakdown: Record<VisitCategory, RegionScoreBreakdown>;
+  subRegionStats?: {
+    visitedCount: number;
+    totalCount: number;
+  };
+  cityStats?: {
+    visitedCount: number;
+    totalCount: number;
+  };
 }
+

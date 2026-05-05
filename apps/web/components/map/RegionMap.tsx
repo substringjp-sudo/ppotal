@@ -155,10 +155,11 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
       stay: 0,
       residence: 0,
       currentTotalScore: 0,
-      currentRankScore: 0,
+      currentRateScore: 0,
       currentDirectScore: 0,
       currentChildSum: 0,
       currentChildMax: 0,
+      totalChildrenCount: 0,
     };
 
     // 1. Current region scores from pre-calculated allScores
@@ -167,12 +168,12 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
       if (score) {
         stats.currentTotalScore = score.totalScore;
         stats.currentDirectScore = score.directScore;
-        stats.currentRankScore = score.rankScore;
-        stats.currentChildSum = score.childSum;
+        stats.currentRateScore = score.rateScore;
         stats.currentChildMax = score.childMax;
+        stats.totalChildrenCount = Math.round(score.childMax / 50);
       }
     } else {
-      // Global stats (World Rank)
+      // Global stats (World Rate)
       const countries = accumulatedRegions.filter(r => r.parentId === null);
       let worldSum = 0;
       let worldMax = 0;
@@ -180,19 +181,20 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         const s = allScores[padId(country.id)];
         if (s) {
           worldSum += s.totalScore;
-          worldMax += 100;
+          worldMax += 50; // Traveler's max is 50 points per country
         }
       }
       stats.currentChildSum = worldSum;
       stats.currentChildMax = worldMax;
-      stats.currentRankScore = Math.round(worldMax > 0 ? Math.min(100, (worldSum / worldMax) * 100) : 0);
-      stats.currentTotalScore = stats.currentRankScore;
+      stats.totalChildrenCount = countries.length;
+      stats.currentRateScore = Math.round(worldMax > 0 ? Math.min(100, (worldSum / worldMax) * 100) : 0);
+      stats.currentTotalScore = stats.currentRateScore;
     }
 
     // 2. Count visited regions
     for (const r of accumulatedRegions) {
       const s = allScores[padId(r.id)];
-      if (s && s.totalScore > 0) {
+      if (s && s.hasVisit) {
         if (r.admLevel === 0) stats.visitedCountries++;
         else if (r.admLevel === 1) stats.visitedPrefectures++;
         else if (r.admLevel === 2) stats.visitedCities++;
@@ -418,20 +420,20 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
                 <span className="text-[9px] text-slate-400 font-bold mt-0.5 tracking-widest uppercase">{hoveredRegion.iso3 || "REGION"}</span>
               </div>
               <div className="flex gap-4 items-center shrink-0">
+                {hoveredRegion.admLevel < 2 && (
+                  <div className="flex flex-col items-center">
+                    <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">점령률</span>
+                    <span className="text-base font-black leading-none text-orange-400 tabular-nums">
+                      {Math.round(hoveredScore.rateScore)}%
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-col items-center">
-                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">Exp</span>
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">경험치</span>
                   <span className="text-base font-black leading-none text-blue-400 tabular-nums">
                     {Math.round(hoveredScore.directScore)}
                   </span>
                 </div>
-                {hoveredRegion.admLevel < 2 && (
-                  <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Rank</span>
-                    <span className="text-base font-black leading-none text-orange-400 tabular-nums">
-                      {Math.round(hoveredScore.rankScore)}%
-                    </span>
-                  </div>
-                )}
               </div>
             </>
           )}
@@ -502,8 +504,8 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
             <ScoreStatsBar
               stats={contextStats}
               isMobile={true}
-              hideRank={currentRegion?.admLevel === 2}
-              totalChildren={contextStats.currentChildMax / 50}
+              hideRate={currentRegion?.admLevel === 2}
+              totalChildren={contextStats.totalChildrenCount}
               admLevel={currentRegion?.admLevel ?? -1}
             />
           </div>
@@ -536,8 +538,8 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
             <ScoreStatsBar 
               stats={contextStats} 
               isMobile={true} 
-              hideRank={currentRegion?.admLevel === 2}
-              totalChildren={contextStats.currentChildMax / 50}
+              hideRate={currentRegion?.admLevel === 2}
+              totalChildren={contextStats.totalChildrenCount}
               admLevel={currentRegion?.admLevel ?? -1}
             />
           </div>
@@ -554,7 +556,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         )}
 
         <div className="pointer-events-auto">
-          <ScoreLegend isMobile={isMobile} hideRank={currentRegion?.admLevel === 2} />
+          <ScoreLegend isMobile={isMobile} hideRate={currentRegion?.admLevel === 2} />
         </div>
       </div>
 
@@ -587,10 +589,10 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
 
 function ScoreLegend({
   isMobile,
-  hideRank = false,
+  hideRate = false,
 }: {
   isMobile: boolean;
-  hideRank?: boolean;
+  hideRate?: boolean;
 }) {
   const individualSteps = [
     { label: "< 10", color: "#eff6ff" },
@@ -599,7 +601,7 @@ function ScoreLegend({
     { label: "50 - 70", color: "#2563eb" },
     { label: "70+", color: "#1e3a8a" },
   ];
-  const rankSteps = [
+  const rateSteps = [
     { label: "< 10", color: "#ffedd5" },
     { label: "10 - 30", color: "#fdba74" },
     { label: "30 - 50", color: "#f97316" },
@@ -610,29 +612,45 @@ function ScoreLegend({
   if (isMobile) {
     return (
       <div className="bg-white/90 backdrop-blur shadow-lg border border-slate-200 p-2 rounded-xl flex gap-3">
+        {!hideRate && (
+          <>
+            <div className="flex gap-1 items-center">
+              <span className="text-[7px] font-black text-slate-400 uppercase">점령률</span>
+              {rateSteps.map(s => (
+                <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
+              ))}
+            </div>
+            <div className="w-[1px] bg-slate-100" />
+          </>
+        )}
         <div className="flex gap-1 items-center">
-          <span className="text-[7px] font-black text-slate-400 uppercase">Pts</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase">경험치</span>
           {individualSteps.map(s => (
             <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
           ))}
         </div>
-        {!hideRank && (
-          <>
-            <div className="w-[1px] bg-slate-100" />
-            <div className="flex gap-1 items-center">
-              <span className="text-[7px] font-black text-slate-400 uppercase">Rank</span>
-              {rankSteps.map(s => (
-                <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
-              ))}
-            </div>
-          </>
-        )}
       </div>
     );
   }
 
   return (
     <div className="bg-white/90 backdrop-blur-md shadow-2xl border border-slate-200 p-3 rounded-2xl w-32 flex flex-col gap-3">
+      {!hideRate && (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">점령률 (Rate)</span>
+            <div className="flex flex-col gap-1">
+              {rateSteps.map((s) => (
+                <div key={s.label} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-sm shadow-sm" style={{ background: s.color }} />
+                  <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="h-[1px] bg-slate-100" />
+        </>
+      )}
       <div className="flex flex-col gap-1.5">
         <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">경험치 (Exp)</span>
         <div className="flex flex-col gap-1">
@@ -644,22 +662,6 @@ function ScoreLegend({
           ))}
         </div>
       </div>
-      {!hideRank && (
-        <>
-          <div className="h-[1px] bg-slate-100" />
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">랭킹 % (Rank)</span>
-            <div className="flex flex-col gap-1">
-              {rankSteps.map((s) => (
-                <div key={s.label} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-sm shadow-sm" style={{ background: s.color }} />
-                  <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }

@@ -98,16 +98,16 @@ describe("Hierarchy Scoring", () => {
     },
   ];
 
-  it("sums child direct scores and calculates rankScore", () => {
+  it("sums child direct scores and calculates rateScore", () => {
     const visits: RegionVisit[] = [
       { regionId: "child1", category: "transit", count: 1 },
       { regionId: "child2", category: "transit", count: 1 },
     ];
     // Each child: transit=1 => directScore=2, totalScore=2
     // Parent: childSum = 2+2=4. childMax = 2*50=100.
-    // rankScore = (4/100)*100 = 4.
+    // rateScore = (4/100)*100 = 4.
     const score = getRegionScore("parent", visits, regions);
-    expect(score.rankScore).toBe(4);
+    expect(score.rateScore).toBe(4);
     expect(score.scoreType).toBe("orange");
     expect(score.totalScore).toBe(4);
   });
@@ -118,20 +118,20 @@ describe("Hierarchy Scoring", () => {
       { regionId: "child1", category: "visit", count: 1 },
     ];
     // parent: directScore = 2 (transit)
-    // child1: directScore = 5 (visit), rankScore = 0 => totalScore = 5
+    // child1: directScore = 5 (visit), rateScore = 0 => totalScore = 5
     // parent: childSum = 5 + 0 = 5. childMax = 2 * 50 = 100.
-    // rankScore = (5 / 100) * 100 = 5.
-    // Since rankScore > 0, scoreType = orange, totalScore = rankScore = 5.
+    // rateScore = (5 / 100) * 100 = 5.
+    // Since rateScore > 0, scoreType = orange, totalScore = rateScore = 5.
     const score = getRegionScore("parent", visits, regions);
-    expect(score.rankScore).toBe(5);
+    expect(score.rateScore).toBe(5);
     expect(score.directScore).toBe(2);
     expect(score.totalScore).toBe(5);
     expect(score.scoreType).toBe("orange");
   });
 
-  it("returns 0 rankScore for leaf regions", () => {
+  it("returns 0 rateScore for leaf regions", () => {
     const score = getRegionScore("child1", [], regions);
-    expect(score.rankScore).toBe(0);
+    expect(score.rateScore).toBe(0);
     expect(score.scoreType).toBe("blue");
   });
 });

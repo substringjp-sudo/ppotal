@@ -59,14 +59,18 @@ export const RegionTooltip = memo(function RegionTooltip({
   }, [childRegions, scoreMap]);
 
   useEffect(() => {
-    if (region.admLevel === 1 && subRegionStats && subRegionStats.visitedCount > 0) {
+    // Countries always show summary. Prefectures default to summary if they have child visits.
+    if (region.admLevel === 0) {
+      setActiveTab("summary");
+    } else if (region.admLevel === 1 && (score.subRegionStats?.visitedCount || 0) > 0) {
       setActiveTab("summary");
     } else {
       setActiveTab("manual");
     }
-  }, [region.id, subRegionStats?.visitedCount]);
+  }, [region.id, score.subRegionStats?.visitedCount, region.admLevel]);
 
-  const isReadOnly = region.admLevel === 1 && subRegionStats && subRegionStats.visitedCount > 0;
+  const isReadOnly = region.admLevel === 1 && (score.subRegionStats?.visitedCount || 0) > 0;
+
 
   // Calculate position to stay within viewport (Desktop)
   const tooltipWidth = 320;
@@ -150,14 +154,14 @@ export const RegionTooltip = memo(function RegionTooltip({
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-baseline gap-2 flex-wrap">
               <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
-              {(region.admLevel === 1 || region.admLevel === 2) && (
+              {(region.admLevel === 0 || region.admLevel === 1 || region.admLevel === 2) && (
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0">
-                    {Math.round(score.directScore)} pts
+                    경험치 {Math.round(score.directScore)}
                   </span>
-                  {region.admLevel === 1 && score.rankScore > 0 && (
-                    <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0">
-                      Rank {Math.round(score.rankScore)}%
+                  {(region.admLevel === 0 || region.admLevel === 1) && score.rateScore > 0 && (
+                    <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0 shadow-sm">
+                      점령률 {Math.round(score.rateScore)}%
                     </span>
                   )}
                 </div>
@@ -180,7 +184,7 @@ export const RegionTooltip = memo(function RegionTooltip({
           )}
         </div>
 
-        {region.admLevel === 1 && subRegionStats && subRegionStats.visitedCount > 0 && (
+        {region.admLevel === 1 && score.subRegionStats && score.subRegionStats.visitedCount > 0 && (
           <div className="flex items-center justify-between px-5 py-2 border-b border-slate-50 bg-white shrink-0">
             <button 
               onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
@@ -201,15 +205,15 @@ export const RegionTooltip = memo(function RegionTooltip({
         )}
 
         <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6" : "px-5"} ${region.admLevel === 2 ? "pb-2" : "pb-4"}`}>
-          {activeTab === "summary" && subRegionStats && (
+          {(activeTab === "summary" || region.admLevel === 0) && subRegionStats && (
             <div className="pt-4 pb-2">
                <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-100 mb-5">
                   <div className="flex justify-between items-end mb-3">
                     <div>
-                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">랭킹 점수 산출 (Ranking)</p>
+                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">점령률 (Occupation Rate)</p>
                       <div className="flex items-baseline gap-1">
                         <p className="text-2xl font-black tabular-nums text-orange-600">
-                          {Math.round(score.rankScore)}<span className="text-sm ml-0.5">%</span>
+                          {score.rateScore}<span className="text-sm ml-0.5">%</span>
                         </p>
                         <div className="flex items-center gap-1 text-[10px] font-bold text-orange-300 ml-2 bg-white px-2 py-0.5 rounded-full border border-orange-100">
                           <span className="text-orange-500">{Math.round(score.childSum)}</span>
@@ -222,24 +226,39 @@ export const RegionTooltip = memo(function RegionTooltip({
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                        {region.admLevel === 0 ? "하위 지역 방문" : "도시 방문"}
-                      </p>
-                      <p className="text-xs font-bold tabular-nums text-slate-500">
-                        {subRegionStats.visitedCount}<span className="text-[10px] text-slate-400 mx-0.5">/</span>{Math.round(score.childMax / 50)}
-                      </p>
+                    <div className="flex flex-col items-end gap-1">
+                      {score.subRegionStats && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            {region.admLevel === 0 ? "지자체" : "도시"}
+                          </p>
+                          <p className="text-[11px] font-bold tabular-nums text-slate-600">
+                            {score.subRegionStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{score.subRegionStats.totalCount}
+                          </p>
+                        </div>
+                      )}
+                      {region.admLevel === 0 && score.cityStats && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            도시
+                          </p>
+                          <p className="text-[11px] font-bold tabular-nums text-slate-600">
+                            {score.cityStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{score.cityStats.totalCount}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="h-1.5 w-full bg-orange-100/50 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-orange-400 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(251,146,60,0.3)]"
-                      style={{ width: `${score.rankScore}%` }}
+                      style={{ width: `${score.rateScore}%` }}
                     />
                   </div>
                </div>
 
                <div className="grid grid-cols-5 gap-2 mb-6">
+
                  {VISIT_CATEGORY_ORDER.map(cat => {
                    const count = subRegionStats.categoryCounts[cat];
                    const cfg = VISIT_CONFIG[cat];
@@ -279,7 +298,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black text-slate-700 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 transition-colors">{child.name}</span>
                             <span className="text-[9px] font-bold text-slate-400">
-                              {child.admLevel < 2 ? `랭킹 ${child.score!.rankScore} · ` : ""}기본 {child.score!.directScore}
+                              {child.admLevel < 2 ? `점령률 ${child.score!.rateScore}% · ` : ""}기본 {child.score!.directScore}
                             </span>
                           </div>
                           <span className={`text-xs font-black tabular-nums ${child.score!.scoreType === 'orange' ? 'text-orange-500' : 'text-blue-500'}`}>

@@ -11,7 +11,7 @@ interface ScoreStats {
   stay: number;
   residence: number;
   currentTotalScore: number;
-  currentRankScore: number;
+  currentRateScore: number;
   currentDirectScore: number;
   currentChildSum: number;
   currentChildMax: number;
@@ -20,7 +20,7 @@ interface ScoreStats {
 interface ScoreStatsBarProps {
   stats: ScoreStats;
   isMobile: boolean;
-  hideRank?: boolean;
+  hideRate?: boolean;
   totalChildren?: number;
   admLevel?: number;
 }
@@ -28,7 +28,7 @@ interface ScoreStatsBarProps {
 export const ScoreStatsBar = memo(function ScoreStatsBar({ 
   stats, 
   isMobile,
-  hideRank = false,
+  hideRate = false,
   totalChildren,
   admLevel,
 }: ScoreStatsBarProps) {
@@ -45,25 +45,28 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
       ${isMobile ? "" : "bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-full px-6 py-3"}
       flex items-center gap-4 transition-all duration-500 animate-in fade-in slide-in-from-top-4
     `}>
-      {/* Experience & Rank Section */}
+      {/* Experience & Rate Section */}
       <div className="flex items-center gap-3 border-r border-slate-200/60 pr-4 shrink-0">
+        <div className="flex flex-col">
+          <span className="text-[8px] font-black text-orange-500 uppercase tracking-tighter leading-none mb-0.5">점령률</span>
+          {!hideRate && (
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-black text-orange-600 tabular-nums leading-none">
+                {Math.round(stats.currentRateScore)}%
+              </span>
+              <span className="text-[10px] font-medium text-slate-400 tabular-nums leading-none">
+                ({Math.round(stats.currentChildSum)} / {Math.round(stats.currentChildMax)})
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="w-[1px] h-3 bg-slate-200" />
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">Exp</span>
+          <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">경험치</span>
           <span className="text-sm font-black text-blue-600 tabular-nums leading-none">
             {Math.round(stats.currentDirectScore)}
           </span>
         </div>
-        {!hideRank && (
-          <>
-            <div className="w-[1px] h-3 bg-slate-200" />
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Rank</span>
-              <span className="text-sm font-black text-orange-600 tabular-nums leading-none">
-                {Math.round(stats.currentRankScore)}%
-              </span>
-            </div>
-          </>
-        )}
       </div>
 
       {/* Region Count Section */}
@@ -71,10 +74,10 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
         {(admLevel === undefined || admLevel === -1) && (
           <>
             <div className="flex flex-col items-center">
-              <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Countries</span>
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">국가</span>
               <span className="text-sm font-black text-slate-800 tabular-nums leading-none">
                 {stats.visitedCountries}
-                {totalChildren && totalChildren > 0 && (
+                {admLevel === -1 && totalChildren && totalChildren > 0 && (
                   <span className="text-[10px] text-slate-400 ml-1">/ {totalChildren}</span>
                 )}
               </span>
@@ -86,7 +89,7 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
         {(admLevel === undefined || admLevel === -1 || admLevel === 0) && (
           <>
             <div className="flex flex-col items-center">
-              <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Regions</span>
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">지역</span>
               <span className="text-sm font-black text-slate-800 tabular-nums leading-none">
                 {stats.visitedPrefectures}
                 {admLevel === 0 && totalChildren && totalChildren > 0 && (
@@ -99,7 +102,7 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
         )}
 
         <div className="flex flex-col items-center">
-          <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Cities</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">도시</span>
           <span className="text-sm font-black text-slate-800 tabular-nums leading-none">
             {stats.visitedCities}
             {admLevel === 1 && totalChildren && totalChildren > 0 && (
