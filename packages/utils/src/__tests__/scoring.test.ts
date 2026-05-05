@@ -8,9 +8,24 @@ import {
 
 const REGION_ID = "KOR-ADM1-001";
 
+const createMaps = (regions: Region[]) => {
+  const regionMap = new Map<string, Region>();
+  const parentIdMap = new Map<string | null, Region[]>();
+  regions.forEach(r => {
+    regionMap.set(r.id, r);
+    const siblings = parentIdMap.get(r.parentId) || [];
+    siblings.push(r);
+    parentIdMap.set(r.parentId, siblings);
+  });
+  return { regionMap, parentIdMap };
+};
+
+const DEFAULT_REGION: Region = { id: REGION_ID, parentId: null, name: "Test", iso3: "KOR", admLevel: 1 };
+const { regionMap: defaultMap, parentIdMap: defaultParentMap } = createMaps([DEFAULT_REGION]);
+
 describe("getRegionScore", () => {
   it("returns zero score for no visits", () => {
-    const score = getRegionScore(REGION_ID, []);
+    const score = getRegionScore(REGION_ID, [], defaultMap, defaultParentMap);
     expect(score.directScore).toBe(0);
     expect(score.totalScore).toBe(0);
     expect(score.breakdown.transit.directCount).toBe(0);
@@ -21,7 +36,7 @@ describe("getRegionScore", () => {
       { regionId: REGION_ID, category: "transit", count: 1 },
       { regionId: REGION_ID, category: "stay", count: 1 },
     ];
-    const score = getRegionScore(REGION_ID, visits);
+    const score = getRegionScore(REGION_ID, visits, defaultMap, defaultParentMap);
     // transit: 1 * 2 = 2, stay: 1 * 10 = 10 => 12
     expect(score.directScore).toBe(12);
     expect(score.breakdown.transit.points).toBe(2);
@@ -32,7 +47,7 @@ describe("getRegionScore", () => {
     const visits: RegionVisit[] = [
       { regionId: REGION_ID, category: "residence", count: 99 },
     ];
-    const score = getRegionScore(REGION_ID, visits);
+    const score = getRegionScore(REGION_ID, visits, defaultMap, defaultParentMap);
     // residence maxCount=1, pointsPerCount=40
     expect(score.directScore).toBe(40);
     expect(score.breakdown.residence.directCount).toBe(1);
@@ -46,7 +61,7 @@ describe("getRegionScore", () => {
       { regionId: REGION_ID, category: "stay", count: 3 },
       { regionId: REGION_ID, category: "residence", count: 1 },
     ];
-    const score = getRegionScore(REGION_ID, visits);
+    const score = getRegionScore(REGION_ID, visits, defaultMap, defaultParentMap);
     // 5*1 + 5*2 + 3*5 + 3*10 + 1*40 = 5 + 10 + 15 + 30 + 40 = 100
     expect(score.directScore).toBe(100);
   });
@@ -106,7 +121,8 @@ describe("Hierarchy Scoring", () => {
     // Each child: transit=1 => directScore=2, totalScore=2
     // Parent: childSum = 2+2=4. childMax = 2*50=100.
     // rateScore = (4/100)*100 = 4.
-    const score = getRegionScore("parent", visits, regions);
+    const { regionMap, parentIdMap } = createMaps(regions);
+    const score = getRegionScore("parent", visits, regionMap, parentIdMap);
     expect(score.rateScore).toBe(4);
     expect(score.scoreType).toBe("orange");
     expect(score.totalScore).toBe(4);
@@ -122,7 +138,8 @@ describe("Hierarchy Scoring", () => {
     // parent: childSum = 5 + 0 = 5. childMax = 2 * 50 = 100.
     // rateScore = (5 / 100) * 100 = 5.
     // Since rateScore > 0, scoreType = orange, totalScore = rateScore = 5.
-    const score = getRegionScore("parent", visits, regions);
+    const { regionMap, parentIdMap } = createMaps(regions);
+    const score = getRegionScore("parent", visits, regionMap, parentIdMap);
     expect(score.rateScore).toBe(5);
     expect(score.directScore).toBe(2);
     expect(score.totalScore).toBe(5);
@@ -130,7 +147,8 @@ describe("Hierarchy Scoring", () => {
   });
 
   it("returns 0 rateScore for leaf regions", () => {
-    const score = getRegionScore("child1", [], regions);
+    const { regionMap, parentIdMap } = createMaps(regions);
+    const score = getRegionScore("child1", [], regionMap, parentIdMap);
     expect(score.rateScore).toBe(0);
     expect(score.scoreType).toBe("blue");
   });

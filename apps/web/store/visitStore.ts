@@ -12,11 +12,13 @@ import {
 interface VisitStore {
   visits: RegionVisit[];
   scores: Record<string, RegionScore>; // Cache for calculated scores
+  _hasHydrated: boolean;
   upsertVisit: (regionId: string, category: VisitCategory, count: number) => void;
   removeVisit: (regionId: string, category: VisitCategory) => void;
   quickIncrement: (regionId: string) => void;
   getScore: (regionId: string) => RegionScore | undefined;
   recalculateScores: (allRegions: Region[]) => void;
+  setHasHydrated: (val: boolean) => void;
 }
 
 export const useVisitStore = create<VisitStore>()(
@@ -24,6 +26,11 @@ export const useVisitStore = create<VisitStore>()(
     (set, get) => ({
       visits: [],
       scores: {},
+      _hasHydrated: false,
+
+      setHasHydrated(val) {
+        set({ _hasHydrated: val });
+      },
 
       upsertVisit(regionId, category, count) {
         const id = padId(regionId);
@@ -64,9 +71,15 @@ export const useVisitStore = create<VisitStore>()(
         const { visits } = get();
         if (allRegions.length === 0) return;
 
+        const regionMap = new Map<string, Region>();
         const parentIdMap = new Map<string | null, Region[]>();
+        
         for (const r of allRegions) {
+          const id = padId(r.id);
           const pId = padId(r.parentId);
+          
+          regionMap.set(id, r);
+          
           if (!parentIdMap.has(pId)) parentIdMap.set(pId, []);
           parentIdMap.get(pId)!.push(r);
         }
@@ -75,12 +88,9 @@ export const useVisitStore = create<VisitStore>()(
         const scoreMemo = new Map<string, RegionScore>();
         const memo = new Map<string, Record<VisitCategory, number>>();
 
-        // We only need to calculate scores for regions that have visits or are ancestors of visits
-        // and also all regions currently "visible" in the map if we want full coverage.
-        // For simplicity now, let's calculate for all loaded regions.
         for (const r of allRegions) {
           const id = padId(r.id);
-          newScores[id] = getRegionScore(id, visits, allRegions, parentIdMap, memo, scoreMemo);
+          newScores[id] = getRegionScore(id, visits, regionMap, parentIdMap, memo, scoreMemo);
         }
 
         set({ scores: newScores });
@@ -89,6 +99,12 @@ export const useVisitStore = create<VisitStore>()(
     {
       name: "regionevel-visits",
       version: 3,
+      partialize: (state) => ({ visits: state.visits }), // Only persist visits, not derived scores
+      onRehydrateStorage: (state) => {
+        return () => {
+          state?.setHasHydrated(true);
+        };
+      },
       migrate: (persistedState: any, version: number) => {
         const state = persistedState as any;
         

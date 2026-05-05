@@ -45,13 +45,18 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
 
   // Sync accumulatedRegions when initialRegions prop changes (e.g. MapView loads more metadata)
   useEffect(() => {
+    if (initialRegions.length === 0) return;
     setAccumulatedRegions((prev) => {
+      // If we're starting from scratch or initialRegions is significantly different,
+      // it's better to trust the parent's provided regions for the initial view.
       const existingIds = new Set(prev.map((r) => padId(r.id)));
       const newRegions = initialRegions.filter((r) => !existingIds.has(padId(r.id)));
       if (newRegions.length === 0) return prev;
       return [...prev, ...newRegions];
     });
   }, [initialRegions]);
+
+  const { visits, scores: storeScores, quickIncrement, upsertVisit, recalculateScores } = useVisitStore();
 
   // O(1) lookup map for regions
   const regionsByIdMap = useMemo(() => {
@@ -62,16 +67,18 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
     return map;
   }, [accumulatedRegions]);
 
-  const { visits, scores: storeScores, quickIncrement, upsertVisit, recalculateScores } = useVisitStore();
-
+  // Only recalculate if we have regions and visits or if accumulatedRegions changed
   useEffect(() => {
-    recalculateScores(accumulatedRegions);
-  }, [accumulatedRegions, visits, recalculateScores]);
+    if (accumulatedRegions.length > 0) {
+      recalculateScores(accumulatedRegions);
+    }
+  }, [accumulatedRegions.length, visits, recalculateScores]);
 
   const { level, currentId, history, setLevel, setCurrentId, setHistory, drillDown, drillUp } = useMapStore();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
@@ -302,6 +309,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         mouseover: (e) => {
           if (isMobile) return;
           setHoveredId(id);
+          setHoveredFeature(feature);
           if (hoverLabelRef.current) {
             hoverLabelRef.current.style.transform = `translate(${e.originalEvent.clientX + 15}px, ${e.originalEvent.clientY + 15}px)`;
             hoverLabelRef.current.style.opacity = "1";
@@ -316,6 +324,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         mouseout: () => {
           if (isMobile) return;
           setHoveredId(null);
+          setHoveredFeature(null);
           if (hoverLabelRef.current) {
             hoverLabelRef.current.style.opacity = "0";
           }
@@ -413,28 +422,40 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
           }}
           className="bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 min-w-fit"
         >
-          {hoveredRegion && hoveredScore && (
+          {(hoveredFeature || hoveredRegion) && (
             <>
               <div className="flex flex-col pr-3 border-r border-white/10">
-                <span className="text-[12px] font-black leading-tight truncate max-w-[140px] tracking-tight">{hoveredRegion.name}</span>
-                <span className="text-[9px] text-slate-400 font-bold mt-0.5 tracking-widest uppercase">{hoveredRegion.iso3 || "REGION"}</span>
+                <span className="text-[12px] font-black leading-tight truncate max-w-[140px] tracking-tight">
+                  {hoveredRegion?.name || hoveredFeature?.properties?.name || "Unknown"}
+                </span>
+                <span className="text-[9px] text-slate-400 font-bold mt-0.5 tracking-widest uppercase">
+                  {hoveredRegion?.iso3 || hoveredFeature?.properties?.iso_a3 || hoveredFeature?.properties?.iso3 || "REGION"}
+                </span>
               </div>
-              <div className="flex gap-4 items-center shrink-0">
-                {hoveredRegion.admLevel < 2 && (
+              
+              {hoveredScore ? (
+                <div className="flex gap-4 items-center shrink-0">
+                  {hoveredRegion && hoveredRegion.admLevel < 2 && (
+                    <div className="flex flex-col items-center">
+                      <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Occupancy</span>
+                      <span className="text-base font-black leading-none text-orange-400 tabular-nums">
+                        {Math.ceil(hoveredScore.rateScore)}%
+                      </span>
+                    </div>
+                  )}
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Occupancy</span>
-                    <span className="text-base font-black leading-none text-orange-400 tabular-nums">
-                      {Math.ceil(hoveredScore.rateScore)}%
+                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">Exp</span>
+                    <span className="text-base font-black leading-none text-blue-400 tabular-nums">
+                      {Math.round(hoveredScore.directScore)}
                     </span>
                   </div>
-                )}
-                <div className="flex flex-col items-center">
-                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">Exp</span>
-                  <span className="text-base font-black leading-none text-blue-400 tabular-nums">
-                    {Math.round(hoveredScore.directScore)}
-                  </span>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Calculating</span>
+                  <div className="w-3 h-3 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                </div>
+              )}
             </>
           )}
         </div>

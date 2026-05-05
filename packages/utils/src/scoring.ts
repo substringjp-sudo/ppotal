@@ -38,9 +38,8 @@ export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { d
  */
 export function getEffectiveCounts(
   regionId: string,
-  allRegions: Region[],
   allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
-  parentIdMap?: Map<string | null, Region[]>,
+  parentIdMap: Map<string | null, Region[]>,
   memo: Map<string, Record<VisitCategory, number>> = new Map(),
 ): Record<VisitCategory, number> {
   const normalizedId = padId(regionId);
@@ -56,23 +55,16 @@ export function getEffectiveCounts(
     : allVisits.get(normalizedId) || [];
 
   for (const v of directVisits) {
-    // We count direct visits as they are (usually already capped by UI to maxCount)
     counts[v.category] += v.count;
   }
 
-  // 2. Add sums from children
-  const childrenFromRegions = parentIdMap
-    ? parentIdMap.get(normalizedId) || []
-    : allRegions.filter((r) => padId(r.parentId) === normalizedId);
-    
-  // If we have children in the region list, we use them.
-  // If not (partial list), we might need to infer from visits, but usually parentIdMap is provided.
+  // 2. Add sums from children using parentIdMap (O(1) lookup)
+  const childrenFromRegions = parentIdMap.get(normalizedId) || [];
   const allChildIds = new Set(childrenFromRegions.map(r => padId(r.id)));
 
   for (const childId of allChildIds) {
     const childCounts = getEffectiveCounts(
       childId,
-      allRegions,
       allVisits,
       parentIdMap,
       memo,
@@ -89,8 +81,8 @@ export function getEffectiveCounts(
 export function getRegionScore(
   regionId: string,
   allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
-  allRegions: Region[] = [],
-  parentIdMap?: Map<string | null, Region[]>,
+  regionMap: Map<string, Region>,
+  parentIdMap: Map<string | null, Region[]>,
   memo?: Map<string, Record<VisitCategory, number>>,
   scoreMemo?: Map<string, RegionScore>,
 ): RegionScore {
@@ -102,7 +94,6 @@ export function getRegionScore(
   
   const effectiveCounts = getEffectiveCounts(
     normalizedId,
-    allRegions,
     allVisits,
     parentIdMap,
     activeMemo,
@@ -115,16 +106,13 @@ export function getRegionScore(
     
   const { directScore: rawDirectScore, ...directBreakdown } = calculateScore(directVisits);
 
-  // Identify the region
-  const region = allRegions.find(r => padId(r.id) === normalizedId);
+  // Identify the region using regionMap (O(1) lookup)
+  const region = regionMap.get(normalizedId);
   const isCountry = region?.admLevel === 0;
   const isPrefecture = region?.admLevel === 1;
 
-  // Children for aggregation
-  const childrenFromRegions = parentIdMap
-    ? parentIdMap.get(normalizedId) || []
-    : allRegions.filter((r) => padId(r.parentId) === normalizedId);
-  
+  // Children for aggregation (O(1) lookup)
+  const childrenFromRegions = parentIdMap.get(normalizedId) || [];
   const allChildIds = new Set(childrenFromRegions.map(r => padId(r.id)));
   const hasChildren = allChildIds.size > 0;
 
@@ -134,8 +122,6 @@ export function getRegionScore(
       const cfg = VISIT_CONFIG[cat];
       const effectiveCount = effectiveCounts[cat];
       
-      // Rule: For regions with children, we sum descendant counts and then cap at maxCount.
-      // For leaf regions (cities), it's just the direct count (already capped in directBreakdown).
       const pointsCount = hasChildren ? effectiveCount : directBreakdown[cat].directCount;
       const points = Math.min(pointsCount, cfg.maxCount) * cfg.pointsPerCount;
       
@@ -161,7 +147,7 @@ export function getRegionScore(
   let childSum = 0;
   let hasChildVisit = false;
   for (const childId of allChildIds) {
-    const childScore = getRegionScore(childId, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+    const childScore = getRegionScore(childId, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
     childSum += childScore.totalScore;
     if (childScore.hasVisit) hasChildVisit = true;
   }
@@ -182,7 +168,6 @@ export function getRegionScore(
   const scoreType = (isCountry || isPrefecture) ? "orange" : "blue";
   
   // totalScore: for countries/prefectures, we usually prefer rateScore.
-  // If rateScore is 0 but hasDirectVisit, use displayDirectScore.
   let displayTotalScore = (isCountry || isPrefecture) 
     ? (rateScore > 0 ? rateScore : Math.round(displayDirectScore))
     : Math.round(displayDirectScore);
@@ -202,17 +187,15 @@ export function getRegionScore(
     let cityVisited = 0;
     let cityTotal = 0;
 
-    // Direct children of country are municipalities (Prefectures)
     for (const munId of allChildIds) {
       munTotal++;
-      const munScore = getRegionScore(munId, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+      const munScore = getRegionScore(munId, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
       if (munScore.hasVisit) munVisited++;
 
-      // Children of prefectures are cities
-      const munChildren = parentIdMap?.get(padId(munId)) || [];
+      const munChildren = parentIdMap.get(padId(munId)) || [];
       for (const city of munChildren) {
         cityTotal++;
-        const cityScore = getRegionScore(city.id, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+        const cityScore = getRegionScore(city.id, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
         if (cityScore.hasVisit) cityVisited++;
       }
     }
@@ -223,7 +206,7 @@ export function getRegionScore(
     let cityTotal = 0;
     for (const cityId of allChildIds) {
       cityTotal++;
-      const cityScore = getRegionScore(cityId, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+      const cityScore = getRegionScore(cityId, allVisits, regionMap, parentIdMap, activeMemo, activeScoreMemo);
       if (cityScore.hasVisit) cityVisited++;
     }
     subRegionStats = { visitedCount: cityVisited, totalCount: cityTotal };
@@ -240,9 +223,10 @@ export function getRegionScore(
     scoreType,
     hasVisit: totalHasVisit,
     breakdown,
-    subRegionStats,
-    cityStats,
   };
+
+  if (subRegionStats) result.subRegionStats = subRegionStats;
+  if (cityStats) result.cityStats = cityStats;
 
   activeScoreMemo.set(normalizedId, result);
   return result;
