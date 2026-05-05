@@ -60,10 +60,8 @@ export const RegionTooltip = memo(function RegionTooltip({
   useEffect(() => {
     if (region.admLevel === 0) {
       setActiveTab("summary");
-    } else if (region.admLevel === 1) {
-      setActiveTab(childRegions.length > 0 ? "summary" : "manual");
     } else {
-      setActiveTab("manual");
+      setActiveTab(childRegions.length > 0 ? "summary" : "manual");
     }
   }, [region.id, region.admLevel, childRegions.length]);
 
@@ -136,8 +134,8 @@ export const RegionTooltip = memo(function RegionTooltip({
         className={`
           bg-white shadow-2xl overflow-hidden flex flex-col border border-slate-200
           ${isMobile 
-            ? "rounded-t-xl animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh]" 
-            : "w-80 rounded-lg animate-in fade-in zoom-in duration-200"
+            ? "animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh]" 
+            : "w-80 animate-in fade-in zoom-in duration-200"
           }
         `}
       >
@@ -223,16 +221,14 @@ export const RegionTooltip = memo(function RegionTooltip({
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      {score.subRegionStats && (
-                        <div className="flex items-center gap-2">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            {region.admLevel === 0 ? "Regions" : "Cities"}
-                          </p>
-                          <p className="text-[11px] font-bold tabular-nums text-slate-600">
-                            {score.subRegionStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{score.subRegionStats.totalCount}
-                          </p>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          {region.admLevel === 0 ? "Regions" : "Cities"}
+                        </p>
+                        <p className="text-[11px] font-bold tabular-nums text-slate-600">
+                          {subRegionStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{subRegionStats.totalCount}
+                        </p>
+                      </div>
                       {region.admLevel === 0 && score.cityStats && (
                         <div className="flex items-center gap-2">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
@@ -253,14 +249,14 @@ export const RegionTooltip = memo(function RegionTooltip({
                   </div>
                </div>
 
-               <div className="grid grid-cols-5 gap-2 mb-6">
+                <div className="grid grid-cols-5 gap-1.5 mb-5">
 
                  {VISIT_CATEGORY_ORDER.map(cat => {
                    const count = subRegionStats.categoryCounts[cat];
                    const cfg = VISIT_CONFIG[cat];
                    return (
                      <div key={cat} className="flex flex-col items-center">
-                       <div className={`w-full py-2 rounded-xl border ${count > 0 ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50/50 border-slate-100 opacity-40'} flex flex-col items-center transition-all`}>
+                        <div className={`w-full py-1.5 border ${count > 0 ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50/50 border-slate-100 opacity-40'} flex flex-col items-center transition-all`}>
                          <span className="text-xs font-black text-slate-800 tabular-nums">{count}</span>
                          <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{cfg.label.slice(0, 4)}</span>
                        </div>
@@ -409,8 +405,8 @@ export const RegionTooltip = memo(function RegionTooltip({
         {region.admLevel < 2 && (
           <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white border-t border-gray-50" : "px-4 pb-4 pt-2"}`}>
             <button
-              onClick={() => onDrillDown(region.id)}
-              className={`w-full py-4 ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white rounded-xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
+              onClick={() => onDrillDown(padId(region.id))}
+              className={`w-full py-3.5 ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

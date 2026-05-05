@@ -560,7 +560,11 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         )}
 
         <div className="pointer-events-auto">
-          <ScoreLegend isMobile={isMobile} hideRate={currentRegion?.admLevel === 2} />
+          <ScoreLegend 
+            isMobile={isMobile} 
+            hideExp={!currentRegion}
+            hideRate={currentRegion?.admLevel === 1}
+          />
         </div>
       </div>
 
@@ -594,78 +598,86 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
 function ScoreLegend({
   isMobile,
   hideRate = false,
+  hideExp = false,
 }: {
   isMobile: boolean;
   hideRate?: boolean;
+  hideExp?: boolean;
 }) {
+  const numericLabels = ["1~9", "10~29", "30~49", "50~69", "70~100"];
+  
   const individualSteps = [
-    { label: "< 10", color: "#eff6ff" },
-    { label: "10 - 30", color: "#bfdbfe" },
-    { label: "30 - 50", color: "#60a5fa" },
-    { label: "50 - 70", color: "#2563eb" },
-    { label: "70+", color: "#1e3a8a" },
+    { label: numericLabels[0], color: "#eff6ff" },
+    { label: numericLabels[1], color: "#bfdbfe" },
+    { label: numericLabels[2], color: "#60a5fa" },
+    { label: numericLabels[3], color: "#2563eb" },
+    { label: numericLabels[4], color: "#1e3a8a" },
   ];
   const rateSteps = [
-    { label: "< 10", color: "#ffedd5" },
-    { label: "10 - 30", color: "#fdba74" },
-    { label: "30 - 50", color: "#f97316" },
-    { label: "50 - 70", color: "#ea580c" },
-    { label: "70+", color: "#c2410c" },
+    { label: numericLabels[0], color: "#ffedd5" },
+    { label: numericLabels[1], color: "#fdba74" },
+    { label: numericLabels[2], color: "#f97316" },
+    { label: numericLabels[3], color: "#ea580c" },
+    { label: numericLabels[4], color: "#c2410c" },
   ];
 
   if (isMobile) {
     return (
-      <div className="bg-white/90 backdrop-blur shadow-lg border border-slate-200 p-2 rounded-xl flex gap-3">
+      <div className="bg-white/90 backdrop-blur shadow-lg border border-slate-200 p-2 rounded-none flex gap-3">
         {!hideRate && (
           <>
             <div className="flex gap-1 items-center">
               <span className="text-[7px] font-black text-slate-400 uppercase">Rate</span>
               {rateSteps.map(s => (
-                <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
+                <div key={s.label} className="w-2.5 h-2.5" style={{ background: s.color }} />
               ))}
             </div>
-            <div className="w-[1px] bg-slate-100" />
+            {!hideExp && <div className="w-[1px] bg-slate-100" />}
           </>
         )}
-        <div className="flex gap-1 items-center">
-          <span className="text-[7px] font-black text-slate-400 uppercase">Exp</span>
-          {individualSteps.map(s => (
-            <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
-          ))}
-        </div>
+        {!hideExp && (
+          <div className="flex gap-1 items-center">
+            <span className="text-[7px] font-black text-slate-400 uppercase">Exp</span>
+            {individualSteps.map(s => (
+              <div key={s.label} className="w-2.5 h-2.5" style={{ background: s.color }} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-md shadow-2xl border border-slate-200 p-3 rounded-2xl w-32 flex flex-col gap-3">
+    <div className="bg-white/90 backdrop-blur-md shadow-2xl border border-slate-200 p-3 rounded-none w-32 flex flex-col gap-3">
       {!hideRate && (
         <>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Occupancy (Rate)</span>
+            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Rate</span>
             <div className="flex flex-col gap-1">
               {rateSteps.map((s) => (
                 <div key={s.label} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-sm shadow-sm" style={{ background: s.color }} />
+                  <div className="w-2.5 h-2.5 shadow-sm" style={{ background: s.color }} />
                   <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="h-[1px] bg-slate-100" />
+          {!hideExp && <div className="h-[1px] bg-slate-100" /> }
         </>
       )}
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Experience (Exp)</span>
-        <div className="flex flex-col gap-1">
-          {individualSteps.map((s) => (
-            <div key={s.label} className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-sm shadow-sm" style={{ background: s.color }} />
-              <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
-            </div>
-          ))}
+      {!hideExp && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Exp</span>
+          <div className="flex flex-col gap-1">
+            {individualSteps.map((s) => (
+              <div key={s.label} className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 shadow-sm" style={{ background: s.color }} />
+                <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
