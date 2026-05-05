@@ -1,0 +1,1184 @@
+{
+  "iso3": "JPN",
+  "countryName": "Japan",
+  "ourAdm1": 47,
+  "ourAdm2": 1707,
+  "totalOsmAdm2": 1479,
+  "totalMatched": 1401,
+  "totalMissing": 78,
+  "skippedProvinces": 7,
+  "perProvince": [
+    {
+      "province": "Oita",
+      "provinceId": "1499101",
+      "ourCount": 15,
+      "osmCount": 18,
+      "missingCount": 2,
+      "missingCities": [
+        {
+          "name": "Tsukumi",
+          "nameLocal": "津久見市",
+          "osmId": 4004870
+        },
+        {
+          "name": "Himeshima",
+          "nameLocal": "姫島村",
+          "osmId": 4004876
+        }
+      ]
+    },
+    {
+      "province": "Fukui Prefecture",
+      "provinceId": "1501101",
+      "ourCount": 14,
+      "osmCount": 17,
+      "missingCount": 3,
+      "missingCities": [
+        {
+          "name": "Takahama",
+          "nameLocal": "高浜町",
+          "osmId": 4799786
+        },
+        {
+          "name": "Tsuruga",
+          "nameLocal": "敦賀市",
+          "osmId": 4799831
+        },
+        {
+          "name": "Mihama",
+          "nameLocal": "美浜町",
+          "osmId": 4799844
+        }
+      ]
+    },
+    {
+      "province": "Gifu Prefecture",
+      "provinceId": "1504101",
+      "ourCount": 41,
+      "osmCount": 42,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Kasamatsu",
+          "nameLocal": "笠松町",
+          "osmId": 4716644
+        }
+      ]
+    },
+    {
+      "province": "Mie Prefecture",
+      "provinceId": "1505101",
+      "ourCount": 28,
+      "osmCount": 29,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Minamiise",
+          "nameLocal": "南伊勢町",
+          "osmId": 4538785
+        }
+      ]
+    },
+    {
+      "province": "Wakayama Prefecture",
+      "provinceId": "1506101",
+      "ourCount": 29,
+      "osmCount": 30,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Mihama",
+          "nameLocal": "美浜町",
+          "osmId": 3340073
+        }
+      ]
+    },
+    {
+      "province": "Tokyo",
+      "provinceId": "1507101",
+      "ourCount": 59,
+      "osmCount": 62,
+      "missingCount": 3,
+      "missingCities": [
+        {
+          "name": "Kozushima",
+          "nameLocal": "神津島村",
+          "osmId": 3605872
+        },
+        {
+          "name": "Ogasawara",
+          "nameLocal": "小笠原村",
+          "osmId": 4561990
+        },
+        {
+          "name": "Aogashima",
+          "nameLocal": "青ヶ島村",
+          "osmId": 5305021
+        }
+      ]
+    },
+    {
+      "province": "Fukuoka Prefecture",
+      "provinceId": "1508101",
+      "ourCount": 57,
+      "osmCount": 60,
+      "missingCount": 4,
+      "missingCities": [
+        {
+          "name": "Ashiya",
+          "nameLocal": "芦屋町",
+          "osmId": 4008299
+        },
+        {
+          "name": "Miyawaka",
+          "nameLocal": "宮若市",
+          "osmId": 4008317
+        },
+        {
+          "name": "Itoshima",
+          "nameLocal": "糸島市",
+          "osmId": 4008328
+        },
+        {
+          "name": "Fukuoka",
+          "nameLocal": "福岡市",
+          "osmId": 4008611
+        }
+      ]
+    },
+    {
+      "province": "Saitama",
+      "provinceId": "1509101",
+      "ourCount": 43,
+      "osmCount": 63,
+      "missingCount": 19,
+      "missingCities": [
+        {
+          "name": "Ogano",
+          "nameLocal": "小鹿野町",
+          "osmId": 1765989
+        },
+        {
+          "name": "Yokoze",
+          "nameLocal": "横瀬町",
+          "osmId": 1768252
+        },
+        {
+          "name": "Moroyama",
+          "nameLocal": "毛呂山町",
+          "osmId": 1768276
+        },
+        {
+          "name": "Ogose",
+          "nameLocal": "越生町",
+          "osmId": 1768278
+        },
+        {
+          "name": "Matsubushi",
+          "nameLocal": "松伏町",
+          "osmId": 1768401
+        },
+        {
+          "name": "Miyashiro",
+          "nameLocal": "宮代町",
+          "osmId": 1768501
+        },
+        {
+          "name": "Sugito",
+          "nameLocal": "杉戸町",
+          "osmId": 1768503
+        },
+        {
+          "name": "Ina",
+          "nameLocal": "伊奈町",
+          "osmId": 1769174
+        },
+        {
+          "name": "Kawajima",
+          "nameLocal": "川島町",
+          "osmId": 1769177
+        },
+        {
+          "name": "Tokigawa",
+          "nameLocal": "ときがわ町",
+          "osmId": 1769193
+        },
+        {
+          "name": "Ranzan",
+          "nameLocal": "嵐山町",
+          "osmId": 1769194
+        },
+        {
+          "name": "Namegawa",
+          "nameLocal": "滑川町",
+          "osmId": 1769195
+        },
+        {
+          "name": "Hatoyama",
+          "nameLocal": "鳩山町",
+          "osmId": 1769197
+        },
+        {
+          "name": "Yorii",
+          "nameLocal": "寄居町",
+          "osmId": 1769223
+        },
+        {
+          "name": "Ogawa",
+          "nameLocal": "小川町",
+          "osmId": 1769224
+        },
+        {
+          "name": "Higashi-Chichibu",
+          "nameLocal": "東秩父村",
+          "osmId": 1769226
+        },
+        {
+          "name": "Minano",
+          "nameLocal": "皆野町",
+          "osmId": 1769227
+        },
+        {
+          "name": "Kamikawa",
+          "nameLocal": "神川町",
+          "osmId": 1769228
+        },
+        {
+          "name": "Nagatoro",
+          "nameLocal": "長瀞町",
+          "osmId": 1769230
+        }
+      ]
+    },
+    {
+      "province": "Aomori",
+      "provinceId": "1512101",
+      "ourCount": 38,
+      "osmCount": 40,
+      "missingCount": 2,
+      "missingCities": [
+        {
+          "name": "Kazamaura",
+          "nameLocal": "風間浦村",
+          "osmId": 4107186
+        },
+        {
+          "name": "Noheji",
+          "nameLocal": "野辺地町",
+          "osmId": 4107222
+        }
+      ]
+    },
+    {
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101",
+      "ourCount": 36,
+      "osmCount": 43,
+      "missingCount": 6,
+      "missingCities": [
+        {
+          "name": "Satsumasendai",
+          "nameLocal": "薩摩川内市",
+          "osmId": 3962263
+        },
+        {
+          "name": "Mishima",
+          "nameLocal": "三島村",
+          "osmId": 3962377
+        },
+        {
+          "name": "Toshima",
+          "nameLocal": "十島村",
+          "osmId": 3964163
+        },
+        {
+          "name": "Setouchi",
+          "nameLocal": "瀬戸内町",
+          "osmId": 3966184
+        },
+        {
+          "name": "Yoron",
+          "nameLocal": "与論町",
+          "osmId": 3980610
+        },
+        {
+          "name": "Tatsugo",
+          "nameLocal": "龍郷町",
+          "osmId": 3981492
+        }
+      ]
+    },
+    {
+      "province": "Kyoto Prefecture",
+      "provinceId": "1519101",
+      "ourCount": 25,
+      "osmCount": 26,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Miyazu",
+          "nameLocal": "宮津市",
+          "osmId": 356943
+        }
+      ]
+    },
+    {
+      "province": "Chiba",
+      "provinceId": "1520101",
+      "ourCount": 53,
+      "osmCount": 55,
+      "missingCount": 2,
+      "missingCities": [
+        {
+          "name": "Futtsu",
+          "nameLocal": "富津市",
+          "osmId": 2679911
+        },
+        {
+          "name": "Shozokumiteichi",
+          "nameLocal": "所属未定地",
+          "osmId": 2679919
+        }
+      ]
+    },
+    {
+      "province": "Kanagawa",
+      "provinceId": "1522101",
+      "ourCount": 32,
+      "osmCount": 33,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Kawasaki",
+          "nameLocal": "川崎市",
+          "osmId": 2689476
+        }
+      ]
+    },
+    {
+      "province": "Hiroshima",
+      "provinceId": "1523101",
+      "ourCount": 21,
+      "osmCount": 23,
+      "missingCount": 2,
+      "missingCities": [
+        {
+          "name": "Kure",
+          "nameLocal": "呉市",
+          "osmId": 4089279
+        },
+        {
+          "name": "Onomichi",
+          "nameLocal": "尾道市",
+          "osmId": 4090359
+        }
+      ]
+    },
+    {
+      "province": "Niigata",
+      "provinceId": "1526101",
+      "ourCount": 29,
+      "osmCount": 30,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Awashimaura",
+          "nameLocal": "粟島浦村",
+          "osmId": 4817098
+        }
+      ]
+    },
+    {
+      "province": "Aichi Prefecture",
+      "provinceId": "1528101",
+      "ourCount": 54,
+      "osmCount": 54,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Gamagori",
+          "nameLocal": "蒲郡市",
+          "osmId": 4548245
+        }
+      ]
+    },
+    {
+      "province": "Yamanashi",
+      "provinceId": "1529101",
+      "ourCount": 27,
+      "osmCount": 27,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Fujiyoshida",
+          "nameLocal": "富士吉田市",
+          "osmId": 4792100
+        }
+      ]
+    },
+    {
+      "province": "Miyagi",
+      "provinceId": "1530101",
+      "ourCount": 34,
+      "osmCount": 35,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Onagawa",
+          "nameLocal": "女川町",
+          "osmId": 4154484
+        }
+      ]
+    },
+    {
+      "province": "Iwate",
+      "provinceId": "1533101",
+      "ourCount": 27,
+      "osmCount": 33,
+      "missingCount": 6,
+      "missingCities": [
+        {
+          "name": "Fudai",
+          "nameLocal": "普代村",
+          "osmId": 963766
+        },
+        {
+          "name": "Ichinohe",
+          "nameLocal": "一戸町",
+          "osmId": 963771
+        },
+        {
+          "name": "Yamada",
+          "nameLocal": "山田町",
+          "osmId": 963778
+        },
+        {
+          "name": "Kunohe",
+          "nameLocal": "九戸村",
+          "osmId": 963779
+        },
+        {
+          "name": "Rikuzen-Takata",
+          "nameLocal": "陸前高田市",
+          "osmId": 963788
+        },
+        {
+          "name": "Kuzumaki",
+          "nameLocal": "葛巻町",
+          "osmId": 963793
+        }
+      ]
+    },
+    {
+      "province": "Ishikawa Prefecture",
+      "provinceId": "1536101",
+      "ourCount": 18,
+      "osmCount": 19,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Nanao",
+          "nameLocal": "七尾市",
+          "osmId": 4800065
+        }
+      ]
+    },
+    {
+      "province": "Okayama Prefecture",
+      "provinceId": "1537101",
+      "ourCount": 25,
+      "osmCount": 27,
+      "missingCount": 2,
+      "missingCities": [
+        {
+          "name": "Kasaoka",
+          "nameLocal": "笠岡市",
+          "osmId": 3931764
+        },
+        {
+          "name": "Setouchi",
+          "nameLocal": "瀬戸内市",
+          "osmId": 3934848
+        }
+      ]
+    },
+    {
+      "province": "Ehime Prefecture",
+      "provinceId": "1540101",
+      "ourCount": 17,
+      "osmCount": 20,
+      "missingCount": 3,
+      "missingCities": [
+        {
+          "name": "Ainan",
+          "nameLocal": "愛南町",
+          "osmId": 4047596
+        },
+        {
+          "name": "Uwajima",
+          "nameLocal": "宇和島市",
+          "osmId": 4047858
+        },
+        {
+          "name": "Imabari",
+          "nameLocal": "今治市",
+          "osmId": 4048246
+        }
+      ]
+    },
+    {
+      "province": "Kagawa Prefecture",
+      "provinceId": "1541101",
+      "ourCount": 15,
+      "osmCount": 17,
+      "missingCount": 2,
+      "missingCities": [
+        {
+          "name": "Sakaide",
+          "nameLocal": "坂出市",
+          "osmId": 909077
+        },
+        {
+          "name": "Naoshima",
+          "nameLocal": "直島町",
+          "osmId": 4051409
+        }
+      ]
+    },
+    {
+      "province": "Okinawa Prefecture",
+      "provinceId": "1542101",
+      "ourCount": 36,
+      "osmCount": 41,
+      "missingCount": 5,
+      "missingCities": [
+        {
+          "name": "Uruma",
+          "nameLocal": "うるま市",
+          "osmId": 4542217
+        },
+        {
+          "name": "Zamami",
+          "nameLocal": "座間味村",
+          "osmId": 4559178
+        },
+        {
+          "name": "Yonabaru",
+          "nameLocal": "与那原町",
+          "osmId": 4559214
+        },
+        {
+          "name": "Ishigaki",
+          "nameLocal": "石垣市",
+          "osmId": 4559285
+        },
+        {
+          "name": "Kitadaito",
+          "nameLocal": "北大東村",
+          "osmId": 4559471
+        }
+      ]
+    },
+    {
+      "province": "Hokkaido",
+      "provinceId": "1543101",
+      "ourCount": 173,
+      "osmCount": 179,
+      "missingCount": 6,
+      "missingCities": [
+        {
+          "name": "Akkeshi",
+          "nameLocal": "厚岸町",
+          "osmId": 4071241
+        },
+        {
+          "name": "Ishikari",
+          "nameLocal": "石狩市",
+          "osmId": 4085263
+        },
+        {
+          "name": "Tomakomai",
+          "nameLocal": "苫小牧市",
+          "osmId": 4085725
+        },
+        {
+          "name": "Otaru",
+          "nameLocal": "小樽市",
+          "osmId": 4085754
+        },
+        {
+          "name": "Muroran",
+          "nameLocal": "室蘭市",
+          "osmId": 4087735
+        },
+        {
+          "name": "Suttu",
+          "nameLocal": "寿都町",
+          "osmId": 4087874
+        }
+      ]
+    },
+    {
+      "province": "Yamaguchi",
+      "provinceId": "1544101",
+      "ourCount": 18,
+      "osmCount": 19,
+      "missingCount": 1,
+      "missingCities": [
+        {
+          "name": "Yanai",
+          "nameLocal": "柳井市",
+          "osmId": 4084185
+        }
+      ]
+    }
+  ],
+  "missingCities": [
+    {
+      "name": "Tsukumi",
+      "nameLocal": "津久見市",
+      "osmId": 4004870,
+      "province": "Oita",
+      "provinceId": "1499101"
+    },
+    {
+      "name": "Himeshima",
+      "nameLocal": "姫島村",
+      "osmId": 4004876,
+      "province": "Oita",
+      "provinceId": "1499101"
+    },
+    {
+      "name": "Takahama",
+      "nameLocal": "高浜町",
+      "osmId": 4799786,
+      "province": "Fukui Prefecture",
+      "provinceId": "1501101"
+    },
+    {
+      "name": "Tsuruga",
+      "nameLocal": "敦賀市",
+      "osmId": 4799831,
+      "province": "Fukui Prefecture",
+      "provinceId": "1501101"
+    },
+    {
+      "name": "Mihama",
+      "nameLocal": "美浜町",
+      "osmId": 4799844,
+      "province": "Fukui Prefecture",
+      "provinceId": "1501101"
+    },
+    {
+      "name": "Kasamatsu",
+      "nameLocal": "笠松町",
+      "osmId": 4716644,
+      "province": "Gifu Prefecture",
+      "provinceId": "1504101"
+    },
+    {
+      "name": "Minamiise",
+      "nameLocal": "南伊勢町",
+      "osmId": 4538785,
+      "province": "Mie Prefecture",
+      "provinceId": "1505101"
+    },
+    {
+      "name": "Mihama",
+      "nameLocal": "美浜町",
+      "osmId": 3340073,
+      "province": "Wakayama Prefecture",
+      "provinceId": "1506101"
+    },
+    {
+      "name": "Kozushima",
+      "nameLocal": "神津島村",
+      "osmId": 3605872,
+      "province": "Tokyo",
+      "provinceId": "1507101"
+    },
+    {
+      "name": "Ogasawara",
+      "nameLocal": "小笠原村",
+      "osmId": 4561990,
+      "province": "Tokyo",
+      "provinceId": "1507101"
+    },
+    {
+      "name": "Aogashima",
+      "nameLocal": "青ヶ島村",
+      "osmId": 5305021,
+      "province": "Tokyo",
+      "provinceId": "1507101"
+    },
+    {
+      "name": "Ashiya",
+      "nameLocal": "芦屋町",
+      "osmId": 4008299,
+      "province": "Fukuoka Prefecture",
+      "provinceId": "1508101"
+    },
+    {
+      "name": "Miyawaka",
+      "nameLocal": "宮若市",
+      "osmId": 4008317,
+      "province": "Fukuoka Prefecture",
+      "provinceId": "1508101"
+    },
+    {
+      "name": "Itoshima",
+      "nameLocal": "糸島市",
+      "osmId": 4008328,
+      "province": "Fukuoka Prefecture",
+      "provinceId": "1508101"
+    },
+    {
+      "name": "Fukuoka",
+      "nameLocal": "福岡市",
+      "osmId": 4008611,
+      "province": "Fukuoka Prefecture",
+      "provinceId": "1508101"
+    },
+    {
+      "name": "Ogano",
+      "nameLocal": "小鹿野町",
+      "osmId": 1765989,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Yokoze",
+      "nameLocal": "横瀬町",
+      "osmId": 1768252,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Moroyama",
+      "nameLocal": "毛呂山町",
+      "osmId": 1768276,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Ogose",
+      "nameLocal": "越生町",
+      "osmId": 1768278,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Matsubushi",
+      "nameLocal": "松伏町",
+      "osmId": 1768401,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Miyashiro",
+      "nameLocal": "宮代町",
+      "osmId": 1768501,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Sugito",
+      "nameLocal": "杉戸町",
+      "osmId": 1768503,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Ina",
+      "nameLocal": "伊奈町",
+      "osmId": 1769174,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Kawajima",
+      "nameLocal": "川島町",
+      "osmId": 1769177,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Tokigawa",
+      "nameLocal": "ときがわ町",
+      "osmId": 1769193,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Ranzan",
+      "nameLocal": "嵐山町",
+      "osmId": 1769194,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Namegawa",
+      "nameLocal": "滑川町",
+      "osmId": 1769195,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Hatoyama",
+      "nameLocal": "鳩山町",
+      "osmId": 1769197,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Yorii",
+      "nameLocal": "寄居町",
+      "osmId": 1769223,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Ogawa",
+      "nameLocal": "小川町",
+      "osmId": 1769224,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Higashi-Chichibu",
+      "nameLocal": "東秩父村",
+      "osmId": 1769226,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Minano",
+      "nameLocal": "皆野町",
+      "osmId": 1769227,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Kamikawa",
+      "nameLocal": "神川町",
+      "osmId": 1769228,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Nagatoro",
+      "nameLocal": "長瀞町",
+      "osmId": 1769230,
+      "province": "Saitama",
+      "provinceId": "1509101"
+    },
+    {
+      "name": "Kazamaura",
+      "nameLocal": "風間浦村",
+      "osmId": 4107186,
+      "province": "Aomori",
+      "provinceId": "1512101"
+    },
+    {
+      "name": "Noheji",
+      "nameLocal": "野辺地町",
+      "osmId": 4107222,
+      "province": "Aomori",
+      "provinceId": "1512101"
+    },
+    {
+      "name": "Satsumasendai",
+      "nameLocal": "薩摩川内市",
+      "osmId": 3962263,
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101"
+    },
+    {
+      "name": "Mishima",
+      "nameLocal": "三島村",
+      "osmId": 3962377,
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101"
+    },
+    {
+      "name": "Toshima",
+      "nameLocal": "十島村",
+      "osmId": 3964163,
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101"
+    },
+    {
+      "name": "Setouchi",
+      "nameLocal": "瀬戸内町",
+      "osmId": 3966184,
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101"
+    },
+    {
+      "name": "Yoron",
+      "nameLocal": "与論町",
+      "osmId": 3980610,
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101"
+    },
+    {
+      "name": "Tatsugo",
+      "nameLocal": "龍郷町",
+      "osmId": 3981492,
+      "province": "Kagoshima Prefecture",
+      "provinceId": "1517101"
+    },
+    {
+      "name": "Miyazu",
+      "nameLocal": "宮津市",
+      "osmId": 356943,
+      "province": "Kyoto Prefecture",
+      "provinceId": "1519101"
+    },
+    {
+      "name": "Futtsu",
+      "nameLocal": "富津市",
+      "osmId": 2679911,
+      "province": "Chiba",
+      "provinceId": "1520101"
+    },
+    {
+      "name": "Shozokumiteichi",
+      "nameLocal": "所属未定地",
+      "osmId": 2679919,
+      "province": "Chiba",
+      "provinceId": "1520101"
+    },
+    {
+      "name": "Kawasaki",
+      "nameLocal": "川崎市",
+      "osmId": 2689476,
+      "province": "Kanagawa",
+      "provinceId": "1522101"
+    },
+    {
+      "name": "Kure",
+      "nameLocal": "呉市",
+      "osmId": 4089279,
+      "province": "Hiroshima",
+      "provinceId": "1523101"
+    },
+    {
+      "name": "Onomichi",
+      "nameLocal": "尾道市",
+      "osmId": 4090359,
+      "province": "Hiroshima",
+      "provinceId": "1523101"
+    },
+    {
+      "name": "Awashimaura",
+      "nameLocal": "粟島浦村",
+      "osmId": 4817098,
+      "province": "Niigata",
+      "provinceId": "1526101"
+    },
+    {
+      "name": "Gamagori",
+      "nameLocal": "蒲郡市",
+      "osmId": 4548245,
+      "province": "Aichi Prefecture",
+      "provinceId": "1528101"
+    },
+    {
+      "name": "Fujiyoshida",
+      "nameLocal": "富士吉田市",
+      "osmId": 4792100,
+      "province": "Yamanashi",
+      "provinceId": "1529101"
+    },
+    {
+      "name": "Onagawa",
+      "nameLocal": "女川町",
+      "osmId": 4154484,
+      "province": "Miyagi",
+      "provinceId": "1530101"
+    },
+    {
+      "name": "Fudai",
+      "nameLocal": "普代村",
+      "osmId": 963766,
+      "province": "Iwate",
+      "provinceId": "1533101"
+    },
+    {
+      "name": "Ichinohe",
+      "nameLocal": "一戸町",
+      "osmId": 963771,
+      "province": "Iwate",
+      "provinceId": "1533101"
+    },
+    {
+      "name": "Yamada",
+      "nameLocal": "山田町",
+      "osmId": 963778,
+      "province": "Iwate",
+      "provinceId": "1533101"
+    },
+    {
+      "name": "Kunohe",
+      "nameLocal": "九戸村",
+      "osmId": 963779,
+      "province": "Iwate",
+      "provinceId": "1533101"
+    },
+    {
+      "name": "Rikuzen-Takata",
+      "nameLocal": "陸前高田市",
+      "osmId": 963788,
+      "province": "Iwate",
+      "provinceId": "1533101"
+    },
+    {
+      "name": "Kuzumaki",
+      "nameLocal": "葛巻町",
+      "osmId": 963793,
+      "province": "Iwate",
+      "provinceId": "1533101"
+    },
+    {
+      "name": "Nanao",
+      "nameLocal": "七尾市",
+      "osmId": 4800065,
+      "province": "Ishikawa Prefecture",
+      "provinceId": "1536101"
+    },
+    {
+      "name": "Kasaoka",
+      "nameLocal": "笠岡市",
+      "osmId": 3931764,
+      "province": "Okayama Prefecture",
+      "provinceId": "1537101"
+    },
+    {
+      "name": "Setouchi",
+      "nameLocal": "瀬戸内市",
+      "osmId": 3934848,
+      "province": "Okayama Prefecture",
+      "provinceId": "1537101"
+    },
+    {
+      "name": "Ainan",
+      "nameLocal": "愛南町",
+      "osmId": 4047596,
+      "province": "Ehime Prefecture",
+      "provinceId": "1540101"
+    },
+    {
+      "name": "Uwajima",
+      "nameLocal": "宇和島市",
+      "osmId": 4047858,
+      "province": "Ehime Prefecture",
+      "provinceId": "1540101"
+    },
+    {
+      "name": "Imabari",
+      "nameLocal": "今治市",
+      "osmId": 4048246,
+      "province": "Ehime Prefecture",
+      "provinceId": "1540101"
+    },
+    {
+      "name": "Sakaide",
+      "nameLocal": "坂出市",
+      "osmId": 909077,
+      "province": "Kagawa Prefecture",
+      "provinceId": "1541101"
+    },
+    {
+      "name": "Naoshima",
+      "nameLocal": "直島町",
+      "osmId": 4051409,
+      "province": "Kagawa Prefecture",
+      "provinceId": "1541101"
+    },
+    {
+      "name": "Uruma",
+      "nameLocal": "うるま市",
+      "osmId": 4542217,
+      "province": "Okinawa Prefecture",
+      "provinceId": "1542101"
+    },
+    {
+      "name": "Zamami",
+      "nameLocal": "座間味村",
+      "osmId": 4559178,
+      "province": "Okinawa Prefecture",
+      "provinceId": "1542101"
+    },
+    {
+      "name": "Yonabaru",
+      "nameLocal": "与那原町",
+      "osmId": 4559214,
+      "province": "Okinawa Prefecture",
+      "provinceId": "1542101"
+    },
+    {
+      "name": "Ishigaki",
+      "nameLocal": "石垣市",
+      "osmId": 4559285,
+      "province": "Okinawa Prefecture",
+      "provinceId": "1542101"
+    },
+    {
+      "name": "Kitadaito",
+      "nameLocal": "北大東村",
+      "osmId": 4559471,
+      "province": "Okinawa Prefecture",
+      "provinceId": "1542101"
+    },
+    {
+      "name": "Akkeshi",
+      "nameLocal": "厚岸町",
+      "osmId": 4071241,
+      "province": "Hokkaido",
+      "provinceId": "1543101"
+    },
+    {
+      "name": "Ishikari",
+      "nameLocal": "石狩市",
+      "osmId": 4085263,
+      "province": "Hokkaido",
+      "provinceId": "1543101"
+    },
+    {
+      "name": "Tomakomai",
+      "nameLocal": "苫小牧市",
+      "osmId": 4085725,
+      "province": "Hokkaido",
+      "provinceId": "1543101"
+    },
+    {
+      "name": "Otaru",
+      "nameLocal": "小樽市",
+      "osmId": 4085754,
+      "province": "Hokkaido",
+      "provinceId": "1543101"
+    },
+    {
+      "name": "Muroran",
+      "nameLocal": "室蘭市",
+      "osmId": 4087735,
+      "province": "Hokkaido",
+      "provinceId": "1543101"
+    },
+    {
+      "name": "Suttu",
+      "nameLocal": "寿都町",
+      "osmId": 4087874,
+      "province": "Hokkaido",
+      "provinceId": "1543101"
+    },
+    {
+      "name": "Yanai",
+      "nameLocal": "柳井市",
+      "osmId": 4084185,
+      "province": "Yamaguchi",
+      "provinceId": "1544101"
+    }
+  ]
+}

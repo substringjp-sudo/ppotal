@@ -33,7 +33,8 @@ export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { d
     directScore += points;
   }
 
-  return { ...breakdown, directScore };
+  const result: any = { ...breakdown, directScore };
+  return result;
 }
 
 /**
@@ -163,11 +164,12 @@ export function getRegionScore(
     const cfg = VISIT_CONFIG[cat];
     const effectiveCount = effectiveCounts[cat];
     
-    const pointsCount = hasChildren ? effectiveCount : directBreakdown[cat].directCount;
+    const directData = (directBreakdown as any)[cat] || { directCount: 0, points: 0 };
+    const pointsCount = hasChildren ? effectiveCount : directData.directCount;
     const points = Math.min(pointsCount, cfg.maxCount) * cfg.pointsPerCount;
     
     breakdown[cat] = {
-      directCount: directBreakdown[cat].directCount,
+      directCount: directData.directCount,
       effectiveCount,
       points,
     };

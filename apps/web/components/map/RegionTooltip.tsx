@@ -44,7 +44,7 @@ export const RegionTooltip = memo(function RegionTooltip({
         if (s && s.totalScore > 0) {
           visitedCount++;
           VISIT_CATEGORY_ORDER.forEach(cat => {
-            categoryCounts[cat] += s.breakdown[cat].effectiveCount;
+            categoryCounts[cat] += s.breakdown?.[cat]?.effectiveCount || 0;
           });
         }
       });
@@ -337,8 +337,8 @@ export const RegionTooltip = memo(function RegionTooltip({
                   </div>
                   {VISIT_CATEGORY_ORDER.map((cat) => {
                     const cfg = VISIT_CONFIG[cat];
-                    const b = score.breakdown[cat];
-                    // If read-only, use effectiveCount for visualization
+                    const b = score?.breakdown?.[cat] || { directCount: 0, effectiveCount: 0, points: 0 };
+                    const isMaxed = b.directCount >= cfg.maxCount;
                     const displayCount = isReadOnly ? b.effectiveCount : b.directCount;
                     
                     return (
@@ -349,7 +349,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full`}>
-                              {b.points} pts
+                              {b?.points || 0} pts
                             </span>
                           </div>
                         </div>
@@ -370,15 +370,15 @@ export const RegionTooltip = memo(function RegionTooltip({
                           {!isReadOnly && (
                             <div className="flex items-center gap-1 shrink-0">
                               <button
-                                onClick={() => onVisitSet(cat, Math.max(0, b.directCount - 1))}
-                                disabled={b.directCount <= 0}
+                                onClick={() => onVisitSet(cat, Math.max(0, (b?.directCount || 0) - 1))}
+                                disabled={(b?.directCount || 0) <= 0}
                                 className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
                               >
                                 −
                               </button>
                               <button
-                                onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, b.directCount + 1))}
-                                disabled={b.directCount >= cfg.maxCount}
+                                onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, (b?.directCount || 0) + 1))}
+                                disabled={(b?.directCount || 0) >= cfg.maxCount}
                                 className={`w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100 disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
                               >
                                 +

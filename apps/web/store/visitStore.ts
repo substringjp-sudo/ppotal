@@ -210,29 +210,13 @@ export const useVisitStore = create<VisitStore>()(
         // Optimization: Only loop through regions that ARE in the current viewport or are countries.
         for (const r of allRegions) {
           const id = padId(r.id);
-          // Only calculate if it's affected OR it's a country (for global stats)
-          if (affectedIds.has(id) || r.admLevel === 0) {
-            const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
-            newScores[id] = score;
+          const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
+          newScores[id] = score;
 
-            if (score.hasVisit) {
-              if (r.admLevel === 0) stats.visitedCountries++;
-              else if (r.admLevel === 1) stats.visitedPrefectures++;
-              else if (r.admLevel === 2) stats.visitedCities++;
-            }
-          } else {
-            // Provide a default empty score for non-affected regions to keep the Record complete
-            newScores[id] = {
-              regionId: id,
-              directScore: 0,
-              rateScore: 0,
-              childSum: 0,
-              childMax: (r.childrenCount ?? 0) * 50,
-              totalScore: 0,
-              scoreType: r.admLevel < 2 ? "orange" : "blue",
-              hasVisit: false,
-              breakdown: {} as any, // Minimal
-            };
+          if (score.hasVisit) {
+            if (r.admLevel === 0) stats.visitedCountries++;
+            else if (r.admLevel === 1) stats.visitedPrefectures++;
+            else if (r.admLevel === 2) stats.visitedCities++;
           }
         }
 

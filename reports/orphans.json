@@ -1,0 +1,9844 @@
+[
+  {
+    "id": "493310000200",
+    "parentId": "200",
+    "name": "CH-IN",
+    "iso3": "113",
+    "admLevel": 2
+  },
+  {
+    "id": "493350000204",
+    "parentId": "204",
+    "name": "Falkland Islands (UK)",
+    "iso3": "117",
+    "admLevel": 2
+  },
+  {
+    "id": "493410000210",
+    "parentId": "210",
+    "name": "Liancourt Rocks",
+    "iso3": "123",
+    "admLevel": 2
+  },
+  {
+    "id": "493420000211",
+    "parentId": "211",
+    "name": "No Man's Land",
+    "iso3": "124",
+    "admLevel": 2
+  },
+  {
+    "id": "493440000213",
+    "parentId": "213",
+    "name": "Sanafir & Tiran Is.",
+    "iso3": "126",
+    "admLevel": 2
+  },
+  {
+    "id": "000000000000",
+    "parentId": "000",
+    "name": "Deh Bala",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "000330000000",
+    "parentId": "000",
+    "name": "Jaji Maidan",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "000670000000",
+    "parentId": "000",
+    "name": "Khas Kunar",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "000790000000",
+    "parentId": "000",
+    "name": "Sarkani",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "000820000000",
+    "parentId": "000",
+    "name": "Marawara",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "000950000000",
+    "parentId": "000",
+    "name": "Dangam",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "001550000000",
+    "parentId": "000",
+    "name": "Turwo",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "002370000000",
+    "parentId": "000",
+    "name": "Ishkashiem",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003140000000",
+    "parentId": "000",
+    "name": "Bargi Matal",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003610000000",
+    "parentId": "000",
+    "name": "Lal Por",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003630000000",
+    "parentId": "000",
+    "name": "Muhmand Dara",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003800000000",
+    "parentId": "000",
+    "name": "Dur Baba",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003830000000",
+    "parentId": "000",
+    "name": "Nazyan",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003850000000",
+    "parentId": "000",
+    "name": "Acheen",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003860000000",
+    "parentId": "000",
+    "name": "Dashti Qala",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "003950000000",
+    "parentId": "000",
+    "name": "Qarqin",
+    "iso3": "AFG",
+    "admLevel": 2
+  },
+  {
+    "id": "045960000009",
+    "parentId": "009",
+    "name": "Luau",
+    "iso3": "AGO",
+    "admLevel": 2
+  },
+  {
+    "id": "006160000002",
+    "parentId": "002",
+    "name": "Has",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "006180000002",
+    "parentId": "002",
+    "name": "Lezhë",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "006220000002",
+    "parentId": "002",
+    "name": "Kurbin",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "006320000002",
+    "parentId": "002",
+    "name": "Lushnjë",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "006420000002",
+    "parentId": "002",
+    "name": "Kolonjë",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "006460000002",
+    "parentId": "002",
+    "name": "Gjirokastër",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "006490000002",
+    "parentId": "002",
+    "name": "Vlorë",
+    "iso3": "ALB",
+    "admLevel": 2
+  },
+  {
+    "id": "465440000189",
+    "parentId": "189",
+    "name": "Abu Dhabi",
+    "iso3": "ARE",
+    "admLevel": 2
+  },
+  {
+    "id": "465500000189",
+    "parentId": "189",
+    "name": "Umm al-Quwain",
+    "iso3": "ARE",
+    "admLevel": 2
+  },
+  {
+    "id": "039850000007",
+    "parentId": "007",
+    "name": "Berazategui",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "040260000007",
+    "parentId": "007",
+    "name": "Río Grande",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "040350000007",
+    "parentId": "007",
+    "name": "Ramón Lista",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "040540000007",
+    "parentId": "007",
+    "name": "Río Senguer",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "040810000007",
+    "parentId": "007",
+    "name": "La Plata",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "040880000007",
+    "parentId": "007",
+    "name": "Lago Buenos Aires",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "042530000007",
+    "parentId": "007",
+    "name": "Escalante",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "042720000007",
+    "parentId": "007",
+    "name": "Comuna 1",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "042750000007",
+    "parentId": "007",
+    "name": "Comuna 14",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043060000007",
+    "parentId": "007",
+    "name": "Comuna 2",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043400000007",
+    "parentId": "007",
+    "name": "Comuna 3",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043430000007",
+    "parentId": "007",
+    "name": "San Antonio",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043440000007",
+    "parentId": "007",
+    "name": "Rawson",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043450000007",
+    "parentId": "007",
+    "name": "Ensenada",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043480000007",
+    "parentId": "007",
+    "name": "Berisso",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043620000007",
+    "parentId": "007",
+    "name": "General Manuel Belgrano",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043740000007",
+    "parentId": "007",
+    "name": "Comuna 4",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "043860000007",
+    "parentId": "007",
+    "name": "Magallanes",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "044080000007",
+    "parentId": "007",
+    "name": "Villarino",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "044210000007",
+    "parentId": "007",
+    "name": "Ushuaia",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "044330000007",
+    "parentId": "007",
+    "name": "Avellaneda",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "044350000007",
+    "parentId": "007",
+    "name": "Monte Hermoso",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "044390000007",
+    "parentId": "007",
+    "name": "Quilmes",
+    "iso3": "ARG",
+    "admLevel": 2
+  },
+  {
+    "id": "039350000006",
+    "parentId": "006",
+    "name": "Saint Paul",
+    "iso3": "ATG",
+    "admLevel": 2
+  },
+  {
+    "id": "050150000012",
+    "parentId": "012",
+    "name": "Bayside (NSW)",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "050320000012",
+    "parentId": "012",
+    "name": "Canada Bay",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "050940000012",
+    "parentId": "012",
+    "name": "Newcastle",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "051030000012",
+    "parentId": "012",
+    "name": "Port Stephens",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "051360000012",
+    "parentId": "012",
+    "name": "Woollahra",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "051970000012",
+    "parentId": "012",
+    "name": "Port Phillip",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "051990000012",
+    "parentId": "012",
+    "name": "Queenscliffe",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "052330000012",
+    "parentId": "012",
+    "name": "Cassowary Coast",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "052660000012",
+    "parentId": "012",
+    "name": "Mornington",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "052770000012",
+    "parentId": "012",
+    "name": "Redland",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "052880000012",
+    "parentId": "012",
+    "name": "Torres Strait Island",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "052960000012",
+    "parentId": "012",
+    "name": "Yarrabah",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "053070000012",
+    "parentId": "012",
+    "name": "Ceduna",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "053230000012",
+    "parentId": "012",
+    "name": "Kingston (SA)",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "053430000012",
+    "parentId": "012",
+    "name": "Port Augusta",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "053630000012",
+    "parentId": "012",
+    "name": "Whyalla",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "053660000012",
+    "parentId": "012",
+    "name": "Yorke Peninsula",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "053950000012",
+    "parentId": "012",
+    "name": "Cocos Islands",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "054130000012",
+    "parentId": "012",
+    "name": "Dundas",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "054430000012",
+    "parentId": "012",
+    "name": "Mandurah",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "054690000012",
+    "parentId": "012",
+    "name": "Perth",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "054750000012",
+    "parentId": "012",
+    "name": "Rockingham",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "054780000012",
+    "parentId": "012",
+    "name": "Shark Bay",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "055190000012",
+    "parentId": "012",
+    "name": "Glamorgan-Spring Bay",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "055250000012",
+    "parentId": "012",
+    "name": "Kingborough",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "055480000012",
+    "parentId": "012",
+    "name": "Roper Gulf",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "055560000012",
+    "parentId": "012",
+    "name": "Unincorp. Other Territories",
+    "iso3": "AUS",
+    "admLevel": 2
+  },
+  {
+    "id": "055730000013",
+    "parentId": "013",
+    "name": "Gmünd",
+    "iso3": "AUT",
+    "admLevel": 2
+  },
+  {
+    "id": "056590000014",
+    "parentId": "014",
+    "name": "Baku City",
+    "iso3": "AZE",
+    "admLevel": 2
+  },
+  {
+    "id": "056780000014",
+    "parentId": "014",
+    "name": "Lankaran District",
+    "iso3": "AZE",
+    "admLevel": 2
+  },
+  {
+    "id": "057050000014",
+    "parentId": "014",
+    "name": "Kalbajar District",
+    "iso3": "AZE",
+    "admLevel": 2
+  },
+  {
+    "id": "057130000014",
+    "parentId": "014",
+    "name": "Qazakh District",
+    "iso3": "AZE",
+    "admLevel": 2
+  },
+  {
+    "id": "057190000014",
+    "parentId": "014",
+    "name": "Jabrayil District",
+    "iso3": "AZE",
+    "admLevel": 2
+  },
+  {
+    "id": "142690000035",
+    "parentId": "035",
+    "name": "Nyamurenza",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142720000035",
+    "parentId": "035",
+    "name": "Kabarore",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142730000035",
+    "parentId": "035",
+    "name": "Bukinanyan",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142810000035",
+    "parentId": "035",
+    "name": "Mabanda",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142820000035",
+    "parentId": "035",
+    "name": "Giharo",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142830000035",
+    "parentId": "035",
+    "name": "Kinyinya",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142900000035",
+    "parentId": "035",
+    "name": "Muyinga",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "142950000035",
+    "parentId": "035",
+    "name": "Kayogoro",
+    "iso3": "BDI",
+    "admLevel": 2
+  },
+  {
+    "id": "484200000195",
+    "parentId": "195",
+    "name": "Aplahoue",
+    "iso3": "BEN",
+    "admLevel": 2
+  },
+  {
+    "id": "484300000195",
+    "parentId": "195",
+    "name": "Boukombe",
+    "iso3": "BEN",
+    "admLevel": 2
+  },
+  {
+    "id": "484450000195",
+    "parentId": "195",
+    "name": "Ifangni",
+    "iso3": "BEN",
+    "admLevel": 2
+  },
+  {
+    "id": "484460000195",
+    "parentId": "195",
+    "name": "Kalale",
+    "iso3": "BEN",
+    "admLevel": 2
+  },
+  {
+    "id": "484650000195",
+    "parentId": "195",
+    "name": "Pobe",
+    "iso3": "BEN",
+    "admLevel": 2
+  },
+  {
+    "id": "484740000195",
+    "parentId": "195",
+    "name": "Tchaourou",
+    "iso3": "BEN",
+    "admLevel": 2
+  },
+  {
+    "id": "141840000034",
+    "parentId": "034",
+    "name": "Banwa",
+    "iso3": "BFA",
+    "admLevel": 2
+  },
+  {
+    "id": "475850000192",
+    "parentId": "192",
+    "name": "Noakhali",
+    "iso3": "BGD",
+    "admLevel": 2
+  },
+  {
+    "id": "475880000192",
+    "parentId": "192",
+    "name": "Patuakhali",
+    "iso3": "BGD",
+    "admLevel": 2
+  },
+  {
+    "id": "138780000033",
+    "parentId": "033",
+    "name": "General Toshevo",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "138850000033",
+    "parentId": "033",
+    "name": "Varna",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "138910000033",
+    "parentId": "033",
+    "name": "Tutrakan",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139280000033",
+    "parentId": "033",
+    "name": "Primorsko",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139570000033",
+    "parentId": "033",
+    "name": "Vidin",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139600000033",
+    "parentId": "033",
+    "name": "Makresh",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139610000033",
+    "parentId": "033",
+    "name": "Belogradchik",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139620000033",
+    "parentId": "033",
+    "name": "Chuprene",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139650000033",
+    "parentId": "033",
+    "name": "Svilengrad",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "139850000033",
+    "parentId": "033",
+    "name": "Svishtov",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140250000033",
+    "parentId": "033",
+    "name": "Treklyano",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140270000033",
+    "parentId": "033",
+    "name": "Godech",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140330000033",
+    "parentId": "033",
+    "name": "Rudozem",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140360000033",
+    "parentId": "033",
+    "name": "Zlatograd",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140440000033",
+    "parentId": "033",
+    "name": "Lyubimets",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140730000033",
+    "parentId": "033",
+    "name": "Hadzhidimovo",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140750000033",
+    "parentId": "033",
+    "name": "Satovcha",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "140890000033",
+    "parentId": "033",
+    "name": "Nevestino",
+    "iso3": "BGR",
+    "admLevel": 2
+  },
+  {
+    "id": "463250000186",
+    "parentId": "186",
+    "name": "Southern Governorate",
+    "iso3": "BHR",
+    "admLevel": 2
+  },
+  {
+    "id": "463260000186",
+    "parentId": "186",
+    "name": "Capital Governorate",
+    "iso3": "BHR",
+    "admLevel": 2
+  },
+  {
+    "id": "057300000015",
+    "parentId": "015",
+    "name": "Green Turtle Cay",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057310000015",
+    "parentId": "015",
+    "name": "West Grand Bahama",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057330000015",
+    "parentId": "015",
+    "name": "Spanish Wells",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057380000015",
+    "parentId": "015",
+    "name": "Ragged Island",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057410000015",
+    "parentId": "015",
+    "name": "North Abaco",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057450000015",
+    "parentId": "015",
+    "name": "Long Island",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057460000015",
+    "parentId": "015",
+    "name": "Hope Town",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057470000015",
+    "parentId": "015",
+    "name": "Grand Cay",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057490000015",
+    "parentId": "015",
+    "name": "Exuma",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057510000015",
+    "parentId": "015",
+    "name": "Central Eleuthera",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057520000015",
+    "parentId": "015",
+    "name": "Central Andros",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057540000015",
+    "parentId": "015",
+    "name": "Cat Island",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057580000015",
+    "parentId": "015",
+    "name": "Crooked Island and Long Cay",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057590000015",
+    "parentId": "015",
+    "name": "Mayaguana",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057600000015",
+    "parentId": "015",
+    "name": "Inagua",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "057610000015",
+    "parentId": "015",
+    "name": "Acklins",
+    "iso3": "BHS",
+    "admLevel": 2
+  },
+  {
+    "id": "062490000022",
+    "parentId": "022",
+    "name": "Brcko District",
+    "iso3": "BIH",
+    "admLevel": 2
+  },
+  {
+    "id": "062500000022",
+    "parentId": "022",
+    "name": "Posavina Canton",
+    "iso3": "BIH",
+    "admLevel": 2
+  },
+  {
+    "id": "057760000017",
+    "parentId": "017",
+    "name": "Brest",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "057930000017",
+    "parentId": "017",
+    "name": "Byerastavitsa",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "057960000017",
+    "parentId": "017",
+    "name": "Lyelchytsy",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "058120000017",
+    "parentId": "017",
+    "name": "Yelʹsk",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "058160000017",
+    "parentId": "017",
+    "name": "Stolin",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "058330000017",
+    "parentId": "017",
+    "name": "Krasnapolle",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "058610000017",
+    "parentId": "017",
+    "name": "Pastavy",
+    "iso3": "BLR",
+    "admLevel": 2
+  },
+  {
+    "id": "059030000019",
+    "parentId": "019",
+    "name": "Orange Walk South",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059200000019",
+    "parentId": "019",
+    "name": "Freetown",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059210000019",
+    "parentId": "019",
+    "name": "Port Loyola",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059220000019",
+    "parentId": "019",
+    "name": "Lake Independence",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059230000019",
+    "parentId": "019",
+    "name": "Fort George",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059240000019",
+    "parentId": "019",
+    "name": "Albert",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059250000019",
+    "parentId": "019",
+    "name": "Queen Square",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059260000019",
+    "parentId": "019",
+    "name": "Mesopotamia",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059270000019",
+    "parentId": "019",
+    "name": "Freetown",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059280000019",
+    "parentId": "019",
+    "name": "Pickstock",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059290000019",
+    "parentId": "019",
+    "name": "Caribbean Shores",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059300000019",
+    "parentId": "019",
+    "name": "Collet",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059310000019",
+    "parentId": "019",
+    "name": "Belize Rural North",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "059320000019",
+    "parentId": "019",
+    "name": "Belize Rural North",
+    "iso3": "BLZ",
+    "admLevel": 2
+  },
+  {
+    "id": "061430000021",
+    "parentId": "021",
+    "name": "Angel Sandoval",
+    "iso3": "BOL",
+    "admLevel": 2
+  },
+  {
+    "id": "061460000021",
+    "parentId": "021",
+    "name": "Arce",
+    "iso3": "BOL",
+    "admLevel": 2
+  },
+  {
+    "id": "061790000021",
+    "parentId": "021",
+    "name": "Gran Chaco",
+    "iso3": "BOL",
+    "admLevel": 2
+  },
+  {
+    "id": "062080000021",
+    "parentId": "021",
+    "name": "Nicolás Suárez",
+    "iso3": "BOL",
+    "admLevel": 2
+  },
+  {
+    "id": "079000000027",
+    "parentId": "027",
+    "name": "Acrelândia",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "079120000027",
+    "parentId": "027",
+    "name": "Plácido de Castro",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "079160000027",
+    "parentId": "027",
+    "name": "Santa Rosa do Purus",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "079870000027",
+    "parentId": "027",
+    "name": "Bonfim",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "079910000027",
+    "parentId": "027",
+    "name": "Iracema",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "079940000027",
+    "parentId": "027",
+    "name": "Pacaraima",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080020000027",
+    "parentId": "027",
+    "name": "Afuá",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080170000027",
+    "parentId": "027",
+    "name": "Belém",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080300000027",
+    "parentId": "027",
+    "name": "Cametá",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080430000027",
+    "parentId": "027",
+    "name": "Curuçá",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080650000027",
+    "parentId": "027",
+    "name": "Maracanã",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080660000027",
+    "parentId": "027",
+    "name": "Marapanim",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "080980000027",
+    "parentId": "027",
+    "name": "Quatipuru",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "081030000027",
+    "parentId": "027",
+    "name": "Salinópolis",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "081150000027",
+    "parentId": "027",
+    "name": "São Caetano de Odivelas",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "081220000027",
+    "parentId": "027",
+    "name": "São João de Pirabas",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "081400000027",
+    "parentId": "027",
+    "name": "Viseu",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083110000027",
+    "parentId": "027",
+    "name": "Apicum-Açu",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083130000027",
+    "parentId": "027",
+    "name": "Araioses",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083180000027",
+    "parentId": "027",
+    "name": "Bacabeira",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083240000027",
+    "parentId": "027",
+    "name": "Barreirinhas",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083480000027",
+    "parentId": "027",
+    "name": "Carutapera",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083500000027",
+    "parentId": "027",
+    "name": "Cedral",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083610000027",
+    "parentId": "027",
+    "name": "Cururupu",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083830000027",
+    "parentId": "027",
+    "name": "Humberto de Campos",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "083840000027",
+    "parentId": "027",
+    "name": "Icatu",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "084270000027",
+    "parentId": "027",
+    "name": "Paço do Lumiar",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "084460000027",
+    "parentId": "027",
+    "name": "Porto Rico do Maranhão",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "084530000027",
+    "parentId": "027",
+    "name": "Raposa",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "084660000027",
+    "parentId": "027",
+    "name": "Santo Amaro do Maranhão",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "085070000027",
+    "parentId": "027",
+    "name": "Tutóia",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "085550000027",
+    "parentId": "027",
+    "name": "Cajueiro da Praia",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "086080000027",
+    "parentId": "027",
+    "name": "Ilha Grande",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "086330000027",
+    "parentId": "027",
+    "name": "Luís Correia",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "086650000027",
+    "parentId": "027",
+    "name": "Parnaíba",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087410000027",
+    "parentId": "027",
+    "name": "Acaraú",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087470000027",
+    "parentId": "027",
+    "name": "Amontada",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087500000027",
+    "parentId": "027",
+    "name": "Aquiraz",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087640000027",
+    "parentId": "027",
+    "name": "Barroquinha",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087700000027",
+    "parentId": "027",
+    "name": "Camocim",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087820000027",
+    "parentId": "027",
+    "name": "Caucaia",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087910000027",
+    "parentId": "027",
+    "name": "Cruz",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "087970000027",
+    "parentId": "027",
+    "name": "Fortaleza",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "088130000027",
+    "parentId": "027",
+    "name": "Icapuí",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "088280000027",
+    "parentId": "027",
+    "name": "Itarema",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "088360000027",
+    "parentId": "027",
+    "name": "Jijoca de Jericoacoara",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "088710000027",
+    "parentId": "027",
+    "name": "Paracuru",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "088720000027",
+    "parentId": "027",
+    "name": "Paraipaba",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "089130000027",
+    "parentId": "027",
+    "name": "Trairi",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "089330000027",
+    "parentId": "027",
+    "name": "Areia Branca",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "089680000027",
+    "parentId": "027",
+    "name": "Galinhos",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "089720000027",
+    "parentId": "027",
+    "name": "Guamaré",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "090010000027",
+    "parentId": "027",
+    "name": "Macau",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "090260000027",
+    "parentId": "027",
+    "name": "Pedra Grande",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "090340000027",
+    "parentId": "027",
+    "name": "Porto do Mangue",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "090490000027",
+    "parentId": "027",
+    "name": "São Bento do Norte",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "090660000027",
+    "parentId": "027",
+    "name": "Senador Georgino Avelino",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "093730000027",
+    "parentId": "027",
+    "name": "Fernando de Noronha",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "095820000027",
+    "parentId": "027",
+    "name": "Santa Luzia do Norte",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "096630000027",
+    "parentId": "027",
+    "name": "Santa Rosa de Lima",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "099240000027",
+    "parentId": "027",
+    "name": "Maraú",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "110220000027",
+    "parentId": "027",
+    "name": "Vitória",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "110230000027",
+    "parentId": "027",
+    "name": "Angra dos Reis",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "110270000027",
+    "parentId": "027",
+    "name": "Armação dos Búzios",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "110620000027",
+    "parentId": "027",
+    "name": "Mangaratiba",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "110750000027",
+    "parentId": "027",
+    "name": "Paraty",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "110960000027",
+    "parentId": "027",
+    "name": "São João da Barra",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "112270000027",
+    "parentId": "027",
+    "name": "Cananéia",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "115380000027",
+    "parentId": "027",
+    "name": "Peruíbe",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "116570000027",
+    "parentId": "027",
+    "name": "Santos",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "120120000027",
+    "parentId": "027",
+    "name": "Paranaguá",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "121850000027",
+    "parentId": "027",
+    "name": "Balneário Camboriú",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "121860000027",
+    "parentId": "027",
+    "name": "Balneário Barra do Sul",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "121900000027",
+    "parentId": "027",
+    "name": "Barra Velha",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "121920000027",
+    "parentId": "027",
+    "name": "Belmonte",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "121970000027",
+    "parentId": "027",
+    "name": "Bombinhas",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "122520000027",
+    "parentId": "027",
+    "name": "Garopaba",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "122550000027",
+    "parentId": "027",
+    "name": "Governador Celso Ramos",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "122700000027",
+    "parentId": "027",
+    "name": "Imbituba",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "122850000027",
+    "parentId": "027",
+    "name": "Itapema",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "122870000027",
+    "parentId": "027",
+    "name": "Itapoá",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123000000027",
+    "parentId": "027",
+    "name": "Laguna",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123270000027",
+    "parentId": "027",
+    "name": "Navegantes",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123440000027",
+    "parentId": "027",
+    "name": "Paraíso",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123490000027",
+    "parentId": "027",
+    "name": "Penha",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123510000027",
+    "parentId": "027",
+    "name": "Pescaria Brava",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123530000027",
+    "parentId": "027",
+    "name": "Balneário Piçarras",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "123620000027",
+    "parentId": "027",
+    "name": "Porto Belo",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "124530000027",
+    "parentId": "027",
+    "name": "Balneário Rincão",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "124750000027",
+    "parentId": "027",
+    "name": "Arroio do Sal",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "124840000027",
+    "parentId": "027",
+    "name": "Balneário Pinhal",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "125360000027",
+    "parentId": "027",
+    "name": "Capão da Canoa",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "128480000027",
+    "parentId": "027",
+    "name": "São José do Norte",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "128940000027",
+    "parentId": "027",
+    "name": "Tapes",
+    "iso3": "BRA",
+    "admLevel": 2
+  },
+  {
+    "id": "138400000032",
+    "parentId": "032",
+    "name": "Labi",
+    "iso3": "BRN",
+    "admLevel": 2
+  },
+  {
+    "id": "138470000032",
+    "parentId": "032",
+    "name": "Rambai",
+    "iso3": "BRN",
+    "admLevel": 2
+  },
+  {
+    "id": "138510000032",
+    "parentId": "032",
+    "name": "Kiudang",
+    "iso3": "BRN",
+    "admLevel": 2
+  },
+  {
+    "id": "138580000032",
+    "parentId": "032",
+    "name": "Kota Batu",
+    "iso3": "BRN",
+    "admLevel": 2
+  },
+  {
+    "id": "138700000032",
+    "parentId": "032",
+    "name": "Bangar",
+    "iso3": "BRN",
+    "admLevel": 2
+  },
+  {
+    "id": "138730000032",
+    "parentId": "032",
+    "name": "Bunkok",
+    "iso3": "BRN",
+    "admLevel": 2
+  },
+  {
+    "id": "059650000020",
+    "parentId": "020",
+    "name": "Dala",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "060280000020",
+    "parentId": "020",
+    "name": "Kurtoe",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "060980000020",
+    "parentId": "020",
+    "name": "Sipsu",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "060990000020",
+    "parentId": "020",
+    "name": "Soe",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "061110000020",
+    "parentId": "020",
+    "name": "Toetsho",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "061330000020",
+    "parentId": "020",
+    "name": "Yalang",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "061350000020",
+    "parentId": "020",
+    "name": "Yoeseltse",
+    "iso3": "BTN",
+    "admLevel": 2
+  },
+  {
+    "id": "062720000023",
+    "parentId": "023",
+    "name": "Gemsbok",
+    "iso3": "BWA",
+    "admLevel": 2
+  },
+  {
+    "id": "062740000023",
+    "parentId": "023",
+    "name": "Tshabong",
+    "iso3": "BWA",
+    "admLevel": 2
+  },
+  {
+    "id": "062800000023",
+    "parentId": "023",
+    "name": "Masungu",
+    "iso3": "BWA",
+    "admLevel": 2
+  },
+  {
+    "id": "062820000023",
+    "parentId": "023",
+    "name": "Ngamiland East",
+    "iso3": "BWA",
+    "admLevel": 2
+  },
+  {
+    "id": "154970000044",
+    "parentId": "044",
+    "name": "Obo",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155020000044",
+    "parentId": "044",
+    "name": "Ouango",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155070000044",
+    "parentId": "044",
+    "name": "Satéma",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155280000044",
+    "parentId": "044",
+    "name": "Mongoumba",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155340000044",
+    "parentId": "044",
+    "name": "Dédé-Mokouba",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155350000044",
+    "parentId": "044",
+    "name": "Gamboula",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155370000044",
+    "parentId": "044",
+    "name": "Baboua",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "155670000044",
+    "parentId": "044",
+    "name": "Bimbo",
+    "iso3": "CAF",
+    "admLevel": 2
+  },
+  {
+    "id": "145920000039",
+    "parentId": "039",
+    "name": "South Coast--Burin Peninsula *",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "145960000039",
+    "parentId": "039",
+    "name": "Cape Breton",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "146000000039",
+    "parentId": "039",
+    "name": "Halifax",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "146020000039",
+    "parentId": "039",
+    "name": "Moncton--Richibucto",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "146050000039",
+    "parentId": "039",
+    "name": "Edmundston--Woodstock",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "146560000039",
+    "parentId": "039",
+    "name": "Vancouver Island and Coast / *",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "146660000039",
+    "parentId": "039",
+    "name": "Nunavut",
+    "iso3": "CAN",
+    "admLevel": 2
+  },
+  {
+    "id": "419190000166",
+    "parentId": "166",
+    "name": "Prättigau/Davos",
+    "iso3": "CHE",
+    "admLevel": 2
+  },
+  {
+    "id": "419310000166",
+    "parentId": "166",
+    "name": "Le Locle",
+    "iso3": "CHE",
+    "admLevel": 2
+  },
+  {
+    "id": "419920000166",
+    "parentId": "166",
+    "name": "Monthey",
+    "iso3": "CHE",
+    "admLevel": 2
+  },
+  {
+    "id": "156500000046",
+    "parentId": "046",
+    "name": "Provincia de Capitán Prat",
+    "iso3": "CHL",
+    "admLevel": 2
+  },
+  {
+    "id": "156650000046",
+    "parentId": "046",
+    "name": "Provincia de Valparaíso",
+    "iso3": "CHL",
+    "admLevel": 2
+  },
+  {
+    "id": "156720000046",
+    "parentId": "046",
+    "name": "Provincia de Llanquihue",
+    "iso3": "CHL",
+    "admLevel": 2
+  },
+  {
+    "id": "156730000046",
+    "parentId": "046",
+    "name": "Provincia de la Antártica Chilena",
+    "iso3": "CHL",
+    "admLevel": 2
+  },
+  {
+    "id": "156790000046",
+    "parentId": "046",
+    "name": "Provincia de Chiloé",
+    "iso3": "CHL",
+    "admLevel": 2
+  },
+  {
+    "id": "156960000047",
+    "parentId": "047",
+    "name": "Geergunyouqi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157030000047",
+    "parentId": "047",
+    "name": "Habahexian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157040000047",
+    "parentId": "047",
+    "name": "Buerjinxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157130000047",
+    "parentId": "047",
+    "name": "Aletaishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157170000047",
+    "parentId": "047",
+    "name": "Jimunaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157240000047",
+    "parentId": "047",
+    "name": "Tachengshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157310000047",
+    "parentId": "047",
+    "name": "Erminxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157390000047",
+    "parentId": "047",
+    "name": "Yuminxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157540000047",
+    "parentId": "047",
+    "name": "Hulinxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "157680000047",
+    "parentId": "047",
+    "name": "Keerqinyouyiqianqi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "158230000047",
+    "parentId": "047",
+    "name": "Zhaoshuxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "158500000047",
+    "parentId": "047",
+    "name": "Wenshuxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "158740000047",
+    "parentId": "047",
+    "name": "Atushenshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "159370000047",
+    "parentId": "047",
+    "name": "Linjiangshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "159410000047",
+    "parentId": "047",
+    "name": "Tashenkuergantajike",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "159430000047",
+    "parentId": "047",
+    "name": "Changbaichaoxianzuxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "159670000047",
+    "parentId": "047",
+    "name": "Jianshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "160020000047",
+    "parentId": "047",
+    "name": "Kuandianmanzuzizhixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161050000047",
+    "parentId": "047",
+    "name": "Changhaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161210000047",
+    "parentId": "047",
+    "name": "Dalianshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161220000047",
+    "parentId": "047",
+    "name": "Changhaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161260000047",
+    "parentId": "047",
+    "name": "Changhaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161310000047",
+    "parentId": "047",
+    "name": "Changhaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161350000047",
+    "parentId": "047",
+    "name": "Changhaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "161400000047",
+    "parentId": "047",
+    "name": "Luannanxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162260000047",
+    "parentId": "047",
+    "name": "Dongyingshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162630000047",
+    "parentId": "047",
+    "name": "Longkoushi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162680000047",
+    "parentId": "047",
+    "name": "Weihaishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162750000047",
+    "parentId": "047",
+    "name": "Rongchengshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162800000047",
+    "parentId": "047",
+    "name": "Mupingxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162840000047",
+    "parentId": "047",
+    "name": "Wendengshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "162970000047",
+    "parentId": "047",
+    "name": "Laizhoushi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "163230000047",
+    "parentId": "047",
+    "name": "Rushanshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "163260000047",
+    "parentId": "047",
+    "name": "Haiyangxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "166970000047",
+    "parentId": "047",
+    "name": "Pulanxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "169250000047",
+    "parentId": "047",
+    "name": "Nantongshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "169490000047",
+    "parentId": "047",
+    "name": "Jiangyinshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "169510000047",
+    "parentId": "047",
+    "name": "Chongmingxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "169940000047",
+    "parentId": "047",
+    "name": "Fengxianxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "170150000047",
+    "parentId": "047",
+    "name": "Nanhuixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "170480000047",
+    "parentId": "047",
+    "name": "Songjiangxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "170560000047",
+    "parentId": "047",
+    "name": "Nielamuxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "170690000047",
+    "parentId": "047",
+    "name": "Dingrixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "170720000047",
+    "parentId": "047",
+    "name": "Shengsixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "171170000047",
+    "parentId": "047",
+    "name": "Hainingshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "171350000047",
+    "parentId": "047",
+    "name": "Daishanxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "171570000047",
+    "parentId": "047",
+    "name": "Dingjiexian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "171720000047",
+    "parentId": "047",
+    "name": "Langxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "171840000047",
+    "parentId": "047",
+    "name": "Kangmaxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "172260000047",
+    "parentId": "047",
+    "name": "Fenghuashi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "172370000047",
+    "parentId": "047",
+    "name": "Yadongxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "173710000047",
+    "parentId": "047",
+    "name": "Yongjiaxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "173820000047",
+    "parentId": "047",
+    "name": "Gongshandulongzunuzuzizhixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "175120000047",
+    "parentId": "047",
+    "name": "Fuanshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "175340000047",
+    "parentId": "047",
+    "name": "Xiapuxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "175980000047",
+    "parentId": "047",
+    "name": "Lushuixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "176120000047",
+    "parentId": "047",
+    "name": "Lianjiangxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "176500000047",
+    "parentId": "047",
+    "name": "Changleshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "176550000047",
+    "parentId": "047",
+    "name": "Tengchongxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "176780000047",
+    "parentId": "047",
+    "name": "Fuqingshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "176990000047",
+    "parentId": "047",
+    "name": "Pingtanxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "177080000047",
+    "parentId": "047",
+    "name": "Yingjiangxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "177800000047",
+    "parentId": "047",
+    "name": "Tonganxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "177940000047",
+    "parentId": "047",
+    "name": "Shishishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "177990000047",
+    "parentId": "047",
+    "name": "Xiamenshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "178140000047",
+    "parentId": "047",
+    "name": "Longhaishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "178210000047",
+    "parentId": "047",
+    "name": "Ruilishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "178260000047",
+    "parentId": "047",
+    "name": "Wandingshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "178830000047",
+    "parentId": "047",
+    "name": "Changyuanwazuzizhixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "178910000047",
+    "parentId": "047",
+    "name": "Dongshanxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179120000047",
+    "parentId": "047",
+    "name": "Nanaoxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179160000047",
+    "parentId": "047",
+    "name": "Malipoxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179200000047",
+    "parentId": "047",
+    "name": "Napoxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179280000047",
+    "parentId": "047",
+    "name": "Huidongxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179360000047",
+    "parentId": "047",
+    "name": "Luchunxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179400000047",
+    "parentId": "047",
+    "name": "Huilaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179430000047",
+    "parentId": "047",
+    "name": "Jinpingmiaozhuyaozhudaizuzizhixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179630000047",
+    "parentId": "047",
+    "name": "Jinghongshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179660000047",
+    "parentId": "047",
+    "name": "Menghaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179730000047",
+    "parentId": "047",
+    "name": "Longzhouxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179880000047",
+    "parentId": "047",
+    "name": "Qinzhoushi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179890000047",
+    "parentId": "047",
+    "name": "Ningmingxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179920000047",
+    "parentId": "047",
+    "name": "Yangxixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179950000047",
+    "parentId": "047",
+    "name": "Fangchenggangshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "179970000047",
+    "parentId": "047",
+    "name": "Hepuxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180010000047",
+    "parentId": "047",
+    "name": "Beihaishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180020000047",
+    "parentId": "047",
+    "name": "Suixixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180040000047",
+    "parentId": "047",
+    "name": "Haikangxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180050000047",
+    "parentId": "047",
+    "name": "Xuwenxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180060000047",
+    "parentId": "047",
+    "name": "Wenchangxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180080000047",
+    "parentId": "047",
+    "name": "Haikoushi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180100000047",
+    "parentId": "047",
+    "name": "Chengmaixian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180110000047",
+    "parentId": "047",
+    "name": "Chanzhoushi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180270000047",
+    "parentId": "047",
+    "name": "Yuhuanxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180280000047",
+    "parentId": "047",
+    "name": "Xianggang",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180410000047",
+    "parentId": "047",
+    "name": "Shanghaishi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180420000047",
+    "parentId": "047",
+    "name": "Zhoushanshi",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "180510000047",
+    "parentId": "047",
+    "name": "Letingxian",
+    "iso3": "CHN",
+    "admLevel": 2
+  },
+  {
+    "id": "147560000041",
+    "parentId": "041",
+    "name": "Cavally",
+    "iso3": "CIV",
+    "admLevel": 2
+  },
+  {
+    "id": "147780000041",
+    "parentId": "041",
+    "name": "Tchologo",
+    "iso3": "CIV",
+    "admLevel": 2
+  },
+  {
+    "id": "145350000038",
+    "parentId": "038",
+    "name": "Mayo-Banyo",
+    "iso3": "CMR",
+    "admLevel": 2
+  },
+  {
+    "id": "145610000038",
+    "parentId": "038",
+    "name": "Wouri",
+    "iso3": "CMR",
+    "admLevel": 2
+  },
+  {
+    "id": "145620000038",
+    "parentId": "038",
+    "name": "Benoue",
+    "iso3": "CMR",
+    "admLevel": 2
+  },
+  {
+    "id": "145630000038",
+    "parentId": "038",
+    "name": "Faro",
+    "iso3": "CMR",
+    "admLevel": 2
+  },
+  {
+    "id": "145810000038",
+    "parentId": "038",
+    "name": "Dja-Et-Lobo",
+    "iso3": "CMR",
+    "admLevel": 2
+  },
+  {
+    "id": "135430000029",
+    "parentId": "029",
+    "name": "Bukavu",
+    "iso3": "COD",
+    "admLevel": 2
+  },
+  {
+    "id": "135590000029",
+    "parentId": "029",
+    "name": "Dungu",
+    "iso3": "COD",
+    "admLevel": 2
+  },
+  {
+    "id": "136570000029",
+    "parentId": "029",
+    "name": "Moba",
+    "iso3": "COD",
+    "admLevel": 2
+  },
+  {
+    "id": "136770000029",
+    "parentId": "029",
+    "name": "Popokabaka",
+    "iso3": "COD",
+    "admLevel": 2
+  },
+  {
+    "id": "136810000029",
+    "parentId": "029",
+    "name": "Rutshuru",
+    "iso3": "COD",
+    "admLevel": 2
+  },
+  {
+    "id": "136860000029",
+    "parentId": "029",
+    "name": "Songololo",
+    "iso3": "COD",
+    "admLevel": 2
+  },
+  {
+    "id": "137090000030",
+    "parentId": "030",
+    "name": "Boundji",
+    "iso3": "COG",
+    "admLevel": 2
+  },
+  {
+    "id": "137130000030",
+    "parentId": "030",
+    "name": "Owando",
+    "iso3": "COG",
+    "admLevel": 2
+  },
+  {
+    "id": "137180000030",
+    "parentId": "030",
+    "name": "Kakamoeka",
+    "iso3": "COG",
+    "admLevel": 2
+  },
+  {
+    "id": "137360000030",
+    "parentId": "030",
+    "name": "Djambala",
+    "iso3": "COG",
+    "admLevel": 2
+  },
+  {
+    "id": "137460000030",
+    "parentId": "030",
+    "name": "Ouesso",
+    "iso3": "COG",
+    "admLevel": 2
+  },
+  {
+    "id": "137470000030",
+    "parentId": "030",
+    "name": "Sembe",
+    "iso3": "COG",
+    "admLevel": 2
+  },
+  {
+    "id": "073570000025",
+    "parentId": "025",
+    "name": "Pueblo Viejo",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "074380000025",
+    "parentId": "025",
+    "name": "Herrán",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "076280000025",
+    "parentId": "025",
+    "name": "Villa Del Rosario",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "076380000025",
+    "parentId": "025",
+    "name": "Nuquí",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "077320000025",
+    "parentId": "025",
+    "name": "Ipiales",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "077670000025",
+    "parentId": "025",
+    "name": "San Felipe",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "078040000025",
+    "parentId": "025",
+    "name": "Buenaventura",
+    "iso3": "COL",
+    "admLevel": 2
+  },
+  {
+    "id": "078340000026",
+    "parentId": "026",
+    "name": "Hamahamet-Mboinkou",
+    "iso3": "COM",
+    "admLevel": 2
+  },
+  {
+    "id": "078430000026",
+    "parentId": "026",
+    "name": "Mutsamudu",
+    "iso3": "COM",
+    "admLevel": 2
+  },
+  {
+    "id": "078450000026",
+    "parentId": "026",
+    "name": "Oichili-Dimani",
+    "iso3": "COM",
+    "admLevel": 2
+  },
+  {
+    "id": "143110000036",
+    "parentId": "036",
+    "name": "Nossa Senhora Do Rosario",
+    "iso3": "CPV",
+    "admLevel": 2
+  },
+  {
+    "id": "147360000040",
+    "parentId": "040",
+    "name": "Puntarenas",
+    "iso3": "CRI",
+    "admLevel": 2
+  },
+  {
+    "id": "153300000043",
+    "parentId": "043",
+    "name": "Pilón",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153350000043",
+    "parentId": "043",
+    "name": "Morón",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153420000043",
+    "parentId": "043",
+    "name": "Puerto Padre",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153430000043",
+    "parentId": "043",
+    "name": "Sagua La Grande",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153450000043",
+    "parentId": "043",
+    "name": "Corralillo",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153550000043",
+    "parentId": "043",
+    "name": "Caimanera",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153560000043",
+    "parentId": "043",
+    "name": "Martí",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153590000043",
+    "parentId": "043",
+    "name": "Caibarién",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "153790000043",
+    "parentId": "043",
+    "name": "Venezuela",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "154450000043",
+    "parentId": "043",
+    "name": "Regla",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "154630000043",
+    "parentId": "043",
+    "name": "La Habana Vieja",
+    "iso3": "CUB",
+    "admLevel": 2
+  },
+  {
+    "id": "183240000048",
+    "parentId": "048",
+    "name": "Agia Napa",
+    "iso3": "CYP",
+    "admLevel": 2
+  },
+  {
+    "id": "183810000048",
+    "parentId": "048",
+    "name": "Ormideia",
+    "iso3": "CYP",
+    "admLevel": 2
+  },
+  {
+    "id": "185040000048",
+    "parentId": "048",
+    "name": "Avdimou",
+    "iso3": "CYP",
+    "admLevel": 2
+  },
+  {
+    "id": "186100000048",
+    "parentId": "048",
+    "name": "Xylotymvou",
+    "iso3": "CYP",
+    "admLevel": 2
+  },
+  {
+    "id": "186120000048",
+    "parentId": "048",
+    "name": "Achna",
+    "iso3": "CYP",
+    "admLevel": 2
+  },
+  {
+    "id": "186420000048",
+    "parentId": "048",
+    "name": "Pergamos",
+    "iso3": "CYP",
+    "admLevel": 2
+  },
+  {
+    "id": "186810000049",
+    "parentId": "049",
+    "name": "Děčín",
+    "iso3": "CZE",
+    "admLevel": 2
+  },
+  {
+    "id": "187370000049",
+    "parentId": "049",
+    "name": "Břeclav",
+    "iso3": "CZE",
+    "admLevel": 2
+  },
+  {
+    "id": "188530000051",
+    "parentId": "051",
+    "name": "Tadjourah",
+    "iso3": "DJI",
+    "admLevel": 2
+  },
+  {
+    "id": "188550000051",
+    "parentId": "051",
+    "name": "Djibouti",
+    "iso3": "DJI",
+    "admLevel": 2
+  },
+  {
+    "id": "188580000051",
+    "parentId": "051",
+    "name": "As Eyla",
+    "iso3": "DJI",
+    "admLevel": 2
+  },
+  {
+    "id": "187510000050",
+    "parentId": "050",
+    "name": "Guldborgsund",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187560000050",
+    "parentId": "050",
+    "name": "Sønderborg",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187650000050",
+    "parentId": "050",
+    "name": "Haderslev",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187660000050",
+    "parentId": "050",
+    "name": "Faxe",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187680000050",
+    "parentId": "050",
+    "name": "Nyborg",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187710000050",
+    "parentId": "050",
+    "name": "Kerteminde",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187740000050",
+    "parentId": "050",
+    "name": "Solrød",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187780000050",
+    "parentId": "050",
+    "name": "Greve",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187810000050",
+    "parentId": "050",
+    "name": "Kolding",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187860000050",
+    "parentId": "050",
+    "name": "Hvidovre",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "187980000050",
+    "parentId": "050",
+    "name": "Gentofte",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188000000050",
+    "parentId": "050",
+    "name": "Roskilde",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188130000050",
+    "parentId": "050",
+    "name": "Vejle",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188150000050",
+    "parentId": "050",
+    "name": "Samsø",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188170000050",
+    "parentId": "050",
+    "name": "Halsnæs",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188230000050",
+    "parentId": "050",
+    "name": "Ringkøbing-Skjern",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188290000050",
+    "parentId": "050",
+    "name": "Struer",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188320000050",
+    "parentId": "050",
+    "name": "Viborg",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188360000050",
+    "parentId": "050",
+    "name": "Mariagerfjord",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188400000050",
+    "parentId": "050",
+    "name": "Aalborg",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188440000050",
+    "parentId": "050",
+    "name": "Jammerbugt",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "188450000050",
+    "parentId": "050",
+    "name": "Frederikshavn",
+    "iso3": "DNK",
+    "admLevel": 2
+  },
+  {
+    "id": "189270000053",
+    "parentId": "053",
+    "name": "Comendador\r\n",
+    "iso3": "DOM",
+    "admLevel": 2
+  },
+  {
+    "id": "189770000053",
+    "parentId": "053",
+    "name": "Sánchez",
+    "iso3": "DOM",
+    "admLevel": 2
+  },
+  {
+    "id": "189830000053",
+    "parentId": "053",
+    "name": "Sabana Grande de Palenque",
+    "iso3": "DOM",
+    "admLevel": 2
+  },
+  {
+    "id": "006510000003",
+    "parentId": "003",
+    "name": "Illizi",
+    "iso3": "DZA",
+    "admLevel": 2
+  },
+  {
+    "id": "006590000003",
+    "parentId": "003",
+    "name": "El Oued",
+    "iso3": "DZA",
+    "admLevel": 2
+  },
+  {
+    "id": "006670000003",
+    "parentId": "003",
+    "name": "Tlemcen",
+    "iso3": "DZA",
+    "admLevel": 2
+  },
+  {
+    "id": "006730000003",
+    "parentId": "003",
+    "name": "Skikda",
+    "iso3": "DZA",
+    "admLevel": 2
+  },
+  {
+    "id": "006850000003",
+    "parentId": "003",
+    "name": "Boumerdes",
+    "iso3": "DZA",
+    "admLevel": 2
+  },
+  {
+    "id": "191010000054",
+    "parentId": "054",
+    "name": "Guayaquil",
+    "iso3": "ECU",
+    "admLevel": 2
+  },
+  {
+    "id": "191050000054",
+    "parentId": "054",
+    "name": "Isabela",
+    "iso3": "ECU",
+    "admLevel": 2
+  },
+  {
+    "id": "191990000054",
+    "parentId": "054",
+    "name": "San Cristobal",
+    "iso3": "ECU",
+    "admLevel": 2
+  },
+  {
+    "id": "192120000054",
+    "parentId": "054",
+    "name": "Santa Cruz",
+    "iso3": "ECU",
+    "admLevel": 2
+  },
+  {
+    "id": "192370000054",
+    "parentId": "054",
+    "name": "Tulcan",
+    "iso3": "ECU",
+    "admLevel": 2
+  },
+  {
+    "id": "193060000055",
+    "parentId": "055",
+    "name": "Al Dikhila",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "193350000055",
+    "parentId": "055",
+    "name": "Ataqa",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "193980000055",
+    "parentId": "055",
+    "name": "Fayid",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "194650000055",
+    "parentId": "055",
+    "name": "Marsa Alam",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "194960000055",
+    "parentId": "055",
+    "name": "North Coast",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "194970000055",
+    "parentId": "055",
+    "name": "North Coast",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "195040000055",
+    "parentId": "055",
+    "name": "Port Alexandria Police Department",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "195070000055",
+    "parentId": "055",
+    "name": "Port Suez Police Department",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "195330000055",
+    "parentId": "055",
+    "name": "Rummana",
+    "iso3": "EGY",
+    "admLevel": 2
+  },
+  {
+    "id": "199600000058",
+    "parentId": "058",
+    "name": "Senafe",
+    "iso3": "ERI",
+    "admLevel": 2
+  },
+  {
+    "id": "406540000157",
+    "parentId": "157",
+    "name": "Palmas, Las",
+    "iso3": "ESP",
+    "admLevel": 2
+  },
+  {
+    "id": "406570000157",
+    "parentId": "157",
+    "name": "Santa Cruz de Tenerife",
+    "iso3": "ESP",
+    "admLevel": 2
+  },
+  {
+    "id": "199770000059",
+    "parentId": "059",
+    "name": "Noarootsi vald",
+    "iso3": "EST",
+    "admLevel": 2
+  },
+  {
+    "id": "199800000059",
+    "parentId": "059",
+    "name": "Kaina",
+    "iso3": "EST",
+    "admLevel": 2
+  },
+  {
+    "id": "199930000059",
+    "parentId": "059",
+    "name": "Salme vald",
+    "iso3": "EST",
+    "admLevel": 2
+  },
+  {
+    "id": "200080000059",
+    "parentId": "059",
+    "name": "Hiiu vald",
+    "iso3": "EST",
+    "admLevel": 2
+  },
+  {
+    "id": "200350000059",
+    "parentId": "059",
+    "name": "Mustjala vald",
+    "iso3": "EST",
+    "admLevel": 2
+  },
+  {
+    "id": "202730000062",
+    "parentId": "062",
+    "name": "Kotkan–Haminan seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "202740000062",
+    "parentId": "062",
+    "name": "Turun seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "202780000062",
+    "parentId": "062",
+    "name": "Ålands skärgård",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "202870000062",
+    "parentId": "062",
+    "name": "Raseborgs ekonomiska region",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "202900000062",
+    "parentId": "062",
+    "name": "Turunmaan seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "202960000062",
+    "parentId": "062",
+    "name": "Kemi-Tornion seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "203050000062",
+    "parentId": "062",
+    "name": "Tunturi-Lapin seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "203120000062",
+    "parentId": "062",
+    "name": "Oulun seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "203170000062",
+    "parentId": "062",
+    "name": "Porin seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "203260000062",
+    "parentId": "062",
+    "name": "Loviisan seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "203380000062",
+    "parentId": "062",
+    "name": "Vakka-Suomen seutukunta",
+    "iso3": "FIN",
+    "admLevel": 2
+  },
+  {
+    "id": "202540000061",
+    "parentId": "061",
+    "name": "Ba",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202570000061",
+    "parentId": "061",
+    "name": "Rewa",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202600000061",
+    "parentId": "061",
+    "name": "Rotuma",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202620000061",
+    "parentId": "061",
+    "name": "Cakaudrove",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202630000061",
+    "parentId": "061",
+    "name": "Kadavu",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202640000061",
+    "parentId": "061",
+    "name": "Lau",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202650000061",
+    "parentId": "061",
+    "name": "Lomaiviti",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "202660000061",
+    "parentId": "061",
+    "name": "Macuata",
+    "iso3": "FJI",
+    "admLevel": 2
+  },
+  {
+    "id": "134320000028",
+    "parentId": "028",
+    "name": "Bouches-du-Rhône",
+    "iso3": "FRA",
+    "admLevel": 2
+  },
+  {
+    "id": "319820000126",
+    "parentId": "126",
+    "name": "Kanifay",
+    "iso3": "FSM",
+    "admLevel": 2
+  },
+  {
+    "id": "319870000126",
+    "parentId": "126",
+    "name": "Tomil",
+    "iso3": "FSM",
+    "admLevel": 2
+  },
+  {
+    "id": "319910000126",
+    "parentId": "126",
+    "name": "Pingelap",
+    "iso3": "FSM",
+    "admLevel": 2
+  },
+  {
+    "id": "319920000126",
+    "parentId": "126",
+    "name": "Polowat",
+    "iso3": "FSM",
+    "admLevel": 2
+  },
+  {
+    "id": "203490000063",
+    "parentId": "063",
+    "name": "Libreville",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "203540000063",
+    "parentId": "063",
+    "name": "Lombo-Bouenguidi",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "203610000063",
+    "parentId": "063",
+    "name": "Bayi-Brikolo",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "203640000063",
+    "parentId": "063",
+    "name": "Sèbè-Brikolo",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "203700000063",
+    "parentId": "063",
+    "name": "Haute-Banio",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "203760000063",
+    "parentId": "063",
+    "name": "Dola",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "203870000063",
+    "parentId": "063",
+    "name": "Mpassa",
+    "iso3": "GAB",
+    "admLevel": 2
+  },
+  {
+    "id": "004070000001",
+    "parentId": "001",
+    "name": "Kingston upon Hull, City of",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "004240000001",
+    "parentId": "001",
+    "name": "Torbay",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "004470000001",
+    "parentId": "001",
+    "name": "Isles of Scilly",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005290000001",
+    "parentId": "001",
+    "name": "Essex",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005300000001",
+    "parentId": "001",
+    "name": "Gloucestershire",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005420000001",
+    "parentId": "001",
+    "name": "Somerset",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005510000001",
+    "parentId": "001",
+    "name": "Belfast",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005530000001",
+    "parentId": "001",
+    "name": "Derry City and Strabane",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005590000001",
+    "parentId": "001",
+    "name": "Ards and North Down",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005660000001",
+    "parentId": "001",
+    "name": "Falkirk",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005710000001",
+    "parentId": "001",
+    "name": "North Ayrshire",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005720000001",
+    "parentId": "001",
+    "name": "Orkney Islands",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005800000001",
+    "parentId": "001",
+    "name": "Argyll and Bute",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005810000001",
+    "parentId": "001",
+    "name": "City of Edinburgh",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005830000001",
+    "parentId": "001",
+    "name": "West Dunbartonshire",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005930000001",
+    "parentId": "001",
+    "name": "Gwynedd",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "005980000001",
+    "parentId": "001",
+    "name": "Ceredigion",
+    "iso3": "GBR",
+    "admLevel": 2
+  },
+  {
+    "id": "209870000070",
+    "parentId": "070",
+    "name": "Jomoro",
+    "iso3": "GHA",
+    "admLevel": 2
+  },
+  {
+    "id": "210060000070",
+    "parentId": "070",
+    "name": "Pusiga",
+    "iso3": "GHA",
+    "admLevel": 2
+  },
+  {
+    "id": "215920000077",
+    "parentId": "077",
+    "name": "Boffa",
+    "iso3": "GIN",
+    "admLevel": 2
+  },
+  {
+    "id": "215980000077",
+    "parentId": "077",
+    "name": "Dinguiraye",
+    "iso3": "GIN",
+    "admLevel": 2
+  },
+  {
+    "id": "216000000077",
+    "parentId": "077",
+    "name": "Faranah",
+    "iso3": "GIN",
+    "admLevel": 2
+  },
+  {
+    "id": "216030000077",
+    "parentId": "077",
+    "name": "Gaoual",
+    "iso3": "GIN",
+    "admLevel": 2
+  },
+  {
+    "id": "216150000077",
+    "parentId": "077",
+    "name": "Macenta",
+    "iso3": "GIN",
+    "admLevel": 2
+  },
+  {
+    "id": "204330000064",
+    "parentId": "064",
+    "name": "Upper Saloum",
+    "iso3": "GMB",
+    "admLevel": 2
+  },
+  {
+    "id": "216370000078",
+    "parentId": "078",
+    "name": "Setor de Caiv",
+    "iso3": "GNB",
+    "admLevel": 2
+  },
+  {
+    "id": "216600000078",
+    "parentId": "078",
+    "name": "Setor de Bubaque",
+    "iso3": "GNB",
+    "admLevel": 2
+  },
+  {
+    "id": "216610000078",
+    "parentId": "078",
+    "name": "Setor de Caravela",
+    "iso3": "GNB",
+    "admLevel": 2
+  },
+  {
+    "id": "199020000057",
+    "parentId": "057",
+    "name": "COGO",
+    "iso3": "GNQ",
+    "admLevel": 2
+  },
+  {
+    "id": "211330000071",
+    "parentId": "071",
+    "name": "Anatolikis Makedonias kai Thr*",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211370000071",
+    "parentId": "071",
+    "name": "Thessalias",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211380000071",
+    "parentId": "071",
+    "name": "Stereas Elladas",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211390000071",
+    "parentId": "071",
+    "name": "Ionion Nison",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211400000071",
+    "parentId": "071",
+    "name": "Dytikis Elladas",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211430000071",
+    "parentId": "071",
+    "name": "Voreioy Aigaioy",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211440000071",
+    "parentId": "071",
+    "name": "Notioy Aigaioy",
+    "iso3": "GRC",
+    "admLevel": 2
+  },
+  {
+    "id": "211580000073",
+    "parentId": "073",
+    "name": "Saint Patrick",
+    "iso3": "GRD",
+    "admLevel": 2
+  },
+  {
+    "id": "211480000072",
+    "parentId": "072",
+    "name": "Avannaata",
+    "iso3": "GRL",
+    "admLevel": 2
+  },
+  {
+    "id": "211520000072",
+    "parentId": "072",
+    "name": "Qeqertalik",
+    "iso3": "GRL",
+    "admLevel": 2
+  },
+  {
+    "id": "211750000075",
+    "parentId": "075",
+    "name": "Agua Blanca",
+    "iso3": "GTM",
+    "admLevel": 2
+  },
+  {
+    "id": "211830000075",
+    "parentId": "075",
+    "name": "Ayutla",
+    "iso3": "GTM",
+    "admLevel": 2
+  },
+  {
+    "id": "212340000075",
+    "parentId": "075",
+    "name": "El Estor",
+    "iso3": "GTM",
+    "admLevel": 2
+  },
+  {
+    "id": "212430000075",
+    "parentId": "075",
+    "name": "Esquipulas",
+    "iso3": "GTM",
+    "admLevel": 2
+  },
+  {
+    "id": "213000000075",
+    "parentId": "075",
+    "name": "Moyuta",
+    "iso3": "GTM",
+    "admLevel": 2
+  },
+  {
+    "id": "216870000079",
+    "parentId": "079",
+    "name": "VII-2 Mazaruni/L.B.E.Rive",
+    "iso3": "GUY",
+    "admLevel": 2
+  },
+  {
+    "id": "218480000082",
+    "parentId": "082",
+    "name": "Omoa",
+    "iso3": "HND",
+    "admLevel": 2
+  },
+  {
+    "id": "147880000042",
+    "parentId": "042",
+    "name": "Otok Losinj",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "147940000042",
+    "parentId": "042",
+    "name": "Opicina Pirovac",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "148150000042",
+    "parentId": "042",
+    "name": "Općina Oprisavci",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "148250000042",
+    "parentId": "042",
+    "name": "Grad Slavonski Brod",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "148490000042",
+    "parentId": "042",
+    "name": "Općina Vela Luka",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "148780000042",
+    "parentId": "042",
+    "name": "Općina Funtana",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "148960000042",
+    "parentId": "042",
+    "name": "Grad Pula",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "150700000042",
+    "parentId": "042",
+    "name": "Općina Malinska - Dubašnica",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "151120000042",
+    "parentId": "042",
+    "name": "Grad Šibenik",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "151410000042",
+    "parentId": "042",
+    "name": "Grad Trogir",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "152530000042",
+    "parentId": "042",
+    "name": "Grad Ilok",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "152750000042",
+    "parentId": "042",
+    "name": "Općina Povljana",
+    "iso3": "HRV",
+    "admLevel": 2
+  },
+  {
+    "id": "217310000080",
+    "parentId": "080",
+    "name": "Arrondissement de Baradères",
+    "iso3": "HTI",
+    "admLevel": 2
+  },
+  {
+    "id": "221490000083",
+    "parentId": "083",
+    "name": "Sopron",
+    "iso3": "HUN",
+    "admLevel": 2
+  },
+  {
+    "id": "221590000083",
+    "parentId": "083",
+    "name": "Nyíradony",
+    "iso3": "HUN",
+    "admLevel": 2
+  },
+  {
+    "id": "221770000083",
+    "parentId": "083",
+    "name": "Esztergom",
+    "iso3": "HUN",
+    "admLevel": 2
+  },
+  {
+    "id": "221870000083",
+    "parentId": "083",
+    "name": "Salgótarján",
+    "iso3": "HUN",
+    "admLevel": 2
+  },
+  {
+    "id": "223580000085",
+    "parentId": "085",
+    "name": "Aceh Singkil",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "223740000085",
+    "parentId": "085",
+    "name": "Banggai Laut",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224050000085",
+    "parentId": "085",
+    "name": "Bengkulu Utara",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224060000085",
+    "parentId": "085",
+    "name": "Berau",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224070000085",
+    "parentId": "085",
+    "name": "Biak Numfor",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224090000085",
+    "parentId": "085",
+    "name": "Bintan",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224200000085",
+    "parentId": "085",
+    "name": "Bombana",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224560000085",
+    "parentId": "085",
+    "name": "Flores Timur",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224630000085",
+    "parentId": "085",
+    "name": "Gresik",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224690000085",
+    "parentId": "085",
+    "name": "Halmahera Tengah",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "224950000085",
+    "parentId": "085",
+    "name": "Karimun",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225050000085",
+    "parentId": "085",
+    "name": "Kepulauan Anambas",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225080000085",
+    "parentId": "085",
+    "name": "Kepulauan Meranti",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225100000085",
+    "parentId": "085",
+    "name": "Kepulauan Selayar",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225110000085",
+    "parentId": "085",
+    "name": "Kepulauan Sula",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225120000085",
+    "parentId": "085",
+    "name": "Kepulauan Talaud",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225170000085",
+    "parentId": "085",
+    "name": "Klungkung",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225180000085",
+    "parentId": "085",
+    "name": "Kolaka",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225250000085",
+    "parentId": "085",
+    "name": "Kota Ambon",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225340000085",
+    "parentId": "085",
+    "name": "Kota Batam",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225600000085",
+    "parentId": "085",
+    "name": "Kota Jayapura",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "225960000085",
+    "parentId": "085",
+    "name": "Kota Sabang",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226020000085",
+    "parentId": "085",
+    "name": "Kota Sibolga",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226190000085",
+    "parentId": "085",
+    "name": "Kota Ternate",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226220000085",
+    "parentId": "085",
+    "name": "Kota Tual",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226240000085",
+    "parentId": "085",
+    "name": "Kotawaringin Barat",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226510000085",
+    "parentId": "085",
+    "name": "Lembata",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226710000085",
+    "parentId": "085",
+    "name": "Maluku Barat Daya",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226720000085",
+    "parentId": "085",
+    "name": "Maluku Tengah",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226730000085",
+    "parentId": "085",
+    "name": "Maluku Tenggara",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "226830000085",
+    "parentId": "085",
+    "name": "Manggarai Barat",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227120000085",
+    "parentId": "085",
+    "name": "Nabire",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227150000085",
+    "parentId": "085",
+    "name": "Natuna",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227220000085",
+    "parentId": "085",
+    "name": "Nias Selatan",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227360000085",
+    "parentId": "085",
+    "name": "Pandeglang",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227400000085",
+    "parentId": "085",
+    "name": "Parigi Moutong",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227730000085",
+    "parentId": "085",
+    "name": "Raja Ampat",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "227950000085",
+    "parentId": "085",
+    "name": "Siau Tagulandang Biaro",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228000000085",
+    "parentId": "085",
+    "name": "Sikka",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228110000085",
+    "parentId": "085",
+    "name": "Sorong Selatan",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228240000085",
+    "parentId": "085",
+    "name": "Sumenep",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228300000085",
+    "parentId": "085",
+    "name": "Tana Tidung",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228400000085",
+    "parentId": "085",
+    "name": "Tapanuli Tengah",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228460000085",
+    "parentId": "085",
+    "name": "Teluk Bintuni",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228470000085",
+    "parentId": "085",
+    "name": "Teluk Wondama",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228500000085",
+    "parentId": "085",
+    "name": "Timor Tengah Utara",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228520000085",
+    "parentId": "085",
+    "name": "Tojo Una-Una",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228530000085",
+    "parentId": "085",
+    "name": "Toli-Toli",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "228640000085",
+    "parentId": "085",
+    "name": "Wakatobi",
+    "iso3": "IDN",
+    "admLevel": 2
+  },
+  {
+    "id": "478380000194",
+    "parentId": "194",
+    "name": "Kishanganj",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "478980000194",
+    "parentId": "194",
+    "name": "Nicobars",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "479020000194",
+    "parentId": "194",
+    "name": "Changlang",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "480470000194",
+    "parentId": "194",
+    "name": "Lakshadweep",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "480570000194",
+    "parentId": "194",
+    "name": "South Twenty Four Parganas",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "480580000194",
+    "parentId": "194",
+    "name": "Darjiling",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "480600000194",
+    "parentId": "194",
+    "name": "Uttar Dinajpur",
+    "iso3": "IND",
+    "admLevel": 2
+  },
+  {
+    "id": "234210000088",
+    "parentId": "088",
+    "name": "HOWTH-MALAHIDE LEA-7",
+    "iso3": "IRL",
+    "admLevel": 2
+  },
+  {
+    "id": "234650000088",
+    "parentId": "088",
+    "name": "CORK CITY SOUTH EAST LEA-6",
+    "iso3": "IRL",
+    "admLevel": 2
+  },
+  {
+    "id": "234940000088",
+    "parentId": "088",
+    "name": "DONEGAL LEA-6",
+    "iso3": "IRL",
+    "admLevel": 2
+  },
+  {
+    "id": "235280000088",
+    "parentId": "088",
+    "name": "CARNDONAGH LEA-4",
+    "iso3": "IRL",
+    "admLevel": 2
+  },
+  {
+    "id": "235410000088",
+    "parentId": "088",
+    "name": "WESTPORT LEA-4",
+    "iso3": "IRL",
+    "admLevel": 2
+  },
+  {
+    "id": "235490000088",
+    "parentId": "088",
+    "name": "SLIGO-DRUMCLIFF LEA-5",
+    "iso3": "IRL",
+    "admLevel": 2
+  },
+  {
+    "id": "228750000086",
+    "parentId": "086",
+    "name": "Dehloran County",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "228770000086",
+    "parentId": "086",
+    "name": "Mehran County",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "228880000086",
+    "parentId": "086",
+    "name": "Astara",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "229550000086",
+    "parentId": "086",
+    "name": "Bandar-e-Mahshahr",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "229650000086",
+    "parentId": "086",
+    "name": "Bushehr",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "229900000086",
+    "parentId": "086",
+    "name": "Jolfa",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "230010000086",
+    "parentId": "086",
+    "name": "Khoda Afarin",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "230820000086",
+    "parentId": "086",
+    "name": "Sarbaz",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "231320000086",
+    "parentId": "086",
+    "name": "Asaluyeh",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "231610000086",
+    "parentId": "086",
+    "name": "Qasr-e-Shirin",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "232330000086",
+    "parentId": "086",
+    "name": "Mirjaveh",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "232690000086",
+    "parentId": "086",
+    "name": "Paveh",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "232730000086",
+    "parentId": "086",
+    "name": "Piranshahr",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "232940000086",
+    "parentId": "086",
+    "name": "Genaveh",
+    "iso3": "IRN",
+    "admLevel": 2
+  },
+  {
+    "id": "233020000087",
+    "parentId": "087",
+    "name": "Abu Al-Khaseeb",
+    "iso3": "IRQ",
+    "admLevel": 2
+  },
+  {
+    "id": "233060000087",
+    "parentId": "087",
+    "name": "Al-Amadiya",
+    "iso3": "IRQ",
+    "admLevel": 2
+  },
+  {
+    "id": "233600000087",
+    "parentId": "087",
+    "name": "Al-Zubair",
+    "iso3": "IRQ",
+    "admLevel": 2
+  },
+  {
+    "id": "233770000087",
+    "parentId": "087",
+    "name": "Halabcha",
+    "iso3": "IRQ",
+    "admLevel": 2
+  },
+  {
+    "id": "233810000087",
+    "parentId": "087",
+    "name": "Khanaqin",
+    "iso3": "IRQ",
+    "admLevel": 2
+  },
+  {
+    "id": "222880000084",
+    "parentId": "084",
+    "name": "Grindavíkurbær",
+    "iso3": "ISL",
+    "admLevel": 2
+  },
+  {
+    "id": "222960000084",
+    "parentId": "084",
+    "name": "Grundarfjarðarbær",
+    "iso3": "ISL",
+    "admLevel": 2
+  },
+  {
+    "id": "223030000084",
+    "parentId": "084",
+    "name": "Ísafjarðarbær",
+    "iso3": "ISL",
+    "admLevel": 2
+  },
+  {
+    "id": "223300000084",
+    "parentId": "084",
+    "name": "Langanesbyggð",
+    "iso3": "ISL",
+    "admLevel": 2
+  },
+  {
+    "id": "223370000084",
+    "parentId": "084",
+    "name": "Djúpavogshreppur",
+    "iso3": "ISL",
+    "admLevel": 2
+  },
+  {
+    "id": "475300000191",
+    "parentId": "191",
+    "name": "Petah Tiqwa",
+    "iso3": "ISR",
+    "admLevel": 2
+  },
+  {
+    "id": "475310000191",
+    "parentId": "191",
+    "name": "HaSharon",
+    "iso3": "ISR",
+    "admLevel": 2
+  },
+  {
+    "id": "475360000191",
+    "parentId": "191",
+    "name": "Golan",
+    "iso3": "ISR",
+    "admLevel": 2
+  },
+  {
+    "id": "247290000099",
+    "parentId": "099",
+    "name": "Liguria",
+    "iso3": "ITA",
+    "admLevel": 2
+  },
+  {
+    "id": "248540000100",
+    "parentId": "100",
+    "name": "Port Royal",
+    "iso3": "JAM",
+    "admLevel": 2
+  },
+  {
+    "id": "251570000100",
+    "parentId": "100",
+    "name": "Central Port Antonio",
+    "iso3": "JAM",
+    "admLevel": 2
+  },
+  {
+    "id": "251620000100",
+    "parentId": "100",
+    "name": "Drapers",
+    "iso3": "JAM",
+    "admLevel": 2
+  },
+  {
+    "id": "217490000081",
+    "parentId": "081",
+    "name": "Dair Alla",
+    "iso3": "JOR",
+    "admLevel": 2
+  },
+  {
+    "id": "255720000101",
+    "parentId": "101",
+    "name": "Miyazu",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "256980000101",
+    "parentId": "101",
+    "name": "Sakaide",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "257130000101",
+    "parentId": "101",
+    "name": "Yamada",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "257230000101",
+    "parentId": "101",
+    "name": "Rikuzen Takata",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "258500000101",
+    "parentId": "101",
+    "name": "Futtsu",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "260200000101",
+    "parentId": "101",
+    "name": "Mihama",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "260880000101",
+    "parentId": "101",
+    "name": "Kasaoka",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "260980000101",
+    "parentId": "101",
+    "name": "Setouchi",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "261220000101",
+    "parentId": "101",
+    "name": "Satsumasendai",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "261250000101",
+    "parentId": "101",
+    "name": "Kagoshima",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "261270000101",
+    "parentId": "101",
+    "name": "Toshima",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "261300000101",
+    "parentId": "101",
+    "name": "Setouchi",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "261490000101",
+    "parentId": "101",
+    "name": "Tatsugo",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "262330000101",
+    "parentId": "101",
+    "name": "Ooita",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "262360000101",
+    "parentId": "101",
+    "name": "Tsukumi",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "262470000101",
+    "parentId": "101",
+    "name": "Ashiya",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "262630000101",
+    "parentId": "101",
+    "name": "Itoshima",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "262990000101",
+    "parentId": "101",
+    "name": "Fukuoka",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "263050000101",
+    "parentId": "101",
+    "name": "Togitsu",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "263060000101",
+    "parentId": "101",
+    "name": "Matsuura",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "263810000101",
+    "parentId": "101",
+    "name": "Ainan",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "263840000101",
+    "parentId": "101",
+    "name": "Uwajima",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "263870000101",
+    "parentId": "101",
+    "name": "Imabari",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "265120000101",
+    "parentId": "101",
+    "name": "Akkeshi",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "265500000101",
+    "parentId": "101",
+    "name": "Yanai",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "265670000101",
+    "parentId": "101",
+    "name": "Ishikari",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "265780000101",
+    "parentId": "101",
+    "name": "Tomakomai",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "265820000101",
+    "parentId": "101",
+    "name": "Otaru",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "265980000101",
+    "parentId": "101",
+    "name": "Muroran",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "266080000101",
+    "parentId": "101",
+    "name": "Suttu",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "266530000101",
+    "parentId": "101",
+    "name": "Kure",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "266660000101",
+    "parentId": "101",
+    "name": "Onomichi",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "266730000101",
+    "parentId": "101",
+    "name": "Kazamaura",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "266790000101",
+    "parentId": "101",
+    "name": "Noheji",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "268170000101",
+    "parentId": "101",
+    "name": "Onagawa",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269390000101",
+    "parentId": "101",
+    "name": "Minami Ise",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269520000101",
+    "parentId": "101",
+    "name": "Uruma",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269670000101",
+    "parentId": "101",
+    "name": "Gamagori",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269850000101",
+    "parentId": "101",
+    "name": "Zamami",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269920000101",
+    "parentId": "101",
+    "name": "Yonabaru",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269950000101",
+    "parentId": "101",
+    "name": "Ishigaki",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "269990000101",
+    "parentId": "101",
+    "name": "Ogasawara",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "270410000101",
+    "parentId": "101",
+    "name": "Kosai",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "270460000101",
+    "parentId": "101",
+    "name": "Numadu",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "270520000101",
+    "parentId": "101",
+    "name": "Atami",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "272000000101",
+    "parentId": "101",
+    "name": "Takahama",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "272080000101",
+    "parentId": "101",
+    "name": "Tsuruga",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "272100000101",
+    "parentId": "101",
+    "name": "Mihama",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "272180000101",
+    "parentId": "101",
+    "name": "Nanao",
+    "iso3": "JPN",
+    "admLevel": 2
+  },
+  {
+    "id": "235700000089",
+    "parentId": "089",
+    "name": "Alakolskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "235750000089",
+    "parentId": "089",
+    "name": "Karasayskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236160000089",
+    "parentId": "089",
+    "name": "Atyrau",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236180000089",
+    "parentId": "089",
+    "name": "Isatayskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236190000089",
+    "parentId": "089",
+    "name": "Kurmangazinskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236230000089",
+    "parentId": "089",
+    "name": "Zhylyoyskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236310000089",
+    "parentId": "089",
+    "name": "Kurchumskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236340000089",
+    "parentId": "089",
+    "name": "Shemonaikhinskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236410000089",
+    "parentId": "089",
+    "name": "Aqtau",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236420000089",
+    "parentId": "089",
+    "name": "Beyneuskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236430000089",
+    "parentId": "089",
+    "name": "Karakiyanskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236450000089",
+    "parentId": "089",
+    "name": "Tupkaraganskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "236510000089",
+    "parentId": "089",
+    "name": "Mamlyutskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "237120000089",
+    "parentId": "089",
+    "name": "Saryagashskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "237250000089",
+    "parentId": "089",
+    "name": "Kaztalovskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "237300000089",
+    "parentId": "089",
+    "name": "Zelenovskiy",
+    "iso3": "KAZ",
+    "admLevel": 2
+  },
+  {
+    "id": "273100000102",
+    "parentId": "102",
+    "name": "Kemin",
+    "iso3": "KGZ",
+    "admLevel": 2
+  },
+  {
+    "id": "144900000037",
+    "parentId": "037",
+    "name": "Preah Sihanouk",
+    "iso3": "KHM",
+    "admLevel": 2
+  },
+  {
+    "id": "144920000037",
+    "parentId": "037",
+    "name": "Stueng Hav",
+    "iso3": "KHM",
+    "admLevel": 2
+  },
+  {
+    "id": "145240000037",
+    "parentId": "037",
+    "name": "Pailin",
+    "iso3": "KHM",
+    "admLevel": 2
+  },
+  {
+    "id": "240330000091",
+    "parentId": "091",
+    "name": "Abaiang",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240340000091",
+    "parentId": "091",
+    "name": "Abemama",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240350000091",
+    "parentId": "091",
+    "name": "Aranuka",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240380000091",
+    "parentId": "091",
+    "name": "Beru",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240400000091",
+    "parentId": "091",
+    "name": "Butaritari",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240410000091",
+    "parentId": "091",
+    "name": "Kanton",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240420000091",
+    "parentId": "091",
+    "name": "Kiritimati",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240430000091",
+    "parentId": "091",
+    "name": "Kuria",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240440000091",
+    "parentId": "091",
+    "name": "Maiana",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240450000091",
+    "parentId": "091",
+    "name": "Marakei",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240460000091",
+    "parentId": "091",
+    "name": "Nikunau",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240470000091",
+    "parentId": "091",
+    "name": "Nonouti",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240510000091",
+    "parentId": "091",
+    "name": "Tabuaeran",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240530000091",
+    "parentId": "091",
+    "name": "Tarawa Ieta",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "240540000091",
+    "parentId": "091",
+    "name": "Tarawa Teinainano",
+    "iso3": "KIR",
+    "admLevel": 2
+  },
+  {
+    "id": "406990000159",
+    "parentId": "159",
+    "name": "Saint George Basseterre",
+    "iso3": "KNA",
+    "admLevel": 2
+  },
+  {
+    "id": "274320000103",
+    "parentId": "103",
+    "name": "Phonthong",
+    "iso3": "LAO",
+    "admLevel": 2
+  },
+  {
+    "id": "274400000103",
+    "parentId": "103",
+    "name": "Samuoi",
+    "iso3": "LAO",
+    "admLevel": 2
+  },
+  {
+    "id": "280810000105",
+    "parentId": "105",
+    "name": "Marjaayoun",
+    "iso3": "LBN",
+    "admLevel": 2
+  },
+  {
+    "id": "280980000105",
+    "parentId": "105",
+    "name": "Tripoli",
+    "iso3": "LBN",
+    "admLevel": 2
+  },
+  {
+    "id": "281020000105",
+    "parentId": "105",
+    "name": "Akkar",
+    "iso3": "LBN",
+    "admLevel": 2
+  },
+  {
+    "id": "281830000107",
+    "parentId": "107",
+    "name": "B'hai",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "281990000107",
+    "parentId": "107",
+    "name": "Cavala",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282020000107",
+    "parentId": "107",
+    "name": "Commonwealth",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282280000107",
+    "parentId": "107",
+    "name": "Gbehlay-Geh",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282390000107",
+    "parentId": "107",
+    "name": "Greater Monrovia",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282560000107",
+    "parentId": "107",
+    "name": "Konobo",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282580000107",
+    "parentId": "107",
+    "name": "Kparblee",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282740000107",
+    "parentId": "107",
+    "name": "Panta",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "282810000107",
+    "parentId": "107",
+    "name": "Quardu Boundi",
+    "iso3": "LBR",
+    "admLevel": 2
+  },
+  {
+    "id": "283240000108",
+    "parentId": "108",
+    "name": "Ajdabiya",
+    "iso3": "LBY",
+    "admLevel": 2
+  },
+  {
+    "id": "283290000108",
+    "parentId": "108",
+    "name": "Al Marqab",
+    "iso3": "LBY",
+    "admLevel": 2
+  },
+  {
+    "id": "283310000108",
+    "parentId": "108",
+    "name": "Az Zawiyah",
+    "iso3": "LBY",
+    "admLevel": 2
+  },
+  {
+    "id": "407600000160",
+    "parentId": "160",
+    "name": "Rodney Bay",
+    "iso3": "LCA",
+    "admLevel": 2
+  },
+  {
+    "id": "409790000160",
+    "parentId": "160",
+    "name": "Tapion",
+    "iso3": "LCA",
+    "admLevel": 2
+  },
+  {
+    "id": "412210000160",
+    "parentId": "160",
+    "name": "New Village",
+    "iso3": "LCA",
+    "admLevel": 2
+  },
+  {
+    "id": "406720000158",
+    "parentId": "158",
+    "name": "Jaffna District",
+    "iso3": "LKA",
+    "admLevel": 2
+  },
+  {
+    "id": "406730000158",
+    "parentId": "158",
+    "name": "Kilinochchi District",
+    "iso3": "LKA",
+    "admLevel": 2
+  },
+  {
+    "id": "406910000158",
+    "parentId": "158",
+    "name": "Puttalam District",
+    "iso3": "LKA",
+    "admLevel": 2
+  },
+  {
+    "id": "283540000110",
+    "parentId": "110",
+    "name": "Ignalinos rajono savivaldybė",
+    "iso3": "LTU",
+    "admLevel": 2
+  },
+  {
+    "id": "283580000110",
+    "parentId": "110",
+    "name": "Neringos savivaldybė",
+    "iso3": "LTU",
+    "admLevel": 2
+  },
+  {
+    "id": "275230000104",
+    "parentId": "104",
+    "name": "Kaplavas pag.",
+    "iso3": "LVA",
+    "admLevel": 2
+  },
+  {
+    "id": "279890000104",
+    "parentId": "104",
+    "name": "Valkas pag.",
+    "iso3": "LVA",
+    "admLevel": 2
+  },
+  {
+    "id": "279950000104",
+    "parentId": "104",
+    "name": "Vaiņodes pag.",
+    "iso3": "LVA",
+    "admLevel": 2
+  },
+  {
+    "id": "204420000065",
+    "parentId": "065",
+    "name": "Tata Province",
+    "iso3": "MAR",
+    "admLevel": 2
+  },
+  {
+    "id": "204470000065",
+    "parentId": "065",
+    "name": "Province de Nador إقليم الناظور",
+    "iso3": "MAR",
+    "admLevel": 2
+  },
+  {
+    "id": "205070000065",
+    "parentId": "065",
+    "name": "Oued Ed-Dahab Province",
+    "iso3": "MAR",
+    "admLevel": 2
+  },
+  {
+    "id": "285170000112",
+    "parentId": "112",
+    "name": "Fontvieille",
+    "iso3": "MCO",
+    "admLevel": 2
+  },
+  {
+    "id": "285190000112",
+    "parentId": "112",
+    "name": "La Condamine",
+    "iso3": "MCO",
+    "admLevel": 2
+  },
+  {
+    "id": "285210000112",
+    "parentId": "112",
+    "name": "Larvotto",
+    "iso3": "MCO",
+    "admLevel": 2
+  },
+  {
+    "id": "319970000127",
+    "parentId": "127",
+    "name": "Taraclia",
+    "iso3": "MDA",
+    "admLevel": 2
+  },
+  {
+    "id": "319990000127",
+    "parentId": "127",
+    "name": "Basarabeasca",
+    "iso3": "MDA",
+    "admLevel": 2
+  },
+  {
+    "id": "320120000127",
+    "parentId": "127",
+    "name": "Ungheni",
+    "iso3": "MDA",
+    "admLevel": 2
+  },
+  {
+    "id": "320150000127",
+    "parentId": "127",
+    "name": "Transnistria",
+    "iso3": "MDA",
+    "admLevel": 2
+  },
+  {
+    "id": "290480000116",
+    "parentId": "116",
+    "name": "Analalava",
+    "iso3": "MDG",
+    "admLevel": 2
+  },
+  {
+    "id": "290820000116",
+    "parentId": "116",
+    "name": "Antsiranana II",
+    "iso3": "MDG",
+    "admLevel": 2
+  },
+  {
+    "id": "290830000116",
+    "parentId": "116",
+    "name": "Antsiranana I",
+    "iso3": "MDG",
+    "admLevel": 2
+  },
+  {
+    "id": "290860000116",
+    "parentId": "116",
+    "name": "Ambanja",
+    "iso3": "MDG",
+    "admLevel": 2
+  },
+  {
+    "id": "292780000119",
+    "parentId": "119",
+    "name": "South Huvadhoo",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292790000119",
+    "parentId": "119",
+    "name": "South Nilandhoo",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292800000119",
+    "parentId": "119",
+    "name": "North Nilandhoo",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292810000119",
+    "parentId": "119",
+    "name": "Kolhumadulu",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292820000119",
+    "parentId": "119",
+    "name": "South Thiladhunmathe",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292830000119",
+    "parentId": "119",
+    "name": "North Maalhosmadulu",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292840000119",
+    "parentId": "119",
+    "name": "South Maalhosmadulu",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292850000119",
+    "parentId": "119",
+    "name": "North Thiladhunmathe",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292860000119",
+    "parentId": "119",
+    "name": "North Miladhunmadulu",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292870000119",
+    "parentId": "119",
+    "name": "Hadhdhunmathee",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292880000119",
+    "parentId": "119",
+    "name": "Addoo",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292890000119",
+    "parentId": "119",
+    "name": "North Huvadhoo",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292910000119",
+    "parentId": "119",
+    "name": "South Miladhunmadulu",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292920000119",
+    "parentId": "119",
+    "name": "Mulaku",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292930000119",
+    "parentId": "119",
+    "name": "Faadhippolhu",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292940000119",
+    "parentId": "119",
+    "name": "Male'",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292950000119",
+    "parentId": "119",
+    "name": "Male'",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292960000119",
+    "parentId": "119",
+    "name": "North Ari",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "292970000119",
+    "parentId": "119",
+    "name": "South Ari",
+    "iso3": "MDV",
+    "admLevel": 2
+  },
+  {
+    "id": "295920000125",
+    "parentId": "125",
+    "name": "Mexicali",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "295990000125",
+    "parentId": "125",
+    "name": "Carmen",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "296540000125",
+    "parentId": "125",
+    "name": "Manzanillo",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "296560000125",
+    "parentId": "125",
+    "name": "Tecomán",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "297850000125",
+    "parentId": "125",
+    "name": "Guadalupe",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "298100000125",
+    "parentId": "125",
+    "name": "Ojinaga",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "304420000125",
+    "parentId": "125",
+    "name": "San Blas",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "310280000125",
+    "parentId": "125",
+    "name": "Heroica Ciudad de Juchitán de Zaragoza",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "313030000125",
+    "parentId": "125",
+    "name": "Tulum",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "313070000125",
+    "parentId": "125",
+    "name": "Othón P. Blanco",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "313680000125",
+    "parentId": "125",
+    "name": "Angostura",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "313890000125",
+    "parentId": "125",
+    "name": "Huatabampo",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "314560000125",
+    "parentId": "125",
+    "name": "Guaymas",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "315880000125",
+    "parentId": "125",
+    "name": "Alvarado",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "317280000125",
+    "parentId": "125",
+    "name": "Tamiahua",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "317660000125",
+    "parentId": "125",
+    "name": "Tuxpan",
+    "iso3": "MEX",
+    "admLevel": 2
+  },
+  {
+    "id": "294160000122",
+    "parentId": "122",
+    "name": "Kwajalein",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294170000122",
+    "parentId": "122",
+    "name": "Kili",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294180000122",
+    "parentId": "122",
+    "name": "Likiep",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294200000122",
+    "parentId": "122",
+    "name": "Ailinglaplap",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294210000122",
+    "parentId": "122",
+    "name": "Ailuk",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294220000122",
+    "parentId": "122",
+    "name": "Arno",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294240000122",
+    "parentId": "122",
+    "name": "Ebon",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294250000122",
+    "parentId": "122",
+    "name": "Enewetak",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294270000122",
+    "parentId": "122",
+    "name": "Lae",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294280000122",
+    "parentId": "122",
+    "name": "Majuro",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294290000122",
+    "parentId": "122",
+    "name": "Mejit",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "294300000122",
+    "parentId": "122",
+    "name": "Namdrik",
+    "iso3": "MHL",
+    "admLevel": 2
+  },
+  {
+    "id": "288970000115",
+    "parentId": "115",
+    "name": "Berovo",
+    "iso3": "MKD",
+    "admLevel": 2
+  },
+  {
+    "id": "289030000115",
+    "parentId": "115",
+    "name": "Makedonska Kamenitsa",
+    "iso3": "MKD",
+    "admLevel": 2
+  },
+  {
+    "id": "289540000115",
+    "parentId": "115",
+    "name": "Staro Nagorichane",
+    "iso3": "MKD",
+    "admLevel": 2
+  },
+  {
+    "id": "293380000120",
+    "parentId": "120",
+    "name": "Kolondieba",
+    "iso3": "MLI",
+    "admLevel": 2
+  },
+  {
+    "id": "293480000121",
+    "parentId": "121",
+    "name": "Ghajnsielem",
+    "iso3": "MLT",
+    "admLevel": 2
+  },
+  {
+    "id": "293630000121",
+    "parentId": "121",
+    "name": "Mellieħa",
+    "iso3": "MLT",
+    "admLevel": 2
+  },
+  {
+    "id": "293960000121",
+    "parentId": "121",
+    "name": "Isla",
+    "iso3": "MLT",
+    "admLevel": 2
+  },
+  {
+    "id": "476030000193",
+    "parentId": "193",
+    "name": "Labutta",
+    "iso3": "MMR",
+    "admLevel": 2
+  },
+  {
+    "id": "476240000193",
+    "parentId": "193",
+    "name": "Myawaddy",
+    "iso3": "MMR",
+    "admLevel": 2
+  },
+  {
+    "id": "476410000193",
+    "parentId": "193",
+    "name": "Kyaukpyu",
+    "iso3": "MMR",
+    "admLevel": 2
+  },
+  {
+    "id": "476630000193",
+    "parentId": "193",
+    "name": "Yangon (South)",
+    "iso3": "MMR",
+    "admLevel": 2
+  },
+  {
+    "id": "476680000193",
+    "parentId": "193",
+    "name": "Monghsat",
+    "iso3": "MMR",
+    "admLevel": 2
+  },
+  {
+    "id": "476730000193",
+    "parentId": "193",
+    "name": "Laukkaing",
+    "iso3": "MMR",
+    "admLevel": 2
+  },
+  {
+    "id": "288820000114",
+    "parentId": "114",
+    "name": "Tivat Municipality",
+    "iso3": "MNE",
+    "admLevel": 2
+  },
+  {
+    "id": "287940000113",
+    "parentId": "113",
+    "name": "Teshig",
+    "iso3": "MNG",
+    "admLevel": 2
+  },
+  {
+    "id": "205360000066",
+    "parentId": "066",
+    "name": "Cidade De Inhambane",
+    "iso3": "MOZ",
+    "admLevel": 2
+  },
+  {
+    "id": "205940000066",
+    "parentId": "066",
+    "name": "Marracuene",
+    "iso3": "MOZ",
+    "admLevel": 2
+  },
+  {
+    "id": "206080000066",
+    "parentId": "066",
+    "name": "Mecula",
+    "iso3": "MOZ",
+    "admLevel": 2
+  },
+  {
+    "id": "206150000066",
+    "parentId": "066",
+    "name": "Moatize",
+    "iso3": "MOZ",
+    "admLevel": 2
+  },
+  {
+    "id": "206370000066",
+    "parentId": "066",
+    "name": "Mutarara",
+    "iso3": "MOZ",
+    "admLevel": 2
+  },
+  {
+    "id": "294480000123",
+    "parentId": "123",
+    "name": "Bir Moghrein",
+    "iso3": "MRT",
+    "admLevel": 2
+  },
+  {
+    "id": "294490000123",
+    "parentId": "123",
+    "name": "Boghe",
+    "iso3": "MRT",
+    "admLevel": 2
+  },
+  {
+    "id": "294620000123",
+    "parentId": "123",
+    "name": "Kaedi",
+    "iso3": "MRT",
+    "admLevel": 2
+  },
+  {
+    "id": "294660000123",
+    "parentId": "123",
+    "name": "Koubenni",
+    "iso3": "MRT",
+    "admLevel": 2
+  },
+  {
+    "id": "294700000123",
+    "parentId": "123",
+    "name": "Maghama",
+    "iso3": "MRT",
+    "admLevel": 2
+  },
+  {
+    "id": "294970000124",
+    "parentId": "124",
+    "name": "Grand Port",
+    "iso3": "MUS",
+    "admLevel": 2
+  },
+  {
+    "id": "295010000124",
+    "parentId": "124",
+    "name": "Port Louis",
+    "iso3": "MUS",
+    "admLevel": 2
+  },
+  {
+    "id": "295060000124",
+    "parentId": "124",
+    "name": "Agaléga",
+    "iso3": "MUS",
+    "admLevel": 2
+  },
+  {
+    "id": "291110000117",
+    "parentId": "117",
+    "name": "Nsanje",
+    "iso3": "MWI",
+    "admLevel": 2
+  },
+  {
+    "id": "291250000118",
+    "parentId": "118",
+    "name": "Jeli",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "291320000118",
+    "parentId": "118",
+    "name": "Seberang Perai Utara",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "291360000118",
+    "parentId": "118",
+    "name": "Baling",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "291940000118",
+    "parentId": "118",
+    "name": "Johor Bahru",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "291950000118",
+    "parentId": "118",
+    "name": "Kota Tinggi",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "291970000118",
+    "parentId": "118",
+    "name": "Klang",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292080000118",
+    "parentId": "118",
+    "name": "Tebedu",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292180000118",
+    "parentId": "118",
+    "name": "Lubok Antu",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292230000118",
+    "parentId": "118",
+    "name": "Song",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292300000118",
+    "parentId": "118",
+    "name": "Daro",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292390000118",
+    "parentId": "118",
+    "name": "Marudi",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292580000118",
+    "parentId": "118",
+    "name": "Kudat",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292590000118",
+    "parentId": "118",
+    "name": "Kalabakan",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292660000118",
+    "parentId": "118",
+    "name": "Sandakan",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292710000118",
+    "parentId": "118",
+    "name": "Kuala Nerus",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "292730000118",
+    "parentId": "118",
+    "name": "Rompin",
+    "iso3": "MYS",
+    "admLevel": 2
+  },
+  {
+    "id": "206680000067",
+    "parentId": "067",
+    "name": "Linyandi",
+    "iso3": "NAM",
+    "admLevel": 2
+  },
+  {
+    "id": "206700000067",
+    "parentId": "067",
+    "name": "Arandis",
+    "iso3": "NAM",
+    "admLevel": 2
+  },
+  {
+    "id": "207020000067",
+    "parentId": "067",
+    "name": "Rundu Urban",
+    "iso3": "NAM",
+    "admLevel": 2
+  },
+  {
+    "id": "207550000067",
+    "parentId": "067",
+    "name": "Omuthiyagwipundi",
+    "iso3": "NAM",
+    "admLevel": 2
+  },
+  {
+    "id": "207600000067",
+    "parentId": "067",
+    "name": "Grootfontein",
+    "iso3": "NAM",
+    "admLevel": 2
+  },
+  {
+    "id": "484980000196",
+    "parentId": "196",
+    "name": "Say",
+    "iso3": "NER",
+    "admLevel": 2
+  },
+  {
+    "id": "485290000196",
+    "parentId": "196",
+    "name": "Gazaoua",
+    "iso3": "NER",
+    "admLevel": 2
+  },
+  {
+    "id": "485520000196",
+    "parentId": "196",
+    "name": "Diffa",
+    "iso3": "NER",
+    "admLevel": 2
+  },
+  {
+    "id": "485680000197",
+    "parentId": "197",
+    "name": "Imeko Afon",
+    "iso3": "NGA",
+    "admLevel": 2
+  },
+  {
+    "id": "488610000197",
+    "parentId": "197",
+    "name": "Apapa",
+    "iso3": "NGA",
+    "admLevel": 2
+  },
+  {
+    "id": "490090000197",
+    "parentId": "197",
+    "name": "Abadam",
+    "iso3": "NGA",
+    "admLevel": 2
+  },
+  {
+    "id": "320360000128",
+    "parentId": "128",
+    "name": "Somotillo (Municipio)",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "320730000128",
+    "parentId": "128",
+    "name": "Municipio Dipilito",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "320770000128",
+    "parentId": "128",
+    "name": "Municipio San Fernando",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "321260000128",
+    "parentId": "128",
+    "name": "Municipio Wiwilí de Jinotega",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "321650000128",
+    "parentId": "128",
+    "name": "Municipio Waspán",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "321740000128",
+    "parentId": "128",
+    "name": "Municipio Laguna de Perlas",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "321840000128",
+    "parentId": "128",
+    "name": "Corn Island",
+    "iso3": "NIC",
+    "admLevel": 2
+  },
+  {
+    "id": "046810000011",
+    "parentId": "011",
+    "name": "Vlieland",
+    "iso3": "NLD",
+    "admLevel": 2
+  },
+  {
+    "id": "049900000011",
+    "parentId": "011",
+    "name": "Berg en Dal",
+    "iso3": "NLD",
+    "admLevel": 2
+  },
+  {
+    "id": "062870000024",
+    "parentId": "024",
+    "name": "Bremanger nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "062890000024",
+    "parentId": "024",
+    "name": "Kristiansand nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "062960000024",
+    "parentId": "024",
+    "name": "Lebesby nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "062980000024",
+    "parentId": "024",
+    "name": "Hammerfest nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063000000024",
+    "parentId": "024",
+    "name": "Karlsøy nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063060000024",
+    "parentId": "024",
+    "name": "Bindal nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063070000024",
+    "parentId": "024",
+    "name": "Kristiansund nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063090000024",
+    "parentId": "024",
+    "name": "Aukra nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063100000024",
+    "parentId": "024",
+    "name": "Selje nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063120000024",
+    "parentId": "024",
+    "name": "Bømlo nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063560000024",
+    "parentId": "024",
+    "name": "Ulvik nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063600000024",
+    "parentId": "024",
+    "name": "Hadsel nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063630000024",
+    "parentId": "024",
+    "name": "Ibestad nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063730000024",
+    "parentId": "024",
+    "name": "Vaksdal nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "063800000024",
+    "parentId": "024",
+    "name": "Ålesund nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064220000024",
+    "parentId": "024",
+    "name": "Vefsn nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064330000024",
+    "parentId": "024",
+    "name": "Luster nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064380000024",
+    "parentId": "024",
+    "name": "Fusa nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064470000024",
+    "parentId": "024",
+    "name": "Stranda nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064480000024",
+    "parentId": "024",
+    "name": "Skodje nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064530000024",
+    "parentId": "024",
+    "name": "Rauma nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064540000024",
+    "parentId": "024",
+    "name": "Eid nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064650000024",
+    "parentId": "024",
+    "name": "Alta nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064660000024",
+    "parentId": "024",
+    "name": "Salangen nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064750000024",
+    "parentId": "024",
+    "name": "Sortland nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "064830000024",
+    "parentId": "024",
+    "name": "Fredrikstad nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065110000024",
+    "parentId": "024",
+    "name": "Samnanger nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065200000024",
+    "parentId": "024",
+    "name": "Kvænangen nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065210000024",
+    "parentId": "024",
+    "name": "Kvalsund nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065250000024",
+    "parentId": "024",
+    "name": "Øksnes nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065320000024",
+    "parentId": "024",
+    "name": "Giske nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065420000024",
+    "parentId": "024",
+    "name": "Haram nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065760000024",
+    "parentId": "024",
+    "name": "Finnøy nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065770000024",
+    "parentId": "024",
+    "name": "Forsand nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "065820000024",
+    "parentId": "024",
+    "name": "Etne nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066000000024",
+    "parentId": "024",
+    "name": "Høyanger nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066090000024",
+    "parentId": "024",
+    "name": "Lyngdal nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066660000024",
+    "parentId": "024",
+    "name": "Skjervøy nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066730000024",
+    "parentId": "024",
+    "name": "Sømna nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066760000024",
+    "parentId": "024",
+    "name": "Frøya nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066800000024",
+    "parentId": "024",
+    "name": "Sande nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066810000024",
+    "parentId": "024",
+    "name": "Flora nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066830000024",
+    "parentId": "024",
+    "name": "Solund nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066850000024",
+    "parentId": "024",
+    "name": "Sund nor",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "066990000024",
+    "parentId": "024",
+    "name": "Porsáŋgu sme 2",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "067020000024",
+    "parentId": "024",
+    "name": "Divtasvuodna smj 1",
+    "iso3": "NOR",
+    "admLevel": 2
+  },
+  {
+    "id": "215160000076",
+    "parentId": "076",
+    "name": "Saptari",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215180000076",
+    "parentId": "076",
+    "name": "Bara",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215200000076",
+    "parentId": "076",
+    "name": "Gorkha",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215240000076",
+    "parentId": "076",
+    "name": "Manang",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215290000076",
+    "parentId": "076",
+    "name": "Kapilbastu",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215390000076",
+    "parentId": "076",
+    "name": "Dolpa",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215580000076",
+    "parentId": "076",
+    "name": "Baitadi",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215630000076",
+    "parentId": "076",
+    "name": "Rasuwa",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215770000076",
+    "parentId": "076",
+    "name": "Sankhuwasabha",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215840000076",
+    "parentId": "076",
+    "name": "Sunsari",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215890000076",
+    "parentId": "076",
+    "name": "Ilam",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "215900000076",
+    "parentId": "076",
+    "name": "Jhapa",
+    "iso3": "NPL",
+    "admLevel": 2
+  },
+  {
+    "id": "137620000031",
+    "parentId": "031",
+    "name": "Western Bay of Plenty District",
+    "iso3": "NZL",
+    "admLevel": 2
+  },
+  {
+    "id": "137630000031",
+    "parentId": "031",
+    "name": "Tauranga City",
+    "iso3": "NZL",
+    "admLevel": 2
+  },
+  {
+    "id": "137950000031",
+    "parentId": "031",
+    "name": "Upper Harbour Local Board Area",
+    "iso3": "NZL",
+    "admLevel": 2
+  },
+  {
+    "id": "138200000031",
+    "parentId": "031",
+    "name": "Porirua City",
+    "iso3": "NZL",
+    "admLevel": 2
+  },
+  {
+    "id": "138360000031",
+    "parentId": "031",
+    "name": "Area Outside Territorial Authority",
+    "iso3": "NZL",
+    "admLevel": 2
+  },
+  {
+    "id": "322120000129",
+    "parentId": "129",
+    "name": "WILAYAT KHASAB",
+    "iso3": "OMN",
+    "admLevel": 2
+  },
+  {
+    "id": "322340000129",
+    "parentId": "129",
+    "name": "WILAYAT AL BURAYMI",
+    "iso3": "OMN",
+    "admLevel": 2
+  },
+  {
+    "id": "322380000129",
+    "parentId": "129",
+    "name": "WILAYAT MAHAWT",
+    "iso3": "OMN",
+    "admLevel": 2
+  },
+  {
+    "id": "322410000129",
+    "parentId": "129",
+    "name": "WILAYAT SHALIM WA JUZOR AL HALLANIYAT",
+    "iso3": "OMN",
+    "admLevel": 2
+  },
+  {
+    "id": "322480000130",
+    "parentId": "130",
+    "name": "Shigar",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "322610000130",
+    "parentId": "130",
+    "name": "Qilla Saifullah",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "322780000130",
+    "parentId": "130",
+    "name": "Lasbela",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "323230000130",
+    "parentId": "130",
+    "name": "Sialkot",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "323330000130",
+    "parentId": "130",
+    "name": "North Waziristan",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "323360000130",
+    "parentId": "130",
+    "name": "Khyber",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "323660000130",
+    "parentId": "130",
+    "name": "Kharmang",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "323670000130",
+    "parentId": "130",
+    "name": "Skardu",
+    "iso3": "PAK",
+    "admLevel": 2
+  },
+  {
+    "id": "324500000132",
+    "parentId": "132",
+    "name": "Bocas del Toro",
+    "iso3": "PAN",
+    "admLevel": 2
+  },
+  {
+    "id": "324510000132",
+    "parentId": "132",
+    "name": "Chiriquí Grande",
+    "iso3": "PAN",
+    "admLevel": 2
+  },
+  {
+    "id": "325100000132",
+    "parentId": "132",
+    "name": "Balboa",
+    "iso3": "PAN",
+    "admLevel": 2
+  },
+  {
+    "id": "325230000132",
+    "parentId": "132",
+    "name": "Montijo",
+    "iso3": "PAN",
+    "admLevel": 2
+  },
+  {
+    "id": "330070000135",
+    "parentId": "135",
+    "name": "Puno",
+    "iso3": "PER",
+    "admLevel": 2
+  },
+  {
+    "id": "330230000135",
+    "parentId": "135",
+    "name": "Sandia",
+    "iso3": "PER",
+    "admLevel": 2
+  },
+  {
+    "id": "330520000135",
+    "parentId": "135",
+    "name": "Yunguyo",
+    "iso3": "PER",
+    "admLevel": 2
+  },
+  {
+    "id": "330530000135",
+    "parentId": "135",
+    "name": "Zarumilla",
+    "iso3": "PER",
+    "admLevel": 2
+  },
+  {
+    "id": "330550000136",
+    "parentId": "136",
+    "name": "Agusan del Norte",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "330580000136",
+    "parentId": "136",
+    "name": "Albay",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "330590000136",
+    "parentId": "136",
+    "name": "Antique",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "330610000136",
+    "parentId": "136",
+    "name": "Aurora",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "330640000136",
+    "parentId": "136",
+    "name": "Batanes",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "330710000136",
+    "parentId": "136",
+    "name": "Cagayan",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "330880000136",
+    "parentId": "136",
+    "name": "Eastern Samar",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331160000136",
+    "parentId": "136",
+    "name": "Occidental Mindoro",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331180000136",
+    "parentId": "136",
+    "name": "Palawan",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331210000136",
+    "parentId": "136",
+    "name": "Quezon",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331240000136",
+    "parentId": "136",
+    "name": "Romblon",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331250000136",
+    "parentId": "136",
+    "name": "Samar",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331260000136",
+    "parentId": "136",
+    "name": "Sarangani",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331280000136",
+    "parentId": "136",
+    "name": "Sorsogon",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331300000136",
+    "parentId": "136",
+    "name": "Southern Leyte",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331310000136",
+    "parentId": "136",
+    "name": "Sulu",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331320000136",
+    "parentId": "136",
+    "name": "Surigao del Norte",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331350000136",
+    "parentId": "136",
+    "name": "Tawi-Tawi",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331380000136",
+    "parentId": "136",
+    "name": "Zamboanga del Sur",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "331390000136",
+    "parentId": "136",
+    "name": "Zamboanga Sibugay",
+    "iso3": "PHL",
+    "admLevel": 2
+  },
+  {
+    "id": "324480000131",
+    "parentId": "131",
+    "name": "Rock Islands",
+    "iso3": "PLW",
+    "admLevel": 2
+  },
+  {
+    "id": "325300000133",
+    "parentId": "133",
+    "name": "Bogia District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325320000133",
+    "parentId": "133",
+    "name": "Central Bougainville District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325360000133",
+    "parentId": "133",
+    "name": "Esa'ala District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325430000133",
+    "parentId": "133",
+    "name": "Huon District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325450000133",
+    "parentId": "133",
+    "name": "Ijivitari District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325550000133",
+    "parentId": "133",
+    "name": "Kavieng District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325580000133",
+    "parentId": "133",
+    "name": "Kikori District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325590000133",
+    "parentId": "133",
+    "name": "Kiriwina-Goodenough District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325780000133",
+    "parentId": "133",
+    "name": "Namatanai District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325820000133",
+    "parentId": "133",
+    "name": "North Bougainville District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325900000133",
+    "parentId": "133",
+    "name": "Rai Coast District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325920000133",
+    "parentId": "133",
+    "name": "Samarai-Murua District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325970000133",
+    "parentId": "133",
+    "name": "Sumkar District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "325980000133",
+    "parentId": "133",
+    "name": "Talasea District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "326010000133",
+    "parentId": "133",
+    "name": "Tawae/Siassi District",
+    "iso3": "PNG",
+    "admLevel": 2
+  },
+  {
+    "id": "333410000137",
+    "parentId": "137",
+    "name": "powiat chełmski",
+    "iso3": "POL",
+    "admLevel": 2
+  },
+  {
+    "id": "334600000137",
+    "parentId": "137",
+    "name": "powiat nowodworski",
+    "iso3": "POL",
+    "admLevel": 2
+  },
+  {
+    "id": "240750000092",
+    "parentId": "092",
+    "name": "Hoeryong City",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241030000092",
+    "parentId": "092",
+    "name": "Kangryong",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241310000092",
+    "parentId": "092",
+    "name": "Musan",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241340000092",
+    "parentId": "092",
+    "name": "Nampo City",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241620000092",
+    "parentId": "092",
+    "name": "Rakwon",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241660000092",
+    "parentId": "092",
+    "name": "Riwon",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241830000092",
+    "parentId": "092",
+    "name": "Sinpho City",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "241970000092",
+    "parentId": "092",
+    "name": "Sukchon",
+    "iso3": "PRK",
+    "admLevel": 2
+  },
+  {
+    "id": "335670000138",
+    "parentId": "138",
+    "name": "Seixal",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "335680000138",
+    "parentId": "138",
+    "name": "Barriero",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "335690000138",
+    "parentId": "138",
+    "name": "Moita",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "336310000138",
+    "parentId": "138",
+    "name": "Nazare",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "337950000138",
+    "parentId": "138",
+    "name": "Lajes das Flores",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "338000000138",
+    "parentId": "138",
+    "name": "Sao Roque do Pico",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "338100000138",
+    "parentId": "138",
+    "name": "Ribeira Grande",
+    "iso3": "PRT",
+    "admLevel": 2
+  },
+  {
+    "id": "327090000134",
+    "parentId": "134",
+    "name": "Jose Falcon",
+    "iso3": "PRY",
+    "admLevel": 2
+  },
+  {
+    "id": "328260000134",
+    "parentId": "134",
+    "name": "Tte. Esteban Martinez",
+    "iso3": "PRY",
+    "admLevel": 2
+  },
+  {
+    "id": "464700000188",
+    "parentId": "188",
+    "name": "70",
+    "iso3": "QAT",
+    "admLevel": 2
+  },
+  {
+    "id": "465340000188",
+    "parentId": "188",
+    "name": "72",
+    "iso3": "QAT",
+    "admLevel": 2
+  },
+  {
+    "id": "465390000188",
+    "parentId": "188",
+    "name": "98",
+    "iso3": "QAT",
+    "admLevel": 2
+  },
+  {
+    "id": "465410000188",
+    "parentId": "188",
+    "name": "74",
+    "iso3": "QAT",
+    "admLevel": 2
+  },
+  {
+    "id": "465420000188",
+    "parentId": "188",
+    "name": "66",
+    "iso3": "QAT",
+    "admLevel": 2
+  },
+  {
+    "id": "465430000188",
+    "parentId": "188",
+    "name": "61",
+    "iso3": "QAT",
+    "admLevel": 2
+  },
+  {
+    "id": "360260000139",
+    "parentId": "139",
+    "name": "ROMANESTI",
+    "iso3": "ROU",
+    "admLevel": 2
+  },
+  {
+    "id": "367150000139",
+    "parentId": "139",
+    "name": "ISTRIA",
+    "iso3": "ROU",
+    "admLevel": 2
+  },
+  {
+    "id": "367910000139",
+    "parentId": "139",
+    "name": "VICTORIA",
+    "iso3": "ROU",
+    "admLevel": 2
+  },
+  {
+    "id": "368900000139",
+    "parentId": "139",
+    "name": "CEAMURLIA DE JOS",
+    "iso3": "ROU",
+    "admLevel": 2
+  },
+  {
+    "id": "368960000139",
+    "parentId": "139",
+    "name": "JURILOVCA",
+    "iso3": "ROU",
+    "admLevel": 2
+  },
+  {
+    "id": "372450000140",
+    "parentId": "140",
+    "name": "Poronaysky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "373170000140",
+    "parentId": "140",
+    "name": "Находкинский городской окр",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "377950000140",
+    "parentId": "140",
+    "name": "Iultinsky District‎",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "378370000140",
+    "parentId": "140",
+    "name": "Щербиновский район",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "378980000140",
+    "parentId": "140",
+    "name": "Sosnovy Bor",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "379370000140",
+    "parentId": "140",
+    "name": "Anabarsky Ulus",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "380060000140",
+    "parentId": "140",
+    "name": "Kyakhtinsky Rayon",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "382150000140",
+    "parentId": "140",
+    "name": "Aleutsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "382840000140",
+    "parentId": "140",
+    "name": "Dzheyrakhsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "383850000140",
+    "parentId": "140",
+    "name": "Kurilsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "384750000140",
+    "parentId": "140",
+    "name": "Odessky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "384860000140",
+    "parentId": "140",
+    "name": "Onezhsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "384910000140",
+    "parentId": "140",
+    "name": "Pallasovsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "385480000140",
+    "parentId": "140",
+    "name": "Severo-Kurilsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "385740000140",
+    "parentId": "140",
+    "name": "Sorokka District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "387270000140",
+    "parentId": "140",
+    "name": "Александровск-Сахалинский",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "387900000140",
+    "parentId": "140",
+    "name": "городской округ Новая Земл",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "388060000140",
+    "parentId": "140",
+    "name": "городской округ Северодвин",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "388320000140",
+    "parentId": "140",
+    "name": "ЗАТО Заозёрск",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "389530000140",
+    "parentId": "140",
+    "name": "Vilyuchinsk",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "390120000140",
+    "parentId": "140",
+    "name": "Nadymsky Rayon",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "390700000140",
+    "parentId": "140",
+    "name": "Penzhinsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "391920000140",
+    "parentId": "140",
+    "name": "Primorsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "392380000140",
+    "parentId": "140",
+    "name": "Владивостокский городской",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "392660000140",
+    "parentId": "140",
+    "name": "Zapolyarny District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "392830000140",
+    "parentId": "140",
+    "name": "Yelizovsky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "393040000140",
+    "parentId": "140",
+    "name": "Bulunsky Ulus",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "393120000140",
+    "parentId": "140",
+    "name": "Ovyursky Kozhuun",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "393240000140",
+    "parentId": "140",
+    "name": "Varnensky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "393640000140",
+    "parentId": "140",
+    "name": "ЗАТО Фокино",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "393770000140",
+    "parentId": "140",
+    "name": "Ileksky District",
+    "iso3": "RUS",
+    "admLevel": 2
+  },
+  {
+    "id": "394080000141",
+    "parentId": "141",
+    "name": "Rusizi",
+    "iso3": "RWA",
+    "admLevel": 2
+  },
+  {
+    "id": "398390000149",
+    "parentId": "149",
+    "name": "Al Khubar Governorate",
+    "iso3": "SAU",
+    "admLevel": 2
+  },
+  {
+    "id": "398420000149",
+    "parentId": "149",
+    "name": "Al Udayd Governorate",
+    "iso3": "SAU",
+    "admLevel": 2
+  },
+  {
+    "id": "398460000149",
+    "parentId": "149",
+    "name": "Al Jubayl Governorate",
+    "iso3": "SAU",
+    "admLevel": 2
+  },
+  {
+    "id": "399140000149",
+    "parentId": "149",
+    "name": "Sharurah",
+    "iso3": "SAU",
+    "admLevel": 2
+  },
+  {
+    "id": "399290000149",
+    "parentId": "149",
+    "name": "Jiddah",
+    "iso3": "SAU",
+    "admLevel": 2
+  },
+  {
+    "id": "412730000162",
+    "parentId": "162",
+    "name": "Abyei PCA area",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "412750000162",
+    "parentId": "162",
+    "name": "Ad Dali",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "412810000162",
+    "parentId": "162",
+    "name": "Ag Geneina",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "413330000162",
+    "parentId": "162",
+    "name": "At Tina",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "413680000162",
+    "parentId": "162",
+    "name": "Habila - WD",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "413700000162",
+    "parentId": "162",
+    "name": "Halfa",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "413900000162",
+    "parentId": "162",
+    "name": "Kulbus",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "414020000162",
+    "parentId": "162",
+    "name": "Port Sudan",
+    "iso3": "SDN",
+    "admLevel": 2
+  },
+  {
+    "id": "399860000150",
+    "parentId": "150",
+    "name": "Bakel",
+    "iso3": "SEN",
+    "admLevel": 2
+  },
+  {
+    "id": "246780000098",
+    "parentId": "098",
+    "name": "CHANGI BAY",
+    "iso3": "SGP",
+    "admLevel": 2
+  },
+  {
+    "id": "246840000098",
+    "parentId": "098",
+    "name": "JURONG EAST",
+    "iso3": "SGP",
+    "admLevel": 2
+  },
+  {
+    "id": "246940000098",
+    "parentId": "098",
+    "name": "NORTH-EASTERN ISLANDS",
+    "iso3": "SGP",
+    "admLevel": 2
+  },
+  {
+    "id": "247000000098",
+    "parentId": "098",
+    "name": "PIONEER",
+    "iso3": "SGP",
+    "admLevel": 2
+  },
+  {
+    "id": "403250000153",
+    "parentId": "153",
+    "name": "East Choiseul",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403280000153",
+    "parentId": "153",
+    "name": "West Honiara",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403310000153",
+    "parentId": "153",
+    "name": "South Vella la Vella",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403320000153",
+    "parentId": "153",
+    "name": "Ranongga-Simbo",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403340000153",
+    "parentId": "153",
+    "name": "West New Georgia-Vonavona",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403360000153",
+    "parentId": "153",
+    "name": "South New Georgia-Rendova",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403400000153",
+    "parentId": "153",
+    "name": "Gao-Bugotu",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403420000153",
+    "parentId": "153",
+    "name": "Savo-Russull Islands",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403430000153",
+    "parentId": "153",
+    "name": "Rennell-Bellona",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403580000153",
+    "parentId": "153",
+    "name": "East Malaita",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403590000153",
+    "parentId": "153",
+    "name": "Auki-Langalanga",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403620000153",
+    "parentId": "153",
+    "name": "East AreAre",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403630000153",
+    "parentId": "153",
+    "name": "West Areare",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403650000153",
+    "parentId": "153",
+    "name": "Malaita Outer Island",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403660000153",
+    "parentId": "153",
+    "name": "West Makira",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403690000153",
+    "parentId": "153",
+    "name": "Ulawa-Ugi",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "403710000153",
+    "parentId": "153",
+    "name": "Temotu Vatu",
+    "iso3": "SLB",
+    "admLevel": 2
+  },
+  {
+    "id": "196450000056",
+    "parentId": "056",
+    "name": "Acajutla",
+    "iso3": "SLV",
+    "admLevel": 2
+  },
+  {
+    "id": "198230000056",
+    "parentId": "056",
+    "name": "Carolina",
+    "iso3": "SLV",
+    "admLevel": 2
+  },
+  {
+    "id": "198350000056",
+    "parentId": "056",
+    "name": "San Fernando",
+    "iso3": "SLV",
+    "admLevel": 2
+  },
+  {
+    "id": "198380000056",
+    "parentId": "056",
+    "name": "Perquin",
+    "iso3": "SLV",
+    "admLevel": 2
+  },
+  {
+    "id": "198670000056",
+    "parentId": "056",
+    "name": "Pasaquina",
+    "iso3": "SLV",
+    "admLevel": 2
+  },
+  {
+    "id": "403730000154",
+    "parentId": "154",
+    "name": "BERBERA",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "403740000154",
+    "parentId": "154",
+    "name": "BORAMA",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "403780000154",
+    "parentId": "154",
+    "name": "EYL",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "404590000154",
+    "parentId": "154",
+    "name": "WABERI",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "404650000154",
+    "parentId": "154",
+    "name": "BARGAAL",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "404820000154",
+    "parentId": "154",
+    "name": "DOLO",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "404850000154",
+    "parentId": "154",
+    "name": "HAFUN",
+    "iso3": "SOM",
+    "admLevel": 2
+  },
+  {
+    "id": "245340000095",
+    "parentId": "095",
+    "name": "Knjazevac Municipality",
+    "iso3": "SRB",
+    "admLevel": 2
+  },
+  {
+    "id": "245610000095",
+    "parentId": "095",
+    "name": "Apatin Municipality",
+    "iso3": "SRB",
+    "admLevel": 2
+  },
+  {
+    "id": "406000000156",
+    "parentId": "156",
+    "name": "Pochalla",
+    "iso3": "SSD",
+    "admLevel": 2
+  },
+  {
+    "id": "406030000156",
+    "parentId": "156",
+    "name": "Akobo",
+    "iso3": "SSD",
+    "admLevel": 2
+  },
+  {
+    "id": "406170000156",
+    "parentId": "156",
+    "name": "Manyo",
+    "iso3": "SSD",
+    "admLevel": 2
+  },
+  {
+    "id": "414540000163",
+    "parentId": "163",
+    "name": "Westelijke Polders",
+    "iso3": "SUR",
+    "admLevel": 2
+  },
+  {
+    "id": "414820000163",
+    "parentId": "163",
+    "name": "Nieuw Amsterdam",
+    "iso3": "SUR",
+    "admLevel": 2
+  },
+  {
+    "id": "401160000152",
+    "parentId": "152",
+    "name": "Piran / Pirano",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401170000152",
+    "parentId": "152",
+    "name": "Izola / Isola",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401350000152",
+    "parentId": "152",
+    "name": "Bovec",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401360000152",
+    "parentId": "152",
+    "name": "Kobarid",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401380000152",
+    "parentId": "152",
+    "name": "Brda",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401390000152",
+    "parentId": "152",
+    "name": "Kanal",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401410000152",
+    "parentId": "152",
+    "name": "Nempeter-Vrtojba",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401440000152",
+    "parentId": "152",
+    "name": "Miren-Kostanjevica",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401880000152",
+    "parentId": "152",
+    "name": "Dravograd",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "401980000152",
+    "parentId": "152",
+    "name": "Selnica ob Dravi",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "403040000152",
+    "parentId": "152",
+    "name": "Metlika",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "403090000152",
+    "parentId": "152",
+    "name": "Podcetrtek",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "403100000152",
+    "parentId": "152",
+    "name": "Razkrirje",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "403170000152",
+    "parentId": "152",
+    "name": "Crnomelj",
+    "iso3": "SVN",
+    "admLevel": 2
+  },
+  {
+    "id": "415650000165",
+    "parentId": "165",
+    "name": "Pajala",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "415670000165",
+    "parentId": "165",
+    "name": "Övertorneå",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "415840000165",
+    "parentId": "165",
+    "name": "Skellefteå",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "415870000165",
+    "parentId": "165",
+    "name": "Robertsfors",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "415900000165",
+    "parentId": "165",
+    "name": "Nordmaling",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "415910000165",
+    "parentId": "165",
+    "name": "Umeå",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "416010000165",
+    "parentId": "165",
+    "name": "Örnsköldsvik",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "416090000165",
+    "parentId": "165",
+    "name": "Hudiksvall",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "416130000165",
+    "parentId": "165",
+    "name": "Söderhamn",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "416330000165",
+    "parentId": "165",
+    "name": "Årjäng",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "416880000165",
+    "parentId": "165",
+    "name": "Malmö",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "416970000165",
+    "parentId": "165",
+    "name": "Torsås",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "417010000165",
+    "parentId": "165",
+    "name": "Mönsterås",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "417060000165",
+    "parentId": "165",
+    "name": "Västervik",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "417110000165",
+    "parentId": "165",
+    "name": "Varberg",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "417830000165",
+    "parentId": "165",
+    "name": "Lysekil",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "417900000165",
+    "parentId": "165",
+    "name": "Orust",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "418150000165",
+    "parentId": "165",
+    "name": "Oxelösund",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "418530000165",
+    "parentId": "165",
+    "name": "Öckerö",
+    "iso3": "SWE",
+    "admLevel": 2
+  },
+  {
+    "id": "246480000096",
+    "parentId": "096",
+    "name": "Central 2 Mahe",
+    "iso3": "SYC",
+    "admLevel": 2
+  },
+  {
+    "id": "246510000096",
+    "parentId": "096",
+    "name": "West Mahe",
+    "iso3": "SYC",
+    "admLevel": 2
+  },
+  {
+    "id": "246520000096",
+    "parentId": "096",
+    "name": "Other Islands",
+    "iso3": "SYC",
+    "admLevel": 2
+  },
+  {
+    "id": "420430000167",
+    "parentId": "167",
+    "name": "Tall Kalakh",
+    "iso3": "SYR",
+    "admLevel": 2
+  },
+  {
+    "id": "155810000045",
+    "parentId": "045",
+    "name": "Haraze-Al-Biar",
+    "iso3": "TCD",
+    "admLevel": 2
+  },
+  {
+    "id": "156180000045",
+    "parentId": "045",
+    "name": "N'Djaména",
+    "iso3": "TCD",
+    "admLevel": 2
+  },
+  {
+    "id": "156220000045",
+    "parentId": "045",
+    "name": "Wadi Hawar",
+    "iso3": "TCD",
+    "admLevel": 2
+  },
+  {
+    "id": "436900000173",
+    "parentId": "173",
+    "name": "Ave",
+    "iso3": "TGO",
+    "admLevel": 2
+  },
+  {
+    "id": "436930000173",
+    "parentId": "173",
+    "name": "Danyi",
+    "iso3": "TGO",
+    "admLevel": 2
+  },
+  {
+    "id": "437010000173",
+    "parentId": "173",
+    "name": "Tandjouare",
+    "iso3": "TGO",
+    "admLevel": 2
+  },
+  {
+    "id": "437030000173",
+    "parentId": "173",
+    "name": "Cinkassé",
+    "iso3": "TGO",
+    "admLevel": 2
+  },
+  {
+    "id": "428190000171",
+    "parentId": "171",
+    "name": "Chiang Saen",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "429020000171",
+    "parentId": "171",
+    "name": "Kap Choeng",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "429440000171",
+    "parentId": "171",
+    "name": "Khlong Yai",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "429690000171",
+    "parentId": "171",
+    "name": "Khura Buri",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "429780000171",
+    "parentId": "171",
+    "name": "Ko Samui",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "431290000171",
+    "parentId": "171",
+    "name": "Mueang Satun",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "434700000171",
+    "parentId": "171",
+    "name": "Su-Ngai Kolok",
+    "iso3": "THA",
+    "admLevel": 2
+  },
+  {
+    "id": "424870000169",
+    "parentId": "169",
+    "name": "Hamadoni District",
+    "iso3": "TJK",
+    "admLevel": 2
+  },
+  {
+    "id": "425050000169",
+    "parentId": "169",
+    "name": "Darvoz District",
+    "iso3": "TJK",
+    "admLevel": 2
+  },
+  {
+    "id": "397740000147",
+    "parentId": "147",
+    "name": "Saparmyrat Turkmenbasy",
+    "iso3": "TKM",
+    "admLevel": 2
+  },
+  {
+    "id": "397860000147",
+    "parentId": "147",
+    "name": "Etrek",
+    "iso3": "TKM",
+    "admLevel": 2
+  },
+  {
+    "id": "398070000147",
+    "parentId": "147",
+    "name": "Magtymguly",
+    "iso3": "TKM",
+    "admLevel": 2
+  },
+  {
+    "id": "394800000144",
+    "parentId": "144",
+    "name": "Kolovai",
+    "iso3": "TON",
+    "admLevel": 2
+  },
+  {
+    "id": "394830000144",
+    "parentId": "144",
+    "name": "Hahake",
+    "iso3": "TON",
+    "admLevel": 2
+  },
+  {
+    "id": "394900000144",
+    "parentId": "144",
+    "name": "Ha`ano",
+    "iso3": "TON",
+    "admLevel": 2
+  },
+  {
+    "id": "395220000146",
+    "parentId": "146",
+    "name": "سليمان",
+    "iso3": "TUN",
+    "admLevel": 2
+  },
+  {
+    "id": "395460000146",
+    "parentId": "146",
+    "name": "بنزرت الشمالية",
+    "iso3": "TUN",
+    "admLevel": 2
+  },
+  {
+    "id": "396980000146",
+    "parentId": "146",
+    "name": "غار الملح",
+    "iso3": "TUN",
+    "admLevel": 2
+  },
+  {
+    "id": "465800000190",
+    "parentId": "190",
+    "name": "Fethiye",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "466230000190",
+    "parentId": "190",
+    "name": "Borçka",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "470200000190",
+    "parentId": "190",
+    "name": "Çıldır",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "473850000190",
+    "parentId": "190",
+    "name": "Konak",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "473940000190",
+    "parentId": "190",
+    "name": "Gemlik",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "474550000190",
+    "parentId": "190",
+    "name": "Datça",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "474840000190",
+    "parentId": "190",
+    "name": "Yumurtalık",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "474980000190",
+    "parentId": "190",
+    "name": "Kuşadası",
+    "iso3": "TUR",
+    "admLevel": 2
+  },
+  {
+    "id": "421240000168",
+    "parentId": "168",
+    "name": "Qijin",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "422310000168",
+    "parentId": "168",
+    "name": "Gongliao District",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "422630000168",
+    "parentId": "168",
+    "name": "Magong City",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "422840000168",
+    "parentId": "168",
+    "name": "Beigan",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "423260000168",
+    "parentId": "168",
+    "name": "Wuqiu",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "423380000168",
+    "parentId": "168",
+    "name": "Juguang",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "423880000168",
+    "parentId": "168",
+    "name": "鹿港鎮",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "423960000168",
+    "parentId": "168",
+    "name": "Xincheng",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "424240000168",
+    "parentId": "168",
+    "name": "南竿鄉",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "424260000168",
+    "parentId": "168",
+    "name": "後龍鎮",
+    "iso3": "TWN",
+    "admLevel": 2
+  },
+  {
+    "id": "425520000170",
+    "parentId": "170",
+    "name": "Buhigwe",
+    "iso3": "TZA",
+    "admLevel": 2
+  },
+  {
+    "id": "425530000170",
+    "parentId": "170",
+    "name": "Kakonko",
+    "iso3": "TZA",
+    "admLevel": 2
+  },
+  {
+    "id": "426190000170",
+    "parentId": "170",
+    "name": "Ludewa",
+    "iso3": "TZA",
+    "admLevel": 2
+  },
+  {
+    "id": "426320000170",
+    "parentId": "170",
+    "name": "Kalambo",
+    "iso3": "TZA",
+    "admLevel": 2
+  },
+  {
+    "id": "437770000175",
+    "parentId": "175",
+    "name": "Vurra",
+    "iso3": "UGA",
+    "admLevel": 2
+  },
+  {
+    "id": "458360000185",
+    "parentId": "185",
+    "name": "Sovietsky",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "458400000185",
+    "parentId": "185",
+    "name": "Dzhankoy",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "458520000185",
+    "parentId": "185",
+    "name": "Yakymivka",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "458840000185",
+    "parentId": "185",
+    "name": "Kodyma",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "458960000185",
+    "parentId": "185",
+    "name": "Rozdilna",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "458990000185",
+    "parentId": "185",
+    "name": "Bilhorod Dnistrovskyi",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "459040000185",
+    "parentId": "185",
+    "name": "Bolhrad",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "459050000185",
+    "parentId": "185",
+    "name": "Kiliia",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "459180000185",
+    "parentId": "185",
+    "name": "Berdiansk",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "459540000185",
+    "parentId": "185",
+    "name": "Troitske",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "459580000185",
+    "parentId": "185",
+    "name": "Novopskov",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "460040000185",
+    "parentId": "185",
+    "name": "Derhachi",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461010000185",
+    "parentId": "185",
+    "name": "Pishchanka",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461150000185",
+    "parentId": "185",
+    "name": "Mohyliv-Podilskyi",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461420000185",
+    "parentId": "185",
+    "name": "Ripky",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461430000185",
+    "parentId": "185",
+    "name": "Sokyriany",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461440000185",
+    "parentId": "185",
+    "name": "Kelmentsi",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461460000185",
+    "parentId": "185",
+    "name": "Novoselytsia",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461510000185",
+    "parentId": "185",
+    "name": "Storozhynets",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "461800000185",
+    "parentId": "185",
+    "name": "Verkhovyna",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "462290000185",
+    "parentId": "185",
+    "name": "Khust",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "462310000185",
+    "parentId": "185",
+    "name": "Vynohradiv",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "462430000185",
+    "parentId": "185",
+    "name": "Dubrovytsia",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "462440000185",
+    "parentId": "185",
+    "name": "Zarichne",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "462810000185",
+    "parentId": "185",
+    "name": "Volodymyr",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "462860000185",
+    "parentId": "185",
+    "name": "Shatsk",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "463060000185",
+    "parentId": "185",
+    "name": "Turka",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "463200000185",
+    "parentId": "185",
+    "name": "Nakhimovskyi",
+    "iso3": "UKR",
+    "admLevel": 2
+  },
+  {
+    "id": "007000000004",
+    "parentId": "004",
+    "name": "Escambia",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "007090000004",
+    "parentId": "004",
+    "name": "Haines",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "009010000004",
+    "parentId": "004",
+    "name": "St. Lucie",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "009030000004",
+    "parentId": "004",
+    "name": "Aleutians West",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "009210000004",
+    "parentId": "004",
+    "name": "Petersburg",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "010130000004",
+    "parentId": "004",
+    "name": "York",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "010370000004",
+    "parentId": "004",
+    "name": "Toa Baja",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "011000000004",
+    "parentId": "004",
+    "name": "Bethel",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "011130000004",
+    "parentId": "004",
+    "name": "Craven",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "012910000004",
+    "parentId": "004",
+    "name": "Guánica",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "013690000004",
+    "parentId": "004",
+    "name": "Hancock",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "013950000004",
+    "parentId": "004",
+    "name": "Hoonah-Angoon",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "014700000004",
+    "parentId": "004",
+    "name": "Valdez-Cordova",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "018580000004",
+    "parentId": "004",
+    "name": "Aransas",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "018710000004",
+    "parentId": "004",
+    "name": "Willacy",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "018760000004",
+    "parentId": "004",
+    "name": "Tillamook",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "018830000004",
+    "parentId": "004",
+    "name": "Los Angeles",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "019550000004",
+    "parentId": "004",
+    "name": "Brevard",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "019620000004",
+    "parentId": "004",
+    "name": "Kent",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "020530000004",
+    "parentId": "004",
+    "name": "Atlantic",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "020640000004",
+    "parentId": "004",
+    "name": "Suffolk",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "021050000004",
+    "parentId": "004",
+    "name": "Matagorda",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "021160000004",
+    "parentId": "004",
+    "name": "Lajas",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "021610000004",
+    "parentId": "004",
+    "name": "Franklin",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "022780000004",
+    "parentId": "004",
+    "name": "Clallam",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "024030000004",
+    "parentId": "004",
+    "name": "New Hanover",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "024110000004",
+    "parentId": "004",
+    "name": "Alameda",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "024370000004",
+    "parentId": "004",
+    "name": "Taylor",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "025470000004",
+    "parentId": "004",
+    "name": "Galveston",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "027250000004",
+    "parentId": "004",
+    "name": "Iberia",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "028110000004",
+    "parentId": "004",
+    "name": "Aleutians East",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "028450000004",
+    "parentId": "004",
+    "name": "Kenedy",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "028620000004",
+    "parentId": "004",
+    "name": "Levy",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "028720000004",
+    "parentId": "004",
+    "name": "Indian River",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "028890000004",
+    "parentId": "004",
+    "name": "Jefferson",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "029310000004",
+    "parentId": "004",
+    "name": "York",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "029480000004",
+    "parentId": "004",
+    "name": "Newport News",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "029580000004",
+    "parentId": "004",
+    "name": "St. Johns",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "029900000004",
+    "parentId": "004",
+    "name": "Yakutat",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "029940000004",
+    "parentId": "004",
+    "name": "Monroe",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "030130000004",
+    "parentId": "004",
+    "name": "Keweenaw",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "030480000004",
+    "parentId": "004",
+    "name": "Portsmouth",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "031260000004",
+    "parentId": "004",
+    "name": "Cataño",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "032030000004",
+    "parentId": "004",
+    "name": "Cumberland",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033040000004",
+    "parentId": "004",
+    "name": "Santa Barbara",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033160000004",
+    "parentId": "004",
+    "name": "Nueces",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033390000004",
+    "parentId": "004",
+    "name": "Currituck",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033510000004",
+    "parentId": "004",
+    "name": "Georgetown",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033520000004",
+    "parentId": "004",
+    "name": "Middlesex",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033690000004",
+    "parentId": "004",
+    "name": "Calvert",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "033770000004",
+    "parentId": "004",
+    "name": "Baltimore",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "034000000004",
+    "parentId": "004",
+    "name": "Pacific",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "034290000004",
+    "parentId": "004",
+    "name": "Northampton",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "034540000004",
+    "parentId": "004",
+    "name": "St. John the Baptist",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "034620000004",
+    "parentId": "004",
+    "name": "Koochiching",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "034640000004",
+    "parentId": "004",
+    "name": "Northern Islands",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "034850000004",
+    "parentId": "004",
+    "name": "Pamlico",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "035510000004",
+    "parentId": "004",
+    "name": "Mayagüez",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "035610000004",
+    "parentId": "004",
+    "name": "Charlevoix",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "036680000004",
+    "parentId": "004",
+    "name": "Manatee",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "036840000004",
+    "parentId": "004",
+    "name": "Ocean",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "037570000004",
+    "parentId": "004",
+    "name": "Norfolk",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "037870000004",
+    "parentId": "004",
+    "name": "Newport",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "038000000004",
+    "parentId": "004",
+    "name": "Harford",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "038040000004",
+    "parentId": "004",
+    "name": "Santa Rosa",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "038230000004",
+    "parentId": "004",
+    "name": "Walton",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "038370000004",
+    "parentId": "004",
+    "name": "Chambers",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "039140000004",
+    "parentId": "004",
+    "name": "San Juan",
+    "iso3": "USA",
+    "admLevel": 2
+  },
+  {
+    "id": "440520000177",
+    "parentId": "177",
+    "name": "Gurlen",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "440640000177",
+    "parentId": "177",
+    "name": "Khazarasp",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "440880000177",
+    "parentId": "177",
+    "name": "Bakhmal",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441020000177",
+    "parentId": "177",
+    "name": "Sokh",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441070000177",
+    "parentId": "177",
+    "name": "Rishtan",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441200000177",
+    "parentId": "177",
+    "name": "Sirdarya",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441220000177",
+    "parentId": "177",
+    "name": "Chinaz",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441260000177",
+    "parentId": "177",
+    "name": "Pskent",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441330000177",
+    "parentId": "177",
+    "name": "Zangiata",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441690000177",
+    "parentId": "177",
+    "name": "Kurgantepa",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "441750000177",
+    "parentId": "177",
+    "name": "Yangikurgan",
+    "iso3": "UZB",
+    "admLevel": 2
+  },
+  {
+    "id": "412630000161",
+    "parentId": "161",
+    "name": "Grenadines",
+    "iso3": "VCT",
+    "admLevel": 2
+  },
+  {
+    "id": "442570000180",
+    "parentId": "180",
+    "name": "Antonio Díaz",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "442670000180",
+    "parentId": "180",
+    "name": "Autónomo Alto Orinoco",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "442740000180",
+    "parentId": "180",
+    "name": "Ayacucho",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "443130000180",
+    "parentId": "180",
+    "name": "Cruz Salmerón Acosta",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "443440000180",
+    "parentId": "180",
+    "name": "Jesús María Semprum",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "444260000180",
+    "parentId": "180",
+    "name": "Rafael Urdaneta",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "445330000180",
+    "parentId": "180",
+    "name": "Mariño",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "445400000180",
+    "parentId": "180",
+    "name": "Páez",
+    "iso3": "VEN",
+    "admLevel": 2
+  },
+  {
+    "id": "446180000181",
+    "parentId": "181",
+    "name": "Bach Long Vi",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "446660000181",
+    "parentId": "181",
+    "name": "Cam Ranh",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "446770000181",
+    "parentId": "181",
+    "name": "Cat Hai",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "447110000181",
+    "parentId": "181",
+    "name": "Co To",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "447130000181",
+    "parentId": "181",
+    "name": "Con Dao",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "447280000181",
+    "parentId": "181",
+    "name": "Dak Glei",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "448080000181",
+    "parentId": "181",
+    "name": "Ha Long",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "448100000181",
+    "parentId": "181",
+    "name": "Ha Tien",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "448700000181",
+    "parentId": "181",
+    "name": "Kien Hai",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "449130000181",
+    "parentId": "181",
+    "name": "Lien Chieu",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "449310000181",
+    "parentId": "181",
+    "name": "Ly Son",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "449920000181",
+    "parentId": "181",
+    "name": "Nha Trang",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "450280000181",
+    "parentId": "181",
+    "name": "Phu Quy",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "450680000181",
+    "parentId": "181",
+    "name": "Que Phong",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "450950000181",
+    "parentId": "181",
+    "name": "Son Tra",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "452340000181",
+    "parentId": "181",
+    "name": "Van Don",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "452390000181",
+    "parentId": "181",
+    "name": "Van Ninh",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "452660000181",
+    "parentId": "181",
+    "name": "Vung Tau",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "452740000181",
+    "parentId": "181",
+    "name": "Yen Chau",
+    "iso3": "VNM",
+    "admLevel": 2
+  },
+  {
+    "id": "442160000178",
+    "parentId": "178",
+    "name": "North Santo",
+    "iso3": "VUT",
+    "admLevel": 2
+  },
+  {
+    "id": "442360000178",
+    "parentId": "178",
+    "name": "Ureparapara",
+    "iso3": "VUT",
+    "admLevel": 2
+  },
+  {
+    "id": "442380000178",
+    "parentId": "178",
+    "name": "Varisu",
+    "iso3": "VUT",
+    "admLevel": 2
+  },
+  {
+    "id": "394360000142",
+    "parentId": "142",
+    "name": "Vaa o Fonoti",
+    "iso3": "WSM",
+    "admLevel": 2
+  },
+  {
+    "id": "394620000142",
+    "parentId": "142",
+    "name": "Safata",
+    "iso3": "WSM",
+    "admLevel": 2
+  },
+  {
+    "id": "244800000094",
+    "parentId": "094",
+    "name": "Municipality of Podujeva",
+    "iso3": "XKX",
+    "admLevel": 2
+  },
+  {
+    "id": "455680000184",
+    "parentId": "184",
+    "name": "Dhubab",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "456260000184",
+    "parentId": "184",
+    "name": "Al Khukhah",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "456340000184",
+    "parentId": "184",
+    "name": "Alluhayah",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "456350000184",
+    "parentId": "184",
+    "name": "Kamaran",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "456560000184",
+    "parentId": "184",
+    "name": "Al Mina",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "457150000184",
+    "parentId": "184",
+    "name": "Radum",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "457450000184",
+    "parentId": "184",
+    "name": "Al Mu'alla",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "457460000184",
+    "parentId": "184",
+    "name": "Al Mansurah",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "458290000184",
+    "parentId": "184",
+    "name": "Qalansiyah wa Abd Al Kuri",
+    "iso3": "YEM",
+    "admLevel": 2
+  },
+  {
+    "id": "405050000155",
+    "parentId": "155",
+    "name": "Eden",
+    "iso3": "ZAF",
+    "admLevel": 2
+  },
+  {
+    "id": "405200000155",
+    "parentId": "155",
+    "name": "Ngaka Modiri Molema",
+    "iso3": "ZAF",
+    "admLevel": 2
+  },
+  {
+    "id": "405370000155",
+    "parentId": "155",
+    "name": "West Coast",
+    "iso3": "ZAF",
+    "admLevel": 2
+  },
+  {
+    "id": "454010000182",
+    "parentId": "182",
+    "name": "Vubwi",
+    "iso3": "ZMB",
+    "admLevel": 2
+  }
+]

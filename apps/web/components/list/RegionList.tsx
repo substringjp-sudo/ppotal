@@ -96,14 +96,16 @@ const RegionListItem = memo(({
         <div className="grid grid-cols-5 gap-1.5">
           {VISIT_CATEGORY_ORDER.map((cat) => {
             const config = VISIT_CONFIG[cat];
-            const b = score.breakdown[cat];
-            const isActive = b.directCount > 0;
-            const hasSubWeight = b.effectiveCount > b.directCount;
+            const b = score.breakdown?.[cat];
+            const isActive = (b?.directCount ?? 0) > 0;
+            
+            if (!config) return null;
+            const hasSubWeight = (b?.effectiveCount ?? 0) > (b?.directCount ?? 0);
 
             return (
               <button
                 key={cat}
-                onClick={() => onUpdateVisit(cat, (b.directCount + 1) % (config.maxCount + 1))}
+                onClick={() => onUpdateVisit(cat, ((b?.directCount ?? 0) + 1) % ((config?.maxCount ?? 0) + 1))}
                 className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all relative overflow-hidden ${
                   isActive
                     ? "bg-blue-600 border-blue-600 text-white shadow-sm"
@@ -112,14 +114,23 @@ const RegionListItem = memo(({
                       : "bg-white border-gray-100 text-gray-400 hover:border-blue-200 hover:bg-blue-50/30"
                 }`}
               >
+                <div 
+                  className="h-full bg-blue-600 transition-all"
+                  style={{ width: `${((b?.effectiveCount ?? 0) / (config?.maxCount || 1)) * 100}%` }}
+                />
+                {isActive && (
+                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                    {b?.points ?? 0} pts
+                  </span>
+                )}
                 {hasSubWeight && !isActive && (
                   <div className="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-bl-md" />
                 )}
                 <span className="text-[10px] font-bold tracking-tighter whitespace-nowrap z-10">
-                  {config.label}
+                  {config?.label}
                 </span>
                 <span className={`text-xs font-black z-10 ${isActive ? "text-blue-100" : hasSubWeight ? "text-blue-400" : "text-gray-300"}`}>
-                  {isActive ? b.directCount : hasSubWeight ? `+${b.effectiveCount}` : 0}
+                  {isActive ? b?.directCount : hasSubWeight ? `+${b?.effectiveCount}` : 0}
                 </span>
               </button>
             );
@@ -269,12 +280,10 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
           totalScore: 0,
           scoreType: (r.admLevel ?? 2) < 2 ? "orange" : "blue",
           hasVisit: false,
-          breakdown: Object.fromEntries(
-            VISIT_CATEGORY_ORDER.map((cat) => [
-              cat,
-              { directCount: 0, effectiveCount: 0, points: 0 },
-            ]),
-          ) as any,
+          breakdown: VISIT_CATEGORY_ORDER.reduce((acc, cat) => {
+            acc[cat] = { directCount: 0, effectiveCount: 0, points: 0 };
+            return acc;
+          }, {} as any),
         }
       };
     });
