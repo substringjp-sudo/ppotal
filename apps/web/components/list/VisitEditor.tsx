@@ -21,9 +21,9 @@ export function VisitEditor({ regionId, regionName, score, onClose }: VisitEdito
           <p className="font-semibold text-gray-800">{regionName}</p>
           <p className="text-xs text-gray-500">
             Total Score <span className="font-bold text-blue-600">{score.totalScore}</span>
-            {score.rankScore > 0 && (
+            {(score.rateScore > 0 || score.directScore > 0) && (
               <span className="ml-1 text-gray-400">
-                (Direct {score.directScore} + Sub {score.rankScore})
+                (Exp {score.directScore} + Occupancy {score.rateScore}%)
               </span>
             )}
             / 100
@@ -51,7 +51,7 @@ export function VisitEditor({ regionId, regionName, score, onClose }: VisitEdito
                     <span className="text-sm font-bold text-gray-700">{cfg.label}</span>
                     {b.effectiveCount > b.directCount && (
                       <span className="text-[10px] text-gray-400 font-medium bg-gray-50 px-1.5 py-0.5 rounded">
-                        +{b.effectiveCount - b.directCount} from sub-regions
+                        +{b.effectiveCount - b.directCount} (from sub-regions)
                       </span>
                     )}
                   </div>
@@ -59,9 +59,9 @@ export function VisitEditor({ regionId, regionName, score, onClose }: VisitEdito
                     {cfg.description}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500 font-medium">
-                  {b.directCount}/{cfg.maxCount} times · {b.points}/{cfg.maxPoints} pts
-                </span>
+                  <span className="text-xs text-gray-500 font-medium">
+                    {b.directCount}/{cfg.maxCount} times · {b.points}/{cfg.maxPoints} pts
+                  </span>
               </div>
 
               {/* Progress bar */}

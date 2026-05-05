@@ -29,8 +29,6 @@ export const RegionTooltip = memo(function RegionTooltip({
   const [activeTab, setActiveTab] = useState<"summary" | "manual">("summary");
 
   const subRegionStats = useMemo(() => {
-    if (childRegions.length === 0) return null;
-    
     let visitedCount = 0;
     const categoryCounts: Record<VisitCategory, number> = {
       pass: 0,
@@ -40,16 +38,17 @@ export const RegionTooltip = memo(function RegionTooltip({
       residence: 0,
     };
     
-    childRegions.forEach(child => {
-      const s = scoreMap[padId(child.id)];
-      if (s && s.totalScore > 0) {
-        visitedCount++;
-        VISIT_CATEGORY_ORDER.forEach(cat => {
-          // Use effectiveCount instead of directCount to reflect sub-region visits in parent tooltips
-          categoryCounts[cat] += s.breakdown[cat].effectiveCount;
-        });
-      }
-    });
+    if (childRegions.length > 0) {
+      childRegions.forEach(child => {
+        const s = scoreMap[padId(child.id)];
+        if (s && s.totalScore > 0) {
+          visitedCount++;
+          VISIT_CATEGORY_ORDER.forEach(cat => {
+            categoryCounts[cat] += s.breakdown[cat].effectiveCount;
+          });
+        }
+      });
+    }
     
     return {
       visitedCount,
@@ -59,17 +58,16 @@ export const RegionTooltip = memo(function RegionTooltip({
   }, [childRegions, scoreMap]);
 
   useEffect(() => {
-    // Countries always show summary. Prefectures default to summary if they have child visits.
     if (region.admLevel === 0) {
       setActiveTab("summary");
-    } else if (region.admLevel === 1 && (score.subRegionStats?.visitedCount || 0) > 0) {
-      setActiveTab("summary");
+    } else if (region.admLevel === 1) {
+      setActiveTab(childRegions.length > 0 ? "summary" : "manual");
     } else {
       setActiveTab("manual");
     }
-  }, [region.id, score.subRegionStats?.visitedCount, region.admLevel]);
+  }, [region.id, region.admLevel, childRegions.length]);
 
-  const isReadOnly = region.admLevel === 1 && (score.subRegionStats?.visitedCount || 0) > 0;
+  const isReadOnly = (region.admLevel === 0 || region.admLevel === 1) && childRegions.length > 0;
 
 
   // Calculate position to stay within viewport (Desktop)
@@ -138,7 +136,7 @@ export const RegionTooltip = memo(function RegionTooltip({
         className={`
           bg-white shadow-2xl overflow-hidden flex flex-col border border-slate-200
           ${isMobile 
-            ? "rounded-t-2xl animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh]" 
+            ? "rounded-t-xl animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh]" 
             : "w-80 rounded-lg animate-in fade-in zoom-in duration-200"
           }
         `}
@@ -155,20 +153,18 @@ export const RegionTooltip = memo(function RegionTooltip({
             <div className="flex items-baseline gap-2 flex-wrap">
               <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
               {(region.admLevel === 0 || region.admLevel === 1 || region.admLevel === 2) && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0">
-                    경험치 {Math.round(score.directScore)}
-                  </span>
-                  {(region.admLevel === 0 || region.admLevel === 1) && score.rateScore > 0 && (
-                    <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0 shadow-sm">
-                      점령률 {Math.round(score.rateScore)}%
-                    </span>
-                  )}
-                </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0 shadow-sm">
+                  EXP {Math.round(score.directScore)}
+                </span>
+                <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0 shadow-sm">
+                  Occupancy {Math.ceil(score.rateScore)}%
+                </span>
+              </div>
               )}
             </div>
             <p className="text-[9px] mt-1 font-black uppercase tracking-widest text-slate-400">
-              {region.iso3} · {region.admLevel === 0 ? "국가" : region.admLevel === 1 ? "광역" : "기초"}
+              {region.iso3} · {region.admLevel === 0 ? "Country" : region.admLevel === 1 ? "Region" : "City"}
             </p>
           </div>
           {!isMobile && (
@@ -184,7 +180,7 @@ export const RegionTooltip = memo(function RegionTooltip({
           )}
         </div>
 
-        {region.admLevel === 1 && score.subRegionStats && score.subRegionStats.visitedCount > 0 && (
+        {region.admLevel === 1 && (
           <div className="flex items-center justify-between px-5 py-2 border-b border-slate-50 bg-white shrink-0">
             <button 
               onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
@@ -193,7 +189,7 @@ export const RegionTooltip = memo(function RegionTooltip({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
             </button>
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              {activeTab === "summary" ? "도시 요약 (City Summary)" : "광역 기록 (Prefecture Record)"}
+              {activeTab === "summary" ? "Summary" : "Visit History"}
             </span>
             <button 
               onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
@@ -205,15 +201,15 @@ export const RegionTooltip = memo(function RegionTooltip({
         )}
 
         <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6" : "px-5"} ${region.admLevel === 2 ? "pb-2" : "pb-4"}`}>
-          {(activeTab === "summary" || region.admLevel === 0) && subRegionStats && (
+          {activeTab === "summary" && subRegionStats && (
             <div className="pt-4 pb-2">
-               <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-100 mb-5">
+               <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-100 mb-5">
                   <div className="flex justify-between items-end mb-3">
                     <div>
-                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">점령률 (Occupation Rate)</p>
+                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Occupancy</p>
                       <div className="flex items-baseline gap-1">
                         <p className="text-2xl font-black tabular-nums text-orange-600">
-                          {score.rateScore}<span className="text-sm ml-0.5">%</span>
+                          {Math.ceil(score.rateScore)}<span className="text-sm ml-0.5">%</span>
                         </p>
                         <div className="flex items-center gap-1 text-[10px] font-bold text-orange-300 ml-2 bg-white px-2 py-0.5 rounded-full border border-orange-100">
                           <span className="text-orange-500">{Math.round(score.childSum)}</span>
@@ -230,7 +226,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                       {score.subRegionStats && (
                         <div className="flex items-center gap-2">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            {region.admLevel === 0 ? "지자체" : "도시"}
+                            {region.admLevel === 0 ? "Regions" : "Cities"}
                           </p>
                           <p className="text-[11px] font-bold tabular-nums text-slate-600">
                             {score.subRegionStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{score.subRegionStats.totalCount}
@@ -240,7 +236,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                       {region.admLevel === 0 && score.cityStats && (
                         <div className="flex items-center gap-2">
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                            도시
+                            Cities
                           </p>
                           <p className="text-[11px] font-bold tabular-nums text-slate-600">
                             {score.cityStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{score.cityStats.totalCount}
@@ -275,7 +271,9 @@ export const RegionTooltip = memo(function RegionTooltip({
 
                <div className="space-y-3 mt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">도시별 현황</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">
+                    {region.admLevel === 0 ? "Status by Region" : "Status by City"}
+                  </p>
                 </div>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                   {childRegions
@@ -298,7 +296,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black text-slate-700 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 transition-colors">{child.name}</span>
                             <span className="text-[9px] font-bold text-slate-400">
-                              {child.admLevel < 2 ? `점령률 ${child.score!.rateScore}% · ` : ""}기본 {child.score!.directScore}
+                              {child.admLevel < 2 ? `Occupancy ${child.score!.rateScore}% · ` : ""}Base {child.score!.directScore}
                             </span>
                           </div>
                           <span className={`text-xs font-black tabular-nums ${child.score!.scoreType === 'orange' ? 'text-orange-500' : 'text-blue-500'}`}>
@@ -317,12 +315,12 @@ export const RegionTooltip = memo(function RegionTooltip({
                     const childId = padId(child.id);
                     return !scoreMap[childId] || scoreMap[childId].totalScore === 0;
                   }).length > 0 && (
-                     <p className="text-[9px] text-slate-400 font-medium italic pt-1">
-                       + {childRegions.filter(child => {
-                         const childId = padId(child.id);
-                         return !scoreMap[childId] || scoreMap[childId].totalScore === 0;
-                       }).length} 미방문 지역
-                     </p>
+                    <div className="text-[10px] text-slate-400 font-bold pt-1.5 px-2.5">
+                      + {childRegions.filter(child => {
+                        const childId = padId(child.id);
+                        return !scoreMap[childId] || scoreMap[childId].totalScore === 0;
+                      }).length} unvisited areas
+                    </div>
                   )}
                 </div>
               </div>
@@ -334,10 +332,10 @@ export const RegionTooltip = memo(function RegionTooltip({
               {region.admLevel > 0 && (
                 <>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">방문 기록</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Visit History</p>
                     {isReadOnly && (
                       <span className="text-[8px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-tighter animate-pulse">
-                        Calculated from children
+                        Summed from sub-regions
                       </span>
                     )}
                   </div>
@@ -408,18 +406,17 @@ export const RegionTooltip = memo(function RegionTooltip({
           )}
         </div>
 
-        {/* Drill down action - Always visible at bottom for regions with children */}
         {region.admLevel < 2 && (
           <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white border-t border-gray-50" : "px-4 pb-4 pt-2"}`}>
             <button
               onClick={() => onDrillDown(region.id)}
-              className={`w-full py-4 ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
+              className={`w-full py-4 ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white rounded-xl text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              진입
+              Explore
             </button>
           </div>
         )}

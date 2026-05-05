@@ -89,7 +89,7 @@ export function MapView() {
         }
       } catch (e) {
         console.error("Failed to load initial data", e);
-        setError("데이터를 불러오는데 실패했습니다.");
+        setError("Failed to load map data.");
       } finally {
         setInitialLoading(false);
       }
@@ -109,7 +109,7 @@ export function MapView() {
   if (initialLoading || !regions) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-56px)] text-gray-400">
-        지도를 준비하고 있습니다...
+        Preparing the map...
       </div>
     );
   }

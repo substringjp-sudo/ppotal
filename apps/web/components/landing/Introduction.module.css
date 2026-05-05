@@ -1,0 +1,209 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  gap: 2.5rem;
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.section:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.textBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.textBlock h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+.textBlock p {
+  font-size: 1.125rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.imageBlock {
+  flex: 1;
+  position: relative;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.imageBlock:hover {
+  transform: scale(1.02);
+}
+
+.imageBlock img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.scoringGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.scoreCard {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-radius: 2px;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transition: all 0.3s ease;
+}
+
+.scoreCard:hover {
+  background: white;
+  border-color: #3b82f6;
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1);
+}
+
+.scoreCard h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.scoreCard .pts {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.scoreCard p {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .section, .section:nth-child(even) {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+  
+  .textBlock h2 {
+    font-size: 2rem;
+  }
+  
+  .container {
+    gap: 3rem;
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* Scoring Diagram Styles */
+.diagramContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  border-radius: 2px;
+  border: 1px solid #f1f5f9;
+}
+
+.levelRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.visual {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.info {
+  flex: 1;
+}
+
+.info h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 0.25rem;
+}
+
+.info p {
+  font-size: 0.875rem !important;
+  color: #6b7280 !important;
+}
+
+.ptsBadge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: white;
+  background: #3b82f6;
+  padding: 0.1rem 0.4rem;
+  border-radius: 1px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Shapes */
+.shape {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.pass { width: 32px; height: 32px; background: #94a3b8; }
+.transit { width: 40px; height: 40px; background: #64748b; }
+.visit { width: 48px; height: 48px; background: #3b82f6; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15); }
+.stay { width: 56px; height: 56px; background: #1d4ed8; box-shadow: 0 6px 14px rgba(29, 78, 216, 0.2); }
+.residence { 
+  width: 64px; height: 64px; 
+  background: #f97316; 
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.3);
+}

@@ -33,8 +33,8 @@ export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { d
 
 
 /**
- * Returns the effective counts for a region, considering its own visits
- * and the visits of all its descendants, capped at maxCount per category.
+ * Returns the raw sums of counts for a region and all its descendants.
+ * Capping is handled at the scoring level, not during recursive aggregation.
  */
 export function getEffectiveCounts(
   regionId: string,
@@ -50,41 +50,24 @@ export function getEffectiveCounts(
     VISIT_CATEGORY_ORDER.map((cat) => [cat, 0]),
   ) as Record<VisitCategory, number>;
 
-  // 1. Start with direct visits of this region (raw count)
+  // 1. Direct visits of this region
   const directVisits = Array.isArray(allVisits) 
     ? allVisits.filter((v) => padId(v.regionId) === normalizedId)
     : allVisits.get(normalizedId) || [];
 
   for (const v of directVisits) {
-    counts[v.category] = Math.min(v.count, VISIT_CONFIG[v.category].maxCount);
+    // We count direct visits as they are (usually already capped by UI to maxCount)
+    counts[v.category] += v.count;
   }
 
-  // 2. Add 1 for each immediate child that has any effective visits in that category
-  // If allRegions is partial, we can still identify children that have visits from the allVisits list.
-  const childrenIdsWithVisits = new Set<string>();
-  const normalizedVisits = Array.isArray(allVisits) ? allVisits : Array.from(allVisits.values()).flat();
-  
-  for (const v of normalizedVisits) {
-    const vId = padId(v.regionId);
-    if (vId.startsWith(normalizedId) && vId.length > normalizedId.length) {
-      // Determine the immediate child ID
-      let childId = "";
-      if (normalizedId.length === 3) childId = vId.substring(0, 7);
-      else if (normalizedId.length === 7) childId = vId.substring(0, 12);
-      
-      if (childId && childId !== normalizedId) {
-        childrenIdsWithVisits.add(childId);
-      }
-    }
-  }
-
-  // Combine children from allRegions and inferred from visits
+  // 2. Add sums from children
   const childrenFromRegions = parentIdMap
     ? parentIdMap.get(normalizedId) || []
     : allRegions.filter((r) => padId(r.parentId) === normalizedId);
     
+  // If we have children in the region list, we use them.
+  // If not (partial list), we might need to infer from visits, but usually parentIdMap is provided.
   const allChildIds = new Set(childrenFromRegions.map(r => padId(r.id)));
-  for (const id of childrenIdsWithVisits) allChildIds.add(id);
 
   for (const childId of allChildIds) {
     const childCounts = getEffectiveCounts(
@@ -99,10 +82,6 @@ export function getEffectiveCounts(
     }
   }
 
-  // 3. Optional: Cap each category only at the very top level if needed, 
-  // but for aggregation we want the full sum.
-  // The points calculation in getRegionScore will handle the capping for Exp.
-  
   memo.set(normalizedId, counts);
   return counts;
 }
@@ -136,25 +115,36 @@ export function getRegionScore(
     
   const { directScore: rawDirectScore, ...directBreakdown } = calculateScore(directVisits);
 
-  // Identify the region's level
+  // Identify the region
   const region = allRegions.find(r => padId(r.id) === normalizedId);
   const isCountry = region?.admLevel === 0;
   const isPrefecture = region?.admLevel === 1;
 
-  // Use effectiveCounts for breakdown and points if it's a prefecture or country with children
+  // Children for aggregation
+  const childrenFromRegions = parentIdMap
+    ? parentIdMap.get(normalizedId) || []
+    : allRegions.filter((r) => padId(r.parentId) === normalizedId);
+  
+  const allChildIds = new Set(childrenFromRegions.map(r => padId(r.id)));
+  const hasChildren = allChildIds.size > 0;
+
+  // Calculate breakdown and points
   const breakdown = Object.fromEntries(
     VISIT_CATEGORY_ORDER.map((cat) => {
       const cfg = VISIT_CONFIG[cat];
       const effectiveCount = effectiveCounts[cat];
-      // For prefectures and countries, we want to show the aggregate count as the primary count
-      const displayCount = (isPrefecture || isCountry) ? effectiveCount : directBreakdown[cat].directCount;
+      
+      // Rule: For regions with children, we sum descendant counts and then cap at maxCount.
+      // For leaf regions (cities), it's just the direct count (already capped in directBreakdown).
+      const pointsCount = hasChildren ? effectiveCount : directBreakdown[cat].directCount;
+      const points = Math.min(pointsCount, cfg.maxCount) * cfg.pointsPerCount;
       
       return [
         cat,
         {
           directCount: directBreakdown[cat].directCount,
           effectiveCount,
-          points: displayCount * cfg.pointsPerCount,
+          points,
         },
       ];
     }),
@@ -164,26 +154,10 @@ export function getRegionScore(
     return sum + breakdown[cat].points;
   }, 0);
 
+  // Points capped at 100
   const displayDirectScore = Math.min(100, effectiveCategoryPoints);
 
-  // Get actual children for sum
-  const childrenFromRegions = parentIdMap
-    ? parentIdMap.get(normalizedId) || []
-    : allRegions.filter((r) => padId(r.parentId) === normalizedId);
-
-  // Inferred children from visits (even if not in allRegions)
-  const inferredChildIds = new Set<string>();
-  const normalizedVisits = Array.isArray(allVisits) ? allVisits : Array.from(allVisits.values()).flat();
-  for (const v of normalizedVisits) {
-    const vId = padId(v.regionId);
-    if (vId.startsWith(normalizedId) && vId.length > normalizedId.length) {
-      if (normalizedId.length === 3) inferredChildIds.add(vId.substring(0, 7));
-      else if (normalizedId.length === 7) inferredChildIds.add(vId.substring(0, 12));
-    }
-  }
-
-  const allChildIds = new Set([...childrenFromRegions.map(r => padId(r.id)), ...inferredChildIds]);
-
+  // Recursively get child scores for rateScore calculation
   let childSum = 0;
   let hasChildVisit = false;
   for (const childId of allChildIds) {
@@ -192,89 +166,79 @@ export function getRegionScore(
     if (childScore.hasVisit) hasChildVisit = true;
   }
 
-  // Identify the region's level and childrenCount
   const actualChildrenCount = region?.childrenCount ?? allChildIds.size;
 
-  // User's formula: (childSum) / (children.length * 50), capped at 100
+  // rateScore (occupancy rate) formula: (childSum) / (children.length * 50)
   const childMax = actualChildrenCount * 50;
   const rawRateScore = childMax > 0 ? Math.min(100, (childSum / childMax) * 100) : 0;
-  // Use Math.ceil so any visit shows at least 1%
+  
+  // Floor at 1% if any visit exists
   const rateScore = rawRateScore > 0 ? Math.max(1, Math.ceil(rawRateScore)) : 0;
 
-  // Rule: Countries/Prefectures use aggregate score as direct score.
-  // Ensure that if there are any visits, the score is at least 1.
-  const effectiveDirectScore = effectiveCategoryPoints > 0 ? Math.max(1, displayDirectScore) : 0;
-  const hasDirectVisit = effectiveDirectScore > 0;
+  const hasDirectVisit = directVisits.some(v => v.count > 0);
+  const totalHasVisit = hasDirectVisit || hasChildVisit;
+
+  // scoreType: orange for aggregated regions (countries/prefectures), blue for individual
+  const scoreType = (isCountry || isPrefecture) ? "orange" : "blue";
   
-  // Rule: If there are child scores, show orange (aggregated). 
-  // Otherwise, if there is a direct score, show blue (individual).
-  const scoreType = (rateScore > 0 || hasChildVisit) && (isPrefecture || isCountry) ? "orange" : "blue";
-  
-  // Final score for display: if orange, use rateScore; if blue, use directScore.
-  // Ensure at least 1 point if there's any visit to avoid 0% showing as empty.
-  let displayTotalScore = scoreType === "orange" ? Math.max(hasChildVisit ? 1 : 0, rateScore) : Math.round(effectiveDirectScore);
-  if (displayTotalScore === 0 && (hasDirectVisit || hasChildVisit)) {
+  // totalScore: for countries/prefectures, we usually prefer rateScore.
+  // If rateScore is 0 but hasDirectVisit, use displayDirectScore.
+  let displayTotalScore = (isCountry || isPrefecture) 
+    ? (rateScore > 0 ? rateScore : Math.round(displayDirectScore))
+    : Math.round(displayDirectScore);
+    
+  // Final visit floor
+  if (displayTotalScore === 0 && totalHasVisit) {
     displayTotalScore = 1;
   }
 
-  // Calculate subRegionStats and cityStats for tooltips
+  // Stats for tooltips
   let subRegionStats = undefined;
   let cityStats = undefined;
 
   if (isCountry) {
-    // For countries: subRegions are admLevel 1, cities are admLevel 2
-    let subVisited = 0;
-    let subTotal = 0;
+    let munVisited = 0;
+    let munTotal = 0;
     let cityVisited = 0;
     let cityTotal = 0;
 
-    // We need to traverse all descendants to count cities
-    const traverse = (id: string, depth: number) => {
-      const children = parentIdMap?.get(padId(id)) || [];
-      // If we don't have child data in parentIdMap, we might use childrenCount if available,
-      // but for visitedCount we need actual scores.
-      for (const child of children) {
-        const childScore = getRegionScore(child.id, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
-        if (child.admLevel === 1) {
-          subTotal++;
-          if (childScore.hasVisit) subVisited++;
-          traverse(child.id, depth + 1);
-        } else if (child.admLevel === 2) {
-          cityTotal++;
-          if (childScore.hasVisit) cityVisited++;
-          // Could have further levels but we stop at cities for now
-        }
-      }
-    };
-    traverse(normalizedId, 0);
+    // Direct children of country are municipalities (Prefectures)
+    for (const munId of allChildIds) {
+      munTotal++;
+      const munScore = getRegionScore(munId, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+      if (munScore.hasVisit) munVisited++;
 
-    subRegionStats = { visitedCount: subVisited, totalCount: subTotal || actualChildrenCount };
-    cityStats = { visitedCount: cityVisited, totalCount: cityTotal };
-  } else if (isPrefecture) {
-    // For prefectures: subRegions and cities are admLevel 2
-    let cityVisited = 0;
-    let cityTotal = 0;
-    const children = parentIdMap?.get(normalizedId) || [];
-    for (const child of children) {
-      const childScore = getRegionScore(child.id, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
-      if (child.admLevel === 2) {
+      // Children of prefectures are cities
+      const munChildren = parentIdMap?.get(padId(munId)) || [];
+      for (const city of munChildren) {
         cityTotal++;
-        if (childScore.hasVisit) cityVisited++;
+        const cityScore = getRegionScore(city.id, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+        if (cityScore.hasVisit) cityVisited++;
       }
     }
-    subRegionStats = { visitedCount: cityVisited, totalCount: cityTotal || actualChildrenCount };
+    subRegionStats = { visitedCount: munVisited, totalCount: munTotal };
+    cityStats = { visitedCount: cityVisited, totalCount: cityTotal };
+  } else if (isPrefecture) {
+    let cityVisited = 0;
+    let cityTotal = 0;
+    for (const cityId of allChildIds) {
+      cityTotal++;
+      const cityScore = getRegionScore(cityId, allVisits, allRegions, parentIdMap, activeMemo, activeScoreMemo);
+      if (cityScore.hasVisit) cityVisited++;
+    }
+    subRegionStats = { visitedCount: cityVisited, totalCount: cityTotal };
     cityStats = { visitedCount: cityVisited, totalCount: cityTotal };
   }
 
   const result: RegionScore = {
     regionId: normalizedId,
-    directScore: Math.round(effectiveDirectScore),
+    directScore: Math.round(displayDirectScore),
     rateScore,
     childSum: Math.round(childSum),
     childMax: Math.round(childMax),
     totalScore: displayTotalScore,
     scoreType,
-    hasVisit: hasDirectVisit || hasChildVisit,
+    hasVisit: totalHasVisit,
     breakdown,
     subRegionStats,
     cityStats,

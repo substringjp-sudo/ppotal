@@ -139,10 +139,10 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
   }, [currentRegions, initialRegions, currentParentId]);
 
   const sortOptions: { value: SortOrder; label: string }[] = [
-    { value: "NAME_ASC", label: "Name A-Z" },
-    { value: "NAME_DESC", label: "Name Z-A" },
-    { value: "SCORE_DESC", label: "Score ↓" },
-    { value: "SCORE_ASC", label: "Score ↑" },
+    { value: "NAME_ASC", label: "Name (A-Z)" },
+    { value: "NAME_DESC", label: "Name (Z-A)" },
+    { value: "SCORE_DESC", label: "Highest Score" },
+    { value: "SCORE_ASC", label: "Lowest Score" },
   ];
 
   return (
@@ -153,7 +153,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
           <div className="relative">
             <input
               type="search"
-              placeholder="Search regions or countries..."
+              placeholder="Search for a country or region..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
@@ -180,7 +180,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
 
           {/* Sort Options */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">Sort by</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">Sort</span>
             {sortOptions.map((opt) => (
               <button
                 key={opt.value}
@@ -300,9 +300,9 @@ function RegionListItem({
             <h3 className="font-bold text-gray-800 leading-tight">{region.name}</h3>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-xs text-blue-600 font-bold">{score.totalScore} pts</span>
-              {score.rankScore > 0 && (
+              {(score.rateScore > 0 || score.directScore > 0) && (
                 <span className="text-[10px] text-gray-400 font-medium">
-                  ({score.directScore} direct + {score.rankScore} sub)
+                  (Exp {score.directScore} + Occupancy {score.rateScore}%)
                 </span>
               )}
             </div>

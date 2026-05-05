@@ -187,7 +187,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
       stats.currentChildSum = worldSum;
       stats.currentChildMax = worldMax;
       stats.totalChildrenCount = countries.length;
-      stats.currentRateScore = Math.round(worldMax > 0 ? Math.min(100, (worldSum / worldMax) * 100) : 0);
+      stats.currentRateScore = Math.ceil(worldMax > 0 ? Math.min(100, (worldSum / worldMax) * 100) : 0);
       stats.currentTotalScore = stats.currentRateScore;
     }
 
@@ -422,14 +422,14 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
               <div className="flex gap-4 items-center shrink-0">
                 {hoveredRegion.admLevel < 2 && (
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">점령률</span>
+                    <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Occupancy</span>
                     <span className="text-base font-black leading-none text-orange-400 tabular-nums">
-                      {Math.round(hoveredScore.rateScore)}%
+                      {Math.ceil(hoveredScore.rateScore)}%
                     </span>
                   </div>
                 )}
                 <div className="flex flex-col items-center">
-                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">경험치</span>
+                  <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">Exp</span>
                   <span className="text-base font-black leading-none text-blue-400 tabular-nums">
                     {Math.round(hoveredScore.directScore)}
                   </span>
@@ -474,28 +474,30 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
             <div className="flex items-center gap-6">
               <div className="shrink-0 flex flex-col justify-center">
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
-                  {currentRegion ? "선택 지역" : "전체 개요"}
+                  {currentRegion ? "Selected Region" : "Global Overview"}
                 </span>
                 <h3 className="text-sm font-black text-slate-800 leading-none truncate max-w-[200px]">
-                  {currentRegion ? currentRegion.name : "전체 (World)"}
+                  {currentRegion ? currentRegion.name : "World Map"}
                 </h3>
               </div>
-              <div className="flex gap-6 border-l border-slate-200 pl-6 h-8 items-center flex-1">
-                <div className="flex flex-col justify-center min-w-[120px]">
-                  <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter leading-none mb-1">
-                    {currentRegion ? "하위 지역 진척도" : "국가별 진척도"}
-                  </span>
-                  <div className="flex items-baseline gap-1 whitespace-nowrap">
-                    <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.round(contextStats.currentChildSum)}</p>
-                    <span className="text-[10px] font-bold text-slate-400">/ {contextStats.currentChildMax}</span>
-                    {contextStats.currentChildMax > 0 && (
-                      <span className="text-[9px] font-black text-slate-400 ml-1">
-                        ({Math.round((contextStats.currentChildSum / contextStats.currentChildMax) * 100)}%)
-                      </span>
-                    )}
+              {currentRegion && (
+                <div className="flex gap-6 border-l border-slate-200 pl-6 h-8 items-center flex-1">
+                  <div className="flex flex-col justify-center min-w-[120px]">
+                    <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter leading-none mb-1">
+                      {currentRegion ? "Sub-region Progress" : "Country Progress"}
+                    </span>
+                    <div className="flex items-baseline gap-1 whitespace-nowrap">
+                      <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.round(contextStats.currentChildSum)}</p>
+                      <span className="text-[10px] font-bold text-slate-400">/ {contextStats.currentChildMax}</span>
+                      {contextStats.currentChildMax > 0 && (
+                        <span className="text-[9px] font-black text-slate-400 ml-1">
+                          ({Math.ceil((contextStats.currentChildSum / contextStats.currentChildMax) * 100)}%)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -504,8 +506,8 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
             <ScoreStatsBar
               stats={contextStats}
               isMobile={true}
-              hideRate={currentRegion?.admLevel === 2}
-              totalChildren={contextStats.totalChildrenCount}
+              hideRate={!currentRegion || currentRegion?.admLevel === 2}
+              totalChildren={currentRegion ? contextStats.totalChildrenCount : accumulatedRegions.filter(r => r.admLevel === 0).length}
               admLevel={currentRegion?.admLevel ?? -1}
             />
           </div>
@@ -534,15 +536,17 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
               ))}
             </div>
           </div>
-          <div className="px-2 pb-2">
-            <ScoreStatsBar 
-              stats={contextStats} 
-              isMobile={true} 
-              hideRate={currentRegion?.admLevel === 2}
-              totalChildren={contextStats.totalChildrenCount}
-              admLevel={currentRegion?.admLevel ?? -1}
-            />
-          </div>
+          {currentRegion && (
+            <div className="px-2 pb-2">
+              <ScoreStatsBar 
+                stats={contextStats} 
+                isMobile={true} 
+                hideRate={currentRegion?.admLevel === 2}
+                totalChildren={contextStats.totalChildrenCount}
+                admLevel={currentRegion?.admLevel ?? -1}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -551,7 +555,7 @@ export function RegionMap({ regions: initialRegions }: RegionMapProps) {
         {loading && (
           <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">로딩 중</span>
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Loading</span>
           </div>
         )}
 
@@ -615,7 +619,7 @@ function ScoreLegend({
         {!hideRate && (
           <>
             <div className="flex gap-1 items-center">
-              <span className="text-[7px] font-black text-slate-400 uppercase">점령률</span>
+              <span className="text-[7px] font-black text-slate-400 uppercase">Rate</span>
               {rateSteps.map(s => (
                 <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
               ))}
@@ -624,7 +628,7 @@ function ScoreLegend({
           </>
         )}
         <div className="flex gap-1 items-center">
-          <span className="text-[7px] font-black text-slate-400 uppercase">경험치</span>
+          <span className="text-[7px] font-black text-slate-400 uppercase">Exp</span>
           {individualSteps.map(s => (
             <div key={s.label} className="w-2.5 h-2.5 rounded-[2px]" style={{ background: s.color }} />
           ))}
@@ -638,7 +642,7 @@ function ScoreLegend({
       {!hideRate && (
         <>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">점령률 (Rate)</span>
+            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Occupancy (Rate)</span>
             <div className="flex flex-col gap-1">
               {rateSteps.map((s) => (
                 <div key={s.label} className="flex items-center gap-2">
@@ -652,7 +656,7 @@ function ScoreLegend({
         </>
       )}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">경험치 (Exp)</span>
+        <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Experience (Exp)</span>
         <div className="flex flex-col gap-1">
           {individualSteps.map((s) => (
             <div key={s.label} className="flex items-center gap-2">
