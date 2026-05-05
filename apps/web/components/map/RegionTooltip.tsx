@@ -150,16 +150,16 @@ export const RegionTooltip = memo(function RegionTooltip({
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-baseline gap-2 flex-wrap">
               <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
-              {(region.admLevel === 0 || region.admLevel === 1 || region.admLevel === 2) && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0 shadow-sm">
                   EXP {Math.round(score.directScore)}
                 </span>
-                <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0 shadow-sm">
-                  Occupancy {Math.ceil(score.rateScore)}%
-                </span>
+                {region.admLevel !== 2 && (
+                  <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0 shadow-sm">
+                    Rate {Math.ceil(score.rateScore)}%
+                  </span>
+                )}
               </div>
-              )}
             </div>
             <p className="text-[9px] mt-1 font-black uppercase tracking-widest text-slate-400">
               {region.iso3} · {region.admLevel === 0 ? "Country" : region.admLevel === 1 ? "Region" : "City"}
@@ -204,7 +204,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-100 mb-5">
                   <div className="flex justify-between items-end mb-3">
                     <div>
-                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Occupancy</p>
+                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Rate</p>
                       <div className="flex items-baseline gap-1">
                         <p className="text-2xl font-black tabular-nums text-orange-600">
                           {Math.ceil(score.rateScore)}<span className="text-sm ml-0.5">%</span>
@@ -292,7 +292,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black text-slate-700 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 transition-colors">{child.name}</span>
                             <span className="text-[9px] font-bold text-slate-400">
-                              {child.admLevel < 2 ? `Occupancy ${child.score!.rateScore}% · ` : ""}Base {child.score!.directScore}
+                              {child.admLevel < 2 ? `Rate ${child.score!.rateScore}% · ` : ""}Base {child.score!.directScore}
                             </span>
                           </div>
                           <span className={`text-xs font-black tabular-nums ${child.score!.scoreType === 'orange' ? 'text-orange-500' : 'text-blue-500'}`}>

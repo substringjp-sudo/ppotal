@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Region, RegionScore, RegionVisit, VisitCategory } from "@regionevel/types";
-import { VISIT_CATEGORY_ORDER } from "@regionevel/types";
+import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import {
   getNextIncrement,
   getRegionScore,
@@ -79,6 +79,10 @@ export const useVisitStore = create<VisitStore>()(
       },
 
       upsertVisit(regionId, category, count) {
+        if (!VISIT_CONFIG[category]) {
+          console.error(`[visitStore] Invalid category: ${category}`);
+          return;
+        }
         const id = padId(regionId);
         set((s) => {
           const filtered = s.visits.filter(
@@ -269,6 +273,11 @@ export const useVisitStore = create<VisitStore>()(
             ...v,
             category: v.category === "live" ? "residence" : v.category,
           }));
+        }
+
+        // Always ensure only valid categories are kept
+        if (state && state.visits) {
+          state.visits = state.visits.filter((v: any) => !!VISIT_CONFIG[v.category as VisitCategory]);
         }
 
         return state;

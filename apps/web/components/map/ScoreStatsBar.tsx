@@ -23,6 +23,7 @@ interface ScoreStatsBarProps {
   hideRate?: boolean;
   totalChildren?: number;
   admLevel?: number;
+  hideExp?: boolean;
 }
 
 export const ScoreStatsBar = memo(function ScoreStatsBar({ 
@@ -31,6 +32,7 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
   hideRate = false,
   totalChildren,
   admLevel,
+  hideExp = false,
 }: ScoreStatsBarProps) {
   const categories: Array<{ key: VisitCategory; color: string }> = [
     { key: "pass", color: "bg-slate-300" },
@@ -49,25 +51,26 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
       {admLevel !== -1 && (
         <div className="flex items-center gap-3 border-r border-slate-200/60 pr-4 shrink-0">
           <div className="flex flex-col">
-            <span className="text-[8px] font-black text-orange-500 uppercase tracking-tighter leading-none mb-0.5">Occupancy</span>
+            <span className="text-[8px] font-black text-orange-500 uppercase tracking-tighter leading-none mb-0.5">Rate</span>
             {!hideRate && (
               <div className="flex items-baseline gap-1.5">
                 <span className="text-sm font-black text-orange-600 tabular-nums leading-none">
                   {Math.ceil(stats.currentRateScore)}%
                 </span>
-                <span className="text-[10px] font-medium text-slate-400 tabular-nums leading-none">
-                  ({Math.round(stats.currentChildSum)} / {Math.round(stats.currentChildMax)})
-                </span>
               </div>
             )}
           </div>
-          <div className="w-[1px] h-3 bg-slate-200" />
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">EXP</span>
-            <span className="text-sm font-black text-blue-600 tabular-nums leading-none">
-              {Math.round(stats.currentDirectScore)}
-            </span>
-          </div>
+          {!hideExp && admLevel !== 0 && (
+            <>
+              <div className="w-[1px] h-3 bg-slate-200" />
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">EXP</span>
+                <span className="text-sm font-black text-blue-600 tabular-nums leading-none">
+                  {Math.round(stats.currentDirectScore)}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       )}
 

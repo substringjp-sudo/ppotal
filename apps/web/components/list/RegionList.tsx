@@ -27,10 +27,10 @@ const RegionListItem = memo(({
 }) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-4">
+      <div className={`flex items-start justify-between ${region.admLevel >= 2 ? "mb-4" : "mb-2"}`}>
         <div className="flex items-center gap-3">
           <div
-            className="w-4 h-4 rounded-full border-2 border-white shadow-sm shrink-0"
+            className="w-5 h-5 rounded-full border-2 border-white shadow-sm shrink-0"
             style={{ backgroundColor: getScoreColor(score.totalScore) }}
           />
           <div>
@@ -39,7 +39,10 @@ const RegionListItem = memo(({
               <span className="text-xs text-blue-600 font-bold">{score.totalScore} pts</span>
               {(score.rateScore > 0 || score.directScore > 0) && (
                 <span className="text-[10px] text-gray-400 font-medium">
-                  (Exp {score.directScore} + Occupancy {score.rateScore}%)
+                  ({[
+                    region.admLevel !== 0 && `Exp ${score.directScore}`,
+                    region.admLevel !== 2 && `Rate ${score.rateScore}%`
+                  ].filter(Boolean).join(" + ")})
                 </span>
               )}
             </div>
@@ -64,39 +67,65 @@ const RegionListItem = memo(({
         )}
       </div>
 
-      {/* Quick Scoring Buttons */}
-      <div className="grid grid-cols-5 gap-1.5">
-        {VISIT_CATEGORY_ORDER.map((cat) => {
-          const config = VISIT_CONFIG[cat];
-          const b = score.breakdown[cat];
-          const isActive = b.directCount > 0;
-          const hasSubWeight = b.effectiveCount > b.directCount;
+      {/* Progress Stats for Higher Levels */}
+      {region.admLevel < 2 && (
+        <div className="flex items-center gap-6 py-1">
+          {score.subRegionStats && score.subRegionStats.totalCount > 0 && (
+            <div className="flex flex-col">
+              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Regions</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-sm font-black text-gray-700">{score.subRegionStats.visitedCount}</span>
+                <span className="text-[10px] text-gray-400 font-medium">/ {score.subRegionStats.totalCount}</span>
+              </div>
+            </div>
+          )}
+          {score.cityStats && score.cityStats.totalCount > 0 && (
+            <div className="flex flex-col">
+              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Cities</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-sm font-black text-gray-700">{score.cityStats.visitedCount}</span>
+                <span className="text-[10px] text-gray-400 font-medium">/ {score.cityStats.totalCount}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
-          return (
-            <button
-              key={cat}
-              onClick={() => onUpdateVisit(cat, (b.directCount + 1) % (config.maxCount + 1))}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all relative overflow-hidden ${
-                isActive
-                  ? "bg-blue-600 border-blue-600 text-white shadow-sm"
-                  : hasSubWeight
-                    ? "bg-blue-50 border-blue-200 text-blue-600"
-                    : "bg-white border-gray-100 text-gray-400 hover:border-blue-200 hover:bg-blue-50/30"
-              }`}
-            >
-              {hasSubWeight && !isActive && (
-                <div className="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-bl-md" />
-              )}
-              <span className="text-[10px] font-bold tracking-tighter whitespace-nowrap z-10">
-                {config.label}
-              </span>
-              <span className={`text-xs font-black z-10 ${isActive ? "text-blue-100" : hasSubWeight ? "text-blue-400" : "text-gray-300"}`}>
-                {isActive ? b.directCount : hasSubWeight ? `+${b.effectiveCount}` : 0}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Quick Scoring Buttons for Leaf Regions (Cities) */}
+      {region.admLevel >= 2 && (
+        <div className="grid grid-cols-5 gap-1.5">
+          {VISIT_CATEGORY_ORDER.map((cat) => {
+            const config = VISIT_CONFIG[cat];
+            const b = score.breakdown[cat];
+            const isActive = b.directCount > 0;
+            const hasSubWeight = b.effectiveCount > b.directCount;
+
+            return (
+              <button
+                key={cat}
+                onClick={() => onUpdateVisit(cat, (b.directCount + 1) % (config.maxCount + 1))}
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all relative overflow-hidden ${
+                  isActive
+                    ? "bg-blue-600 border-blue-600 text-white shadow-sm"
+                    : hasSubWeight
+                      ? "bg-blue-50 border-blue-200 text-blue-600"
+                      : "bg-white border-gray-100 text-gray-400 hover:border-blue-200 hover:bg-blue-50/30"
+                }`}
+              >
+                {hasSubWeight && !isActive && (
+                  <div className="absolute top-0 right-0 w-2 h-2 bg-blue-400 rounded-bl-md" />
+                )}
+                <span className="text-[10px] font-bold tracking-tighter whitespace-nowrap z-10">
+                  {config.label}
+                </span>
+                <span className={`text-xs font-black z-10 ${isActive ? "text-blue-100" : hasSubWeight ? "text-blue-400" : "text-gray-300"}`}>
+                  {isActive ? b.directCount : hasSubWeight ? `+${b.effectiveCount}` : 0}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 });

@@ -23,7 +23,7 @@ export function VisitEditor({ regionId, regionName, score, onClose }: VisitEdito
             Total Score <span className="font-bold text-blue-600">{score.totalScore}</span>
             {(score.rateScore > 0 || score.directScore > 0) && (
               <span className="ml-1 text-gray-400">
-                (Exp {score.directScore} + Occupancy {score.rateScore}%)
+                (Exp {score.directScore} + Rate {score.rateScore}%)
               </span>
             )}
             / 100

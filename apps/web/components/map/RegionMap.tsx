@@ -148,6 +148,28 @@ export function RegionMap() {
       totalChildrenCount: 0,
     };
 
+    // Helper to check if a region is within the current scope
+    const isWithinScope = (regionId: string) => {
+      if (!currentId) return true;
+      const id = padId(regionId);
+      const targetId = padId(currentId);
+      if (id === targetId) return true;
+
+      const r = regionsByIdMap.get(id);
+      if (!r) return false;
+
+      // Check immediate parent
+      if (padId(r.parentId) === targetId) return true;
+
+      // Check grandparent (for cities under prefectures under current country)
+      if (r.parentId) {
+        const p = regionsByIdMap.get(padId(r.parentId));
+        if (p && padId(p.parentId) === targetId) return true;
+      }
+
+      return false;
+    };
+
     // 1. Current region scores from pre-calculated allScores
     if (currentId) {
       const score = allScores[padId(currentId)];
@@ -155,6 +177,7 @@ export function RegionMap() {
         stats.currentTotalScore = score.totalScore;
         stats.currentDirectScore = score.directScore;
         stats.currentRateScore = score.rateScore;
+        stats.currentChildSum = score.childSum;
         stats.currentChildMax = score.childMax;
         stats.totalChildrenCount = Math.round(score.childMax / 50);
       }
@@ -177,8 +200,10 @@ export function RegionMap() {
       stats.currentTotalScore = stats.currentRateScore;
     }
 
-    // 2. Count visited regions
+    // 2. Count visited regions in scope
     for (const r of allRegions) {
+      if (!isWithinScope(r.id)) continue;
+
       const s = allScores[padId(r.id)];
       if (s && s.hasVisit) {
         if (r.admLevel === 0) stats.visitedCountries++;
@@ -187,14 +212,14 @@ export function RegionMap() {
       }
     }
 
-    // 3. Category counts
+    // 3. Category counts in scope
     const categoryVisitedRegions = new Map<VisitCategory, Set<string>>();
     for (const cat of VISIT_CATEGORY_ORDER) {
       categoryVisitedRegions.set(cat, new Set());
     }
 
     for (const v of visits) {
-      if (v.count > 0 && categoryVisitedRegions.has(v.category)) {
+      if (v.count > 0 && categoryVisitedRegions.has(v.category) && isWithinScope(v.regionId)) {
         categoryVisitedRegions.get(v.category)!.add(padId(v.regionId));
       }
     }
@@ -204,7 +229,7 @@ export function RegionMap() {
     }
 
     return stats;
-  }, [currentId, allScores, visits, allRegions]);
+  }, [currentId, allScores, visits, allRegions, regionsByIdMap]);
 
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
@@ -398,20 +423,20 @@ export function RegionMap() {
               
               {hoveredScore ? (
                 <div className="flex gap-4 items-center shrink-0">
+                  <div className="flex flex-col items-center">
+                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">EXP</span>
+                    <span className="text-base font-black leading-none text-blue-400 tabular-nums">
+                      {Math.round(hoveredScore.directScore)}
+                    </span>
+                  </div>
                   {hoveredRegion && hoveredRegion.admLevel < 2 && (
                     <div className="flex flex-col items-center">
-                      <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Occupancy</span>
+                      <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Rate</span>
                       <span className="text-base font-black leading-none text-orange-400 tabular-nums">
                         {Math.ceil(hoveredScore.rateScore)}%
                       </span>
                     </div>
                   )}
-                  <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">Exp</span>
-                    <span className="text-base font-black leading-none text-blue-400 tabular-nums">
-                      {Math.round(hoveredScore.directScore)}
-                    </span>
-                  </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
@@ -464,20 +489,14 @@ export function RegionMap() {
                   {currentRegion ? currentRegion.name : "World Map"}
                 </h3>
               </div>
-              {currentRegion && (
+              {currentRegion && currentRegion.admLevel !== 2 && (
                 <div className="flex gap-6 border-l border-slate-200 pl-6 h-8 items-center flex-1">
                   <div className="flex flex-col justify-center min-w-[120px]">
                     <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter leading-none mb-1">
-                      {currentRegion ? "Sub-region Progress" : "Country Progress"}
+                      Rate
                     </span>
                     <div className="flex items-baseline gap-1 whitespace-nowrap">
-                      <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.round(contextStats.currentChildSum)}</p>
-                      <span className="text-[10px] font-bold text-slate-400">/ {contextStats.currentChildMax}</span>
-                      {contextStats.currentChildMax > 0 && (
-                        <span className="text-[9px] font-black text-slate-400 ml-1">
-                          ({Math.ceil((contextStats.currentChildSum / contextStats.currentChildMax) * 100)}%)
-                        </span>
-                      )}
+                      <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.ceil(contextStats.currentRateScore)}%</p>
                     </div>
                   </div>
                 </div>
@@ -526,6 +545,7 @@ export function RegionMap() {
                 stats={contextStats} 
                 isMobile={true} 
                 hideRate={currentRegion?.admLevel === 2}
+                hideExp={currentRegion?.admLevel === 0}
                 totalChildren={contextStats.totalChildrenCount}
                 admLevel={currentRegion?.admLevel ?? -1}
               />
@@ -546,7 +566,7 @@ export function RegionMap() {
         <div className="pointer-events-auto">
           <ScoreLegend 
             isMobile={isMobile} 
-            hideExp={!currentRegion}
+            hideExp={false}
             hideRate={currentRegion?.admLevel === 1}
           />
         </div>

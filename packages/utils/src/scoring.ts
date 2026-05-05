@@ -23,6 +23,10 @@ export function calculateScore(visits: RegionVisit[]): Record<VisitCategory, { d
 
   for (const visit of visits) {
     const cfg = VISIT_CONFIG[visit.category];
+    if (!cfg) {
+      console.warn(`[scoring] Unknown visit category: ${visit.category} for region ${visit.regionId}`);
+      continue;
+    }
     const clamped = Math.min(visit.count, cfg.maxCount);
     const points = clamped * cfg.pointsPerCount;
     breakdown[visit.category] = { directCount: clamped, points };
@@ -60,7 +64,9 @@ export function getEffectiveCounts(
   // 1. Direct visits of this region
   const directVisits = allVisits.get(normalizedId) || [];
   for (const v of directVisits) {
-    counts[v.category] += v.count;
+    if (v.category in counts) {
+      counts[v.category] += v.count;
+    }
   }
 
   // 2. Add sums from children using parentIdMap (O(1) lookup)
@@ -203,7 +209,7 @@ export function getRegionScore(
   const rateScore = rawRateScore > 0 ? Math.max(1, Math.ceil(rawRateScore)) : 0;
 
   const totalHasVisit = (directVisits.length > 0 && directVisits.some(v => v.count > 0)) || hasChildVisit;
-  const scoreType = (isCountry || isPrefecture) ? "orange" : "blue";
+  const scoreType = (isCountry || isPrefecture) && rateScore > 0 ? "orange" : "blue";
   
   let displayTotalScore = (isCountry || isPrefecture) 
     ? (rateScore > 0 ? rateScore : Math.round(displayDirectScore))
@@ -241,18 +247,18 @@ export function getMapColor(score: RegionScore): string {
   
   if (score.scoreType === "orange") {
     const s = Math.round(score.rateScore);
-    if (s < 10) return "#ffedd5";
-    if (s < 30) return "#fdba74";
-    if (s < 50) return "#f97316";
-    if (s < 70) return "#ea580c";
-    return "#c2410c";
+    if (s < 10) return "#fdba74"; // Orange 300 (was #fed7aa 200)
+    if (s < 30) return "#fb923c"; // Orange 400 (was #fdba74 300)
+    if (s < 50) return "#f97316"; // Orange 500
+    if (s < 70) return "#ea580c"; // Orange 600
+    return "#c2410c"; // Orange 700
   } else {
     const s = Math.round(score.directScore);
-    if (s < 10) return "#eff6ff";
-    if (s < 30) return "#bfdbfe";
-    if (s < 50) return "#60a5fa";
-    if (s < 70) return "#2563eb";
-    return "#1e3a8a";
+    if (s < 10) return "#93c5fd"; // Blue 300 (was #bfdbfe 200)
+    if (s < 30) return "#60a5fa"; // Blue 400 (was #93c5fd 300)
+    if (s < 50) return "#3b82f6"; // Blue 500 (was #60a5fa 400)
+    if (s < 70) return "#2563eb"; // Blue 600
+    return "#1e3a8a"; // Blue 900
   }
 }
 
@@ -273,19 +279,19 @@ export function getNextIncrement(
 
 export function getScoreColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  if (score < 10) return "#eff6ff";
-  if (score < 30) return "#bfdbfe";
-  if (score < 50) return "#60a5fa";
-  if (score < 70) return "#2563eb";
+  if (score < 10) return "#93c5fd"; // Blue 300
+  if (score < 30) return "#60a5fa"; // Blue 400
+  if (score < 50) return "#3b82f6"; // Blue 500
+  if (score < 70) return "#2563eb"; // Blue 600
   return "#1e3a8a";
 }
 
 export function getCumulativeColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  if (score < 10) return "#ffedd5";
-  if (score < 30) return "#fdba74";
-  if (score < 50) return "#f97316";
-  if (score < 70) return "#ea580c";
+  if (score < 10) return "#fdba74"; // Orange 300
+  if (score < 30) return "#fb923c"; // Orange 400
+  if (score < 50) return "#f97316"; // Orange 500
+  if (score < 70) return "#ea580c"; // Orange 600
   return "#c2410c";
 }
 
