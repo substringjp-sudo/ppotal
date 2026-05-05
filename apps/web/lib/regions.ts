@@ -109,6 +109,15 @@ export async function fetchAllRegions(): Promise<Region[]> {
   }
 }
 
+export async function fetchRegionsByIds(ids: string[]): Promise<Region[]> {
+  try {
+    return await getStore().getRegionsByIds(ids);
+  } catch (e) {
+    console.error("Failed to fetch regions by IDs", e);
+    return [];
+  }
+}
+
 export async function fetchAncestors(regionId: string): Promise<Region[]> {
   const result: Region[] = [];
   let currentId: string | null = padId(regionId);

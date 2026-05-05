@@ -1,4 +1,4 @@
-export type VisitCategory = "transit" | "visit" | "stay" | "live";
+export type VisitCategory = "pass" | "transit" | "visit" | "stay" | "residence";
 
 export interface VisitCategoryConfig {
   label: string;
@@ -9,29 +9,36 @@ export interface VisitCategoryConfig {
 }
 
 export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
+  pass: {
+    label: "Pass (통과)",
+    description: "Briefly passed through",
+    maxCount: 5,
+    pointsPerCount: 1,
+    maxPoints: 5,
+  },
   transit: {
-    label: "Transit",
+    label: "Transit (경유)",
     description: "Passing through or short stay",
     maxCount: 5,
     pointsPerCount: 2,
     maxPoints: 10,
   },
   visit: {
-    label: "Visit",
+    label: "Visit (방문)",
     description: "Sightseeing or dining",
-    maxCount: 5,
-    pointsPerCount: 4,
-    maxPoints: 20,
+    maxCount: 3,
+    pointsPerCount: 5,
+    maxPoints: 15,
   },
   stay: {
-    label: "Stay",
+    label: "Stay (숙박)",
     description: "Overnight stay",
-    maxCount: 5,
-    pointsPerCount: 6,
+    maxCount: 3,
+    pointsPerCount: 10,
     maxPoints: 30,
   },
-  live: {
-    label: "Live",
+  residence: {
+    label: "Residence (거주)",
     description: "Residence or long-term",
     maxCount: 1,
     pointsPerCount: 40,
@@ -40,10 +47,11 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
 } as const;
 
 export const VISIT_CATEGORY_ORDER: VisitCategory[] = [
+  "pass",
   "transit",
   "visit",
   "stay",
-  "live",
+  "residence",
 ];
 
 export const MAX_TOTAL_SCORE = 100;

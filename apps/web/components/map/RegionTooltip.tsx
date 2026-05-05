@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState, useEffect } from "react";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import type { Region, RegionScore, VisitCategory } from "@regionevel/types";
 import { padId } from "@regionevel/utils";
@@ -26,15 +26,18 @@ export const RegionTooltip = memo(function RegionTooltip({
   onDrillDown,
   onVisitSet,
 }: RegionTooltipProps) {
+  const [activeTab, setActiveTab] = useState<"summary" | "manual">("summary");
+
   const subRegionStats = useMemo(() => {
     if (childRegions.length === 0) return null;
     
     let visitedCount = 0;
     const categoryCounts: Record<VisitCategory, number> = {
+      pass: 0,
       transit: 0,
       visit: 0,
       stay: 0,
-      live: 0,
+      residence: 0,
     };
     
     childRegions.forEach(child => {
@@ -55,6 +58,16 @@ export const RegionTooltip = memo(function RegionTooltip({
     };
   }, [childRegions, scoreMap]);
 
+  useEffect(() => {
+    if (region.admLevel === 1 && subRegionStats && subRegionStats.visitedCount > 0) {
+      setActiveTab("summary");
+    } else {
+      setActiveTab("manual");
+    }
+  }, [region.id, subRegionStats?.visitedCount]);
+
+  const isReadOnly = region.admLevel === 1 && subRegionStats && subRegionStats.visitedCount > 0;
+
   // Calculate position to stay within viewport (Desktop)
   const tooltipWidth = 320;
   const tooltipHeight = 450; 
@@ -65,7 +78,7 @@ export const RegionTooltip = memo(function RegionTooltip({
         const winH = typeof window !== "undefined" ? window.innerHeight : 0;
         
         // Dynamic height based on content
-        const idealHeight = 580;
+        const idealHeight = region.admLevel === 2 ? 520 : 580;
         const actualHeight = Math.min(idealHeight, winH - 60);
         
         let left = mousePos.x + 20;
@@ -84,7 +97,8 @@ export const RegionTooltip = memo(function RegionTooltip({
           position: "fixed",
           left,
           top,
-          height: actualHeight,
+          height: region.admLevel === 2 ? "auto" : actualHeight,
+          maxHeight: actualHeight,
           zIndex: 2000,
         };
       })()
@@ -133,10 +147,24 @@ export const RegionTooltip = memo(function RegionTooltip({
         )}
 
         <div className={`flex items-center justify-between px-5 py-4 shrink-0 border-b border-slate-100 bg-slate-50/50`}>
-          <div>
-            <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
+          <div className="flex-1 min-w-0 pr-4">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
+              {(region.admLevel === 1 || region.admLevel === 2) && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0">
+                    {Math.round(score.directScore)} pts
+                  </span>
+                  {region.admLevel === 1 && score.rankScore > 0 && (
+                    <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0">
+                      Rank {Math.round(score.rankScore)}%
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
             <p className="text-[9px] mt-1 font-black uppercase tracking-widest text-slate-400">
-              {region.iso3} · {region.admLevel === 0 ? "National" : region.admLevel === 1 ? "Regional" : "Local"}
+              {region.iso3} · {region.admLevel === 0 ? "국가" : region.admLevel === 1 ? "광역" : "기초"}
             </p>
           </div>
           {!isMobile && (
@@ -152,69 +180,61 @@ export const RegionTooltip = memo(function RegionTooltip({
           )}
         </div>
 
-        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
-          <div className="flex flex-col">
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
-              {score.scoreType === "orange" ? "Ranking (from sub-regions)" : "Experience Points"}
+        {region.admLevel === 1 && subRegionStats && subRegionStats.visitedCount > 0 && (
+          <div className="flex items-center justify-between px-5 py-2 border-b border-slate-50 bg-white shrink-0">
+            <button 
+              onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
+              className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              {activeTab === "summary" ? "도시 요약 (City Summary)" : "광역 기록 (Prefecture Record)"}
             </span>
-            <div className="flex items-baseline gap-2">
-              <p className={`text-2xl font-black tabular-nums ${score.scoreType === 'orange' ? 'text-orange-600' : 'text-blue-600'}`}>
-                {Math.round(score.totalScore)}
-              </p>
-                {score.scoreType === "orange" && (
-                  <div className="flex flex-col items-center ml-2 bg-orange-50 px-2 py-1 rounded-lg border border-orange-100">
-                    <span className="text-[10px] font-black text-orange-400 leading-none uppercase tracking-tighter mb-0.5">
-                      Sub-sum / Max
-                    </span>
-                    <div className="flex items-baseline gap-0.5">
-                      <span className="text-xs font-black text-orange-600 leading-none tabular-nums">
-                        {Math.round(score.childSum)}
-                      </span>
-                      <span className="text-[10px] font-bold text-orange-300">/</span>
-                      <span className="text-[10px] font-bold text-orange-400">
-                        {score.childMax}
-                      </span>
-                    </div>
-                  </div>
-                )}
-            </div>
+            <button 
+              onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
+              className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+            </button>
           </div>
-          {score.rankScore > 0 && score.directScore > 0 && (
-            <>
-              <div className="h-6 w-[1px] bg-slate-100" />
-              <div className="flex flex-col items-end">
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Base Pts</span>
-                <p className="text-sm font-bold tabular-nums text-slate-400">
-                  {score.directScore}
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+        )}
 
-        <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6 pb-8" : "px-5 pb-4"}`}>
-          {/* Aggregated Stats for parents */}
-          {subRegionStats && (
+        <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6" : "px-5"} ${region.admLevel === 2 ? "pb-2" : "pb-4"}`}>
+          {activeTab === "summary" && subRegionStats && (
             <div className="pt-4 pb-2">
-               <div className="bg-slate-900 rounded-2xl p-4 text-white shadow-lg shadow-slate-200 mb-5">
+               <div className="bg-orange-50/50 rounded-2xl p-4 border border-orange-100 mb-5">
                   <div className="flex justify-between items-end mb-3">
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Exploration</p>
-                      <p className="text-2xl font-black tabular-nums">
-                        {Math.round((subRegionStats.visitedCount / subRegionStats.totalCount) * 100)}<span className="text-sm font-bold text-slate-500 ml-1">%</span>
-                      </p>
+                      <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">랭킹 점수 산출 (Ranking)</p>
+                      <div className="flex items-baseline gap-1">
+                        <p className="text-2xl font-black tabular-nums text-orange-600">
+                          {Math.round(score.rankScore)}<span className="text-sm ml-0.5">%</span>
+                        </p>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-orange-300 ml-2 bg-white px-2 py-0.5 rounded-full border border-orange-100">
+                          <span className="text-orange-500">{Math.round(score.childSum)}</span>
+                          <span>/</span>
+                          <div className="flex items-center">
+                            <span className="text-orange-400/80">{Math.round(score.childMax / 50)}</span>
+                            <span className="mx-0.5 text-[8px] text-orange-300">×</span>
+                            <span>50</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Progress</p>
-                      <p className="text-sm font-bold tabular-nums">
-                        {subRegionStats.visitedCount} / {subRegionStats.totalCount} <span className="text-[10px] font-black text-slate-500 ml-0.5">Regions</span>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                        {region.admLevel === 0 ? "하위 지역 방문" : "도시 방문"}
+                      </p>
+                      <p className="text-xs font-bold tabular-nums text-slate-500">
+                        {subRegionStats.visitedCount}<span className="text-[10px] text-slate-400 mx-0.5">/</span>{Math.round(score.childMax / 50)}
                       </p>
                     </div>
                   </div>
-                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-orange-100/50 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-blue-400 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(96,165,250,0.5)]"
-                      style={{ width: `${(subRegionStats.visitedCount / subRegionStats.totalCount) * 100}%` }}
+                      className="h-full bg-orange-400 rounded-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(251,146,60,0.3)]"
+                      style={{ width: `${score.rankScore}%` }}
                     />
                   </div>
                </div>
@@ -233,74 +253,10 @@ export const RegionTooltip = memo(function RegionTooltip({
                    );
                  })}
                </div>
-            </div>
-          )}
 
-          {/* Score breakdown */}
-          <div className="space-y-3.5 pt-2">
-            {region.admLevel > 0 && (
-              <>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Visit History</p>
-                {VISIT_CATEGORY_ORDER.map((cat) => {
-                  const cfg = VISIT_CONFIG[cat];
-                  const b = score.breakdown[cat];
-                  return (
-                    <div key={cat} className="group">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-baseline gap-2 overflow-hidden mr-2">
-                          <span className="text-sm font-bold text-slate-700 whitespace-nowrap shrink-0">{cfg.label}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full`}>
-                            {b.points} pts
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 flex gap-1.5 h-4 items-center cursor-pointer">
-                          {Array.from({ length: cfg.maxCount }, (_, i) => (
-                            <button
-                              key={i}
-                              onClick={() => onVisitSet(cat, i + 1 === b.directCount ? i : i + 1)}
-                              className={`flex-1 h-2 rounded-full transition-all duration-300 hover:scale-y-125 ${
-                                i < b.directCount 
-                                  ? "bg-blue-600 shadow-sm shadow-blue-200"
-                                  : "bg-slate-100"
-                              }`}
-                              title={`${i + 1} visits`}
-                            />
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            onClick={() => onVisitSet(cat, Math.max(0, b.directCount - 1))}
-                            disabled={b.directCount <= 0}
-                            className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
-                          >
-                            −
-                          </button>
-                          <button
-                            onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, b.directCount + 1))}
-                            disabled={b.directCount >= cfg.maxCount}
-                            className={`w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100 disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-            
-            {childRegions.length > 0 && (
-              <div className="space-y-3 mt-4">
+               <div className="space-y-3 mt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Sub-region Scores</p>
-                  <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 italic">
-                    Contribution to Rank
-                  </span>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">도시별 현황</p>
                 </div>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                   {childRegions
@@ -322,7 +278,9 @@ export const RegionTooltip = memo(function RegionTooltip({
                         <div className="flex justify-between items-end px-1">
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black text-slate-700 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 transition-colors">{child.name}</span>
-                            <span className="text-[9px] font-bold text-slate-400">Rank {child.score!.rankScore} · Direct {child.score!.directScore}</span>
+                            <span className="text-[9px] font-bold text-slate-400">
+                              {child.admLevel < 2 ? `랭킹 ${child.score!.rankScore} · ` : ""}기본 {child.score!.directScore}
+                            </span>
                           </div>
                           <span className={`text-xs font-black tabular-nums ${child.score!.scoreType === 'orange' ? 'text-orange-500' : 'text-blue-500'}`}>
                             {Math.round(child.score!.totalScore)}
@@ -344,18 +302,95 @@ export const RegionTooltip = memo(function RegionTooltip({
                        + {childRegions.filter(child => {
                          const childId = padId(child.id);
                          return !scoreMap[childId] || scoreMap[childId].totalScore === 0;
-                       }).length} unvisited regions
+                       }).length} 미방문 지역
                      </p>
                   )}
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-          </div>
+          {activeTab === "manual" && (
+            <div className="space-y-3.5 pt-2">
+              {region.admLevel > 0 && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">방문 기록</p>
+                    {isReadOnly && (
+                      <span className="text-[8px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-tighter animate-pulse">
+                        Calculated from children
+                      </span>
+                    )}
+                  </div>
+                  {VISIT_CATEGORY_ORDER.map((cat) => {
+                    const cfg = VISIT_CONFIG[cat];
+                    const b = score.breakdown[cat];
+                    // If read-only, use effectiveCount for visualization
+                    const displayCount = isReadOnly ? b.effectiveCount : b.directCount;
+                    
+                    return (
+                      <div key={cat} className={`group ${isReadOnly ? 'opacity-90' : ''}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-baseline gap-2 overflow-hidden mr-2">
+                            <span className="text-sm font-bold text-slate-700 whitespace-nowrap shrink-0">{cfg.label}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full`}>
+                              {b.points} pts
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`flex-1 flex gap-1.5 h-4 items-center ${isReadOnly ? 'cursor-default' : 'cursor-pointer'}`}>
+                            {Array.from({ length: cfg.maxCount }, (_, i) => (
+                              <div
+                                key={i}
+                                onClick={() => !isReadOnly && onVisitSet(cat, i + 1 === displayCount ? i : i + 1)}
+                                className={`flex-1 h-2 rounded-full transition-all duration-300 ${!isReadOnly ? 'hover:scale-y-125' : ''} ${
+                                  i < displayCount 
+                                    ? "bg-blue-600 shadow-sm shadow-blue-200"
+                                    : "bg-slate-100"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          {!isReadOnly && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                onClick={() => onVisitSet(cat, Math.max(0, b.directCount - 1))}
+                                disabled={b.directCount <= 0}
+                                className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
+                              >
+                                −
+                              </button>
+                              <button
+                                onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, b.directCount + 1))}
+                                disabled={b.directCount >= cfg.maxCount}
+                                className={`w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100 disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                          {isReadOnly && (
+                            <div className="w-15 h-7 flex items-center justify-center">
+                              <span className="text-xs font-black text-slate-400 tabular-nums">
+                                {displayCount} / {cfg.maxCount}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Drill down action - Always visible at bottom */}
-        {childRegions.length > 0 && (
+        {/* Drill down action - Always visible at bottom for regions with children */}
+        {region.admLevel < 2 && (
           <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white border-t border-gray-50" : "px-4 pb-4 pt-2"}`}>
             <button
               onClick={() => onDrillDown(region.id)}
@@ -365,7 +400,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              Explore {region.name}
+              진입
             </button>
           </div>
         )}

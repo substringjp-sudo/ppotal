@@ -5,10 +5,11 @@ interface ScoreStats {
   visitedCountries: number;
   visitedPrefectures: number;
   visitedCities: number;
+  pass: number;
   transit: number;
   visit: number;
   stay: number;
-  live: number;
+  residence: number;
   currentTotalScore: number;
   currentRankScore: number;
   currentDirectScore: number;
@@ -19,17 +20,24 @@ interface ScoreStats {
 interface ScoreStatsBarProps {
   stats: ScoreStats;
   isMobile: boolean;
+  hideRank?: boolean;
+  totalChildren?: number;
+  admLevel?: number;
 }
 
 export const ScoreStatsBar = memo(function ScoreStatsBar({ 
   stats, 
   isMobile,
+  hideRank = false,
+  totalChildren,
+  admLevel,
 }: ScoreStatsBarProps) {
   const categories: Array<{ key: VisitCategory; color: string }> = [
+    { key: "pass", color: "bg-slate-300" },
     { key: "transit", color: "bg-cyan-400" },
     { key: "visit", color: "bg-blue-500" },
     { key: "stay", color: "bg-indigo-500" },
-    { key: "live", color: "bg-violet-600" },
+    { key: "residence", color: "bg-violet-600" },
   ];
 
   return (
@@ -37,21 +45,67 @@ export const ScoreStatsBar = memo(function ScoreStatsBar({
       ${isMobile ? "" : "bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-full px-6 py-3"}
       flex items-center gap-4 transition-all duration-500 animate-in fade-in slide-in-from-top-4
     `}>
+      {/* Experience & Rank Section */}
+      <div className="flex items-center gap-3 border-r border-slate-200/60 pr-4 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">Exp</span>
+          <span className="text-sm font-black text-blue-600 tabular-nums leading-none">
+            {Math.round(stats.currentDirectScore)}
+          </span>
+        </div>
+        {!hideRank && (
+          <>
+            <div className="w-[1px] h-3 bg-slate-200" />
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-black text-orange-500 uppercase tracking-tighter">Rank</span>
+              <span className="text-sm font-black text-orange-600 tabular-nums leading-none">
+                {Math.round(stats.currentRankScore)}%
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Region Count Section */}
       <div className="flex items-center gap-3 border-r border-slate-200/60 pr-4 shrink-0">
-        <div className="flex flex-col items-center">
-          <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Countries</span>
-          <span className="text-sm font-black text-slate-800 tabular-nums leading-none">{stats.visitedCountries}</span>
-        </div>
-        <div className="w-[1px] h-4 bg-slate-100" />
-        <div className="flex flex-col items-center">
-          <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Regions</span>
-          <span className="text-sm font-black text-slate-800 tabular-nums leading-none">{stats.visitedPrefectures}</span>
-        </div>
-        <div className="w-[1px] h-4 bg-slate-100" />
+        {(admLevel === undefined || admLevel === -1) && (
+          <>
+            <div className="flex flex-col items-center">
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Countries</span>
+              <span className="text-sm font-black text-slate-800 tabular-nums leading-none">
+                {stats.visitedCountries}
+                {totalChildren && totalChildren > 0 && (
+                  <span className="text-[10px] text-slate-400 ml-1">/ {totalChildren}</span>
+                )}
+              </span>
+            </div>
+            <div className="w-[1px] h-4 bg-slate-100" />
+          </>
+        )}
+        
+        {(admLevel === undefined || admLevel === -1 || admLevel === 0) && (
+          <>
+            <div className="flex flex-col items-center">
+              <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Regions</span>
+              <span className="text-sm font-black text-slate-800 tabular-nums leading-none">
+                {stats.visitedPrefectures}
+                {admLevel === 0 && totalChildren && totalChildren > 0 && (
+                  <span className="text-[10px] text-slate-400 ml-1">/ {totalChildren}</span>
+                )}
+              </span>
+            </div>
+            <div className="w-[1px] h-4 bg-slate-100" />
+          </>
+        )}
+
         <div className="flex flex-col items-center">
           <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mb-0.5">Cities</span>
-          <span className="text-sm font-black text-slate-800 tabular-nums leading-none">{stats.visitedCities}</span>
+          <span className="text-sm font-black text-slate-800 tabular-nums leading-none">
+            {stats.visitedCities}
+            {admLevel === 1 && totalChildren && totalChildren > 0 && (
+              <span className="text-[10px] text-slate-400 ml-1">/ {totalChildren}</span>
+            )}
+          </span>
         </div>
       </div>
 

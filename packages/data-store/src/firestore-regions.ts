@@ -41,6 +41,22 @@ export function createFirestoreRegionStore(): RegionDataStore {
       return snap.data() as Region;
     },
 
+    async getRegionsByIds(ids) {
+      if (ids.length === 0) return [];
+      const { documentId } = await import("firebase/firestore");
+      
+      const results: Region[] = [];
+      // Firestore 'in' query limit is 30
+      const CHUNK_SIZE = 30;
+      for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+        const chunk = ids.slice(i, i + CHUNK_SIZE);
+        const q = query(regionsRef, where(documentId(), "in", chunk));
+        const snap = await getDocs(q);
+        results.push(...snap.docs.map(d => d.data() as Region));
+      }
+      return results;
+    },
+
     async getGeometries(ids) {
       if (ids.length === 0) return [];
       // Use documentId() in query if needed, but for now placeholder

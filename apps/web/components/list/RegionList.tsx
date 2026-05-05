@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import type { Region, VisitCategory, RegionScore } from "@regionevel/types";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
-import { getScoreColor } from "@regionevel/utils";
+import { getScoreColor, getRegionScore } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
 import { fetchChildren, fetchAncestors, fetchRegion } from "@/lib/regions";
 
@@ -14,7 +14,7 @@ interface RegionListProps {
 type SortOrder = "NAME_ASC" | "NAME_DESC" | "SCORE_DESC" | "SCORE_ASC";
 
 export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
-  const { visits, upsertVisit, getFullScore } = useVisitStore();
+  const { visits, upsertVisit } = useVisitStore();
   const [currentParentId, setCurrentParentId] = useState<string | null>(null);
   const [currentRegions, setCurrentRegions] = useState<Region[]>([]);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; name: string }[]>([
@@ -101,7 +101,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
 
     const withScores = displayRegions.map(r => ({
       region: r,
-      score: getFullScore(r.id, allRegions, pMap, memo, vMap)
+      score: getRegionScore(r.id, vMap, allRegions, pMap, memo)
     }));
 
     // Sort
@@ -124,7 +124,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
       return withScores.slice(0, 50);
     }
     return withScores;
-  }, [currentRegions, initialRegions, visits, getFullScore, search, sortOrder]);
+  }, [currentRegions, initialRegions, visits, search, sortOrder]);
 
   const handleDrillDown = useCallback((id: string) => {
     setSearch("");
