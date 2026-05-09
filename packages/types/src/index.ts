@@ -6,6 +6,8 @@ export interface VisitCategoryConfig {
   maxCount: number;
   pointsPerCount: number;
   maxPoints: number;
+  color: string;
+  emoji: string;
 }
 
 export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
@@ -15,6 +17,8 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
     maxCount: 5,
     pointsPerCount: 1,
     maxPoints: 5,
+    color: "#FFD60A",
+    emoji: "🚗",
   },
   transit: {
     label: "Transit",
@@ -22,6 +26,8 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
     maxCount: 5,
     pointsPerCount: 2,
     maxPoints: 10,
+    color: "#FF9F0A",
+    emoji: "🚉",
   },
   visit: {
     label: "Visit",
@@ -29,6 +35,8 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
     maxCount: 3,
     pointsPerCount: 5,
     maxPoints: 15,
+    color: "#32ADE6",
+    emoji: "📸",
   },
   stay: {
     label: "Stay",
@@ -36,6 +44,8 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
     maxCount: 3,
     pointsPerCount: 10,
     maxPoints: 30,
+    color: "#007AFF",
+    emoji: "🛌",
   },
   residence: {
     label: "Residence",
@@ -43,6 +53,8 @@ export const VISIT_CONFIG: Record<VisitCategory, VisitCategoryConfig> = {
     maxCount: 1,
     pointsPerCount: 40,
     maxPoints: 40,
+    color: "#5856D6",
+    emoji: "🏠",
   },
 } as const;
 
@@ -64,10 +76,13 @@ export interface Region {
   id: string;
   parentId: string | null;
   name: string;
+  nameKo?: string;
+  nameEn?: string;
   iso3: string; // ISO 3166-1 alpha-3
   admLevel: AdmLevel;
   childrenCount?: number;
   code?: string;
+  type?: string;
 }
 
 export interface RegionVisit {

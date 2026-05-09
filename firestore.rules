@@ -15,6 +15,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Geometry bundles: public read, no client writes
+    match /geometries_bundles/{bundleId} {
+      allow get: if true;
+      allow write: if false;
+    }
+
     // Visit records: only the owning user can read/write
     match /users/{uid}/visits/{visitId} {
       allow read, write: if request.auth != null && request.auth.uid == uid;

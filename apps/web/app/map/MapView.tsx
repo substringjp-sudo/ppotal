@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { Region } from "@regionevel/types";
-import { fetchChildren, fetchRegionsByIds, fetchAncestors } from "@/lib/regions";
+import { fetchChildren, fetchRegionsByIds, fetchAncestors, fetchAncestorsBulk, fetchAllRegions } from "@/lib/regions";
 import { useVisitStore } from "@/store/visitStore";
+import { useMapStore } from "@/store/mapStore";
 import { padId } from "@regionevel/utils";
 
 // Leaflet accesses `window` at import time — load only on the client
@@ -24,7 +25,7 @@ export function MapView() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { visits, allRegions, _hasHydrated, setRegions } = useVisitStore();
-  
+  const { level, currentId } = useMapStore();
   const [hasLoadedCountries, setHasLoadedCountries] = useState(false);
 
   useEffect(() => {
@@ -35,59 +36,73 @@ export function MapView() {
     let active = true;
 
     const loadInitialData = async () => {
-      // If we already have regions and this was triggered by a minor visit update,
-      // we might just need to recalculate, but for the FIRST load, we need to fetch everything.
-      if (!hasLoadedCountries) {
-        try {
-          const initialCountries = await fetchChildren(null);
-          if (!active) return;
-          setRegions(initialCountries);
-          setHasLoadedCountries(true);
-          
-          // Initial calculation with just countries if no visits
-          if (visits.length === 0) {
-            setInitialLoading(false);
-            return;
-          }
-        } catch (e) {
-          console.error("Failed to load countries", e);
-          if (active) setError("Failed to load countries");
-          return;
-        }
-      }
-
-      // 3. Load metadata for visited regions and their ancestors
+      // 3. Get current state
+      const { currentId } = useMapStore.getState();
+      
+      // 4. Load metadata for visited regions, current region, and their ancestors
       try {
         const visitedIds = Array.from(new Set(visits.map(v => padId(v.regionId))));
-        if (visitedIds.length === 0) {
-          if (active) {
-            setInitialLoading(false);
+        const targetIds = [...visitedIds];
+        if (currentId) targetIds.push(padId(currentId));
+
+        if (targetIds.length === 0) {
+          // If we don't have visits or currentId, just load countries if not done
+          if (!hasLoadedCountries) {
+            const initialCountries = await fetchChildren(null);
+            if (active) {
+              setRegions(initialCountries);
+              setHasLoadedCountries(true);
+              setInitialLoading(false);
+            }
+          } else {
+            if (active) setInitialLoading(false);
           }
           return;
         }
 
         // Only fetch if we don't have them in allRegions yet
-        const existingIds = new Set(allRegions.map(r => padId(r.id)));
-        const missingIds = visitedIds.filter(id => !existingIds.has(id));
+        // Access current allRegions from state to avoid dependency loop
+        const currentAllRegions = useVisitStore.getState().allRegions;
+        const existingIds = new Set(currentAllRegions.map(r => padId(r.id)));
+        const missingIds = targetIds.filter(id => !existingIds.has(id));
+
+        // Even if no missing IDs, we might still need initial countries for the base map
+        if (!hasLoadedCountries) {
+          const initialCountries = await fetchChildren(null);
+          if (active) {
+            setRegions(initialCountries);
+            setHasLoadedCountries(true);
+          }
+        }
 
         if (missingIds.length === 0) {
           if (active) setInitialLoading(false);
           return;
         }
 
-        // Fetch missing metadata in parallel
-        const [visitedRegions, ...ancestorResults] = await Promise.all([
+        // If we have a lot of visited regions, it's actually much faster to just fetch EVERYTHING once
+        if (missingIds.length > 50) {
+          const all = await fetchAllRegions();
+          if (active) {
+            setRegions(all);
+            setInitialLoading(false);
+          }
+          return;
+        }
+
+        // Otherwise fetch missing metadata and ancestors in bulk
+        const [visitedRegions, ancestorResults] = await Promise.all([
           fetchRegionsByIds(missingIds),
-          ...missingIds.map(id => fetchAncestors(id))
+          fetchAncestorsBulk(missingIds)
         ]);
 
         if (!active) return;
 
-        const allNewRegions = [...visitedRegions, ...ancestorResults.flat()];
+        const allNewRegions = [...visitedRegions, ...ancestorResults];
         setRegions(allNewRegions);
         setInitialLoading(false);
       } catch (e) {
-        console.error("Failed to load visited metadata", e);
+        console.error("Failed to load map metadata", e);
         if (active) {
           setInitialLoading(false);
         }
@@ -96,7 +111,7 @@ export function MapView() {
 
     loadInitialData();
     return () => { active = false; };
-  }, [_hasHydrated, hasLoadedCountries, visits.length]); // Re-run when visits count changes
+  }, [visits, _hasHydrated, setRegions, hasLoadedCountries, currentId, level]);
 
   if (error) {
     return (

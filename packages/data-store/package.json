@@ -17,9 +17,11 @@
   },
   "dependencies": {
     "@regionevel/types": "workspace:*",
-    "firebase": "^11.7.1"
+    "firebase": "^11.7.1",
+    "topojson-client": "^3.1.0"
   },
   "devDependencies": {
+    "@types/topojson-client": "^3.1.5",
     "typescript": "^5.7.3"
   },
   "peerDependencies": {

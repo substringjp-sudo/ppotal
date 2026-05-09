@@ -59,6 +59,7 @@ export const useVisitStore = create<VisitStore>()(
 
       setRegions(regions) {
         const currentRegions = get().allRegions;
+        const currentScores = get().scores;
         // Merge regions if they are different
         const regionMap = new Map<string, Region>();
         currentRegions.forEach(r => regionMap.set(padId(r.id), r));
@@ -71,7 +72,9 @@ export const useVisitStore = create<VisitStore>()(
           }
         });
         
-        if (changed) {
+        const hasNoScores = Object.keys(currentScores).length === 0;
+
+        if (changed || (hasNoScores && regions.length > 0)) {
           const newRegions = Array.from(regionMap.values());
           set({ allRegions: newRegions });
           get().recalculateScores(newRegions);
@@ -158,7 +161,7 @@ export const useVisitStore = create<VisitStore>()(
 
       recalculateScores(regions) {
         const allRegions = regions || get().allRegions;
-        const { visits } = get();
+        const { visits, scores: currentScores } = get();
         if (allRegions.length === 0) return;
 
         const regionMap = new Map<string, Region>();
@@ -190,10 +193,35 @@ export const useVisitStore = create<VisitStore>()(
           }
         }
 
-        const newScores: Record<string, RegionScore> = {};
+        const newScores: Record<string, RegionScore> = { ...currentScores };
         const scoreMemo = new Map<string, RegionScore>();
+        // Pre-populate memo with existing scores to avoid re-calculation of unaffected branches
+        for (const [id, score] of Object.entries(currentScores)) {
+          scoreMemo.set(id, score);
+        }
+
         const countMemo = new Map<string, Record<VisitCategory, number>>();
 
+        // Optimization: Only recalculate for affected IDs if this was a visit update.
+        // If regions was passed, it's likely an initial load or new data, so we might need more.
+        const targets = regions ? allRegions : Array.from(affectedIds).map(id => regionMap.get(id)).filter((r): r is Region => !!r);
+        
+        // If it's the very first calculation, we still need to loop through all to initialize
+        const finalTargets = Object.keys(currentScores).length === 0 ? allRegions : targets;
+
+        for (const r of finalTargets) {
+          const id = padId(r.id);
+          // If already in memo and not affected, getRegionScore will return it immediately.
+          // We clear affected IDs from memo first to ensure they are recalculated.
+          if (affectedIds.has(id)) {
+            scoreMemo.delete(id);
+            countMemo.delete(id);
+          }
+          const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
+          newScores[id] = score;
+        }
+
+        // Efficient stats calculation
         const stats = {
           visitedCountries: 0,
           visitedPrefectures: 0,
@@ -205,15 +233,10 @@ export const useVisitStore = create<VisitStore>()(
           residence: 0,
         };
 
-        // Instead of calculating for ALL regions, we can be smarter.
-        // But for the initial map load, we do need most of them.
-        // Optimization: Only loop through regions that ARE in the current viewport or are countries.
-        for (const r of allRegions) {
-          const id = padId(r.id);
-          const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
-          newScores[id] = score;
-
-          if (score.hasVisit) {
+        // Visited counts from vMap (only regions with direct visits)
+        for (const [rid] of vMap) {
+          const r = regionMap.get(rid);
+          if (r) {
             if (r.admLevel === 0) stats.visitedCountries++;
             else if (r.admLevel === 1) stats.visitedPrefectures++;
             else if (r.admLevel === 2) stats.visitedCities++;

@@ -16,8 +16,11 @@ export interface RegionDataStore {
   getRegionsByIds(ids: string[]): Promise<Region[]>;
   getGeometries(ids: string[]): Promise<any[]>;
   getGeometriesByParent: (parentId: string | null) => Promise<any[]>;
+  getGeometriesByCountry: (iso3: string, admLevel: number) => Promise<any[]>;
+  getGeometryBundle: (iso3: string, admLevel: number) => Promise<any | null>;
   seedRegions: (regions: Region[]) => Promise<void>;
   seedGeometries: (geometries: any[]) => Promise<void>;
+  getSimplifiedGeometries: (iso3: string) => Promise<any[]>;
 }
 
 export interface AuthUser {

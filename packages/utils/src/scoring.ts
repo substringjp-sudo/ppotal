@@ -214,7 +214,7 @@ export function getRegionScore(
   const scoreType = (isCountry || isPrefecture) && rateScore > 0 ? "orange" : "blue";
   
   let displayTotalScore = (isCountry || isPrefecture) 
-    ? (rateScore > 0 ? rateScore : Math.round(displayDirectScore))
+    ? Math.max(rateScore, Math.round(displayDirectScore))
     : Math.round(displayDirectScore);
     
   if (displayTotalScore === 0 && totalHasVisit) {

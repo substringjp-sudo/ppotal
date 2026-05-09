@@ -10,18 +10,27 @@
     "type-check": "turbo type-check",
     "deploy": "pnpm build && firebase deploy --only hosting,firestore:rules,storage",
     "deploy:preview": "pnpm build && firebase hosting:channel:deploy preview --expires 7d",
-    "deploy:rules": "firebase deploy --only firestore:rules,storage:rules"
+    "deploy:rules": "firebase deploy --only firestore:rules,storage:rules",
+    "data:download": "tsx scripts/download-data.ts"
   },
   "devDependencies": {
     "@regionevel/data-store": "workspace:*",
     "@regionevel/types": "workspace:*",
     "@regionevel/utils": "workspace:*",
+    "dotenv": "^17.4.2",
+    "firebase-admin": "^13.9.0",
     "firebase-tools": "^14.5.1",
+    "mapshaper": "^0.7.10",
     "tsx": "^4.21.0",
     "turbo": "^2.3.3",
     "typescript": "^5.7.3"
   },
   "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "overrides": {
+      "color-string": "1.9.1"
+    }
+  },
   "engines": {
     "node": ">=22"
   }

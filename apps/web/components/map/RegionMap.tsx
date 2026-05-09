@@ -8,7 +8,7 @@ import L from "leaflet";
 import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, type VisitCategory } from "@regionevel/types";
 import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
-import { fetchChildren, fetchGeometries, getAncestors } from "@/lib/regions";
+import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } from "@/lib/regions";
 import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
@@ -16,14 +16,48 @@ import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
 
 
-// Helper component to auto-fit bounds when GeoJSON changes
-function FitBounds({ data }: { data: FeatureCollection }) {
+function FitBounds({ data, level }: { data: FeatureCollection | null; level: string }) {
   const map = useMap();
+  
   useEffect(() => {
-    if (!data || data.features.length === 0) return;
-    const geoJsonLayer = L.geoJSON(data);
-    map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20], animate: true });
-  }, [data, map]);
+    // 1. World level: Always reset to global view immediately
+    if (level === "world") {
+      console.log("[FitBounds] Level is world, resetting view to [20, 0]");
+      map.setView([20, 0], 2, { animate: true });
+      
+      // Delay-based fallback for problematic renders
+      const timer = setTimeout(() => {
+        if (map.getZoom() < 2 || map.getCenter().lat !== 20) {
+          map.setView([20, 0], 2, { animate: true });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+    
+    // 2. Other levels: Fit bounds to data if available
+    if (data && data.features && data.features.length > 0) {
+      try {
+        const geoJsonLayer = L.geoJSON(data);
+        const bounds = geoJsonLayer.getBounds();
+        
+        if (bounds.isValid()) {
+          console.log(`[FitBounds] Level: ${level}, Features: ${data.features.length}, Bounds:`, bounds.toBBoxString());
+          // Use a small timeout to ensure map container is ready
+          const timer = setTimeout(() => {
+            console.log(`[FitBounds] Executing fitBounds for ${level}`);
+            map.fitBounds(bounds, { padding: [40, 40], animate: true });
+            map.invalidateSize();
+          }, 300);
+          return () => clearTimeout(timer);
+        } else {
+          console.warn("[FitBounds] Invalid bounds for data", data);
+        }
+      } catch (e) {
+        console.error("[FitBounds] Error fitting bounds:", e);
+      }
+    }
+  }, [data, map, level]);
+  
   return null;
 }
 
@@ -45,7 +79,8 @@ export function RegionMap() {
     quickIncrement, 
     upsertVisit, 
     recalculateScores,
-    setRegions
+    setRegions,
+    getRegionScoreById
   } = useVisitStore();
 
   // O(1) lookup map for regions
@@ -57,7 +92,9 @@ export function RegionMap() {
     return map;
   }, [allRegions]);
 
-  const { level, currentId, history, drillDown, drillUp } = useMapStore();
+  const { level, currentId, history, drillDown, drillUp, reset, viewLevel, setViewLevel } = useMapStore();
+  const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
+
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -86,27 +123,81 @@ export function RegionMap() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    setGeoData(null);
 
-    fetchGeometries(currentId)
-      .then((features) => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setGeoData(null); // Clear previous data to avoid ghosting or wrong bounds
+        
+        let features: any[] = [];
+        
+        console.log(`[RegionMap] loadData started for level: ${level}, id: ${currentId}, viewLevel: ${viewLevel}`);
+        // 1. Determine which geometries to fetch
+        if (level === "world") {
+          console.log("[RegionMap] Loading world map (level=world, currentId=null)");
+          features = await fetchGeometries(null);
+          console.log(`[RegionMap] World map loaded with ${features.length} features`);
+        } else if (level === "country" && currentId) {
+          const iso3 = currentRegion?.iso3;
+          if (iso3) {
+            console.log(`[RegionMap] Fetching country geometries for iso3=${iso3} (id=${currentId}) at viewLevel ${viewLevel}`);
+            features = await fetchCountryGeometries(iso3, viewLevel);
+          } else {
+            console.log(`[RegionMap] No iso3 for country ${currentId}, falling back to fetchGeometries`);
+            features = await fetchGeometries(currentId);
+          }
+        } else if (currentId) {
+          console.log(`[RegionMap] Fetching sub-region geometries for id=${currentId}`);
+          features = await fetchGeometries(currentId);
+        }
+
         if (!active) return;
-        setGeoData({
-          type: "FeatureCollection",
-          features,
-        } as FeatureCollection);
-        setLoading(false);
-      })
-      .catch((err) => {
+
+        if (features.length === 0 && level === "world") {
+          console.error("[RegionMap] Critical: World map features are empty!");
+        }
+
+        if (features && features.length > 0) {
+          console.log(`[RegionMap] Successfully loaded ${features.length} features`);
+          
+          // Convert features to Region objects and update store
+          // This is critical so the store can calculate scores for these newly loaded regions (especially cities)
+          const newRegions: Region[] = features.map(f => ({
+            id: String(f.properties?.id || f.properties?.shapeID),
+            name: String(f.properties?.name || f.properties?.shapeName || "Unknown"),
+            parentId: currentId || null,
+            admLevel: level === "world" ? 0 : (level === "country" ? viewLevel : 2),
+            iso3: f.properties?.iso3 || null
+          }));
+          setRegions(newRegions);
+          
+          const newGeoData = {
+            type: "FeatureCollection" as const,
+            features: features
+          };
+          
+          setGeoData(newGeoData);
+        } else {
+          console.warn(`[RegionMap] No geometries found for ${level}/${currentId || "root"}`);
+          setGeoData(null);
+        }
+      } catch (err) {
         if (!active) return;
-        console.error(err);
-        setLoading(false);
-      });
+        console.error("[RegionMap] Failed to fetch geometries:", err);
+        setGeoData(null);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
 
     return () => {
       active = false;
     };
-  }, [level, currentId]);
+  }, [level, currentId, currentRegion, viewLevel, setRegions]);
 
   const parentMap = useMemo(() => {
     const map = new Map<string | null, Region[]>();
@@ -235,7 +326,6 @@ export function RegionMap() {
     return stats;
   }, [currentId, allScores, visits, allRegions, regionsByIdMap]);
 
-  const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
   const getStyle = useCallback(
     (feature?: Feature): PathOptions => {
@@ -243,7 +333,7 @@ export function RegionMap() {
       const id = padId(rawId);
       const scoreData = scoreMap[id];
 
-      const fillColor = scoreData ? getMapColor(scoreData) : "#f8fafc";
+      const fillColor = scoreData ? getMapColor(scoreData) : "#e2e8f0";
 
       return {
         fillColor,
@@ -268,11 +358,11 @@ export function RegionMap() {
       if (region.admLevel < 2) {
         setLoading(true);
         try {
-          const childMeta = await fetchChildren(id);
-          setRegions(childMeta); // Store will handle merging and recalculation
-
-          const nextLevel = region.admLevel === 0 ? "country" : "prefecture";
-          drillDown(nextLevel as any, id);
+          if (region.admLevel === 0) {
+            drillDown("country", id);
+          } else {
+            drillDown("prefecture", id);
+          }
           setSelectedId(null);
         } catch (err) {
           console.error("Failed to drill down:", err);
@@ -283,7 +373,7 @@ export function RegionMap() {
         quickIncrement(id);
       }
     },
-    [regionsByIdMap, quickIncrement, drillDown, setRegions],
+    [regionsByIdMap, quickIncrement, drillDown],
   );
 
   const handleBack = useCallback(() => {
@@ -396,18 +486,31 @@ export function RegionMap() {
   );
 
   const selectedRegion = selectedId ? regionsByIdMap.get(selectedId) ?? null : null;
-  const selectedScore = selectedId ? scoreMap[selectedId] ?? null : null;
+  // Use getRegionScoreById for instant score even if global scoreMap isn't ready
+  const selectedScore = useMemo(() => {
+    if (!selectedId) return null;
+    return allScores[selectedId] || getRegionScoreById(selectedId);
+  }, [selectedId, allScores, getRegionScoreById]);
+
   const selectedChildren = selectedId ? (parentMap.get(selectedId) || []) : [];
 
-  const currentPath = useMemo(() => {
-    if (!currentId) return ["World"];
+  const hoveredScore = useMemo(() => {
+    if (!hoveredId) return null;
+    return allScores[hoveredId] || getRegionScoreById(hoveredId);
+  }, [hoveredId, allScores, getRegionScoreById]);
+
+  const { currentPath, currentPathIds } = useMemo(() => {
+    if (!currentId) return { currentPath: ["World"], currentPathIds: [null] };
     const ancestors = getAncestors(allRegions, currentId);
     const self = regionsByIdMap.get(currentId);
-    return ["World", ...ancestors.map((a) => a.name), self?.name].filter(Boolean) as string[];
+    
+    const names = ["World", ...ancestors.map((a) => a.name), self?.name].filter(Boolean) as string[];
+    const ids = [null, ...ancestors.map((a) => a.id), currentId].filter((_, i) => i === 0 || names[i] !== undefined) as (string | null)[];
+    
+    return { currentPath: names, currentPathIds: ids };
   }, [allRegions, currentId, regionsByIdMap]);
 
   const hoveredRegion = hoveredId ? regionsByIdMap.get(hoveredId) ?? null : null;
-  const hoveredScore = hoveredId ? scoreMap[hoveredId] ?? null : null;
 
   return (
     <div ref={exportRef} className="relative w-full h-full bg-sky-50 overflow-hidden">
@@ -424,19 +527,21 @@ export function RegionMap() {
         attributionControl={false}
         zoomControl={false}
       >
+        {/* Background Layer (Ocean) */}
+        <div className="absolute inset-0 bg-sky-50/30" />
+
+        <FitBounds data={geoData} level={level} />
+
         {geoData && (
-          <>
-            <GeoJSON
-              key={`${level}-${currentId}`}
-              ref={geoJsonRef}
-              data={geoData}
-              style={getStyle}
-              onEachFeature={onEachFeature}
-            />
-            <FitBounds data={geoData} />
-            <MapEvents onMapClick={() => setSelectedId(null)} />
-          </>
+          <GeoJSON
+            key={`geojson-${level}-${currentId || "root"}-${viewLevel}-${geoData.features?.length || 0}`}
+            ref={geoJsonRef}
+            data={geoData}
+            style={getStyle}
+            onEachFeature={onEachFeature}
+          />
         )}
+        <MapEvents onMapClick={() => setSelectedId(null)} />
       </MapContainer>
 
       {/* Hover Label */}
@@ -514,9 +619,33 @@ export function RegionMap() {
                 {currentPath.map((name, i) => (
                   <div key={i} className="flex items-center gap-1">
                     {i > 0 && <span className="text-slate-300 text-[10px]">/</span>}
-                    <span className={`text-[10px] font-black tracking-tight whitespace-nowrap ${i === currentPath.length - 1 ? "text-blue-600" : "text-slate-400 uppercase"}`}>
+                    <button 
+                      onClick={() => {
+                        if (i === 0) {
+                          reset();
+                        } else {
+                          // Go back until we reach the desired ancestor
+                          const targetId = i === 1 ? currentPathIds[1] : currentPathIds[i];
+                          // This is a simple way to go back to a specific level in history
+                          const currentHistory = useMapStore.getState().history;
+                          const targetIndex = currentHistory.findIndex(h => h.currentId === targetId);
+                          if (targetIndex !== -1) {
+                            const pops = currentHistory.length - targetIndex;
+                            for (let j = 0; j < pops; j++) {
+                              useMapStore.getState().drillUp();
+                            }
+                          }
+                        }
+                      }}
+                      disabled={i === currentPath.length - 1}
+                      className={`text-[10px] font-black tracking-tight whitespace-nowrap transition-colors ${
+                        i === currentPath.length - 1 
+                          ? "text-blue-600 cursor-default" 
+                          : "text-slate-400 hover:text-blue-500 uppercase cursor-pointer"
+                      }`}
+                    >
                       {name}
-                    </span>
+                    </button>
                   </div>
                 ))}
               </div>
@@ -534,6 +663,33 @@ export function RegionMap() {
                   {currentRegion ? currentRegion.name : "World Map"}
                 </h3>
               </div>
+              
+              {/* View Toggle (Only for Country level) */}
+              {level === "country" && (
+                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 no-export">
+                  <button
+                    onClick={() => setViewLevel(1)}
+                    className={`text-xs font-medium px-2 py-0.5 rounded-md transition-all ${
+                      viewLevel === 1 
+                        ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    PREFECTURE
+                  </button>
+                  <button
+                    onClick={() => setViewLevel(2)}
+                    className={`text-xs font-medium px-2 py-0.5 rounded-md transition-all ${
+                      viewLevel === 2 
+                        ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    CITY
+                  </button>
+                </div>
+              )}
+
               {currentRegion && currentRegion.admLevel !== 2 && (
                 <div className="flex gap-6 border-l border-slate-200 pl-6 h-8 items-center flex-1">
                   <div className="flex flex-col justify-center min-w-[120px]">
@@ -583,6 +739,31 @@ export function RegionMap() {
                 </div>
               ))}
             </div>
+
+            {level === "country" && (
+              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 no-export">
+                <button
+                  onClick={() => setViewLevel(1)}
+                  className={`px-2 py-1 text-[8px] font-black rounded-md transition-all ${
+                    viewLevel === 1 
+                      ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
+                      : "text-slate-400"
+                  }`}
+                >
+                  PREF
+                </button>
+                <button
+                  onClick={() => setViewLevel(2)}
+                  className={`px-2 py-1 text-[8px] font-black rounded-md transition-all ${
+                    viewLevel === 2 
+                      ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
+                      : "text-slate-400"
+                  }`}
+                >
+                  CITY
+                </button>
+              </div>
+            )}
           </div>
           {currentRegion && (
             <div className="px-2 pb-2">
