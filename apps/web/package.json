@@ -10,6 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.6",
     "@regionevel/data-store": "workspace:*",
     "@regionevel/types": "workspace:*",
     "@regionevel/utils": "workspace:*",

@@ -2,6 +2,7 @@
   "name": "regionevel",
   "private": true,
   "version": "0.0.0",
+  "description": "A premium global travel tracker for visualizing visits at country, prefecture, and city levels with regional experience (Keikenchi) scores.",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
