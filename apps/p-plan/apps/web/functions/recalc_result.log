@@ -1,0 +1,19 @@
+[RECALC] UID: eneYuPyCdOTtSzCggJ5aVFb60rB2 에 대한 분석을 시작합니다...
+[ERROR] 분석 중 오류 발생: Error: Unable to detect a Project Id in the current environment. 
+To learn more about authentication and Google APIs, visit: 
+https://cloud.google.com/docs/authentication/getting-started
+    at GoogleAuth.findAndCacheProjectId (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/google-gax/node_modules/google-auth-library/build/src/auth/googleauth.js:170:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:31:15)
+    at ContextAPI.with (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/api/context.ts:77:42)
+    at NoopTracer.startActiveSpan (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:98:27)
+    at ProxyTracer.startActiveSpan (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    ... collapsed 22 duplicate lines matching above 11 lines 2 times...
+[FINISH] 작업 종료

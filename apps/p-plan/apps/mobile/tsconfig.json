@@ -1,0 +1,15 @@
+{
+  "extends": "../../node_modules/expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "jsx": "react-native",
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@pplaner/shared": ["../../packages/shared/src/index"]
+    }
+  }
+}

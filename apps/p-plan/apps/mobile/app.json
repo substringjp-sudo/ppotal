@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "mobile",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pplaner.mobile",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ],
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "여행지 방문 기록 및 동선 자동 생성을 위해 백그라운치 위치 권한이 필요합니다.",
+        "NSLocationAlwaysUsageDescription": "여행지 방문 기록 및 동선 자동 생성을 위해 백그라운드 위치 권한이 필요합니다.",
+        "NSLocationWhenInUseUsageDescription": "여행 중 실시간 위치를 지도에 표시하기 위해 위치 권한이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "여행 기록에 사진을 추가하기 위해 라이브러리 접근 권한이 필요합니다.",
+        "NSCameraUsageDescription": "직접 사진을 촬영하여 여행기에 추가하기 위해 카메라 권한이 필요합니다."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.pplaner.mobile",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ],
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-router",
+      "expo-font",
+      "expo-asset"
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

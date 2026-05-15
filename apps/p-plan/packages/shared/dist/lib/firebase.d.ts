@@ -1,0 +1,13 @@
+import { FirebaseApp } from "firebase/app";
+import { Firestore } from "firebase/firestore";
+import { Auth } from "firebase/auth";
+import { FirebaseStorage } from "firebase/storage";
+import { Functions } from "firebase/functions";
+declare let app: FirebaseApp;
+declare let auth: Auth;
+declare let db: Firestore;
+declare let storage: FirebaseStorage;
+declare let functions: Functions;
+export { app, auth, db, storage, functions };
+export declare const initAnalytics: () => Promise<import("@firebase/analytics").Analytics | null>;
+export default app;

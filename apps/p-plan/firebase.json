@@ -1,0 +1,77 @@
+{
+  "emulators": {
+    "dataconnect": {
+      "dataDir": "apps/web/dataconnect/.dataconnect/pgliteData"
+    }
+  },
+  "dataconnect": {
+    "source": "apps/web/dataconnect"
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-east1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix apps/web/functions run build"
+      ],
+      "source": "apps/web/functions"
+    }
+  ],
+  "hosting": {
+    "public": "apps/web/out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/dashboard/**",
+        "destination": "/dashboard/placeholder/index.html"
+      },
+      {
+        "source": "/invite/**",
+        "destination": "/invite/placeholder/index.html"
+      },
+      {
+        "source": "/edit-trip/**",
+        "destination": "/edit-trip/placeholder/index.html"
+      },
+      {
+        "source": "/trips/**",
+        "destination": "/trips/index.html"
+      },
+      {
+        "source": "/friends/**",
+        "destination": "/friends/index.html"
+      },
+      {
+        "source": "/profile/**",
+        "destination": "/profile/index.html"
+      },
+      {
+        "source": "/wishlist/**",
+        "destination": "/wishlist/index.html"
+      }
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "auth": {
+    "providers": {}
+  }
+}

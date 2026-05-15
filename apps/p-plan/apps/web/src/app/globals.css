@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+/* TipTap Custom Nodes & Editor Styles */
+.ProseMirror {
+  outline: none !important;
+}
+
+.callout-node {
+  @apply my-8 p-6 rounded-[32px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex gap-4 transition-all hover:shadow-lg;
+}
+
+.callout-node::before {
+  content: attr(data-emoji);
+  @apply text-2xl flex-shrink-0;
+}
+
+.premium-divider {
+  @apply my-12 border-none h-[2px] bg-slate-50 dark:bg-slate-800 relative overflow-visible;
+}
+
+.premium-divider.dashed {
+  background: repeating-linear-gradient(to right, transparent, transparent 10px, #e2e8f0 10px, #e2e8f0 20px);
+}
+
+.dark .premium-divider.dashed {
+  background: repeating-linear-gradient(to right, transparent, transparent 10px, #1e293b 10px, #1e293b 20px);
+}
+
+/* TipTap Schedule Item Node */
+.schedule-item-node {
+  @apply my-8 p-6 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all;
+}
+
+.schedule-item-node.activity {
+  @apply border-l-4 border-l-primary;
+}
+
+.schedule-header {
+  @apply flex items-center gap-3 mb-4 pb-4 border-b border-slate-200/60 dark:border-slate-800;
+}
+
+.schedule-time {
+  @apply text-xs font-black text-primary px-3 py-1.5 bg-primary/10 rounded-xl uppercase tracking-widest;
+}
+
+.schedule-type-badge {
+  @apply text-[8px] font-black px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 uppercase tracking-tighter;
+}
+
+.schedule-dot {
+  @apply text-slate-300 dark:text-slate-800 self-center;
+}
+
+.schedule-location {
+  @apply text-sm font-black text-slate-800 dark:text-slate-200 tracking-tight;
+}
+
+.schedule-content {
+  @apply text-slate-500 dark:text-slate-400 text-sm leading-relaxed;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+}
+
+
+/* Tailwind CSS v4 Theme configuration (IDE may show warning, but it's valid) */
+@theme inline {
+  --font-display: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "system-ui", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --color-primary: #ec5b13;
+  --color-primary-vibrant: #ff6b21;
+  --color-background-light: #f8f6f6;
+  --color-background-dark: #0f172a;
+
+  /* Semantic Status Colors */
+  --color-visited-orange: #ea580c;
+  --color-planned-blue: #3b82f6;
+  --color-danger-red: #ef4444;
+  --color-master-emerald: #10b981;
+  --color-stat-cyan: #0ea5e9;
+  --color-stat-purple: #8b5cf6;
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  --animation-spin-slow: spin-slow 3s linear infinite;
+}
+
+:root {
+  --background: var(--color-background-light);
+  --foreground: #171717;
+  --primary: var(--color-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-background-dark);
+    --foreground: #f8fafc;
+    --primary: var(--color-primary-vibrant);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-display);
+  overflow-x: hidden;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Custom scrollbar for better visibility and aesthetics */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2); /* slate-400 */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.3); /* slate-600 */
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.5);
+}
+
+/* Safe area insets for notched devices (iPhone) */
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --mobile-nav-height: 4rem;
+  --mobile-section-tab-bar-height: 5rem;
+}
+
+@media (max-width: 767px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+  /* Override for small icon-only buttons in specific contexts */
+  .compact-touch {
+    min-height: unset;
+  }
+
+  /* Prevent horizontal scroll on mobile */
+}
+
+/* ─── Dashboard Layout Utilities ─────────────────────────────────── */
+
+/* 대시보드 위젯 카드 공통 스타일 */
+.widget-card {
+  @apply bg-white dark:bg-slate-900/50 rounded-[32px] border border-slate-200 dark:border-slate-800 p-4 shadow-sm transition-all;
+}
+
+/* 섹션 구분선용 강조 바 */
+.section-bar {
+  @apply w-1 h-4 bg-primary rounded-full flex-shrink-0;
+}
+
+/* 섹션 레이블 (캡션 상단) */
+.section-label {
+  @apply text-[9px] font-black uppercase tracking-widest text-slate-400;
+}
+
+/* 대시보드 그룹 래퍼 */
+.dashboard-section {
+  @apply bg-white/50 dark:bg-slate-900/30 rounded-[32px] p-3 border border-slate-200 dark:border-slate-700/50 shadow-sm;
+}
+
+/* Global Layout Frame Enhancements */
+.page-container {
+  @apply border border-slate-200/60 dark:border-slate-800/80 rounded-[32px] overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-md;
+}
+
+.glass-frame {
+  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-300/40 dark:border-white/10 shadow-sm rounded-[32px];
+}
+
+/* Common UI Elements Separation */
+.border-thin {
+  @apply border border-slate-200/80 dark:border-slate-800;
+}
+
+.divide-thin > * + * {
+  @apply border-t border-slate-200/80 dark:border-slate-800;
+}
+
+/* Center Content Area Frame */
+.main-content-frame {
+  @apply bg-white/40 dark:bg-slate-900/20 rounded-[32px] border border-slate-200 dark:border-slate-800 p-4 lg:p-8 backdrop-blur-sm;
+}

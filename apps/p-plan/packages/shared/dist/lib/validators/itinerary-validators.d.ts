@@ -1,0 +1,11 @@
+import { Trip, TripWarning } from '../../types/trip';
+import { TravelStyle } from '../../types/user';
+export declare function validateItineraryConflicts(trip: Trip, warnings: TripWarning[], style?: TravelStyle): void;
+export declare function validateInterEventTravel(trip: Trip, warnings: TripWarning[], style?: TravelStyle): void;
+export declare function validateDailyIntensity(trip: Trip, warnings: TripWarning[], style?: TravelStyle): void;
+export declare function validateEventDates(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateOperatingHours(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateDuplicateEvents(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateLastDayPressure(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateMealTimeGaps(trip: Trip, warnings: TripWarning[], style?: TravelStyle): void;
+export declare function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[]): void;

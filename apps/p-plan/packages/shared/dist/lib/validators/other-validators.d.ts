@@ -1,0 +1,13 @@
+import { Trip, TripWarning } from '../../types/trip';
+import { TravelStyle } from '../../types/user';
+export declare function validateDateConsistency(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateVisaRequirements(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateSeasonalCaution(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateCrowdPreference(trip: Trip, warnings: TripWarning[], style?: TravelStyle): void;
+export declare function checkPreparationReadiness(trip: Trip, warnings: TripWarning[]): void;
+export declare function checkPassportRules(trip: Trip, warnings: TripWarning[]): void;
+export declare function checkLateArrivalAccommodation(trip: Trip, warnings: TripWarning[]): void;
+export declare function checkPowerAdapterRequirement(trip: Trip, warnings: TripWarning[]): void;
+export declare function checkEmptyTimelineDays(trip: Trip, warnings: TripWarning[]): void;
+export declare function checkTravelInsurance(trip: Trip, warnings: TripWarning[]): void;
+export declare function validateUrgentBookings(trip: Trip, warnings: TripWarning[]): void;

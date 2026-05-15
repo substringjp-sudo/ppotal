@@ -1,0 +1,43 @@
+
+> web:build
+> npm run build --workspace=@pplaner/web
+
+
+> @pplaner/web@0.1.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/yunhyeongseob/dev/p-plan/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/yunhyeongseob/dev/p-plan/apps/web/package-lock.json
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ✓ turbopackUseSystemTlsCerts
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.5s
+  Running TypeScript ...
+Failed to compile.
+
+./src/components/edit-trip/interests/InterestsImportSelector.tsx:127:75
+Type error: Cannot find name 'cn'.
+
+[0m [90m 125 |[39m                                     [36mconst[39m isAdded [33m=[39m bucketList[33m.[39msome(b [33m=>[39m b[33m.[39mwishlistId [33m===[39m rec[33m.[39mitem[33m.[39mid)[33m;[39m
+ [90m 126 |[39m                                     [36mreturn[39m (
+[31m[1m>[22m[39m[90m 127 |[39m                                         [33m<[39m[33mdiv[39m key[33m=[39m{rec[33m.[39mitem[33m.[39mid} className[33m=[39m{cn([32m"p-4 rounded-3xl border-2 transition-all flex items-center gap-4"[39m[33m,[39m isAdded [33m?[39m [32m'bg-slate-50 dark:bg-slate-800/40 border-slate-100'[39m [33m:[39m [32m'bg-white dark:bg-slate-900 border-slate-100 hover:border-indigo-500/50 shadow-sm'[39m)}[33m>[39m
+ [90m     |[39m                                                                           [31m[1m^[22m[39m
+ [90m 128 |[39m                                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0"[39m[33m>[39m
+ [90m 129 |[39m                                                 {rec[33m.[39mitem[33m.[39mimageUrls[33m?[39m[33m.[39m[[35m0[39m] [33m?[39m [33m<[39m[33mimg[39m src[33m=[39m{rec[33m.[39mitem[33m.[39mimageUrls[[35m0[39m]} className[33m=[39m[32m"w-full h-full object-cover"[39m [35m/> : <TagIcon className="w-6 h-6 text-slate-300 m-5" /[39m[33m>[39m}
+ [90m 130 |[39m                                             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path /Users/yunhyeongseob/dev/p-plan/apps/web
+npm error workspace @pplaner/web@0.1.0
+npm error location /Users/yunhyeongseob/dev/p-plan/apps/web
+npm error command failed
+npm error command sh -c next build

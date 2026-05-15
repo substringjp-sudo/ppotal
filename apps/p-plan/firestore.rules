@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- 1. Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // --- 2. Public / Global Metadata (Always Allow Read) ---
+    // 이 규칙들이 상단에 있으면 정적 분석 시 혼동을 줄일 수 있습니다.
+    match /metadata/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    match /exchange_rates/{document=**} { allow read: if true; }
+    match /nations/{document=**} { allow read: if true; }
+    match /regions/{document=**} { allow read: if true; }
+    match /cities/{document=**} { allow read: if true; }
+    match /places/{document=**} { allow read: if true; }
+    match /countries/{document=**} { allow read: if true; }
+    match /aviation_data/{document=**} { allow read: if true; }
+    match /search_registry/{document=**} { allow read: if true; }
+    match /feature_registry/{document=**} { allow read: if true; }
+    match /tileset_manifest/{document=**} { allow read: if true; }
+    match /geodata/{document=**} { allow read: if true; }
+
+
+    // --- 3. Core Business Collections ---
+
+    // Trips
+    function canViewTrip(tripId) {
+      let trip = get(/databases/$(database)/documents/trips/$(tripId)).data;
+      return isSignedIn() && (
+        trip.userId == request.auth.uid || 
+        (request.auth.uid in trip.get('members', [])) || 
+        trip.get('visibility', 'private') == 'public' ||
+        trip.get('isPublished', false) == true
+      );
+    }
+
+    match /trips/{tripId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() && (
+        resource == null || 
+        resource.data.userId == request.auth.uid || 
+        (request.auth.uid in resource.data.get('members', [])) ||
+        resource.data.get('visibility', 'private') == 'public' ||
+        resource.data.get('isPublished', false) == true
+      );
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        (request.auth.uid in resource.data.get('members', [])) ||
+        ((resource.data.get('visibility', 'private') == 'public' || resource.data.get('isPublished', false) == true) && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'likedBy', 'bookmarkCount', 'updatedAt']))
+      );
+      allow delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        (request.auth.uid in resource.data.get('members', []))
+      );
+
+      match /{allSub=**} {
+        allow read: if canViewTrip(tripId);
+        allow write: if isSignedIn() && (
+          get(/databases/$(database)/documents/trips/$(tripId)).data.userId == request.auth.uid ||
+          (request.auth.uid in get(/databases/$(database)/documents/trips/$(tripId)).data.get('members', []))
+        );
+      }
+    }
+
+    // Friendships
+    match /friendships/{friendshipId} {
+      allow read, update, delete: if isSignedIn() && (request.auth.uid in resource.data.uids);
+      allow create: if isSignedIn() && (request.resource.data.initiatorUid == request.auth.uid);
+    }
+
+    // Travelogs
+    match /travelogs/{travelogId} {
+      allow read: if resource == null || 
+                   resource.data.userId == request.auth.uid || 
+                   (resource.data.status == 'published' && resource.data.visibility == 'public');
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'updatedAt']));
+
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Notifications & Other Social
+    match /notifications/{notificationId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isSignedIn() && (resource.data.targetUid == request.auth.uid);
+    }
+
+    match /friendRequests/{requestId} {
+      allow create: if isSignedIn() && request.resource.data.senderUid == request.auth.uid;
+      allow read, update, delete: if isSignedIn() && (resource.data.senderUid == request.auth.uid || resource.data.receiverUid == request.auth.uid);
+    }
+
+    match /bucketItems/{itemId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+    }
+
+    // --- 4. Default Deny ---
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

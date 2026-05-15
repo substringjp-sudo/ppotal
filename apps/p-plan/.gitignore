@@ -1,0 +1,37 @@
+# node.js
+node_modules/
+.npm/
+
+# next.js
+.next/
+out/
+build/
+
+# firebase
+.firebase/
+firebase-debug.log*
+.runtimeconfig.json
+
+# environment files
+.env*
+
+# large data files
+*_geom.json
+*.geojson
+*.csv
+# data directories
+raw/
+data/region/
+apps/web/public/data/region/
+apps/web/functions/data/
+
+# development scratch and secrets
+serviceAccountKey.json
+repro_error.ts
+scratch/
+apps/web/file_list.txt
+implementation_plan.md
+task.md
+design.md
+cors-config.json
+*.db
