@@ -1,0 +1,33 @@
+.vscode/
+*.tsbuildinfo
+.DS_Store
+node_modules
+.turbo
+dist
+.next
+out
+.env
+.env.local
+.env.*.local
+data/source/
+*.pmtiles
+
+# Firebase
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+scripts/serviceAccount.json
+
+# Data and Scripts
+# Data & Scripts
+data/
+scripts/
+**/data/
+**/scripts/
+**/.firebase/
+apps/web/public/data/
+
+# Keep some public geo data if needed, but the user specifically asked to ignore the regions data
+public/geo/
+apps/web/public/geo/
+apps/web/public/data/meta/

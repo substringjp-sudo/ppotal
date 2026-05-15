@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Region metadata: public read, no client writes (seeded by admin script only)
+    match /regions/{shapeId} {
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Geometries: public read, no client writes
+    match /geometries/{regionId} {
+      allow get, list: if true;
+      allow write: if false;
+    }
+
+    // Geometry bundles: public read, no client writes
+    match /geometries_bundles/{bundleId} {
+      allow get: if true;
+      allow write: if false;
+    }
+
+    // Visit records: only the owning user can read/write
+    match /users/{uid}/visits/{visitId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

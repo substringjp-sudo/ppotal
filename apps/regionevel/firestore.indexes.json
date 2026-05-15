@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "geometries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "properties.countryId", "order": "ASCENDING" },
+        { "fieldPath": "properties.level", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
