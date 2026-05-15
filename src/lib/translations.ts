@@ -623,7 +623,7 @@ export const EXPORT_TRANSLATIONS = {
         share: '트위터 공유',
         preview: '내보내기 미리보기',
         twitterMessage: (stations: number, lines: number, distance: number) =>
-            `JapanRailNote에서 일본 철도 여행을 기록해보세요. ${stations}개 역 ${lines}개 노선 총 ${distance}km를 이용하셨습니다. jprail.web.app #Japan #Rail #JapanRailNote`,
+            `JapanRailNote에서 일본 철도 여행을 기록해보세요. ${stations}개 역 ${lines}개 노선 총 ${distance}km를 이용하셨습니다. jprail.pplaner.com #Japan #Rail #JapanRailNote`,
         saveFile: '파일로 저장하기',
         shareTwitter: '트위터에 공유하기',
     },
@@ -633,7 +633,7 @@ export const EXPORT_TRANSLATIONS = {
         share: 'Share on X',
         preview: 'Export Preview',
         twitterMessage: (stations: number, lines: number, distance: number) =>
-            `Recording my Japanese rail journey on JapanRailNote! ${stations} stations, ${lines} lines, ${distance}km total. jprail.web.app #Japan #Rail #JapanRailNote`,
+            `Recording my Japanese rail journey on JapanRailNote! ${stations} stations, ${lines} lines, ${distance}km total. jprail.pplaner.com #Japan #Rail #JapanRailNote`,
         saveFile: 'Save as File',
         shareTwitter: 'Share on Twitter',
     },
@@ -643,7 +643,7 @@ export const EXPORT_TRANSLATIONS = {
         share: 'Xで共有',
         preview: '書き出しプレビュー',
         twitterMessage: (stations: number, lines: number, distance: number) =>
-            `JapanRailNoteで日本鉄道旅行を記録しましょう！${stations}駅 ${lines}路線 合計 ${distance}kmを利用しました。 jprail.web.app #Japan #Rail #JapanRailNote`,
+            `JapanRailNoteで日本鉄道旅行を記録しましょう！${stations}駅 ${lines}路線 合計 ${distance}kmを利用しました。 jprail.pplaner.com #Japan #Rail #JapanRailNote`,
         saveFile: 'ファイルとして保存',
         shareTwitter: 'Twitterで共有',
     }
