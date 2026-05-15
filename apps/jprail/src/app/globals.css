@@ -1,0 +1,235 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-primary: #1c74e9;
+  --color-background-light: #f6f7f8;
+  --color-background-dark: #111821;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111821;
+    --foreground: #f6f7f8;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  user-select: none;
+  /* Block overall text selection */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+input,
+textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* --- Scrollbar Styles --- */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+
+/* Visited Station Glow Effect */
+.visited-station-glow {
+  filter: drop-shadow(0 0 3px #2ecc71);
+  transition: filter 0.3s ease;
+}
+
+/* --- Leaflet Interaction & Style Fixes --- */
+
+/* 
+  Globally remove the focus outline from the map container and its interactive elements. 
+*/
+.leaflet-container,
+.leaflet-container *,
+.leaflet-marker-icon,
+.leaflet-interactive,
+svg,
+g,
+path {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+.leaflet-container:focus,
+.leaflet-container:active,
+.leaflet-marker-icon:focus,
+.leaflet-marker-icon:active,
+.leaflet-interactive:focus,
+.leaflet-interactive:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Clear selection styling for the entire app except form elements */
+::selection {
+  background-color: transparent !important;
+}
+
+input::selection,
+textarea::selection {
+  background-color: rgba(28, 116, 233, 0.2) !important;
+  color: inherit !important;
+}
+
+/* SEO Content Visibility */
+#content-info {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .seo-content-root {
+    display: none !important;
+  }
+}
+
+@media print {
+  #content-info {
+    display: block !important;
+  }
+}
+
+/* 
+  Leaflet custom panes are full-screen divs. 
+  We must disable pointer-events on background/helper panes so they don't block clicks.
+*/
+.leaflet-top-tooltips-pane,
+.leaflet-ui-elements-pane,
+.leaflet-railroad-casing-pane,
+.leaflet-railroad-glow-pane,
+.leaflet-background-pane {
+  pointer-events: none !important;
+}
+
+.leaflet-railroad-lines-pane {
+  pointer-events: none !important;
+}
+
+
+/* 
+  Station labels (DivIcons) can be numerous. 
+  Even if the Marker is non-interactive, the div can block. 
+*/
+.station-label-icon {
+  pointer-events: none !important;
+}
+
+.leaflet-marker-icon.station-label-icon {
+  pointer-events: none !important;
+}
+
+/* Tooltip Enhancements */
+/* Hide all native Leaflet tooltips as we move to a React-based FloatingTooltip layer */
+.leaflet-tooltip,
+.leaflet-tooltip-pane,
+.railroad-tooltip {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+  display: none !important;
+}
+
+/* Airport Marker Icon */
+.airport-marker-container {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: white !important;
+  color: #1c74e9 !important;
+  border-radius: 50%;
+  border: 1.2px solid #1c74e9 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.airport-marker-container:hover {
+  background: #f8fafc !important;
+  transform: scale(1.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+.airport-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #1e293b;
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
+  pointer-events: none !important;
+  display: block !important;
+  /* Override the display: none for .leaflet-tooltip */
+  visibility: visible !important;
+}
+
+.dark .airport-label {
+  color: #f1f5f9;
+  text-shadow: 0 0 3px #0f172a, 0 0 3px #0f172a, 0 0 3px #0f172a;
+}
+
+/* Global Interaction Fixes */
+.leaflet-interactive,
+.leaflet-marker-icon,
+canvas.leaflet-canvas {
+  pointer-events: auto !important;
+}

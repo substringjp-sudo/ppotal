@@ -1,0 +1,1166 @@
+[
+  {
+    "name": "三宅島空港",
+    "name_en": "Miyakejima Airport",
+    "name_kr": "미야케지마 공항",
+    "location": [
+      34.07209173529412,
+      139.55940744117643
+    ],
+    "type": "domestic",
+    "adm1": "p10",
+    "adm2": "c492"
+  },
+  {
+    "name": "三沢飛行場",
+    "name_en": "Misawa Airport",
+    "name_kr": "미사와 공항",
+    "location": [
+      40.6993886,
+      141.37901893333336
+    ],
+    "type": "domestic",
+    "adm1": "p15",
+    "adm2": "c1120"
+  },
+  {
+    "name": "上五島空港",
+    "name_en": "Kamigoto Airport",
+    "name_kr": "가미고토 공항",
+    "location": [
+      33.01322644578314,
+      129.19240389156627
+    ],
+    "type": "domestic",
+    "adm1": "p17",
+    "adm2": "c745"
+  },
+  {
+    "name": "下地島空港",
+    "name_en": "Shimojishima Airport",
+    "name_kr": "시모지섬 공항",
+    "location": [
+      24.82636834782608,
+      125.14643276086962
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1432"
+  },
+  {
+    "name": "与論空港",
+    "name_en": "Yoron Airport",
+    "name_kr": "요론 공항",
+    "location": [
+      27.04424878571428,
+      128.40086742857144
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c584"
+  },
+  {
+    "name": "与那国空港",
+    "name_en": "Yonaguni Airport",
+    "name_kr": "요나구니 공항",
+    "location": [
+      24.466552423076926,
+      122.98061580769227
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1436"
+  },
+  {
+    "name": "中標津空港",
+    "name_en": "Nakashibetsu Airport",
+    "name_kr": "나카시베쓰 공항",
+    "location": [
+      43.57768655357143,
+      144.9633413035714
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c946"
+  },
+  {
+    "name": "中部国際空港",
+    "name_en": "Chubu Centrair International Airport",
+    "name_kr": "주부 센토레아 국제공항",
+    "location": [
+      34.86008345977012,
+      136.80852642528743
+    ],
+    "type": "international",
+    "adm1": "p31",
+    "adm2": "c1415"
+  },
+  {
+    "name": "久米島空港",
+    "name_en": "Kumejima Airport",
+    "name_kr": "구메지마 공항",
+    "location": [
+      26.363751279999992,
+      126.71500924000001
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1348"
+  },
+  {
+    "name": "仙台空港",
+    "name_en": "Sendai Airport",
+    "name_kr": "센다이 공항",
+    "location": [
+      38.13808439229731,
+      140.91743362031525
+    ],
+    "type": "domestic",
+    "adm1": "p33",
+    "adm2": "c1268"
+  },
+  {
+    "name": "伊江島空港",
+    "name_en": "Iejima Airport",
+    "name_kr": "이에지마 공항",
+    "location": [
+      26.724216874999996,
+      127.78743270833333
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1387"
+  },
+  {
+    "name": "但馬飛行場",
+    "name_en": "Tajima Airport",
+    "name_kr": "다지마 공항 (코우노토리)",
+    "location": [
+      35.51184488235293,
+      134.7869328627451
+    ],
+    "type": "domestic",
+    "adm1": "p3",
+    "adm2": "c88"
+  },
+  {
+    "name": "佐渡空港",
+    "name_en": "Sado Airport",
+    "name_kr": "사도 공항",
+    "location": [
+      38.06076819047619,
+      138.41467076190474
+    ],
+    "type": "domestic",
+    "adm1": "p29",
+    "adm2": "c1384"
+  },
+  {
+    "name": "佐賀空港",
+    "name_en": "Saga Airport",
+    "name_kr": "사가 공항",
+    "location": [
+      33.15024208145454,
+      130.30044138981816
+    ],
+    "type": "domestic",
+    "adm1": "p16",
+    "adm2": "c765"
+  },
+  {
+    "name": "八丈島空港",
+    "name_en": "Hachijojima Airport",
+    "name_kr": "하치조지마 공항",
+    "location": [
+      33.1151567735849,
+      139.78605396226413
+    ],
+    "type": "domestic",
+    "adm1": "p10",
+    "adm2": "c1728"
+  },
+  {
+    "name": "八尾空港",
+    "name_en": "Yao Airport",
+    "name_kr": "야오 공항",
+    "location": [
+      34.597335421052634,
+      135.59544905263155
+    ],
+    "type": "domestic",
+    "adm1": "p1",
+    "adm2": "c45"
+  },
+  {
+    "name": "出雲空港",
+    "name_en": "Izumo Airport",
+    "name_kr": "이즈모 공항",
+    "location": [
+      35.414611071428574,
+      132.88766685714288
+    ],
+    "type": "domestic",
+    "adm1": "p28",
+    "adm2": "c1060"
+  },
+  {
+    "name": "函館空港",
+    "name_en": "Hakodate Airport",
+    "name_kr": "하코다테 공항",
+    "location": [
+      41.77015442603053,
+      140.8258982340458
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c1067"
+  },
+  {
+    "name": "利尻空港",
+    "name_en": "Rishiri Airport",
+    "name_kr": "리시리 공항",
+    "location": [
+      45.2440663181818,
+      141.18902574999998
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c1079"
+  },
+  {
+    "name": "北九州空港",
+    "name_en": "Kitakyushu Airport",
+    "name_kr": "기타큐슈 공항",
+    "location": [
+      33.83881605128205,
+      131.03519538461538
+    ],
+    "type": "domestic",
+    "adm1": "p11",
+    "adm2": "c735"
+  },
+  {
+    "name": "北大東空港",
+    "name_en": "Kitadaito Airport",
+    "name_kr": "기타다이토 공항",
+    "location": [
+      25.943245699999995,
+      131.3251753666667
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1438"
+  },
+  {
+    "name": "南大東空港",
+    "name_en": "Minamidaito Airport",
+    "name_kr": "미나미다이토 공항",
+    "location": [
+      25.847105315789474,
+      131.26410942105267
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1437"
+  },
+  {
+    "name": "南紀白浜空港",
+    "name_en": "Nanki-Shirahama Airport",
+    "name_kr": "난키 시라하마 공항",
+    "location": [
+      33.6610158888889,
+      135.36493888888884
+    ],
+    "type": "domestic",
+    "adm1": "p9",
+    "adm2": "c456"
+  },
+  {
+    "name": "名古屋飛行場",
+    "name_en": "Nagoya Airport",
+    "name_kr": "나고야 비행장 (코마키)",
+    "location": [
+      35.2547948375817,
+      136.92071980156868
+    ],
+    "type": "domestic",
+    "adm1": "p31",
+    "adm2": "c1466"
+  },
+  {
+    "name": "喜界空港",
+    "name_en": "Kikai Airport",
+    "name_kr": "기카이 공항",
+    "location": [
+      28.320823999999998,
+      129.92753386666666
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c590"
+  },
+  {
+    "name": "壱岐空港",
+    "name_en": "Iki Airport",
+    "name_kr": "이키 공항",
+    "location": [
+      33.74945647368421,
+      129.7855533684211
+    ],
+    "type": "domestic",
+    "adm1": "p17",
+    "adm2": "c737"
+  },
+  {
+    "name": "多良間空港",
+    "name_en": "Tarama Airport",
+    "name_kr": "다라마 공항",
+    "location": [
+      24.653605703703708,
+      124.67599907407406
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1433"
+  },
+  {
+    "name": "大分県央飛行場",
+    "name_en": "Oita Ken-o Airfield",
+    "name_kr": "오이타현 중앙 비행장",
+    "location": [
+      33.02665973333333,
+      131.50468990000002
+    ],
+    "type": "domestic",
+    "adm1": "p2",
+    "adm2": "c678"
+  },
+  {
+    "name": "大分空港",
+    "name_en": "Oita Airport",
+    "name_kr": "오이타 공항",
+    "location": [
+      33.47890452906977,
+      131.73723732558148
+    ],
+    "type": "domestic",
+    "adm1": "p2",
+    "adm2": "c667"
+  },
+  {
+    "name": "大島空港",
+    "name_en": "Oshima Airport",
+    "name_kr": "오시마 공항",
+    "location": [
+      34.783608099999995,
+      139.36247177500002
+    ],
+    "type": "domestic",
+    "adm1": "p10",
+    "adm2": "c487"
+  },
+  {
+    "name": "大阪国際空港",
+    "name_en": "Itami Airport",
+    "name_kr": "이타미 공항 (오사카)",
+    "location": [
+      34.786153591516616,
+      135.4400425086255
+    ],
+    "type": "international",
+    "adm1": "p3",
+    "adm2": "c125"
+  },
+  {
+    "name": "大館能代空港",
+    "name_en": "Odate-Noshiro Airport",
+    "name_kr": "오다테 노시로 공항",
+    "location": [
+      40.1924394423077,
+      140.3717609807692
+    ],
+    "type": "domestic",
+    "adm1": "p35",
+    "adm2": "c1178"
+  },
+  {
+    "name": "天草飛行場",
+    "name_en": "Amakusa Airport",
+    "name_kr": "아마쿠사 공항",
+    "location": [
+      32.482144757872334,
+      130.15875966478725
+    ],
+    "type": "domestic",
+    "adm1": "p19",
+    "adm2": "c651"
+  },
+  {
+    "name": "奄美空港",
+    "name_en": "Amami Airport",
+    "name_kr": "아마미 공항",
+    "location": [
+      28.430257872549003,
+      129.71090524509808
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c588"
+  },
+  {
+    "name": "奥尻空港",
+    "name_en": "Okushiri Airport",
+    "name_kr": "오쿠시리 공항",
+    "location": [
+      42.070844162162146,
+      139.43410245945947
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c1075"
+  },
+  {
+    "name": "女満別空港",
+    "name_en": "Memanbetsu Airport",
+    "name_kr": "메만베쓰 공항",
+    "location": [
+      43.881076178947374,
+      144.16544496842107
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c932"
+  },
+  {
+    "name": "宮古空港",
+    "name_en": "Miyako Airport",
+    "name_kr": "미야코 공항",
+    "location": [
+      24.783382500000005,
+      125.29717984210527
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1432"
+  },
+  {
+    "name": "宮崎空港",
+    "name_en": "Miyazaki Airport",
+    "name_kr": "미야자키 공항",
+    "location": [
+      31.87635259183674,
+      131.4439986326531
+    ],
+    "type": "domestic",
+    "adm1": "p18",
+    "adm2": "c594"
+  },
+  {
+    "name": "富山空港",
+    "name_en": "Toyama Airport",
+    "name_kr": "도야마 공항",
+    "location": [
+      36.646473823529405,
+      137.18826905882355
+    ],
+    "type": "domestic",
+    "adm1": "p37",
+    "adm2": "c1684"
+  },
+  {
+    "name": "対馬空港",
+    "name_en": "Tsushima Airport",
+    "name_kr": "쓰시마 공항",
+    "location": [
+      34.283998898648676,
+      129.3316841283784
+    ],
+    "type": "domestic",
+    "adm1": "p17",
+    "adm2": "c748"
+  },
+  {
+    "name": "小値賀空港",
+    "name_en": "Ojika Airport",
+    "name_kr": "오지카 공항",
+    "location": [
+      33.19102657894737,
+      129.0901693157895
+    ],
+    "type": "domestic",
+    "adm1": "p17",
+    "adm2": "c743"
+  },
+  {
+    "name": "小松飛行場",
+    "name_en": "Komatsu Airport",
+    "name_kr": "고마쓰 공항 (코마츠)",
+    "location": [
+      36.39172751612904,
+      136.40747412903227
+    ],
+    "type": "domestic",
+    "adm1": "p39",
+    "adm2": "c1660"
+  },
+  {
+    "name": "屋久島空港",
+    "name_en": "Yakushima Airport",
+    "name_kr": "야쿠시마 공항",
+    "location": [
+      30.384957967741936,
+      130.6594706451613
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c553"
+  },
+  {
+    "name": "山口宇部空港",
+    "name_en": "Yamaguchi Ube Airport",
+    "name_kr": "야마구치 우베 공항",
+    "location": [
+      33.93201464912283,
+      131.2790989649123
+    ],
+    "type": "domestic",
+    "adm1": "p47",
+    "adm2": "c784"
+  },
+  {
+    "name": "山形空港",
+    "name_en": "Yamagata Airport",
+    "name_kr": "야마가타 공항",
+    "location": [
+      38.41576179411765,
+      140.3717775882353
+    ],
+    "type": "domestic",
+    "adm1": "p34",
+    "adm2": "c1221"
+  },
+  {
+    "name": "岡南飛行場",
+    "name_en": "Konan Airport",
+    "name_kr": "코난 비행장",
+    "location": [
+      34.59180576470588,
+      133.93519688235293
+    ],
+    "type": "domestic",
+    "adm1": "p40",
+    "adm2": "c547"
+  },
+  {
+    "name": "岡山空港",
+    "name_en": "Okayama Airport",
+    "name_kr": "오카야마 공항",
+    "location": [
+      34.756588646666664,
+      133.85526567333335
+    ],
+    "type": "domestic",
+    "adm1": "p40",
+    "adm2": "c547"
+  },
+  {
+    "name": "岩国飛行場",
+    "name_en": "Iwakuni Airport",
+    "name_kr": "이와쿠니 공항",
+    "location": [
+      34.15596274193549,
+      132.2402336129032
+    ],
+    "type": "domestic",
+    "adm1": "p47",
+    "adm2": "c976"
+  },
+  {
+    "name": "帯広空港",
+    "name_en": "Obihiro Airport",
+    "name_kr": "오비히로 공항",
+    "location": [
+      42.72725633333334,
+      143.21944786666666
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c966"
+  },
+  {
+    "name": "広島空港",
+    "name_en": "Hiroshima Airport",
+    "name_kr": "히로시마 공항",
+    "location": [
+      34.43544182354838,
+      132.92196805209667
+    ],
+    "type": "domestic",
+    "adm1": "p26",
+    "adm2": "c1095"
+  },
+  {
+    "name": "庄内空港",
+    "name_en": "Shonai Airport",
+    "name_kr": "쇼나이 공항",
+    "location": [
+      38.812064258620694,
+      139.78052577586206
+    ],
+    "type": "domestic",
+    "adm1": "p34",
+    "adm2": "c1196"
+  },
+  {
+    "name": "徳之島空港",
+    "name_en": "Tokunoshima Airport",
+    "name_kr": "도쿠노시마 공항",
+    "location": [
+      27.83338417647059,
+      128.8814825
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c573"
+  },
+  {
+    "name": "徳島飛行場",
+    "name_en": "Tokushima Airport",
+    "name_kr": "도쿠시마 공항",
+    "location": [
+      34.13289805555556,
+      134.60066350000002
+    ],
+    "type": "domestic",
+    "adm1": "p41",
+    "adm2": "c886"
+  },
+  {
+    "name": "慶良間空港",
+    "name_en": "Kerama Airport",
+    "name_kr": "게라마 공항",
+    "location": [
+      26.169748902439025,
+      127.29319382926828
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1424"
+  },
+  {
+    "name": "成田国際空港",
+    "name_en": "Narita International Airport",
+    "name_kr": "나리타 국제공항",
+    "location": [
+      35.77559111403509,
+      140.38574417982457
+    ],
+    "type": "international",
+    "adm1": "p23",
+    "adm2": "c287"
+  },
+  {
+    "name": "新千歳空港",
+    "name_en": "New Chitose Airport",
+    "name_kr": "신치토세 공항",
+    "location": [
+      42.77665538103032,
+      141.6883622701818
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c1016"
+  },
+  {
+    "name": "新島空港",
+    "name_en": "Niijima Airport",
+    "name_kr": "니이지마 공항",
+    "location": [
+      34.37033741666667,
+      139.26721775
+    ],
+    "type": "domestic",
+    "adm1": "p10",
+    "adm2": "c489"
+  },
+  {
+    "name": "新潟空港",
+    "name_en": "Niigata Airport",
+    "name_kr": "니가타 공항",
+    "location": [
+      37.9530935576923,
+      139.11036319230772
+    ],
+    "type": "domestic",
+    "adm1": "p29",
+    "adm2": "c1330"
+  },
+  {
+    "name": "新石垣空港",
+    "name_en": "New Ishigaki Airport",
+    "name_kr": "이시가키 공항",
+    "location": [
+      24.397778408585346,
+      124.24707278195118
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1434"
+  },
+  {
+    "name": "旭川空港",
+    "name_en": "Asahikawa Airport",
+    "name_kr": "아사히카와 공항",
+    "location": [
+      43.66757075757576,
+      142.45066719696976
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c913"
+  },
+  {
+    "name": "札幌飛行場",
+    "name_en": "Sapporo Okadama Airport",
+    "name_kr": "삿포로 오카다마 공항",
+    "location": [
+      43.115710846153846,
+      141.3784272307692
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c1020"
+  },
+  {
+    "name": "東京国際空港",
+    "name_en": "Haneda Airport",
+    "name_kr": "하네다 공항 (도쿄)",
+    "location": [
+      35.54721125137613,
+      139.77451993587158
+    ],
+    "type": "international",
+    "adm1": "p10",
+    "adm2": "c175"
+  },
+  {
+    "name": "松山空港",
+    "name_en": "Matsuyama Airport",
+    "name_kr": "마쓰야마 공항",
+    "location": [
+      33.82723308823528,
+      132.70162455882357
+    ],
+    "type": "domestic",
+    "adm1": "p43",
+    "adm2": "c827"
+  },
+  {
+    "name": "松本空港",
+    "name_en": "Matsumoto Airport",
+    "name_kr": "마쓰모토 공항 (신슈 마쓰모토)",
+    "location": [
+      36.17053292307693,
+      137.9226666923077
+    ],
+    "type": "domestic",
+    "adm1": "p30",
+    "adm2": "c504"
+  },
+  {
+    "name": "沖永良部空港",
+    "name_en": "Okinoerabu Airport",
+    "name_kr": "오키노에라부 공항",
+    "location": [
+      27.43074912,
+      128.70412138
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c586"
+  },
+  {
+    "name": "波照間空港",
+    "name_en": "Hateruma Airport",
+    "name_kr": "하테루마 공항",
+    "location": [
+      24.059848444444448,
+      123.80510466666667
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1435"
+  },
+  {
+    "name": "熊本空港",
+    "name_en": "Kumamoto Airport",
+    "name_kr": "구마모토 공항 (아소 구마모토)",
+    "location": [
+      32.8368519384375,
+      130.8563052592708
+    ],
+    "type": "domestic",
+    "adm1": "p19",
+    "adm2": "c625"
+  },
+  {
+    "name": "百里飛行場",
+    "name_en": "Ibaraki Airport",
+    "name_kr": "이바라키 공항 (햐쿠리)",
+    "location": [
+      36.17840643650794,
+      140.41504353968253
+    ],
+    "type": "domestic",
+    "adm1": "p24",
+    "adm2": "c339"
+  },
+  {
+    "name": "石見空港",
+    "name_en": "Iwami Airport",
+    "name_kr": "이와미 공항 (하기 이와미)",
+    "location": [
+      34.67754948333332,
+      131.79205258333332
+    ],
+    "type": "domestic",
+    "adm1": "p28",
+    "adm2": "c1054"
+  },
+  {
+    "name": "礼文空港",
+    "name_en": "Rebun Airport",
+    "name_kr": "레분 공항",
+    "location": [
+      45.45391133333333,
+      141.04061066666665
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c1080"
+  },
+  {
+    "name": "神戸空港",
+    "name_en": "Kobe Airport",
+    "name_kr": "고베 공항",
+    "location": [
+      34.635386482758626,
+      135.2272801034483
+    ],
+    "type": "domestic",
+    "adm1": "p3",
+    "adm2": "c115"
+  },
+  {
+    "name": "神津島空港",
+    "name_en": "Kozushima Airport",
+    "name_kr": "고즈시마 공항",
+    "location": [
+      34.190049238095234,
+      139.13261936507936
+    ],
+    "type": "domestic",
+    "adm1": "p10",
+    "adm2": "c490"
+  },
+  {
+    "name": "福井空港",
+    "name_en": "Fukui Airport",
+    "name_kr": "후쿠이 공항",
+    "location": [
+      36.143554866666676,
+      136.223689
+    ],
+    "type": "domestic",
+    "adm1": "p4",
+    "adm2": "c1641"
+  },
+  {
+    "name": "福岡空港",
+    "name_en": "Fukuoka Airport",
+    "name_kr": "후쿠오카 공항",
+    "location": [
+      33.588896043,
+      130.44787397983333
+    ],
+    "type": "domestic",
+    "adm1": "p11",
+    "adm2": "c736"
+  },
+  {
+    "name": "福岡空港（奈多地区）",
+    "name_en": "Fukuoka Airport (Nata Area)",
+    "name_kr": "후쿠오카 공항 (나타 지역)",
+    "location": [
+      33.6779525125,
+      130.39227053375
+    ],
+    "type": "domestic",
+    "adm1": "p11",
+    "adm2": "c736"
+  },
+  {
+    "name": "福島空港",
+    "name_en": "Fukushima Airport",
+    "name_kr": "후쿠시마 공항",
+    "location": [
+      37.229369357142886,
+      140.42988867142856
+    ],
+    "type": "domestic",
+    "adm1": "p13",
+    "adm2": "c1311"
+  },
+  {
+    "name": "福江空港",
+    "name_en": "Fukue Airport",
+    "name_kr": "후쿠에 공항",
+    "location": [
+      32.66695003174603,
+      128.83413119047623
+    ],
+    "type": "domestic",
+    "adm1": "p17",
+    "adm2": "c739"
+  },
+  {
+    "name": "秋田空港",
+    "name_en": "Akita Airport",
+    "name_kr": "아키타 공항",
+    "location": [
+      39.614145903225804,
+      140.2162899354839
+    ],
+    "type": "domestic",
+    "adm1": "p35",
+    "adm2": "c1182"
+  },
+  {
+    "name": "稚内空港",
+    "name_en": "Wakkanai Airport",
+    "name_kr": "왓카나이 공항",
+    "location": [
+      45.40536674785715,
+      141.80610013464283
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c854"
+  },
+  {
+    "name": "種子島空港",
+    "name_en": "Tanegashima Airport",
+    "name_kr": "다네가시마 공항",
+    "location": [
+      30.605420661016947,
+      130.9917328983051
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c571"
+  },
+  {
+    "name": "粟国空港",
+    "name_en": "Aguni Airport",
+    "name_kr": "아구니 공항",
+    "location": [
+      26.592846222222224,
+      127.23979477777779
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1392"
+  },
+  {
+    "name": "紋別空港",
+    "name_en": "Monbetsu Airport",
+    "name_kr": "몬베쓰 공항",
+    "location": [
+      44.305755749999996,
+      143.40229859615386
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c891"
+  },
+  {
+    "name": "美保飛行場",
+    "name_en": "Yonago Airport",
+    "name_kr": "요나고 공항 (미호)",
+    "location": [
+      35.49448946428572,
+      133.24302989285712
+    ],
+    "type": "domestic",
+    "adm1": "p27",
+    "adm2": "c1156"
+  },
+  {
+    "name": "能登空港",
+    "name_en": "Noto Airport",
+    "name_kr": "노토 공항",
+    "location": [
+      37.29524740625,
+      136.96105859374998
+    ],
+    "type": "domestic",
+    "adm1": "p39",
+    "adm2": "c1670"
+  },
+  {
+    "name": "花巻空港",
+    "name_en": "Hanamaki Airport",
+    "name_kr": "하나마키 공항 (이와테 하나마키)",
+    "location": [
+      39.43172315254238,
+      141.1345852033898
+    ],
+    "type": "domestic",
+    "adm1": "p36",
+    "adm2": "c161"
+  },
+  {
+    "name": "調布飛行場",
+    "name_en": "Chofu Airport",
+    "name_kr": "조후 비행장",
+    "location": [
+      35.67343554166667,
+      139.52857799999998
+    ],
+    "type": "domestic",
+    "adm1": "p10",
+    "adm2": "c1727"
+  },
+  {
+    "name": "那覇空港",
+    "name_en": "Naha Airport",
+    "name_kr": "나하 공항",
+    "location": [
+      26.20078320022472,
+      127.64418050842693
+    ],
+    "type": "domestic",
+    "adm1": "p45",
+    "adm2": "c1422"
+  },
+  {
+    "name": "釧路空港",
+    "name_en": "Kushiro Airport",
+    "name_kr": "쿠시로 공항",
+    "location": [
+      43.04218206949152,
+      144.19351084101697
+    ],
+    "type": "domestic",
+    "adm1": "p46",
+    "adm2": "c943"
+  },
+  {
+    "name": "長崎空港",
+    "name_en": "Nagasaki Airport",
+    "name_kr": "나가사키 공항",
+    "location": [
+      32.92448587305697,
+      129.90696652072543
+    ],
+    "type": "domestic",
+    "adm1": "p17",
+    "adm2": "c749"
+  },
+  {
+    "name": "関西国際空港",
+    "name_en": "Kansai International Airport",
+    "name_kr": "간사이 국제공항",
+    "location": [
+      34.43295381578948,
+      135.23792226315788
+    ],
+    "type": "international",
+    "adm1": "p1",
+    "adm2": "c64"
+  },
+  {
+    "name": "隠岐空港",
+    "name_en": "Oki Airport",
+    "name_kr": "오키 공항",
+    "location": [
+      36.176757259259254,
+      133.32163237037037
+    ],
+    "type": "domestic",
+    "adm1": "p28",
+    "adm2": "c1050"
+  },
+  {
+    "name": "青森空港",
+    "name_en": "Aomori Airport",
+    "name_kr": "아오모리 공항",
+    "location": [
+      40.73717042276423,
+      140.69353955284555
+    ],
+    "type": "domestic",
+    "adm1": "p15",
+    "adm2": "c1125"
+  },
+  {
+    "name": "静岡空港",
+    "name_en": "Shizuoka Airport",
+    "name_kr": "시즈오카 공항 (후지산 시즈오카)",
+    "location": [
+      34.79587247058823,
+      138.18330794117645
+    ],
+    "type": "domestic",
+    "adm1": "p38",
+    "adm2": "c1497"
+  },
+  {
+    "name": "高松空港",
+    "name_en": "Takamatsu Airport",
+    "name_kr": "다카마쓰 공항",
+    "location": [
+      34.21600428409093,
+      134.0125630909091
+    ],
+    "type": "domestic",
+    "adm1": "p44",
+    "adm2": "c846"
+  },
+  {
+    "name": "高知空港",
+    "name_en": "Kochi Airport",
+    "name_kr": "고치 공항",
+    "location": [
+      33.54757700904,
+      133.66969777247996
+    ],
+    "type": "domestic",
+    "adm1": "p42",
+    "adm2": "c813"
+  },
+  {
+    "name": "鳥取空港",
+    "name_en": "Tottori Airport",
+    "name_kr": "돗토리 공항",
+    "location": [
+      35.52888380902779,
+      134.16435249472218
+    ],
+    "type": "domestic",
+    "adm1": "p27",
+    "adm2": "c1164"
+  },
+  {
+    "name": "鹿児島空港",
+    "name_en": "Kagoshima Airport",
+    "name_kr": "가고시마 공항",
+    "location": [
+      31.805090164910713,
+      130.7184974319643
+    ],
+    "type": "domestic",
+    "adm1": "p20",
+    "adm2": "c582"
+  }
+]
