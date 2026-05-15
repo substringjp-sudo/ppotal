@@ -1,6 +1,7 @@
 {
   "name": "ppotal",
   "private": true,
+  "packageManager": "pnpm@11.1.2",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -13,5 +14,11 @@
   },
   "devDependencies": {
     "turbo": "latest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
