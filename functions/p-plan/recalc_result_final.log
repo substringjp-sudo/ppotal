@@ -1,0 +1,63 @@
+[RECALC] UID: eneYuPyCdOTtSzCggJ5aVFb60rB2 에 대한 분석을 시작합니다...
+[ERROR] 분석 중 오류 발생: Error: 7 PERMISSION_DENIED: Permission denied on resource project substringjp-sudo.
+    at callErrorFromStatus (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@grpc/grpc-js/src/call.ts:84:17)
+    at Object.onReceiveStatus (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@grpc/grpc-js/src/client.ts:612:51)
+    at Object.onReceiveStatus (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@grpc/grpc-js/src/client-interceptors.ts:424:48)
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@grpc/grpc-js/src/resolving-call.ts:170:24
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@grpc/grpc-js/src/client.ts:595:42)
+    at ServiceClientImpl.<anonymous> (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@grpc/grpc-js/src/make-client.ts:189:15)
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/google-gax/src/streamingCalls/streamingApiCaller.ts:59:19
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/google-gax/src/normalCalls/timeout.ts:54:13
+    at Object.request (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/google-gax/src/streamingCalls/streaming.ts:331:28)
+    at makeRequest (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/google-gax/src/streamingCalls/streaming.ts:322:29)
+    at StreamingApiCaller.call (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/google-gax/src/streamingCalls/streamingApiCaller.ts:89:12)
+Caused by: Error
+    at QueryUtil._getResponse (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/context/NoopContextManager.ts:31:15)
+    at ContextAPI.with (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/api/context.ts:77:42)
+    at NoopTracer.startActiveSpan (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/trace/NoopTracer.ts:98:27)
+    at ProxyTracer.startActiveSpan (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@opentelemetry/api/src/trace/ProxyTracer.ts:51:20)
+    at EnabledTraceUtil.startActiveSpan (/Users/yunhyeongseob/dev/p-plan/apps/web/functions/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28) {
+  code: 7,
+  details: 'Permission denied on resource project substringjp-sudo.',
+  metadata: Metadata {
+    internalRepr: Map(5) {
+      'google.rpc.errorinfo-bin' => [Array],
+      'google.rpc.help-bin' => [Array],
+      'google.rpc.localizedmessage-bin' => [Array],
+      'grpc-status-details-bin' => [Array],
+      'x-debug-tracking-id' => [Array]
+    },
+    opaqueData: Map(0) {},
+    options: {}
+  },
+  statusDetails: [
+    ErrorInfo {
+      metadata: [Object],
+      reason: 'CONSUMER_INVALID',
+      domain: 'googleapis.com'
+    },
+    LocalizedMessage {
+      locale: 'en-US',
+      message: 'Permission denied on resource project substringjp-sudo.'
+    },
+    Help { links: [Array] }
+  ],
+  reason: 'CONSUMER_INVALID',
+  domain: 'googleapis.com',
+  errorInfoMetadata: {
+    containerInfo: 'substringjp-sudo',
+    service: 'firestore.googleapis.com',
+    consumer: 'projects/substringjp-sudo'
+  }
+}
+[FINISH] 작업 종료

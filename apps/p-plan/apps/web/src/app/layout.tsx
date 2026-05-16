@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
+import { constructMetadata, Analytics, GoogleMapsScript } from '@ppotal/ui';
+import type { Metadata } from 'next';
 import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "PPLANER - 스마트한 여행 플래너",
-  description: "스마트한 일정 계획과 논리적 검증을 제공하는 여행 플래너 및 다이어리 앱",
-};
-
 import FirebaseAnalytics from "@/components/common/FirebaseAnalytics";
 import TripSyncProvider from "@/components/providers/TripSyncProvider";
 import GlobalOverlays from "@/components/common/GlobalOverlays";
@@ -19,6 +14,12 @@ import UserSyncProvider from "@/components/providers/UserSyncProvider";
 import IntelligenceSyncProvider from "@/components/providers/IntelligenceSyncProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import Script from "next/script";
+
+export const metadata: Metadata = constructMetadata({
+  title: "PPLANER - 스마트한 여행 플래너",
+  description: "스마트한 일정 계획과 논리적 검증을 제공하는 여행 플래너 및 다이어리 앱",
+  url: "https://app.pplaner.com",
+});
 
 export default function RootLayout({
   children,
@@ -40,10 +41,8 @@ export default function RootLayout({
           rel="stylesheet"
           crossOrigin="anonymous"
         />
-        <Script
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,drawing,geometry&v=beta&loading=async`}
-          strategy="afterInteractive"
-        />
+        <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        <GoogleMapsScript />
       </head>
       <body suppressHydrationWarning className="antialiased bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
         <FirebaseAnalytics />

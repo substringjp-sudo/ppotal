@@ -6,12 +6,12 @@ const nextConfig: NextConfig = {
   output: isProd ? 'export' : undefined,
   trailingSlash: true,
   images: { unoptimized: true },
-  transpilePackages: ["@pplaner/shared"],
+  transpilePackages: ["@pplaner/shared", "@ppotal/ui"],
   experimental: {
     turbopackUseSystemTlsCerts: true,
   },
   turbopack: {
-    root: "../../",
+    root: "../../../../",
   },
 };
 

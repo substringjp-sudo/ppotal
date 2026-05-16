@@ -1,6 +1,17 @@
 packages:
   - 'apps/*'
+  - 'apps/p-plan/apps/*'
+  - 'apps/regionevel/apps/*'
   - 'packages/*'
+  - 'apps/p-plan/packages/*'
+  - 'apps/regionevel/packages/*'
 allowBuilds:
+  '@firebase/util': true
+  better-sqlite3: true
+  esbuild: true
+  exifreader: true
+  msgpackr-extract: true
+  protobufjs: true
+  re2: true
   sharp: true
   unrs-resolver: true

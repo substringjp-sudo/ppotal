@@ -1,0 +1,39 @@
+{
+	"folders": [
+		{
+			"name": "ROOT",
+			"path": "."
+		},
+		{
+			"name": "PORTAL (Landing)",
+			"path": "apps/portal"
+		},
+		{
+			"name": "JP RAIL",
+			"path": "apps/jprail"
+		},
+		{
+			"name": "REGION LEVEL",
+			"path": "apps/regionevel"
+		},
+		{
+			"name": "P-PLAN",
+			"path": "apps/p-plan"
+		},
+		{
+			"name": "SHARED PACKAGES",
+			"path": "packages"
+		},
+		{
+			"name": "FUNCTIONS",
+			"path": "functions"
+		}
+	],
+	"settings": {
+		"turbo.remoteCaching": true,
+		"files.exclude": {
+			"**/node_modules": true,
+			"**/.next": true
+		}
+	}
+}

@@ -12,10 +12,13 @@ import { useRailData } from '../hooks/useRailData';
 import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
-import { useAuth } from '../lib/auth-context';
+import { useAuth, OnboardingModal } from '@ppotal/ui';
+import { updateOnboardingStatus } from '@ppotal/firebase';
+import { Train, Map as MapIcon, Share2 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { I18nProvider, useI18n } from '../lib/i18n-context';
 import { collection, query, getDocs, setDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
+import { getStationInfoRemote } from '../lib/rail-api';
 
 import { Station } from '../types/railData';
 import { MapProps } from './Map';
@@ -128,7 +131,44 @@ const MainPageClient = () => {
     const [isMapStyleOpen, setIsMapStyleOpen] = React.useState(false);
     const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
     const [exportImageData, setExportImageData] = React.useState<string | null>(null);
-    const { user, loading: authLoading } = useAuth();
+    const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+    const [isOnboardingOpen, setIsOnboardingOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!authLoading && user && profile && !profile.onboarding.jprail) {
+            setIsOnboardingOpen(true);
+        }
+    }, [authLoading, user, profile]);
+
+    const handleOnboardingComplete = async () => {
+        if (user) {
+            await updateOnboardingStatus(user.uid, 'jprail', true);
+            await refreshProfile();
+        }
+        setIsOnboardingOpen(false);
+    };
+
+    const jprailOnboardingSteps = [
+        {
+            title: "Welcome to JapanRailNote",
+            description: "Explore the vast Japanese railway network including JR, private lines, and subways.",
+            icon: <Train />,
+            color: "#16a34a"
+        },
+        {
+            title: "Interactive Network Map",
+            description: "Click on lines and stations to see detailed information and connections.",
+            icon: <MapIcon />,
+            color: "#2563eb"
+        },
+        {
+            title: "Track Your Journeys",
+            description: "Sign in to save your visited lines and share your railway map with others.",
+            icon: <Share2 />,
+            color: "#9333ea"
+        }
+    ];
+
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
     const toFirestoreTrip = (trip: Trip) => ({
@@ -457,6 +497,21 @@ const MainPageClient = () => {
                     setIsMobileSheetOpen(false);
                 }
                 trackEvent('station_click', 'interaction', station.name);
+
+                // Fetch extra station info (like neighbors) from remote
+                try {
+                    const remoteInfo = await getStationInfoRemote(stationId);
+                    if (remoteInfo) {
+                        setSelectedStation(prev => {
+                            if (prev && prev.id === stationId) {
+                                return { ...prev, ...remoteInfo };
+                            }
+                            return prev;
+                        });
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch remote station info:", err);
+                }
 
                 // Preview trip path if one is in progress
                 if (tripStartStation && lineDetailData) {
@@ -1113,6 +1168,13 @@ const MainPageClient = () => {
                     <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />
                 </div>
             )}
+            <OnboardingModal
+                isOpen={isOnboardingOpen}
+                onClose={() => setIsOnboardingOpen(false)}
+                appName="jpRail"
+                steps={jprailOnboardingSteps}
+                onComplete={handleOnboardingComplete}
+            />
         </div>
     );
 };

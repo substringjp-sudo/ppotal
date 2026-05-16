@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RawDataPoint } from './reconstruction-utils';
+import { RawDataPoint } from '../lib/reconstruction-utils';
 
 interface ReconstructionState {
   sourceData: RawDataPoint[];

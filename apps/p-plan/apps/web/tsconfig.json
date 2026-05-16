@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@pplaner/shared": ["../../packages/shared/src/index"]
+      "@pplaner/shared": ["../../packages/shared/src/index"],
+      "@pplaner/shared/*": ["../../packages/shared/*"]
     }
   },
   "include": [

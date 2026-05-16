@@ -703,7 +703,7 @@ export const reconstructTripFromHistory = async (
         }
     }
 
-    const finalTrip = { ...trip, dailyTimeline: updatedTimeline, status: 'completed' as const };
+    const finalTrip = { ...trip, dailyTimeline: updatedTimeline, status: 'finished' as const };
     await updateTrip(trip.id, finalTrip);
     
     return finalTrip;

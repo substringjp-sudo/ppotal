@@ -55,7 +55,7 @@ export function processTimelineData(points: RawDataPoint[]): { points: TimelineP
       speed = timeHours > 0 ? dist / timeHours : 0;
     }
 
-    let color = DESIGN_TOKENS.colors.slate[400]; // Default staying (Grey)
+    let color: string = DESIGN_TOKENS.colors.slate[400]; // Default staying (Grey)
     if (speed > 30) {
       color = '#EF4444'; // Fast move (Red)
     } else if (speed > 6) {

@@ -4,13 +4,21 @@
   "packageManager": "pnpm@11.1.2",
   "workspaces": [
     "apps/*",
+    "apps/p-plan/apps/*",
+    "apps/p-plan/packages/*",
+    "apps/regionevel/apps/*",
     "packages/*"
   ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "portal:dev": "pnpm dev --filter portal",
+    "jprail:dev": "pnpm dev --filter japanrailnote",
+    "pplan:dev": "pnpm dev --filter @pplaner/web",
+    "pplan:mobile": "pnpm dev --filter @pplaner/mobile",
+    "regionevel:dev": "pnpm dev --filter @regionevel/web"
   },
   "devDependencies": {
     "turbo": "latest"
@@ -18,7 +26,14 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "sharp",
-      "unrs-resolver"
+      "unrs-resolver",
+      "@firebase/util",
+      "better-sqlite3",
+      "esbuild",
+      "exifreader",
+      "msgpackr-extract",
+      "protobufjs",
+      "re2"
     ]
   }
 }

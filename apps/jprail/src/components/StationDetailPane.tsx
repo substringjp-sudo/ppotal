@@ -67,14 +67,16 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
     const left: { station: Station; ratio: number; skippedCount: number }[] = [];
     const right: { station: Station; ratio: number; skippedCount: number }[] = [];
     const railroadNetwork = railData.railroadNetwork;
-    if (!railroadNetwork || !railroadNetwork.station_graph) return { left, right };
 
     const stationId = station.id;
     const currentLineId = platform.line;
-    const neighborsMap = railroadNetwork.station_graph[stationId];
+
+    // Use station.neighbors if available (hydrated from remote), otherwise fallback to railroadNetwork.station_graph
+    const neighborsMap = station.neighbors || railroadNetwork?.station_graph?.[stationId];
+    
     if (!neighborsMap) return { left, right };
 
-    const lineData = railroadNetwork.line_data && railroadNetwork.line_data[String(currentLineId)];
+    const lineData = railroadNetwork?.line_data?.[String(currentLineId)];
     const lineSequence = lineData?.stations || [];
 
     // 1. Group neighbors by their 'first step' from the current station.
@@ -87,20 +89,16 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 
       // 1. Check if the neighbor station itself belongs to the current platform's line.
       const neighborPlatforms = (neighbor.platform_ids || []).map(pid => platforms[pid]);
+      // Relaxed check: if the graph explicitly says they are connected on this line_id, trust it.
+      // But we still prefer neighbors that actually have a platform on this line for better UI.
       const isNeighborOnThisLine = neighborPlatforms.some(pm => pm && String(pm.line) === String(currentLineId));
 
       // 2. Find connections that explicitly match the current line ID.
-      let validConnections = data.connections.filter(c => String(c.line_id) === String(currentLineId));
+      let validConnections = data.connections.filter((c: any) => String(c.line_id) === String(currentLineId));
 
-      // 3. Filtering logic:
-      // - If neighbor is NOT on this line, exclude even if connection.line_id matches (often data artifacts from shared tracks).
-      // - If neighbor IS on this line, but no direct line_id match exists (due to junctions or cross-line labeling), allow existing connections.
-      if (!isNeighborOnThisLine && validConnections.length > 0) {
-        // Strict platform isolation: neighbor doesn't belong to this line.
-        validConnections = [];
-      } else if (isNeighborOnThisLine && validConnections.length === 0) {
-        // Neighbor is valid for this line, but connection is labeled differently (e.g. shared track J_xx).
-        // Pick the best available connection.
+      // 3. Fallback: If no connections found for this specific line_id, 
+      // but the stations are physically connected, show all connections.
+      if (validConnections.length === 0) {
         validConnections = data.connections;
       }
 
@@ -116,7 +114,15 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
       g.neighborIds.push(neighborId);
 
       const idx = lineSequence.indexOf(neighborId);
-      g.avgIdx += idx !== -1 ? idx : lineSequence.indexOf(stationId);
+      const stationIdx = lineSequence.indexOf(stationId);
+      
+      // If we have line sequence data, use it for direction.
+      if (idx !== -1 && stationIdx !== -1) {
+          g.avgIdx += idx;
+      } else {
+          // If no line sequence, use relative longitude as a fallback for sorting.
+          g.avgIdx += neighbor.lon > station.lon ? 1000 : -1000;
+      }
       g.avgLon += neighbor.lon;
     });
 

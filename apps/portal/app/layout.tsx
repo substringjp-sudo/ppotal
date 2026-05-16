@@ -1,9 +1,14 @@
-import type { Metadata } from 'next'
+import { constructMetadata } from '@ppotal/ui';
+import { Analytics } from '@ppotal/ui';
 
-export const metadata: Metadata = {
-  title: 'PPLANER | The Value of Documenting Travel',
-  description: 'Personally record and cherish every moment of your travels. We provide various travel documentation services like jpRail and Regionevel.',
-}
+export const metadata = constructMetadata({
+  title: 'PPLANER | Unified Travel Portal',
+  description: 'The master portal for pplaner.com - Access JP Rail, Region Level, and P-Plan.',
+  url: 'https://www.pplaner.com',
+});
+
+import { AuthProvider } from '@ppotal/ui';
+import './globals.css';
 
 export default function RootLayout({
   children,
@@ -12,7 +17,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      </head>
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   )
 }

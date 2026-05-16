@@ -54,6 +54,7 @@ export interface Station {
     platform_ids: string[];
     prefecture_id?: string;
     city_id?: string;
+    neighbors?: { [neighborId: string]: { connections: NetworkConnection[] } };
 }
 
 export interface Section {

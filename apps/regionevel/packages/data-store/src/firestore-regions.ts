@@ -61,7 +61,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
     async getGeometries(ids) {
       if (!ids || ids.length === 0) return [];
       const { documentId } = await import("firebase/firestore");
-      const geometriesRef = collection(db, "geometries");
+      const geometriesRef = collection(db, "regionevel_geometries");
       const chunks = [];
       const CHUNK_SIZE = 30;
       for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
@@ -72,17 +72,37 @@ export function createFirestoreRegionStore(): RegionDataStore {
       for (const chunk of chunks) {
         const q = query(geometriesRef, where(documentId(), "in", chunk));
         const snap = await getDocs(q);
-        results.push(...snap.docs.map(d => d.data()));
+        results.push(...snap.docs.map(d => {
+          const data = d.data();
+          if (typeof data.geometry === 'string') {
+            try {
+              data.geometry = JSON.parse(data.geometry);
+            } catch (e) {
+              console.error("Failed to parse geometry for doc", d.id, e);
+            }
+          }
+          return data;
+        }));
       }
       return results;
     },
 
     async getGeometriesByParent(parentId) {
-      const geometriesRef = collection(db, "geometries");
+      const geometriesRef = collection(db, "regionevel_geometries");
       // Use root-level parentId for better performance
       const q = query(geometriesRef, where("parentId", "==", parentId));
       const snap = await getDocs(q);
-      return snap.docs.map(d => d.data());
+      return snap.docs.map(d => {
+        const data = d.data();
+        if (typeof data.geometry === 'string') {
+          try {
+            data.geometry = JSON.parse(data.geometry);
+          } catch (e) {
+            console.error("Failed to parse geometry for doc", d.id, e);
+          }
+        }
+        return data;
+      });
     },
     
     async getGeometriesByCountry(iso3, admLevel) {
@@ -121,7 +141,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
       const countryId = countryDoc.id;
       console.log(`[FirestoreRegionStore] Resolved countryId: ${countryId} for iso3: ${iso3}`);
 
-      const geometriesRef = collection(db, "geometries");
+      const geometriesRef = collection(db, "regionevel_geometries");
       let q;
       
       if (admLevel === 0) {
@@ -142,7 +162,17 @@ export function createFirestoreRegionStore(): RegionDataStore {
       
       const snap = await getDocs(q);
       console.log(`[FirestoreRegionStore] Fetched ${snap.docs.length} geometries`);
-      return snap.docs.map(d => d.data());
+      return snap.docs.map(d => {
+        const data = d.data();
+        if (typeof data.geometry === 'string') {
+          try {
+            data.geometry = JSON.parse(data.geometry);
+          } catch (e) {
+            console.error("Failed to parse geometry for doc", d.id, e);
+          }
+        }
+        return data;
+      });
     },
 
     async getSimplifiedGeometries(iso3) {
@@ -153,7 +183,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
     },
 
     async getGeometryBundle(iso3, admLevel) {
-      const bundlesRef = collection(db, "geometries_bundles");
+      const bundlesRef = collection(db, "regionevel_geometries_bundles");
       const bundleId = `${iso3}_ADM${admLevel}`;
       const snap = await getDoc(doc(bundlesRef, bundleId));
       if (!snap.exists()) return null;
@@ -173,7 +203,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
     },
 
     async seedGeometries(geometries) {
-      const geometriesRef = collection(db, "geometries");
+      const geometriesRef = collection(db, "regionevel_geometries");
       const BATCH_SIZE = 499;
       for (let i = 0; i < geometries.length; i += BATCH_SIZE) {
         const batch = writeBatch(db);

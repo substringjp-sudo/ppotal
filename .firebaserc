@@ -1,0 +1,23 @@
+{
+  "projects": {
+    "default": "p-plan"
+  },
+  "targets": {
+    "p-plan": {
+      "hosting": {
+        "portal": [
+          "ppotal"
+        ],
+        "jprail": [
+          "jprail-pplan"
+        ],
+        "regionevel": [
+          "rgnevel-pplan"
+        ],
+        "p-plan": [
+          "p-plan-8a6ae"
+        ]
+      }
+    }
+  }
+}

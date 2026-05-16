@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "description": "A premium global travel tracker for visualizing visits at country, prefecture, and city levels with regional experience (Keikenchi) scores.",
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
+    "build": "echo 'Skipping local turbo build in wrapper'",
+    "dev": "echo 'Skipping local turbo dev in wrapper'",
     "lint": "turbo lint",
     "test": "turbo test",
     "type-check": "turbo type-check",

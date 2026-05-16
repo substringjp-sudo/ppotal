@@ -363,8 +363,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         const props = feature.properties as any;
         const { id, endpoints } = props;
 
-        const lineData = railroadNetwork?.lines[id.split('::')[1]];
-        const companyData = railroadNetwork?.companies[id.split('::')[0]];
+        const lineData = railroadNetwork?.lines?.[id.split('::')[1]];
+        const companyData = railroadNetwork?.companies?.[id.split('::')[0]];
 
         const primaryLine = getLocalizedName(lineData, language) || props.name;
         const secondaryLine = language !== 'ja' ? props.name : '';

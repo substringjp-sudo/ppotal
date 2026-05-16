@@ -548,26 +548,23 @@ export function RegionMap() {
       {!isMobile && (
         <div
           ref={hoverLabelRef}
+          className={`fixed top-0 left-0 z-[5000] pointer-events-none transition-opacity duration-200 ${
+            hoveredFeature || hoveredRegion ? "opacity-100" : "opacity-0"
+          }`}
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            zIndex: 3000,
             pointerEvents: "none",
-            opacity: 0,
             transition: "opacity 0.15s ease-out",
             willChange: "transform",
           }}
-          className="bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 min-w-fit"
         >
           {(hoveredFeature || hoveredRegion) && (
-            <>
+            <div className="bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 min-w-fit">
               <div className="flex flex-col pr-3 border-r border-white/10">
                 <span className="text-[12px] font-black leading-tight truncate max-w-[140px] tracking-tight">
-                  {hoveredRegion?.name || hoveredFeature?.properties?.name || "Unknown"}
+                  {hoveredRegion?.name || hoveredFeature?.properties?.name || hoveredFeature?.properties?.shapeName || "Unknown"}
                 </span>
                 <span className="text-[9px] text-slate-400 font-bold mt-0.5 tracking-widest uppercase">
-                  {hoveredRegion?.iso3 || hoveredFeature?.properties?.iso_a3 || hoveredFeature?.properties?.iso3 || "REGION"}
+                  {hoveredRegion?.iso3 || hoveredFeature?.properties?.iso_a3 || hoveredFeature?.properties?.iso3 || hoveredFeature?.properties?.adm0_a3 || "REGION"}
                 </span>
               </div>
               
@@ -590,11 +587,11 @@ export function RegionMap() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Calculating</span>
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Ready</span>
                   <div className="w-3 h-3 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
