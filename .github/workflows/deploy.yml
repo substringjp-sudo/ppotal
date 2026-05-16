@@ -1,0 +1,67 @@
+name: Deploy Affected Apps
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Affected Apps
+        id: turbo
+        run: |
+          # Use turbo to build only changed apps
+          pnpm exec turbo build --filter=[HEAD^1]
+
+      - name: Deploy Portal
+        if: success()
+        run: |
+          if [ -d "apps/portal/out" ]; then
+            npx firebase-tools deploy --only hosting:portal --token "${{ secrets.FIREBASE_TOKEN }}"
+          fi
+
+      - name: Deploy jpRail
+        if: success()
+        run: |
+          if [ -d "apps/jprail/out" ]; then
+            npx firebase-tools deploy --only hosting:jprail --token "${{ secrets.FIREBASE_TOKEN }}"
+          fi
+
+      - name: Deploy Regionevel
+        if: success()
+        run: |
+          if [ -d "apps/regionevel/apps/web/out" ]; then
+            npx firebase-tools deploy --only hosting:regionevel --token "${{ secrets.FIREBASE_TOKEN }}"
+          fi
+
+      - name: Deploy P-Plan
+        if: success()
+        run: |
+          if [ -d "apps/p-plan/apps/web/out" ]; then
+            npx firebase-tools deploy --only hosting:p-plan --token "${{ secrets.FIREBASE_TOKEN }}"
+          fi
+
+      - name: Deploy Functions and Security Rules
+        if: success()
+        run: |
+          # Always deploy rules if they might have changed
+          npx firebase-tools deploy --only firestore,storage --token "${{ secrets.FIREBASE_TOKEN }}"
