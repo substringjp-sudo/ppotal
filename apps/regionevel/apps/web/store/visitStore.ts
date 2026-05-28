@@ -35,6 +35,111 @@ interface VisitStore {
   setHasHydrated: (val: boolean) => void;
 }
 
+// Helper function to calculate scores and stats atomically
+const calculateScoresAndStats = (
+  visits: RegionVisit[],
+  allRegions: Region[],
+  currentScores: Record<string, RegionScore>,
+  forceAll: boolean = false
+) => {
+  if (allRegions.length === 0) {
+    return {
+      scores: currentScores,
+      stats: {
+        visitedCountries: 0,
+        visitedPrefectures: 0,
+        visitedCities: 0,
+        pass: 0,
+        transit: 0,
+        visit: 0,
+        stay: 0,
+        residence: 0,
+      },
+    };
+  }
+
+  const regionMap = new Map<string, Region>();
+  const parentIdMap = new Map<string | null, Region[]>();
+  
+  for (const r of allRegions) {
+    const id = padId(r.id);
+    const pId = padId(r.parentId);
+    regionMap.set(id, r);
+    const children = parentIdMap.get(pId) || [];
+    children.push(r);
+    parentIdMap.set(pId, children);
+  }
+
+  const vMap = new Map<string, RegionVisit[]>();
+  const affectedIds = new Set<string>();
+  
+  for (const v of visits) {
+    const rid = padId(v.regionId);
+    const list = vMap.get(rid) || [];
+    list.push(v);
+    vMap.set(rid, list);
+    
+    let currId: string | null = rid;
+    while (currId && !affectedIds.has(currId)) {
+      affectedIds.add(currId);
+      const reg = regionMap.get(currId);
+      currId = reg ? padId(reg.parentId) : null;
+    }
+  }
+
+  const newScores: Record<string, RegionScore> = { ...currentScores };
+  const scoreMemo = new Map<string, RegionScore>();
+  for (const [id, score] of Object.entries(currentScores)) {
+    scoreMemo.set(id, score);
+  }
+
+  const countMemo = new Map<string, Record<VisitCategory, number>>();
+
+  const targets = Array.from(affectedIds)
+    .map((id) => regionMap.get(id))
+    .filter((r): r is Region => !!r);
+  
+  const finalTargets = (Object.keys(currentScores).length === 0 || forceAll) ? allRegions : targets;
+
+  for (const r of finalTargets) {
+    const id = padId(r.id);
+    if (affectedIds.has(id)) {
+      scoreMemo.delete(id);
+      countMemo.delete(id);
+    }
+    const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
+    newScores[id] = score;
+  }
+
+  const stats = {
+    visitedCountries: 0,
+    visitedPrefectures: 0,
+    visitedCities: 0,
+    pass: 0,
+    transit: 0,
+    visit: 0,
+    stay: 0,
+    residence: 0,
+  };
+
+  for (const [rid] of vMap) {
+    const r = regionMap.get(rid);
+    if (r) {
+      if (r.admLevel === 0) stats.visitedCountries++;
+      else if (r.admLevel === 1) stats.visitedPrefectures++;
+      else if (r.admLevel === 2) stats.visitedCities++;
+    }
+  }
+
+  for (const v of visits) {
+    if (v.category in stats) {
+      (stats as any)[v.category] += v.count;
+    }
+  }
+
+  return { scores: newScores, stats };
+};
+
 export const useVisitStore = create<VisitStore>()(
   persist(
     (set, get) => ({
@@ -60,7 +165,6 @@ export const useVisitStore = create<VisitStore>()(
       setRegions(regions) {
         const currentRegions = get().allRegions;
         const currentScores = get().scores;
-        // Merge regions if they are different
         const regionMap = new Map<string, Region>();
         currentRegions.forEach(r => regionMap.set(padId(r.id), r));
         let changed = false;
@@ -87,61 +191,55 @@ export const useVisitStore = create<VisitStore>()(
           return;
         }
         const id = padId(regionId);
-        set((s) => {
-          // 기존의 카테고리별 count 조회
-          const getPrevCount = (cat: VisitCategory) => {
-            const found = s.visits.find(v => padId(v.regionId) === id && v.category === cat);
-            return found ? found.count : 0;
-          };
+        const { visits, allRegions, scores: currentScores } = get();
 
-          const prevCount = getPrevCount(category);
-          const diff = count - prevCount;
+        const getPrevCount = (cat: VisitCategory) => {
+          const found = visits.find(v => padId(v.regionId) === id && v.category === cat);
+          return found ? found.count : 0;
+        };
 
-          let updatedVisits = [...s.visits];
+        const prevCount = getPrevCount(category);
+        const diff = count - prevCount;
 
-          const applyChange = (cat: VisitCategory, targetCount: number) => {
-            const cfg = VISIT_CONFIG[cat];
-            const finalCount = Math.max(0, Math.min(cfg.maxCount, targetCount));
-            
-            // 기존 레코드 제거
-            updatedVisits = updatedVisits.filter(v => !(padId(v.regionId) === id && v.category === cat));
-            // 0보다 크면 추가
-            if (finalCount > 0) {
-              updatedVisits.push({ regionId: id, category: cat, count: finalCount, updatedAt: Date.now() });
-            }
-          };
+        let updatedVisits = [...visits];
 
-          // 현재 카테고리 업데이트 적용
-          applyChange(category, count);
-
-          // 횟수가 증가한 경우(diff > 0)에만 연쇄 증가 처리
-          if (diff > 0) {
-            if (category === "transit") {
-              applyChange("pass", getPrevCount("pass") + diff);
-            } else if (category === "visit") {
-              applyChange("transit", getPrevCount("transit") + diff);
-              applyChange("pass", getPrevCount("pass") + diff);
-            } else if (category === "stay") {
-              applyChange("visit", getPrevCount("visit") + diff);
-              applyChange("transit", getPrevCount("transit") + diff);
-              applyChange("pass", getPrevCount("pass") + diff);
-            }
+        const applyChange = (cat: VisitCategory, targetCount: number) => {
+          const cfg = VISIT_CONFIG[cat];
+          const finalCount = Math.max(0, Math.min(cfg.maxCount, targetCount));
+          
+          updatedVisits = updatedVisits.filter(v => !(padId(v.regionId) === id && v.category === cat));
+          if (finalCount > 0) {
+            updatedVisits.push({ regionId: id, category: cat, count: finalCount, updatedAt: Date.now() });
           }
+        };
 
-          return { visits: updatedVisits };
-        });
-        // Recalculate scores after visit update
-        get().recalculateScores();
+        applyChange(category, count);
+
+        if (diff > 0) {
+          if (category === "transit") {
+            applyChange("pass", getPrevCount("pass") + diff);
+          } else if (category === "visit") {
+            applyChange("transit", getPrevCount("transit") + diff);
+            applyChange("pass", getPrevCount("pass") + diff);
+          } else if (category === "stay") {
+            applyChange("visit", getPrevCount("visit") + diff);
+            applyChange("transit", getPrevCount("transit") + diff);
+            applyChange("pass", getPrevCount("pass") + diff);
+          }
+        }
+
+        const { scores: newScores, stats } = calculateScoresAndStats(updatedVisits, allRegions, currentScores);
+        set({ visits: updatedVisits, scores: newScores, stats });
       },
 
       removeVisit(regionId, category) {
         const id = padId(regionId);
-        set((s) => ({
-          visits: s.visits.filter(
-            (v) => !(padId(v.regionId) === id && v.category === category),
-          ),
-        }));
-        get().recalculateScores();
+        const { visits, allRegions, scores: currentScores } = get();
+        const updatedVisits = visits.filter(
+          (v) => !(padId(v.regionId) === id && v.category === category),
+        );
+        const { scores: newScores, stats } = calculateScoresAndStats(updatedVisits, allRegions, currentScores);
+        set({ visits: updatedVisits, scores: newScores, stats });
       },
 
       quickIncrement(regionId) {
@@ -197,92 +295,7 @@ export const useVisitStore = create<VisitStore>()(
         const { visits, scores: currentScores } = get();
         if (allRegions.length === 0) return;
 
-        const regionMap = new Map<string, Region>();
-        const parentIdMap = new Map<string | null, Region[]>();
-        
-        for (const r of allRegions) {
-          const id = padId(r.id);
-          const pId = padId(r.parentId);
-          regionMap.set(id, r);
-          const children = parentIdMap.get(pId) || [];
-          children.push(r);
-          parentIdMap.set(pId, children);
-        }
-
-        const vMap = new Map<string, RegionVisit[]>();
-        const affectedIds = new Set<string>();
-        
-        for (const v of visits) {
-          const rid = padId(v.regionId);
-          const list = vMap.get(rid) || [];
-          list.push(v);
-          vMap.set(rid, list);
-          
-          let currId: string | null = rid;
-          while (currId && !affectedIds.has(currId)) {
-            affectedIds.add(currId);
-            const reg = regionMap.get(currId);
-            currId = reg ? padId(reg.parentId) : null;
-          }
-        }
-
-        const newScores: Record<string, RegionScore> = { ...currentScores };
-        const scoreMemo = new Map<string, RegionScore>();
-        // Pre-populate memo with existing scores to avoid re-calculation of unaffected branches
-        for (const [id, score] of Object.entries(currentScores)) {
-          scoreMemo.set(id, score);
-        }
-
-        const countMemo = new Map<string, Record<VisitCategory, number>>();
-
-        // Optimization: Only recalculate for affected IDs if this was a visit update.
-        // If regions was passed, it's likely an initial load or new data, so we might need more.
-        const targets = regions ? allRegions : Array.from(affectedIds).map(id => regionMap.get(id)).filter((r): r is Region => !!r);
-        
-        // If it's the very first calculation, we still need to loop through all to initialize
-        const finalTargets = Object.keys(currentScores).length === 0 ? allRegions : targets;
-
-        for (const r of finalTargets) {
-          const id = padId(r.id);
-          // If already in memo and not affected, getRegionScore will return it immediately.
-          // We clear affected IDs from memo first to ensure they are recalculated.
-          if (affectedIds.has(id)) {
-            scoreMemo.delete(id);
-            countMemo.delete(id);
-          }
-          const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
-          newScores[id] = score;
-        }
-
-        // Efficient stats calculation
-        const stats = {
-          visitedCountries: 0,
-          visitedPrefectures: 0,
-          visitedCities: 0,
-          pass: 0,
-          transit: 0,
-          visit: 0,
-          stay: 0,
-          residence: 0,
-        };
-
-        // Visited counts from vMap (only regions with direct visits)
-        for (const [rid] of vMap) {
-          const r = regionMap.get(rid);
-          if (r) {
-            if (r.admLevel === 0) stats.visitedCountries++;
-            else if (r.admLevel === 1) stats.visitedPrefectures++;
-            else if (r.admLevel === 2) stats.visitedCities++;
-          }
-        }
-
-        // Aggregate category counts from visits
-        for (const v of visits) {
-          if (v.category in stats) {
-            (stats as any)[v.category] += v.count;
-          }
-        }
-
+        const { scores: newScores, stats } = calculateScoresAndStats(visits, allRegions, currentScores, !!regions);
         set({ scores: newScores, stats });
       },
     }),
