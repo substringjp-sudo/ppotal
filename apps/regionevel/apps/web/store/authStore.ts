@@ -46,7 +46,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         const remote = createFirestoreVisitStore(user.uid);
         const syncManager = new SyncManager(remote, {
           getLocalVisits: () => useVisitStore.getState().visits,
-          setVisits: (visits) => useVisitStore.setState({ visits }),
+          setVisits: (visits) => {
+            useVisitStore.setState({ visits });
+            useVisitStore.getState().recalculateScores();
+          },
           subscribe: (cb) =>
             useVisitStore.subscribe((state) => cb(state.visits)),
         });

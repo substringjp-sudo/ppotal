@@ -1,14 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;600;800&display=swap');
-
 :root {
-  --background: #08080a;
-  --foreground: #ffffff;
-  --accent-primary: #6366f1;
-  --accent-secondary: #ec4899;
-  --accent-tertiary: #06b6d4;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --background: #111821;
+  --foreground: #f6f7f8;
+  --accent-primary: #1c74e9;
+  --accent-secondary: #2ecc71;
+  --accent-tertiary: #38bdf8;
+  --glass-bg: rgba(255, 255, 255, 0.02);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-highlight: rgba(255, 255, 255, 0.1);
   --font-main: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
   --card-radius: 32px;
@@ -46,7 +44,7 @@ h1, h2, h3, .logo {
   height: 100vh;
   z-index: -1;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #111115 0%, #08080a 100%);
+  background: radial-gradient(circle at 50% 50%, #172230 0%, #111821 100%);
 }
 
 .bg-light {
@@ -311,9 +309,6 @@ header {
   margin-bottom: 2rem;
   letter-spacing: -0.04em;
   background: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0.4) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

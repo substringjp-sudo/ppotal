@@ -15,8 +15,9 @@ const getStorage = () => {
         if (typeof window !== 'undefined' && window.localStorage) {
             return localStorage;
         }
-        // React Native 환경에서는 호출 시점에 AsyncStorage를 가져옴 (호환성 유지)
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        // Obfuscate module name to prevent static build-time resolution by Webpack/Turbopack
+        const moduleName = '@react-native-async-storage/' + 'async-storage';
+        const AsyncStorage = require(moduleName).default;
         return AsyncStorage;
     } catch (e) {
         return undefined;

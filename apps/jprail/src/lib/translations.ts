@@ -291,7 +291,13 @@ export const AUTH_TRANSLATIONS = {
         nickname: '닉네임',
         authFailed: '인증에 실패했습니다.',
         switchToSignup: '계정이 없으신가요? 회원가입',
-        switchToLogin: '이미 계정이 있으신가요? 로그인'
+        switchToLogin: '이미 계정이 있으신가요? 로그인',
+        forgotPassword: '비밀번호를 잊으셨나요?',
+        resetPassword: '비밀번호 재설정',
+        sendResetLink: '재설정 메일 전송',
+        backToLogin: '로그인 화면으로 돌아가기',
+        resetEmailSent: '비밀번호 재설정 이메일이 발송되었습니다. 메일함을 확인해주세요.',
+        resetPasswordDesc: '이메일을 입력하시면 비밀번호 재설정 링크를 보내드립니다.'
     },
     en: {
         login: 'Login',
@@ -310,7 +316,13 @@ export const AUTH_TRANSLATIONS = {
         nickname: 'Nickname',
         authFailed: 'Authentication failed',
         switchToSignup: "Don't have an account? Sign Up",
-        switchToLogin: "Already have an account? Login"
+        switchToLogin: "Already have an account? Login",
+        forgotPassword: 'Forgot Password?',
+        resetPassword: 'Reset Password',
+        sendResetLink: 'Send Reset Link',
+        backToLogin: 'Back to Login',
+        resetEmailSent: 'Password reset email sent. Please check your inbox.',
+        resetPasswordDesc: 'Enter your email to receive a password reset link'
     },
     ja: {
         login: 'ログイン',
@@ -329,7 +341,13 @@ export const AUTH_TRANSLATIONS = {
         nickname: 'ニックネーム',
         authFailed: '認証に失敗しました。',
         switchToSignup: 'アカウントをお持ちでないですか？新規登録',
-        switchToLogin: 'すでにアカウントをお持ちですか？ログイン'
+        switchToLogin: 'すでにアカウントをお持ちですか？ログイン',
+        forgotPassword: 'パスワードをお忘れですか？',
+        resetPassword: 'パスワード再設定',
+        sendResetLink: '再設定メールを送信',
+        backToLogin: 'ログイン画面に戻る',
+        resetEmailSent: 'パスワード再設定メールを送信しました。メールボックスをご確認ください。',
+        resetPasswordDesc: 'メールアドレスを入力すると、パスワード再設定リンクが送信されます。'
     }
 };
 export const LINE_DETAIL_TRANSLATIONS = {

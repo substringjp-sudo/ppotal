@@ -3,15 +3,18 @@ import { getAuth, Auth, onAuthStateChanged, User, signOut } from "firebase/auth"
 import { getFirestore, Firestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
-const firebaseConfig = {
+const firebaseConfig: Record<string, string> = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCHVsk1xvYnMn1fSt5uV2XDfiC6qpVYN68",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "p-plan-8a6ae.firebaseapp.com",
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "p-plan",
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "p-plan.firebasestorage.app",
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "860206623180",
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:860206623180:web:1b7040908309612c579569",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+if (process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID) {
+  firebaseConfig.measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
+}
 
 let app: FirebaseApp;
 if (!getApps().length) {
