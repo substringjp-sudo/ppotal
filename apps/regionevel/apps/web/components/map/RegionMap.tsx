@@ -92,11 +92,10 @@ export function RegionMap() {
     return map;
   }, [allRegions]);
 
-  const { level, currentId, history, drillDown, drillUp, reset, viewLevel, setViewLevel } = useMapStore();
+  const { level, currentId, history, drillDown, drillUp, reset, viewLevel, setViewLevel, selectedId, setSelectedId } = useMapStore();
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
