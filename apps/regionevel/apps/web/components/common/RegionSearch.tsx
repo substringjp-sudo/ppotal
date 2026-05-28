@@ -5,6 +5,7 @@ import { Search, X } from "lucide-react";
 import { useVisitStore } from "@/store/visitStore";
 import { useMapStore } from "@/store/mapStore";
 import { padId } from "@regionevel/utils";
+import { useRouter, usePathname } from "next/navigation";
 
 export function RegionSearch() {
   const { allRegions } = useVisitStore();
@@ -13,6 +14,8 @@ export function RegionSearch() {
   const [results, setResults] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Close results list on click outside
   useEffect(() => {
@@ -54,6 +57,9 @@ export function RegionSearch() {
 
   const handleSelect = (id: string) => {
     jumpToRegion(id, allRegions);
+    if (pathname !== "/map") {
+      router.push("/map");
+    }
     setQuery("");
     setIsOpen(false);
   };

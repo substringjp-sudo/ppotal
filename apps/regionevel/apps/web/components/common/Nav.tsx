@@ -49,8 +49,8 @@ export function Nav() {
         </Link>
       </div>
 
-      {/* Middle: Search (Only in Desktop & Map/List pages) */}
-      {!isMobile && (pathname === "/map" || pathname === "/list") && (
+      {/* Middle: Search (Only in Desktop) */}
+      {!isMobile && (
         <div className="flex-1 flex justify-center px-4">
           <RegionSearch />
         </div>
