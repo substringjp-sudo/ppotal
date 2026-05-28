@@ -691,7 +691,7 @@ const MainPageClient = () => {
                     Skip to main content
                 </a>
 
-                <header className={`flex ${isMobile ? 'h-[60px]' : 'h-16'} items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative`}>
+                <header className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative">
                     {/* Left: Logo & Title */}
                     <div className="flex items-center gap-3 shrink-0 mr-4">
                         <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-sm">

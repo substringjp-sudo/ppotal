@@ -68,48 +68,23 @@ export const RegionTooltip = memo(function RegionTooltip({
   const isReadOnly = (region.admLevel === 0 || region.admLevel === 1) && childRegions.length > 0;
 
 
-  // Calculate position to stay within viewport (Desktop)
+  // Position fixed at the top-right corner (Desktop)
   const tooltipWidth = 320;
-  const tooltipHeight = 450; 
   
-  const desktopStyle: React.CSSProperties = mousePos
-    ? (() => {
-        const winW = typeof window !== "undefined" ? window.innerWidth : 0;
-        const winH = typeof window !== "undefined" ? window.innerHeight : 0;
-        
-        // Dynamic height based on content
-        const idealHeight = region.admLevel === 2 ? 520 : 580;
-        const actualHeight = Math.min(idealHeight, winH - 60);
-        
-        let left = mousePos.x + 20;
-        if (left + tooltipWidth > winW - 20) {
-          left = mousePos.x - tooltipWidth - 20;
-        }
-        left = Math.max(20, Math.min(left, winW - tooltipWidth - 20));
-
-        let top = mousePos.y + 20;
-        if (top + actualHeight > winH - 20) {
-          top = mousePos.y - actualHeight - 20;
-        }
-        top = Math.max(20, Math.min(top, winH - actualHeight - 20));
-
-        return {
-          position: "fixed",
-          left,
-          top,
-          height: region.admLevel === 2 ? "auto" : actualHeight,
-          maxHeight: actualHeight,
-          zIndex: 2000,
-        };
-      })()
-    : {
-        position: "fixed",
-        bottom: "1.5rem",
-        left: "50%",
-        transform: "translateX(-50%)",
-        height: 580,
-        zIndex: 2000,
-      };
+  const desktopStyle: React.CSSProperties = (() => {
+    const winH = typeof window !== "undefined" ? window.innerHeight : 0;
+    // Calculate appropriate max height to prevent overflow (margin 72px top + 32px bottom)
+    const maxCardHeight = winH > 0 ? Math.max(300, winH - 104) : 580;
+    
+    return {
+      position: "absolute",
+      right: "1rem",
+      top: "4.5rem",
+      width: `${tooltipWidth}px`,
+      maxHeight: `${maxCardHeight}px`,
+      zIndex: 2000,
+    };
+  })();
 
   const mobileStyle: React.CSSProperties = {
     position: "fixed",
@@ -132,10 +107,10 @@ export const RegionTooltip = memo(function RegionTooltip({
       <div
         style={isMobile ? mobileStyle : desktopStyle}
         className={`
-          bg-white shadow-2xl overflow-hidden flex flex-col border border-slate-200
+          bg-white/95 backdrop-blur-md shadow-2xl overflow-hidden flex flex-col border border-slate-200/80
           ${isMobile 
-            ? "animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh]" 
-            : "w-80 animate-in fade-in zoom-in duration-200"
+            ? "animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh] rounded-t-[32px]" 
+            : "w-80 animate-in fade-in zoom-in duration-200 rounded-2xl"
           }
         `}
       >

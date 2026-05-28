@@ -26,7 +26,7 @@ const Map: React.FC<MapProps> = ({ children }) => {
         <MapContainer
             center={[36.0, 138.0]}
             zoom={5}
-            style={{ height: '100%', width: '100%', background: '#a0c4ff' }}
+            style={{ height: '100%', width: '100%', background: '#e0f2fe' }}
             preferCanvas={true}
             zoomControl={false}
             zoomSnap={0.5}

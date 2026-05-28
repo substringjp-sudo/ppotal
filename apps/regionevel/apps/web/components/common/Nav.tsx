@@ -11,7 +11,7 @@ export function Nav() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <nav className="flex items-center gap-4 px-4 py-3 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-[2000]">
+    <nav className="flex h-14 items-center gap-4 px-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-[2000]">
       <Link href="/" className="font-bold text-blue-700 text-lg tracking-tight">
         Regionevel
       </Link>

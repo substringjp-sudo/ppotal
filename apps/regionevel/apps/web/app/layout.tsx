@@ -33,32 +33,34 @@ export default function RootLayout({
       <head>
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       </head>
-      <body className="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
+      <body className="bg-slate-50 text-gray-900 antialiased min-h-screen flex flex-col bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]">
         <AuthProvider>
           <FirebaseProvider>
-            <Nav />
-            <main className="flex-1">
-              <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                  __html: JSON.stringify({
-                    "@context": "https://schema.org",
-                    "@type": "SoftwareApplication",
-                    "name": "Regionevel",
-                    "description": "A global travel tracker for visualizing and managing travel history at Country, Prefecture, and City levels.",
-                    "applicationCategory": "TravelApplication",
-                    "operatingSystem": "Web",
-                    "url": "https://rgnevel.pplaner.com",
-                    "author": {
-                      "@type": "Organization",
-                      "name": "Regionevel Team"
-                    }
-                  }),
-                }}
-              />
-              {children}
-            </main>
-            <Footer />
+            <div className="flex-1 flex flex-col max-w-[1920px] mx-auto w-full bg-white shadow-2xl shadow-slate-900/10 min-h-screen">
+              <Nav />
+              <main className="flex-1 flex flex-col">
+                <script
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                      "@context": "https://schema.org",
+                      "@type": "SoftwareApplication",
+                      "name": "Regionevel",
+                      "description": "A global travel tracker for visualizing and managing travel history at Country, Prefecture, and City levels.",
+                      "applicationCategory": "TravelApplication",
+                      "operatingSystem": "Web",
+                      "url": "https://rgnevel.pplaner.com",
+                      "author": {
+                        "@type": "Organization",
+                        "name": "Regionevel Team"
+                      }
+                    }),
+                  }}
+                />
+                {children}
+              </main>
+              <Footer />
+            </div>
           </FirebaseProvider>
         </AuthProvider>
       </body>
