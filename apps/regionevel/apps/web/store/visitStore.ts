@@ -88,14 +88,47 @@ export const useVisitStore = create<VisitStore>()(
         }
         const id = padId(regionId);
         set((s) => {
-          const filtered = s.visits.filter(
-            (v) => !(padId(v.regionId) === id && v.category === category),
-          );
-          const newVisits = count <= 0 
-            ? filtered 
-            : [...filtered, { regionId: id, category, count, updatedAt: Date.now() }];
-          
-          return { visits: newVisits };
+          // 기존의 카테고리별 count 조회
+          const getPrevCount = (cat: VisitCategory) => {
+            const found = s.visits.find(v => padId(v.regionId) === id && v.category === cat);
+            return found ? found.count : 0;
+          };
+
+          const prevCount = getPrevCount(category);
+          const diff = count - prevCount;
+
+          let updatedVisits = [...s.visits];
+
+          const applyChange = (cat: VisitCategory, targetCount: number) => {
+            const cfg = VISIT_CONFIG[cat];
+            const finalCount = Math.max(0, Math.min(cfg.maxCount, targetCount));
+            
+            // 기존 레코드 제거
+            updatedVisits = updatedVisits.filter(v => !(padId(v.regionId) === id && v.category === cat));
+            // 0보다 크면 추가
+            if (finalCount > 0) {
+              updatedVisits.push({ regionId: id, category: cat, count: finalCount, updatedAt: Date.now() });
+            }
+          };
+
+          // 현재 카테고리 업데이트 적용
+          applyChange(category, count);
+
+          // 횟수가 증가한 경우(diff > 0)에만 연쇄 증가 처리
+          if (diff > 0) {
+            if (category === "transit") {
+              applyChange("pass", getPrevCount("pass") + diff);
+            } else if (category === "visit") {
+              applyChange("transit", getPrevCount("transit") + diff);
+              applyChange("pass", getPrevCount("pass") + diff);
+            } else if (category === "stay") {
+              applyChange("visit", getPrevCount("visit") + diff);
+              applyChange("transit", getPrevCount("transit") + diff);
+              applyChange("pass", getPrevCount("pass") + diff);
+            }
+          }
+
+          return { visits: updatedVisits };
         });
         // Recalculate scores after visit update
         get().recalculateScores();
