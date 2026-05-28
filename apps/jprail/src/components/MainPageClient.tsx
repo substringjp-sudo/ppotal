@@ -131,6 +131,8 @@ const MainPageClient = () => {
     const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
     const [exportImageData, setExportImageData] = React.useState<string | null>(null);
     const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+    const [isHoverLoading, setIsHoverLoading] = React.useState(false);
+    const [isRecordingLoading, setIsRecordingLoading] = React.useState(false);
 
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
@@ -313,7 +315,7 @@ const MainPageClient = () => {
     const handleEndTrip = React.useCallback(async (endStation: Station) => {
         if (!tripStartStation || !lineDetailData) return;
 
-        // Use RoutingGraph to calculate path (Async)
+        setIsRecordingLoading(true);
         try {
             const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, endStation.id, undefined);
 
@@ -338,8 +340,7 @@ const MainPageClient = () => {
 
                 // Sync with Firebase if user logged in
                 if (user) {
-                    setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip))
-                        .catch(e => console.error("Cloud sync failed", e));
+                    await setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip));
                 }
 
                 // Reset
@@ -349,24 +350,29 @@ const MainPageClient = () => {
             }
         } catch (err) {
             console.error("End trip remote search failed:", err);
+        } finally {
+            setIsRecordingLoading(false);
         }
     }, [tripStartStation, lineDetailData, user]);
 
     const handleRecordTrip = React.useCallback(async (trip: Trip) => {
-        setRecordedTrips(prev => {
-            if (prev.find(t => t.id === trip.id)) return prev;
-            return [...prev, trip];
-        });
-        setDraftTrip(null);
+        setIsRecordingLoading(true);
+        try {
+            setRecordedTrips(prev => {
+                if (prev.find(t => t.id === trip.id)) return prev;
+                return [...prev, trip];
+            });
+            setDraftTrip(null);
 
-        trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
+            trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
 
-        if (user) {
-            try {
+            if (user) {
                 await setDoc(doc(db, `users/${user.uid}/trips`, trip.id), toFirestoreTrip(trip));
-            } catch (e) {
-                console.error("Cloud sync failed", e);
             }
+        } catch (e) {
+            console.error("Cloud sync failed", e);
+        } finally {
+            setIsRecordingLoading(false);
         }
     }, [user]);
 
@@ -514,6 +520,7 @@ const MainPageClient = () => {
             const station = (railData.stations as Record<string, Station>)[targetStationId];
             if (station && station.id !== tripStartStation.id) {
                 const requestId = ++hoverRequestRef.current;
+                setIsHoverLoading(true);
                 try {
                     const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
                     
@@ -540,6 +547,10 @@ const MainPageClient = () => {
                         console.error("Hover remote search failed:", err);
                         setDraftTrip(null);
                     }
+                } finally {
+                    if (requestId === hoverRequestRef.current) {
+                        setIsHoverLoading(false);
+                    }
                 }
             } else if (station && station.id === tripStartStation.id) {
                 setDraftTrip(null);
@@ -552,13 +563,14 @@ const MainPageClient = () => {
     const handleResetTrips = React.useCallback(async () => {
         if (recordedTrips.length === 0) return;
 
-        setRecordedTrips([]);
-        setVisitedLineLengths({});
-        localStorage.removeItem('jprail_trips');
-        trackEvent('reset_all_trips', 'engagement', 'confirm');
+        setIsRecordingLoading(true);
+        try {
+            setRecordedTrips([]);
+            setVisitedLineLengths({});
+            localStorage.removeItem('jprail_trips');
+            trackEvent('reset_all_trips', 'engagement', 'confirm');
 
-        if (user) {
-            try {
+            if (user) {
                 const batch = writeBatch(db);
                 // In some versions it was users/${user.uid}/trips, let's keep it consistent
                 const tripsRef = collection(db, `users/${user.uid}/trips`);
@@ -567,9 +579,11 @@ const MainPageClient = () => {
                     batch.delete(doc.ref);
                 });
                 await batch.commit();
-            } catch (e) {
-                console.error("Cloud reset failed", e);
             }
+        } catch (e) {
+            console.error("Cloud reset failed", e);
+        } finally {
+            setIsRecordingLoading(false);
         }
     }, [recordedTrips.length, user]);
 
@@ -598,15 +612,18 @@ const MainPageClient = () => {
     }, [visitedLineLengths, recordedTrips]);
 
     const handleDeleteTrip = React.useCallback(async (id: string) => {
-        setRecordedTrips(prev => prev.filter(t => t.id !== id));
-        trackEvent('delete_trip', 'engagement', id);
-
-        if (user) {
-            try {
+        setIsRecordingLoading(true);
+        try {
+            setRecordedTrips(prev => prev.filter(t => t.id !== id));
+            trackEvent('delete_trip', 'engagement', id);
+    
+            if (user) {
                 await deleteDoc(doc(db, `users/${user.uid}/trips`, id));
-            } catch (e) {
-                console.error("Cloud delete failed", e);
             }
+        } catch (e) {
+            console.error("Cloud delete failed", e);
+        } finally {
+            setIsRecordingLoading(false);
         }
     }, [user]);
 
@@ -788,6 +805,8 @@ const MainPageClient = () => {
                                 onStationClick={handleStationClick}
                                 onSetSelectedLines={setSelectedLinesList}
                                 onSetActiveLine={setActiveLine}
+                                isHoverLoading={isHoverLoading}
+                                isRecordingLoading={isRecordingLoading}
                                 onLengthsCalculated={setLineLengths}
                                 onVisitedLengthsCalculated={setVisitedLineLengths}
                                 onLineMappingCreated={setLineIdMapping}

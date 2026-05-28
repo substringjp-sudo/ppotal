@@ -68,6 +68,8 @@ interface MapPaneProps {
     onPrefectureClick?: (name: string) => void;
     leftBound?: number;
     rightBound?: number;
+    isHoverLoading?: boolean;
+    isRecordingLoading?: boolean;
 }
 
 const PANE_STYLES = {
@@ -115,7 +117,9 @@ const MapPane: React.FC<MapPaneProps> = ({
     selectedStation,
     onPrefectureClick,
     leftBound,
-    rightBound
+    rightBound,
+    isHoverLoading,
+    isRecordingLoading
 }) => {
     const map = useMap();
     const [zoomLevel, setZoomLevel] = useState(5);
@@ -270,7 +274,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragStartStation,
         dragPath,
         handleStationMouseDown: rawHandleStationMouseDown,
-        handleStationMouseUp
+        handleStationMouseUp,
+        isCalculating
     } = useTripRecorder({
         graph: graph,
         visibleStations,
@@ -721,6 +726,65 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
 
             <FloatingTooltip {...floatingTooltip} leftBound={leftBound} rightBound={rightBound} />
+
+            {/* 실시간 경로 연산 중 로딩 표시 (호버 / 드래그) */}
+            {(isCalculating || isHoverLoading) && (
+                <div 
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: 11000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                        backdropFilter: 'blur(8px)',
+                        padding: '10px 20px',
+                        borderRadius: '20px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'none'
+                    }}
+                    className="dark:bg-slate-900/85 dark:border-slate-800/40"
+                >
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {isHoverLoading ? "경로 조회 중..." : "경로 연산 중..."}
+                    </span>
+                </div>
+            )}
+
+            {/* 여행 기록 저장 / 삭제 / 초기화 로딩 표시 (전체 영역 블러) */}
+            {isRecordingLoading && (
+                <div 
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 12000,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '15px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                        backdropFilter: 'blur(5px)',
+                        pointerEvents: 'auto'
+                    }}
+                    className="dark:bg-slate-950/40"
+                >
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800/50 flex flex-col items-center gap-4">
+                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">
+                            여행 기록 동기화 중...
+                        </span>
+                    </div>
+                </div>
+            )}
         </>
 
     );
