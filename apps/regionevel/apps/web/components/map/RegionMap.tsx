@@ -831,7 +831,7 @@ function ScoreLegend({
   hideRate?: boolean;
   hideExp?: boolean;
 }) {
-  const numericLabels = ["1~9", "10~29", "30~49", "50~69", "70~100"];
+  const numericLabels = ["1~7", "8~17", "18~30", "31~50", "51~100"];
   
   const individualSteps = [
     { label: numericLabels[0], color: "#eff6ff" },

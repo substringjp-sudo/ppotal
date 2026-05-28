@@ -249,18 +249,18 @@ export function getMapColor(score: RegionScore): string {
   
   if (score.scoreType === "orange") {
     const s = Math.round(score.rateScore);
-    if (s < 10) return "#fdba74"; // Orange 300 (was #fed7aa 200)
-    if (s < 30) return "#fb923c"; // Orange 400 (was #fdba74 300)
-    if (s < 50) return "#f97316"; // Orange 500
-    if (s < 70) return "#ea580c"; // Orange 600
-    return "#c2410c"; // Orange 700
+    if (s < 8) return "#fdba74"; // Orange 300 (1~7)
+    if (s < 18) return "#fb923c"; // Orange 400 (8~17)
+    if (s < 31) return "#f97316"; // Orange 500 (18~30)
+    if (s < 51) return "#ea580c"; // Orange 600 (31~50)
+    return "#c2410c"; // Orange 700 (51~100)
   } else {
     const s = Math.round(score.directScore);
-    if (s < 10) return "#93c5fd"; // Blue 300 (was #bfdbfe 200)
-    if (s < 30) return "#60a5fa"; // Blue 400 (was #93c5fd 300)
-    if (s < 50) return "#3b82f6"; // Blue 500 (was #60a5fa 400)
-    if (s < 70) return "#2563eb"; // Blue 600
-    return "#1e3a8a"; // Blue 900
+    if (s < 8) return "#93c5fd"; // Blue 300 (1~7)
+    if (s < 18) return "#60a5fa"; // Blue 400 (8~17)
+    if (s < 31) return "#3b82f6"; // Blue 500 (18~30)
+    if (s < 51) return "#2563eb"; // Blue 600 (31~50)
+    return "#1e3a8a"; // Blue 900 (51~100)
   }
 }
 
@@ -281,19 +281,19 @@ export function getNextIncrement(
 
 export function getScoreColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  if (score < 10) return "#93c5fd"; // Blue 300
-  if (score < 30) return "#60a5fa"; // Blue 400
-  if (score < 50) return "#3b82f6"; // Blue 500
-  if (score < 70) return "#2563eb"; // Blue 600
+  if (score < 8) return "#93c5fd"; // Blue 300
+  if (score < 18) return "#60a5fa"; // Blue 400
+  if (score < 31) return "#3b82f6"; // Blue 500
+  if (score < 51) return "#2563eb"; // Blue 600
   return "#1e3a8a";
 }
 
 export function getCumulativeColor(score: number): string {
   if (score === 0) return "#f8fafc";
-  if (score < 10) return "#fdba74"; // Orange 300
-  if (score < 30) return "#fb923c"; // Orange 400
-  if (score < 50) return "#f97316"; // Orange 500
-  if (score < 70) return "#ea580c"; // Orange 600
+  if (score < 8) return "#fdba74"; // Orange 300
+  if (score < 18) return "#fb923c"; // Orange 400
+  if (score < 31) return "#f97316"; // Orange 500
+  if (score < 51) return "#ea580c"; // Orange 600
   return "#c2410c";
 }
 
