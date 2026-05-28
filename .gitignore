@@ -42,3 +42,8 @@ next-env.d.ts
 
 # large files
 *.db
+
+# build output
+dist/
+dist
+
