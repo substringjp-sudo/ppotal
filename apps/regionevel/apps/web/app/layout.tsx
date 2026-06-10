@@ -1,9 +1,30 @@
 import { constructMetadata, Analytics, AuthProvider } from "@ppotal/ui";
 import type { Metadata } from "next";
 import React from "react";
+import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import { Footer } from "@/components/common/Footer";
 import { Nav } from "@/components/common/Nav";
 import { FirebaseProvider } from "@/components/auth/FirebaseProvider";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+});
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -31,9 +52,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Preconnect to Google Fonts & CDN sources */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       </head>
-      <body className="bg-slate-50 text-gray-900 antialiased min-h-screen flex flex-col bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]">
+      <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} bg-slate-50 text-gray-900 antialiased min-h-screen flex flex-col bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]`}>
         <AuthProvider>
           <FirebaseProvider>
             <div className="flex-1 flex flex-col max-w-[1920px] mx-auto w-full bg-white shadow-2xl shadow-slate-900/10 min-h-screen">

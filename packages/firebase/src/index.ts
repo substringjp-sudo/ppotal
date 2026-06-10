@@ -84,3 +84,42 @@ export const updateOnboardingStatus = async (uid: string, appName: keyof UserPro
   }
 };
 
+// ----------------------------------------------------
+// JPRAIL - REGIONEVEL City ID Mapping Helpers
+// ----------------------------------------------------
+import cityMapping from "./city_mapping.json";
+
+/**
+ * jprail city_id (예: "c1") -> regionevel shapeID (예: "22064153B77932337401071")
+ */
+export const getRegionevelShapeId = (jprailCityId: string): string | undefined => {
+  return (cityMapping as Record<string, string>)[jprailCityId];
+};
+
+/**
+ * regionevel shapeID (예: "22064153B77932337401071") -> jprail city_id (예: "c1")
+ */
+export const getJprailCityId = (shapeId: string): string | undefined => {
+  if (shapeId.startsWith("c")) return shapeId;
+  const entry = Object.entries(cityMapping).find(([_, v]) => v === shapeId);
+  return entry ? entry[0] : undefined;
+};
+
+/**
+ * Regionevel ID를 규격화하는 padId 함수 이식
+ */
+export const padId = (id: string | number | undefined | null): string => {
+  if (id === undefined || id === null) return "";
+  const s = typeof id === "string" ? id : String(id);
+  const len = s.length;
+  if (len === 3 || len === 7 || len === 12) return s;
+  const trimmed = s.trim();
+  if (trimmed.length === 0) return "";
+  if (!/^\d+$/.test(trimmed)) return trimmed;
+  const tLen = trimmed.length;
+  if (tLen <= 3) return trimmed.padStart(3, "0");
+  if (tLen <= 7) return trimmed.padStart(7, "0");
+  return trimmed.padStart(12, "0");
+};
+
+

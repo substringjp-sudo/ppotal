@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
 
 interface FloatingTooltipProps {
     content: string | null;
@@ -13,6 +13,7 @@ interface FloatingTooltipProps {
 
 const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, y, leftBound = 0, rightBound }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [style, setStyle] = useState<React.CSSProperties>({
         position: 'fixed',
         left: 0,
@@ -20,17 +21,26 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
         pointerEvents: 'none',
         zIndex: 99999,
         opacity: 0,
-        transition: 'opacity 0.1s ease-out, transform 0.05s linear',
+        transition: 'opacity 0.1s ease-out',
     });
 
+    // Content가 바뀔 때만 크기를 1회 측정하여 강제 리플로우 횟수 극적 감소
+    useLayoutEffect(() => {
+        if (!visible || !content || !tooltipRef.current) return;
+        
+        const width = tooltipRef.current.offsetWidth;
+        const height = tooltipRef.current.offsetHeight;
+        setDimensions({ width, height });
+    }, [content, visible]);
+
     useEffect(() => {
-        if (!visible || !content || !tooltipRef.current) {
+        if (!visible || !content) {
             setStyle(prev => ({ ...prev, opacity: 0 }));
             return;
         }
 
-        const tooltipWidth = tooltipRef.current.offsetWidth;
-        const tooltipHeight = tooltipRef.current.offsetHeight;
+        const tooltipWidth = dimensions.width || 180;
+        const tooltipHeight = dimensions.height || 50;
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         const effectiveRightBound = rightBound ?? windowWidth;
@@ -40,10 +50,7 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
 
         // Boundary checks - Horizontal
         if (finalX + tooltipWidth > effectiveRightBound - 20) {
-            // Flip to left side
             finalX = x - tooltipWidth - 20;
-
-            // If still goes off left bound, nudge it
             if (finalX < leftBound + 10) {
                 finalX = leftBound + 10;
             }
@@ -54,16 +61,22 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
             finalY = y - tooltipHeight - 20;
         }
 
-        setStyle({
-            position: 'fixed',
-            left: `${finalX}px`,
-            top: `${finalY}px`,
-            pointerEvents: 'none',
-            zIndex: 99999,
-            opacity: 1,
-            transform: 'translate3d(0, 0, 0)', // Optimize for performance
+        // requestAnimationFrame으로 프레임 단위 동기화하여 Snappy UX 보장
+        const animId = requestAnimationFrame(() => {
+            setStyle({
+                position: 'fixed',
+                left: `${finalX}px`,
+                top: `${finalY}px`,
+                pointerEvents: 'none',
+                zIndex: 99999,
+                opacity: 1,
+                transform: 'translate3d(0, 0, 0)',
+                transition: 'opacity 0.1s ease-out',
+            });
         });
-    }, [visible, content, x, y, leftBound, rightBound]);
+
+        return () => cancelAnimationFrame(animId);
+    }, [visible, content, x, y, leftBound, rightBound, dimensions]);
 
     if (!content) return null;
 

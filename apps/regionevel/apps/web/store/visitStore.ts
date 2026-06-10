@@ -9,6 +9,8 @@ import {
   getRegionScore,
   padId,
 } from "@regionevel/utils";
+import { db, getRegionevelShapeId } from "@ppotal/firebase";
+import { collection, getDocs, doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 interface VisitStore {
   visits: RegionVisit[];
@@ -33,6 +35,7 @@ interface VisitStore {
   recalculateScores: (regions?: Region[]) => void;
   getRegionScoreById: (id: string, includeStats?: boolean) => RegionScore | null;
   setHasHydrated: (val: boolean) => void;
+  importTripsFromJprail: (uid: string) => Promise<{ success: boolean; importedShapeIds: string[] }>;
 }
 
 // Helper function to calculate scores and stats atomically
@@ -297,6 +300,101 @@ export const useVisitStore = create<VisitStore>()(
 
         const { scores: newScores, stats } = calculateScoresAndStats(visits, allRegions, currentScores, !!regions);
         set({ scores: newScores, stats });
+      },
+
+      async importTripsFromJprail(uid: string) {
+        try {
+          const tripsRef = collection(db, "users", uid, "trips");
+          const querySnapshot = await getDocs(tripsRef);
+          const uniqueCityIds = new Set<string>();
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (data.cityIds && Array.isArray(data.cityIds)) {
+              data.cityIds.forEach((cid: string) => uniqueCityIds.add(cid));
+            }
+          });
+
+          if (uniqueCityIds.size === 0) return { success: false, importedShapeIds: [] };
+
+          const currentVisits = [...get().visits];
+          const shapeIds = new Set<string>();
+          uniqueCityIds.forEach((cityId) => {
+            const shapeId = getRegionevelShapeId(cityId);
+            if (shapeId) {
+              shapeIds.add(shapeId);
+            }
+          });
+
+          if (shapeIds.size === 0) return { success: false, importedShapeIds: [] };
+
+          let changed = false;
+          shapeIds.forEach((shapeId) => {
+            const paddedShapeId = padId(shapeId);
+            const existingIdx = currentVisits.findIndex(
+              (v) => padId(v.regionId) === paddedShapeId && v.category === "pass"
+            );
+
+            if (existingIdx >= 0) {
+              const existingVisit = currentVisits[existingIdx];
+              if (existingVisit) {
+                const currentCount = existingVisit.count || 0;
+                if (currentCount < 5) {
+                  currentVisits[existingIdx] = {
+                    ...existingVisit,
+                    count: Math.min(5, currentCount + 1),
+                    updatedAt: Date.now(),
+                  };
+                  changed = true;
+                }
+              }
+            } else {
+              currentVisits.push({
+                regionId: paddedShapeId,
+                category: "pass",
+                count: 1,
+                updatedAt: Date.now(),
+              });
+              changed = true;
+            }
+          });
+
+          if (changed) {
+            const { allRegions, scores: currentScores } = get();
+            const { scores: newScores, stats } = calculateScoresAndStats(
+              currentVisits,
+              allRegions,
+              currentScores
+            );
+            set({ visits: currentVisits, scores: newScores, stats });
+
+            // Firestore에 직접 백업 진행
+            try {
+              await Promise.all(
+                Array.from(shapeIds).map(async (shapeId) => {
+                  const paddedShapeId = padId(shapeId);
+                  const matchedVisit = currentVisits.find(
+                    (v) => padId(v.regionId) === paddedShapeId && v.category === "pass"
+                  );
+                  if (matchedVisit) {
+                    const docId = `${paddedShapeId}__pass`;
+                    await setDoc(doc(db, "users", uid, "visits", docId), {
+                      regionId: paddedShapeId,
+                      category: "pass",
+                      count: matchedVisit.count,
+                      updatedAt: serverTimestamp(),
+                    });
+                  }
+                })
+              );
+            } catch (err) {
+              console.error("Failed to batch write imported visits to Firestore:", err);
+            }
+          }
+          return { success: true, importedShapeIds: Array.from(shapeIds) };
+        } catch (e) {
+          console.error("Failed to import trips from JPRAIL:", e);
+          return { success: false, importedShapeIds: [] };
+        }
       },
     }),
     {

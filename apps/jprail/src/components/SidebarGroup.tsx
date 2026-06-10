@@ -67,7 +67,8 @@ const SidebarLineItem: React.FC<{
                             onToggleLine(key);
                             trackEvent('line_toggle', 'interaction', key);
                         }}
-                        className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 pointer-events-auto"
+                        aria-label={`${lName} ${language === 'ko' ? '노선 선택' : language === 'ja' ? '路線選択' : 'line selection'}`}
+                        className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 pointer-events-auto relative after:content-[''] after:absolute after:inset-[-16px] after:cursor-pointer"
                     />
                     <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
                         check
@@ -194,7 +195,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                 trackEvent('category_toggle', 'interaction', groupKey);
                             }}
                             onChange={() => { }} // Controlled component needs onChange
-                            className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
+                            aria-label={`${title} ${language === 'ko' ? '카테고리 전체 선택' : language === 'ja' ? 'カテゴリ一括選択' : 'category selection'}`}
+                            className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 relative after:content-[''] after:absolute after:inset-[-16px] after:cursor-pointer"
                         />
                         <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
                             check
@@ -262,7 +264,8 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                             trackEvent('company_toggle_selection', 'interaction', companyId);
                                         }}
                                         onChange={() => { }} // Controlled component needs onChange
-                                        className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20"
+                                        aria-label={`${cName} ${language === 'ko' ? '회사 노선 전체 선택' : language === 'ja' ? '会社路線一括選択' : 'company lines selection'}`}
+                                        className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 relative after:content-[''] after:absolute after:inset-[-18px] after:cursor-pointer"
                                     />
                                     <span className="material-symbols-outlined absolute pointer-events-none text-[10px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
                                         check

@@ -15,7 +15,7 @@ export const CHANGELOG: VersionUpdate[] = [
         version: "2.0.0",
         date: "2026-04-19",
         isMajor: true,
-        imageUrl: "/assets/updates/v2-ui-preview.png",
+        imageUrl: "/assets/updates/v2-ui-preview.webp",
         title: {
             ko: "지능형 클라우드 아키텍처 및 Snappy UX 대개편",
             en: "Intelligent Cloud Architecture & Snappy UX Overhaul",

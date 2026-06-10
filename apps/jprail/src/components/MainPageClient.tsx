@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { LanguageSelector } from './LanguageSelector';
 import { trackEvent } from '../lib/gtag';
 
-import HowToModal from './HowToModal';
+
 import { useRailData } from '../hooks/useRailData';
 import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
@@ -16,16 +16,17 @@ import { useAuth } from '@ppotal/ui';
 import { Train, Map as MapIcon, Share2 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { I18nProvider, useI18n } from '../lib/i18n-context';
-import { collection, query, getDocs, setDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, query, getDocs, getDoc, setDoc, deleteDoc, doc, writeBatch, onSnapshot } from 'firebase/firestore';
 import { getStationInfoRemote } from '../lib/rail-api';
+import { getRegionevelShapeId, getJprailCityId } from '@ppotal/firebase';
+
 
 import { Station } from '../types/railData';
 import { MapProps } from './Map';
 import MapLoadingIndicator from './MapLoadingIndicator';
-import FeedbackModal from './FeedbackModal';
-import AuthModal from './auth/AuthModal';
-import ExportModal from './ExportModal';
-import UpdateNoticeModal from './UpdateNoticeModal';
+import { JrnLogo } from './JrnLogo';
+import type { ExportModalProps } from './ExportModal';
+
 
 
 
@@ -38,7 +39,8 @@ const MapPaneWithNoSSR = dynamic(() => import('./MapPane'), { ssr: false });
 import { SidebarProps } from './Sidebar';
 
 const SidebarWithNoSSR = dynamic<SidebarProps>(() => import('./Sidebar'), { ssr: false });
-import MyLinesPane from './MyLinesPane';
+import type { MyLinesPaneProps } from './MyLinesPane';
+
 import RailSearch from './RailSearch';
 
 import type { MobileLinePreviewProps } from './Mobile/MobileLinePreview';
@@ -49,6 +51,14 @@ const MobileStationPreviewWithNoSSR = dynamic<MobileStationPreviewProps>(() => i
 
 import type { LineDetailPaneProps } from './LineDetailPane';
 const LineDetailPaneWithNoSSR = dynamic<LineDetailPaneProps>(() => import('./LineDetailPane'), { ssr: false });
+
+const HowToModal = dynamic(() => import('./HowToModal'), { ssr: false });
+const FeedbackModal = dynamic(() => import('./FeedbackModal'), { ssr: false });
+const AuthModal = dynamic(() => import('./auth/AuthModal'), { ssr: false });
+const ExportModal = dynamic<ExportModalProps>(() => import('./ExportModal'), { ssr: false });
+const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: false });
+const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
+
 
 import type { StationDetailPaneProps } from './StationDetailPane';
 const StationDetailPaneWithNoSSR = dynamic<StationDetailPaneProps>(() => import('./StationDetailPane'), { ssr: false });
@@ -133,13 +143,34 @@ const MainPageClient = () => {
     const { user, profile, loading: authLoading, refreshProfile } = useAuth();
     const [isHoverLoading, setIsHoverLoading] = React.useState(false);
     const [isRecordingLoading, setIsRecordingLoading] = React.useState(false);
+    const [regionevelVisits, setRegionevelVisits] = React.useState<any[]>([]);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = React.useState(false);
+    const profileDropdownRef = React.useRef<HTMLDivElement>(null);
+    const [isSyncSummaryOpen, setIsSyncSummaryOpen] = React.useState(false);
+    const [syncSummaryData, setSyncSummaryData] = React.useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
+    const [regionNames, setRegionNames] = React.useState<any>(null);
 
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
-    const toFirestoreTrip = (trip: Trip) => ({
-        ...trip,
-        geometries: JSON.stringify(trip.geometries)
-    });
+    const toFirestoreTrip = (trip: Trip) => {
+        const cityIds: string[] = [];
+        if (trip.path && trip.path.length > 0 && railData?.stations) {
+            const uniqueCityIds = new Set<string>();
+            trip.path.forEach((stationId: string) => {
+                const station = (railData.stations as Record<string, Station>)[stationId];
+                if (station && station.city_id) {
+                    uniqueCityIds.add(station.city_id);
+                }
+            });
+            cityIds.push(...Array.from(uniqueCityIds));
+        }
+
+        return {
+            ...trip,
+            geometries: JSON.stringify(trip.geometries),
+            cityIds
+        };
+    };
 
     const fromFirestoreTrip = (data: Record<string, unknown>): Trip => ({
         ...(data as unknown as Trip),
@@ -155,6 +186,23 @@ const MainPageClient = () => {
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+                setIsProfileDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    React.useEffect(() => {
+        fetch('/data/region_names.json')
+            .then(res => res.json())
+            .then(data => setRegionNames(data))
+            .catch(err => console.error("Failed to load region names in client:", err));
     }, []);
 
     const exportMap = async () => {
@@ -307,6 +355,71 @@ const MainPageClient = () => {
         }
     }, [recordedTrips, isLoaded]);
 
+    React.useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const savedVisits = localStorage.getItem('jprail_regionevel_visits');
+        if (savedVisits) {
+            try {
+                setRegionevelVisits(JSON.parse(savedVisits));
+            } catch (e) {
+                console.error("Failed to parse cached Regionevel visits", e);
+            }
+        }
+    }, []);
+
+    const syncWithRegionevel = React.useCallback(async (showSummary: boolean = true) => {
+        if (!user) return;
+        if (showSummary) {
+            setIsRecordingLoading(true);
+        }
+        try {
+            const visitsRef = collection(db, "users", user.uid, "visits");
+            const q = query(visitsRef);
+            const querySnapshot = await getDocs(q);
+
+            const list: any[] = [];
+            querySnapshot.forEach((doc) => {
+                list.push(doc.data());
+            });
+
+            setRegionevelVisits(list);
+            localStorage.setItem('jprail_regionevel_visits', JSON.stringify(list));
+            trackEvent('sync_with_regionevel', 'engagement', 'success');
+
+            if (showSummary) {
+                // 동기화 요약 목록 파싱
+                const activeVisits = list.filter((v: any) => v.count > 0);
+                const activeCities: string[] = [];
+                activeVisits.forEach((v: any) => {
+                    const jprailCityId = getJprailCityId(v.regionId);
+                    if (jprailCityId && regionNames?.adm2?.[jprailCityId]) {
+                        const info = regionNames.adm2[jprailCityId];
+                        const name = language === 'ko' ? (info.name_kr || info.name) : language === 'ja' ? info.name : (info.name_en || info.name);
+                        activeCities.push(name);
+                    }
+                });
+
+                setSyncSummaryData({
+                    count: activeVisits.length,
+                    cities: Array.from(new Set(activeCities))
+                });
+                setIsSyncSummaryOpen(true);
+            }
+        } catch (e) {
+            console.error("Failed to sync with Regionevel:", e);
+        } finally {
+            if (showSummary) {
+                setIsRecordingLoading(false);
+            }
+        }
+    }, [user, regionNames, language]);
+
+    React.useEffect(() => {
+        if (user && isLoaded) {
+            syncWithRegionevel(false);
+        }
+    }, [user, isLoaded, syncWithRegionevel]);
+
     const handleStartTrip = React.useCallback((station: Station) => {
         setTripStartStation(station);
         trackEvent('start_trip', 'interaction', station.name);
@@ -367,6 +480,7 @@ const MainPageClient = () => {
             trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
 
             if (user) {
+                // 1. JPRAIL Trip 저장
                 await setDoc(doc(db, `users/${user.uid}/trips`, trip.id), toFirestoreTrip(trip));
             }
         } catch (e) {
@@ -374,7 +488,7 @@ const MainPageClient = () => {
         } finally {
             setIsRecordingLoading(false);
         }
-    }, [user]);
+    }, [user, railData]);
 
     const toggleLine = React.useCallback((line: string) => {
         setSelectedLines(prev =>
@@ -694,9 +808,7 @@ const MainPageClient = () => {
                 <header className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative">
                     {/* Left: Logo & Title */}
                     <div className="flex items-center gap-3 shrink-0 mr-4">
-                        <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white shadow-sm">
-                            <span className="material-symbols-outlined text-2xl">train</span>
-                        </div>
+                        <JrnLogo size={32} />
                         <h1 className="text-lg md:text-xl font-black tracking-tight text-slate-800 dark:text-white block">
                             <span className="text-primary">Japan</span>RailNote
                         </h1>
@@ -774,12 +886,55 @@ const MainPageClient = () => {
                             )}
 
                             {user ? (
-                                <div
-                                    className="size-8 md:size-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold cursor-pointer ring-2 ring-white dark:ring-slate-800 shadow-md transition-transform hover:scale-105"
-                                    onClick={() => isMobile && setIsMobileSheetOpen(true)}
-                                    title={user.email || 'User'}
-                                >
-                                    {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                                <div ref={profileDropdownRef} className="relative">
+                                    <button
+                                        onClick={() => isMobile ? setIsMobileSheetOpen(true) : setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                        className="size-8 md:size-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold cursor-pointer ring-2 ring-white dark:ring-slate-800 shadow-md transition-transform hover:scale-105 focus:outline-none"
+                                        title={user.email || 'User'}
+                                    >
+                                        {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                                    </button>
+                                    
+                                    {isProfileDropdownOpen && !isMobile && (
+                                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden z-[10005] animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-auto">
+                                            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+                                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Logged in as</p>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={user.email || ""}>
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                            <div className="py-1">
+                                                <button
+                                                    onClick={() => {
+                                                        syncWithRegionevel();
+                                                        setIsProfileDropdownOpen(false);
+                                                    }}
+                                                    disabled={isRecordingLoading}
+                                                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                                                >
+                                                    {isRecordingLoading ? (
+                                                        <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                    ) : (
+                                                        <span className="material-symbols-outlined text-[16px] text-primary">sync</span>
+                                                    )}
+                                                    {language === 'ko' ? "Regionevel에서 가져오기" : language === 'ja' ? "Regionevelから取得" : "Sync with Regionevel"}
+                                                </button>
+                                                <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+                                                <button
+                                                    onClick={async () => {
+                                                        const { auth } = await import('../lib/firebase');
+                                                        const { signOut } = await import('firebase/auth');
+                                                        await signOut(auth);
+                                                        setIsProfileDropdownOpen(false);
+                                                    }}
+                                                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <span className="material-symbols-outlined text-[16px]">logout</span>
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <button
@@ -801,6 +956,7 @@ const MainPageClient = () => {
                                 selectedLines={selectedLines}
                                 recordedTrips={recordedTrips}
                                 onRecordTrip={handleRecordTrip}
+                                regionevelVisits={regionevelVisits}
                                 onRailroadClick={handleRailroadClick}
                                 onStationClick={handleStationClick}
                                 onSetSelectedLines={setSelectedLinesList}
@@ -945,6 +1101,8 @@ const MainPageClient = () => {
                                     railData={railData}
                                     lineLengths={lineLengths}
                                     visitedLineLengths={visitedLineLengths}
+                                    onSyncWithRegionevel={undefined}
+                                    isSyncLoading={isRecordingLoading}
                                 />
                             </aside>
                         )}
@@ -1037,6 +1195,8 @@ const MainPageClient = () => {
                                             lineLengths={lineLengths}
                                             visitedLineLengths={visitedLineLengths}
                                             className="bg-transparent border-none shadow-none"
+                                            onSyncWithRegionevel={syncWithRegionevel}
+                                            isSyncLoading={isRecordingLoading}
                                         />
                                     )
                                 }
@@ -1070,6 +1230,14 @@ const MainPageClient = () => {
             />
 
             <UpdateNoticeModal />
+
+            <SyncSummaryModal
+                 isOpen={isSyncSummaryOpen}
+                 onClose={() => setIsSyncSummaryOpen(false)}
+                 importedCount={syncSummaryData.count}
+                 cities={syncSummaryData.cities}
+                 language={language}
+             />
 
 
             {/* Info Modal for Mobile */}
@@ -1155,3 +1323,66 @@ const MainPageClient = () => {
 };
 
 export default MainPageClient;
+
+interface SyncSummaryModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    importedCount: number;
+    cities: string[];
+    language: 'ko' | 'en' | 'ja';
+}
+
+const SyncSummaryModal: React.FC<SyncSummaryModalProps> = ({ isOpen, onClose, importedCount, cities, language }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 max-w-sm w-full flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+                <div className="flex items-center gap-3">
+                    <div className="size-10 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-inner">
+                        <span className="material-symbols-outlined text-2xl">check_circle</span>
+                    </div>
+                    <div>
+                        <h3 className="text-base font-black text-slate-800 dark:text-white">
+                            {language === 'ko' ? "동기화 완료" : language === 'ja' ? "同期完了" : "Sync Completed"}
+                        </h3>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                            JapanRailNote ↔ Regionevel
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 p-4 rounded-2xl">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 font-bold leading-relaxed">
+                        {language === 'ko' 
+                            ? `Regionevel에서 총 ${importedCount}개의 시정촌 방문 기록을 성공적으로 동기화하여 반영했습니다.` 
+                            : language === 'ja'
+                            ? `Regionevel에서 총 ${importedCount}個の市町村訪問記録を同期して反映しました。`
+                            : `Successfully synced ${importedCount} municipality footprint records from Regionevel.`}
+                    </p>
+                </div>
+
+                {cities.length > 0 && (
+                    <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                            {language === 'ko' ? "방문 시정촌 목록" : language === 'ja' ? "訪問市町村リスト" : "Visited Municipalities"}
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                            {cities.map((city, idx) => (
+                                <span key={idx} className="bg-blue-50 dark:bg-blue-950/40 border border-blue-100/50 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg text-[10px] font-black tracking-tight">
+                                    {city}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <button
+                    onClick={onClose}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer mt-1"
+                >
+                    {language === 'ko' ? "확인" : language === 'ja' ? "確認" : "OK"}
+                </button>
+            </div>
+        </div>
+    );
+};

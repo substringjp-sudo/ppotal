@@ -70,6 +70,7 @@ interface MapPaneProps {
     rightBound?: number;
     isHoverLoading?: boolean;
     isRecordingLoading?: boolean;
+    regionevelVisits?: any[];
 }
 
 const PANE_STYLES = {
@@ -119,7 +120,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     leftBound,
     rightBound,
     isHoverLoading,
-    isRecordingLoading
+    isRecordingLoading,
+    regionevelVisits
 }) => {
     const map = useMap();
     const [zoomLevel, setZoomLevel] = useState(5);
@@ -596,10 +598,11 @@ const MapPane: React.FC<MapPaneProps> = ({
             )}
             {zoomLevel > 8 && activeMunicipalities && (
                 <MunicipalMap
-                    key={`muni-${zoomLevel <= 9 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}`}
+                    key={`muni-${zoomLevel <= 9 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}-${regionevelVisits?.length || 0}-${JSON.stringify(regionevelVisits || []).slice(-50)}`}
                     municipalities={activeMunicipalities}
                     zoom={zoomLevel}
                     pane="background"
+                    regionevelVisits={regionevelVisits}
                 />
             )}
             {styleSettings.showAirports && airports && (

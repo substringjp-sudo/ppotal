@@ -17,6 +17,8 @@ export interface MyLinesPaneProps {
     lineLengths?: Record<string, number>;
     visitedLineLengths?: Record<string, number>;
     className?: string;
+    onSyncWithRegionevel?: () => Promise<void>;
+    isSyncLoading?: boolean;
 }
 
 interface RegionNames {
@@ -31,7 +33,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     railData,
     lineLengths = {},
     visitedLineLengths = {},
-    className
+    className,
+    onSyncWithRegionevel,
+    isSyncLoading
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);

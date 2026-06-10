@@ -1,6 +1,6 @@
 import { constructMetadata, Analytics } from '@ppotal/ui';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@ppotal/ui";
 import { I18nProvider } from "../lib/i18n-context";
@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -41,15 +46,34 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Material Symbols Outlined */}
+        {/* Preconnect to Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Preload stylesheet for early download */}
         <link
+          rel="preload"
+          as="style"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
+        />
+        {/* Inject stylesheet dynamically to bypass React Server Component event handler restriction */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var link = document.createElement('link');
+                link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
+                link.rel = 'stylesheet';
+                link.media = 'print';
+                link.onload = function() { this.media = 'all'; };
+                document.head.appendChild(link);
+              })();
+            `
+          }}
         />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} antialiased`}
         suppressHydrationWarning
       >
         <AuthProvider>

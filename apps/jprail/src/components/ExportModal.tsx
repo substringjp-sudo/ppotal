@@ -4,7 +4,7 @@ import React from 'react';
 import { useI18n } from '../lib/i18n-context';
 import { EXPORT_TRANSLATIONS, getTranslations } from '../lib/translations';
 
-interface ExportModalProps {
+export interface ExportModalProps {
     isOpen: boolean;
     onClose: () => void;
     imageData: string | null;

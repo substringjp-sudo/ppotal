@@ -6,7 +6,9 @@ import type { Region } from "@regionevel/types";
 import { fetchChildren, fetchRegionsByIds, fetchAncestors, fetchAncestorsBulk, fetchAllRegions } from "@/lib/regions";
 import { useVisitStore } from "@/store/visitStore";
 import { useMapStore } from "@/store/mapStore";
+import { useAuthStore } from "@/store/authStore";
 import { padId } from "@regionevel/utils";
+import { Train } from "lucide-react";
 
 // Leaflet accesses `window` at import time — load only on the client
 const RegionMap = dynamic(
@@ -130,7 +132,7 @@ export function MapView() {
   }
 
   return (
-    <div className="h-[calc(100vh-56px)]">
+    <div className="h-[calc(100vh-56px)] relative">
       <RegionMap />
     </div>
   );
