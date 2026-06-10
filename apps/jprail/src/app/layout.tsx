@@ -76,6 +76,24 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} antialiased`}
         suppressHydrationWarning
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "JapanRailNote",
+              "description": "일본 전역의 신칸센, JR, 사철, 지하철 노선을 탐색하고 탑승 기록을 아카이브할 수 있는 웹 기반 에디팅 서비스입니다.",
+              "applicationCategory": "TravelApplication",
+              "operatingSystem": "All",
+              "url": "https://jprail.pplaner.com",
+              "creator": {
+                "@type": "Organization",
+                "name": "PPLANER"
+              }
+            }),
+          }}
+        />
         <AuthProvider>
           <I18nProvider>
             {children}

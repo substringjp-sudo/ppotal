@@ -850,6 +850,13 @@ const MainPageClient = () => {
                                 <span className="material-symbols-outlined text-lg">list_alt</span>
                                 {language === 'ko' ? "디렉토리" : language === 'ja' ? "路線一覧" : "Directory"}
                             </Link>
+                            <Link
+                                href="/pplaner"
+                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-lg">travel_explore</span>
+                                {language === 'ko' ? "PPLANER 소개" : language === 'ja' ? "PPLANER紹介" : "About PPLANER"}
+                            </Link>
                             <button
                                 onClick={exportMap}
                                 className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"

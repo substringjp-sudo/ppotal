@@ -5,28 +5,28 @@ export const dynamic = 'force-static';
 export default function sitemap(): MetadataRoute.Sitemap {
     return [
         {
-            url: 'https://jprail.pplaner.com',
+            url: 'https://rgnevel.pplaner.com',
             lastModified: new Date(),
             changeFrequency: 'weekly',
             priority: 1,
         },
         {
-            url: 'https://jprail.pplaner.com/pplaner',
+            url: 'https://rgnevel.pplaner.com/map',
             lastModified: new Date(),
-            changeFrequency: 'monthly',
+            changeFrequency: 'weekly',
+            priority: 0.9,
+        },
+        {
+            url: 'https://rgnevel.pplaner.com/list',
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
             priority: 0.8,
         },
         {
-            url: 'https://jprail.pplaner.com/credits',
+            url: 'https://rgnevel.pplaner.com/pplaner',
             lastModified: new Date(),
             changeFrequency: 'monthly',
-            priority: 0.5,
-        },
-        {
-            url: 'https://jprail.pplaner.com/privacy',
-            lastModified: new Date(),
-            changeFrequency: 'monthly',
-            priority: 0.5,
-        },
+            priority: 0.8,
+        }
     ];
 }

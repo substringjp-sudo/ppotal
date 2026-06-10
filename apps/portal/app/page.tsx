@@ -10,6 +10,101 @@ export default function Home() {
   const { user, profile, loading, logout, refreshProfile } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const showcaseSlides = [
+    {
+      category: "JapanRailNote",
+      title: "일본 철도망 초정밀 벡터 시각화",
+      description: "일본 전역의 신칸센과 JR, 사철, 지하철 노선망을 정밀한 인터랙티브 벡터 지도로 탐색하고 나의 탑승 완료 노선을 채색하여 시각화합니다.",
+      bullets: [
+        "초정밀 노선 데이터 시각화",
+        "탑승률 및 진행률 통계 실시간 추적",
+        "디바이스 최적화 줌/이동 벡터 맵"
+      ],
+      image: "/screenshots/jrn-main.png",
+      color: "#1c74e9"
+    },
+    {
+      category: "JapanRailNote",
+      title: "상세 노선 및 역 다이어그램",
+      description: "선택한 노선의 모든 정차역과 주행 거리를 직관적인 선형 다이어그램으로 시각화하여 복잡한 철도 정보를 명확하게 파악할 수 있습니다.",
+      bullets: [
+        "역 간 거리 및 전체 주행 연장 표시",
+        "직관적인 노선 스키마 그래픽",
+        "완료도(%) 진행 바 피드백"
+      ],
+      image: "/screenshots/jrn-line-diagram.png",
+      color: "#1c74e9"
+    },
+    {
+      category: "JapanRailNote",
+      title: "초정밀 역 네트워크 및 환승 정보",
+      description: "신주쿠나 도쿄역 같이 여러 노선이 교차하는 복잡한 허브역에 대한 환승 노선 관계망을 제공하여 정밀한 여행 설계를 돕습니다.",
+      bullets: [
+        "환승 노선별 연결 역망 입체 도식화",
+        "허브역 기준 상세 네트워크 맵",
+        "노선 클릭 시 해당 에디터 연동"
+      ],
+      image: "/screenshots/jrn-station-map.png",
+      color: "#1c74e9"
+    },
+    {
+      category: "Regionevel",
+      title: "글로벌 여행 흔적 대시보드",
+      description: "전 세계 다녀온 국가들을 한눈에 마킹하고, 국가별 경험 수치(EXP)와 방문율(RATE)을 히트맵 형태로 시각화하여 나만의 세계 지도를 완성합니다.",
+      bullets: [
+        "전 세계 방문 국가 채색 히트맵",
+        "RATE(방문율) 및 EXP(경험치) 등급 범례",
+        "다국어 지원 및 깔끔한 대시보드"
+      ],
+      image: "/screenshots/rgn-world.png",
+      color: "#2ecc71"
+    },
+    {
+      category: "Regionevel",
+      title: "현 단위 방문율 및 상세 도시 탐색",
+      description: "일본 도도부현 등 특정 국가의 행정구역 레벨에서 상세 도시(시정촌)들의 방문율과 점수를 오카야마 현 등 오버레이 카드를 통해 면밀하게 분석합니다.",
+      bullets: [
+        "도도부현/주(State) 단위 방문율 분석",
+        "내부 시정촌(City) 리스트 스크롤 제공",
+        "원클릭 맵 이동 및 탐색 연동"
+      ],
+      image: "/screenshots/rgn-prefecture.png",
+      color: "#2ecc71"
+    },
+    {
+      category: "Regionevel",
+      title: "도시 상세 방문 유형 기록",
+      description: "특정 도시에 머문 형태(Pass, Transit, Visit, Stay, Residence)에 따라 가중치를 다르게 반영하여 나의 여행 깊이를 과학적으로 기록합니다.",
+      bullets: [
+        "5가지 세밀한 방문 유형 점수 배점",
+        "체크온 방식의 직관적인 게이지 컨트롤",
+        "실시간 파이어베이스 영구 동기화"
+      ],
+      image: "/screenshots/rgn-city-history.png",
+      color: "#2ecc71"
+    },
+    {
+      category: "Regionevel",
+      title: "시정촌 단위 정밀 경험 수치 지도",
+      description: "홋카이도 등 지자체 내부의 아주 미세한 행정구역(시정촌) 경계선까지 나의 경험치 등급에 맞춰 색칠하여 고해상도 흔적을 만들어냅니다.",
+      bullets: [
+        "마이크로 행정구역 경계선 완전 렌더링",
+        "EXP 등급별 블루/오렌지 투톤 채색",
+        "정교하고 촘촘한 방문 아카이브 시각화"
+      ],
+      image: "/screenshots/rgn-hokkaido-detail.png",
+      color: "#2ecc71"
+    }
+  ];
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % showcaseSlides.length);
+  };
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + showcaseSlides.length) % showcaseSlides.length);
+  };
 
   useEffect(() => {
     // Show portal onboarding if logged in and not completed
@@ -193,6 +288,70 @@ export default function Home() {
         </div>
 
         <section className="section-title reveal">
+          <h2>Feature Showcase</h2>
+          <p>스크린샷으로 확인하는 PPLANER의 강력한 기능과 정밀한 에디터 화면입니다.</p>
+        </section>
+
+        <div className="showcase-carousel-section reveal">
+          <div className="carousel-container">
+            {/* Prev Button */}
+            <button className="carousel-nav-btn prev" onClick={prevSlide} aria-label="이전 슬라이드">
+              <span>←</span>
+            </button>
+
+            {/* Content Area */}
+            <div className="carousel-content animate-slide-fade" key={`content-${currentSlide}`}>
+              <span className="carousel-badge" style={{ color: showcaseSlides[currentSlide].color }}>
+                {showcaseSlides[currentSlide].category}
+              </span>
+              <h3 className="carousel-title">
+                {showcaseSlides[currentSlide].title}
+              </h3>
+              <p className="carousel-desc">
+                {showcaseSlides[currentSlide].description}
+              </p>
+              <div className="carousel-bullets">
+                {showcaseSlides[currentSlide].bullets.map((bullet, index) => (
+                  <div key={index} className="carousel-bullet-item">
+                    <span className="carousel-bullet-dot" style={{ backgroundColor: showcaseSlides[currentSlide].color }}></span>
+                    <span>{bullet}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Visual Area */}
+            <div className="carousel-visual-wrapper animate-slide-fade" key={`visual-${currentSlide}`}>
+              <div className="carousel-image-frame" style={{ boxShadow: `0 30px 60px -15px rgba(0, 0, 0, 0.6), 0 0 40px ${showcaseSlides[currentSlide].color}22` }}>
+                <img 
+                  src={showcaseSlides[currentSlide].image} 
+                  alt={showcaseSlides[currentSlide].title} 
+                  className="carousel-image" 
+                />
+              </div>
+            </div>
+
+            {/* Next Button */}
+            <button className="carousel-nav-btn next" onClick={nextSlide} aria-label="다음 슬라이드">
+              <span>→</span>
+            </button>
+          </div>
+
+          {/* Indicators */}
+          <div className="carousel-indicators">
+            {showcaseSlides.map((_, index) => (
+              <span
+                key={index}
+                className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
+                onClick={() => setCurrentSlide(index)}
+                role="button"
+                aria-label={`${index + 1}번 슬라이드로 이동`}
+              ></span>
+            ))}
+          </div>
+        </div>
+
+        <section className="section-title reveal">
           <h2>Future Roadmap</h2>
           <p>We are constantly evolving to provide a better travel experience.</p>
         </section>
@@ -237,6 +396,13 @@ export default function Home() {
       </div>
 
       <style jsx>{`
+        @keyframes slideFadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-fade {
+          animation: slideFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         @keyframes drawLine {
           from { stroke-dashoffset: 1000; }
           to { stroke-dashoffset: 0; }

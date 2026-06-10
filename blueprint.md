@@ -74,5 +74,5 @@ JPRAIL과 REGIONEVEL의 세부 디자인 일관성을 극대화하기 위해, RE
     7. (완료) `jprail` 및 `regionevel` 이미지 포맷 캐싱 헤더(1년 TTL) 추가, `v2-ui-preview.webp` 변환 및 `fetchpriority="high"` 설정, `FloatingTooltip` 강제 리플로우 제거.
     8. (완료) `MainPageClient.tsx` 내 모달들(`FeedbackModal`, `AuthModal`, `ExportModal`, `UpdateNoticeModal`, `HowToModal`) 및 `MyLinesPane`을 비동기 dynamic import(with `ssr: false`)로 전환하여, 초기 로딩 시 불필요한 JS 실행 오버헤드 완화 및 TBT(Total Blocking Time) 최적화 완료.
     9. (완료) `SidebarGroup.tsx` 내 개별 노선, 회사, 카테고리 전체 선택 체크박스 `<input>` 태그에 다국어 대응 `aria-label` 속성을 추가하여 스크린 리더 표준(a11y) 충족 및 진단 경고 해결 완료.
-    10. (완료) `SidebarGroup.tsx` 내 체크박스 요소들에 CSS 가상 선택자(`::after`) 히트박스 확장 기법을 적용하여, 시각적 디자인 스케일(size-4, size-3.5)을 훼손하지 않으면서 물리적인 모바일 터치 영역만 48x48px 표준 규격 이상으로 확장 완료.
-
+    11. (완료) PPLANER 포털 내 스크린샷(7종) 연동 캐러셀 기능 개발 및 각 서브 앱(`jprail`, `regionevel`) 내 PPLANER 브랜드 소개 브릿지 페이지(`/pplaner`) 구축을 통한 서비스 간 통합성 강화.
+    12. (진행 중) Google 검색 노출 극대화를 위해 각 Next.js 프로젝트별 SEO 메타데이터 대거 확충, JSON-LD 구조화 데이터 삽입, Robots.ts 및 Sitemap.ts 메타데이터 라우트 적용.
