@@ -76,3 +76,5 @@ JPRAIL과 REGIONEVEL의 세부 디자인 일관성을 극대화하기 위해, RE
     9. (완료) `SidebarGroup.tsx` 내 개별 노선, 회사, 카테고리 전체 선택 체크박스 `<input>` 태그에 다국어 대응 `aria-label` 속성을 추가하여 스크린 리더 표준(a11y) 충족 및 진단 경고 해결 완료.
     11. (완료) PPLANER 포털 내 스크린샷(7종) 연동 캐러셀 기능 개발 및 각 서브 앱(`jprail`, `regionevel`) 내 PPLANER 브랜드 소개 브릿지 페이지(`/pplaner`) 구축을 통한 서비스 간 통합성 강화.
     12. (진행 중) Google 검색 노출 극대화를 위해 각 Next.js 프로젝트별 SEO 메타데이터 대거 확충, JSON-LD 구조화 데이터 삽입, Robots.ts 및 Sitemap.ts 메타데이터 라우트 적용.
+    13. (완료) 구버전 도메인(`jprail.web.app`, `jprail.firebaseapp.com`)에서 신버전 도메인(`jprail.pplaner.com`)으로의 즉각적인 클라이언트 사이드 리다이렉트 스크립트 적용 완료.
+
