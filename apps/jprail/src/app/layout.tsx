@@ -46,6 +46,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Redirect old web.app domain to custom domain immediately */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (window.location.hostname === 'jprail.web.app' || window.location.hostname === 'jprail.firebaseapp.com') {
+                window.location.replace('https://jprail.pplaner.com' + window.location.pathname + window.location.search);
+              }
+            `
+          }}
+        />
         {/* Preconnect to Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
