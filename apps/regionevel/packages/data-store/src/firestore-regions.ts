@@ -114,7 +114,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
       };
       const level = levelMap[admLevel] || "prefecture";
 
-      // Try to get from bundle first
+      let bundleFeatures: any[] = [];
       const bundle = await this.getGeometryBundle(iso3, admLevel);
       if (bundle && bundle.data) {
         console.log(`[FirestoreRegionStore] Using bundle for ${iso3}_ADM${admLevel}`);
@@ -122,9 +122,10 @@ export function createFirestoreRegionStore(): RegionDataStore {
           const { feature } = await import("topojson-client");
           const topoData = typeof bundle.data === 'string' ? JSON.parse(bundle.data) : bundle.data;
           const firstKey = Object.keys(topoData.objects)[0];
-          if (!firstKey) return [];
-          const geojson = feature(topoData, topoData.objects[firstKey] as any) as any;
-          return geojson.features;
+          if (firstKey) {
+            const geojson = feature(topoData, topoData.objects[firstKey] as any) as any;
+            bundleFeatures = geojson.features;
+          }
         } catch (e) {
           console.error(`Failed to parse bundle for ${iso3}_ADM${admLevel}`, e);
         }
@@ -136,7 +137,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
       const countryDoc = regionSnap.docs[0];
       if (!countryDoc) {
         console.warn(`[FirestoreRegionStore] Country doc not found for iso3: ${iso3}`);
-        return [];
+        return bundleFeatures;
       }
       const countryId = countryDoc.id;
       console.log(`[FirestoreRegionStore] Resolved countryId: ${countryId} for iso3: ${iso3}`);
@@ -162,7 +163,7 @@ export function createFirestoreRegionStore(): RegionDataStore {
       
       const snap = await getDocs(q);
       console.log(`[FirestoreRegionStore] Fetched ${snap.docs.length} geometries`);
-      return snap.docs.map(d => {
+      const dbFeatures = snap.docs.map(d => {
         const data = d.data();
         if (typeof data.geometry === 'string') {
           try {
@@ -173,6 +174,18 @@ export function createFirestoreRegionStore(): RegionDataStore {
         }
         return data;
       });
+
+      if (bundleFeatures.length > 0) {
+        // Merge them, preventing duplicates by region/shape ID
+        const seenIds = new Set(bundleFeatures.map(f => f.properties?.id || f.properties?.shapeID));
+        const newDbFeatures = dbFeatures.filter(f => {
+          const id = f.properties?.id || f.properties?.shapeID;
+          return !seenIds.has(id);
+        });
+        return [...bundleFeatures, ...newDbFeatures];
+      }
+
+      return dbFeatures;
     },
 
     async getSimplifiedGeometries(iso3) {
