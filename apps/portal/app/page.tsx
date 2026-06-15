@@ -96,6 +96,42 @@ export default function Home() {
       ],
       image: "/screenshots/rgn-hokkaido-detail.png",
       color: "#2ecc71"
+    },
+    {
+      category: "BeforeGlow",
+      title: "실시간 노을 & 일출 예보 스코어",
+      description: "대기 광학 Rayleigh/Mie 산란 물리 공식과 기상 예보 데이터를 결합하여 오늘의 노을 가능성을 0-100점의 스코어로 완벽히 진단합니다.",
+      bullets: [
+        "대기 산란 공식 기반 노을 스코어링",
+        "습도, 운량, 가시거리 실시간 추적",
+        "지형 데이터 결합 차폐 고도 분석"
+      ],
+      image: "/screenshots/beforeglow-forecast.png",
+      color: "#f97316"
+    },
+    {
+      category: "BeforeGlow",
+      title: "AR 골든아워 태양 궤적 트래커",
+      description: "모바일 카메라와 연동하여 현재 위치에서의 실시간 태양 이동 궤적을 증강현실(AR)로 시각화하고, 정확히 해가 지는 포인트와 시간을 확인합니다.",
+      bullets: [
+        "실시간 AR 궤적 뷰파인더",
+        "지형 차폐 고려 일출/일몰 각도",
+        "골든아워 및 블루아워 실시간 카운트다운"
+      ],
+      image: "/screenshots/beforeglow-camera.png",
+      color: "#f97316"
+    },
+    {
+      category: "BeforeGlow",
+      title: "글로벌 골든아워 스팟 가이드",
+      description: "전국의 가장 아름다운 노을 명소와 사용자들의 실시간 사진 피드를 탐색하고, 각 장소의 오늘 노을 지수를 비교 분석합니다.",
+      bullets: [
+        "지역별 정밀 노을 스코어 랭킹",
+        "실시간 현장 포토 갤러리 피드",
+        "방문자 평점 및 혼잡도 정보 제공"
+      ],
+      image: "/screenshots/beforeglow-gallery.png",
+      color: "#f97316"
     }
   ];
 
@@ -282,6 +318,22 @@ export default function Home() {
             </p>
             <a href="https://rgnevel.pplaner.com" className="feature-btn">
               Launch Regionevel
+              <span>→</span>
+            </a>
+          </div>
+
+          {/* BeforeGlow Card */}
+          <div className="feature-card reveal" onMouseMove={handleMouseMove}>
+            <div className="feature-visual">
+              <BeforeGlowAnimation />
+            </div>
+            <h3>BeforeGlow</h3>
+            <p>
+              Smart sunset & sunrise tracker. Calculate optimal golden hour windows
+              and sunset scores using real-time atmospheric scattering simulation.
+            </p>
+            <a href="https://bglow.pplaner.com" className="feature-btn">
+              Launch BeforeGlow
               <span>→</span>
             </a>
           </div>
@@ -658,6 +710,69 @@ function RegionevelAnimation() {
       {/* Sydney */}
       <circle cx="218" cy="122" r="2.5" fill="#a855f7" />
       <circle cx="218" cy="122" r="6" stroke="#a855f7" strokeWidth="0.8" fill="none" style={{ transformOrigin: '218px 122px', animation: 'pulseMarker 2s infinite 1.5s' }} />
+    </svg>
+  );
+}
+
+function BeforeGlowAnimation() {
+  return (
+    <svg width="280" height="180" viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
+      <defs>
+        <linearGradient id="sky-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#0b132b" />
+          <stop offset="40%" stopColor="#1c2541" />
+          <stop offset="70%" stopColor="#5bc0be" />
+          <stop offset="90%" stopColor="#f3c68f" />
+          <stop offset="100%" stopColor="#ee6c4d" />
+        </linearGradient>
+        <radialGradient id="sun-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffb703" stopOpacity="1" />
+          <stop offset="40%" stopColor="#fb8500" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#d9480f" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="mountain-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#1c2541" />
+          <stop offset="100%" stopColor="#0b132b" />
+        </linearGradient>
+        <linearGradient id="mountain-grad-2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#3a506b" />
+          <stop offset="100%" stopColor="#1c2541" />
+        </linearGradient>
+      </defs>
+
+      <line x1="0" y1="45" x2="280" y2="45" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8" />
+      <line x1="0" y1="90" x2="280" y2="90" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8" />
+      <line x1="0" y1="135" x2="280" y2="135" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8" />
+      <line x1="70" y1="0" x2="70" y2="180" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8" />
+      <line x1="140" y1="0" x2="140" y2="180" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8" />
+      <line x1="210" y1="0" x2="210" y2="180" stroke="rgba(255,255,255,0.03)" strokeWidth="1" strokeDasharray="4 8" />
+
+      <rect x="10" y="10" width="260" height="160" rx="16" fill="url(#sky-grad)" opacity="0.3" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+
+      <path d="M30,140 Q140,20 250,140" stroke="rgba(251, 133, 0, 0.3)" strokeWidth="1.5" strokeDasharray="5 5" fill="none" />
+
+      <circle r="18" fill="url(#sun-glow)" style={{
+        offsetPath: "path('M30,140 Q140,20 250,140')",
+        animation: 'moveTrain 12s infinite linear',
+        filter: 'drop-shadow(0 0 8px #fb8500)'
+      }} />
+
+      <path d="M10,170 L40,110 L90,145 L150,95 L220,150 L270,110 L270,170 Z" fill="url(#mountain-grad)" opacity="0.8" />
+      
+      <path d="M10,170 L60,130 L110,150 L180,115 L240,160 L270,140 L270,170 Z" fill="url(#mountain-grad-2)" opacity="0.9" />
+
+      <line x1="140" y1="80" x2="110" y2="140" stroke="rgba(251, 133, 0, 0.15)" strokeWidth="1.5" strokeDasharray="2 4" />
+      <line x1="140" y1="80" x2="140" y2="150" stroke="rgba(251, 133, 0, 0.15)" strokeWidth="1.5" strokeDasharray="2 4" />
+      <line x1="140" y1="80" x2="170" y2="140" stroke="rgba(251, 133, 0, 0.15)" strokeWidth="1.5" strokeDasharray="2 4" />
+
+      <ellipse cx="140" cy="160" rx="90" ry="8" fill="url(#sun-glow)" opacity="0.4" style={{ animation: 'pulse 4s infinite ease-in-out' }} />
+
+      <circle cx="140" cy="80" r="30" stroke="rgba(251, 133, 0, 0.2)" strokeWidth="1" strokeDasharray="2 2" />
+      <circle cx="140" cy="80" r="2" fill="#ffb703" />
+      <line x1="140" y1="45" x2="140" y2="70" stroke="rgba(251, 133, 0, 0.3)" strokeWidth="1" />
+      <line x1="140" y1="90" x2="140" y2="115" stroke="rgba(251, 133, 0, 0.3)" strokeWidth="1" />
+      <line x1="105" y1="80" x2="130" y2="80" stroke="rgba(251, 133, 0, 0.3)" strokeWidth="1" />
+      <line x1="150" y1="80" x2="175" y2="80" stroke="rgba(251, 133, 0, 0.3)" strokeWidth="1" />
     </svg>
   );
 }

@@ -4,6 +4,7 @@
   --accent-primary: #1c74e9;
   --accent-secondary: #2ecc71;
   --accent-tertiary: #38bdf8;
+  --accent-quaternary: #f97316;
   --glass-bg: rgba(255, 255, 255, 0.02);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-highlight: rgba(255, 255, 255, 0.1);
@@ -340,7 +341,7 @@ header {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 2.5rem;
   margin-bottom: 8rem;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plane, Train, Map, LayoutGrid } from 'lucide-react';
+import { Plane, Train, Map, LayoutGrid, Sun } from 'lucide-react';
 
 export const Navbar = () => {
   return (
@@ -15,6 +15,7 @@ export const Navbar = () => {
         <NavLink icon={<LayoutGrid size={18} />} label="Portal" href="/" active />
         <NavLink icon={<Train size={18} />} label="JP Rail" href="https://jprail.pplaner.com" />
         <NavLink icon={<Map size={18} />} label="Region" href="https://rgnevel.pplaner.com" />
+        <NavLink icon={<Sun size={18} />} label="BeforeGlow" href="https://bglow.pplaner.com" />
         <NavLink icon={<Plane size={18} />} label="P-Plan" href="https://app.pplaner.com" />
       </div>
 
