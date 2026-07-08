@@ -162,8 +162,9 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
       );
       
       for (let i = 0; i < results.length; i++) {
-        if (results[i].length > 0) {
-          rawFeatures = results[i];
+        const res = results[i];
+        if (res && res.length > 0) {
+          rawFeatures = res;
           console.log(`[fetchGeometries] Successfully found ${rawFeatures.length} root geometries using identifier: "${rootIdentifers[i]}"`);
           break;
         }
@@ -188,7 +189,7 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
           rootIdentifers.map(id => fsStore.getGeometriesByParent(id as any))
         );
         for (const res of results) {
-          if (res.length > 0) {
+          if (res && res.length > 0) {
             rawFeatures = res;
             break;
           }
