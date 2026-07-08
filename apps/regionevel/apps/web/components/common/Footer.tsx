@@ -11,8 +11,12 @@ export function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200 py-6 px-4 mt-auto">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="text-sm text-gray-500">
-          © {new Date().getFullYear()} Regionevel. All rights reserved.
+        <div className="flex gap-3 text-sm text-gray-500 flex-wrap justify-center">
+          <span>© {new Date().getFullYear()} Regionevel. All rights reserved.</span>
+          <span className="text-gray-350 hidden sm:inline">|</span>
+          <Link href="/privacy" className="hover:underline text-blue-500">
+            Privacy Policy
+          </Link>
         </div>
         <div className="text-xs text-gray-400 text-center md:text-right">
           Boundary data provided by{" "}

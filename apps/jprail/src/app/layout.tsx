@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@ppotal/ui";
 import { I18nProvider } from "../lib/i18n-context";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -93,6 +94,11 @@ export default function RootLayout({
           }}
         />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} antialiased`}

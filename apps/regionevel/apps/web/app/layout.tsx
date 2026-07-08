@@ -2,6 +2,7 @@ import { constructMetadata, Analytics, AuthProvider } from "@ppotal/ui";
 import type { Metadata } from "next";
 import React from "react";
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
+import Script from "next/script";
 import { Footer } from "@/components/common/Footer";
 import { Nav } from "@/components/common/Nav";
 import { FirebaseProvider } from "@/components/auth/FirebaseProvider";
@@ -60,6 +61,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} bg-slate-50 text-gray-900 antialiased min-h-screen flex flex-col bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]`}>
         <AuthProvider>

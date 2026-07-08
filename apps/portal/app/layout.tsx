@@ -1,5 +1,6 @@
 import { constructMetadata } from '@ppotal/ui';
 import { Analytics } from '@ppotal/ui';
+import Script from 'next/script';
 
 export const metadata = constructMetadata({
   title: 'PPLANER (피플래너) - AI 여행 설계 및 실시간 동행 플랫폼',
@@ -30,6 +31,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet" />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body>
         <script
