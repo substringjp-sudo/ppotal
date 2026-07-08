@@ -4,6 +4,10 @@ import TravelogEditorClient from './TravelogEditorClient';
 export const metadata: Metadata = {
     title: '여행 기록하기 | PPLANER',
     description: '소중한 순간들을 기록하고 나만의 이야기를 완성하세요.',
+    robots: {
+        index: false,
+        follow: false,
+    },
 };
 
 export const dynamic = 'force-static';

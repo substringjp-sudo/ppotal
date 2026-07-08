@@ -7,7 +7,11 @@ export const metadata = constructMetadata({
   url: 'https://www.pplaner.com',
   keywords: [
     '피플래너', 'PPLANER', '여행 계획', '여행 설계', '철도 여행', '일본 철도', 'JapanRailNote', 'Regionevel', 
-    '여행 아카이브', '여행 지도', '실시간 동행', 'AI 여행 플래너', '도시별 여행 등급', '지자체 방문 기록'
+    '여행 아카이브', '여행 지도', '실시간 동행', 'AI 여행 플래너', '도시별 여행 등급', '지자체 방문 기록',
+    // Targeted Persona Keywords
+    '해외여행 일정 플래너', '여행 계획 세우기 사이트', '실시간 여행 동행 구하기', '일본 여행 일정표 양식', 
+    'AI 여행 일정 추천', 'interactive travel itinerary maker', 'AI travel planner map', 'find travel companions real time',
+    'group travel planner collaborative'
   ]
 });
 

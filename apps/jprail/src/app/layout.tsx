@@ -26,15 +26,27 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = constructMetadata({
-  title: "JapanRailNote | Interactive Japan Railway Map & Travel Tracker",
-  description: "Visualize Japan's railway network (JR, Private, Subway) and track your journeys.",
+  title: "JapanRailNote | 일본 철도 지도 & 노선도 여행 기록 | Japan Railway Map & Tracker",
+  description: "일본 전역의 신칸센, JR, 사철, 지하철 노선을 탐색하고 탑승 기록을 아카이브할 수 있는 웹 기반 에디팅 서비스입니다. (Interactive Japan Railway Map & Travel Tracker)",
   url: "https://jprail.pplaner.com",
   keywords: [
+    // Brand & Basics
+    "JapanRailNote", "PPLANER", "Japan Railway Map", "JR Pass Route", "Japan Train Tracker",
+    // Korean Persona Keywords
     "일본 철도 지도", "JR 패스 노선도", "일본 기차 여행", "신칸센 지도", "도쿄 지하철 노선도",
     "오사카 지하철 노선도", "일본 철도 거리 계산", "철도 여행 기록", "노리테츠", "도리테츠",
-    "JR East", "JR West", "JR Central", "JR Kyushu", "JR Hokkaido", "JR Shikoku",
-    "Japan Railway Map", "JR Pass Route", "Japan Train Tracker", "Shinkansen Network",
-    "Interactive Japan Map", "Japan Rail Pass Planner", "日本鉄道地図", "乗りつぶし", "鉄道旅行"
+    "일본 철도 완주 기록", "일본 철도 승차 기록", "일본 철도 지도 시각화", "노리츠부시 기록 사이트",
+    "일본 기차 완주 거리 계산", "일본 철도 정차역 지도", "전국 JR 패스 노선 지도", "JR 서일본 패스 노선도",
+    "청춘 18 티켓 노선도", "일본 소도시 기차 여행 경로", "일본 지하철 노선 통합 검색", "신칸센 노선도 최적 경로",
+    // Japanese Persona Keywords
+    "乗りつぶしマップ デジタル", "鉄道 完乗 記録 ツール", "乗り鉄 路線図 塗りつぶし", "日本鉄道 完乗率 計算",
+    "JR 私鉄 地下鉄 乗りつぶし", "路線図 白地図 鉄道", "駅スタンプラリー 路線図", "鉄印帳 路線 マップ",
+    "日本鉄道地図", "乗りつぶし", "鉄道旅行",
+    // English Persona Keywords
+    "Japan rail pass calculator map", "JR Pass interactive route planner", "Map of private railways Japan",
+    "Track Japan train journeys", "Shinkansen interactive network map", "Japan rail travel progress tracker",
+    "Japan railway vector map", "Interactive Japan transit network", "High resolution Japan rail map",
+    "JR East", "JR West", "JR Central", "JR Kyushu", "JR Hokkaido", "JR Shikoku"
   ]
 });
 

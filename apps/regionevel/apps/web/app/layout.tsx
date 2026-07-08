@@ -29,18 +29,22 @@ import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = constructMetadata({
-  title: "Regionevel - Regional Travel Tracker",
-  description: "A global travel tracker for visualizing and managing your travel history at Country, Prefecture, and City levels.",
+  title: "Regionevel | 나의 여행 경현치 지도 & 국내 세계 여행 기록 | Regional Travel Tracker",
+  description: "한국 시군구 경현치 테스트, 일본 経県値(경현치) 지도 만들기, 전 세계 국가 및 도시 단위 방문 기록을 시각화하고 관리할 수 있는 글로벌 여행 트래커 Regionevel입니다. (Regional Travel Tracker & Keikenchi Map)",
   url: "https://rgnevel.pplaner.com",
   keywords: [
-    "travel tracker", "regional level", "map", "footprint", "South Korea", 
-    "world map", "world travel", "visit record", "travel log", "visit history", 
-    "regional experience", "prefecture", "state", "province", "municipality", "Keikenchi",
-    "여행 기록", "지도", "지역별 레벨", "경현치", "지역", "도도부현", "주", "도",
-    "시군구", "시정촌", "읍면동", "방문기록", "세계지도", "세계여행", "방문",
-    "방문내역", "히스토리",
-    "経県値", "都道府県", "地域", "旅行記録", "訪問記録", "世界地図", "世界旅行", 
-    "市町村", "訪問", "ヒストリー"
+    // Brand & Basic
+    "Regionevel", "rgnevel", "pplaner", "travel tracker", "regional level", "travel log",
+    // Korean Persona Keywords (경현치 & 여행기록)
+    "경현치", "경현치 테스트", "경현치 계산기", "일본 경현치 지도", "한국 경현치 지도",
+    "국내 여행 레벨", "여행 지도 색칠", "전국 시군구 방문 기록", "도시별 여행 기록 지도",
+    "여행 기록", "지도", "지역별 레벨", "방문기록", "세계지도", "세계여행", "방문내역", "히스토리",
+    // Japanese Persona Keywords (経県値 & 訪問記録)
+    "経県値", "経県値 日本地図", "経県値 アプリ", "経都府県値", "市区町村 塗りつぶし",
+    "全国市区町村 訪問記録", "都道府県", "地域", "旅行記録", "訪問記録", "世界地図", "世界旅行", "市町村",
+    // English Persona Keywords (Global Tracker)
+    "digital scratch travel map", "US states visited map builder", "prefecture level travel tracker",
+    "interactive country visit logger", "world travel map", "visit history tracker", "Keikenchi"
   ]
 });
 

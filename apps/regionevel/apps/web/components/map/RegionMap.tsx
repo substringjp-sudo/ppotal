@@ -817,6 +817,11 @@ export function RegionMap() {
           }}
         />
       )}
+      {/* Watermark/Credits overlay visible in exported images */}
+      <div className="absolute bottom-2 left-2 z-[1002] pointer-events-none bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-200/60 text-[10px] font-black text-slate-500 flex items-center gap-1.5 shadow-sm tracking-tight">
+        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+        <span>rgnevel.pplaner.com</span>
+      </div>
     </div>
   );
 }

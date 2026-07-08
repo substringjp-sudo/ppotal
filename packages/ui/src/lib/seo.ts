@@ -21,6 +21,9 @@ export function constructMetadata({
     title,
     description,
     keywords: [...new Set(['PPLANER', 'Travel Tracker', ...keywords])],
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title,
       description,

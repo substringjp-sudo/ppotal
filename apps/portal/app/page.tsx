@@ -445,6 +445,34 @@ export default function Home() {
           steps={portalOnboardingSteps}
           onComplete={handleOnboardingComplete}
         />
+
+        {/* SEO Content for search engines & browsers without JavaScript */}
+        <noscript>
+          <div style={{ padding: '40px', backgroundColor: '#0f172a', color: '#94a3b8', fontFamily: 'sans-serif', maxWidth: '1000px', margin: '0 auto', lineHeight: '1.8', borderRadius: '12px', marginTop: '40px' }}>
+            <h1 style={{ color: '#fff', fontSize: '28px', borderBottom: '2px solid #6366f1', paddingBottom: '10px', marginBottom: '20px' }}>
+              PPLANER (피플래너) — 차세대 통합 여행 포털 및 AI 일정 플래너
+            </h1>
+            
+            <div style={{ marginBottom: '30px' }}>
+              <h2 style={{ color: '#e2e8f0', fontSize: '20px', marginBottom: '10px' }}>🇰🇷 나만의 정밀한 여행 일정 수립과 기록 아카이빙</h2>
+              <p style={{ fontSize: '15px' }}>
+                PPLANER는 해외여행 및 국내여행을 준비하는 사용자를 위해 정밀한 여행 일정 수립, AI 기반의 자동 경로 설계, 실시간 동행 찾기 가이드, 나만의 글로벌 여행기(Travelogs) 작성을 지원하는 다기능 여행 포털 플랫폼입니다.
+              </p>
+              <ul style={{ fontSize: '14px', paddingLeft: '20px', color: '#cbd5e1' }}>
+                <li><strong>AI 여행 일정 플래너:</strong> 인공지능을 이용해 가고 싶은 도시와 맛집, 명소를 연결한 여행 계획표 및 일정을 자동 추천합니다.</li>
+                <li><strong>실시간 여행 동행 매칭:</strong> 지도상에서 근처에 있는 여행 동행을 실시간으로 구하고 안전하게 조인할 수 있는 소셜 매칭을 지원합니다.</li>
+                <li><strong>다양한 연계 전문 서비스 제공:</strong> 일본 철도 전문 트래커인 <a href="https://jprail.pplaner.com" style={{ color: '#818cf8', textDecoration: 'underline' }}>JapanRailNote</a>, 전 세계 지자체별 방문 등급을 기록하고 경현치를 계산하는 <a href="https://rgnevel.pplaner.com" style={{ color: '#818cf8', textDecoration: 'underline' }}>Regionevel</a> 등을 하나의 피플래너 계정으로 연결해 이용해 보세요.</li>
+              </ul>
+            </div>
+
+            <div style={{ marginBottom: '10px', borderTop: '1px solid #1e293b', paddingTop: '20px' }}>
+              <h2 style={{ color: '#e2e8f0', fontSize: '20px', marginBottom: '10px' }}>🌐 Interactive Travel Itinerary Planner & Real-Time Companions</h2>
+              <p style={{ fontSize: '15px' }}>
+                PPLANER is a comprehensive travel management ecosystem. Build detailed custom itineraries, connect with travel companions in real-time, and archive your personal travel memories digitally. Seamlessly integrate your accounts with our sub-services like JapanRailNote and Regionevel.
+              </p>
+            </div>
+          </div>
+        </noscript>
       </div>
 
       <style jsx>{`

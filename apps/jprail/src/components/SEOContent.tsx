@@ -140,51 +140,43 @@ const SEOContent = ({ data }: { data: SEOData | null }) => {
                 {/* Rich Informational Sections - trilingual */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
                     gap: '40px',
                     marginBottom: '80px'
                 }}>
-                    <article>
-                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
-                            Comprehensive Railway Network / 全国鉄道網 / 전국 철도망
+                    <article style={{ backgroundColor: '#202225', padding: '24px', borderRadius: '8px', border: '1px solid #333' }}>
+                        <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '15px', borderLeft: '4px solid #3b82f6', paddingLeft: '12px', fontWeight: 'bold' }}>
+                            일본 철도 완주 기록 & 노선도 시각화
                         </h3>
-                        <p style={{ fontSize: '15px' }}>
-                            Covers all major JR lines (East, West, Central, Kyushu, Hokkaido, Shikoku), Tokyo and Osaka subways, and major private railways.
-                            北海道から沖縄まで、JR各社・地下鉄・私鉄・LRTを含む全国の鉄道路線を網羅。
-                            홋카이도부터 오키나와까지 JR 전 노선, 도쿄·오사카 지하철, 주요 사철을 포함합니다.
+                        <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
+                            내가 탑승한 철도 노선과 구간을 마우스 클릭이나 모바일 터치로 간편하게 칠하고, 노선별·회사별 완주율 및 총 승차 거리를 자동으로 계산하는 온라인 노리츠부시 기록 사이트입니다. 도쿄 지하철 노선도, 오사카 지하철 노선도 등 복잡한 대도시 노선부터 지방 소도시 기차 여행 경로까지 한눈에 시각화하세요.
                         </p>
                     </article>
 
-                    <article>
-                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
-                            Journey Recording / 乗りつぶし記録 / 여행 기록
+                    <article style={{ backgroundColor: '#202225', padding: '24px', borderRadius: '8px', border: '1px solid #333' }}>
+                        <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '15px', borderLeft: '4px solid #3b82f6', paddingLeft: '12px', fontWeight: 'bold' }}>
+                            전국 JR 패스 노선 지도 & 청춘 18 티켓 플래너
                         </h3>
-                        <p style={{ fontSize: '15px' }}>
-                            Record every line you ride. Track your progress with automatic distance calculation and completion percentages per line and company.
-                            乗った路線を記録して、乗りつぶし達成率と走行距離を自動集計します。
-                            탑승한 노선을 기록하고 노선별·회사별 완주율과 이동 거리를 자동으로 계산합니다.
+                        <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
+                            전국 JR 패스, JR 서일본 패스 등 다양한 할인이 지원되는 JR 패스 노선도 범위 및 커버리지를 인터랙티브 맵 상에서 확인할 수 있습니다. 청춘 18 티켓을 이용한 소도시 로컬 철도 종단 여행 경로 설계와 신칸센 노선도 최적 연결 경로 탐색에 최적화되어 있습니다.
                         </p>
                     </article>
 
-                    <article>
-                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
-                            Interactive Map / インタラクティブ地図 / 인터랙티브 지도
+                    <article style={{ backgroundColor: '#202225', padding: '24px', borderRadius: '8px', border: '1px solid #333' }}>
+                        <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '15px', borderLeft: '4px solid #2ecc71', paddingLeft: '12px', fontWeight: 'bold' }}>
+                            乗りつぶしマップ・鉄道完乗記録ツール
                         </h3>
-                        <p style={{ fontSize: '15px' }}>
-                            Draw your travel routes directly on the map with an intelligent snapping system. Visualize completed and remaining segments at a glance.
-                            直感的な操作で地図上に経路を描き、乗車済み区間と未乗区間を一目で確認。
-                            지도 위에서 직접 경로를 그리고, 방문한 구간과 미방문 구간을 한눈에 확인하세요.
+                        <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
+                            JR全線、大手私鉄、地下鉄、全国のローカル線を白地図上で塗りつぶし、完乗率や乗車走行距離を自動集計・ビジュアル化するデジタルツールです。駅スタンプラリーや鉄印帳の乗車路線記録、都道府県別の鉄道乗車率の確認に最適で、完成した日本鉄道地図は画像としてSNSにエクスポート可能です。
                         </p>
                     </article>
 
-                    <article>
-                        <h3 style={{ color: '#fff', fontSize: '20px', marginBottom: '15px', borderLeft: '4px solid #3498db', paddingLeft: '12px' }}>
-                            The Art of "Noritsubushi" / 乗りつぶしの美学 / 노리츠부시의 미학
+                    <article style={{ backgroundColor: '#202225', padding: '24px', borderRadius: '8px', border: '1px solid #333' }}>
+                        <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '15px', borderLeft: '4px solid #e74c3c', paddingLeft: '12px', fontWeight: 'bold' }}>
+                            Japan Rail Pass Calculator & Itinerary Planner
                         </h3>
-                        <p style={{ fontSize: '15px' }}>
-                            "Noritsubushi" is the unique Japanese culture of riding every single railway line to completion. JapanRailNote is built specifically for these enthusiasts, providing the tools needed to document and share your progress towards 100% completion of Japan's 27,000+ kilometers of iron roads.
-                            「乗りつぶし」は、日本全国の全路線を完乗することを目指す独自の鉄道文化です。JapanRailNoteは、この情熱的な趣味をサポートするために設計されており、27,000km以上に及ぶ日本の鉄道網の記録を可能にします。
-                            "노리츠부시"는 일본 전역의 모든 철도 노선을 완주하는 것을 목표로 하는 독특한 철도 문화입니다. JapanRailNote는 이러한 열정적인 취미를 지원하기 위해 설계되었으며, 27,000km가 넘는 일본의 방대한 철도망 완주 기록을 돕습니다.
+                        <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
+                            Designed for international backpackers and transit map enthusiasts. Use our interactive Shinkansen network and private railway map to calculate point-to-point rail travel distances, check JR Pass coverage, and track your overall rail journey progress across Japan.
                         </p>
                     </article>
                 </div>

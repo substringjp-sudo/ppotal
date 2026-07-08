@@ -8,10 +8,16 @@
         "**/.*",
         "**/node_modules/**"
       ],
-      "rewrites": [
+      "redirects": [
         {
-          "source": "**",
-          "destination": "/index.html"
+          "source": "/pplaner",
+          "destination": "https://app.pplaner.com",
+          "type": 301
+        },
+        {
+          "source": "/ko/auth/login",
+          "destination": "https://app.pplaner.com",
+          "type": 301
         }
       ]
     },
