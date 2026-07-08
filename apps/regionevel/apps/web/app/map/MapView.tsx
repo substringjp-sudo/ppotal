@@ -74,25 +74,17 @@ export function MapView() {
           if (active) {
             setRegions(initialCountries);
             setHasLoadedCountries(true);
+            setInitialLoading(false);
           }
+        } else {
+          if (active) setInitialLoading(false);
         }
 
         if (missingIds.length === 0) {
-          if (active) setInitialLoading(false);
           return;
         }
 
-        // If we have a lot of visited regions, it's actually much faster to just fetch EVERYTHING once
-        if (missingIds.length > 50) {
-          const all = await fetchAllRegions();
-          if (active) {
-            setRegions(all);
-            setInitialLoading(false);
-          }
-          return;
-        }
-
-        // Otherwise fetch missing metadata and ancestors in bulk
+        // Otherwise fetch missing metadata and ancestors in bulk in the background
         const [visitedRegions, ancestorResults] = await Promise.all([
           fetchRegionsByIds(missingIds),
           fetchAncestorsBulk(missingIds)
@@ -102,7 +94,6 @@ export function MapView() {
 
         const allNewRegions = [...visitedRegions, ...ancestorResults];
         setRegions(allNewRegions);
-        setInitialLoading(false);
       } catch (e) {
         console.error("Failed to load map metadata", e);
         if (active) {

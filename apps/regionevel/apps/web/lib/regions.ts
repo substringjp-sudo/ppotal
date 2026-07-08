@@ -101,31 +101,37 @@ export async function fetchAncestorsBulk(regionIds: string[]): Promise<Region[]>
   const store = await getStore();
   const allAncestors = new Map<string, Region>();
   
-  // If we have a lot of regions, it's actually faster to just get all regions 
-  // if we're using a local store.
-  if (regionIds.length > 50) {
-    return await store.getAllRegions();
-  }
+  const fetchedRegions = new Map<string, Region>();
+  let currentIds = new Set<string>(regionIds.map(id => padId(id)));
+  const visited = new Set<string>();
 
-  for (const id of regionIds) {
-    let currentId: string | null = padId(id);
-    const visited = new Set<string>();
+  while (currentIds.size > 0) {
+    const idsToFetch = Array.from(currentIds).filter(id => !fetchedRegions.has(id) && !visited.has(id));
+    if (idsToFetch.length === 0) break;
 
-    while (currentId) {
-      const region = await store.getRegion(currentId);
-      if (!region || !region.parentId) break;
+    idsToFetch.forEach(id => visited.add(id));
+
+    // Fetch regions in bulk
+    const regions = await store.getRegionsByIds(idsToFetch);
+    
+    const nextParentIds = new Set<string>();
+    for (const r of regions) {
+      const paddedId = padId(r.id);
+      fetchedRegions.set(paddedId, r);
       
-      const pId = padId(region.parentId);
-      if (visited.has(pId)) break;
-      visited.add(pId);
+      const isOriginal = regionIds.some(origId => padId(origId) === paddedId);
+      if (!isOriginal) {
+        allAncestors.set(paddedId, r);
+      }
 
-      const parent = await store.getRegion(pId);
-      if (!parent) break;
-      allAncestors.set(padId(parent.id), parent);
-      currentId = pId;
+      if (r.parentId) {
+        nextParentIds.add(padId(r.parentId));
+      }
     }
+
+    currentIds = nextParentIds;
   }
-  
+
   return Array.from(allAncestors.values());
 }
 
@@ -148,13 +154,17 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
     
     if (isRoot) {
       console.log(`[fetchGeometries] Fetching root geometries (world map)...`);
-      // Try multiple common root identifiers to ensure we get data
+      // Try multiple common root identifiers in parallel to ensure we get data quickly
       const rootIdentifers = ["world", null, "ROOT", "root", ""];
       
-      for (const id of rootIdentifers) {
-        rawFeatures = await store.getGeometriesByParent(id as any);
-        if (rawFeatures.length > 0) {
-          console.log(`[fetchGeometries] Successfully found ${rawFeatures.length} root geometries using identifier: "${id}"`);
+      const results = await Promise.all(
+        rootIdentifers.map(id => store.getGeometriesByParent(id as any))
+      );
+      
+      for (let i = 0; i < results.length; i++) {
+        if (results[i].length > 0) {
+          rawFeatures = results[i];
+          console.log(`[fetchGeometries] Successfully found ${rawFeatures.length} root geometries using identifier: "${rootIdentifers[i]}"`);
           break;
         }
       }
@@ -173,8 +183,16 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
       const fsStore = await getFirestoreStore();
       
       if (isRoot) {
-        rawFeatures = await fsStore.getGeometriesByParent("world");
-        if (rawFeatures.length === 0) rawFeatures = await fsStore.getGeometriesByParent(null);
+        const rootIdentifers = ["world", null];
+        const results = await Promise.all(
+          rootIdentifers.map(id => fsStore.getGeometriesByParent(id as any))
+        );
+        for (const res of results) {
+          if (res.length > 0) {
+            rawFeatures = res;
+            break;
+          }
+        }
       } else {
         rawFeatures = await fsStore.getGeometriesByParent(parentId);
       }
