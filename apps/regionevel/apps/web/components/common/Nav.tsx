@@ -123,15 +123,13 @@ export function Nav() {
             <Trophy className="w-4 h-4" />
             List
           </Link>
-          <Link
-            href="/pplaner"
-            className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${
-              pathname === "/pplaner" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
-            }`}
+          <a
+            href="https://pplaner.com"
+            className="text-sm font-bold transition-colors flex items-center gap-1.5 text-slate-500 hover:text-blue-600"
           >
             <Compass className="w-4 h-4" />
             PPLANER
-          </Link>
+          </a>
           <ExportMapButton />
         </nav>
 

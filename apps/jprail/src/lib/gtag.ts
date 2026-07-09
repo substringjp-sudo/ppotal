@@ -1,4 +1,4 @@
-export const GA_TRACKING_ID = 'G-VF27R8XBMY';
+export const GA_TRACKING_ID = 'G-K586RNZD1F';
 
 /**
  * Log a specific event to Google Analytics.

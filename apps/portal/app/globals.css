@@ -709,3 +709,106 @@ header {
   }
 }
 
+/* --- Feature List & Sections --- */
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+  margin-bottom: 8rem;
+}
+
+.feature-section-container {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--card-radius);
+  padding: 4rem;
+  backdrop-filter: blur(20px);
+  margin-bottom: 6rem;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.feature-section-container:hover {
+  border-color: var(--glass-highlight);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 40px 80px -20px rgba(0,0,0,0.5);
+}
+
+.feature-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4rem;
+  margin-bottom: 4rem;
+}
+
+.feature-info-pane {
+  flex: 1.2;
+}
+
+.feature-info-pane h3 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.feature-info-pane p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.15rem;
+  margin-bottom: 2.5rem;
+  line-height: 1.7;
+}
+
+.feature-visual-pane {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.feature-showcase-pane {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 3rem;
+}
+
+.showcase-section-subtitle {
+  font-family: var(--font-main);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: var(--accent-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.feature-showcase-pane .showcase-carousel-section {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.feature-showcase-pane .carousel-container {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 3rem;
+  min-height: auto;
+  gap: 3rem;
+}
+
+@media (max-width: 968px) {
+  .feature-section-container {
+    padding: 2.5rem;
+  }
+  .feature-section-header {
+    flex-direction: column;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+  }
+  .feature-visual-pane {
+    width: 100%;
+    order: -1;
+  }
+}
+

@@ -64,7 +64,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBJCZ6PPDZ"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K586RNZD1F"></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -73,15 +73,14 @@ export default function RootLayout({
               
               // Google Consent Mode v2 Default Settings
               gtag('consent', 'default', {
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied',
-                'ad_personalization': 'denied',
-                'analytics_storage': 'denied',
-                'wait_for_update': 500
+                'ad_storage': 'granted',
+                'ad_user_data': 'granted',
+                'ad_personalization': 'granted',
+                'analytics_storage': 'granted'
               });
 
               gtag('js', new Date());
-              gtag('config', 'G-QBJCZ6PPDZ');
+              gtag('config', 'G-K586RNZD1F');
             `
           }}
         />
