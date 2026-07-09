@@ -1,5 +1,4 @@
 import {
-  getFirestore,
   collection,
   doc,
   setDoc,
@@ -11,10 +10,10 @@ import {
 } from "firebase/firestore";
 import type { Region } from "@regionevel/types";
 import type { RegionDataStore } from "./types.js";
-import { getFirebaseApp } from "./firebase-app.js";
+import { getFirestoreDb } from "./firebase-app.js";
 
 export function createFirestoreRegionStore(): RegionDataStore {
-  const db = getFirestore(getFirebaseApp());
+  const db = getFirestoreDb();
   const regionsRef = collection(db, "regions");
 
   return {

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAuth, Auth, onAuthStateChanged, User, signOut } from "firebase/auth";
-import { getFirestore, Firestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig: Record<string, string> = {
@@ -23,9 +23,22 @@ if (!getApps().length) {
   app = getApp();
 }
 
+let dbInstance: Firestore;
+if (typeof window !== "undefined") {
+  dbInstance = initializeFirestore(app, {
+    localCache: persistentLocalCache({})
+  });
+} else {
+  try {
+    dbInstance = getFirestore(app);
+  } catch (e) {
+    dbInstance = initializeFirestore(app, {});
+  }
+}
+
 export const firebaseApp = app;
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
+export const db: Firestore = dbInstance;
 export const storage: FirebaseStorage = getStorage(app);
 
 // User Profile Type

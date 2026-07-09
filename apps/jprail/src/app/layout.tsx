@@ -63,6 +63,28 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBJCZ6PPDZ"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              
+              // Google Consent Mode v2 Default Settings
+              gtag('consent', 'default', {
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'analytics_storage': 'denied',
+                'wait_for_update': 500
+              });
+
+              gtag('js', new Date());
+              gtag('config', 'G-QBJCZ6PPDZ');
+            `
+          }}
+        />
         {/* Redirect old web.app domain to custom domain immediately */}
         <script
           dangerouslySetInnerHTML={{

@@ -1,5 +1,4 @@
 import {
-  getFirestore,
   collection,
   doc,
   setDoc,
@@ -11,7 +10,7 @@ import {
 } from "firebase/firestore";
 import type { RegionVisit, VisitCategory } from "@regionevel/types";
 import type { VisitDataStore } from "./types.js";
-import { getFirebaseApp } from "./firebase-app.js";
+import { getFirestoreDb } from "./firebase-app.js";
 
 function docToVisit(data: Record<string, unknown>): RegionVisit {
   const visit: RegionVisit = {
@@ -28,7 +27,7 @@ function docToVisit(data: Record<string, unknown>): RegionVisit {
 }
 
 export function createFirestoreVisitStore(uid: string): VisitDataStore {
-  const db = getFirestore(getFirebaseApp());
+  const db = getFirestoreDb();
   const visitsRef = () => collection(db, "users", uid, "visits");
 
   return {

@@ -29,6 +29,28 @@ export default function RootLayout({
   return (
     <html lang="ko" className="font-pretendard" suppressHydrationWarning>
       <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YEK2N4EFT5"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              
+              // Google Consent Mode v2 Default Settings
+              gtag('consent', 'default', {
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'analytics_storage': 'denied',
+                'wait_for_update': 500
+              });
+
+              gtag('js', new Date());
+              gtag('config', 'G-YEK2N4EFT5');
+            `
+          }}
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link
           rel="stylesheet"

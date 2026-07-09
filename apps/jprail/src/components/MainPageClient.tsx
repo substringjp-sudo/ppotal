@@ -107,6 +107,14 @@ const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { 
 
 import { MAIN_PAGE_TRANSLATIONS, getTranslations } from '../lib/translations';
 
+const getDocsWithTimeout = (q: any, timeoutMs: number = 3000): Promise<any> => {
+    return Promise.race([
+        getDocs(q),
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Firestore query timeout")), timeoutMs)
+        )
+    ]);
+};
 
 const MainPageClient = () => {
     const [selectedLines, setSelectedLines] = React.useState<string[]>([]);
@@ -315,9 +323,9 @@ const MainPageClient = () => {
                 if (user) {
                     const tripsRef = collection(db, `users/${user.uid}/trips`);
                     const q = query(tripsRef);
-                    const querySnapshot = await getDocs(q);
+                    const querySnapshot = await getDocsWithTimeout(q);
                     const cloudTrips: Trip[] = [];
-                    querySnapshot.forEach((doc) => {
+                    querySnapshot.forEach((doc: any) => {
                         cloudTrips.push(fromFirestoreTrip(doc.data()));
                     });
 
@@ -375,10 +383,10 @@ const MainPageClient = () => {
         try {
             const visitsRef = collection(db, "users", user.uid, "visits");
             const q = query(visitsRef);
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await getDocsWithTimeout(q);
 
             const list: any[] = [];
-            querySnapshot.forEach((doc) => {
+            querySnapshot.forEach((doc: any) => {
                 list.push(doc.data());
             });
 

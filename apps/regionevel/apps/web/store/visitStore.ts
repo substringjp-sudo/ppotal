@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, subscribeWithSelector } from "zustand/middleware";
 import type { Region, RegionScore, RegionVisit, VisitCategory } from "@regionevel/types";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import {
@@ -144,8 +144,9 @@ const calculateScoresAndStats = (
 };
 
 export const useVisitStore = create<VisitStore>()(
-  persist(
-    (set, get) => ({
+  subscribeWithSelector(
+    persist(
+      (set, get) => ({
       visits: [],
       scores: {},
       allRegions: [],
@@ -433,6 +434,6 @@ export const useVisitStore = create<VisitStore>()(
 
         return state;
       },
-    },
+    }),
   ),
 );
