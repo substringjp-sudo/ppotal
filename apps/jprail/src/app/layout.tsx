@@ -35,19 +35,23 @@ export const metadata: Metadata = constructMetadata({
     "JapanRailNote", "PPLANER", "Japan Railway Map", "JR Pass Route", "Japan Train Tracker",
     // Korean Persona Keywords
     "일본 철도 지도", "JR 패스 노선도", "일본 기차 여행", "신칸센 지도", "도쿄 지하철 노선도",
-    "오사카 지하철 노선도", "일본 철도 거리 계산", "철도 여행 기록", "노리테츠", "도리테츠",
-    "일본 철도 완주 기록", "일본 철도 승차 기록", "일본 철도 지도 시각화", "노리츠부시 기록 사이트",
+    "오사카 지하철 노선도", "일본 철도 거리 계산", "철도 여행 기록", "일철덕", "철덕",
+    "일본 철도 완주 기록", "일본 철도 승차 기록", "일본 철도 지도 시각화", "철도 완주 기록 사이트",
     "일본 기차 완주 거리 계산", "일본 철도 정차역 지도", "전국 JR 패스 노선 지도", "JR 서일본 패스 노선도",
     "청춘 18 티켓 노선도", "일본 소도시 기차 여행 경로", "일본 지하철 노선 통합 검색", "신칸센 노선도 최적 경로",
+    "철도 완승", "에키스탬프", "패스 뽕", "에키벤", "비경역", "성지순례", "철싸대", "철스퍼거",
     // Japanese Persona Keywords
-    "乗りつぶしマップ デジタル", "鉄道 完乗 記録 ツール", "乗り鉄 路線図 塗りつぶし", "日本鉄道 完乗率 計算",
-    "JR 私鉄 地下鉄 乗りつぶし", "路線図 白地図 鉄道", "駅スタンプラリー 路線図", "鉄印帳 路線 マップ",
-    "日本鉄道地図", "乗りつぶし", "鉄道旅行",
+    "完乗マップ デジタル", "鉄道 完乗 記録 ツール", "乗り鉄 路線図 塗りつぶし", "日本鉄道 完乗率 계산",
+    "JR 私鉄 地下鉄 完乗", "路線図 白地図 鉄道", "駅スタンプラリー 路線図", "鉄印帳 路線 マップ",
+    "日本鉄道地図", "完乗", "鉄道旅行", "乗り鉄", "駅跨ぎ", "盲腸線", "大回り乗車", "駅弁",
+    "秘境駅", "女子鉄", "ママ鉄", "子鉄", "鉄子", "キセル乗車", "地雷鉄",
     // English Persona Keywords
     "Japan rail pass calculator map", "JR Pass interactive route planner", "Map of private railways Japan",
     "Track Japan train journeys", "Shinkansen interactive network map", "Japan rail travel progress tracker",
     "Japan railway vector map", "Interactive Japan transit network", "High resolution Japan rail map",
-    "JR East", "JR West", "JR Central", "JR Kyushu", "JR Hokkaido", "JR Shikoku"
+    "JR East", "JR West", "JR Central", "JR Kyushu", "JR Hokkaido", "JR Shikoku",
+    "railfan", "trainspotter", "rail buff", "foamer", "gricer", "anorak", "rail bashing",
+    "shinkansen bashing", "timetable nerd", "rail completion", "train bashing"
   ]
 });
 

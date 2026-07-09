@@ -23,7 +23,7 @@ const RailwayDirectory = ({ data }: { data: SEOData | null }) => {
                     <strong>over {stationCount} stations</strong>.
                     <br />
                     <span style={{ opacity: 0.7, fontSize: '12px' }}>
-                        日本全国の鉄道事業者・路線・駅を網羅。乗りつぶし記録と経路検索に対応。
+                        日本全国の鉄道事業者・路線・駅を網羅。完乗・乗車記録と経路検索に対応。
                         &nbsp;/&nbsp;
                         일본 전국 {lineCount}개 노선, {stationCount}개 이상의 역 정보를 제공하며, 탑승 기록과 경로 검색을 지원합니다.
                     </span>
@@ -146,10 +146,10 @@ const SEOContent = ({ data }: { data: SEOData | null }) => {
                 }}>
                     <article style={{ backgroundColor: '#202225', padding: '24px', borderRadius: '8px', border: '1px solid #333' }}>
                         <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '15px', borderLeft: '4px solid #3b82f6', paddingLeft: '12px', fontWeight: 'bold' }}>
-                            일본 철도 완주 기록 & 노선도 시각화
+                            일본 철도 완승 기록 & 노선도 시각화
                         </h3>
                         <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
-                            내가 탑승한 철도 노선과 구간을 마우스 클릭이나 모바일 터치로 간편하게 칠하고, 노선별·회사별 완주율 및 총 승차 거리를 자동으로 계산하는 온라인 노리츠부시 기록 사이트입니다. 도쿄 지하철 노선도, 오사카 지하철 노선도 등 복잡한 대도시 노선부터 지방 소도시 기차 여행 경로까지 한눈에 시각화하세요.
+                            내가 탑승한 철도 노선과 구간을 마우스 클릭이나 모바일 터치로 간편하게 칠하고, 노선별·회사별 완주율 및 총 승차 거리를 자동으로 계산하는 온라인 철도 완승 기록 사이트입니다. 일철덕(일본 철도 덕후)을 위한 전 노선 완승 기록, 패스 효율 극대화 및 패스 뽕 루트 확인, 역 스탬프(에키스탬프) 수집 및 비경역 답사 등 감성적인 철도 여행의 모든 발자취를 지도에 시각화해 보세요.
                         </p>
                     </article>
 
@@ -164,10 +164,10 @@ const SEOContent = ({ data }: { data: SEOData | null }) => {
 
                     <article style={{ backgroundColor: '#202225', padding: '24px', borderRadius: '8px', border: '1px solid #333' }}>
                         <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '15px', borderLeft: '4px solid #2ecc71', paddingLeft: '12px', fontWeight: 'bold' }}>
-                            乗りつぶしマップ・鉄道完乗記録ツール
+                            鉄道完乗記録マップ・乗車記録ツール
                         </h3>
                         <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
-                            JR全線、大手私鉄、地下鉄、全国のローカル線を白地図上で塗りつぶし、完乗率や乗車走行距離を自動集計・ビジュアル化するデジタルツールです。駅スタンプラリーや鉄印帳の乗車路線記録、都道府県別の鉄道乗車率の確認に最適で、完成した日本鉄道地図は画像としてSNSにエクスポート可能です。
+                            JR全線、大手私鉄、地下鉄、全国のローカル線を白地図上で記録し、完乗率や乗車走行距離を自動集計・ビジュアル化するデジタルツールです。乗り鉄や完乗派の盲腸線乗りつぶし記録、大回り乗車ルートの管理、駅スタンプや鉄印帳の収集記録、都道府県別の乗車率チェックに最適で、完成した地図は画像としてSNSにエクスポート可能です。
                         </p>
                     </article>
 
@@ -176,7 +176,7 @@ const SEOContent = ({ data }: { data: SEOData | null }) => {
                             Japan Rail Pass Calculator & Itinerary Planner
                         </h3>
                         <p style={{ fontSize: '14px', color: '#a0a0a0', lineHeight: '1.7' }}>
-                            Designed for international backpackers and transit map enthusiasts. Use our interactive Shinkansen network and private railway map to calculate point-to-point rail travel distances, check JR Pass coverage, and track your overall rail journey progress across Japan.
+                            Designed for international backpackers, railfans, and trainspotters. Use our interactive Shinkansen network and private railway map to check JR Pass coverage, track mileage for railway bashing (shinkansen bashing), calculate point-to-point distances, and keep a permanent completion log of your Japanese rail travels.
                         </p>
                     </article>
                 </div>
