@@ -3,6 +3,7 @@ export * from './context/AuthContext';
 export * from './components/AuthModal';
 export * from './components/OnboardingModal';
 export * from './components/Analytics';
+export * from './components/AdSense';
 export * from './components/GoogleMapsScript';
 export * from './lib/seo';
 export * from './config';
