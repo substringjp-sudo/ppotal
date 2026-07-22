@@ -47,6 +47,8 @@ export default function BasicInfoEditor() {
 
     if (!trip) return null;
 
+    const isGuest = !trip || trip.id === 'guest' || trip.id.startsWith('guest');
+
     const handleLocationInputChange = async (val: string) => {
         setNewLocation(val);
         if (val.trim().length >= 1) {
@@ -586,7 +588,7 @@ export default function BasicInfoEditor() {
              {/* Detail Progress Booster Removed */}
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-                <div className="xl:col-span-5 space-y-3">
+                <div className={cn("space-y-3", isGuest ? "xl:col-span-12" : "xl:col-span-5")}>
                     {/* 1. Identity Section (Always Active) */}
                     <div className="p-3 md:p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
                         <div className="grid grid-cols-1 gap-4 items-start">
@@ -987,31 +989,33 @@ export default function BasicInfoEditor() {
                 </div>
 
                 {/* Map Section - Integrated & Refined */}
-                <div className="xl:col-span-7 flex flex-col gap-3 h-full">
-                    <div className="flex items-center justify-between px-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <span className="material-symbols-rounded text-sm">map</span>
-                            인터랙티브 여행 지도
-                        </label>
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-primary" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">일정</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">마커</span>
+                {!isGuest && (
+                    <div className="xl:col-span-7 flex flex-col gap-3 h-full">
+                        <div className="flex items-center justify-between px-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <span className="material-symbols-rounded text-sm">map</span>
+                                인터랙티브 여행 지도
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-primary" />
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">일정</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">마커</span>
+                                </div>
                             </div>
                         </div>
+                        <div className="flex-1 min-h-[400px] xl:min-h-[500px] border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm relative bg-slate-100 dark:bg-slate-800 group/map">
+                            <div className="absolute inset-0 bg-slate-200/50 dark:bg-slate-800/50 animate-pulse pointer-events-none group-focus-within/map:opacity-0 transition-opacity" />
+                            <TripMap
+                                trip={trip}
+                                viewMode="basic"
+                            />
+                        </div>
                     </div>
-                    <div className="flex-1 min-h-[400px] xl:min-h-[500px] border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm relative bg-slate-100 dark:bg-slate-800 group/map">
-                        <div className="absolute inset-0 bg-slate-200/50 dark:bg-slate-800/50 animate-pulse pointer-events-none group-focus-within/map:opacity-0 transition-opacity" />
-                        <TripMap
-                            trip={trip}
-                            viewMode="basic"
-                        />
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );

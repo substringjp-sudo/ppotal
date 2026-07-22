@@ -68,6 +68,7 @@ export function LocationSelector({
     initialBias
 }: LocationSelectorProps) {
     const { currentTrip: trip } = useTripStore();
+    const isGuest = !trip || trip.id === 'guest' || trip.id.startsWith('guest');
 
     const [selectedPlace, setSelectedPlace] = useState<{
         name: string;
@@ -83,6 +84,29 @@ export function LocationSelector({
         googlePlaceId?: string;
         url?: string;
     } | null>(null);
+
+    if (isGuest) {
+        return (
+            <div className={cn("space-y-2", className)}>
+                <label className="text-xs font-black text-slate-700 dark:text-slate-300 ml-1 block">
+                    {label || '장소이름'}
+                </label>
+                <input
+                    type="text"
+                    value={selectedPlace?.name || initialValue || ''}
+                    onChange={(e) => {
+                        const newName = e.target.value;
+                        const updated = { ...(selectedPlace || {}), name: newName } as any;
+                        setSelectedPlace(updated);
+                        onLocationSelect(updated);
+                    }}
+                    placeholder={placeholder || "장소 이름 입력 (예: 도쿄 타워)"}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none font-bold text-sm text-slate-800 dark:text-slate-100"
+                />
+            </div>
+        );
+    }
+
     const [nearbyRecommendations, setNearbyRecommendations] = useState<google.maps.places.PlaceResult[]>([]);
     const [isNearbyLoading, setIsNearbyLoading] = useState(false);
     const [isResolvingRegion, setIsResolvingRegion] = useState(false);

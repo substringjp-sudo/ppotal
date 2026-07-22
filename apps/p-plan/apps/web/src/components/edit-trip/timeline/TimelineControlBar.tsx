@@ -2,6 +2,7 @@
 
 import { List as ListIcon, Map as MapIcon, LayoutPanelLeft as GanttIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTripStore } from '@pplaner/shared';
 
 interface TimelineControlBarProps {
     viewMode: 'timeline' | 'map' | 'gantt';
@@ -16,6 +17,9 @@ export default function TimelineControlBar({
     showOnlyBooked,
     onShowOnlyBookedChange
 }: TimelineControlBarProps) {
+    const trip = useTripStore((state) => state.currentTrip);
+    const isGuest = !trip || trip.id === 'guest' || trip.id.startsWith('guest');
+
     return (
         <div className="flex items-center gap-2">
             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
@@ -30,17 +34,19 @@ export default function TimelineControlBar({
                     <ListIcon className="w-3.5 h-3.5" />
                     <span className="hidden lg:inline">타임라인</span>
                 </button>
-                <button 
-                    onClick={() => onViewModeChange('map')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
-                        viewMode === 'map' 
-                        ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5' 
-                        : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
-                    }`}
-                >
-                    <MapIcon className="w-3.5 h-3.5" />
-                    <span className="hidden lg:inline">지도</span>
-                </button>
+                {!isGuest && (
+                    <button 
+                        onClick={() => onViewModeChange('map')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
+                            viewMode === 'map' 
+                            ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5' 
+                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                        }`}
+                    >
+                        <MapIcon className="w-3.5 h-3.5" />
+                        <span className="hidden lg:inline">지도</span>
+                    </button>
+                )}
                 <button 
                     onClick={() => onViewModeChange('gantt')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${

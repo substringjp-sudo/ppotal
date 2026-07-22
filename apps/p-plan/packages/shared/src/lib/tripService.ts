@@ -56,12 +56,49 @@ export const addTripEvent = async (tripId: string, day: number, event: Partial<T
 /**
  * 단일 여행의 메인 정보만 조회 (기본 설정 및 메타데이터)
  */
+export const createDefaultGuestTrip = (id: string = 'guest'): Trip => {
+    const today = new Date().toISOString().split('T')[0];
+    const d2 = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    const d3 = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
+    return {
+        id,
+        title: '나의 첫 여행 계획 (비로그인)',
+        dates: { startDate: today, endDate: d3, flexibilityDays: 0, isUndecided: false },
+        locations: { regionNames: [], center: { lat: 37.5665, lng: 126.9780 }, regions: [] },
+        participants: [],
+        budget: { baseCurrency: 'KRW', currency: 'KRW', expenses: [], activeCurrencies: [], exchanges: [], commonAllocated: 0, individualAllocated: 0, participantBudgets: [] },
+        transportSettings: { useFlight: false, useDriving: false },
+        flights: [], accommodation: [], driving: [], publicTransport: [],
+        checklist: [], prepTimeline: [], reservations: [], bucketList: [],
+        dailyTimeline: [
+            { day: 1, date: today, events: [] },
+            { day: 2, date: d2, events: [] },
+            { day: 3, date: d3, events: [] },
+        ],
+        theme: 'nature',
+        isOverseas: false,
+        status: 'draft',
+        planningStatus: 'planned',
+    };
+};
+
 export const getTripMain = async (tripId: string): Promise<TripDocument | null> => {
+    const localTrip = useTripStore.getState().trips.find(t => t.id === tripId) || (useTripStore.getState().currentTrip?.id === tripId ? useTripStore.getState().currentTrip : null);
+    if (tripId.startsWith('guest') || tripId === 'guest') {
+        if (localTrip) return localTrip as unknown as TripDocument;
+        const newGuest = createDefaultGuestTrip(tripId);
+        useTripStore.getState().addTrip(newGuest);
+        return newGuest as unknown as TripDocument;
+    }
+    if (localTrip && !auth.currentUser) {
+        return localTrip as unknown as TripDocument;
+    }
+
     try {
         const tripRef = doc(db, TRIPS_COLLECTION, tripId);
         const docSnap = await getDoc(tripRef);
         
-        if (!docSnap.exists()) return null;
+        if (!docSnap.exists()) return (localTrip as unknown as TripDocument) || null;
         const data = docSnap.data();
         
         // 필수 필드 보장 및 기본값 설정
@@ -98,13 +135,15 @@ export const getTripMain = async (tripId: string): Promise<TripDocument | null> 
             publicTransport: data.publicTransport || [],
             prepTimeline: data.prepTimeline || [],
             reservations: data.reservations || [],
-            comments: data.comments || []
+            warnings: data.warnings || [],
+            comments: data.comments || [],
+            planningStatus: data.planningStatus || 'ideation'
         };
 
         return mainData;
     } catch (error) {
         console.error("Error getting trip main document:", error);
-        throw error;
+        return (localTrip as unknown as TripDocument) || null;
     }
 };
 
@@ -113,6 +152,13 @@ export const getTripMain = async (tripId: string): Promise<TripDocument | null> 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getTripSubCollection = async (tripId: string, subCollection: string): Promise<any[]> => {
+    const localTrip = useTripStore.getState().trips.find(t => t.id === tripId) || (useTripStore.getState().currentTrip?.id === tripId ? useTripStore.getState().currentTrip : null);
+    if (localTrip && (!auth.currentUser || tripId.startsWith('guest'))) {
+        const fieldName = (subCollection === DAILY_PLANS_SUB ? 'dailyTimeline' : subCollection) as keyof Trip;
+        const val = localTrip[fieldName];
+        return Array.isArray(val) ? val : [];
+    }
+
     try {
         const snap = await getDocs(collection(db, TRIPS_COLLECTION, tripId, subCollection));
         const data = snap.docs.map(d => d.data());
@@ -124,7 +170,9 @@ export const getTripSubCollection = async (tripId: string, subCollection: string
         return data;
     } catch (error) {
         console.error(`Error getting sub-collection ${subCollection}:`, error);
-        return [];
+        const fieldName = (subCollection === DAILY_PLANS_SUB ? 'dailyTimeline' : subCollection) as keyof Trip;
+        const val = localTrip ? localTrip[fieldName] : undefined;
+        return Array.isArray(val) ? val : [];
     }
 };
 

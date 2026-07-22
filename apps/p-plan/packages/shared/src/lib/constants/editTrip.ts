@@ -17,8 +17,8 @@ export const SECTIONS: { id: SectionId; label: string; icon: string; description
     { id: 'basics', label: '기본', icon: 'settings', description: '여행 제목, 날짜, 지역' },
     { id: 'transport', label: '교통', icon: 'directions_car', description: '항공, 렌터카, 대중교통' },
     { id: 'accommodation', label: '숙소', icon: 'hotel', description: '호텔, 에어비앤비 등' },
-    { id: 'timeline', label: '일정', icon: 'event_note', description: '상세 타임라인 및 경로' },
     { id: 'reservations', label: '예약', icon: 'confirmation_number', description: '식당, 투어, 기타 영수증' },
+    { id: 'timeline', label: '일정', icon: 'event_note', description: '상세 타임라인 및 경로' },
 ];
 
 export const TRANSPORT_ICONS: Record<TransportationMethod, string> = {

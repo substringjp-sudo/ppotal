@@ -67,7 +67,7 @@ export function TimeSliderPicker({ value, onChange, label, onClose, lat, lng, da
         const interval = window.setInterval(() => {
             const now = Date.now();
             const elapsed = now - lastMoveTimeRef.current;
-            const progress = Math.min(1, elapsed / 3000);
+            const progress = Math.min(1, elapsed / 2000);
             
             setZoomProgress(progress);
 

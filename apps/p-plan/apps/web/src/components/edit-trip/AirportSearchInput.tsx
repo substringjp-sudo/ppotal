@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserStore } from '@pplaner/shared';
 import { Star } from 'lucide-react';
 
-import { TripRegion } from '@pplaner/shared';
+import { TripRegion, useTripStore } from '@pplaner/shared';
 import { useAviation } from '../../hooks/useAviation';
 
 interface AirportSearchInputProps {
@@ -37,12 +37,32 @@ export function AirportSearchInput({
     intent = 'departure',
     departureCode
 }: AirportSearchInputProps) {
+    const trip = useTripStore((state) => state.currentTrip);
+    const isGuest = !trip || trip.id === 'guest' || trip.id.startsWith('guest');
+
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
     const [displayResults, setDisplayResults] = useState<Airport[]>([]);
     const { loading, searchAirports } = useAviation();
+
+    if (isGuest) {
+        return (
+            <div className={cn("space-y-1.5 relative", className)}>
+                {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+                <input
+                    value={value || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder || (intent === 'departure' ? '출발 장소 입력 (예: 인천공항)' : '도착 장소 입력 (예: 도쿄 나리타)')}
+                    className={cn(
+                        "w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-primary/30 rounded-2xl outline-none font-bold text-sm transition-all text-slate-800 dark:text-slate-100",
+                        inputClassName
+                    )}
+                />
+            </div>
+        );
+    }
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Helper to get display name from code

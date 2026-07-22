@@ -87,6 +87,8 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
         updateAccommodation(id, { [field]: value });
     };
 
+    const isGuest = !trip || trip.id === 'guest' || trip.id.startsWith('guest');
+
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* 1. Basic Info Section */}
@@ -104,14 +106,26 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-slate-50/50 dark:bg-slate-800/20 rounded-[32px] border border-slate-200 dark:border-slate-800">
                         <div className="space-y-1.5 order-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">장소 검색 (구글 지도)</label>
-                            <GoogleMapsSearch 
-                                defaultValue={acc.name} 
-                                onPlaceSelect={handlePlaceSelect}
-                                placeholder="숙소 이름이나 주소를 검색하세요"
-                                className="h-14"
-                            />
-                        </div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                {isGuest ? '장소이름' : '장소 검색 (구글 지도)'}
+                            </label>
+                                {isGuest ? (
+                                    <input
+                                        type="text"
+                                        value={acc.name || ''}
+                                        onChange={(e) => handleChange('name', e.target.value)}
+                                        placeholder="숙소 이름 입력 (예: 도쿄 힐튼 호텔)"
+                                        className="w-full h-14 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl outline-none font-bold text-sm text-slate-800 dark:text-slate-100 shadow-sm"
+                                    />
+                                ) : (
+                                    <GoogleMapsSearch 
+                                        defaultValue={acc.name} 
+                                        onPlaceSelect={handlePlaceSelect}
+                                        placeholder="숙소 이름이나 주소를 검색하세요"
+                                        className="h-14"
+                                    />
+                                )}
+                            </div>
 
                         <div className="space-y-1.5 order-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">숙소 유형</label>

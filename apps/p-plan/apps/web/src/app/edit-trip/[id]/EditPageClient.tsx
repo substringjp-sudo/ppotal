@@ -27,10 +27,13 @@ import MobileSectionTabBar from '@/components/edit-trip/layout/MobileSectionTabB
 import Link from 'next/link';
 import { Trip } from '@pplaner/shared';
 
+import { useAuth } from '@/hooks/useAuth';
+
 export default function EditTripByIdPage() {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { user, loginWithGoogle } = useAuth();
     
     const idParam = params.id;
     let id = Array.isArray(idParam) ? idParam[0] : (idParam as string);
@@ -40,18 +43,15 @@ export default function EditTripByIdPage() {
     if (id === 'placeholder') {
         if (!isServer) {
             const pathSegments = window.location.pathname.split('/').filter(Boolean);
-            // /edit-trip/ID 형식인 경우 두 번째 세그먼트가 ID입니다.
             if (pathSegments[0] === 'edit-trip' && pathSegments[1]) {
                 id = pathSegments[1];
             }
         } else {
-            // 빌드 타임(SSR)에는placeholder 데이터를 가져오지 않도록 id를 비워줌
             id = '';
         }
     }
 
-    
-    // id가 없으면 목록으로 리다이렉트
+    // id가 없으면 목록으로 리다이렉트 (guest인 경우는 예외)
     useEffect(() => {
         if (!id) {
             router.replace('/trips');
@@ -93,12 +93,42 @@ export default function EditTripByIdPage() {
         }
     }, [searchParams]);
 
-    // Initial trip sync
+    // Initial trip sync & guest trip auto-creation
     useEffect(() => {
+        if (id === 'guest') {
+            if (!currentTrip || currentTrip.id !== 'guest') {
+                const today = new Date().toISOString().split('T')[0];
+                const d2 = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+                const d3 = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
+                const guestTrip: Trip = {
+                    id: 'guest',
+                    title: '나의 첫 여행 계획 (비로그인)',
+                    dates: { startDate: today, endDate: d3, flexibilityDays: 0, isUndecided: false },
+                    locations: { regionNames: [], center: { lat: 37.5665, lng: 126.9780 }, regions: [] },
+                    participants: [],
+                    budget: { baseCurrency: 'KRW', currency: 'KRW', expenses: [], activeCurrencies: [], exchanges: [], commonAllocated: 0, individualAllocated: 0, participantBudgets: [] },
+                    transportSettings: { useFlight: false, useDriving: false },
+                    flights: [], accommodation: [], driving: [], publicTransport: [],
+                    checklist: [], prepTimeline: [], reservations: [], bucketList: [],
+                    dailyTimeline: [
+                        { day: 1, date: today, events: [] },
+                        { day: 2, date: d2, events: [] },
+                        { day: 3, date: d3, events: [] },
+                    ],
+                    theme: 'nature',
+                    isOverseas: false,
+                    status: 'draft',
+                    planningStatus: 'planned',
+                };
+                updateTrip(guestTrip);
+            }
+            return;
+        }
+
         if (tripData && (!currentTrip || currentTrip.id !== id)) {
             updateTrip(tripData);
         }
-    }, [tripData, updateTrip, id, currentTrip]);
+    }, [id, tripData, updateTrip, currentTrip]);
 
     // Sub-collections sync
     useEffect(() => {
@@ -238,16 +268,18 @@ export default function EditTripByIdPage() {
         return acc;
     }, {} as Record<string, { critical: number; warning: number; info: number }>);
 
-    if (isTripLoading) return (
+    const displayTrip = currentTrip || tripData;
+
+    if (!displayTrip && (isTripLoading || id === 'guest' || id.startsWith('guest'))) return (
         <div className="min-h-screen flex items-center justify-center dark:bg-slate-950 font-pretendard">
             <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                <p className="text-slate-500 font-bold animate-pulse">여행 정보를 불러오는 중...</p>
+                <p className="text-slate-500 font-bold animate-pulse">여행 계획을 준비하는 중...</p>
             </div>
         </div>
     );
 
-    if (!currentTrip) return (
+    if (!displayTrip) return (
         <div className="min-h-screen flex items-center justify-center dark:bg-slate-950 font-pretendard">
             <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
                 <span className="material-symbols-rounded text-6xl text-slate-300 mb-4 font-light">search_off</span>
@@ -262,6 +294,19 @@ export default function EditTripByIdPage() {
 
     return (
         <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 font-pretendard">
+            {!user && (
+                <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-center text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center justify-center gap-2">
+                    <span className="material-symbols-rounded text-base font-black text-amber-600">info</span>
+                    <span>비로그인 체험 모드입니다. 작성하신 여행 계획은 브라우저(로컬 캐시)에만 보관됩니다.</span>
+                    <button
+                        onClick={() => loginWithGoogle()}
+                        className="ml-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-[11px] font-black transition-all flex items-center gap-1 shadow-sm"
+                    >
+                        <span className="material-symbols-rounded text-xs">bolt</span>
+                        Google로 계정에 저장하기
+                    </button>
+                </div>
+            )}
             <motion.main
                 initial="hidden" animate="visible"
                 variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
@@ -271,7 +316,7 @@ export default function EditTripByIdPage() {
                 <div className="flex flex-row gap-3 lg:gap-4 xl:gap-5 items-start relative h-[calc(100dvh-96px)] sm:h-[calc(100vh-64px)] overflow-hidden">
                     <EditSidebar
                         tripId={id}
-                        currentTrip={currentTrip}
+                        currentTrip={displayTrip}
                         warnings={warnings}
                         activeSection={activeSection}
                         setActiveSection={setActiveSection}

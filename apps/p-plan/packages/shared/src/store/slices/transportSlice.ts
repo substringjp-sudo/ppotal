@@ -34,7 +34,7 @@ export const createTransportSlice: StateCreator<TripState, [], [], TransportSlic
             id: generateId(),
             type,
             date: type === 'inbound' ? draft.dates.endDate : draft.dates.startDate,
-            isRoundTrip: false,
+            isRoundTrip: true,
             isInternational: false,
             reservations: []
         };

@@ -53,14 +53,12 @@ function FlightSegmentRow({ segment, icon = 'flight_takeoff', isRoundTrip = fals
 
                 {/* Path / Duration */}
                 <div className="flex flex-col items-center flex-1 px-2 relative">
+                    {segment.flightDurationMinutes ? (
+                        <span className="text-[9px] font-black text-primary bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-primary/10 shadow-sm whitespace-nowrap italic mb-1">
+                             {Math.floor(segment.flightDurationMinutes / 60)}시간 {segment.flightDurationMinutes % 60}분
+                        </span>
+                    ) : null}
                     <div className="w-full h-[1px] bg-slate-200 dark:bg-slate-700/50 relative flex items-center justify-center">
-                        <div className="absolute inset-0 flex items-center justify-center -top-[14px]">
-                            {segment.flightDurationMinutes && (
-                                <span className="text-[9px] font-black text-primary bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-primary/10 shadow-sm whitespace-nowrap italic">
-                                     {Math.floor(segment.flightDurationMinutes / 60)}시간 {segment.flightDurationMinutes % 60}분
-                                </span>
-                            )}
-                        </div>
                         <span className={cn(
                             "material-symbols-rounded text-[16px] bg-white dark:bg-slate-900 px-1.5 text-slate-300 z-10",
                             icon === 'flight_land' ? 'rotate-180' : ''
@@ -231,14 +229,15 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
 
     // Timezone & Arrival Time Sync Logic
     const calculateArrivalTime = (target: FlightSegment, depTime: string, durationMin: number) => {
+        if (!depTime || !durationMin) return;
+        const [h, m] = depTime.split(':').map(Number);
+        if (isNaN(h) || isNaN(m)) return;
+
         const depA = AIRPORTS.find(a => a.code === target.departureLocation);
         const arrA = AIRPORTS.find(a => a.code === target.arrivalLocation);
-        if (!depTime || !depA || !arrA) return;
-        const [h, m] = depTime.split(':').map(Number);
+        const tzOffsetMin = (depA && arrA) ? (arrA.timezone - depA.timezone) * 60 : 0;
+
         const date = new Date(2000, 0, 1, h, m);
-        
-        // Duration + Timezone Difference
-        const tzOffsetMin = (arrA.timezone - depA.timezone) * 60;
         date.setMinutes(date.getMinutes() + durationMin + tzOffsetMin);
         
         const resH = String(date.getHours()).padStart(2, '0');
@@ -359,7 +358,9 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                         expectedRangeEnd={rangeEnd || undefined}
                                         onDepartureChange={(newTime) => {
                                             updateFlight(target.id, { departureTime: newTime });
-                                            if (target.arrivalTime) {
+                                            if (target.flightDurationMinutes) {
+                                                calculateArrivalTime(target, newTime, target.flightDurationMinutes);
+                                            } else if (target.arrivalTime) {
                                                 syncDurationFromTimes(target, newTime, target.arrivalTime);
                                             }
                                         }}

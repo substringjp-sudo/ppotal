@@ -7,6 +7,8 @@ import LandingShowcase from './LandingShowcase';
 import LandingFeaturesDetailed from './LandingFeaturesDetailed';
 import { ChevronRight, Play, Sparkles, Globe2, ShieldCheck, Smartphone } from 'lucide-react';
 
+import Link from 'next/link';
+
 export default function LandingHero() {
   const { loginWithGoogle } = useAuth();
   const targetRef = useRef<HTMLDivElement>(null);
@@ -61,7 +63,7 @@ export default function LandingHero() {
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 0.8, x: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="text-xl text-slate-500 font-bold mb-14 max-w-lg leading-relaxed"
+                            className="text-xl text-slate-500 font-bold mb-10 max-w-lg leading-relaxed"
                         >
                             단순한 기록을 넘어, 스마트 검증 시스템이 찾아내는<br />
                             완벽한 일정과 안정적인 예산 관리를 경험해보세요.
@@ -71,22 +73,23 @@ export default function LandingHero() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
-                            className="flex flex-wrap gap-5"
+                            className="flex flex-wrap gap-4"
                         >
+                            <Link
+                                href="/edit-trip/guest"
+                                className="group relative px-8 py-5 bg-primary text-white text-lg font-black rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-transparent"
+                            >
+                                <span className="material-symbols-rounded font-black bg-white/20 text-white p-2 rounded-xl">edit_note</span>
+                                로그인 없이 바로 여행 계획하기
+                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+
                             <button
                                 onClick={loginWithGoogle}
-                                className="group relative px-10 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-lg font-black rounded-[2rem] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-4 border-2 border-transparent hover:border-primary"
+                                className="px-8 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-lg font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-transparent hover:border-primary"
                             >
                                 <span className="material-symbols-rounded font-black bg-primary text-white p-2 rounded-xl">bolt</span>
                                 Google로 5초 만에 시작
-                                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button
-                                onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
-                                className="px-10 py-6 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-lg font-black rounded-[2rem] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-3"
-                            >
-                                <Play className="w-5 h-5 fill-current" />
-                                실제 사용 화면 보기
                             </button>
                         </motion.div>
                     </motion.div>
@@ -231,14 +234,23 @@ export default function LandingHero() {
                         더 스마트한 여행을 위한 첫걸음,<br />
                         PPLANER와 함께 지금 시작하세요.
                     </p>
-                    <button
-                        onClick={loginWithGoogle}
-                        className="px-16 py-8 bg-primary text-white text-2xl font-black rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-4"
-                    >
-                        <span className="material-symbols-rounded font-black text-3xl">edit_note</span>
-                        지금 바로 무료로 시작하기
-                    </button>
-                    <p className="mt-8 text-slate-400 font-bold text-sm">카드 등록 불필요 • 5초 소요</p>
+                    <div className="flex flex-wrap justify-center gap-5">
+                        <Link
+                            href="/edit-trip/guest"
+                            className="px-12 py-6 bg-primary text-white text-xl font-black rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3"
+                        >
+                            <span className="material-symbols-rounded font-black text-2xl">edit_note</span>
+                            로그인 없이 바로 여행 계획하기
+                        </Link>
+                        <button
+                            onClick={loginWithGoogle}
+                            className="px-12 py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xl font-black rounded-[2.5rem] shadow-xl hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3"
+                        >
+                            <span className="material-symbols-rounded font-black text-2xl">bolt</span>
+                            Google로 5초 만에 시작
+                        </button>
+                    </div>
+                    <p className="mt-8 text-slate-400 font-bold text-sm">로그인 없이 점검 가능 • 회원가입 시 일정 자동 보관</p>
                 </motion.div>
             </div>
             

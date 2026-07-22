@@ -56,6 +56,7 @@ export default function Header() {
     }, [isUserMenuOpen]);
 
     const navLinks = [
+        { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
         { href: '/', label: '홈', icon: 'home', authRequired: true },
         { href: '/journey-atlas', label: '탐색', icon: 'explore', authRequired: true },
         { href: '/wishlist', label: '위시리스트', icon: 'favorite', authRequired: true },
@@ -178,13 +179,22 @@ export default function Header() {
                                 </AnimatePresence>
                             </div>
                         ) : (
-                            <button
-                                onClick={() => loginWithGoogle()}
-                                aria-haspopup="dialog"
-                                className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors whitespace-nowrap"
-                            >
-                                로그인
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    href="/edit-trip/guest"
+                                    className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-black rounded-full transition-all flex items-center gap-1.5"
+                                >
+                                    <span className="material-symbols-rounded text-sm font-black">edit_note</span>
+                                    로그인 없이 계획 작성
+                                </Link>
+                                <button
+                                    onClick={() => loginWithGoogle()}
+                                    aria-haspopup="dialog"
+                                    className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-primary transition-colors whitespace-nowrap px-2"
+                                >
+                                    로그인
+                                </button>
+                            </div>
                         )}
 
                     </div>

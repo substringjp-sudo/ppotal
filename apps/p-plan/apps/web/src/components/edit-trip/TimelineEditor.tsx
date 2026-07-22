@@ -109,12 +109,15 @@ export default function TimelineEditor({ onNavigateToSection, onAddComment }: Ti
 
     if (!trip) return null;
 
+    const isGuest = !trip || trip.id === 'guest' || trip.id.startsWith('guest');
+    const effectiveViewMode = isGuest && viewMode === 'map' ? 'timeline' : viewMode;
+
     return (
         <div className="flex flex-col h-full bg-white relative">
             {/* Main Content Area */}
             <div className="flex-1 flex relative">
                 <AnimatePresence mode="wait">
-                    {viewMode === 'timeline' ? (
+                    {effectiveViewMode === 'timeline' ? (
                         <motion.div 
                             key="timeline"
                             initial={{ opacity: 0, x: -20 }}
@@ -133,7 +136,7 @@ export default function TimelineEditor({ onNavigateToSection, onAddComment }: Ti
                                 onDayIdxChange={setActiveDayIdx}
                             />
                         </motion.div>
-                    ) : viewMode === 'gantt' ? (
+                    ) : effectiveViewMode === 'gantt' ? (
                         <motion.div 
                             key="gantt"
                             initial={{ opacity: 0, y: 20 }}
