@@ -1,4 +1,4 @@
-import { constructMetadata, Analytics, GoogleMapsScript } from '@ppotal/ui';
+import { constructMetadata, Analytics } from '@ppotal/ui';
 import type { Metadata } from 'next';
 import "./globals.css";
 import FirebaseAnalytics from "@/components/common/FirebaseAnalytics";
@@ -13,6 +13,7 @@ import { Toaster } from 'sonner';
 import UserSyncProvider from "@/components/providers/UserSyncProvider";
 import IntelligenceSyncProvider from "@/components/providers/IntelligenceSyncProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import AuthedGoogleMaps from "@/components/common/AuthedGoogleMaps";
 import Script from "next/script";
 
 export const metadata: Metadata = constructMetadata({
@@ -63,11 +64,11 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        <GoogleMapsScript />
       </head>
       <body suppressHydrationWarning className="antialiased bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
         <FirebaseAnalytics />
         <AuthProvider>
+          <AuthedGoogleMaps />
           <ReactQueryProvider>
             <UserSyncProvider>
               <TripSyncProvider>

@@ -31,6 +31,7 @@
     }
   ],
   "hosting": {
+    "site": "pplan-pplan",
     "public": "apps/web/out",
     "ignore": [
       "firebase.json",

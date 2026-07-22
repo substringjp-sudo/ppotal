@@ -11,12 +11,12 @@
       "redirects": [
         {
           "source": "/pplaner",
-          "destination": "https://app.pplaner.com",
+          "destination": "https://pplan.pplaner.com",
           "type": 301
         },
         {
           "source": "/ko/auth/login",
-          "destination": "https://app.pplaner.com",
+          "destination": "https://pplan.pplaner.com",
           "type": 301
         }
       ]
