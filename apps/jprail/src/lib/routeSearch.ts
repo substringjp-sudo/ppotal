@@ -30,6 +30,8 @@ interface PathState {
     currentNode: string;
     visitedNodes: Set<string>;
     distance: number;
+    cost: number;
+    lastLineId: number;
     stationIds: string[];
     sectionIds: number[];
     lineIds: number[];
@@ -103,7 +105,7 @@ export function findCandidateRoutes(
 
     // Leg route finder
     const findLegPaths = (startSt: Station, endSt: Station): PathState[] => {
-        // Collect all matching start IDs (station id + platform_ids + same-named stations)
+        // Collect all matching start IDs
         const startIds = new Set<string>();
         startIds.add(startSt.id);
         if (startSt.platform_ids) startSt.platform_ids.forEach(pid => startIds.add(pid));
@@ -143,6 +145,8 @@ export function findCandidateRoutes(
                     currentNode: sid,
                     visitedNodes: new Set([sid]),
                     distance: 0,
+                    cost: 0,
+                    lastLineId: 0,
                     stationIds: [sid],
                     sectionIds: [],
                     lineIds: []
@@ -154,7 +158,7 @@ export function findCandidateRoutes(
             const maxProcessed = 15000;
 
             while (queue.length > 0 && processed < maxProcessed) {
-                queue.sort((a, b) => a.distance - b.distance);
+                queue.sort((a, b) => a.cost - b.cost);
                 const curr = queue.shift()!;
                 processed++;
 
@@ -169,7 +173,11 @@ export function findCandidateRoutes(
                 const neighbors = adj.get(curr.currentNode) || [];
                 for (const edge of neighbors) {
                     const edgeKey = `${curr.currentNode}-${edge.neighborId}`;
-                    const penalty = bannedEdges.has(edgeKey) ? 60 : 0;
+                    const banPenalty = bannedEdges.has(edgeKey) ? 100 : 0;
+
+                    // Line transfer penalty: discourage unnecessary transfers off a continuous line
+                    const isTransfer = curr.lastLineId > 0 && edge.lineId > 0 && curr.lastLineId !== edge.lineId;
+                    const transferPenalty = isTransfer ? 15 : 0;
 
                     const count = visitCount.get(edge.neighborId) || 0;
                     if (count >= 2) continue; // max 2 visits per node
@@ -181,7 +189,9 @@ export function findCandidateRoutes(
                     queue.push({
                         currentNode: edge.neighborId,
                         visitedNodes: nextVisited,
-                        distance: curr.distance + edge.dist + penalty,
+                        distance: curr.distance + edge.dist,
+                        cost: curr.cost + edge.dist + transferPenalty + banPenalty,
+                        lastLineId: edge.lineId || curr.lastLineId,
                         stationIds: [...curr.stationIds, edge.neighborId],
                         sectionIds: edge.sectionId ? [...curr.sectionIds, edge.sectionId] : curr.sectionIds,
                         lineIds: edge.lineId ? [...curr.lineIds, edge.lineId] : curr.lineIds
@@ -284,21 +294,24 @@ export function findCandidateRoutes(
             return st ? st.name : sid;
         });
 
-        // Collect distinct lines used in order
+        // Collect distinct lines in chronological order
         const linesUsed: RouteLineInfo[] = [];
-        const seenLineIds = new Set<number>();
+        const sequentialLineIds: number[] = [];
         state.lineIds.forEach(lid => {
-            if (lid > 0 && !seenLineIds.has(lid)) {
-                seenLineIds.add(lid);
-                const meta = linesMetaMap[String(lid)];
-                linesUsed.push({
-                    id: lid,
-                    name: meta?.name || `Line ${lid}`,
-                    name_en: meta?.name_en,
-                    name_kr: meta?.name_kr,
-                    color: meta?.color || '#3b82f6'
-                });
+            if (lid > 0 && (sequentialLineIds.length === 0 || sequentialLineIds[sequentialLineIds.length - 1] !== lid)) {
+                sequentialLineIds.push(lid);
             }
+        });
+
+        sequentialLineIds.forEach(lid => {
+            const meta = linesMetaMap[String(lid)];
+            linesUsed.push({
+                id: lid,
+                name: meta?.name || `Line ${lid}`,
+                name_en: meta?.name_en,
+                name_kr: meta?.name_kr,
+                color: meta?.color || '#3b82f6'
+            });
         });
 
         // Collect section geometries
@@ -368,6 +381,8 @@ function combineLegs(legCandidates: PathState[][]): PathState[] {
                     currentNode: leg2.currentNode,
                     visitedNodes: combinedVisited,
                     distance: leg1.distance + leg2.distance,
+                    cost: leg1.cost + leg2.cost,
+                    lastLineId: leg2.lastLineId || leg1.lastLineId,
                     stationIds: combinedStationIds,
                     sectionIds: [...leg1.sectionIds, ...leg2.sectionIds],
                     lineIds: [...leg1.lineIds, ...leg2.lineIds]
