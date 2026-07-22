@@ -78,6 +78,45 @@ export function validateVisaRequirements(trip: Trip, warnings: TripWarning[]) {
     });
 }
 
+// 전자여행허가(ETA) 국가별 안내 — 국가 고유 제도라 국가 데이터셋으로 매핑 (기후와 달리 위도 일반화 불가)
+interface EntryAuthSystem {
+    aliases: string[];
+    system: string;
+    note: string;
+}
+
+const ENTRY_AUTH_SYSTEMS: EntryAuthSystem[] = [
+    { aliases: ['미국', 'united states', 'usa', '괌', '하와이'], system: 'ESTA', note: '무비자 입국 시 ESTA 전자여행허가 사전 승인이 필요해요.' },
+    { aliases: ['캐나다', 'canada'], system: 'eTA', note: '항공편 입국 시 eTA 전자여행허가가 필요해요.' },
+    { aliases: ['호주', '오스트레일리아', 'australia'], system: 'ETA/eVisitor', note: '전자비자(ETA 또는 eVisitor) 사전 신청이 필요해요.' },
+    { aliases: ['영국', 'united kingdom', 'england', 'britain'], system: 'UK ETA', note: '영국 입국 전 ETA 전자여행허가가 필요할 수 있어요.' },
+    { aliases: ['뉴질랜드', 'new zealand'], system: 'NZeTA', note: '입국 전 NZeTA 전자여행허가와 관광세(IVL)가 필요해요.' },
+    { aliases: ['일본', 'japan'], system: 'Visit Japan Web', note: '입국·세관 수속 간소화를 위해 Visit Japan Web을 미리 등록하면 편해요.' },
+    { aliases: ['유럽', 'schengen', '솅겐', '셍겐', '프랑스', '독일', '이탈리아', '스페인', '네덜란드', '스위스', '포르투갈', '그리스', '오스트리아'], system: 'ETIAS', note: '유럽(솅겐) 여행 시 ETIAS 전자여행허가가 도입될 예정이니 출발 전 최신 요건을 확인하세요.' },
+];
+
+export function validateEntryAuthorization(trip: Trip, warnings: TripWarning[]) {
+    const isInternational = trip.isOverseas || trip.flights?.some(f => f.isInternational);
+    if (!isInternational) return;
+
+    const regionNames = (trip.locations?.regions || []).map(r => (r.name || '').toLowerCase());
+    if (regionNames.length === 0) return;
+
+    ENTRY_AUTH_SYSTEMS.forEach(sys => {
+        const matched = sys.aliases.some(a => regionNames.some(n => n.includes(a.toLowerCase())));
+        if (matched && !warnings.some(w => w.id === `entry-auth-${sys.system}`)) {
+            warnings.push({
+                id: `entry-auth-${sys.system}`,
+                type: 'not_booked',
+                severity: 'info',
+                message: `${sys.system}: ${sys.note}`,
+                suggestion: '전자여행허가는 승인에 시간이 걸릴 수 있어요. 출발 전 여유 있게 공식 사이트에서 신청하세요.',
+                sourceType: 'checklist'
+            });
+        }
+    });
+}
+
 export function validateSeasonalCaution(trip: Trip, warnings: TripWarning[]) {
     if (!trip.dates?.startDate) return;
     const center = trip.locations?.center;

@@ -395,6 +395,62 @@ export function validateFirstDayJetlag(trip: Trip, warnings: TripWarning[], styl
     }
 }
 
+// 가족 동반 여행의 페이싱 (memberCounts 재활용) — 아이·어르신 동반 시 무리한 일정 완화 제안
+export function validateFamilyPacing(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
+    const familyCount = trip.memberCounts?.family || 0;
+    if (familyCount <= 0) return;
+    if (style?.active === 'energetic') return; // 강행군 선호면 스킵
+
+    let flagged = false;
+    (trip.dailyTimeline || []).forEach(day => {
+        if (flagged) return;
+        const events = day.events || [];
+        const hasLate = events.some(e => {
+            const end = timeToMinutes(e.endTime);
+            return end !== null && end >= 22 * 60;
+        });
+        if (hasLate || events.length >= 6) flagged = true;
+    });
+
+    if (flagged) {
+        warnings.push({
+            id: 'family-pacing',
+            type: 'time_pressure',
+            severity: 'info',
+            message: '가족과 함께하는 여행에 늦은 밤 일정이나 빡빡한 날이 있어요. 아이·어르신 동반 시 체력과 휴식을 고려해 보세요.',
+            suggestion: '가족 여행은 이동을 줄이고 중간중간 휴식·식사 시간을 넉넉히 두는 것이 좋아요.',
+            sourceType: 'event'
+        });
+    }
+}
+
+// 다른 날 동일 장소 중복 방문 (좌표 기반) — 의도치 않은 중복 감지
+export function validateSamePlaceMultipleDays(trip: Trip, warnings: TripWarning[]) {
+    const seen = new Map<string, number>(); // key -> 최초 dayIdx
+    (trip.dailyTimeline || []).forEach((day, dayIdx) => {
+        (day.events || []).forEach(event => {
+            const loc = event.location;
+            if (!loc?.lat || !loc?.lng) return; // 좌표 있는 경우만 (오탐 방지)
+            const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
+            const firstDay = seen.get(key);
+            if (firstDay === undefined) {
+                seen.set(key, dayIdx);
+            } else if (firstDay !== dayIdx) {
+                warnings.push({
+                    id: `same-place-multi-${event.id}`,
+                    type: 'duplicate_event',
+                    severity: 'info',
+                    message: `'${event.title}'을(를) ${firstDay + 1}일차와 ${dayIdx + 1}일차에 모두 방문해요. 의도한 재방문인지 확인해 보세요.`,
+                    suggestion: '실수로 같은 장소를 다른 날에 중복 추가한 것은 아닌지 확인하세요. 의도한 재방문이면 그대로 두셔도 좋아요.',
+                    sourceType: 'event',
+                    sourceId: event.id,
+                    metadata: { dayIndex: dayIdx }
+                });
+            }
+        });
+    });
+}
+
 // B7 + C8: 마지막 날 귀국편 전 일정 과잉 / 공항 이동 시간 미고려
 export function validateLastDayPressure(trip: Trip, warnings: TripWarning[]) {
     if (!trip.flights || !trip.dailyTimeline || trip.dailyTimeline.length === 0) return;
