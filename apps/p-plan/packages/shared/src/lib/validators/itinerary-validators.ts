@@ -182,7 +182,10 @@ function checkPointToPointFeasibility(
 export function validateDailyIntensity(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     (trip.dailyTimeline || []).forEach((day, idx) => {
         const eventCount = day.events?.length || 0;
-        const threshold = style?.planning === 'planned' ? 8 : 5;
+        let threshold = style?.planning === 'planned' ? 8 : 5;
+        // 체력형은 빡빡한 일정을 선호하므로 기준을 완화, 여유형은 강화
+        if (style?.active === 'energetic') threshold += 3;
+        else if (style?.active === 'relaxed') threshold = Math.max(3, threshold - 1);
 
         if (eventCount >= threshold) {
             warnings.push({
@@ -374,8 +377,8 @@ export function validateLastDayPressure(trip: Trip, warnings: TripWarning[]) {
 
 // C1: 식사 시간 미확보 (빡빡한 일정 사이 점심/저녁 공백 없음)
 export function validateMealTimeGaps(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
-    // 유연한 여행 스타일이면 건너뜀
-    if (style?.planning === 'flexible') return;
+    // 유연한 여행 스타일이거나 체력형(강행군 감수)이면 건너뜀
+    if (style?.planning === 'flexible' || style?.active === 'energetic') return;
 
     (trip.dailyTimeline || []).forEach((day, dayIdx) => {
         const events = (day.events || [])
@@ -459,9 +462,11 @@ export function validateMealTimeGaps(trip: Trip, warnings: TripWarning[], style?
 }
 
 // C2: 연속 이동일 경고 (3일 이상 연속 도시간 이동)
-export function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[]) {
+export function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     if (!trip.dailyTimeline || trip.dailyTimeline.length < 3) return;
 
+    // 체력형(energetic)은 연속 이동 허용치를 높임
+    const threshold = style?.active === 'energetic' ? 4 : 3;
     let consecutiveCount = 0;
     let startDay = 0;
 
@@ -476,7 +481,7 @@ export function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[
             if (consecutiveCount === 0) startDay = dayIdx;
             consecutiveCount++;
         } else {
-            if (consecutiveCount >= 3) {
+            if (consecutiveCount >= threshold) {
                 warnings.push({
                     id: `consecutive-travel-${startDay}`,
                     type: 'time_pressure',

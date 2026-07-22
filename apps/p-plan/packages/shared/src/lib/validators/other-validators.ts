@@ -80,43 +80,60 @@ export function validateVisaRequirements(trip: Trip, warnings: TripWarning[]) {
 
 export function validateSeasonalCaution(trip: Trip, warnings: TripWarning[]) {
     if (!trip.dates?.startDate) return;
-    const startMonth = new Date(trip.dates.startDate).getMonth() + 1;
-    const regions = trip.locations.regions || [];
+    const center = trip.locations?.center;
+    if (!center || typeof center.lat !== 'number' || typeof center.lng !== 'number') return;
 
-    regions.forEach(reg => {
-        const name = reg.name || '';
-        
-        if ((name.includes('일본') || name.includes('도쿄') || name.includes('오사카') || name.includes('후쿠오카')) && (startMonth >= 6 && startMonth <= 9)) {
-            warnings.push({
-                id: `season-typhoon-${reg.id}`,
-                type: 'location',
-                severity: 'info',
-                message: `${name}의 ${startMonth}월은 장마나 태풍의 영향을 받을 수 있습니다. 우천 시 실내 일정 등을 미리 준비해 보세요.`,
-                suggestion: '갑작스러운 비에 대비해 박물관, 미술관, 쇼핑몰 등 실내 일정 후보를 미리 찾아두세요.',
-                sourceType: 'location'
-            });
-        }
+    const month = new Date(trip.dates.startDate).getMonth() + 1; // 1~12
+    const { lat, lng } = center;
+    const absLat = Math.abs(lat);
+    const isNorth = lat >= 0;
 
-        if ((name.includes('유럽') || name.includes('이탈리아') || name.includes('스페인')) && (startMonth >= 7 && startMonth <= 8)) {
-            warnings.push({
-                id: `season-heat-${reg.id}`,
-                type: 'location',
-                severity: 'info',
-                message: `유럽 지역의 ${startMonth}월은 극심한 폭염이 발생할 수 있습니다. 한낮 야외 활동에 유의하세요.`,
-                sourceType: 'location'
-            });
-        }
+    // 현지 계절 판정 (남반구는 북반구와 반대)
+    const northSummer = [6, 7, 8];
+    const northWinter = [12, 1, 2];
+    const isLocalWinter = isNorth ? northWinter.includes(month) : northSummer.includes(month);
+    const isLocalSummer = isNorth ? northSummer.includes(month) : northWinter.includes(month);
 
-        if ((name.includes('홋카이도') || name.includes('삿포로') || name.includes('북유럽') || name.includes('아이슬란드')) && (startMonth >= 12 || startMonth <= 2)) {
-            warnings.push({
-                id: `season-snow-${reg.id}`,
-                type: 'location',
-                severity: 'info',
-                message: `${name}의 겨울철은 폭설로 인한 교통 지연이 잦을 수 있습니다. 이동 시간을 넉넉히 잡으세요.`,
-                sourceType: 'location'
-            });
-        }
-    });
+    const push = (id: string, message: string, suggestion?: string) => {
+        // 같은 종류의 경고 중복 방지
+        if (warnings.some(w => w.id === id)) return;
+        warnings.push({ id, type: 'seasonal', severity: 'info', message, suggestion, sourceType: 'location' });
+    };
+
+    // 1. 고위도 겨울: 폭설·결빙·짧은 일조
+    if (absLat >= 45 && isLocalWinter) {
+        push('season-highlat-winter',
+            `여행지가 고위도 지역이라 ${month}월은 폭설·결빙으로 교통이 지연될 수 있어요. 방한 준비와 넉넉한 이동 시간을 고려하세요.`,
+            '겨울철 고위도는 해가 짧아 야외 일정 가능 시간이 줄어듭니다. 주요 야외 일정은 오전에 배치하세요.');
+    }
+    // 2. 초고위도 여름: 백야
+    if (absLat >= 60 && isLocalSummer) {
+        push('season-highlat-summer',
+            '초고위도 지역의 여름은 백야로 밤에도 밝을 수 있어요. 숙면을 위해 안대 등을 챙기면 좋아요.');
+    }
+    // 3. 열대: 연중 고온다습 + 스콜
+    if (absLat <= 23.5) {
+        push('season-tropical',
+            '열대 지역은 연중 덥고 습하며 스콜(소나기)이 잦아요. 가벼운 옷과 우비, 충분한 수분을 준비하세요.');
+    }
+    // 4. 중위도 여름 폭염
+    else if (absLat >= 30 && absLat < 45 && isLocalSummer) {
+        push('season-heat',
+            `${month}월은 한낮 폭염이 있을 수 있어요. 야외 일정은 이른 오전이나 늦은 오후로 배치하고 수분을 챙기세요.`);
+    }
+
+    // 5. 동아시아 태풍·장마철 (한국·일본·대만·중국 동안·필리핀 등, 좌표 기반)
+    if (lng >= 115 && lng <= 150 && lat >= 15 && lat <= 45 && [6, 7, 8, 9, 10].includes(month)) {
+        push('season-typhoon',
+            `${month}월 동아시아는 장마·태풍의 영향을 받을 수 있어요. 우천 시 대체할 실내 일정을 미리 준비하세요.`,
+            '갑작스러운 비에 대비해 박물관·미술관·쇼핑몰 등 실내 일정 후보를 미리 찾아두세요.');
+    }
+
+    // 6. 남·동남아시아 몬순 우기 (인도·동남아 등)
+    if (lng >= 70 && lng <= 110 && absLat <= 28 && [6, 7, 8, 9].includes(month)) {
+        push('season-monsoon',
+            `${month}월 이 지역은 몬순 우기일 수 있어요. 방수 대비와 실내 일정을 함께 준비하세요.`);
+    }
 }
 
 export function validateCrowdPreference(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {

@@ -70,7 +70,7 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
         validateOperatingHours(trip, warnings);
         validateDuplicateEvents(trip, warnings);                    // B5: 중복 일정
         validateMealTimeGaps(trip, warnings, style);                // C1: 식사 시간
-        validateConsecutiveTravelDays(trip, warnings);              // C2: 연속 이동일
+        validateConsecutiveTravelDays(trip, warnings, style);       // C2: 연속 이동일
         if (isLoaded('flights')) {
             validateLastDayPressure(trip, warnings);                // B7+C8: 마지막날 과잉/공항 이동
         }
