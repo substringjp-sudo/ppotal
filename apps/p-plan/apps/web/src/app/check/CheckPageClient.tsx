@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { runQuickCheck, type QuickCheckEventInput, type TripWarning } from '@pplaner/shared';
+import { runQuickCheck, QUICK_CHECK_PERSONAS, type QuickCheckEventInput, type TripWarning } from '@pplaner/shared';
 import TripDayPicker from '@/components/common/TripDayPicker';
 import ConflictAwareTimePicker from '@/components/common/ConflictAwareTimePicker';
 import { useRequireAuth } from '@/components/common/AuthGate';
@@ -44,6 +44,7 @@ export default function CheckPageClient() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [events, setEvents] = useState<DraftEvent[]>([]);
+    const [personaId, setPersonaId] = useState('balanced');
     const { isAuthed, login } = useRequireAuth();
 
     // 즉시 가치 체감용 예시 (일부러 시간이 겹치는 일정을 넣어 점검 결과를 보여줌)
@@ -66,15 +67,20 @@ export default function CheckPageClient() {
     const readyEvents = events.filter((e) => e.title.trim() && e.date);
     const canCheck = !!startDate && readyEvents.length > 0;
 
+    const persona = QUICK_CHECK_PERSONAS.find((p) => p.id === personaId);
+
     const warnings = useMemo<TripWarning[]>(() => {
         if (!canCheck) return [];
-        return runQuickCheck({
-            startDate,
-            endDate: endDate || startDate,
-            events: readyEvents.map(({ key, ...rest }) => rest),
-        }).warnings;
+        return runQuickCheck(
+            {
+                startDate,
+                endDate: endDate || startDate,
+                events: readyEvents.map(({ key, ...rest }) => rest),
+            },
+            persona?.style
+        ).warnings;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [startDate, endDate, JSON.stringify(readyEvents), canCheck]);
+    }, [startDate, endDate, JSON.stringify(readyEvents), canCheck, personaId]);
 
     const sortedWarnings = useMemo(
         () =>
@@ -254,6 +260,34 @@ export default function CheckPageClient() {
                         {endDate && endDate !== startDate ? ` ~ ${endDate}` : ''}) 안으로 제한돼요 — 연·월을
                         오갈 필요가 없죠.
                     </p>
+                )}
+            </section>
+
+            {/* 여행 타입 — 타입에 따라 경고 강도가 달라짐 */}
+            <section className="mb-6">
+                <h2 className="mb-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                    여행 타입{' '}
+                    <span className="font-normal text-slate-400">— 타입에 따라 경고 강도가 달라져요</span>
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                    {QUICK_CHECK_PERSONAS.map((p) => (
+                        <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setPersonaId(p.id)}
+                            title={p.description}
+                            className={`rounded-lg border px-3 py-1.5 text-xs font-bold transition ${
+                                personaId === p.id
+                                    ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                            }`}
+                        >
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+                {persona?.description && (
+                    <p className="mt-1.5 text-[11px] text-slate-400">{persona.description}</p>
                 )}
             </section>
 
