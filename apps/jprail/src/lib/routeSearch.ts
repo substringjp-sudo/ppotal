@@ -35,6 +35,13 @@ interface PathState {
     lineIds: number[];
 }
 
+interface GraphEdge {
+    neighborId: string;
+    sectionId: number;
+    dist: number;
+    lineId: number;
+}
+
 /**
  * Searches candidate routes connecting a series of waypoints (Start -> Via 1 -> ... -> End)
  */
@@ -46,43 +53,204 @@ export function findCandidateRoutes(
         return { candidates: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
     }
 
-    const network = railData.railroadNetwork;
-    const stationGraph = network?.station_graph;
-    const lineDataMap = network?.line_data;
-    const stationsMap = railData.stations;
+    const stationsMap = railData.stations || {};
+    const linesMetaMap = railData.lines || {};
 
-    // Create quick lookup for sections by id
+    // 1. Quick lookup for sections
     const sectionsMap = new Map<number, Section>();
     if (railData.sections && railData.sections.sections) {
         railData.sections.sections.forEach(s => sectionsMap.set(s.id, s));
     }
 
-    // Quick lookup for lines by id
-    const linesMetaMap = railData.lines || {};
+    // 2. Build unified adjacency graph
+    const adj = new Map<string, GraphEdge[]>();
 
-    // 1. For each leg between waypoints[i] and waypoints[i+1], find candidate paths
+    const addEdge = (u: string, v: string, secId: number, distKm: number, lineId: number) => {
+        if (!u || !v || u === v) return;
+        if (!adj.has(u)) adj.set(u, []);
+        if (!adj.has(v)) adj.set(v, []);
+        adj.get(u)!.push({ neighborId: v, sectionId: secId, dist: distKm, lineId });
+        adj.get(v)!.push({ neighborId: u, sectionId: secId, dist: distKm, lineId });
+    };
+
+    // Add edges from sections metadata
+    if (railData.sections && railData.sections.sections) {
+        railData.sections.sections.forEach(s => {
+            const dist = (s.length || 500) / 1000;
+            addEdge(s.start, s.end, s.id, dist, s.line_id);
+        });
+    }
+
+    // Add edges from station_graph if available
+    if (railData.railroadNetwork && railData.railroadNetwork.station_graph) {
+        const sg = railData.railroadNetwork.station_graph;
+        Object.entries(sg).forEach(([u, neighbors]) => {
+            Object.entries(neighbors).forEach(([v, connData]: [string, any]) => {
+                const secIds = (connData.section_ids || []).map(Number);
+                const lines = (connData.available_lines || []).map(Number);
+                const lineId = lines.length > 0 ? lines[0] : 0;
+                const secId = secIds.length > 0 ? secIds[0] : 0;
+                let dist = 0;
+                secIds.forEach((sid: number) => {
+                    const sec = sectionsMap.get(sid);
+                    if (sec && sec.length) dist += sec.length / 1000;
+                });
+                if (dist === 0) dist = 0.5;
+                addEdge(u, v, secId, dist, lineId);
+            });
+        });
+    }
+
+    // Helper to resolve all station IDs sharing the same station name
+    const getMatchingStationIds = (st: Station): string[] => {
+        const ids = new Set<string>();
+        ids.add(st.id);
+        if (st.name) {
+            Object.values(stationsMap).forEach(s => {
+                if (s.name === st.name) ids.add(s.id);
+            });
+        }
+        return Array.from(ids);
+    };
+
+    // Leg route finder
+    const findLegPaths = (startSt: Station, endSt: Station): PathState[] => {
+        const startIds = getMatchingStationIds(startSt);
+        const targetNames = new Set<string>();
+        if (endSt.name) {
+            Object.values(stationsMap).forEach(s => {
+                if (s.name === endSt.name) targetNames.add(s.name);
+            });
+        } else {
+            targetNames.add(endSt.id);
+        }
+
+        const candidates: PathState[] = [];
+        const bannedEdges = new Set<string>();
+
+        // Up to 5 search iterations with penalization for previously used edges to find alternate routes
+        for (let attempt = 0; attempt < 5; attempt++) {
+            const visitCount = new Map<string, number>();
+            const queue: PathState[] = [];
+
+            startIds.forEach(sid => {
+                visitCount.set(sid, 1);
+                queue.push({
+                    currentNode: sid,
+                    visitedNodes: new Set([sid]),
+                    distance: 0,
+                    stationIds: [sid],
+                    sectionIds: [],
+                    lineIds: []
+                });
+            });
+
+            let foundPath: PathState | null = null;
+            let processed = 0;
+            const maxProcessed = 6000;
+
+            while (queue.length > 0 && processed < maxProcessed) {
+                queue.sort((a, b) => a.distance - b.distance);
+                const curr = queue.shift()!;
+                processed++;
+
+                const stObj = stationsMap[curr.currentNode];
+                if (stObj && targetNames.has(stObj.name) && curr.stationIds.length > 1) {
+                    foundPath = curr;
+                    break;
+                }
+
+                const neighbors = adj.get(curr.currentNode) || [];
+                for (const edge of neighbors) {
+                    const edgeKey = `${curr.currentNode}-${edge.neighborId}`;
+                    const penalty = bannedEdges.has(edgeKey) ? 60 : 0;
+
+                    const count = visitCount.get(edge.neighborId) || 0;
+                    if (count >= 2) continue; // max 2 visits per node
+
+                    visitCount.set(edge.neighborId, count + 1);
+                    const nextVisited = new Set(curr.visitedNodes);
+                    nextVisited.add(edge.neighborId);
+
+                    queue.push({
+                        currentNode: edge.neighborId,
+                        visitedNodes: nextVisited,
+                        distance: curr.distance + edge.dist + penalty,
+                        stationIds: [...curr.stationIds, edge.neighborId],
+                        sectionIds: edge.sectionId ? [...curr.sectionIds, edge.sectionId] : curr.sectionIds,
+                        lineIds: edge.lineId ? [...curr.lineIds, edge.lineId] : curr.lineIds
+                    });
+                }
+            }
+
+            if (foundPath) {
+                // Calculate true distance without penalties
+                let trueDist = 0;
+                foundPath.sectionIds.forEach(sid => {
+                    const sec = sectionsMap.get(sid);
+                    if (sec && sec.length) trueDist += sec.length / 1000;
+                });
+                if (trueDist === 0) trueDist = foundPath.distance;
+                foundPath.distance = trueDist;
+
+                candidates.push(foundPath);
+
+                // Ban middle section edge to encourage discovering alternate paths
+                if (foundPath.sectionIds.length > 0) {
+                    const midSecId = foundPath.sectionIds[Math.floor(foundPath.sectionIds.length / 2)];
+                    const sec = sectionsMap.get(midSecId);
+                    if (sec) {
+                        bannedEdges.add(`${sec.start}-${sec.end}`);
+                        bannedEdges.add(`${sec.end}-${sec.start}`);
+                    }
+                } else if (foundPath.stationIds.length > 2) {
+                    const midIdx = Math.floor(foundPath.stationIds.length / 2);
+                    const u = foundPath.stationIds[midIdx];
+                    const v = foundPath.stationIds[midIdx + 1];
+                    bannedEdges.add(`${u}-${v}`);
+                    bannedEdges.add(`${v}-${u}`);
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        // Filter unique paths by line sequence or station sequence
+        const uniquePathsMap = new Map<string, PathState>();
+        candidates.forEach(path => {
+            const key = path.lineIds.join('-') || path.stationIds.join('-');
+            if (!uniquePathsMap.has(key) || path.distance < uniquePathsMap.get(key)!.distance) {
+                uniquePathsMap.set(key, path);
+            }
+        });
+
+        return Array.from(uniquePathsMap.values()).sort((a, b) => a.distance - b.distance);
+    };
+
+    // 3. For each leg between waypoints[i] and waypoints[i+1], find candidate paths
     const legCandidates: PathState[][] = [];
 
     for (let i = 0; i < waypoints.length - 1; i++) {
         const startSt = waypoints[i];
         const endSt = waypoints[i + 1];
 
-        const paths = findLegPaths(startSt.id, endSt.id, stationGraph, stationsMap);
+        const paths = findLegPaths(startSt, endSt);
         if (paths.length === 0) {
-            // Cannot connect this leg
             return { candidates: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
         }
         legCandidates.push(paths);
     }
 
-    // 2. Combine leg candidates into full route candidates
+    // 4. Combine leg candidates into full route candidates
     const combinedStates: PathState[] = combineLegs(legCandidates);
 
-    // 3. Deduplicate combined states by section sequence / line combination
+    // 5. Deduplicate combined states by section sequence / line combination
     const uniqueCandidatesMap = new Map<string, PathState>();
 
     for (const state of combinedStates) {
-        const key = state.sectionIds.join('-');
+        const key = state.sectionIds.length > 0 ? state.sectionIds.join('-') : state.stationIds.join('-');
         if (!uniqueCandidatesMap.has(key)) {
             uniqueCandidatesMap.set(key, state);
         } else {
@@ -94,8 +262,6 @@ export function findCandidateRoutes(
     }
 
     let allUniqueStates = Array.from(uniqueCandidatesMap.values());
-
-    // Sort by distance
     allUniqueStates.sort((a, b) => a.distance - b.distance);
 
     const totalCandidatesCount = allUniqueStates.length;
@@ -119,13 +285,12 @@ export function findCandidateRoutes(
             if (lid > 0 && !seenLineIds.has(lid)) {
                 seenLineIds.add(lid);
                 const meta = linesMetaMap[String(lid)];
-                const netLine = lineDataMap ? lineDataMap[String(lid)] : undefined;
                 linesUsed.push({
                     id: lid,
-                    name: meta?.name || netLine?.name || `Line ${lid}`,
-                    name_en: meta?.name_en || netLine?.name_en,
+                    name: meta?.name || `Line ${lid}`,
+                    name_en: meta?.name_en,
                     name_kr: meta?.name_kr,
-                    color: meta?.color || netLine?.color || '#3b82f6'
+                    color: meta?.color || '#3b82f6'
                 });
             }
         });
@@ -169,125 +334,6 @@ export function findCandidateRoutes(
 }
 
 /**
- * Finds candidate paths between startId and endId using BFS/Dijkstra on stationGraph
- */
-function findLegPaths(
-    startId: string,
-    endId: string,
-    stationGraph: Record<string, any> | undefined,
-    stationsMap: Record<string, Station>
-): PathState[] {
-    if (startId === endId) {
-        return [{
-            currentNode: startId,
-            visitedNodes: new Set([startId]),
-            distance: 0,
-            stationIds: [startId],
-            sectionIds: [],
-            lineIds: []
-        }];
-    }
-
-    if (!stationGraph) {
-        return [];
-    }
-
-    // Normalize start and end IDs: check if start/end station names match other IDs
-    const startStationName = stationsMap[startId]?.name;
-    const endStationName = stationsMap[endId]?.name;
-
-    const targetStationIds = new Set<string>();
-    targetStationIds.add(endId);
-    if (endStationName) {
-        Object.values(stationsMap).forEach(st => {
-            if (st.name === endStationName) targetStationIds.add(st.id);
-        });
-    }
-
-    const startStationIds: string[] = [startId];
-    if (startStationName) {
-        Object.values(stationsMap).forEach(st => {
-            if (st.name === startStationName && st.id !== startId) startStationIds.push(st.id);
-        });
-    }
-
-    const candidates: PathState[] = [];
-    const queue: PathState[] = [];
-
-    startStationIds.forEach(sid => {
-        queue.push({
-            currentNode: sid,
-            visitedNodes: new Set([sid]),
-            distance: 0,
-            stationIds: [sid],
-            sectionIds: [],
-            lineIds: []
-        });
-    });
-
-    const maxQueue = 1000;
-    let processed = 0;
-
-    while (queue.length > 0 && processed < maxQueue) {
-        // Sort queue by distance
-        queue.sort((a, b) => a.distance - b.distance);
-        const curr = queue.shift()!;
-        processed++;
-
-        if (targetStationIds.has(curr.currentNode)) {
-            // Found a path
-            candidates.push(curr);
-            if (candidates.length >= 6) break; // Collect top candidate paths
-            continue;
-        }
-
-        const neighbors = stationGraph[curr.currentNode];
-        if (!neighbors) continue;
-
-        for (const neighborId in neighbors) {
-            if (curr.visitedNodes.has(neighborId)) continue;
-
-            const connData = neighbors[neighborId];
-            if (!connData || !connData.connections) continue;
-
-            for (const conn of connData.connections) {
-                const lineId = Number(conn.line_id || 0);
-                const sectionIds = (conn.section_ids || []).map(Number);
-                const dist = (conn.distance || 0) / 1000;
-
-                const nextVisited = new Set(curr.visitedNodes);
-                nextVisited.add(neighborId);
-
-                const nextState: PathState = {
-                    currentNode: neighborId,
-                    visitedNodes: nextVisited,
-                    distance: curr.distance + dist,
-                    stationIds: [...curr.stationIds, neighborId],
-                    sectionIds: [...curr.sectionIds, ...sectionIds],
-                    lineIds: lineId > 0 ? [...curr.lineIds, lineId] : curr.lineIds
-                };
-
-                // Limit search depth to prevent infinite loops (max 100 stations per leg)
-                if (nextState.stationIds.length < 100) {
-                    queue.push(nextState);
-                }
-            }
-        }
-    }
-
-    // Filter distinct paths by line sequence
-    const distinctPathsMap = new Map<string, PathState>();
-    candidates.forEach(path => {
-        const lineKey = path.lineIds.join('-') || path.stationIds.join('-');
-        if (!distinctPathsMap.has(lineKey) || path.distance < distinctPathsMap.get(lineKey)!.distance) {
-            distinctPathsMap.set(lineKey, path);
-        }
-    });
-
-    return Array.from(distinctPathsMap.values()).sort((a, b) => a.distance - b.distance);
-}
-
-/**
  * Combines candidates across legs
  */
 function combineLegs(legCandidates: PathState[][]): PathState[] {
@@ -302,10 +348,8 @@ function combineLegs(legCandidates: PathState[][]): PathState[] {
 
         for (const leg1 of currentCombinations) {
             for (const leg2 of nextLeg) {
-                // Combine leg1 and leg2
                 const combinedVisited = new Set([...Array.from(leg1.visitedNodes), ...Array.from(leg2.visitedNodes)]);
                 const combinedStationIds = [...leg1.stationIds];
-                // Avoid duplicating the transition station
                 if (leg2.stationIds.length > 0) {
                     if (combinedStationIds[combinedStationIds.length - 1] === leg2.stationIds[0]) {
                         combinedStationIds.push(...leg2.stationIds.slice(1));

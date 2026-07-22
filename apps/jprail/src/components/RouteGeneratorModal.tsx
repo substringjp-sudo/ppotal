@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { RailData, Station } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName } from '../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { findCandidateRoutes, CandidateRoute, RouteSearchResult } from '../lib/routeSearch';
 
@@ -21,11 +21,32 @@ interface StationInputProps {
     selectedStation: Station | null;
     onSelectStation: (station: Station | null) => void;
     railData: RailData | null;
+    regionNames: RegionNames | null;
     onRemove?: () => void;
     isRemovable?: boolean;
     icon: string;
     iconColor?: string;
 }
+
+const getStationLines = (station: Station, railData: RailData | null) => {
+    if (!railData) return [];
+    const linesMap = new Map<string, { name: string; name_en?: string; name_kr?: string; color: string }>();
+    station.platform_ids?.forEach(pid => {
+        const platform = railData.platforms[pid];
+        if (platform) {
+            const line = railData.lines[platform.line];
+            if (line) {
+                linesMap.set(line.id.toString(), {
+                    name: line.name,
+                    name_en: line.name_en,
+                    name_kr: line.name_kr,
+                    color: line.color || '#3b82f6'
+                });
+            }
+        }
+    });
+    return Array.from(linesMap.values());
+};
 
 const StationPickerInput: React.FC<StationInputProps> = ({
     label,
@@ -33,6 +54,7 @@ const StationPickerInput: React.FC<StationInputProps> = ({
     selectedStation,
     onSelectStation,
     railData,
+    regionNames,
     onRemove,
     isRemovable = false,
     icon,
@@ -74,6 +96,11 @@ const StationPickerInput: React.FC<StationInputProps> = ({
         return Array.from(stationsMap.values()).slice(0, 10);
     }, [railData, query]);
 
+    const selectedAddress = selectedStation
+        ? getLocalizedAddress(selectedStation.prefecture_id, selectedStation.city_id, regionNames, language)
+        : '';
+    const selectedLines = selectedStation ? getStationLines(selectedStation, railData) : [];
+
     return (
         <div className="relative flex flex-col gap-1" ref={containerRef}>
             <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -82,21 +109,47 @@ const StationPickerInput: React.FC<StationInputProps> = ({
             </label>
 
             {selectedStation ? (
-                <div className="flex items-center justify-between p-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in duration-150">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                        <span className="material-symbols-outlined text-base text-primary">location_on</span>
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
-                                {getLocalizedName(selectedStation, language)}
-                            </span>
-                            {selectedStation.name_en && (
-                                <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                                    {selectedStation.name_en}
+                <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in duration-150">
+                    <div className="flex items-start gap-2.5 overflow-hidden flex-1 min-w-0">
+                        <span className="material-symbols-outlined text-base text-primary shrink-0 mt-0.5">location_on</span>
+                        <div className="flex flex-col min-w-0 space-y-1">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                                    {getLocalizedName(selectedStation, language)}
                                 </span>
+                                {language !== 'ja' && selectedStation.name && (
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                                        {selectedStation.name}
+                                    </span>
+                                )}
+                            </div>
+
+                            {selectedAddress && (
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[11px] shrink-0">map</span>
+                                    {selectedAddress}
+                                </span>
+                            )}
+
+                            {selectedLines.length > 0 && (
+                                <div className="flex flex-wrap gap-1 pt-0.5">
+                                    {selectedLines.map((l, lIdx) => (
+                                        <div
+                                            key={lIdx}
+                                            className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
+                                        >
+                                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: l.color }}></span>
+                                            <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[120px]">
+                                                {getLocalizedName(l, language)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-1">
+
+                    <div className="flex items-center gap-1 shrink-0 ml-2">
                         <button
                             type="button"
                             onClick={() => onSelectStation(null)}
@@ -132,28 +185,61 @@ const StationPickerInput: React.FC<StationInputProps> = ({
                     />
 
                     {isOpen && results.length > 0 && (
-                        <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[1100] max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-                            {results.map(st => (
-                                <button
-                                    key={st.id}
-                                    type="button"
-                                    onClick={() => {
-                                        onSelectStation(st);
-                                        setQuery('');
-                                        setIsOpen(false);
-                                    }}
-                                    className="w-full px-3 py-2 text-left hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors flex items-center justify-between"
-                                >
-                                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                                        {getLocalizedName(st, language)}
-                                    </span>
-                                    {st.name_en && (
-                                        <span className="text-[10px] text-slate-400">
-                                            {st.name_en}
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
+                        <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[1100] max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 custom-scrollbar">
+                            {results.map(st => {
+                                const address = getLocalizedAddress(st.prefecture_id, st.city_id, regionNames, language);
+                                const lines = getStationLines(st, railData);
+
+                                return (
+                                    <button
+                                        key={st.id}
+                                        type="button"
+                                        onClick={() => {
+                                            onSelectStation(st);
+                                            setQuery('');
+                                            setIsOpen(false);
+                                        }}
+                                        className="w-full p-3 text-left hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors flex flex-col gap-1.5"
+                                    >
+                                        {/* Station Name & Alternate Name */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
+                                                {getLocalizedName(st, language)}
+                                            </span>
+                                            {language !== 'ja' && st.name && (
+                                                <span className="text-[10px] text-slate-400 font-medium shrink-0">
+                                                    {st.name}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Address */}
+                                        {address && (
+                                            <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+                                                <span className="material-symbols-outlined text-[12px] text-slate-400">location_on</span>
+                                                <span className="truncate">{address}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Serving Line Badges */}
+                                        {lines.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mt-0.5">
+                                                {lines.map((l, lIdx) => (
+                                                    <div
+                                                        key={lIdx}
+                                                        className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60"
+                                                    >
+                                                        <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: l.color }}></span>
+                                                        <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[140px]">
+                                                            {getLocalizedName(l, language)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -170,6 +256,15 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
+
+    const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
+
+    useEffect(() => {
+        fetch('/data/region_names.json')
+            .then(res => res.json())
+            .then(data => setRegionNames(data))
+            .catch(err => console.error("Failed to load region names:", err));
+    }, []);
 
     const [startStation, setStartStation] = useState<Station | null>(null);
     const [endStation, setEndStation] = useState<Station | null>(null);
@@ -295,6 +390,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                             selectedStation={startStation}
                             onSelectStation={setStartStation}
                             railData={railData}
+                            regionNames={regionNames}
                             icon="trip_origin"
                             iconColor="text-emerald-500"
                         />
@@ -308,6 +404,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 selectedStation={via}
                                 onSelectStation={(st) => handleSetVia(idx, st)}
                                 railData={railData}
+                                regionNames={regionNames}
                                 isRemovable={true}
                                 onRemove={() => handleRemoveVia(idx)}
                                 icon="adjust"
@@ -334,6 +431,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                             selectedStation={endStation}
                             onSelectStation={setEndStation}
                             railData={railData}
+                            regionNames={regionNames}
                             icon="location_on"
                             iconColor="text-rose-500"
                         />
