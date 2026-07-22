@@ -9,6 +9,7 @@ import { validateBudget, validateBudgetRealism, validateExpenseAnomalies, valida
 import { validateChecklistProgress, validatePrepTaskProgress } from './validators/progress-validators';
 import { validateDateConsistency, validateVisaRequirements, validateSeasonalCaution, validateCrowdPreference, checkPreparationReadiness, checkPassportRules, checkLateArrivalAccommodation, checkPowerAdapterRequirement, checkEmptyTimelineDays, checkTravelInsurance, validateUrgentBookings, validateEntryAuthorization } from './validators/other-validators';
 import { validateInternationalLicense, validateHealthPreparation, validateCommunicationPrep, validateAirportTransfer, validateLateNightReturn } from './validators/logistics-validators';
+import { validateHolidayCongestion } from './validators/holiday-validators';
 
 /**
  * 여행 일정 검증 엔진 - 분리된 검증 로직들을 통합하여 수행합니다.
@@ -104,6 +105,7 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
     validateDateConsistency(trip, warnings);
     validateVisaRequirements(trip, warnings);
     validateEntryAuthorization(trip, warnings);                     // 신규: 전자여행허가(ESTA/ETIAS 등)
+    validateHolidayCongestion(trip, warnings);                      // 신규: 현지 공휴일·연휴 혼잡
     validateSeasonalCaution(trip, warnings);
     validateCrowdPreference(trip, warnings, style);
     
