@@ -59,6 +59,9 @@ const ExportModal = dynamic<ExportModalProps>(() => import('./ExportModal'), { s
 const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: false });
 const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
 
+import type { RouteGeneratorModalProps } from './RouteGeneratorModal';
+const RouteGeneratorModal = dynamic<RouteGeneratorModalProps>(() => import('./RouteGeneratorModal').then(m => m.RouteGeneratorModal), { ssr: false });
+
 
 import type { StationDetailPaneProps } from './StationDetailPane';
 const StationDetailPaneWithNoSSR = dynamic<StationDetailPaneProps>(() => import('./StationDetailPane'), { ssr: false });
@@ -157,6 +160,7 @@ const MainPageClient = () => {
     const [isSyncSummaryOpen, setIsSyncSummaryOpen] = React.useState(false);
     const [syncSummaryData, setSyncSummaryData] = React.useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
     const [regionNames, setRegionNames] = React.useState<any>(null);
+    const [isRouteGeneratorOpen, setIsRouteGeneratorOpen] = React.useState(false);
 
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
@@ -1118,6 +1122,7 @@ const MainPageClient = () => {
                                     visitedLineLengths={visitedLineLengths}
                                     onSyncWithRegionevel={undefined}
                                     isSyncLoading={isRecordingLoading}
+                                    onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
                                 />
                             </aside>
                         )}
@@ -1212,6 +1217,7 @@ const MainPageClient = () => {
                                             className="bg-transparent border-none shadow-none"
                                             onSyncWithRegionevel={syncWithRegionevel}
                                             isSyncLoading={isRecordingLoading}
+                                            onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
                                         />
                                     )
                                 }
@@ -1328,6 +1334,14 @@ const MainPageClient = () => {
                     </div>
                 </div>
             )}
+
+            <RouteGeneratorModal
+                isOpen={isRouteGeneratorOpen}
+                onClose={() => setIsRouteGeneratorOpen(false)}
+                railData={railData}
+                onAddTrip={handleRecordTrip}
+            />
+
             {!isMobile && (
                 <div className="fixed bottom-0 right-0 z-[10002] p-2 sm:p-4 pointer-events-none">
                     <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />

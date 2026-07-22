@@ -19,6 +19,7 @@ export interface MyLinesPaneProps {
     className?: string;
     onSyncWithRegionevel?: () => Promise<void>;
     isSyncLoading?: boolean;
+    onOpenRouteGenerator?: () => void;
 }
 
 interface RegionNames {
@@ -35,7 +36,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     visitedLineLengths = {},
     className,
     onSyncWithRegionevel,
-    isSyncLoading
+    isSyncLoading,
+    onOpenRouteGenerator
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
@@ -64,12 +66,23 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     return (
         <div className={`flex flex-col h-full bg-transparent overflow-hidden font-display ${className || ""}`}>
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-xl">history</span>
-                    {t.title}
-                </h2>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0 flex items-center justify-between">
+                <div>
+                    <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-xl">history</span>
+                        {t.title}
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
+                </div>
+                {onOpenRouteGenerator && (
+                    <button
+                        onClick={onOpenRouteGenerator}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all shrink-0"
+                    >
+                        <span className="material-symbols-outlined text-base">alt_route</span>
+                        {t.generateRoute || '경로 생성'}
+                    </button>
+                )}
             </div>
 
             <div className="px-5 py-4">
