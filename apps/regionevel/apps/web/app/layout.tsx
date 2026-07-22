@@ -88,12 +88,12 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} bg-slate-50 text-gray-900 antialiased min-h-screen flex flex-col bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} bg-slate-50 text-gray-900 antialiased h-dvh flex flex-col overflow-hidden`}>
         <AuthProvider>
           <FirebaseProvider>
-            <div className="flex-1 flex flex-col max-w-[1920px] mx-auto w-full bg-white shadow-2xl shadow-slate-900/10 min-h-screen">
+            <div className="flex-1 flex flex-col max-w-[1920px] mx-auto w-full bg-white shadow-2xl shadow-slate-900/10 h-full overflow-hidden">
               <Nav />
-              <main className="flex-1 flex flex-col">
+              <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
                 <script
                   type="application/ld+json"
                   dangerouslySetInnerHTML={{

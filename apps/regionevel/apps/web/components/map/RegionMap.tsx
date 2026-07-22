@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
-import { MapContainer, GeoJSON, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, GeoJSON, useMap, useMapEvents, Polyline } from "react-leaflet";
 import type { FeatureCollection, Feature } from "geojson";
 import type { GeoJSON as LeafletGeoJSON, Layer, PathOptions } from "leaflet";
 import L from "leaflet";
@@ -13,9 +13,197 @@ import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import { ExportModal, type ExportModalStats } from "./ExportModal";
+import { Pencil, CheckCircle2, X } from "lucide-react";
 import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
 
+
+// Ray-casting algorithm for GeoJSON Polygon & MultiPolygon feature point lookup
+function isPointInPolygonCoords(point: [number, number], vs: any[]) {
+  const x = point[0], y = point[1];
+  let inside = false;
+  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    const p1 = vs[i];
+    const p2 = vs[j];
+    if (!p1 || !p2) continue;
+    const xi = p1[0], yi = p1[1];
+    const xj = p2[0], yj = p2[1];
+    if (xi === undefined || yi === undefined || xj === undefined || yj === undefined) continue;
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function isPointInFeature(lng: number, lat: number, feature: Feature): boolean {
+  if (!feature.geometry) return false;
+  const geom = feature.geometry;
+  if (geom.type === "Polygon" && geom.coordinates && geom.coordinates[0]) {
+    return isPointInPolygonCoords([lng, lat], geom.coordinates[0]);
+  } else if (geom.type === "MultiPolygon" && geom.coordinates) {
+    for (const poly of geom.coordinates) {
+      if (poly && poly[0] && isPointInPolygonCoords([lng, lat], poly[0])) return true;
+    }
+  }
+  return false;
+}
+
+function findRegionForPoint(lat: number, lng: number, features: Feature[]): { id: string; name: string } | null {
+  for (const feature of features) {
+    if (isPointInFeature(lng, lat, feature)) {
+      const rawId = feature.properties?.id || feature.properties?.shapeID;
+      const id = padId(rawId);
+      const name = String(feature.properties?.name || feature.properties?.shapeName || "Unknown");
+      if (id) return { id, name };
+    }
+  }
+  return null;
+}
+
+interface MapDrawControllerProps {
+  isDrawMode: boolean;
+  geoData: FeatureCollection | null;
+  onDrawComplete: (
+    startRegion: { id: string; name: string } | null,
+    endRegion: { id: string; name: string } | null,
+    pathRegions: Array<{ id: string; name: string }>
+  ) => void;
+}
+
+function MapDrawController({ isDrawMode, geoData, onDrawComplete }: MapDrawControllerProps) {
+  const map = useMap();
+  const [drawnPath, setDrawnPath] = useState<[number, number][]>([]);
+
+  useEffect(() => {
+    if (isDrawMode) {
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.scrollWheelZoom.disable();
+      map.boxZoom.disable();
+      map.keyboard.disable();
+    } else {
+      map.dragging.enable();
+      map.touchZoom.enable();
+      map.doubleClickZoom.enable();
+      map.scrollWheelZoom.enable();
+      map.boxZoom.enable();
+      map.keyboard.enable();
+      setDrawnPath([]);
+    }
+  }, [isDrawMode, map]);
+
+  useEffect(() => {
+    if (!isDrawMode) return;
+
+    const container = map.getContainer();
+    let drawing = false;
+    let path: [number, number][] = [];
+
+    const getLatLng = (e: MouseEvent | TouchEvent) => {
+      const touch = "touches" in e ? (e.touches[0] || e.changedTouches[0]) : e;
+      if (!touch) return null;
+      const rect = container.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      return map.containerPointToLatLng([x, y]);
+    };
+
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      e.stopPropagation();
+      drawing = true;
+      const latLng = getLatLng(e);
+      if (latLng) {
+        path = [[latLng.lat, latLng.lng]];
+        setDrawnPath(path);
+      }
+    };
+
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      if (!drawing) return;
+      e.stopPropagation();
+      const latLng = getLatLng(e);
+      if (latLng) {
+        path.push([latLng.lat, latLng.lng]);
+        setDrawnPath([...path]);
+      }
+    };
+
+    const handlePointerUp = () => {
+      if (!drawing) return;
+      drawing = false;
+
+      if (path.length > 0 && geoData?.features) {
+        const startPt = path[0];
+        const endPt = path[path.length - 1];
+        if (!startPt || !endPt) return;
+
+        const startRegion = findRegionForPoint(startPt[0], startPt[1], geoData.features);
+        const endRegion = findRegionForPoint(endPt[0], endPt[1], geoData.features);
+
+        const sampleStep = Math.max(1, Math.floor(path.length / 40));
+        const sampledPoints: [number, number][] = [];
+        for (let i = 0; i < path.length; i += sampleStep) {
+          const pt = path[i];
+          if (pt) sampledPoints.push(pt);
+        }
+        if (path.length > 1) {
+          sampledPoints.push(endPt);
+        }
+
+        const encounteredRegions: Array<{ id: string; name: string }> = [];
+        const seenIds = new Set<string>();
+
+        sampledPoints.forEach(([lat, lng]) => {
+          const reg = findRegionForPoint(lat, lng, geoData.features);
+          if (reg && !seenIds.has(reg.id)) {
+            seenIds.add(reg.id);
+            encounteredRegions.push(reg);
+          }
+        });
+
+        onDrawComplete(startRegion, endRegion, encounteredRegions);
+      }
+
+      setTimeout(() => setDrawnPath([]), 1500);
+    };
+
+    container.addEventListener("mousedown", handlePointerDown);
+    container.addEventListener("mousemove", handlePointerMove);
+    window.addEventListener("mouseup", handlePointerUp);
+
+    container.addEventListener("touchstart", handlePointerDown, { passive: false });
+    container.addEventListener("touchmove", handlePointerMove, { passive: false });
+    window.addEventListener("touchend", handlePointerUp);
+
+    return () => {
+      container.removeEventListener("mousedown", handlePointerDown);
+      container.removeEventListener("mousemove", handlePointerMove);
+      window.removeEventListener("mouseup", handlePointerUp);
+
+      container.removeEventListener("touchstart", handlePointerDown);
+      container.removeEventListener("touchmove", handlePointerMove);
+      window.removeEventListener("touchend", handlePointerUp);
+    };
+  }, [isDrawMode, map, geoData, onDrawComplete]);
+
+  return (
+    <>
+      {drawnPath.length > 1 && (
+        <Polyline
+          positions={drawnPath}
+          pathOptions={{
+            color: "#f59e0b",
+            weight: 6,
+            opacity: 0.9,
+            lineCap: "round",
+            lineJoin: "round",
+          }}
+        />
+      )}
+    </>
+  );
+}
 
 function FitBounds({ data, level }: { data: FeatureCollection | null; level: string }) {
   const map = useMap();
@@ -81,7 +269,8 @@ export function RegionMap() {
     upsertVisit, 
     recalculateScores,
     setRegions,
-    getRegionScoreById
+    getRegionScoreById,
+    addDrawPathVisits,
   } = useVisitStore();
 
   // O(1) lookup map for regions
@@ -93,9 +282,22 @@ export function RegionMap() {
     return map;
   }, [allRegions]);
 
-  const { level, currentId, history, drillDown, drillUp, reset, viewLevel, setViewLevel, selectedId, setSelectedId } = useMapStore();
+  const {
+    level,
+    currentId,
+    history,
+    drillDown,
+    drillUp,
+    reset,
+    viewLevel,
+    setViewLevel,
+    selectedId,
+    setSelectedId,
+    isDrawMode,
+    setIsDrawMode,
+    exportRequested,
+  } = useMapStore();
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
-
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
@@ -106,10 +308,45 @@ export function RegionMap() {
   const [exporting, setExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportImageData, setExportImageData] = useState<string | null>(null);
-  const exportRequested = useMapStore(state => state.exportRequested);
+  const [drawResult, setDrawResult] = useState<{
+    startName: string;
+    endName: string;
+    pathCount: number;
+    pathNames: string[];
+  } | null>(null);
+
   const geoJsonRef = useRef<LeafletGeoJSON | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
   const hoverLabelRef = useRef<HTMLDivElement>(null);
+
+
+  const handleDrawComplete = useCallback(
+    (
+      startRegion: { id: string; name: string } | null,
+      endRegion: { id: string; name: string } | null,
+      pathRegions: Array<{ id: string; name: string }>
+    ) => {
+      if (!startRegion && !endRegion && pathRegions.length === 0) return;
+
+      const startId = startRegion?.id || endRegion?.id || pathRegions[0]?.id;
+      const endId = endRegion?.id || startRegion?.id || pathRegions[pathRegions.length - 1]?.id;
+
+      if (!startId) return;
+
+      const pathIds = pathRegions.map(r => r.id);
+      addDrawPathVisits(startId, endId || startId, pathIds);
+
+      setDrawResult({
+        startName: startRegion?.name || pathRegions[0]?.name || "Unknown",
+        endName: endRegion?.name || pathRegions[pathRegions.length - 1]?.name || "Unknown",
+        pathCount: pathRegions.length,
+        pathNames: pathRegions.map(r => r.name),
+      });
+
+      setTimeout(() => setDrawResult(null), 5000);
+    },
+    [addDrawPathVisits]
+  );
 
   // Mobile detection
   useEffect(() => {
@@ -465,6 +702,14 @@ export function RegionMap() {
       const id = padId(rawId);
       if (!id) return;
 
+      let pressTimer: ReturnType<typeof setTimeout>;
+      const startPress = () => {
+        pressTimer = setTimeout(() => {
+          setIsDrawMode(true);
+        }, 500);
+      };
+      const cancelPress = () => clearTimeout(pressTimer);
+
       layer.on({
         mouseover: (e) => {
           if (isMobile) return;
@@ -489,8 +734,13 @@ export function RegionMap() {
             hoverLabelRef.current.style.opacity = "0";
           }
         },
+        mousedown: startPress,
+        mouseup: () => {
+          cancelPress();
+        },
         click: (e) => {
           L.DomEvent.stopPropagation(e);
+          if (useMapStore.getState().isDrawMode) return;
           if (!isMobile) {
             setMousePos({ x: e.originalEvent.clientX, y: e.originalEvent.clientY });
           } else {
@@ -507,17 +757,9 @@ export function RegionMap() {
         },
       });
 
-      // Long press for mobile
-      let pressTimer: ReturnType<typeof setTimeout>;
-      layer.on("touchstart", (e) => {
-        if (!isMobile) return;
-        pressTimer = setTimeout(() => {
-          L.DomEvent.stopPropagation(e);
-          setSelectedId(id);
-        }, 500);
-      });
-      layer.on("touchend", () => clearTimeout(pressTimer));
-      layer.on("touchcancel", () => clearTimeout(pressTimer));
+      (layer as any).on("touchstart", startPress);
+      (layer as any).on("touchend", cancelPress);
+      (layer as any).on("touchcancel", cancelPress);
     },
     [isMobile],
   );
@@ -550,7 +792,7 @@ export function RegionMap() {
   const hoveredRegion = hoveredId ? regionsByIdMap.get(hoveredId) ?? null : null;
 
   return (
-    <div ref={exportRef} className="relative w-full h-full bg-sky-50 overflow-hidden">
+    <div ref={exportRef} className={`relative w-full h-full bg-sky-50 overflow-hidden ${isDrawMode ? "cursor-pen" : ""}`}>
       <MapContainer
         preferCanvas={true}
         center={[20, 0]}
@@ -569,6 +811,12 @@ export function RegionMap() {
         <div className="absolute inset-0 bg-sky-50/30" />
 
         <FitBounds data={geoData} level={level} />
+
+        <MapDrawController
+          isDrawMode={isDrawMode}
+          geoData={geoData}
+          onDrawComplete={handleDrawComplete}
+        />
 
         {geoData && (
           <GeoJSON
@@ -832,6 +1080,47 @@ export function RegionMap() {
           />
         </div>
       </div>
+
+      {/* Draw Mode Active Banner */}
+      {isDrawMode && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[5000] bg-amber-500 text-white px-4 py-2 rounded-2xl shadow-xl border border-amber-400 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 no-export">
+          <Pencil className="w-4 h-4 animate-bounce" />
+          <div className="flex flex-col">
+            <span className="text-xs font-black">드로잉 모드 활성화</span>
+            <span className="text-[10px] text-amber-100 font-bold">마우스/터치로 지도를 드래그하여 이동 경로를 그리세요</span>
+          </div>
+          <button
+            onClick={() => setIsDrawMode(false)}
+            className="ml-2 px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+          >
+            그리기 종료
+          </button>
+        </div>
+      )}
+
+      {/* Draw Result Toast */}
+      {drawResult && (
+        <div className="absolute top-28 left-1/2 -translate-x-1/2 z-[5000] bg-slate-900/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 flex items-center gap-4 max-w-md animate-in zoom-in-95 duration-200 no-export">
+          <div className="size-8 bg-amber-500 text-white rounded-xl flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+            <span className="text-xs font-extrabold text-amber-400">경로 점수 추가 완료!</span>
+            <span className="text-[11px] font-bold text-slate-200 truncate">
+              📍 {drawResult.startName} ➔ {drawResult.endName} (+1 Visit, Transit, Pass)
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium truncate">
+              통과 지역 ({drawResult.pathCount}개 +1 Pass): {drawResult.pathNames.join(", ")}
+            </span>
+          </div>
+          <button
+            onClick={() => setDrawResult(null)}
+            className="text-slate-400 hover:text-white p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* RegionTooltip */}
       {selectedRegion && selectedScore && (

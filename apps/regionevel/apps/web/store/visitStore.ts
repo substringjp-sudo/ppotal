@@ -30,6 +30,7 @@ interface VisitStore {
   upsertVisit: (regionId: string, category: VisitCategory, count: number) => void;
   removeVisit: (regionId: string, category: VisitCategory) => void;
   quickIncrement: (regionId: string) => void;
+  addDrawPathVisits: (startRegionId: string, endRegionId: string, pathRegionIds: string[]) => void;
   getScore: (regionId: string) => RegionScore | undefined;
   setRegions: (regions: Region[]) => void;
   recalculateScores: (regions?: Region[]) => void;
@@ -251,6 +252,34 @@ export const useVisitStore = create<VisitStore>()(
         const { visits, upsertVisit } = get();
         const next = getNextIncrement(visits, id);
         if (next) upsertVisit(id, next.category, next.newCount);
+      },
+
+      addDrawPathVisits(startRegionId, endRegionId, pathRegionIds) {
+        const { visits, upsertVisit } = get();
+
+        const getCount = (rid: string, cat: VisitCategory) => {
+          const found = visits.find(v => padId(v.regionId) === padId(rid) && v.category === cat);
+          return found ? found.count : 0;
+        };
+
+        const startPadded = padId(startRegionId);
+        const endPadded = padId(endRegionId);
+        const endpoints = new Set([startPadded, endPadded].filter(Boolean));
+
+        // 1. Start & End regions: Visit +1 (cascades to Transit +1 and Pass +1)
+        endpoints.forEach((rid) => {
+          const currVisit = getCount(rid, "visit");
+          upsertVisit(rid, "visit", currVisit + 1);
+        });
+
+        // 2. Intermediate path regions: Pass +1
+        pathRegionIds.forEach((rid) => {
+          const padded = padId(rid);
+          if (padded && !endpoints.has(padded)) {
+            const currPass = getCount(padded, "pass");
+            upsertVisit(padded, "pass", currPass + 1);
+          }
+        });
       },
 
       getScore(regionId: string) {

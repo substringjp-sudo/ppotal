@@ -123,7 +123,7 @@ export function MapView() {
   }
 
   return (
-    <div className="h-[calc(100vh-56px)] relative">
+    <div className="h-full relative overflow-hidden">
       <RegionMap />
     </div>
   );

@@ -3,16 +3,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth, AuthModal } from "@ppotal/ui";
-import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info } from "lucide-react";
+import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info, Pencil } from "lucide-react";
 import { ExportMapButton } from "@/components/map/ExportMapButton";
 import { RegionSearch } from "@/components/common/RegionSearch";
 import { usePathname } from "next/navigation";
 import { useVisitStore } from "@/store/visitStore";
+import { useMapStore } from "@/store/mapStore";
 import { padId } from "@regionevel/utils";
 
 export function Nav() {
   const { user, profile, loading, logout } = useAuth();
   const { importTripsFromJprail, allRegions } = useVisitStore();
+  const { isDrawMode, toggleDrawMode } = useMapStore();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -132,6 +134,18 @@ export function Nav() {
             <Info className="w-4 h-4" />
             About
           </Link>
+          <button
+            onClick={toggleDrawMode}
+            className={`text-sm font-bold transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-xl cursor-pointer ${
+              isDrawMode
+                ? "bg-amber-500 text-white shadow-md animate-pulse"
+                : "text-slate-500 hover:text-amber-600 hover:bg-amber-50"
+            }`}
+            title="드래그로 경로 그리기 (Draw Route)"
+          >
+            <Pencil className="w-4 h-4" />
+            <span>Draw</span>
+          </button>
           <ExportMapButton />
         </nav>
 

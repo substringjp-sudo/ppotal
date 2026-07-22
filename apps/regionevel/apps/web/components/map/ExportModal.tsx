@@ -32,6 +32,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [xNotice, setXNotice] = useState(false);
+  const [postingToX, setPostingToX] = useState(false);
+  const [xPostResult, setXPostResult] = useState<{ success: boolean; link?: string; message?: string } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -75,6 +78,107 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
   };
 
+  const handleXShare = async () => {
+    // 1. Copy image blob to clipboard if supported
+    if (imageData) {
+      try {
+        const response = await fetch(imageData);
+        const blob = await response.blob();
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type || "image/png"]: blob }),
+          ]);
+        }
+      } catch (e) {
+        console.warn("Failed to copy image blob to clipboard:", e);
+      }
+    }
+
+    setXNotice(true);
+    setTimeout(() => setXNotice(false), 4500);
+
+    // 2. Open X/Twitter intent composer with text pre-filled
+    const intentUrl = `https://x.com/intent/post?text=${encodeURIComponent(summaryText)}`;
+    window.open(intentUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleDirectXPost = async () => {
+    setPostingToX(true);
+    setXPostResult(null);
+
+    try {
+      const { auth } = await import("@ppotal/firebase");
+      const { TwitterAuthProvider, signInWithPopup, linkWithPopup } = await import("firebase/auth");
+
+      let accessToken = "";
+      let accessSecret = "";
+
+      try {
+        const provider = new TwitterAuthProvider();
+        let result: any = null;
+        if (auth.currentUser) {
+          result = await linkWithPopup(auth.currentUser, provider).catch(() => signInWithPopup(auth, provider));
+        } else {
+          result = await signInWithPopup(auth, provider);
+        }
+        const credential = TwitterAuthProvider.credentialFromResult(result);
+        if (credential) {
+          accessToken = (credential as any).accessToken || "";
+          accessSecret = (credential as any).secret || "";
+        }
+      } catch (authErr: any) {
+        console.warn("X OAuth Login cancelled or failed:", authErr);
+      }
+
+      const res = await fetch("/api/twitter/post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: summaryText,
+          imageData,
+          accessToken,
+          accessSecret,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setXPostResult({
+          success: true,
+          link: data.tweetLink,
+          message: "✨ X에 이미지와 글이 자동으로 게시되었습니다!",
+        });
+      } else {
+        if (data.error === "TWITTER_APP_NOT_CONFIGURED" || data.error === "UNAUTHORIZED") {
+          setXPostResult({
+            success: false,
+            message: "💡 X API 키 설정 미완료로 포스팅 창으로 이동합니다! (지도가 클립보드에 복사됨)",
+          });
+          setTimeout(() => {
+            handleXShare();
+          }, 1500);
+        } else {
+          setXPostResult({
+            success: false,
+            message: `❌ 게시 실패: ${data.message || data.details || "알 수 없는 오류"}`,
+          });
+        }
+      }
+    } catch (err: any) {
+      console.error("Direct X Post Error:", err);
+      setXPostResult({
+        success: false,
+        message: "❌ X 게시 처리 중 오류가 발생했습니다. 웹 작성 창으로 이동합니다.",
+      });
+      setTimeout(() => {
+        handleXShare();
+      }, 1500);
+    } finally {
+      setPostingToX(false);
+    }
+  };
+
   return createPortal(
     <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
       {/* Backdrop */}
@@ -106,6 +210,41 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
+          {/* Direct X Post Result Notice */}
+          {xPostResult && (
+            <div className={`text-xs px-4 py-3 rounded-2xl flex items-center justify-between shadow-lg animate-in fade-in slide-in-from-top-2 ${
+              xPostResult.success ? "bg-emerald-600 text-white" : "bg-slate-900 text-amber-200"
+            }`}>
+              <span className="font-medium">{xPostResult.message}</span>
+              {xPostResult.link ? (
+                <a
+                  href={xPostResult.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-3 px-3 py-1 bg-white text-emerald-800 rounded-xl font-extrabold text-[11px] hover:bg-emerald-50 shrink-0"
+                >
+                  게시글 보기
+                </a>
+              ) : (
+                <button onClick={() => setXPostResult(null)} className="text-slate-400 hover:text-white ml-2">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* X Share Tip Notice */}
+          {xNotice && (
+            <div className="bg-slate-900 text-white text-xs px-4 py-2.5 rounded-2xl flex items-center justify-between shadow-lg animate-in fade-in slide-in-from-top-2">
+              <span className="font-medium">
+                💡 텍스트가 자동 입력되었습니다! 지도를 첨부하려면 X 작성 창에서 <strong>Ctrl+V (붙여넣기)</strong>를 누르세요.
+              </span>
+              <button onClick={() => setXNotice(false)} className="text-slate-400 hover:text-white ml-2">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Thumbnail Section */}
           <div className="relative rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 overflow-hidden aspect-video flex items-center justify-center shadow-inner">
             {imageData ? (
@@ -163,19 +302,37 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 sm:p-6 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3 shrink-0">
+        <div className="p-4 sm:p-6 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-end gap-2 shrink-0">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs md:text-sm font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             닫기
           </button>
           <button
+            onClick={handleDirectXPost}
+            disabled={postingToX || !imageData}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md active:scale-98 cursor-pointer"
+            title="X(트위터) API를 통해 서버에서 이미지와 글을 직접 게시"
+          >
+            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            <span>{postingToX ? "게시 중..." : "X에 직접 게시 (API)"}</span>
+          </button>
+          <button
+            onClick={handleXShare}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-all shadow-md active:scale-98 cursor-pointer"
+            title="X(트위터) 작성 창 열기 (요약 텍스트 자동 입력 & 지도 이미지 복사)"
+          >
+            <span>X(웹) 작성</span>
+          </button>
+          <button
             onClick={handleDownload}
             disabled={!imageData}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs md:text-sm font-bold transition-all shadow-md active:scale-98"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md active:scale-98 cursor-pointer"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             <span>이미지 다운로드</span>
           </button>
         </div>

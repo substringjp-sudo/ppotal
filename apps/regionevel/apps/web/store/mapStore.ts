@@ -12,6 +12,7 @@ interface MapState {
   exportRequested: number;
   viewLevel: 1 | 2;
   selectedId: string | null;
+  isDrawMode: boolean;
 }
 
 interface MapActions {
@@ -20,6 +21,8 @@ interface MapActions {
   setHistory: (history: Array<{ level: MapLevel; currentId: string | null }>) => void;
   setViewLevel: (viewLevel: 1 | 2) => void;
   setSelectedId: (id: string | null) => void;
+  setIsDrawMode: (isDrawMode: boolean) => void;
+  toggleDrawMode: () => void;
   drillDown: (level: MapLevel, id: string) => void;
   drillUp: () => void;
   reset: () => void;
@@ -36,12 +39,15 @@ export const useMapStore = create<MapState & MapActions>()(
       exportRequested: 0,
       viewLevel: 1,
       selectedId: null,
+      isDrawMode: false,
 
       setLevel: (level) => set({ level }),
       setCurrentId: (currentId) => set({ currentId }),
       setHistory: (history) => set({ history }),
       setViewLevel: (viewLevel) => set({ viewLevel }),
       setSelectedId: (selectedId) => set({ selectedId }),
+      setIsDrawMode: (isDrawMode) => set({ isDrawMode }),
+      toggleDrawMode: () => set((state) => ({ isDrawMode: !state.isDrawMode })),
 
       drillDown: (newLevel, id) => {
         const { level, currentId, history } = get();
