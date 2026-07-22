@@ -55,6 +55,45 @@ interface GraphEdge {
 }
 
 /**
+ * Filter out negligible line segments (e.g. platform joints < 0.8 km)
+ * to compute true line sequence and accurate transfer count.
+ */
+function getSignificantLines(
+    sectionIds: number[],
+    lineIds: number[],
+    sectionsMap: Map<number, Section>
+): { lineId: number; dist: number }[] {
+    const rawSegments: { lineId: number; dist: number }[] = [];
+
+    sectionIds.forEach((sid, i) => {
+        const sec = sectionsMap.get(sid);
+        const lenKm = sec && sec.length ? sec.length / 1000 : 0.5;
+        const lid = (sec && sec.line_id) ? sec.line_id : (lineIds[i] || 0);
+
+        if (lid > 0) {
+            if (rawSegments.length === 0 || rawSegments[rawSegments.length - 1].lineId !== lid) {
+                rawSegments.push({ lineId: lid, dist: lenKm });
+            } else {
+                rawSegments[rawSegments.length - 1].dist += lenKm;
+            }
+        }
+    });
+
+    const totalDist = rawSegments.reduce((sum, s) => sum + s.dist, 0);
+
+    // Keep line segments if length >= 0.8 km or >= 2% of total distance
+    const significant = rawSegments.filter(s => {
+        if (rawSegments.length === 1) return true;
+        if (s.dist >= 0.8 || (totalDist > 0 && (s.dist / totalDist) >= 0.02)) {
+            return true;
+        }
+        return false;
+    });
+
+    return significant.length > 0 ? significant : rawSegments.slice(0, 1);
+}
+
+/**
  * Searches candidate routes connecting a series of waypoints (Start -> Via 1 -> ... -> End)
  * Groups candidates by leg and ranks top 2 by Distance + top 2 by Least Transfers.
  */
@@ -143,7 +182,6 @@ export function findCandidateRoutes(
         const rawCandidates: PathState[] = [];
         const bannedEdges = new Set<string>();
 
-        // Explore multiple candidate paths using edge penalties
         for (let attempt = 0; attempt < 8; attempt++) {
             const visitCount = new Map<string, number>();
             const queue: PathState[] = [];
@@ -184,7 +222,8 @@ export function findCandidateRoutes(
                     const edgeKey = `${curr.currentNode}-${edge.neighborId}`;
                     const banPenalty = bannedEdges.has(edgeKey) ? 100 : 0;
 
-                    const isTransfer = curr.lastLineId > 0 && edge.lineId > 0 && curr.lastLineId !== edge.lineId;
+                    // Only penalize transfer if the edge is longer than 0.2 km (ignores tiny station platform joint edges)
+                    const isTransfer = curr.lastLineId > 0 && edge.lineId > 0 && curr.lastLineId !== edge.lineId && edge.dist >= 0.2;
                     const transferPenalty = isTransfer ? 15 : 0;
 
                     const count = visitCount.get(edge.neighborId) || 0;
@@ -240,41 +279,26 @@ export function findCandidateRoutes(
 
         const allPaths = Array.from(uniqueMap.values());
 
-        // Calculate transfer count for each candidate
-        const getTransferCount = (state: PathState): number => {
-            const seqLines: number[] = [];
-            state.lineIds.forEach(lid => {
-                if (lid > 0 && (seqLines.length === 0 || seqLines[seqLines.length - 1] !== lid)) {
-                    seqLines.push(lid);
-                }
-            });
-            return Math.max(0, seqLines.length - 1);
-        };
-
-        // Convert PathState to CandidateRoute object
+        // Convert PathState to CandidateRoute object with significant lines filtering
         const mapToCandidateRoute = (state: PathState, category: 'distance' | 'transfer', rank: number): CandidateRoute => {
             const stationNames = state.stationIds.map(sid => {
                 const st = stationsMap[sid];
                 return st ? st.name : sid;
             });
 
-            const linesUsed: RouteLineInfo[] = [];
-            const sequentialLineIds: number[] = [];
-            state.lineIds.forEach(lid => {
-                if (lid > 0 && (sequentialLineIds.length === 0 || sequentialLineIds[sequentialLineIds.length - 1] !== lid)) {
-                    sequentialLineIds.push(lid);
-                }
-            });
+            // Get significant lines list (filters out station platform connections < 0.8 km)
+            const sigLines = getSignificantLines(state.sectionIds, state.lineIds, sectionsMap);
+            const transferCount = Math.max(0, sigLines.length - 1);
 
-            sequentialLineIds.forEach(lid => {
-                const meta = linesMetaMap[String(lid)];
-                linesUsed.push({
-                    id: lid,
-                    name: meta?.name || `Line ${lid}`,
+            const linesUsed: RouteLineInfo[] = sigLines.map(sl => {
+                const meta = linesMetaMap[String(sl.lineId)];
+                return {
+                    id: sl.lineId,
+                    name: meta?.name || `Line ${sl.lineId}`,
                     name_en: meta?.name_en,
                     name_kr: meta?.name_kr,
                     color: meta?.color || '#3b82f6'
-                });
+                };
             });
 
             const geometries: [number, number][][] = [];
@@ -294,9 +318,9 @@ export function findCandidateRoutes(
             }
 
             return {
-                id: `leg_${legIndex}_cand_${category}_${rank}_${Date.now()}`,
+                id: `leg_${legIndex}_cand_${category}_${rank}_${Date.now()}_${Math.random()}`,
                 distance: Math.round(state.distance * 10) / 10,
-                transferCount: getTransferCount(state),
+                transferCount,
                 category,
                 rank,
                 stationIds: state.stationIds,
@@ -317,15 +341,18 @@ export function findCandidateRoutes(
 
         // 2. Top 2 by Transfer Count (최소환승순 2개)
         const byTransfer = [...allPaths].sort((a, b) => {
-            const tA = getTransferCount(a);
-            const tB = getTransferCount(b);
+            const sigA = getSignificantLines(a.sectionIds, a.lineIds, sectionsMap);
+            const sigB = getSignificantLines(b.sectionIds, b.lineIds, sectionsMap);
+            const tA = Math.max(0, sigA.length - 1);
+            const tB = Math.max(0, sigB.length - 1);
             if (tA !== tB) return tA - tB;
             return a.distance - b.distance;
         });
 
         const transferCandidates: CandidateRoute[] = [];
         for (const c of byTransfer) {
-            const key = c.lineIds.filter(l => l > 0).join('-');
+            const sig = getSignificantLines(c.sectionIds, c.lineIds, sectionsMap);
+            const key = sig.map(s => s.lineId).join('-');
             if (!chosenLineKeys.has(key)) {
                 chosenLineKeys.add(key);
                 transferCandidates.push(mapToCandidateRoute(c, 'transfer', transferCandidates.length + 1));

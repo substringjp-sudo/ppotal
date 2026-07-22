@@ -213,7 +213,6 @@ const StationPickerInput: React.FC<StationInputProps> = ({
                                         }}
                                         className="w-full p-3 text-left hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors flex flex-col gap-1.5"
                                     >
-                                        {/* Station Name & Alternate Name */}
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
                                                 {getLocalizedName(st, language)}
@@ -225,7 +224,6 @@ const StationPickerInput: React.FC<StationInputProps> = ({
                                             )}
                                         </div>
 
-                                        {/* Address */}
                                         {address && (
                                             <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                                                 <span className="material-symbols-outlined text-[12px] text-slate-400">location_on</span>
@@ -233,7 +231,6 @@ const StationPickerInput: React.FC<StationInputProps> = ({
                                             </div>
                                         )}
 
-                                        {/* Serving Line Badges */}
                                         {lines.length > 0 && (
                                             <div className="flex flex-wrap gap-1 mt-0.5">
                                                 {lines.map((l, lIdx) => (
@@ -284,7 +281,6 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
     const [searchResult, setSearchResult] = useState<RouteSearchResult | null>(null);
     const [selectedLegCandidates, setSelectedLegCandidates] = useState<Record<number, CandidateRoute | null>>({});
-    const [activeLegIndex, setActiveLegIndex] = useState<number>(0);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
@@ -296,13 +292,12 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
             setViaStations([]);
             setSearchResult(null);
             setSelectedLegCandidates({});
-            setActiveLegIndex(0);
             setHasSearched(false);
             setIsSearching(false);
         }
     }, [isOpen]);
 
-    // Compute combined stats for summary card
+    // Compute combined stats for summary card (Hooks MUST be above early return if (!isOpen) return null)
     const combinedStats = useMemo(() => {
         if (!searchResult || !searchResult.legs.length) return null;
         let dist = 0;
@@ -366,7 +361,6 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                 initialSelected[leg.legIndex] = leg.candidates.length > 0 ? leg.candidates[0] : null;
             });
             setSelectedLegCandidates(initialSelected);
-            setActiveLegIndex(0);
 
             setIsSearching(false);
             setHasSearched(true);
@@ -434,15 +428,12 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
     const isSearchDisabled = !startStation || !endStation;
 
-    // Check if all legs have a selected candidate
     const allLegsSelected = searchResult && searchResult.legs.length > 0 &&
         searchResult.legs.every(leg => Boolean(selectedLegCandidates[leg.legIndex]));
 
-
-
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] overflow-hidden">
                 {/* Modal Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-2.5">
@@ -454,7 +445,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 {t.createRouteTitle || '경로 자동 생성'}
                             </h3>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                시작역과 도착역 사이의 세부 경로를 선택하여 기록을 생성합니다.
+                                시작역과 도착역 사이의 세부 경로를 한눈에 비교하고 선택합니다.
                             </p>
                         </div>
                     </div>
@@ -551,7 +542,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
                     {/* Search Results */}
                     {hasSearched && searchResult && (
-                        <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                        <div className="space-y-5 pt-2 animate-in fade-in duration-200">
                             {/* Warning Banner if >= 5 Candidates */}
                             {searchResult.hasTooManyCandidates && (
                                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
@@ -568,67 +559,38 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                             )}
 
                             {searchResult.legs.length > 0 ? (
-                                <div className="space-y-4">
-                                    {/* Multi-Leg Tabs Header (when via stations exist) */}
-                                    {searchResult.legs.length > 1 && (
-                                        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl overflow-x-auto custom-scrollbar">
-                                            {searchResult.legs.map((leg, idx) => {
-                                                const isActive = activeLegIndex === idx;
-                                                const chosen = selectedLegCandidates[idx];
-                                                const sName = getLocalizedName(leg.startStation, language);
-                                                const eName = getLocalizedName(leg.endStation, language);
-
-                                                return (
-                                                    <button
-                                                        key={idx}
-                                                        type="button"
-                                                        onClick={() => setActiveLegIndex(idx)}
-                                                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${
-                                                            isActive
-                                                                ? 'bg-white dark:bg-slate-900 text-primary border-slate-200 dark:border-slate-700 shadow-sm'
-                                                                : 'text-slate-600 dark:text-slate-400 border-transparent hover:bg-white/50'
-                                                        }`}
-                                                    >
-                                                        <span className="size-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-black">
-                                                            {idx + 1}
-                                                        </span>
-                                                        <span>{sName} ➔ {eName}</span>
-                                                        {chosen && (
-                                                            <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md">
-                                                                {chosen.distance}km
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-
-                                    {/* Candidates for Current Active Leg */}
+                                <div className="space-y-6">
+                                    {/* All Legs Stacked Vertically for At-a-Glance Selection */}
                                     {searchResult.legs.map((leg, legIdx) => {
-                                        // If multi-leg, show active leg tab; if single leg, show leg 0
-                                        if (searchResult.legs.length > 1 && activeLegIndex !== legIdx) return null;
-
                                         const sName = getLocalizedName(leg.startStation, language);
                                         const eName = getLocalizedName(leg.endStation, language);
                                         const currentSelected = selectedLegCandidates[legIdx];
 
                                         return (
-                                            <div key={legIdx} className="space-y-3">
-                                                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider px-1 flex items-center justify-between">
+                                            <div
+                                                key={legIdx}
+                                                className="space-y-3 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800"
+                                            >
+                                                {/* Leg Section Title Banner */}
+                                                <div className="flex items-center justify-between px-1">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="material-symbols-outlined text-base text-primary">route</span>
-                                                        <span>
-                                                            {searchResult.legs.length > 1 ? `[구간 ${legIdx + 1}] ${sName} ➔ ${eName}` : '추천 경로 경우의 수'}
+                                                        <span className="size-6 rounded-xl bg-primary text-white flex items-center justify-center text-xs font-black shadow-xs">
+                                                            {legIdx + 1}
                                                         </span>
+                                                        <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                                                            <span>{sName}</span>
+                                                            <span className="text-primary font-black">➔</span>
+                                                            <span>{eName}</span>
+                                                        </h4>
                                                     </div>
-                                                    <span className="text-[10px] font-normal text-slate-400">
-                                                        (거리순 2개 + 최소환승순 2개)
-                                                    </span>
-                                                </h4>
 
-                                                {/* Candidate cards grid */}
-                                                <div className="space-y-2.5">
+                                                    <span className="text-[10px] font-bold text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                        경우의 수 {leg.candidates.length}개
+                                                    </span>
+                                                </div>
+
+                                                {/* Candidate Cards Stack */}
+                                                <div className="grid grid-cols-1 gap-2.5">
                                                     {leg.candidates.map((candidate) => {
                                                         const isSelected = currentSelected?.id === candidate.id;
 
@@ -636,16 +598,15 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                                             <div
                                                                 key={candidate.id}
                                                                 onClick={() => handleSelectCandidateForLeg(legIdx, candidate)}
-                                                                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2.5 ${
+                                                                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
                                                                     isSelected
-                                                                        ? 'bg-primary/5 dark:bg-primary/10 border-primary shadow-md ring-2 ring-primary/20'
-                                                                        : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-slate-300 shadow-xs'
+                                                                        ? 'bg-white dark:bg-slate-900 border-primary shadow-md ring-2 ring-primary/20'
+                                                                        : 'bg-white dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 shadow-2xs'
                                                                 }`}
                                                             >
-                                                                {/* Header Info & Category Badges */}
+                                                                {/* Category Badges & Stats */}
                                                                 <div className="flex items-center justify-between">
                                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                                        {/* Category Badge */}
                                                                         {candidate.category === 'distance' ? (
                                                                             <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                                                                                 <span className="material-symbols-outlined text-[12px]">bolt</span>
@@ -658,8 +619,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                                                             </span>
                                                                         )}
 
-                                                                        {/* Transfer count badge */}
-                                                                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                                                                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                                                             {candidate.transferCount === 0 ? '직통 (환승 없음)' : `환승 ${candidate.transferCount}회`}
                                                                         </span>
                                                                     </div>
@@ -677,7 +637,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                                                                 <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">➔</span>
                                                                             )}
                                                                             <span
-                                                                                className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-xs"
+                                                                                className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs"
                                                                                 style={{ backgroundColor: line.color || '#3b82f6' }}
                                                                             >
                                                                                 {getLocalizedName(line, language)}
@@ -686,27 +646,22 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                                                     ))}
                                                                 </div>
 
-                                                                {/* Station sequence snippet */}
-                                                                <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed bg-slate-50 dark:bg-slate-900/40 p-2 rounded-xl">
-                                                                    {candidate.stationNames.slice(0, 8).join(' ➔ ')}
-                                                                    {candidate.stationNames.length > 8 && ` ➔ ... (${candidate.stationNames.length}개 역)`}
-                                                                </div>
-
-                                                                {/* Choice Radio / Button */}
-                                                                <div className="flex items-center justify-between pt-1">
+                                                                {/* Choice Indicator */}
+                                                                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
                                                                     <span className="text-[10px] text-slate-400">
-                                                                        {isSelected ? '✓ 선택된 구간 경로' : '클릭하여 구간 경로 선택'}
+                                                                        {candidate.stationNames.slice(0, 5).join(' ➔ ')}
+                                                                        {candidate.stationNames.length > 5 && ' ...'}
                                                                     </span>
 
-                                                                    <div className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                                                                    <div className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
                                                                         isSelected
-                                                                            ? 'bg-primary text-white shadow-sm'
-                                                                            : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                                                            ? 'bg-primary text-white shadow-2xs'
+                                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                                                                     }`}>
-                                                                        <span className="material-symbols-outlined text-sm">
+                                                                        <span className="material-symbols-outlined text-xs">
                                                                             {isSelected ? 'check_circle' : 'radio_button_unchecked'}
                                                                         </span>
-                                                                        {isSelected ? '선택됨' : '구간 선택'}
+                                                                        {isSelected ? '선택됨' : '선택'}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -719,7 +674,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
                                     {/* Combined Route Summary & Action Card */}
                                     {allLegsSelected && combinedStats && (
-                                        <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/30 shadow-lg space-y-3 mt-4 animate-in fade-in duration-200">
+                                        <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/30 shadow-xl space-y-3 mt-4 animate-in fade-in duration-200">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <span className="material-symbols-outlined text-xl text-primary">route</span>
@@ -733,14 +688,14 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                             </div>
 
                                             {/* Combined line badges */}
-                                            <div className="flex flex-wrap items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                                            <div className="flex flex-wrap items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800">
                                                 {combinedStats.lines.map((line, lIdx) => (
                                                     <React.Fragment key={line.id}>
                                                         {lIdx > 0 && (
                                                             <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">➔</span>
                                                         )}
                                                         <span
-                                                            className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-xs"
+                                                            className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs"
                                                             style={{ backgroundColor: line.color || '#3b82f6' }}
                                                         >
                                                             {getLocalizedName(line, language)}
@@ -756,7 +711,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={handleCreateCombinedTrip}
-                                                className="w-full py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider bg-primary text-white hover:bg-primary/90 active:scale-[0.99] transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+                                                className="w-full py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider bg-primary text-white hover:bg-primary/90 active:scale-[0.99] transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
                                             >
                                                 <span className="material-symbols-outlined text-base">check_circle</span>
                                                 이 최종 경로로 여행 기록 생성
