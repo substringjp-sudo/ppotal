@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { TripEvent, EventLocation, reverseGeocodeIds, resolveRegionIdsFromPlace } from '@pplaner/shared';
+import { useState, useMemo } from 'react';
+import { TripEvent, EventLocation, reverseGeocodeIds, resolveRegionIdsFromPlace, useTripStore } from '@pplaner/shared';
 import { MainCategory, SubCategory, CATEGORY_MAP } from '@pplaner/shared';
 import { motion } from 'framer-motion';
 import { GoogleMapsSearch } from '@/components/common/GoogleMapsSearch';
+import ConflictAwareTimePicker from '@/components/common/ConflictAwareTimePicker';
 import { TimeInput, TimeRangeInput } from '../common/FormComponents';
 import { Calendar } from 'lucide-react';
 
@@ -36,6 +37,18 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
     const [subCategory, setSubCategory] = useState<SubCategory | undefined>(event?.subCategory);
     const [memo, setMemo] = useState(event?.memo || '');
     const [isGeoLoading, setIsGeoLoading] = useState(false);
+
+    const trip = useTripStore((s) => s.currentTrip);
+    // 지역 한정 장소 검색: 여행 지역 중심으로 결과를 바이어스
+    const regionCenter = trip?.locations?.center;
+    // 충돌 인지 시간: 같은 날 다른 일정(현재 편집 대상 제외)을 점유 구간으로 전달
+    const siblingBusy = useMemo(() => {
+        const day = trip?.dailyTimeline?.find((d) => d.date === date);
+        if (!day) return [];
+        return day.events
+            .filter((ev) => ev.id !== event?.id && ev.startTime)
+            .map((ev) => ({ title: ev.title, startTime: ev.startTime, endTime: ev.endTime }));
+    }, [trip, date, event?.id]);
 
 
 
@@ -154,7 +167,7 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Time */}
                     <div className="space-y-4">
-                        <TimeRangeInput 
+                        <TimeRangeInput
                             label="시간 설정"
                             startTime={startTime}
                             endTime={endTime || undefined}
@@ -164,6 +177,18 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                             lng={location?.lng}
                             date={date}
                         />
+                        {siblingBusy.length > 0 && (
+                            <ConflictAwareTimePicker
+                                showInputs={false}
+                                startTime={startTime}
+                                endTime={endTime || undefined}
+                                busy={siblingBusy}
+                                onChange={(patch) => {
+                                    if (patch.startTime !== undefined) setStartTime(patch.startTime);
+                                    if (patch.endTime !== undefined) setEndTime(patch.endTime || '');
+                                }}
+                            />
+                        )}
                     </div>
 
                     {/* Location */}
@@ -171,6 +196,8 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">장소 검색</label>
                         <GoogleMapsSearch
                             initialValue={location?.name}
+                            locationBias={regionCenter}
+                            radius={50000}
                             onPlaceSelect={async (place) => {
                                 const lat = place.geometry?.location?.lat();
                                 const lng = place.geometry?.location?.lng();

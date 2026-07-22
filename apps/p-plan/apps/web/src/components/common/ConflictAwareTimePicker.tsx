@@ -21,6 +21,11 @@ interface ConflictAwareTimePickerProps {
     endTime?: string;
     busy: BusyEvent[];
     onChange: (patch: { startTime?: string; endTime?: string }) => void;
+    /**
+     * false면 자체 시간 입력칸을 숨기고 충돌 타임라인/경고/빈 시간 칩만 렌더한다.
+     * 이미 다른 시간 입력 UI가 있는 편집기에 시각화만 얹을 때 사용.
+     */
+    showInputs?: boolean;
 }
 
 const toMin = (t?: string): number | null => {
@@ -51,6 +56,7 @@ export default function ConflictAwareTimePicker({
     endTime,
     busy,
     onChange,
+    showInputs = true,
 }: ConflictAwareTimePickerProps) {
     const busyIntervals = useMemo<Interval[]>(() => {
         return busy
@@ -117,30 +123,32 @@ export default function ConflictAwareTimePicker({
     return (
         <div className="space-y-2">
             {/* 시간 입력 */}
-            <div className="grid grid-cols-2 gap-2">
-                <input
-                    type="time"
-                    value={startTime || ''}
-                    onChange={(e) => onChange({ startTime: e.target.value })}
-                    title="시작 시간"
-                    className={`${inputCls} ${
-                        hasConflict
-                            ? 'border-red-300 dark:border-red-800'
-                            : 'border-slate-200 focus:border-slate-400 dark:border-slate-700'
-                    }`}
-                />
-                <input
-                    type="time"
-                    value={endTime || ''}
-                    onChange={(e) => onChange({ endTime: e.target.value })}
-                    title="종료 시간"
-                    className={`${inputCls} ${
-                        hasConflict
-                            ? 'border-red-300 dark:border-red-800'
-                            : 'border-slate-200 focus:border-slate-400 dark:border-slate-700'
-                    }`}
-                />
-            </div>
+            {showInputs && (
+                <div className="grid grid-cols-2 gap-2">
+                    <input
+                        type="time"
+                        value={startTime || ''}
+                        onChange={(e) => onChange({ startTime: e.target.value })}
+                        title="시작 시간"
+                        className={`${inputCls} ${
+                            hasConflict
+                                ? 'border-red-300 dark:border-red-800'
+                                : 'border-slate-200 focus:border-slate-400 dark:border-slate-700'
+                        }`}
+                    />
+                    <input
+                        type="time"
+                        value={endTime || ''}
+                        onChange={(e) => onChange({ endTime: e.target.value })}
+                        title="종료 시간"
+                        className={`${inputCls} ${
+                            hasConflict
+                                ? 'border-red-300 dark:border-red-800'
+                                : 'border-slate-200 focus:border-slate-400 dark:border-slate-700'
+                        }`}
+                    />
+                </div>
+            )}
 
             {/* 하루 타임라인 (다른 일정 = 점유 블록) */}
             {(busyIntervals.length > 0 || selStart !== null) && (
