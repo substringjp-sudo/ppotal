@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { runQuickCheck, type QuickCheckEventInput, type TripWarning } from '@pplaner/shared';
+import TripDayPicker from '@/components/common/TripDayPicker';
 
 interface DraftEvent extends QuickCheckEventInput {
     key: string;
@@ -180,16 +181,15 @@ export default function CheckPageClient() {
                                         ✕
                                     </button>
                                 </div>
-                                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                    <input
-                                        type="date"
+                                <div className="mt-2">
+                                    <TripDayPicker
+                                        startDate={startDate}
+                                        endDate={endDate || startDate}
                                         value={e.date}
-                                        min={startDate || undefined}
-                                        max={endDate || startDate || undefined}
-                                        onChange={(ev) => updateEvent(e.key, { date: ev.target.value })}
-                                        className={inputCls}
-                                        title="날짜 (여행 기간 내에서만 선택)"
+                                        onChange={(date) => updateEvent(e.key, { date })}
                                     />
+                                </div>
+                                <div className="mt-2 grid grid-cols-3 gap-2">
                                     <input
                                         type="time"
                                         value={e.startTime || ''}
