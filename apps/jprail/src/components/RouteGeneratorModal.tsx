@@ -302,6 +302,33 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
         }
     }, [isOpen]);
 
+    // Compute combined stats for summary card
+    const combinedStats = useMemo(() => {
+        if (!searchResult || !searchResult.legs.length) return null;
+        let dist = 0;
+        let transfers = 0;
+        const lineList: RouteLineInfo[] = [];
+
+        searchResult.legs.forEach(leg => {
+            const chosen = selectedLegCandidates[leg.legIndex];
+            if (chosen) {
+                dist += chosen.distance;
+                transfers += chosen.transferCount;
+                chosen.lines.forEach(l => {
+                    if (lineList.length === 0 || lineList[lineList.length - 1].id !== l.id) {
+                        lineList.push(l);
+                    }
+                });
+            }
+        });
+
+        return {
+            totalDistance: Math.round(dist * 10) / 10,
+            totalTransfers: transfers,
+            lines: lineList
+        };
+    }, [searchResult, selectedLegCandidates]);
+
     if (!isOpen) return null;
 
     const handleAddVia = () => {
@@ -411,32 +438,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const allLegsSelected = searchResult && searchResult.legs.length > 0 &&
         searchResult.legs.every(leg => Boolean(selectedLegCandidates[leg.legIndex]));
 
-    // Compute combined stats for summary card
-    const combinedStats = useMemo(() => {
-        if (!searchResult || !searchResult.legs.length) return null;
-        let dist = 0;
-        let transfers = 0;
-        const lineList: RouteLineInfo[] = [];
 
-        searchResult.legs.forEach(leg => {
-            const chosen = selectedLegCandidates[leg.legIndex];
-            if (chosen) {
-                dist += chosen.distance;
-                transfers += chosen.transferCount;
-                chosen.lines.forEach(l => {
-                    if (lineList.length === 0 || lineList[lineList.length - 1].id !== l.id) {
-                        lineList.push(l);
-                    }
-                });
-            }
-        });
-
-        return {
-            totalDistance: Math.round(dist * 10) / 10,
-            totalTransfers: transfers,
-            lines: lineList
-        };
-    }, [searchResult, selectedLegCandidates]);
 
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
