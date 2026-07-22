@@ -101,28 +101,32 @@ export function findCandidateRoutes(
         });
     }
 
-    // Helper to resolve all station IDs sharing the same station name
-    const getMatchingStationIds = (st: Station): string[] => {
-        const ids = new Set<string>();
-        ids.add(st.id);
-        if (st.name) {
-            Object.values(stationsMap).forEach(s => {
-                if (s.name === st.name) ids.add(s.id);
-            });
-        }
-        return Array.from(ids);
-    };
-
     // Leg route finder
     const findLegPaths = (startSt: Station, endSt: Station): PathState[] => {
-        const startIds = getMatchingStationIds(startSt);
-        const targetNames = new Set<string>();
+        // Collect all matching start IDs (station id + platform_ids + same-named stations)
+        const startIds = new Set<string>();
+        startIds.add(startSt.id);
+        if (startSt.platform_ids) startSt.platform_ids.forEach(pid => startIds.add(pid));
+        if (startSt.name) {
+            Object.values(stationsMap).forEach(s => {
+                if (s.name === startSt.name) {
+                    startIds.add(s.id);
+                    if (s.platform_ids) s.platform_ids.forEach(pid => startIds.add(pid));
+                }
+            });
+        }
+
+        // Collect all matching target IDs
+        const targetIds = new Set<string>();
+        targetIds.add(endSt.id);
+        if (endSt.platform_ids) endSt.platform_ids.forEach(pid => targetIds.add(pid));
         if (endSt.name) {
             Object.values(stationsMap).forEach(s => {
-                if (s.name === endSt.name) targetNames.add(s.name);
+                if (s.name === endSt.name) {
+                    targetIds.add(s.id);
+                    if (s.platform_ids) s.platform_ids.forEach(pid => targetIds.add(pid));
+                }
             });
-        } else {
-            targetNames.add(endSt.id);
         }
 
         const candidates: PathState[] = [];
@@ -147,7 +151,7 @@ export function findCandidateRoutes(
 
             let foundPath: PathState | null = null;
             let processed = 0;
-            const maxProcessed = 6000;
+            const maxProcessed = 15000;
 
             while (queue.length > 0 && processed < maxProcessed) {
                 queue.sort((a, b) => a.distance - b.distance);
@@ -155,7 +159,9 @@ export function findCandidateRoutes(
                 processed++;
 
                 const stObj = stationsMap[curr.currentNode];
-                if (stObj && targetNames.has(stObj.name) && curr.stationIds.length > 1) {
+                const isGoal = targetIds.has(curr.currentNode) || (stObj && endSt.name && stObj.name === endSt.name);
+
+                if (isGoal && curr.stationIds.length > 1) {
                     foundPath = curr;
                     break;
                 }

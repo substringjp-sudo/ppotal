@@ -75,11 +75,23 @@ const StationPickerInput: React.FC<StationInputProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const POPULAR_NAMES = ['東京', '新大阪', '新宿', '京都', '名古屋', '博多'];
+
     const results = useMemo(() => {
-        if (!railData || !query.trim()) return [];
+        if (!railData) return [];
         const q = query.toLowerCase().trim();
 
         const stationsMap = new Map<string, Station>();
+
+        if (!q) {
+            Object.values(railData.stations).forEach(s => {
+                if (POPULAR_NAMES.includes(s.name) && !stationsMap.has(s.name)) {
+                    stationsMap.set(s.name, s);
+                }
+            });
+            return Array.from(stationsMap.values());
+        }
+
         Object.values(railData.stations).forEach(s => {
             const key = `${s.name}-${s.prefecture_id}`;
             if (!stationsMap.has(key)) {
