@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { runQuickCheck, type QuickCheckEventInput, type TripWarning } from '@pplaner/shared';
 import TripDayPicker from '@/components/common/TripDayPicker';
 import ConflictAwareTimePicker from '@/components/common/ConflictAwareTimePicker';
+import { useRequireAuth } from '@/components/common/AuthGate';
 
 interface DraftEvent extends QuickCheckEventInput {
     key: string;
@@ -43,6 +44,24 @@ export default function CheckPageClient() {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [events, setEvents] = useState<DraftEvent[]>([]);
+    const { isAuthed, login } = useRequireAuth();
+
+    // 즉시 가치 체감용 예시 (일부러 시간이 겹치는 일정을 넣어 점검 결과를 보여줌)
+    const fillExample = () => {
+        const base = new Date();
+        base.setDate(base.getDate() + 14);
+        const d1 = base.toISOString().split('T')[0];
+        const next = new Date(base);
+        next.setDate(next.getDate() + 1);
+        const d2 = next.toISOString().split('T')[0];
+        setStartDate(d1);
+        setEndDate(d2);
+        setEvents([
+            { key: newKey(), title: '센소지', date: d1, startTime: '10:00', endTime: '11:30', placeName: '아사쿠사' },
+            { key: newKey(), title: '도쿄 스카이트리', date: d1, startTime: '11:00', endTime: '12:30', placeName: '' },
+            { key: newKey(), title: '시부야 스크램블', date: d2, startTime: '15:00', endTime: '16:30', placeName: '시부야' },
+        ]);
+    };
 
     const readyEvents = events.filter((e) => e.title.trim() && e.date);
     const canCheck = !!startDate && readyEvents.length > 0;
@@ -109,6 +128,16 @@ export default function CheckPageClient() {
                     여행 날짜와 일정을 넣으면 <b>겹치는 시간·중복 일정·무리한 동선·운영시간</b> 같은
                     문제를 바로 찾아드려요. 저장 없이 즉시 확인할 수 있어요.
                 </p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={fillExample}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                        예시로 채워보기
+                    </button>
+                    <span className="text-xs text-slate-400">계정 없이 무료로 바로 사용</span>
+                </div>
             </header>
 
             {/* Dates */}
@@ -339,12 +368,22 @@ export default function CheckPageClient() {
                 <p className="mt-1 text-xs text-slate-300 dark:text-slate-400">
                     로그인하면 여기서 점검한 일정을 그대로 발전시킬 수 있어요.
                 </p>
-                <Link
-                    href="/"
-                    className="mt-4 inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
-                >
-                    로그인하고 계속하기
-                </Link>
+                {isAuthed ? (
+                    <Link
+                        href="/trips"
+                        className="mt-4 inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+                    >
+                        내 여행 만들러 가기
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => void login()}
+                        className="mt-4 inline-block rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+                    >
+                        로그인하고 계속하기
+                    </button>
+                )}
             </div>
         </main>
     );

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search, MapPin, X, Lock } from 'lucide-react';
 import { isGoogleMapsReady } from '@pplaner/shared';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * 지역 한정 장소 검색.
@@ -56,6 +57,7 @@ export default function RegionScopedPlaceSearch({
     className = '',
     lockedHint = '로그인하면 지역 한정 장소 검색을 사용할 수 있어요.',
 }: RegionScopedPlaceSearchProps) {
+    const { user, loginWithGoogle } = useAuth();
     const [ready, setReady] = useState(false);
     const [input, setInput] = useState('');
     const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
@@ -171,14 +173,35 @@ export default function RegionScopedPlaceSearch({
         );
     };
 
-    // 비로그인/미로드: 잠금 안내
+    // 로그인 안 함: 부드러운 로그인 유도 (벽이 아니라 안내)
+    if (!user) {
+        return (
+            <div
+                className={`flex items-center justify-between gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400 ${className}`}
+            >
+                <span className="flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5 shrink-0" />
+                    {lockedHint}
+                </span>
+                <button
+                    type="button"
+                    onClick={() => void loginWithGoogle()}
+                    className="shrink-0 rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900"
+                >
+                    로그인
+                </button>
+            </div>
+        );
+    }
+
+    // 로그인은 했으나 지도 스크립트 로딩 중
     if (!ready) {
         return (
             <div
-                className={`flex items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400 ${className}`}
+                className={`flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-400 dark:border-slate-700 dark:bg-slate-800/40 ${className}`}
             >
-                <Lock className="h-3.5 w-3.5 shrink-0" />
-                <span>{lockedHint}</span>
+                <span className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
+                지도 준비 중…
             </div>
         );
     }
