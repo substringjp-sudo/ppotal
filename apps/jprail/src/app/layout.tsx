@@ -119,10 +119,10 @@ export default function RootLayout({
           }}
         />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        <Script
+        <script
+          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body

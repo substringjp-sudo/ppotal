@@ -1,5 +1,4 @@
 import React from 'react';
-import Script from 'next/script';
 import Link from 'next/link';
 import SEOContent from '../../components/SEOContent';
 import { getSEOData } from '../../lib/server-rail-data';
@@ -32,13 +31,6 @@ export default function DirectoryPage() {
             </div>
 
             <div style={{ padding: '0 24px' }}>
-                <Script
-                    async
-                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
-                    strategy="lazyOnload"
-                    crossOrigin="anonymous"
-                />
-
                 <SEOContent data={seoData} />
             </div>
         </main>
