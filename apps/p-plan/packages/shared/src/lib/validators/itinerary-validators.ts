@@ -1,7 +1,8 @@
-import { Trip, TripWarning, TripEvent, WarningSourceType } from '../../types/trip';
+import { Trip, TripWarning, TripEvent, WarningSourceType, SubCategory } from '../../types/trip';
 import { TravelStyle } from '../../types/user';
 import { calculateDistance } from '../geo-utils';
 import { timeToMinutes } from '../utils';
+import { getSunPhases } from '../sun-utils';
 
 export function validateItineraryConflicts(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     (trip.dailyTimeline || []).forEach((day, dayIdx) => {
@@ -333,6 +334,65 @@ export function validateDuplicateEvents(trip: Trip, warnings: TripWarning[]) {
             }
         }
     });
+}
+
+// 일몰 후 야외/경치 일정 (낮 경치를 놓칠 수 있음) — sun-utils 재활용
+const SCENIC_SUBCATEGORIES: SubCategory[] = ['scenic', 'landmark', 'amusement', 'activity'];
+export function validateSunsetOutdoor(trip: Trip, warnings: TripWarning[]) {
+    (trip.dailyTimeline || []).forEach((day, dayIdx) => {
+        (day.events || []).forEach(event => {
+            const sub = event.subCategory;
+            if (!sub || !SCENIC_SUBCATEGORIES.includes(sub)) return;
+            if (!event.startTime || !event.location?.lat || !event.location?.lng) return;
+
+            const { sunsetMins, sunset } = getSunPhases(day.date, event.location.lat, event.location.lng);
+            const start = timeToMinutes(event.startTime);
+            if (start !== null && start >= sunsetMins) {
+                warnings.push({
+                    id: `sunset-outdoor-${event.id}`,
+                    type: 'timeline_conflict',
+                    severity: 'info',
+                    message: `'${event.title}' 일정이 일몰(약 ${sunset}) 이후에 시작해요. 낮 풍경을 원하신다면 시간을 앞당겨 보세요.`,
+                    suggestion: '전망·경치 명소는 해가 있을 때 방문하면 더 좋습니다. 일몰 전으로 일정을 옮겨보세요.',
+                    sourceType: 'event',
+                    sourceId: event.id,
+                    metadata: { dayIndex: dayIdx }
+                });
+            }
+        });
+    });
+}
+
+// 장거리 비행 후 첫날 강행군 (시차·피로) — timeDifference / flightDurationMinutes 재활용
+export function validateFirstDayJetlag(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
+    const longHaul = (trip.flights || []).find(
+        f => f.type === 'outbound' && f.date && (f.flightDurationMinutes || 0) >= 360
+    );
+    if (!longHaul) return;
+
+    const arrivalDay = (trip.dailyTimeline || []).find(d => d.date === longHaul.date);
+    if (!arrivalDay?.events || arrivalDay.events.length === 0) return;
+
+    const threshold = style?.active === 'energetic' ? 5 : 3;
+    const eventCount = arrivalDay.events.length;
+    const hasLateEvent = arrivalDay.events.some(e => {
+        const end = timeToMinutes(e.endTime);
+        return end !== null && end >= 21 * 60;
+    });
+
+    if (eventCount >= threshold || hasLateEvent) {
+        const hasTimeDiff = !!(trip.timeDifference && trip.timeDifference.trim() && trip.timeDifference.trim() !== '0');
+        const hours = Math.round((longHaul.flightDurationMinutes || 0) / 60);
+        warnings.push({
+            id: 'first-day-jetlag',
+            type: 'time_pressure',
+            severity: 'info',
+            message: `장거리 비행(약 ${hours}시간) 후 도착 첫날 일정이 ${eventCount}개로 빡빡해요.${hasTimeDiff ? ' 시차 피로까지 겹칠 수 있어요.' : ''}`,
+            suggestion: '도착 첫날은 이동·체크인·시차 적응만으로도 지칩니다. 숙소 근처 위주로 가볍게 잡아보세요.',
+            sourceType: 'flight',
+            sourceId: longHaul.id
+        });
+    }
 }
 
 // B7 + C8: 마지막 날 귀국편 전 일정 과잉 / 공항 이동 시간 미고려

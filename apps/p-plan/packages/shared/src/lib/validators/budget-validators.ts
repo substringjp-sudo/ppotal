@@ -101,6 +101,29 @@ export function validateExpenseAnomalies(trip: Trip, warnings: TripWarning[]) {
     });
 }
 
+// 예산 카테고리 공백 (지출을 기록 중인데 자주 빠뜨리는 필수 카테고리가 비어있음)
+export function validateBudgetCategoryGaps(trip: Trip, warnings: TripWarning[]) {
+    const budget = trip.budget;
+    if (!budget || !budget.expenses || budget.expenses.length === 0) return;
+    if (!trip.dates?.durationDays || trip.dates.durationDays < 2) return;
+
+    const usedCategories = new Set(budget.expenses.map(e => e.category));
+    const missing: string[] = [];
+    if (!usedCategories.has('food')) missing.push('식비');
+    if (!usedCategories.has('transport')) missing.push('현지 교통비');
+
+    if (missing.length > 0) {
+        warnings.push({
+            id: 'budget-category-gap',
+            type: 'budget_anomaly',
+            severity: 'info',
+            message: `예산에 ${missing.join(', ')} 항목이 비어 있어요. 여행 지출에서 자주 빠뜨리는 항목이에요.`,
+            suggestion: '식비와 현지 교통비는 총 경비의 큰 비중을 차지합니다. 대략적인 금액이라도 미리 잡아두면 예산 관리가 쉬워요.',
+            sourceType: 'budget'
+        });
+    }
+}
+
 // B2: 통화 불일치 (예산 통화와 지출 통화가 다른데 환율 미입력)
 export function validateCurrencyMismatch(trip: Trip, warnings: TripWarning[]) {
     const budget = trip.budget;

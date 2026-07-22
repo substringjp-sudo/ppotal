@@ -4,8 +4,8 @@ import { TravelStyle } from '../types/user';
 import { validateAirportDistance, validateAccommodationRegion, validateEventLocations, validateLocationClusters } from './validators/location-validators';
 import { validateAccommodationOverlap, validateAccommodationGaps, validateAccommodationCapacity, validateAccommodationExpectedTimes, checkAccommodationFlightConflict, validateNoAccommodation, validateCheckoutDaySchedule } from './validators/accommodation-validators';
 import { validateFlightCompleteness, validateFlightTimeRange, validateFlightSpeed, validateRentalCarPeriod, validatePublicTransportFeasibility, validateDrivingFeasibility, validateFlightLayovers, validatePublicTransportConflicts, validateDrivingConflicts } from './validators/transport-validators';
-import { validateItineraryConflicts, validateInterEventTravel, validateDailyIntensity, validateEventDates, validateOperatingHours, validateDuplicateEvents, validateLastDayPressure, validateMealTimeGaps, validateConsecutiveTravelDays } from './validators/itinerary-validators';
-import { validateBudget, validateBudgetRealism, validateExpenseAnomalies, validateCurrencyMismatch } from './validators/budget-validators';
+import { validateItineraryConflicts, validateInterEventTravel, validateDailyIntensity, validateEventDates, validateOperatingHours, validateDuplicateEvents, validateLastDayPressure, validateMealTimeGaps, validateConsecutiveTravelDays, validateSunsetOutdoor, validateFirstDayJetlag } from './validators/itinerary-validators';
+import { validateBudget, validateBudgetRealism, validateExpenseAnomalies, validateCurrencyMismatch, validateBudgetCategoryGaps } from './validators/budget-validators';
 import { validateChecklistProgress, validatePrepTaskProgress } from './validators/progress-validators';
 import { validateDateConsistency, validateVisaRequirements, validateSeasonalCaution, validateCrowdPreference, checkPreparationReadiness, checkPassportRules, checkLateArrivalAccommodation, checkPowerAdapterRequirement, checkEmptyTimelineDays, checkTravelInsurance, validateUrgentBookings } from './validators/other-validators';
 import { validateInternationalLicense, validateHealthPreparation, validateCommunicationPrep, validateAirportTransfer, validateLateNightReturn } from './validators/logistics-validators';
@@ -69,10 +69,12 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
         validateEventDates(trip, warnings);
         validateOperatingHours(trip, warnings);
         validateDuplicateEvents(trip, warnings);                    // B5: 중복 일정
+        validateSunsetOutdoor(trip, warnings);                      // 신규: 일몰 후 야외/경치 일정
         validateMealTimeGaps(trip, warnings, style);                // C1: 식사 시간
         validateConsecutiveTravelDays(trip, warnings, style);       // C2: 연속 이동일
         if (isLoaded('flights')) {
             validateLastDayPressure(trip, warnings);                // B7+C8: 마지막날 과잉/공항 이동
+            validateFirstDayJetlag(trip, warnings, style);          // 신규: 장거리 비행 후 첫날 강행군
         }
     }
 
@@ -81,6 +83,7 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
     validateBudgetRealism(trip, warnings, style);
     validateExpenseAnomalies(trip, warnings);                       // B1: 비용 이상치
     validateCurrencyMismatch(trip, warnings);                       // B2: 통화 불일치
+    validateBudgetCategoryGaps(trip, warnings);                     // 신규: 예산 카테고리 공백
 
     // 6. 준비 상태 관련 검증
     if (isLoaded('checklist')) validateChecklistProgress(trip, warnings, style);
