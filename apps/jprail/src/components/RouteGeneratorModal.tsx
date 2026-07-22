@@ -6,7 +6,7 @@ import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
-import { findCandidateRoutes, CandidateRoute, RouteSearchResult } from '../lib/routeSearch';
+import { findCandidateRoutes, CandidateRoute, RouteSearchResult, LegSearchResult, RouteLineInfo } from '../lib/routeSearch';
 
 export interface RouteGeneratorModalProps {
     isOpen: boolean;
@@ -283,16 +283,20 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const [viaStations, setViaStations] = useState<(Station | null)[]>([]);
 
     const [searchResult, setSearchResult] = useState<RouteSearchResult | null>(null);
+    const [selectedLegCandidates, setSelectedLegCandidates] = useState<Record<number, CandidateRoute | null>>({});
+    const [activeLegIndex, setActiveLegIndex] = useState<number>(0);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
-    // Reset when modal opens/closes
+    // Reset state when modal opens/closes
     useEffect(() => {
         if (!isOpen) {
             setStartStation(null);
             setEndStation(null);
             setViaStations([]);
             setSearchResult(null);
+            setSelectedLegCandidates({});
+            setActiveLegIndex(0);
             setHasSearched(false);
             setIsSearching(false);
         }
@@ -322,26 +326,65 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
         setIsSearching(true);
         setHasSearched(false);
 
-        // Build list of valid waypoints: start -> valid vias -> end
         const validVias = viaStations.filter((v): v is Station => v !== null);
         const waypoints = [startStation, ...validVias, endStation];
 
         setTimeout(() => {
             const result = findCandidateRoutes(waypoints, railData);
             setSearchResult(result);
+
+            // Pre-select top candidate for each leg
+            const initialSelected: Record<number, CandidateRoute | null> = {};
+            result.legs.forEach(leg => {
+                initialSelected[leg.legIndex] = leg.candidates.length > 0 ? leg.candidates[0] : null;
+            });
+            setSelectedLegCandidates(initialSelected);
+            setActiveLegIndex(0);
+
             setIsSearching(false);
             setHasSearched(true);
         }, 150);
     };
 
-    const handleSelectRoute = (candidate: CandidateRoute) => {
-        if (!startStation || !endStation) return;
+    const handleSelectCandidateForLeg = (legIndex: number, candidate: CandidateRoute) => {
+        setSelectedLegCandidates(prev => ({
+            ...prev,
+            [legIndex]: candidate
+        }));
+    };
+
+    const handleCreateCombinedTrip = () => {
+        if (!startStation || !endStation || !searchResult || searchResult.legs.length === 0) return;
 
         const validVias = viaStations.filter((v): v is Station => v !== null);
         const waypoints = [startStation, ...validVias, endStation];
 
         const startName = getLocalizedName(startStation, language);
         const endName = getLocalizedName(endStation, language);
+
+        let totalDist = 0;
+        const combinedStationIds: string[] = [];
+        const combinedSectionIds: number[] = [];
+        const combinedGeometries: [number, number][][] = [];
+
+        searchResult.legs.forEach(leg => {
+            const chosen = selectedLegCandidates[leg.legIndex];
+            if (chosen) {
+                totalDist += chosen.distance;
+                chosen.sectionIds.forEach(s => combinedSectionIds.push(s));
+                chosen.geometries.forEach(g => combinedGeometries.push(g));
+
+                if (combinedStationIds.length === 0) {
+                    combinedStationIds.push(...chosen.stationIds);
+                } else {
+                    if (combinedStationIds[combinedStationIds.length - 1] === chosen.stationIds[0]) {
+                        combinedStationIds.push(...chosen.stationIds.slice(1));
+                    } else {
+                        combinedStationIds.push(...chosen.stationIds);
+                    }
+                }
+            }
+        });
 
         const newTrip: Trip = {
             id: `trip_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -350,11 +393,11 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
             end: endName,
             startId: startStation.id,
             endId: endStation.id,
-            distance: candidate.distance,
-            path: candidate.stationIds,
+            distance: Math.round(totalDist * 10) / 10,
+            path: combinedStationIds,
             waypoints: waypoints.map(w => w.id),
-            geometries: candidate.geometries,
-            sectionIds: candidate.sectionIds,
+            geometries: combinedGeometries,
+            sectionIds: combinedSectionIds,
             createdAt: new Date().toISOString()
         };
 
@@ -363,6 +406,37 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     };
 
     const isSearchDisabled = !startStation || !endStation;
+
+    // Check if all legs have a selected candidate
+    const allLegsSelected = searchResult && searchResult.legs.length > 0 &&
+        searchResult.legs.every(leg => Boolean(selectedLegCandidates[leg.legIndex]));
+
+    // Compute combined stats for summary card
+    const combinedStats = useMemo(() => {
+        if (!searchResult || !searchResult.legs.length) return null;
+        let dist = 0;
+        let transfers = 0;
+        const lineList: RouteLineInfo[] = [];
+
+        searchResult.legs.forEach(leg => {
+            const chosen = selectedLegCandidates[leg.legIndex];
+            if (chosen) {
+                dist += chosen.distance;
+                transfers += chosen.transferCount;
+                chosen.lines.forEach(l => {
+                    if (lineList.length === 0 || lineList[lineList.length - 1].id !== l.id) {
+                        lineList.push(l);
+                    }
+                });
+            }
+        });
+
+        return {
+            totalDistance: Math.round(dist * 10) / 10,
+            totalTransfers: transfers,
+            lines: lineList
+        };
+    }, [searchResult, selectedLegCandidates]);
 
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
@@ -378,7 +452,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 {t.createRouteTitle || '경로 자동 생성'}
                             </h3>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                시작역과 도착역 사이의 세부 경로를 찾아 기록을 생성합니다.
+                                시작역과 도착역 사이의 세부 경로를 선택하여 기록을 생성합니다.
                             </p>
                         </div>
                     </div>
@@ -475,89 +549,218 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
                     {/* Search Results */}
                     {hasSearched && searchResult && (
-                        <div className="space-y-3 pt-2 animate-in fade-in duration-200">
+                        <div className="space-y-4 pt-2 animate-in fade-in duration-200">
                             {/* Warning Banner if >= 5 Candidates */}
                             {searchResult.hasTooManyCandidates && (
                                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
                                     <span className="material-symbols-outlined text-lg text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">warning</span>
                                     <div className="text-xs font-semibold leading-relaxed">
                                         <p className="font-bold mb-0.5">
-                                            경우의 수가 {searchResult.totalCandidatesCount}개 발견되었습니다.
+                                            경우의 수가 5개 이상 발견되었습니다.
                                         </p>
                                         <p className="text-[11px] opacity-90">
-                                            {t.tooManyCandidatesWarning || '경우의 수가 5개 이상 발견되었습니다. 경유역을 추가하면 더 정확한 경로를 지정할 수 있습니다.'}
+                                            {t.tooManyCandidatesWarning || '경유역을 추가하면 더 정확한 경로를 지정할 수 있습니다.'}
                                         </p>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Candidate List */}
-                            {searchResult.candidates.length > 0 ? (
-                                <div className="space-y-3">
-                                    <h4 className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider px-1 flex items-center justify-between">
-                                        <span>추천 경로 후보 ({searchResult.candidates.length}개)</span>
-                                        <span className="text-[10px] font-normal text-slate-400">원하는 경로를 선택하세요</span>
-                                    </h4>
+                            {searchResult.legs.length > 0 ? (
+                                <div className="space-y-4">
+                                    {/* Multi-Leg Tabs Header (when via stations exist) */}
+                                    {searchResult.legs.length > 1 && (
+                                        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl overflow-x-auto custom-scrollbar">
+                                            {searchResult.legs.map((leg, idx) => {
+                                                const isActive = activeLegIndex === idx;
+                                                const chosen = selectedLegCandidates[idx];
+                                                const sName = getLocalizedName(leg.startStation, language);
+                                                const eName = getLocalizedName(leg.endStation, language);
 
-                                    {searchResult.candidates.map((candidate, idx) => (
-                                        <div
-                                            key={candidate.id}
-                                            className="p-4 rounded-2xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col gap-2.5"
-                                        >
-                                            {/* Header info */}
+                                                return (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => setActiveLegIndex(idx)}
+                                                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 border ${
+                                                            isActive
+                                                                ? 'bg-white dark:bg-slate-900 text-primary border-slate-200 dark:border-slate-700 shadow-sm'
+                                                                : 'text-slate-600 dark:text-slate-400 border-transparent hover:bg-white/50'
+                                                        }`}
+                                                    >
+                                                        <span className="size-4 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-black">
+                                                            {idx + 1}
+                                                        </span>
+                                                        <span>{sName} ➔ {eName}</span>
+                                                        {chosen && (
+                                                            <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md">
+                                                                {chosen.distance}km
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Candidates for Current Active Leg */}
+                                    {searchResult.legs.map((leg, legIdx) => {
+                                        // If multi-leg, show active leg tab; if single leg, show leg 0
+                                        if (searchResult.legs.length > 1 && activeLegIndex !== legIdx) return null;
+
+                                        const sName = getLocalizedName(leg.startStation, language);
+                                        const eName = getLocalizedName(leg.endStation, language);
+                                        const currentSelected = selectedLegCandidates[legIdx];
+
+                                        return (
+                                            <div key={legIdx} className="space-y-3">
+                                                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider px-1 flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-base text-primary">route</span>
+                                                        <span>
+                                                            {searchResult.legs.length > 1 ? `[구간 ${legIdx + 1}] ${sName} ➔ ${eName}` : '추천 경로 경우의 수'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[10px] font-normal text-slate-400">
+                                                        (거리순 2개 + 최소환승순 2개)
+                                                    </span>
+                                                </h4>
+
+                                                {/* Candidate cards grid */}
+                                                <div className="space-y-2.5">
+                                                    {leg.candidates.map((candidate) => {
+                                                        const isSelected = currentSelected?.id === candidate.id;
+
+                                                        return (
+                                                            <div
+                                                                key={candidate.id}
+                                                                onClick={() => handleSelectCandidateForLeg(legIdx, candidate)}
+                                                                className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2.5 ${
+                                                                    isSelected
+                                                                        ? 'bg-primary/5 dark:bg-primary/10 border-primary shadow-md ring-2 ring-primary/20'
+                                                                        : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-slate-300 shadow-xs'
+                                                                }`}
+                                                            >
+                                                                {/* Header Info & Category Badges */}
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                                        {/* Category Badge */}
+                                                                        {candidate.category === 'distance' ? (
+                                                                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                                                                <span className="material-symbols-outlined text-[12px]">bolt</span>
+                                                                                거리순 {candidate.rank}위
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
+                                                                                <span className="material-symbols-outlined text-[12px]">sync_alt</span>
+                                                                                최소환승 {candidate.rank}위
+                                                                            </span>
+                                                                        )}
+
+                                                                        {/* Transfer count badge */}
+                                                                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                                                                            {candidate.transferCount === 0 ? '직통 (환승 없음)' : `환승 ${candidate.transferCount}회`}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className="text-xs font-black text-primary">
+                                                                        {candidate.distance} KM
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Lines Badges */}
+                                                                <div className="flex flex-wrap items-center gap-1.5 py-0.5">
+                                                                    {candidate.lines.map((line, lIdx) => (
+                                                                        <React.Fragment key={line.id}>
+                                                                            {lIdx > 0 && (
+                                                                                <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">➔</span>
+                                                                            )}
+                                                                            <span
+                                                                                className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-xs"
+                                                                                style={{ backgroundColor: line.color || '#3b82f6' }}
+                                                                            >
+                                                                                {getLocalizedName(line, language)}
+                                                                            </span>
+                                                                        </React.Fragment>
+                                                                    ))}
+                                                                </div>
+
+                                                                {/* Station sequence snippet */}
+                                                                <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed bg-slate-50 dark:bg-slate-900/40 p-2 rounded-xl">
+                                                                    {candidate.stationNames.slice(0, 8).join(' ➔ ')}
+                                                                    {candidate.stationNames.length > 8 && ` ➔ ... (${candidate.stationNames.length}개 역)`}
+                                                                </div>
+
+                                                                {/* Choice Radio / Button */}
+                                                                <div className="flex items-center justify-between pt-1">
+                                                                    <span className="text-[10px] text-slate-400">
+                                                                        {isSelected ? '✓ 선택된 구간 경로' : '클릭하여 구간 경로 선택'}
+                                                                    </span>
+
+                                                                    <div className={`px-3 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                                                                        isSelected
+                                                                            ? 'bg-primary text-white shadow-sm'
+                                                                            : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                                                    }`}>
+                                                                        <span className="material-symbols-outlined text-sm">
+                                                                            {isSelected ? 'check_circle' : 'radio_button_unchecked'}
+                                                                        </span>
+                                                                        {isSelected ? '선택됨' : '구간 선택'}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {/* Combined Route Summary & Action Card */}
+                                    {allLegsSelected && combinedStats && (
+                                        <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/30 shadow-lg space-y-3 mt-4 animate-in fade-in duration-200">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                                                        {t.routeOption || '경로'} {idx + 1}
-                                                    </span>
-                                                    {candidate.isShortest && (
-                                                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                                                            {t.shortestRoute || '최단 경로'}
-                                                        </span>
-                                                    )}
+                                                    <span className="material-symbols-outlined text-xl text-primary">route</span>
+                                                    <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                                                        최종 조합 경로 요약
+                                                    </h4>
                                                 </div>
-
                                                 <div className="text-xs font-black text-primary">
-                                                    {candidate.distance} KM
+                                                    총 {combinedStats.totalDistance} KM
                                                 </div>
                                             </div>
 
-                                            {/* Lines Used Badges */}
-                                            <div className="flex flex-wrap items-center gap-1.5 py-1">
-                                                {candidate.lines.map((line, lIdx) => (
+                                            {/* Combined line badges */}
+                                            <div className="flex flex-wrap items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                                                {combinedStats.lines.map((line, lIdx) => (
                                                     <React.Fragment key={line.id}>
                                                         {lIdx > 0 && (
                                                             <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">➔</span>
                                                         )}
                                                         <span
-                                                            className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-sm"
+                                                            className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-xs"
                                                             style={{ backgroundColor: line.color || '#3b82f6' }}
                                                         >
-                                                            {line.name}
+                                                            {getLocalizedName(line, language)}
                                                         </span>
                                                     </React.Fragment>
                                                 ))}
                                             </div>
 
-                                            {/* Station snippet */}
-                                            <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed bg-slate-50 dark:bg-slate-900/40 p-2 rounded-xl">
-                                                {candidate.stationNames.slice(0, 8).join(' ➔ ')}
-                                                {candidate.stationNames.length > 8 && ` ➔ ... (${candidate.stationNames.length}개 역)`}
+                                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400 px-1">
+                                                <span>총 환승 횟수: {combinedStats.totalTransfers === 0 ? '직통 (환승 없음)' : `${combinedStats.totalTransfers}회`}</span>
                                             </div>
 
-                                            {/* Action button */}
-                                            <div className="flex justify-end pt-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleSelectRoute(candidate)}
-                                                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary text-white hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5"
-                                                >
-                                                    <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                    {t.selectRoute || '이 경로 선택'}
-                                                </button>
-                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={handleCreateCombinedTrip}
+                                                className="w-full py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider bg-primary text-white hover:bg-primary/90 active:scale-[0.99] transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+                                            >
+                                                <span className="material-symbols-outlined text-base">check_circle</span>
+                                                이 최종 경로로 여행 기록 생성
+                                            </button>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             ) : (
                                 <div className="p-6 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
