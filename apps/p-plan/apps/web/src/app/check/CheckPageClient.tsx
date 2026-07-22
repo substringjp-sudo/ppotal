@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { runQuickCheck, type QuickCheckEventInput, type TripWarning } from '@pplaner/shared';
 import TripDayPicker from '@/components/common/TripDayPicker';
+import ConflictAwareTimePicker from '@/components/common/ConflictAwareTimePicker';
 
 interface DraftEvent extends QuickCheckEventInput {
     key: string;
@@ -189,21 +190,23 @@ export default function CheckPageClient() {
                                         onChange={(date) => updateEvent(e.key, { date })}
                                     />
                                 </div>
-                                <div className="mt-2 grid grid-cols-3 gap-2">
-                                    <input
-                                        type="time"
-                                        value={e.startTime || ''}
-                                        onChange={(ev) => updateEvent(e.key, { startTime: ev.target.value })}
-                                        className={inputCls}
-                                        title="시작 시간"
+                                <div className="mt-2">
+                                    <ConflictAwareTimePicker
+                                        startTime={e.startTime}
+                                        endTime={e.endTime}
+                                        busy={events
+                                            .filter(
+                                                (o) => o.key !== e.key && o.date === e.date && !!o.startTime
+                                            )
+                                            .map((o) => ({
+                                                title: o.title || '다른 일정',
+                                                startTime: o.startTime,
+                                                endTime: o.endTime,
+                                            }))}
+                                        onChange={(patch) => updateEvent(e.key, patch)}
                                     />
-                                    <input
-                                        type="time"
-                                        value={e.endTime || ''}
-                                        onChange={(ev) => updateEvent(e.key, { endTime: ev.target.value })}
-                                        className={inputCls}
-                                        title="종료 시간"
-                                    />
+                                </div>
+                                <div className="mt-2">
                                     <input
                                         type="text"
                                         placeholder="장소(선택)"
