@@ -12,6 +12,7 @@ import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } 
 import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
+import { ExportModal, type ExportModalStats } from "./ExportModal";
 import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
 
@@ -103,6 +104,8 @@ export function RegionMap() {
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportImageData, setExportImageData] = useState<string | null>(null);
   const exportRequested = useMapStore(state => state.exportRequested);
   const geoJsonRef = useRef<LeafletGeoJSON | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
@@ -385,34 +388,69 @@ export function RegionMap() {
     
     setExporting(true);
     try {
-      // Small delay to ensure any pending UI updates are rendered
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Ensure any SVG elements have explicit xmlns attribute for clean rendering
+      const svgs = exportRef.current.querySelectorAll("svg");
+      svgs.forEach((svg) => {
+        if (!svg.getAttribute("xmlns")) {
+          svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        }
+      });
+
+      // Small delay to ensure any pending canvas / UI updates are flushed
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       const dataUrl = await toPng(exportRef.current, {
-        cacheBust: true,
+        cacheBust: false,
+        pixelRatio: 2,
         backgroundColor: "#f0f9ff", // bg-sky-50 equivalent
         filter: (node: HTMLElement) => {
-          // Exclude elements with 'no-export' class or specific Leaflet controls
+          if (!node || !node.classList) return true;
           const isExcluded = 
-            node.classList?.contains("no-export") || 
-            node.classList?.contains("leaflet-control-zoom") || 
-            node.classList?.contains("leaflet-control-attribution");
+            node.classList.contains("no-export") || 
+            node.classList.contains("leaflet-control-zoom") || 
+            node.classList.contains("leaflet-control-attribution") ||
+            node.classList.contains("leaflet-control");
           return !isExcluded;
         },
       });
 
-      const link = document.createElement("a");
-      const regionName = currentRegion ? currentRegion.name : "World";
-      link.download = `Regionevel-${regionName}-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = dataUrl;
-      link.click();
+      setExportImageData(dataUrl);
+      setIsExportModalOpen(true);
     } catch (err) {
       console.error("Failed to export map:", err);
       alert("지도 이미지를 생성하는 중 오류가 발생했습니다.");
     } finally {
       setExporting(false);
     }
-  }, [currentRegion]);
+  }, []);
+
+  const exportStats: ExportModalStats = useMemo(() => {
+    const regionName = currentRegion
+      ? currentRegion.nameKo || currentRegion.name
+      : "전 세계";
+
+    let visitedSubRegions = 0;
+    if (!currentId) {
+      visitedSubRegions = contextStats.visitedCountries;
+    } else if (currentRegion?.admLevel === 0) {
+      visitedSubRegions = contextStats.visitedPrefectures;
+    } else {
+      visitedSubRegions = contextStats.visitedCities;
+    }
+
+    return {
+      regionName,
+      pass: contextStats.pass,
+      transit: contextStats.transit,
+      visit: contextStats.visit,
+      stay: contextStats.stay,
+      residence: contextStats.residence,
+      rate: Math.ceil(contextStats.currentRateScore),
+      exp: Math.round(contextStats.currentDirectScore || contextStats.currentTotalScore || 0),
+      visitedSubRegions,
+      totalSubRegions: contextStats.totalChildrenCount || 0,
+    };
+  }, [currentRegion, currentId, contextStats]);
 
   // Listen for export requests from the global navigation
   useEffect(() => {
@@ -514,6 +552,7 @@ export function RegionMap() {
   return (
     <div ref={exportRef} className="relative w-full h-full bg-sky-50 overflow-hidden">
       <MapContainer
+        preferCanvas={true}
         center={[20, 0]}
         zoom={2}
         minZoom={2}
@@ -547,7 +586,7 @@ export function RegionMap() {
       {!isMobile && (
         <div
           ref={hoverLabelRef}
-          className={`fixed top-0 left-0 z-[5000] pointer-events-none transition-opacity duration-200 ${
+          className={`fixed top-0 left-0 z-[5000] pointer-events-none transition-opacity duration-200 no-export ${
             hoveredFeature || hoveredRegion ? "opacity-100" : "opacity-0"
           }`}
           style={{
@@ -597,7 +636,7 @@ export function RegionMap() {
 
       {/* Professional Top Header (Desktop) */}
       {!isMobile && (
-        <div className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 z-[1001] flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500">
+        <div className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 z-[1001] flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500 no-export">
           {/* Breadcrumbs Section */}
           <div className="flex items-center gap-2 h-full border-r border-slate-100 pr-4 shrink-0">
             <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-md p-1">
@@ -716,7 +755,7 @@ export function RegionMap() {
 
       {/* Mobile Header */}
       {isMobile && (
-        <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200">
+        <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200 no-export">
           <div className="flex items-center gap-2 p-2 pointer-events-auto">
             {history.length > 0 && (
               <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600 no-export">
@@ -777,7 +816,7 @@ export function RegionMap() {
       )}
 
       {/* Map Controls */}
-      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4`}>
+      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
         {loading && (
           <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -796,32 +835,41 @@ export function RegionMap() {
 
       {/* RegionTooltip */}
       {selectedRegion && selectedScore && (
-        <RegionTooltip
-          region={selectedRegion}
-          score={selectedScore}
-          childRegions={selectedChildren}
-          scoreMap={allScores}
-          mousePos={mousePos}
-          isMobile={isMobile}
-          onClose={() => {
-            setSelectedId(null);
-            setMousePos(null);
-          }}
-          onDrillDown={(id) => {
-            handleDrillDown(id);
-            setSelectedId(null);
-            setMousePos(null);
-          }}
-          onVisitSet={(cat, count) => {
-            upsertVisit(selectedId!, cat, count);
-          }}
-        />
+        <div className="no-export">
+          <RegionTooltip
+            region={selectedRegion}
+            score={selectedScore}
+            childRegions={selectedChildren}
+            scoreMap={allScores}
+            mousePos={mousePos}
+            isMobile={isMobile}
+            onClose={() => {
+              setSelectedId(null);
+              setMousePos(null);
+            }}
+            onDrillDown={(id) => {
+              handleDrillDown(id);
+              setSelectedId(null);
+              setMousePos(null);
+            }}
+            onVisitSet={(cat, count) => {
+              upsertVisit(selectedId!, cat, count);
+            }}
+          />
+        </div>
       )}
       {/* Watermark/Credits overlay visible in exported images */}
       <div className="absolute bottom-2 left-2 z-[1002] pointer-events-none bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-200/60 text-[10px] font-black text-slate-500 flex items-center gap-1.5 shadow-sm tracking-tight">
         <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
         <span>rgnevel.pplaner.com</span>
       </div>
+
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        imageData={exportImageData}
+        stats={exportStats}
+      />
     </div>
   );
 }

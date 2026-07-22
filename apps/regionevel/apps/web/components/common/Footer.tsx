@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function Footer() {
   const pathname = usePathname();
   // Hide footer on map and list views to keep them fullscreen
-  if (pathname === "/map" || pathname === "/list") return null;
+  if (pathname === "/" || pathname === "/map" || pathname === "/list") return null;
 
   return (
     <footer className="bg-white border-t border-gray-200 py-6 px-4 mt-auto">

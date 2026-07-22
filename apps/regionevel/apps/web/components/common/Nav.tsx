@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth, AuthModal } from "@ppotal/ui";
-import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass } from "lucide-react";
+import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info } from "lucide-react";
 import { ExportMapButton } from "@/components/map/ExportMapButton";
 import { RegionSearch } from "@/components/common/RegionSearch";
 import { usePathname } from "next/navigation";
@@ -106,9 +106,9 @@ export function Nav() {
       <div className="flex items-center gap-4 ml-auto">
         <nav className="hidden md:flex items-center gap-6">
           <Link
-            href="/map"
+            href="/"
             className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${
-              pathname === "/map" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
+              pathname === "/" || pathname === "/map" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
             }`}
           >
             <MapIcon className="w-4 h-4" />
@@ -123,13 +123,15 @@ export function Nav() {
             <Trophy className="w-4 h-4" />
             List
           </Link>
-          <a
-            href="https://pplaner.com"
-            className="text-sm font-bold transition-colors flex items-center gap-1.5 text-slate-500 hover:text-blue-600"
+          <Link
+            href="/about"
+            className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${
+              pathname === "/about" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
+            }`}
           >
-            <Compass className="w-4 h-4" />
-            PPLANER
-          </a>
+            <Info className="w-4 h-4" />
+            About
+          </Link>
           <ExportMapButton />
         </nav>
 

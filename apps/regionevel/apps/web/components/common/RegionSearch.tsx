@@ -57,8 +57,8 @@ export function RegionSearch() {
 
   const handleSelect = (id: string) => {
     jumpToRegion(id, allRegions);
-    if (pathname !== "/map") {
-      router.push("/map");
+    if (pathname !== "/map" && pathname !== "/") {
+      router.push("/");
     }
     setQuery("");
     setIsOpen(false);

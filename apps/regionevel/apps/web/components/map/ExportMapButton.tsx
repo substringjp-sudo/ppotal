@@ -8,8 +8,9 @@ export function ExportMapButton() {
   const pathname = usePathname();
   const requestExport = useMapStore((state) => state.requestExport);
   
-  // Only show on the map page
-  if (!pathname || !pathname.startsWith("/map")) return null;
+  // Only show on the map page (/ or /map)
+  const isMapPage = !pathname || pathname === "/" || pathname.startsWith("/map");
+  if (!isMapPage) return null;
 
   return (
     <button
