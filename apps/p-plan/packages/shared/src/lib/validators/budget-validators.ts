@@ -1,5 +1,6 @@
 import { Trip, TripWarning } from '../../types/trip';
 import { TravelStyle } from '../../types/user';
+import { calculateSettlement } from '../settlement-utils';
 
 export function validateBudget(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     const budget = trip.budget;
@@ -99,6 +100,63 @@ export function validateExpenseAnomalies(trip: Trip, warnings: TripWarning[]) {
             }
         });
     });
+}
+
+// 정산 편중 (settlement-utils 재활용) — 결제 부담이 한쪽으로 크게 쏠려 미정산이 큰 경우
+export function validateSettlementBalance(trip: Trip, warnings: TripWarning[]) {
+    const participants = trip.participants || [];
+    if (participants.length < 2) return;
+
+    const expenses = (trip.budget?.expenses || []).filter(
+        e => !e.isExcluded && e.status === 'confirmed' && e.payerId
+    );
+    if (expenses.length === 0) return;
+
+    // 환율을 알 수 없는 경우 1로 근사 (지출에 환율이 있으면 그것을 사용)
+    const { summary, transfers } = calculateSettlement(
+        participants,
+        expenses,
+        trip.budget?.baseCurrency || 'KRW',
+        () => 1
+    );
+
+    const totalPaid = summary.reduce((s, r) => s + r.paid, 0);
+    if (totalPaid < 10000) return; // 금액이 작으면 의미 없음
+
+    const maxOwed = Math.max(0, ...summary.map(r => -r.balance)); // 가장 많이 내야 할 금액
+    if (transfers.length > 0 && maxOwed > totalPaid * 0.4) {
+        warnings.push({
+            id: 'settlement-imbalance',
+            type: 'budget_anomaly',
+            severity: 'info',
+            message: '참여자 간 결제 부담이 한쪽으로 크게 쏠려 있어요. 미정산 금액이 남아 있으니 정산을 확인해 보세요.',
+            suggestion: '각 지출의 결제자와 분담 인원을 확인하고, 정산 기능으로 송금 내역을 정리하세요.',
+            sourceType: 'budget'
+        });
+    }
+}
+
+// 예산 카테고리 공백 (지출을 기록 중인데 자주 빠뜨리는 필수 카테고리가 비어있음)
+export function validateBudgetCategoryGaps(trip: Trip, warnings: TripWarning[]) {
+    const budget = trip.budget;
+    if (!budget || !budget.expenses || budget.expenses.length === 0) return;
+    if (!trip.dates?.durationDays || trip.dates.durationDays < 2) return;
+
+    const usedCategories = new Set(budget.expenses.map(e => e.category));
+    const missing: string[] = [];
+    if (!usedCategories.has('food')) missing.push('식비');
+    if (!usedCategories.has('transport')) missing.push('현지 교통비');
+
+    if (missing.length > 0) {
+        warnings.push({
+            id: 'budget-category-gap',
+            type: 'budget_anomaly',
+            severity: 'info',
+            message: `예산에 ${missing.join(', ')} 항목이 비어 있어요. 여행 지출에서 자주 빠뜨리는 항목이에요.`,
+            suggestion: '식비와 현지 교통비는 총 경비의 큰 비중을 차지합니다. 대략적인 금액이라도 미리 잡아두면 예산 관리가 쉬워요.',
+            sourceType: 'budget'
+        });
+    }
 }
 
 // B2: 통화 불일치 (예산 통화와 지출 통화가 다른데 환율 미입력)

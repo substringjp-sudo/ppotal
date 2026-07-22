@@ -1,7 +1,8 @@
-import { Trip, TripWarning, TripEvent, WarningSourceType } from '../../types/trip';
+import { Trip, TripWarning, TripEvent, WarningSourceType, SubCategory } from '../../types/trip';
 import { TravelStyle } from '../../types/user';
 import { calculateDistance } from '../geo-utils';
 import { timeToMinutes } from '../utils';
+import { getSunPhases } from '../sun-utils';
 
 export function validateItineraryConflicts(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     (trip.dailyTimeline || []).forEach((day, dayIdx) => {
@@ -182,7 +183,10 @@ function checkPointToPointFeasibility(
 export function validateDailyIntensity(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     (trip.dailyTimeline || []).forEach((day, idx) => {
         const eventCount = day.events?.length || 0;
-        const threshold = style?.planning === 'planned' ? 8 : 5;
+        let threshold = style?.planning === 'planned' ? 8 : 5;
+        // 체력형은 빡빡한 일정을 선호하므로 기준을 완화, 여유형은 강화
+        if (style?.active === 'energetic') threshold += 3;
+        else if (style?.active === 'relaxed') threshold = Math.max(3, threshold - 1);
 
         if (eventCount >= threshold) {
             warnings.push({
@@ -332,6 +336,121 @@ export function validateDuplicateEvents(trip: Trip, warnings: TripWarning[]) {
     });
 }
 
+// 일몰 후 야외/경치 일정 (낮 경치를 놓칠 수 있음) — sun-utils 재활용
+const SCENIC_SUBCATEGORIES: SubCategory[] = ['scenic', 'landmark', 'amusement', 'activity'];
+export function validateSunsetOutdoor(trip: Trip, warnings: TripWarning[]) {
+    (trip.dailyTimeline || []).forEach((day, dayIdx) => {
+        (day.events || []).forEach(event => {
+            const sub = event.subCategory;
+            if (!sub || !SCENIC_SUBCATEGORIES.includes(sub)) return;
+            if (!event.startTime || !event.location?.lat || !event.location?.lng) return;
+
+            const { sunsetMins, sunset } = getSunPhases(day.date, event.location.lat, event.location.lng);
+            const start = timeToMinutes(event.startTime);
+            if (start !== null && start >= sunsetMins) {
+                warnings.push({
+                    id: `sunset-outdoor-${event.id}`,
+                    type: 'timeline_conflict',
+                    severity: 'info',
+                    message: `'${event.title}' 일정이 일몰(약 ${sunset}) 이후에 시작해요. 낮 풍경을 원하신다면 시간을 앞당겨 보세요.`,
+                    suggestion: '전망·경치 명소는 해가 있을 때 방문하면 더 좋습니다. 일몰 전으로 일정을 옮겨보세요.',
+                    sourceType: 'event',
+                    sourceId: event.id,
+                    metadata: { dayIndex: dayIdx }
+                });
+            }
+        });
+    });
+}
+
+// 장거리 비행 후 첫날 강행군 (시차·피로) — timeDifference / flightDurationMinutes 재활용
+export function validateFirstDayJetlag(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
+    const longHaul = (trip.flights || []).find(
+        f => f.type === 'outbound' && f.date && (f.flightDurationMinutes || 0) >= 360
+    );
+    if (!longHaul) return;
+
+    const arrivalDay = (trip.dailyTimeline || []).find(d => d.date === longHaul.date);
+    if (!arrivalDay?.events || arrivalDay.events.length === 0) return;
+
+    const threshold = style?.active === 'energetic' ? 5 : 3;
+    const eventCount = arrivalDay.events.length;
+    const hasLateEvent = arrivalDay.events.some(e => {
+        const end = timeToMinutes(e.endTime);
+        return end !== null && end >= 21 * 60;
+    });
+
+    if (eventCount >= threshold || hasLateEvent) {
+        const hasTimeDiff = !!(trip.timeDifference && trip.timeDifference.trim() && trip.timeDifference.trim() !== '0');
+        const hours = Math.round((longHaul.flightDurationMinutes || 0) / 60);
+        warnings.push({
+            id: 'first-day-jetlag',
+            type: 'time_pressure',
+            severity: 'info',
+            message: `장거리 비행(약 ${hours}시간) 후 도착 첫날 일정이 ${eventCount}개로 빡빡해요.${hasTimeDiff ? ' 시차 피로까지 겹칠 수 있어요.' : ''}`,
+            suggestion: '도착 첫날은 이동·체크인·시차 적응만으로도 지칩니다. 숙소 근처 위주로 가볍게 잡아보세요.',
+            sourceType: 'flight',
+            sourceId: longHaul.id
+        });
+    }
+}
+
+// 가족 동반 여행의 페이싱 (memberCounts 재활용) — 아이·어르신 동반 시 무리한 일정 완화 제안
+export function validateFamilyPacing(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
+    const familyCount = trip.memberCounts?.family || 0;
+    if (familyCount <= 0) return;
+    if (style?.active === 'energetic') return; // 강행군 선호면 스킵
+
+    let flagged = false;
+    (trip.dailyTimeline || []).forEach(day => {
+        if (flagged) return;
+        const events = day.events || [];
+        const hasLate = events.some(e => {
+            const end = timeToMinutes(e.endTime);
+            return end !== null && end >= 22 * 60;
+        });
+        if (hasLate || events.length >= 6) flagged = true;
+    });
+
+    if (flagged) {
+        warnings.push({
+            id: 'family-pacing',
+            type: 'time_pressure',
+            severity: 'info',
+            message: '가족과 함께하는 여행에 늦은 밤 일정이나 빡빡한 날이 있어요. 아이·어르신 동반 시 체력과 휴식을 고려해 보세요.',
+            suggestion: '가족 여행은 이동을 줄이고 중간중간 휴식·식사 시간을 넉넉히 두는 것이 좋아요.',
+            sourceType: 'event'
+        });
+    }
+}
+
+// 다른 날 동일 장소 중복 방문 (좌표 기반) — 의도치 않은 중복 감지
+export function validateSamePlaceMultipleDays(trip: Trip, warnings: TripWarning[]) {
+    const seen = new Map<string, number>(); // key -> 최초 dayIdx
+    (trip.dailyTimeline || []).forEach((day, dayIdx) => {
+        (day.events || []).forEach(event => {
+            const loc = event.location;
+            if (!loc?.lat || !loc?.lng) return; // 좌표 있는 경우만 (오탐 방지)
+            const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
+            const firstDay = seen.get(key);
+            if (firstDay === undefined) {
+                seen.set(key, dayIdx);
+            } else if (firstDay !== dayIdx) {
+                warnings.push({
+                    id: `same-place-multi-${event.id}`,
+                    type: 'duplicate_event',
+                    severity: 'info',
+                    message: `'${event.title}'을(를) ${firstDay + 1}일차와 ${dayIdx + 1}일차에 모두 방문해요. 의도한 재방문인지 확인해 보세요.`,
+                    suggestion: '실수로 같은 장소를 다른 날에 중복 추가한 것은 아닌지 확인하세요. 의도한 재방문이면 그대로 두셔도 좋아요.',
+                    sourceType: 'event',
+                    sourceId: event.id,
+                    metadata: { dayIndex: dayIdx }
+                });
+            }
+        });
+    });
+}
+
 // B7 + C8: 마지막 날 귀국편 전 일정 과잉 / 공항 이동 시간 미고려
 export function validateLastDayPressure(trip: Trip, warnings: TripWarning[]) {
     if (!trip.flights || !trip.dailyTimeline || trip.dailyTimeline.length === 0) return;
@@ -374,8 +493,8 @@ export function validateLastDayPressure(trip: Trip, warnings: TripWarning[]) {
 
 // C1: 식사 시간 미확보 (빡빡한 일정 사이 점심/저녁 공백 없음)
 export function validateMealTimeGaps(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
-    // 유연한 여행 스타일이면 건너뜀
-    if (style?.planning === 'flexible') return;
+    // 유연한 여행 스타일이거나 체력형(강행군 감수)이면 건너뜀
+    if (style?.planning === 'flexible' || style?.active === 'energetic') return;
 
     (trip.dailyTimeline || []).forEach((day, dayIdx) => {
         const events = (day.events || [])
@@ -459,9 +578,11 @@ export function validateMealTimeGaps(trip: Trip, warnings: TripWarning[], style?
 }
 
 // C2: 연속 이동일 경고 (3일 이상 연속 도시간 이동)
-export function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[]) {
+export function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     if (!trip.dailyTimeline || trip.dailyTimeline.length < 3) return;
 
+    // 체력형(energetic)은 연속 이동 허용치를 높임
+    const threshold = style?.active === 'energetic' ? 4 : 3;
     let consecutiveCount = 0;
     let startDay = 0;
 
@@ -476,7 +597,7 @@ export function validateConsecutiveTravelDays(trip: Trip, warnings: TripWarning[
             if (consecutiveCount === 0) startDay = dayIdx;
             consecutiveCount++;
         } else {
-            if (consecutiveCount >= 3) {
+            if (consecutiveCount >= threshold) {
                 warnings.push({
                     id: `consecutive-travel-${startDay}`,
                     type: 'time_pressure',

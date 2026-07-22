@@ -6,6 +6,7 @@ import { MainCategory, SubCategory, CATEGORY_MAP } from '@pplaner/shared';
 import { motion } from 'framer-motion';
 import { GoogleMapsSearch } from '@/components/common/GoogleMapsSearch';
 import ConflictAwareTimePicker from '@/components/common/ConflictAwareTimePicker';
+import { mapGooglePlaceOpeningHours } from '@/lib/place-hours';
 import { TimeInput, TimeRangeInput } from '../common/FormComponents';
 import { Calendar } from 'lucide-react';
 
@@ -202,14 +203,16 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                                 const lat = place.geometry?.location?.lat();
                                 const lng = place.geometry?.location?.lng();
                                 
-                                // Set basic info first
+                                // Set basic info first (+ Google 영업시간/정기 휴무 자동 반영)
+                                const hours = mapGooglePlaceOpeningHours(place.opening_hours);
                                 setLocation({
                                     name: place.name || '',
                                     address: place.formatted_address,
                                     lat,
                                     lng,
                                     googlePlaceId: place.place_id,
-                                    url: place.url
+                                    url: place.url,
+                                    ...hours
                                 });
                                 
                                 if (!title) setTitle(place.name || '');

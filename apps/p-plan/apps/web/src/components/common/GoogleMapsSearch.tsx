@@ -136,7 +136,7 @@ export function GoogleMapsSearch({
         placesServiceRef.current.getDetails(
             { 
                 placeId: prediction.place_id,
-                fields: ['name', 'formatted_address', 'geometry', 'address_components', 'url', 'place_id']
+                fields: ['name', 'formatted_address', 'geometry', 'address_components', 'url', 'place_id', 'opening_hours']
             },
             (place, status) => {
                 setIsLoading(false);

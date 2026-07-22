@@ -1,4 +1,5 @@
 import { Trip, TripEvent, TripWarning, MainCategory } from '../types/trip';
+import { TravelStyle } from '../types/user';
 import { validateTrip } from './trip-validator';
 
 /**
@@ -110,10 +111,55 @@ export function buildQuickCheckTrip(input: QuickCheckInput): Trip {
 }
 
 /**
- * 경량 입력을 받아 즉시 검증 결과를 돌려준다. (로그인/네트워크 불필요, 순수 함수)
+ * 무료 점검 도구용 여행 타입(페르소나) 프리셋.
+ * 같은 일정이라도 타입에 따라 경고의 심각도가 달라진다.
+ * (/check는 일정 위주 검증만 하므로 timeline 관련 축만 실효가 있다.)
  */
-export function runQuickCheck(input: QuickCheckInput): QuickCheckResult {
+export interface QuickCheckPersona {
+    id: string;
+    label: string;
+    description: string;
+    style?: TravelStyle;
+}
+
+export const QUICK_CHECK_PERSONAS: QuickCheckPersona[] = [
+    {
+        id: 'balanced',
+        label: '균형',
+        description: '기본 점검 강도',
+    },
+    {
+        id: 'energetic',
+        label: '빡빡해도 OK',
+        description: '체력형·강행군 감수 — 과밀/충돌 경고를 완화',
+        style: {
+            planning: 'planned',
+            active: 'energetic',
+            budgetStrategy: 'value',
+            crowdPreference: 'trendy',
+            strictness: 'relaxed',
+        },
+    },
+    {
+        id: 'relaxed',
+        label: '느긋하게',
+        description: '여유 중시 — 과밀/충돌을 더 엄격히',
+        style: {
+            planning: 'planned',
+            active: 'relaxed',
+            budgetStrategy: 'value',
+            crowdPreference: 'local',
+            strictness: 'strict',
+        },
+    },
+];
+
+/**
+ * 경량 입력을 받아 즉시 검증 결과를 돌려준다. (로그인/네트워크 불필요, 순수 함수)
+ * style을 넘기면 여행 타입에 맞춰 경고 심각도가 조절된다.
+ */
+export function runQuickCheck(input: QuickCheckInput, style?: TravelStyle): QuickCheckResult {
     const trip = buildQuickCheckTrip(input);
-    const warnings = validateTrip(trip);
+    const warnings = validateTrip(trip, undefined, style);
     return { trip, warnings };
 }
