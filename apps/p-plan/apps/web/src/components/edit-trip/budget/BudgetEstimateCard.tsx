@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
     useTripStore,
@@ -27,9 +27,13 @@ function toMan(amount: number): { value: string; unit: string } {
     return { value: Math.round(amount).toLocaleString(), unit: '원' };
 }
 
-export default function BudgetEstimateCard() {
+interface BudgetEstimateCardProps {
+    level: DailySpendLevel;
+    onLevelChange: (level: DailySpendLevel) => void;
+}
+
+export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstimateCardProps) {
     const trip = useTripStore((state) => state.currentTrip);
-    const [level, setLevel] = useState<DailySpendLevel>('normal');
 
     const est = useMemo(() => (trip ? estimateTripBudget(trip, level) : null), [trip, level]);
     if (!trip || !est) return null;
@@ -104,7 +108,7 @@ export default function BudgetEstimateCard() {
                                 <button
                                     key={lv}
                                     type="button"
-                                    onClick={() => setLevel(lv)}
+                                    onClick={() => onLevelChange(lv)}
                                     aria-pressed={on}
                                     className={cn(
                                         'flex flex-col items-center gap-0.5 rounded-xl border px-2 py-2.5 transition-all',
