@@ -141,7 +141,8 @@ export function generatePreparationItems(trip: Trip, options?: GeneratePrepOptio
     }
 
     // ── 여행 타입: 쇼핑 ──────────────────────────────────
-    if (shoppingCount >= 2) {
+    // 택스리펀/면세 한도는 해외 여행에만 해당(자국 내 쇼핑에는 적용되지 않음)
+    if (shoppingCount >= 2 && isOverseas) {
         add({ id: 'prep-taxrefund', title: '택스리펀(Tax Refund) 준비 — 여권 지참', category: 'shopping', priority: 'recommended', reason: '일정 금액 이상 구매 시 부가세 환급을 받으려면 여권과 서류가 필요해요.' });
         add({ id: 'prep-dutyfree', title: '면세 한도 확인 / 사전 예약 쿠폰·바우처', category: 'shopping', priority: 'optional', reason: '귀국 시 면세 한도를 초과하면 세금이 부과돼요.' });
     }
