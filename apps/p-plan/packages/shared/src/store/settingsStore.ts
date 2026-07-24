@@ -24,11 +24,18 @@ export interface SettingsState {
   location: LocationSettings;
   photo: PhotoSettings;
   theme: 'system' | 'light' | 'dark';
-  
+  /**
+   * 로그인 프로필의 거주국(residence.country)이 없을 때(비로그인 게스트, 또는
+   * 아직 프로필을 설정하지 않은 로그인 사용자)를 위한 기기 로컬 홈 국가 대체값.
+   * 준비물/비자 요건 계산의 기준국을 정확히 하기 위한 용도.
+   */
+  homeCountryOverride?: string;
+
   // Actions
   updateLocationSettings: (settings: Partial<LocationSettings>) => void;
   updatePhotoSettings: (settings: Partial<PhotoSettings>) => void;
   updateTheme: (theme: SettingsState['theme']) => void;
+  updateHomeCountryOverride: (country?: string) => void;
 }
 
 const getStorage = () => {
@@ -67,7 +74,8 @@ export const useSettingsStore = create<SettingsState>()(
         quality: 'high',
       },
       theme: 'system',
-      
+      homeCountryOverride: undefined,
+
       updateLocationSettings: (settings) => set((state) => ({
         location: { ...state.location, ...settings }
       })),
@@ -75,6 +83,7 @@ export const useSettingsStore = create<SettingsState>()(
         photo: { ...state.photo, ...settings }
       })),
       updateTheme: (theme) => set({ theme }),
+      updateHomeCountryOverride: (country) => set({ homeCountryOverride: country }),
     }),
     {
       name: 'pplaner-settings',

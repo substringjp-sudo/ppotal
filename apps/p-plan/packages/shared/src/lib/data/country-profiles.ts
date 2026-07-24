@@ -62,3 +62,18 @@ export function resolveCountryProfile(name?: string): CountryProfile | undefined
 
 /** 기본 거주국(정보가 없을 때) */
 export const DEFAULT_HOME_COUNTRY = 'KR';
+
+/**
+ * 거주국 선택 UI(예: 비로그인 게스트의 "내 국적" 선택)에 노출할 국가 목록.
+ * entry-requirements.ts의 양자 비자 데이터가 채워진 6개국과 동일하게 맞춘다 —
+ * 여기 없는 국가를 골라도 동작은 하지만(목적지 단독 entryAuth로 폴백), 비자
+ * 요건 정확도가 이 6개국만큼 높지 않다.
+ */
+export const SUPPORTED_HOME_COUNTRIES: { key: string; name: string }[] = [
+    { key: 'KR', name: '한국' },
+    { key: 'JP', name: '일본' },
+    { key: 'US', name: '미국' },
+    { key: 'GB', name: '영국' },
+    { key: 'CN', name: '중국' },
+    { key: 'AU', name: '호주' },
+];

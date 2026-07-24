@@ -6,12 +6,12 @@ export const SOURCE_TO_SECTION_MAP: Record<string, SectionId> = {
     driving: 'transport',
     publicTransport: 'transport',
     event: 'timeline',
-    checklist: 'basics',
-    prep: 'basics',
+    checklist: 'checklist',
+    prep: 'checklist',
     general: 'basics'
 };
 
-export type SectionId = 'basics' | 'timeline' | 'transport' | 'accommodation' | 'reservations';
+export type SectionId = 'basics' | 'timeline' | 'transport' | 'accommodation' | 'reservations' | 'checklist';
 
 export const SECTIONS: { id: SectionId; label: string; icon: string; description: string }[] = [
     { id: 'basics', label: '기본', icon: 'settings', description: '여행 제목, 날짜, 지역' },
@@ -19,6 +19,7 @@ export const SECTIONS: { id: SectionId; label: string; icon: string; description
     { id: 'accommodation', label: '숙소', icon: 'hotel', description: '호텔, 에어비앤비 등' },
     { id: 'reservations', label: '예약', icon: 'confirmation_number', description: '식당, 투어, 기타 영수증' },
     { id: 'timeline', label: '일정', icon: 'event_note', description: '상세 타임라인 및 경로' },
+    { id: 'checklist', label: '준비물', icon: 'checklist', description: '비자·환전·어댑터 등 목적지별 준비물' },
 ];
 
 export const TRANSPORT_ICONS: Record<TransportationMethod, string> = {

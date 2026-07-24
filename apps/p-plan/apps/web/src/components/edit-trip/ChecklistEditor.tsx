@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useTripStore, useUserStore, generatePreparationItems, resolveCountryProfile } from '@pplaner/shared';
+import { useTripStore, useUserStore, useSettingsStore, generatePreparationItems, resolveCountryProfile, SUPPORTED_HOME_COUNTRIES } from '@pplaner/shared';
 import { CustomCheckbox } from '@/components/common/FormComponents';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@pplaner/shared';
@@ -264,13 +264,18 @@ export default function ChecklistEditor() {
     const updateChecklistItem = useTripStore((state) => state.updateChecklistItem);
     const addChecklistItem = useTripStore((state) => state.addChecklistItem);
     const removeChecklistItem = useTripStore((state) => state.removeChecklistItem);
-    const homeCountry = useUserStore((state) => state.profile?.residence?.country);
+    const profileHomeCountry = useUserStore((state) => state.profile?.residence?.country);
+    const homeCountryOverride = useSettingsStore((state) => state.homeCountryOverride);
+    const updateHomeCountryOverride = useSettingsStore((state) => state.updateHomeCountryOverride);
 
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
     if (!trip) return null;
 
+    // 로그인 프로필에 거주국이 설정돼 있으면 그것을 우선하고, 없으면(비로그인 게스트 등)
+    // 기기에 저장된 로컬 선택값을 대신 쓴다. 준비물/비자 요건의 기준국이 정확해야 하므로.
+    const homeCountry = profileHomeCountry || homeCountryOverride;
     const homeProfile = resolveCountryProfile(homeCountry);
 
     // 국가 차이(플러그·전압·통화·국제면허·비자 등) 기반 준비물을 기존 추천과 병합
@@ -323,6 +328,38 @@ export default function ChecklistEditor() {
 
     return (
         <div className="space-y-12">
+            {/* 거주국(내 국적) 선택 — 로그인 프로필에 이미 설정돼 있으면 숨김 */}
+            {!profileHomeCountry && (
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="material-symbols-rounded text-base text-slate-400">badge</span>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">내 국적(거주국)</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                        {SUPPORTED_HOME_COUNTRIES.map((c) => {
+                            const isActive = (homeCountryOverride || 'KR') === c.key;
+                            return (
+                                <button
+                                    key={c.key}
+                                    onClick={() => updateHomeCountryOverride(c.key === 'KR' ? undefined : c.key)}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                                        isActive
+                                            ? "bg-primary text-white border-primary shadow-sm"
+                                            : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-primary/40"
+                                    )}
+                                >
+                                    {c.name}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <p className="w-full text-[10px] font-medium text-slate-400">
+                        비자·어댑터·전압 등 준비물은 이 국적을 기준으로 계산돼요. 로그인하면 프로필 설정값이 자동으로 대신 쓰여요.
+                    </p>
+                </div>
+            )}
+
             {/* Recommendations Section */}
             {recommendations.length > 0 && (
                 <div className="space-y-6">
