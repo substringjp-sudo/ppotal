@@ -62,7 +62,8 @@ export default function MobileBottomNav() {
     const { action: pageAction, icon: pageActionIcon, label: pageActionLabel } = usePageActionStore();
     const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
-    if (pathname.startsWith('/edit-trip')) return null;
+    // 비로그인 방문자의 '/'는 게스트 편집기(자체 모바일 탭바 보유)를 그대로 보여주므로 숨긴다.
+    if (pathname.startsWith('/edit-trip') || (!user && pathname === '/')) return null;
 
     const visibleItems = NAV_ITEMS.filter(item => !item.authRequired || !!user);
     const leftItems = visibleItems.slice(0, 2);

@@ -1,10 +1,20 @@
 'use client';
 import { useState } from 'react';
-import { useTripStore } from '@pplaner/shared';
+import { useTripStore, useUserStore, useSettingsStore, generatePreparationItems, resolveCountryProfile, SUPPORTED_HOME_COUNTRIES } from '@pplaner/shared';
 import { CustomCheckbox } from '@/components/common/FormComponents';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@pplaner/shared';
 import { Trip } from '@pplaner/shared';
+
+const PREP_PRIORITY_RANK: Record<string, number> = { essential: 0, recommended: 1, optional: 2 };
+
+const PREP_CATEGORY_LABELS: Record<string, string> = {
+    documents: '서류', money: '금융', connectivity: '통신', transport: '교통',
+    power: '전자기기', health: '건강', shopping: '쇼핑', activity: '액티비티', general: '일반',
+};
+const PREP_PRIORITY_LABELS: Record<string, string> = {
+    essential: '필수', recommended: '권장', optional: '선택',
+};
 
 const PRESETS = [
     {
@@ -92,6 +102,8 @@ interface RecommendationItem {
     title: string;
     tags: string[];
     reason: string;
+    priority?: 'essential' | 'recommended' | 'optional';
+    isVisa?: boolean;
 }
 
 function getRecommendations(trip: Trip): RecommendationItem[] {
@@ -252,15 +264,38 @@ export default function ChecklistEditor() {
     const updateChecklistItem = useTripStore((state) => state.updateChecklistItem);
     const addChecklistItem = useTripStore((state) => state.addChecklistItem);
     const removeChecklistItem = useTripStore((state) => state.removeChecklistItem);
+    const profileHomeCountry = useUserStore((state) => state.profile?.residence?.country);
+    const homeCountryOverride = useSettingsStore((state) => state.homeCountryOverride);
+    const updateHomeCountryOverride = useSettingsStore((state) => state.updateHomeCountryOverride);
 
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
     if (!trip) return null;
 
-    const recommendations = getRecommendations(trip).filter(rec => 
-        !trip.checklist.some(item => item.title === rec.title)
-    );
+    // 로그인 프로필에 거주국이 설정돼 있으면 그것을 우선하고, 없으면(비로그인 게스트 등)
+    // 기기에 저장된 로컬 선택값을 대신 쓴다. 준비물/비자 요건의 기준국이 정확해야 하므로.
+    const homeCountry = profileHomeCountry || homeCountryOverride;
+    const homeProfile = resolveCountryProfile(homeCountry);
+
+    // 국가 차이(플러그·전압·통화·국제면허·비자 등) 기반 준비물을 기존 추천과 병합
+    const prepRecommendations: RecommendationItem[] = generatePreparationItems(trip, { homeCountryName: homeCountry }).map((p) => ({
+        title: p.title,
+        reason: p.reason || '',
+        tags: [PREP_CATEGORY_LABELS[p.category] || p.category, PREP_PRIORITY_LABELS[p.priority] || p.priority],
+        priority: p.priority,
+        isVisa: p.id.startsWith('prep-visa-'),
+    }));
+
+    const seenTitles = new Set<string>();
+    const recommendations = [...prepRecommendations, ...getRecommendations(trip)]
+        .filter(rec => {
+            if (seenTitles.has(rec.title)) return false;
+            seenTitles.add(rec.title);
+            return !trip.checklist.some(item => item.title === rec.title);
+        })
+        // 필수(특히 비자) 항목이 묻히지 않도록 우선순위 순으로 정렬
+        .sort((a, b) => (PREP_PRIORITY_RANK[a.priority || 'recommended'] ?? 1) - (PREP_PRIORITY_RANK[b.priority || 'recommended'] ?? 1));
 
     const applyPreset = (preset: typeof PRESETS[0]) => {
         preset.items.forEach(item => {
@@ -293,6 +328,38 @@ export default function ChecklistEditor() {
 
     return (
         <div className="space-y-12">
+            {/* 거주국(내 국적) 선택 — 로그인 프로필에 이미 설정돼 있으면 숨김 */}
+            {!profileHomeCountry && (
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="material-symbols-rounded text-base text-slate-400">badge</span>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">내 국적(거주국)</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                        {SUPPORTED_HOME_COUNTRIES.map((c) => {
+                            const isActive = (homeCountryOverride || 'KR') === c.key;
+                            return (
+                                <button
+                                    key={c.key}
+                                    onClick={() => updateHomeCountryOverride(c.key === 'KR' ? undefined : c.key)}
+                                    className={cn(
+                                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                                        isActive
+                                            ? "bg-primary text-white border-primary shadow-sm"
+                                            : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-primary/40"
+                                    )}
+                                >
+                                    {c.name}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <p className="w-full text-[10px] font-medium text-slate-400">
+                        비자·어댑터·전압 등 준비물은 이 국적을 기준으로 계산돼요. 로그인하면 프로필 설정값이 자동으로 대신 쓰여요.
+                    </p>
+                </div>
+            )}
+
             {/* Recommendations Section */}
             {recommendations.length > 0 && (
                 <div className="space-y-6">
@@ -303,6 +370,9 @@ export default function ChecklistEditor() {
                                 사용자님을 위한 추천 준비물
                             </h3>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">여행지, 기간, 테마를 분석하여 꼭 필요한 아이템을 골랐어요.</p>
+                            <p className="text-[10px] font-medium text-slate-400 mt-0.5 normal-case">
+                                거주국/여권: <b>{homeProfile?.aliases[0] || '대한민국'}</b> 기준 · 비자·입국 요건은 참고용이며 출발 전 대사관·공식 사이트에서 꼭 재확인하세요.
+                            </p>
                         </div>
                         <button
                             onClick={addAllRecommended}
@@ -312,39 +382,74 @@ export default function ChecklistEditor() {
                         </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {recommendations.map((rec, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: i * 0.05 }}
-                                className="group p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col justify-between gap-3 hover:border-primary/30 transition-all hover:shadow-md"
-                            >
-                                <div className="space-y-1.5">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 leading-tight">
-                                            {rec.title}
-                                        </h4>
-                                        <button
-                                            onClick={() => addRecommended(rec)}
-                                            className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white transition-all shadow-sm"
-                                        >
-                                            <span className="material-symbols-rounded text-[18px]">add</span>
-                                        </button>
+                        {recommendations.map((rec, i) => {
+                            const isEssential = rec.priority === 'essential';
+                            return (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className={cn(
+                                        "group p-4 border rounded-2xl flex flex-col justify-between gap-3 transition-all hover:shadow-md",
+                                        rec.isVisa
+                                            ? "bg-red-50/60 dark:bg-red-900/10 border-red-200 dark:border-red-900/40 hover:border-red-300"
+                                            : isEssential
+                                                ? "bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/40 hover:border-amber-300"
+                                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary/30"
+                                    )}
+                                >
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 leading-tight flex items-center gap-1.5">
+                                                {rec.isVisa && (
+                                                    <span className="material-symbols-rounded text-[16px] text-red-500 shrink-0">warning</span>
+                                                )}
+                                                {rec.title}
+                                            </h4>
+                                            <button
+                                                onClick={() => addRecommended(rec)}
+                                                className={cn(
+                                                    "w-8 h-8 rounded-full flex items-center justify-center text-slate-400 transition-all shadow-sm shrink-0",
+                                                    rec.isVisa
+                                                        ? "bg-red-100 dark:bg-red-900/30 group-hover:bg-red-500 group-hover:text-white"
+                                                        : "bg-slate-50 dark:bg-slate-800 group-hover:bg-primary group-hover:text-white"
+                                                )}
+                                            >
+                                                <span className="material-symbols-rounded text-[18px]">add</span>
+                                            </button>
+                                        </div>
+                                        <p className={cn(
+                                            "text-[10px] font-bold text-slate-500 dark:text-slate-400",
+                                            isEssential ? "" : "line-clamp-2"
+                                        )}>
+                                            {rec.reason}
+                                        </p>
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 line-clamp-2">
-                                        {rec.reason}
-                                    </p>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                    {rec.tags.map((tag, j) => (
-                                        <span key={j} className="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-800 text-[8px] font-black text-slate-400 rounded-md uppercase tracking-widest border border-slate-200 dark:border-slate-700">
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        ))}
+                                    <div className="flex flex-wrap gap-1">
+                                        {rec.tags.map((tag, j) => {
+                                            const isPriorityTag = j === 1 && !!rec.priority;
+                                            const priorityColorCls = rec.priority === 'essential'
+                                                ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40'
+                                                : rec.priority === 'recommended'
+                                                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40'
+                                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700';
+                                            return (
+                                                <span
+                                                    key={j}
+                                                    className={cn(
+                                                        "px-1.5 py-0.5 text-[8px] font-black rounded-md uppercase tracking-widest border",
+                                                        isPriorityTag ? priorityColorCls : "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700"
+                                                    )}
+                                                >
+                                                    {tag}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

@@ -10,6 +10,7 @@ import ReservationsWidget from '@/components/dashboard/ReservationsWidget';
 import WishlistWidget from '@/components/dashboard/WishlistWidget';
 import MapWidget from '@/components/dashboard/MapWidget';
 import TripWarnings from '@/components/dashboard/TripWarnings';
+import OnlineAdvisories from '@/components/dashboard/OnlineAdvisories';
 import DashboardWidget from '@/components/dashboard/DashboardWidget';
 import IntegratedOverview from '@/components/dashboard/IntegratedOverview';
 import SmartInsightHub from '@/components/dashboard/SmartInsightHub';
@@ -211,6 +212,7 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                     className="mb-4"
                 >
                     <TripWarnings />
+                    <OnlineAdvisories />
                 </motion.div>
 
                 {/* Integrated Dashboard Overview & Smart Hub */}

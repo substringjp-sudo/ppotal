@@ -1,5 +1,7 @@
 export * from './accommodation-validators';
 export * from './budget-validators';
+export * from './completeness-validators';
+export * from './holiday-validators';
 export * from './itinerary-validators';
 export * from './location-validators';
 export * from './logistics-validators';

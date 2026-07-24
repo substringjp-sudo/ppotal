@@ -3,13 +3,14 @@ import { GeoJSONGeometry } from './geo-utils';
 import { TravelStyle } from '../types/user';
 import { validateAirportDistance, validateAccommodationRegion, validateEventLocations, validateLocationClusters } from './validators/location-validators';
 import { validateAccommodationOverlap, validateAccommodationGaps, validateAccommodationCapacity, validateAccommodationExpectedTimes, checkAccommodationFlightConflict, validateNoAccommodation, validateCheckoutDaySchedule } from './validators/accommodation-validators';
-import { validateFlightCompleteness, validateFlightTimeRange, validateFlightSpeed, validateRentalCarPeriod, validatePublicTransportFeasibility, validateDrivingFeasibility, validateFlightLayovers, validatePublicTransportConflicts, validateDrivingConflicts } from './validators/transport-validators';
+import { validateFlightCompleteness, validateFlightTimeRange, validateFlightSpeed, validateRentalCarPeriod, validatePublicTransportFeasibility, validateDrivingFeasibility, validateFlightLayovers, validatePublicTransportConflicts, validateDrivingConflicts, validateSelfTransferAirportChange } from './validators/transport-validators';
 import { validateItineraryConflicts, validateInterEventTravel, validateDailyIntensity, validateEventDates, validateOperatingHours, validateDuplicateEvents, validateLastDayPressure, validateMealTimeGaps, validateConsecutiveTravelDays, validateSunsetOutdoor, validateFirstDayJetlag, validateFamilyPacing, validateSamePlaceMultipleDays } from './validators/itinerary-validators';
 import { validateBudget, validateBudgetRealism, validateExpenseAnomalies, validateCurrencyMismatch, validateBudgetCategoryGaps, validateSettlementBalance } from './validators/budget-validators';
 import { validateChecklistProgress, validatePrepTaskProgress } from './validators/progress-validators';
 import { validateDateConsistency, validateVisaRequirements, validateSeasonalCaution, validateCrowdPreference, checkPreparationReadiness, checkPassportRules, checkLateArrivalAccommodation, checkPowerAdapterRequirement, checkEmptyTimelineDays, checkTravelInsurance, validateUrgentBookings, validateEntryAuthorization } from './validators/other-validators';
 import { validateInternationalLicense, validateHealthPreparation, validateCommunicationPrep, validateAirportTransfer, validateLateNightReturn } from './validators/logistics-validators';
 import { validateHolidayCongestion } from './validators/holiday-validators';
+import { validateReservationCompleteness, validateReservationConflicts, validateDataCompleteness } from './validators/completeness-validators';
 
 /**
  * 여행 일정 검증 엔진 - 분리된 검증 로직들을 통합하여 수행합니다.
@@ -50,6 +51,7 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
         validateFlightTimeRange(trip, warnings);
         validateFlightSpeed(trip, warnings);
         validateFlightLayovers(trip, warnings);
+        validateSelfTransferAirportChange(trip, warnings);          // 신규: 셀프 환승 공항 변경
     }
     
     if (isLoaded('publicTransport')) {
@@ -108,6 +110,13 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
     validateHolidayCongestion(trip, warnings);                      // 신규: 현지 공휴일·연휴 혼잡
     validateSeasonalCaution(trip, warnings);
     validateCrowdPreference(trip, warnings, style);
+
+    // 예약(reservations) 및 데이터 완전성 검증 (신규)
+    if (isLoaded('reservations')) {
+        validateReservationCompleteness(trip, warnings);
+        if (isLoaded('dailyTimeline')) validateReservationConflicts(trip, warnings);
+    }
+    validateDataCompleteness(trip, warnings);                       // 신규: 좌표·시각 누락 안내
     
     // 항공-숙소 연계 (심야 도착 등)
     if (isLoaded('flights') && isLoaded('accommodation')) {

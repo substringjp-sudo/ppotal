@@ -22,7 +22,6 @@ export * from './store/reconstructionStore';
 // Validators
 export * from './lib/trip-validator';
 export * from './lib/validators/index';
-export * from './lib/quick-check';
 
 // Services
 export * from './lib/tripService';
@@ -45,6 +44,12 @@ export * from './lib/geo-utils';
 export * from './lib/statsCalculator';
 export * from './lib/locationStatsCalculator';
 export * from './lib/trip-readiness-service';
+export * from './lib/preparation-service';
+export * from './lib/data/country-profiles';
+export * from './lib/data/entry-requirements';
+export * from './lib/weather-service';
+export * from './lib/holiday-service';
+export * from './lib/fx-service';
 export * from './lib/design-tokens';
 export * from './lib/constants/common';
 export * from './lib/airports';

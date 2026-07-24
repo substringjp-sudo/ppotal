@@ -8,6 +8,7 @@ import TransportAndTicketsEditor from '@/components/edit-trip/TransportAndTicket
 import AccommodationEditor from '@/components/edit-trip/AccommodationEditor';
 
 import ReservationsEditor from '@/components/edit-trip/ReservationsEditor';
+import ChecklistEditor from '@/components/edit-trip/ChecklistEditor';
 import { useUIStore } from '@pplaner/shared';
 
 interface EditMainContentProps {
@@ -93,10 +94,11 @@ export default function EditMainContent({ activeSection, setActiveSection, onAdd
                             {activeSection === 'transport' && <TransportAndTicketsEditor />}
                             {activeSection === 'accommodation' && <AccommodationEditor />}
                             {activeSection === 'reservations' && (
-                                <ReservationsEditor 
-                                    onNavigateToSection={(s) => setActiveSection(s as SectionId)} 
+                                <ReservationsEditor
+                                    onNavigateToSection={(s) => setActiveSection(s as SectionId)}
                                     />
                             )}
+                            {activeSection === 'checklist' && <ChecklistEditor />}
                         </div>
 
                     </motion.div>
