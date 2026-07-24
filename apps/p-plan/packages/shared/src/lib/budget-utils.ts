@@ -2,6 +2,18 @@ import { Trip, BudgetExpense } from '../types/trip';
 
 import { PaymentMethod, PaymentStatus } from '../types/trip';
 
+// 일정 이벤트의 대분류(MainCategory)를 예산 카테고리(BudgetCategory)로 매핑
+const EVENT_CATEGORY_TO_BUDGET: Record<string, string> = {
+    meal: 'food',
+    shopping: 'shopping',
+    transport: 'transport',
+    accommodation: 'accommodation',
+    sightseeing: 'activity',
+    reservation: 'activity',
+    people: 'other',
+    other: 'other',
+};
+
 export interface AggregatedBudget {
     total: number;               // 총 할당 예산 (KRW)
     spent: number;               // 총 지출 (KRW)
@@ -109,7 +121,70 @@ export function calculateAggregatedBudget(trip: Trip): AggregatedBudget {
         }
     });
 
-    // 수동 지출 및 기타 연동 지출 (trip.budget.expenses에 통합 관리되어 있다고 가정)
+    // 렌터카/운전 (현지 통화 가능)
+    trip.driving?.forEach(d => {
+        if (d.cost) {
+            const cur = d.currency || baseCurrency;
+            items.push({
+                amount: d.cost,
+                currency: cur,
+                method: d.isBooked ? 'credit_card' : 'cash',
+                status: d.isBooked ? 'pre_paid' : 'pending',
+                category: 'transport',
+                krwAmount: getKrw(d.cost, cur),
+            });
+        }
+    });
+
+    // 대중교통 (현지 통화 가능)
+    trip.publicTransport?.forEach(pt => {
+        if (pt.cost) {
+            const cur = pt.currency || baseCurrency;
+            items.push({
+                amount: pt.cost,
+                currency: cur,
+                method: pt.isBooked ? 'credit_card' : 'cash',
+                status: pt.isBooked ? 'pre_paid' : 'pending',
+                category: 'transport',
+                krwAmount: getKrw(pt.cost, cur),
+            });
+        }
+    });
+
+    // 예약 (식당·투어·입장권 등)
+    trip.reservations?.forEach(r => {
+        if (r.cost) {
+            const cur = r.currency || baseCurrency;
+            const status: PaymentStatus = r.paymentStatus || (r.status === 'confirmed' ? 'pre_paid' : 'pending');
+            items.push({
+                amount: r.cost,
+                currency: cur,
+                method: r.paymentMethod || 'credit_card',
+                status,
+                category: 'activity',
+                krwAmount: getKrw(r.cost, cur),
+            });
+        }
+    });
+
+    // 일정 이벤트에 직접 입력된 비용 (입장료 등)
+    trip.dailyTimeline?.forEach(day => {
+        day.events?.forEach(e => {
+            if (e.cost) {
+                const cat = EVENT_CATEGORY_TO_BUDGET[(e.mainCategory || e.type) as string] || 'activity';
+                items.push({
+                    amount: e.cost,
+                    currency: baseCurrency,
+                    method: 'cash',
+                    status: 'pending',
+                    category: cat,
+                    krwAmount: e.cost,
+                });
+            }
+        });
+    });
+
+    // 수동 지출 (trip.budget.expenses)
     budget.expenses.forEach(e => {
         const krw = getKrw(e.amount, e.currency, e.exchangeRate);
         items.push({ 
@@ -201,5 +276,66 @@ export function calculateAggregatedBudget(trip: Trip): AggregatedBudget {
         plannedByCategory,
         byPaymentMethod,
         byPaymentStatus
+    };
+}
+
+// ─── Layer 0: 여행 예산 "감" 추정 ────────────────────────────────
+//
+// 예산의 1차 목적은 정밀 장부가 아니라 "이 여행 대충 얼마짜리인지 + 감당 가능한지".
+// 그래서 두 덩어리로만 답한다:
+//   ① 고정비  = 이미 입력한 항공·숙소·교통·예약·일정 비용의 합 (실측)
+//   ② 현지 지출 = 하루 1인 지출 프리셋 × 일수 × 인원 (추정)
+// 손입력을 요구하지 않고, 프리셋 탭 하나로 총액 감을 준다.
+
+export type DailySpendLevel = 'backpack' | 'normal' | 'comfort';
+
+export const DAILY_SPEND_LEVELS: Record<DailySpendLevel, { label: string; perDay: number }> = {
+    backpack: { label: '배낭', perDay: 50000 },
+    normal: { label: '보통', perDay: 100000 },
+    comfort: { label: '여유', perDay: 200000 },
+};
+
+export interface TripBudgetEstimate {
+    fixedTotal: number;                     // 입력된 비용 합 (KRW)
+    fixedByCategory: Record<string, number>;
+    dailyPerPerson: number;                 // 선택 레벨의 하루 1인 현지 지출
+    level: DailySpendLevel;
+    days: number;
+    participants: number;
+    localEstimate: number;                  // dailyPerPerson × days × participants
+    total: number;                          // fixedTotal + localEstimate
+    perPerson: number;                      // total / participants
+    allocated: number;                      // 사용자가 설정한 목표 예산 (없으면 0)
+}
+
+export function estimateTripBudget(trip: Trip, level: DailySpendLevel = 'normal'): TripBudgetEstimate {
+    const agg = calculateAggregatedBudget(trip);
+    const fixedTotal = Object.values(agg.byCategory).reduce((sum, v) => sum + v, 0);
+
+    const perDay = DAILY_SPEND_LEVELS[level].perDay;
+
+    let days = trip.dates?.durationDays || 0;
+    if (!days && trip.dates?.startDate && trip.dates?.endDate) {
+        const s = new Date(trip.dates.startDate).getTime();
+        const e = new Date(trip.dates.endDate).getTime();
+        if (!isNaN(s) && !isNaN(e) && e >= s) days = Math.round((e - s) / 86400000) + 1;
+    }
+    if (!days) days = 1;
+
+    const participants = Math.max(trip.participants?.length || 1, 1);
+    const localEstimate = perDay * days * participants;
+    const total = fixedTotal + localEstimate;
+
+    return {
+        fixedTotal,
+        fixedByCategory: agg.byCategory,
+        dailyPerPerson: perDay,
+        level,
+        days,
+        participants,
+        localEstimate,
+        total,
+        perPerson: Math.round(total / participants),
+        allocated: agg.allocated,
     };
 }

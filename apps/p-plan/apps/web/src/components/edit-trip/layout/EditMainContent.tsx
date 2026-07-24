@@ -9,6 +9,7 @@ import AccommodationEditor from '@/components/edit-trip/AccommodationEditor';
 
 import ReservationsEditor from '@/components/edit-trip/ReservationsEditor';
 import ChecklistEditor from '@/components/edit-trip/ChecklistEditor';
+import BudgetSection from '@/components/edit-trip/budget/BudgetSection';
 import { useUIStore } from '@pplaner/shared';
 
 interface EditMainContentProps {
@@ -98,6 +99,7 @@ export default function EditMainContent({ activeSection, setActiveSection, onAdd
                                     onNavigateToSection={(s) => setActiveSection(s as SectionId)}
                                     />
                             )}
+                            {activeSection === 'budget' && <BudgetSection />}
                             {activeSection === 'checklist' && <ChecklistEditor />}
                         </div>
 
