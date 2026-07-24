@@ -47,6 +47,13 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
     const [amount, setAmount] = useState('');
     const [cat, setCat] = useState<BudgetCategory>('food');
 
+    // 정산 모드가 켜져 있으면 결제자를 지정할 수 있게 한다 (기본 = 기본 결제자/나).
+    const settlementOn = !!trip?.settlement?.enabled;
+    const participants = trip?.participants || [];
+    const defaultPayer = trip?.settlement?.defaultPayerId || participants.find((p) => p.role === 'me')?.id || participants[0]?.id;
+    const [payerId, setPayerId] = useState<string | undefined>(undefined);
+    const effectivePayer = payerId ?? defaultPayer;
+
     const derived = useMemo(() => {
         if (!trip) return null;
         const est = estimateTripBudget(trip, level);
@@ -96,6 +103,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
             paymentStatus: 'paid',
             date: todayStr(),
             exchangeRate: spendRate,
+            ...(settlementOn && effectivePayer ? { payerId: effectivePayer } : {}),
         });
         setAmount('');
     };
@@ -132,6 +140,18 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                             추가
                         </button>
                     </div>
+                    {settlementOn && participants.length > 0 && (
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">결제자</span>
+                            <select
+                                value={effectivePayer || ''}
+                                onChange={(e) => setPayerId(e.target.value || undefined)}
+                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-[11px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary"
+                            >
+                                {participants.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </select>
+                        </div>
+                    )}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                         {CATS.map((c) => {
                             const on = cat === c.key;

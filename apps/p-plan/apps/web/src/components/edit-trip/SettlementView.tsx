@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Trip, Participant, calculateSettlement, cn } from '@pplaner/shared';
+import { Trip, Participant, calculateTripSettlement, cn } from '@pplaner/shared';
 
 interface SettlementViewProps {
     trip: Trip;
@@ -10,14 +10,8 @@ interface SettlementViewProps {
 }
 
 export function SettlementView({ trip, getRate, formatAmount, currencySymbol }: SettlementViewProps) {
-    const { summary, transfers } = useMemo(() => {
-        return calculateSettlement(
-            trip.participants || [],
-            trip.budget?.expenses || [],
-            trip.budget?.baseCurrency || 'KRW',
-            getRate
-        );
-    }, [trip, getRate]);
+    // 모든 비용 소스(항공·숙소·예약·교통·지출)를 결제자/분담/정확금액과 함께 정산한다.
+    const { summary, transfers } = useMemo(() => calculateTripSettlement(trip, getRate), [trip, getRate]);
 
     const totalSharedExpense = useMemo(() => {
         return summary.reduce((sum, s) => sum + s.owed, 0);

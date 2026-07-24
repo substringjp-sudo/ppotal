@@ -1,6 +1,6 @@
 import { Trip, TripWarning } from '../../types/trip';
 import { TravelStyle } from '../../types/user';
-import { calculateSettlement } from '../settlement-utils';
+import { calculateTripSettlement, makeTripRateResolver } from '../settlement-utils';
 
 export function validateBudget(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
     const budget = trip.budget;
@@ -106,19 +106,11 @@ export function validateExpenseAnomalies(trip: Trip, warnings: TripWarning[]) {
 export function validateSettlementBalance(trip: Trip, warnings: TripWarning[]) {
     const participants = trip.participants || [];
     if (participants.length < 2) return;
+    // 정산 모드가 꺼져 있으면 편중을 경고하지 않는다(솔로·커플 등).
+    if (!trip.settlement?.enabled) return;
 
-    const expenses = (trip.budget?.expenses || []).filter(
-        e => !e.isExcluded && e.status === 'confirmed' && e.payerId
-    );
-    if (expenses.length === 0) return;
-
-    // 환율을 알 수 없는 경우 1로 근사 (지출에 환율이 있으면 그것을 사용)
-    const { summary, transfers } = calculateSettlement(
-        participants,
-        expenses,
-        trip.budget?.baseCurrency || 'KRW',
-        () => 1
-    );
+    // 모든 비용 소스(항공·숙소·예약·교통·지출)를 결제자/분담과 함께 정산.
+    const { summary, transfers } = calculateTripSettlement(trip, makeTripRateResolver(trip));
 
     const totalPaid = summary.reduce((s, r) => s + r.paid, 0);
     if (totalPaid < 10000) return; // 금액이 작으면 의미 없음

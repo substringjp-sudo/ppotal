@@ -5,6 +5,7 @@ import { cn, type DailySpendLevel } from '@pplaner/shared';
 import BudgetEstimateCard from './BudgetEstimateCard';
 import BudgetCashPlanCard from './BudgetCashPlanCard';
 import BudgetActualCard from './BudgetActualCard';
+import SettlementCard from './SettlementCard';
 import BudgetEditor from '../BudgetEditor';
 
 /**
@@ -75,6 +76,7 @@ export default function BudgetSection() {
                         className="space-y-5"
                     >
                         <BudgetActualCard level={level} />
+                        <SettlementCard />
 
                         <button
                             type="button"
