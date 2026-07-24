@@ -23,6 +23,9 @@ export const BudgetHeader: React.FC<BudgetHeaderProps> = ({
     aggregatedExpenses,
     formatAmount
 }) => {
+    // 목표 예산(할당액). 0이면 소진율은 표시하지 않는다(0으로 나눠 NaN 방지).
+    const allocated = (trip.budget?.commonAllocated || 0) + (trip.budget?.individualAllocated || 0) * (trip.participants?.length || 1);
+    const usagePct = allocated > 0 ? Math.round((totalConfirmed / allocated) * 100) : null;
     return (
         <div className="p-6 md:p-8 bg-slate-900 rounded-[28px] text-white shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
@@ -55,18 +58,20 @@ export const BudgetHeader: React.FC<BudgetHeaderProps> = ({
                                     <span className="text-[10px] font-bold opacity-40 uppercase">공동 지출 합계</span>
                                     <span className="text-sm font-black">{currencySymbol} {formatAmount(totalCommonSpent)}</span>
                                 </div>
-                                <div className="hidden lg:flex flex-col min-w-[120px]">
-                                    <span className="text-[10px] font-bold opacity-40 uppercase">예산 소진율</span>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                            <div 
-                                                className="h-full bg-primary" 
-                                                style={{ width: `${Math.min(100, (totalConfirmed / ((trip.budget?.commonAllocated || 0) + (trip.budget?.individualAllocated || 0) * (trip.participants?.length || 1))) * 100)}%` }}
-                                            />
+                                {usagePct !== null && (
+                                    <div className="hidden lg:flex flex-col min-w-[120px]">
+                                        <span className="text-[10px] font-bold opacity-40 uppercase">예산 소진율</span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-primary"
+                                                    style={{ width: `${Math.min(100, usagePct)}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[10px] font-black">{usagePct}%</span>
                                         </div>
-                                        <span className="text-[10px] font-black">{Math.round((totalConfirmed / ((trip.budget?.commonAllocated || 0) + (trip.budget?.individualAllocated || 0) * (trip.participants?.length || 1))) * 100)}%</span>
                                     </div>
-                                </div>
+                                )}
                             </>
                         )}
                     </div>
