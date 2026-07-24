@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { DEFAULT_EXCHANGE_RATES } from '../lib/currency-utils';
 import { DEFAULT_API_TIMEOUT } from '../lib/constants/common';
+import { fetchLiveExchangeRates } from '../lib/fx-service';
 
 interface ExchangeRateState {
     rates: Record<string, number>;
@@ -29,7 +30,23 @@ export const useExchangeRateStore = create<ExchangeRateState>()(
                 if (isLoading) return;
 
                 set({ isLoading: true, error: null });
-                
+
+                // 1) 라이브 환율(Frankfurter) 우선 시도 — 실패 시 아래 Firestore 폴백
+                try {
+                    const live = await fetchLiveExchangeRates('KRW');
+                    if (live && Object.keys(live.rates).length > 0) {
+                        set({
+                            rates: { ...DEFAULT_EXCHANGE_RATES, ...live.rates },
+                            lastUpdated: live.date || new Date().toISOString(),
+                            isLoading: false,
+                        });
+                        return;
+                    }
+                } catch {
+                    // 폴백 진행
+                }
+
+                // 2) Firestore 문서 폴백
                 try {
                     const docRef = doc(db, 'metadata', 'exchange_rates');
                     
