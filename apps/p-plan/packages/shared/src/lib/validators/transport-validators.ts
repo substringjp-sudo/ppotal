@@ -267,6 +267,62 @@ export function validateFlightLayovers(trip: Trip, warnings: TripWarning[]) {
 }
 
 /**
+ * 셀프 환승 시 공항이 바뀌는 구간을 감지한다.
+ *
+ * 서로 다른 예약(별도 발권)으로 짜인 여정에서 앞 구간의 "도착 공항"과 이어지는
+ * 구간의 "출발 공항"이 다르면, 여행자가 직접 두 공항 사이를 이동해야 하고 수하물도
+ * 재수속해야 한다(through-check 안 됨). 이는 우리가 가진 항공편 데이터만으로 확실히
+ * 알 수 있는 위험이다.
+ *
+ * 오탐 방지: 두 항공편이 실제로 "연결편"으로 의도된 경우(도착~다음 출발 간격이 24시간
+ * 이내)에만 경고한다. 며칠 간격이면 도착지에서 육로로 이동한 뒤 다른 공항에서 출발하는
+ * 오픈조(open-jaw) 여정이므로 문제가 아니다.
+ */
+export function validateSelfTransferAirportChange(trip: Trip, warnings: TripWarning[]) {
+    const flights = (trip.flights || []).filter(
+        f => f.date && f.arrivalLocation && f.departureLocation
+    );
+    if (flights.length < 2) return;
+
+    // 출발 일시(날짜 + 출발시각) 순으로 정렬
+    const sorted = [...flights].sort((a, b) => {
+        if (a.date !== b.date) return a.date! < b.date! ? -1 : 1;
+        return timeToMinutes(a.departureTime) - timeToMinutes(b.departureTime);
+    });
+
+    const dayIndex = (d: string) => Math.floor(new Date(`${d}T00:00:00Z`).getTime() / 86400000);
+
+    for (let i = 0; i < sorted.length - 1; i++) {
+        const a = sorted[i];
+        const b = sorted[i + 1];
+
+        // 앞 구간 도착 공항 == 다음 구간 출발 공항이면 정상 (동일 공항 환승)
+        if (a.arrivalLocation === b.departureLocation) continue;
+
+        // 도착 → 다음 출발까지의 간격(분) 계산
+        const arrDay = dayIndex(a.date!);
+        const depDay = dayIndex(b.date!);
+        if (isNaN(arrDay) || isNaN(depDay)) continue;
+
+        const gapMinutes = (depDay - arrDay) * 1440 + (timeToMinutes(b.departureTime) - timeToMinutes(a.arrivalTime));
+
+        // 음수(정렬 오차) 또는 24시간 초과면 연결편이 아니라 오픈조 여정 → 건너뜀
+        if (gapMinutes < 0 || gapMinutes > 24 * 60) continue;
+
+        warnings.push({
+            id: `self-transfer-airport-${a.id}-${b.id}`,
+            type: 'timeline_conflict',
+            severity: 'warning',
+            message: `연결 항공편의 도착 공항(${a.arrivalLocation})과 다음 출발 공항(${b.departureLocation})이 달라요. 공항 간 이동과 수하물 재수속이 필요할 수 있어요.`,
+            suggestion: '별도 발권 시 수하물이 자동 연결되지 않아요. 공항 간 이동 시간과 재수속 시간을 넉넉히 확보하세요.',
+            sourceType: 'flight',
+            sourceId: a.id,
+            metadata: { otherId: b.id },
+        });
+    }
+}
+
+/**
  * 대중교통(열차, 버스 등) 일정이 다른 리소스와 겹치는지 확인
  */
 export function validatePublicTransportConflicts(trip: Trip, warnings: TripWarning[]) {

@@ -50,6 +50,7 @@ interface Ctx {
   warnings: TripWarning[];
   flights: FlightSegment[];
   accId: string;
+  accStatuses: string[];
   hasP: (id: string) => boolean;
   hasPrefixP: (prefix: string) => boolean;
   hasW: (id: string) => boolean;
@@ -229,7 +230,27 @@ const FLIGHT_CHECKS: Check[] = [
   { name: 'flight-speed-absent-given-no-coords', run: (c) => ({ pass: !c.hasPrefixW('flight-speed-') }) },
 ];
 
-const ALL_CHECKS = [...PREP_CHECKS, ...ACCOMMODATION_CHECKS, ...FLIGHT_CHECKS];
+// ── 신규: 예약·셀프환승·데이터 완전성 체크 4개 ─────────────────────
+const COMPLETENESS_CHECKS: Check[] = [
+  // 픽스처 항공편은 도착/출발 공항 코드(문자열)를 넣지 않으므로 셀프환승 감지 대상이 아님 → 항상 부재
+  { name: 'self-transfer-airport-absent', run: (c) => ({ pass: !c.hasPrefixW('self-transfer-airport-') }) },
+  // 픽스처에 예약(reservations)이 없으므로 예약 관련 경고는 모두 부재
+  { name: 'reservation-checks-absent', run: (c) => ({ pass: !c.hasPrefixW('res-no-info-') && !c.hasPrefixW('res-missing-') && !c.hasPrefixW('res-event-conflict-') }) },
+  // 픽스처 일정은 좌표를, 항공편은 시각을 모두 채우므로 데이터 완전성 경고는 부재
+  { name: 'data-completeness-absent', run: (c) => ({ pass: !c.hasW('completeness-event-coords') && !c.hasW('completeness-flight-time') }) },
+  // 연휴 혼잡 경고가 있으면 (픽스처 숙소는 전부 미확정이므로) 예약 촉구 경고도 반드시 함께 존재
+  {
+    name: 'holiday-booking-urgent-consistency',
+    run: (c) => {
+      const congestion = c.warnings.some(w => w.id.startsWith('holiday-') && w.id !== 'holiday-booking-urgent');
+      const unbooked = c.accStatuses.length === 0 || c.accStatuses.some(s => s !== 'booked');
+      const expected = congestion && unbooked;
+      return { pass: expected === c.hasW('holiday-booking-urgent'), detail: `congestion=${congestion} unbooked=${unbooked}` };
+    },
+  },
+];
+
+const ALL_CHECKS = [...PREP_CHECKS, ...ACCOMMODATION_CHECKS, ...FLIGHT_CHECKS, ...COMPLETENESS_CHECKS];
 
 let totalChecks = 0;
 const failuresByCheck: Record<string, { count: number; examples: string[] }> = {};
@@ -253,6 +274,7 @@ for (const combo of ALL_SCENARIOS) {
     prep, warnings,
     flights: trip.flights,
     accId: trip.accommodation[0]?.id || '',
+    accStatuses: trip.accommodation.map(a => a.status),
     hasP: (id) => prep.some(p => p.id === id),
     hasPrefixP: (prefix) => prep.some(p => p.id.startsWith(prefix)),
     hasW: (id) => warnings.some(w => w.id === id),
@@ -273,8 +295,8 @@ for (const combo of ALL_SCENARIOS) {
   if (scenarioFailed) scenariosWithAnyFailure++;
 }
 
-console.log(`\n================ 확장 검증 결과 (준비물 + 숙박 + 항공) ================`);
-console.log(`시나리오: ${ALL_SCENARIOS.length}개 / 체크 항목: ${ALL_CHECKS.length}개 (기존 ${PREP_CHECKS.length} + 숙박 ${ACCOMMODATION_CHECKS.length} + 항공 ${FLIGHT_CHECKS.length}) / 총 검증: ${totalChecks}건`);
+console.log(`\n================ 확장 검증 결과 (준비물 + 숙박 + 항공 + 예약/완전성) ================`);
+console.log(`시나리오: ${ALL_SCENARIOS.length}개 / 체크 항목: ${ALL_CHECKS.length}개 (기존 ${PREP_CHECKS.length} + 숙박 ${ACCOMMODATION_CHECKS.length} + 항공 ${FLIGHT_CHECKS.length} + 예약/완전성 ${COMPLETENESS_CHECKS.length}) / 총 검증: ${totalChecks}건`);
 console.log(`실패가 있었던 시나리오: ${scenariosWithAnyFailure}개\n`);
 
 let allPass = true;
@@ -294,5 +316,6 @@ const printGroup = (title: string, checks: Check[]) => {
 printGroup('준비물 (documents/money/power/transport/health/shopping/outdoor)', PREP_CHECKS);
 printGroup('숙박 (신규 9개)', ACCOMMODATION_CHECKS);
 printGroup('항공 (신규 6개)', FLIGHT_CHECKS);
+printGroup('예약·셀프환승·데이터 완전성 (신규 4개)', COMPLETENESS_CHECKS);
 
 console.log(`\n전체 결과: ${allPass ? '✅ 모든 체크 통과' : '❌ 일부 체크 실패'}`);

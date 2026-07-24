@@ -141,6 +141,8 @@ export function validateHolidayCongestion(trip: Trip, warnings: TripWarning[]) {
 
     const years = yearsInRange(tripStart, tripEnd);
 
+    let firstOverlappingHoliday: string | null = null;
+
     COUNTRY_HOLIDAYS.forEach(country => {
         const matched = country.aliases.some(a => regionNames.some(n => n.includes(a.toLowerCase())));
         if (!matched) return;
@@ -165,6 +167,7 @@ export function validateHolidayCongestion(trip: Trip, warnings: TripWarning[]) {
             const overlaps = ranges.some(r => r.start <= tripEnd && tripStart <= r.end);
             const id = `holiday-${country.aliases[0]}-${h.name}`;
             if (overlaps && !warnings.some(w => w.id === id)) {
+                if (!firstOverlappingHoliday) firstOverlappingHoliday = h.name;
                 warnings.push({
                     id,
                     type: 'seasonal',
@@ -176,4 +179,23 @@ export function validateHolidayCongestion(trip: Trip, warnings: TripWarning[]) {
             }
         });
     });
+
+    // 연휴가 포함되는데 숙소가 아예 없거나 아직 확정 전이면 예약을 서두르라고 강하게 안내.
+    // (연휴에는 숙소가 조기 마감되고 가격이 급등하므로 '미확정'만으로도 실질적 위험)
+    if (firstOverlappingHoliday) {
+        const accommodations = trip.accommodation || [];
+        const hasUnbooked = accommodations.length === 0 || accommodations.some(a => a.status !== 'booked');
+        if (hasUnbooked) {
+            warnings.push({
+                id: 'holiday-booking-urgent',
+                type: 'not_booked',
+                severity: 'warning',
+                message: accommodations.length === 0
+                    ? `현지 연휴('${firstOverlappingHoliday}') 기간인데 숙소가 아직 없어요. 연휴에는 숙소가 조기 마감되고 가격이 급등해요.`
+                    : `현지 연휴('${firstOverlappingHoliday}') 기간인데 확정되지 않은 숙소가 있어요. 연휴에는 숙소가 조기 마감되고 가격이 급등해요.`,
+                suggestion: '연휴 성수기에는 취소 가능 조건으로라도 숙소를 미리 확보해 두는 것이 안전해요.',
+                sourceType: 'accommodation',
+            });
+        }
+    }
 }
