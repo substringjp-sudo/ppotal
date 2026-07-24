@@ -1,10 +1,18 @@
 'use client';
 import { useState } from 'react';
-import { useTripStore } from '@pplaner/shared';
+import { useTripStore, useUserStore, generatePreparationItems } from '@pplaner/shared';
 import { CustomCheckbox } from '@/components/common/FormComponents';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@pplaner/shared';
 import { Trip } from '@pplaner/shared';
+
+const PREP_CATEGORY_LABELS: Record<string, string> = {
+    documents: '서류', money: '금융', connectivity: '통신', transport: '교통',
+    power: '전자기기', health: '건강', shopping: '쇼핑', activity: '액티비티', general: '일반',
+};
+const PREP_PRIORITY_LABELS: Record<string, string> = {
+    essential: '필수', recommended: '권장', optional: '선택',
+};
 
 const PRESETS = [
     {
@@ -252,15 +260,26 @@ export default function ChecklistEditor() {
     const updateChecklistItem = useTripStore((state) => state.updateChecklistItem);
     const addChecklistItem = useTripStore((state) => state.addChecklistItem);
     const removeChecklistItem = useTripStore((state) => state.removeChecklistItem);
+    const homeCountry = useUserStore((state) => state.profile?.residence?.country);
 
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
     if (!trip) return null;
 
-    const recommendations = getRecommendations(trip).filter(rec => 
-        !trip.checklist.some(item => item.title === rec.title)
-    );
+    // 국가 차이(플러그·전압·통화·국제면허 등) 기반 준비물을 기존 추천과 병합
+    const prepRecommendations: RecommendationItem[] = generatePreparationItems(trip, { homeCountryName: homeCountry }).map((p) => ({
+        title: p.title,
+        reason: p.reason || '',
+        tags: [PREP_CATEGORY_LABELS[p.category] || p.category, PREP_PRIORITY_LABELS[p.priority] || p.priority],
+    }));
+
+    const seenTitles = new Set<string>();
+    const recommendations = [...prepRecommendations, ...getRecommendations(trip)].filter(rec => {
+        if (seenTitles.has(rec.title)) return false;
+        seenTitles.add(rec.title);
+        return !trip.checklist.some(item => item.title === rec.title);
+    });
 
     const applyPreset = (preset: typeof PRESETS[0]) => {
         preset.items.forEach(item => {
