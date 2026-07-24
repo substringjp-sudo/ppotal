@@ -47,6 +47,7 @@ export * from './lib/locationStatsCalculator';
 export * from './lib/trip-readiness-service';
 export * from './lib/preparation-service';
 export * from './lib/data/country-profiles';
+export * from './lib/weather-service';
 export * from './lib/design-tokens';
 export * from './lib/constants/common';
 export * from './lib/airports';
