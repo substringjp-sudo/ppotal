@@ -90,6 +90,7 @@ export interface BudgetExpense {
     isExcluded?: boolean;
     payerId?: string;             // 실제 결제한 사람의 ID (undefined = 공금/공동)
     splitWithIds?: string[];      // 비용을 함께 부담할 사람들의 ID 목록 (undefined = 전체)
+    splitExact?: Record<string, number>; // 멤버별 정확 분담액(결제 통화 기준). 있으면 균등 대신 이 값을 사용(LV1)
     memo?: string;
 }
 
@@ -219,6 +220,9 @@ export interface FlightSegment {
     paymentDate?: ISODateString;
     paymentStatus?: PaymentStatus;
     currency?: string;
+    payerId?: string;             // 정산: 실제 결제자
+    splitWithIds?: string[];      // 정산: 함께 부담할 멤버 (undefined = 전체)
+    splitExact?: Record<string, number>; // 정산: 멤버별 정확 분담액(해당 통화 기준, LV1)
 }
 
 // ─── 교통 - 운전/렌터카 ────────────────────────────────────────
@@ -266,6 +270,9 @@ export interface DrivingSegment {
     paymentStatus?: PaymentStatus;
     isReturnTimeManuallyEdited?: boolean;
     currency?: string;
+    payerId?: string;             // 정산: 실제 결제자
+    splitWithIds?: string[];      // 정산: 함께 부담할 멤버 (undefined = 전체)
+    splitExact?: Record<string, number>; // 정산: 멤버별 정확 분담액(해당 통화 기준, LV1)
 }
 
 // ─── 교통 - 대중교통 ───────────────────────────────────────────
@@ -314,6 +321,9 @@ export interface PublicTransportSegment {
     paymentDate?: ISODateString;
     paymentStatus?: PaymentStatus;
     currency?: string;
+    payerId?: string;             // 정산: 실제 결제자
+    splitWithIds?: string[];      // 정산: 함께 부담할 멤버 (undefined = 전체)
+    splitExact?: Record<string, number>; // 정산: 멤버별 정확 분담액(해당 통화 기준, LV1)
 }
 
 // ─── 숙박 ───────────────────────────────────────────────────────
@@ -365,6 +375,9 @@ export interface AccommodationSegment {
     paymentDate?: ISODateString;
     paymentStatus?: PaymentStatus;
     currency?: string;
+    payerId?: string;             // 정산: 실제 결제자
+    splitWithIds?: string[];      // 정산: 함께 부담할 멤버 (undefined = 전체)
+    splitExact?: Record<string, number>; // 정산: 멤버별 정확 분담액(해당 통화 기준, LV1)
 }
 
 // ─── 체크리스트 / 버킷리스트 ────────────────────────────────────
@@ -422,6 +435,9 @@ export interface Reservation {
     paymentDate?: ISODateString;
     paymentStatus?: PaymentStatus;
     currency?: string;
+    payerId?: string;             // 정산: 실제 결제자
+    splitWithIds?: string[];      // 정산: 함께 부담할 멤버 (undefined = 전체)
+    splitExact?: Record<string, number>; // 정산: 멤버별 정확 분담액(해당 통화 기준, LV1)
     memo?: string;
 }
 
@@ -652,6 +668,18 @@ export interface TripSummary extends FirestoreMetadata {
     planningStatus?: PlanningStatus;
 }
 
+/**
+ * 여행 단위 정산 설정.
+ * - enabled: 정산 모드 on/off. off면 결제자·분담 개념을 UI에서 숨긴다(솔로·커플용).
+ * - mode: 'even' = 지출 기본 1/N(전원 균등), 'individual' = 각자(기본 미분담).
+ * - defaultPayerId: 결제자 미지정 항목의 기본 결제자. 없으면 'me' 참가자로 유도.
+ */
+export interface SettlementSettings {
+    enabled: boolean;
+    mode: 'even' | 'individual';
+    defaultPayerId?: string;
+}
+
 export interface Trip extends FirestoreMetadata {
     id: string;
     status?: 'draft' | 'active' | 'finished';
@@ -677,6 +705,7 @@ export interface Trip extends FirestoreMetadata {
     memo?: string;
     theme: string;
     isOverseas: boolean; // 사용자의 거주지와 여행지가 다른지 여부
+    settlement?: SettlementSettings; // 정산 모드 설정 (없으면 off로 간주)
     warnings?: TripWarning[];
     inviteToken?: string;
 
