@@ -63,6 +63,7 @@ export default function Header() {
         { href: '/trips', label: '내 여행', icon: 'luggage', authRequired: true },
         { href: '/travelogs', label: '여행기록', icon: 'auto_stories', authRequired: true },
         { href: '/stats', label: '인텔리전스', icon: 'analytics', authRequired: true },
+        { href: '/about', label: '소개', icon: 'info', authRequired: false },
     ].filter(link => !link.authRequired || !!user);
 
     return (

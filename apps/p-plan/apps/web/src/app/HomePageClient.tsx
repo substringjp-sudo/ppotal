@@ -11,9 +11,9 @@ import OnboardingWizard from '@/components/auth/OnboardingWizard';
 import { getUserProfile } from '@pplaner/shared';
 import { UserProfile } from '@pplaner/shared';
 import { useUserStore } from '@pplaner/shared';
+import TripEditorApp from '@/components/edit-trip/TripEditorApp';
 
 // 불러온 하위 컴포넌트들
-import LandingHero from '@/components/home/LandingHero';
 import DashboardHeader from '@/components/home/DashboardHeader';
 import TripHighlightCard from '@/components/home/TripHighlightCard';
 import { CurrencyWidget, TodoWidget } from '@/components/home/UtilityWidgets';
@@ -172,9 +172,9 @@ export default function HomePage() {
     );
   }
 
-  // 로그인되지 않은 사용자
+  // 로그인되지 않은 사용자: 로그인 없이 바로 여행 계획을 만들어볼 수 있는 게스트 모드
   if (!user) {
-    return <LandingHero />;
+    return <TripEditorApp id="guest" />;
   }
 
   // 로그인된 사용자
