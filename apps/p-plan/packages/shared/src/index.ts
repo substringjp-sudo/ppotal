@@ -45,6 +45,8 @@ export * from './lib/geo-utils';
 export * from './lib/statsCalculator';
 export * from './lib/locationStatsCalculator';
 export * from './lib/trip-readiness-service';
+export * from './lib/preparation-service';
+export * from './lib/data/country-profiles';
 export * from './lib/design-tokens';
 export * from './lib/constants/common';
 export * from './lib/airports';
