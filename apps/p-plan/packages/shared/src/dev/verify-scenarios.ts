@@ -26,6 +26,7 @@ import { ALL_SCENARIOS, buildScenarioTrip, scenarioLabel } from './traveler-simu
 import { validateTrip } from '../lib/trip-validator';
 import { generatePreparationItems, PrepItem } from '../lib/preparation-service';
 import { resolveCountryProfile } from '../lib/data/country-profiles';
+import { resolveEntryRequirement } from '../lib/data/entry-requirements';
 import { TripWarning, FlightSegment } from '../types/trip';
 
 function toMin(t?: string): number | null {
@@ -66,8 +67,32 @@ const PREP_CHECKS: Check[] = [
   {
     name: 'entry-auth-presence',
     run: (c) => {
-      if (!c.isOverseas || !c.dest) return { pass: !c.hasPrefixP('prep-entry-') };
+      if (!c.isOverseas || !c.dest || !c.home) return { pass: !c.hasPrefixP('prep-entry-') && !c.hasPrefixP('prep-visa-') };
+      const bilateral = resolveEntryRequirement(c.home.key, c.dest.key);
+      if (bilateral) {
+        // 양자 데이터가 있으면: visa-free/eta-optional/eta-required는 prep-entry-*, visa-required는 prep-visa-*
+        if (bilateral.tier === 'visa-required') {
+          return { pass: c.hasP(`prep-visa-${c.dest.key}`) && !c.hasP(`prep-entry-${c.dest.key}`) };
+        }
+        return { pass: c.hasP(`prep-entry-${c.dest.key}`) && !c.hasP(`prep-visa-${c.dest.key}`) };
+      }
+      // 양자 데이터가 없는 거주국은 기존처럼 목적지 단독 entryAuth로 폴백
       return { pass: !!c.dest.entryAuth === c.hasP(`prep-entry-${c.dest.key}`) };
+    },
+  },
+  {
+    name: 'entry-tier-priority-matches',
+    run: (c) => {
+      if (!c.isOverseas || !c.dest || !c.home) return { pass: true };
+      const bilateral = resolveEntryRequirement(c.home.key, c.dest.key);
+      if (!bilateral) return { pass: true }; // 폴백 경로는 위 체크가 이미 검증
+      const expectedPriority: Record<string, string> = {
+        'visa-free': 'optional', 'eta-optional': 'recommended', 'eta-required': 'essential', 'visa-required': 'essential',
+      };
+      const id = bilateral.tier === 'visa-required' ? `prep-visa-${c.dest.key}` : `prep-entry-${c.dest.key}`;
+      const item = c.prep.find(p => p.id === id);
+      if (!item) return { pass: false, detail: `expected item ${id} missing` };
+      return { pass: item.priority === expectedPriority[bilateral.tier], detail: `tier=${bilateral.tier} priority=${item.priority}` };
     },
   },
   { name: 'flight-booking-presence', run: (c) => ({ pass: c.isOverseas === c.hasP('prep-flight-booking') }) },
@@ -132,7 +157,7 @@ const PREP_CHECKS: Check[] = [
     name: 'domestic-no-leakage',
     run: (c) => {
       if (c.isOverseas) return { pass: true };
-      const leaked = c.prep.filter(p => /^prep-(passport|entry-|currency|credit-card|connectivity|adapter-|voltage-|idp-|driving-side-|insurance|medicine|taxrefund|dutyfree)/.test(p.id));
+      const leaked = c.prep.filter(p => /^prep-(passport|entry-|visa-|currency|credit-card|connectivity|adapter-|voltage-|idp-|driving-side-|insurance|medicine|taxrefund|dutyfree)/.test(p.id));
       return { pass: leaked.length === 0, detail: leaked.map(p => p.id).join(',') };
     },
   },
@@ -266,7 +291,7 @@ const printGroup = (title: string, checks: Check[]) => {
     }
   }
 };
-printGroup('준비물 (기존 16개)', PREP_CHECKS);
+printGroup('준비물 (documents/money/power/transport/health/shopping/outdoor)', PREP_CHECKS);
 printGroup('숙박 (신규 9개)', ACCOMMODATION_CHECKS);
 printGroup('항공 (신규 6개)', FLIGHT_CHECKS);
 

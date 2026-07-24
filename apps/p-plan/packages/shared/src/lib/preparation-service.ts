@@ -4,6 +4,7 @@ import {
     CountryProfile,
     resolveCountryProfile,
 } from './data/country-profiles';
+import { resolveEntryRequirement, ENTRY_REQUIREMENT_DISCLAIMER } from './data/entry-requirements';
 
 /**
  * 여행 준비물 자동 생성.
@@ -75,8 +76,22 @@ export function generatePreparationItems(trip: Trip, options?: GeneratePrepOptio
         add({ id: 'prep-passport', title: '여권 (유효기간 6개월 이상)', category: 'documents', priority: 'essential', reason: '해외 여행 필수. 잔여 유효기간이 부족하면 입국이 거절될 수 있어요.' });
     }
     destProfiles.forEach(d => {
-        if (d.entryAuth) {
-            add({ id: `prep-entry-${d.key}`, title: `${d.entryAuth} 신청`, category: 'documents', priority: 'essential', reason: `${d.aliases[0]} 입국에 필요한 전자여행허가예요.` });
+        // 거주국(여권) 기준 양자 입국 요건 데이터가 있으면 우선 사용 — 목적지 단독 정보보다 정밀하다.
+        const bilateral = resolveEntryRequirement(home.key, d.key);
+        if (bilateral) {
+            const reason = `${bilateral.note} ${ENTRY_REQUIREMENT_DISCLAIMER}`;
+            if (bilateral.tier === 'visa-free') {
+                add({ id: `prep-entry-${d.key}`, title: '무비자 입국 가능 (체류기간 확인)', category: 'documents', priority: 'optional', reason });
+            } else if (bilateral.tier === 'eta-optional') {
+                add({ id: `prep-entry-${d.key}`, title: `${bilateral.program} 등록 (선택, 권장)`, category: 'documents', priority: 'recommended', reason });
+            } else if (bilateral.tier === 'eta-required') {
+                add({ id: `prep-entry-${d.key}`, title: `${bilateral.program} 신청 (필수)`, category: 'documents', priority: 'essential', reason });
+            } else if (bilateral.tier === 'visa-required') {
+                add({ id: `prep-visa-${d.key}`, title: '비자 발급 신청', category: 'documents', priority: 'essential', reason });
+            }
+        } else if (d.entryAuth) {
+            // 거주국별 정밀 데이터가 아직 없는 경우: 목적지 단독 정보로 안전하게 폴백
+            add({ id: `prep-entry-${d.key}`, title: `${d.entryAuth} 신청`, category: 'documents', priority: 'essential', reason: `${d.aliases[0]} 입국에 필요한 전자여행허가예요(여권 발급국에 따라 다를 수 있어요). ${ENTRY_REQUIREMENT_DISCLAIMER}` });
         }
     });
     if (hasFlights) {
