@@ -14,6 +14,17 @@ import type {
     TravelogPlace,
 } from '../types/record';
 
+/** 컬렉션 기본 색 팔레트 (커스텀 분류 칩/핀) */
+export const COLLECTION_COLORS = [
+    '#ef4444', '#f59e0b', '#10b981', '#3b82f6',
+    '#8b5cf6', '#ec4899', '#14b8a6', '#f97316',
+];
+
+/** 특정 컬렉션에 속한 장소만 추린다 */
+export function placesInCollection(places: TravelogPlace[], collectionId: string): TravelogPlace[] {
+    return places.filter((p) => p.collectionIds?.includes(collectionId));
+}
+
 /**
  * 장소 동일성 판별 키.
  * 1) 구글 Place ID가 있으면 그것으로, 2) 좌표가 있으면 소수 4자리(≈11m)로 반올림해서,

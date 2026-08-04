@@ -9,6 +9,7 @@ import {
     TravelogSection,
     TravelogDailyPlan,
     TravelogPlace,
+    TravelogCollection,
     syncTravelogPlaces,
     cn
 } from '@pplaner/shared';
@@ -109,14 +110,20 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
         return syncTravelogPlaces(travelog);
     }, [travelog]);
 
+    // 커스텀 분류 필터
+    const [activeCollection, setActiveCollection] = useState<string | null>(null);
+    const visiblePlaces = useMemo(() => (
+        activeCollection ? places.filter(p => p.collectionIds?.includes(activeCollection)) : places
+    ), [places, activeCollection]);
+
     // 지도·포토북 템플릿이면 장소 보기로 시작
     useEffect(() => {
         if (travelog?.template === 'map' || travelog?.template === 'photobook') setViewMode('places');
     }, [travelog?.template]);
 
-    // 장소 마커 (좌표가 있는 장소만)
+    // 장소 마커 (좌표가 있는 장소만, 활성 분류 반영)
     const placeMarkers = useMemo(() => {
-        return places
+        return visiblePlaces
             .filter(p => p.location && typeof p.location.lat === 'number' && typeof p.location.lng === 'number')
             .map(p => ({
                 id: p.id,
@@ -126,7 +133,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                 type: 'activity' as const,
                 highlighted: p.id === highlightedMarkerId,
             }));
-    }, [places, highlightedMarkerId]);
+    }, [visiblePlaces, highlightedMarkerId]);
 
     // 현재 보기에 맞는 마커/경로
     const activeMarkers = viewMode === 'places' ? placeMarkers : markers;
@@ -296,9 +303,19 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     </div>
                 </div>
 
+                {/* 커스텀 분류 필터 (장소 보기에서) */}
+                {viewMode === 'places' && (travelog.collections?.length ?? 0) > 0 && (
+                    <CollectionFilterBar
+                        collections={travelog.collections!}
+                        places={places}
+                        active={activeCollection}
+                        onSelect={setActiveCollection}
+                    />
+                )}
+
                 {viewMode === 'places' && travelog.template === 'map' ? (
                     <MapTemplateSection
-                        places={places}
+                        places={visiblePlaces}
                         markers={placeMarkers}
                         center={mapCenter}
                         zoom={mapZoom}
@@ -306,7 +323,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         onFocusPlace={focusPlace}
                     />
                 ) : viewMode === 'places' && travelog.template === 'photobook' ? (
-                    <PhotobookSection places={places} onFocusPlace={focusPlace} />
+                    <PhotobookSection places={visiblePlaces} onFocusPlace={focusPlace} />
                 ) : (
                 <div className="flex flex-col lg:flex-row gap-20">
                     {/* Left Column: Content */}
@@ -348,7 +365,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                             )
                         ) : (
                             <PlaceListView
-                                places={places}
+                                places={visiblePlaces}
                                 highlightedId={highlightedMarkerId}
                                 onFocusPlace={focusPlace}
                             />
@@ -495,6 +512,42 @@ function StarRating({ value }: { value: number }) {
                     star
                 </span>
             ))}
+        </div>
+    );
+}
+
+/** 커스텀 분류 필터 바 (칩 + 선택 시 분류 설명) */
+function CollectionFilterBar({ collections, places, active, onSelect }: {
+    collections: TravelogCollection[];
+    places: TravelogPlace[];
+    active: string | null;
+    onSelect: (id: string | null) => void;
+}) {
+    const countFor = (id: string) => places.filter((p) => p.collectionIds?.includes(id)).length;
+    const activeCol = collections.find((c) => c.id === active);
+    const chip = (on: boolean, label: string, color: string | undefined, onClick: () => void, key: string) => (
+        <button
+            key={key}
+            onClick={onClick}
+            className={cn('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-black border transition',
+                on ? 'text-white border-transparent shadow' : 'text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/15 hover:border-slate-400')}
+            style={on && color ? { backgroundColor: color } : on ? { backgroundColor: '#334155' } : undefined}
+        >
+            {color && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: on ? 'rgba(255,255,255,0.9)' : color }} />}
+            {label}
+        </button>
+    );
+    return (
+        <div className="mb-10">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                {chip(!active, `전체 ${places.length}`, undefined, () => onSelect(null), 'all')}
+                {collections.map((c) => chip(active === c.id, `${c.name} ${countFor(c.id)}`, c.color, () => onSelect(c.id), c.id))}
+            </div>
+            {activeCol?.description && (
+                <p className="mt-4 text-center text-sm text-slate-500 dark:text-white/50 max-w-xl mx-auto leading-relaxed">
+                    {activeCol.description}
+                </p>
+            )}
         </div>
     );
 }

@@ -1787,6 +1787,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                     <TravelogPlacePanel
                         travelog={travelog}
                         onChange={(places) => setTravelog(prev => prev ? { ...prev, places } : prev)}
+                        onCollectionsChange={(collections) => setTravelog(prev => prev ? { ...prev, collections } : prev)}
                         onClose={() => setShowPlacePanel(false)}
                     />
                 )}

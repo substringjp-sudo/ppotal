@@ -216,6 +216,21 @@ export interface TravelogSection {
     linkedEventId?: string;        // 타임라인 내 특정 일정(TravelogEvent)과 연결된 경우
 }
 
+/**
+ * 사용자 정의 컬렉션 (커스텀 분류).
+ * 장소를 사용자가 만든 묶음으로 분류한다. 컬렉션 자체에 이름·색뿐 아니라
+ * 설명/요약을 달 수 있어(예: "골목 카페 투어 — 조용하고 오래 앉기 좋은 곳들"),
+ * 뷰어에서 그 분류를 선택하면 소개글로 보여준다.
+ * 장소는 TravelogPlace.collectionIds 로 컬렉션을 참조한다(다대다).
+ */
+export interface TravelogCollection {
+    id: string;
+    name: string;
+    color?: string;          // 칩/핀 색 (hex)
+    description?: string;     // 컬렉션 설명·요약
+    icon?: string;           // 선택: material symbol 이름
+}
+
 export interface TravelogMemberCounts {
     me: number;
     partner: number;
@@ -256,6 +271,9 @@ export interface Travelog {
     // 장소 중심 뷰의 데이터 (지도/목록 토글 · "여행지도" 템플릿의 원천)
     // 이벤트 좌표에서 파생되거나 사용자가 직접 작성할 수 있다.
     places?: TravelogPlace[];
+
+    // 사용자 정의 컬렉션 (커스텀 분류)
+    collections?: TravelogCollection[];
 
     createdAt: string;
     updatedAt: string;
