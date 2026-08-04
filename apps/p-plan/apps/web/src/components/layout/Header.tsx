@@ -55,16 +55,25 @@ export default function Header() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isUserMenuOpen]);
 
-    const navLinks = [
-        { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
-        { href: '/', label: '홈', icon: 'home', authRequired: true },
-        { href: '/journey-atlas', label: '탐색', icon: 'explore', authRequired: true },
-        { href: '/wishlist', label: '위시리스트', icon: 'favorite', authRequired: true },
-        { href: '/trips', label: '내 여행', icon: 'luggage', authRequired: true },
-        { href: '/travelogs', label: '여행기록', icon: 'auto_stories', authRequired: true },
-        { href: '/stats', label: '인텔리전스', icon: 'analytics', authRequired: true },
-        { href: '/about', label: '소개', icon: 'info', authRequired: false },
-    ].filter(link => !link.authRequired || !!user);
+    // 라이프사이클 컨셉에 맞춘 최소 내비: 로그인 시 내 여행 / 탐색(+프로필 아바타).
+    // 위시리스트·여행기록·통계는 프로필 메뉴로 접어 넣는다(아래 사용자 드롭다운).
+    const navLinks = user
+        ? [
+            { href: '/', label: '내 여행', icon: 'luggage', authRequired: true },
+            { href: '/journey-atlas', label: '탐색', icon: 'explore', authRequired: true },
+        ]
+        : [
+            { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
+            { href: '/about', label: '소개', icon: 'info', authRequired: false },
+        ];
+
+    // 사용자 드롭다운에서 접근하는 보조 메뉴 (탑 내비에서 강등된 것들)
+    const secondaryLinks = [
+        { href: '/travelogs', label: '여행기록', icon: 'auto_stories' },
+        { href: '/wishlist', label: '위시리스트', icon: 'favorite' },
+        { href: '/stats', label: '인텔리전스', icon: 'analytics' },
+        { href: '/about', label: '소개', icon: 'info' },
+    ];
 
     return (
         <>
@@ -161,7 +170,7 @@ export default function Header() {
                                             <p className="text-xs font-black text-slate-900 dark:text-white truncate">{user.displayName}</p>
                                             <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 setIsProfileModalOpen(true);
                                                 setIsUserMenuOpen(false);
@@ -171,6 +180,18 @@ export default function Header() {
                                             <span className="material-symbols-rounded text-sm">settings</span>
                                             프로필 설정
                                         </button>
+                                        {secondaryLinks.map((link) => (
+                                            <Link
+                                                key={link.href}
+                                                href={link.href}
+                                                onClick={() => setIsUserMenuOpen(false)}
+                                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2"
+                                            >
+                                                <span className="material-symbols-rounded text-sm">{link.icon}</span>
+                                                {link.label}
+                                            </Link>
+                                        ))}
+                                        <div className="my-1 border-t border-slate-200/60 dark:border-slate-700"></div>
                                         <button onClick={() => { logout(); setIsUserMenuOpen(false); }} className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
                                             <span className="material-symbols-rounded text-sm">logout</span>
                                             로그아웃
