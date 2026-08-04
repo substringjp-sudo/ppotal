@@ -10,11 +10,10 @@ import MobileProfileSheet from './MobileProfileSheet';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TRANSITION_SPRING, TRANSITION_SPRING_BOUNCY } from '@/lib/animations';
 
+// 라이프사이클 컨셉: 내 여행 / 탐색 + 가운데 "새로 시작" + 프로필 (위시·기록·통계는 프로필 시트로)
 const NAV_ITEMS = [
-    { href: '/', label: '홈', icon: 'home', exact: true, authRequired: true },
-    { href: '/wishlist', label: '위시', icon: 'favorite', exact: true, authRequired: true },
-    { href: '/trips', label: '여행', icon: 'luggage', exact: false, authRequired: true },
-    { href: '/travelogs', label: '기록', icon: 'auto_stories', exact: true, authRequired: true },
+    { href: '/', label: '내 여행', icon: 'luggage', exact: true, authRequired: true },
+    { href: '/journey-atlas', label: '탐색', icon: 'explore', exact: false, authRequired: true },
 ];
 
 function NavItem({ href, label, icon, isActive }: { href: string; label: string; icon: string; isActive: boolean }) {
@@ -106,7 +105,19 @@ export default function MobileBottomNav() {
                             isActive={isItemActive(item, pathname)}
                         />
                     ))}
-                    
+
+                    {/* 가운데 액션: 새로 시작 (계획/기록 위저드) */}
+                    <button
+                        onClick={handleCenterAction}
+                        aria-label={centerLabel}
+                        className="compact-touch flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px]"
+                    >
+                        <span className="w-11 h-11 -mt-4 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30">
+                            <span className="material-symbols-rounded text-[24px]">{centerIcon}</span>
+                        </span>
+                        <span className="text-[10px] font-bold leading-none text-slate-400 dark:text-slate-500">{centerLabel}</span>
+                    </button>
+
                     {/* 프로필 버튼 */}
                     <button
                         onClick={() => user ? setIsProfileSheetOpen(true) : loginWithGoogle()}
