@@ -109,9 +109,9 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
         return syncTravelogPlaces(travelog);
     }, [travelog]);
 
-    // 여행지도 템플릿이면 장소 보기로 시작
+    // 지도·포토북 템플릿이면 장소 보기로 시작
     useEffect(() => {
-        if (travelog?.template === 'map') setViewMode('places');
+        if (travelog?.template === 'map' || travelog?.template === 'photobook') setViewMode('places');
     }, [travelog?.template]);
 
     // 장소 마커 (좌표가 있는 장소만)
@@ -305,6 +305,8 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         highlightedId={highlightedMarkerId}
                         onFocusPlace={focusPlace}
                     />
+                ) : viewMode === 'places' && travelog.template === 'photobook' ? (
+                    <PhotobookSection places={places} onFocusPlace={focusPlace} />
                 ) : (
                 <div className="flex flex-col lg:flex-row gap-20">
                     {/* Left Column: Content */}
@@ -622,6 +624,50 @@ function MapTemplateSection({ places, markers, center, zoom, highlightedId, onFo
                     </ScrollReveal>
                 ))}
             </div>
+        </div>
+    );
+}
+
+/** 포토북 템플릿: 장소마다 사진을 매거진식 그리드로, 소감을 캡션으로 */
+function PhotobookSection({ places, onFocusPlace }: {
+    places: TravelogPlace[];
+    onFocusPlace: (place: TravelogPlace) => void;
+}) {
+    const withPhotos = places.filter((p) => p.photoUrls && p.photoUrls.length > 0);
+    if (withPhotos.length === 0) return <PlacesEmpty />;
+    return (
+        <div className="space-y-20">
+            {withPhotos.map((p, i) => (
+                <ScrollReveal key={p.id}>
+                    <section id={`place-${p.id}`} onClick={() => onFocusPlace(p)} className="cursor-pointer">
+                        <div className="flex items-end justify-between mb-6">
+                            <div className="flex items-center gap-4 min-w-0">
+                                <span className="text-6xl font-black text-slate-200 dark:text-white/10 tabular-nums leading-none">{String(i + 1).padStart(2, '0')}</span>
+                                <div className="min-w-0">
+                                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white truncate">{p.name}</h3>
+                                    {(p.visitDate || p.location?.address) && (
+                                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                            {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            {typeof p.rating === 'number' && p.rating > 0 && <StarRating value={p.rating} />}
+                        </div>
+                        <div className="columns-2 md:columns-3 gap-3 [column-fill:_balance]">
+                            {p.photoUrls!.map((url, idx) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img key={idx} src={url} alt="" className="w-full mb-3 rounded-2xl break-inside-avoid border border-slate-200 dark:border-white/5" />
+                            ))}
+                        </div>
+                        {p.impression && (
+                            <p className="mt-6 text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-relaxed font-light whitespace-pre-wrap">
+                                {p.impression}
+                            </p>
+                        )}
+                    </section>
+                </ScrollReveal>
+            ))}
         </div>
     );
 }
