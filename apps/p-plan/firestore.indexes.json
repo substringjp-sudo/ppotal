@@ -1,6 +1,15 @@
 {
   "indexes": [
     {
+      "collectionGroup": "travelogs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "isPublic", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "bookmarks",
       "queryScope": "COLLECTION",
       "fields": [

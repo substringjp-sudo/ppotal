@@ -13,7 +13,7 @@ import { TRANSITION_SPRING, TRANSITION_SPRING_BOUNCY } from '@/lib/animations';
 // 라이프사이클 컨셉: 내 여행 / 탐색 + 가운데 "새로 시작" + 프로필 (위시·기록·통계는 프로필 시트로)
 const NAV_ITEMS = [
     { href: '/', label: '내 여행', icon: 'luggage', exact: true, authRequired: true },
-    { href: '/journey-atlas', label: '탐색', icon: 'explore', exact: false, authRequired: true },
+    { href: '/explore', label: '탐색', icon: 'explore', exact: false, authRequired: true },
 ];
 
 function NavItem({ href, label, icon, isActive }: { href: string; label: string; icon: string; isActive: boolean }) {

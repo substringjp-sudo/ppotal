@@ -60,9 +60,10 @@ export default function Header() {
     const navLinks = user
         ? [
             { href: '/', label: '내 여행', icon: 'luggage', authRequired: true },
-            { href: '/journey-atlas', label: '탐색', icon: 'explore', authRequired: true },
+            { href: '/explore', label: '탐색', icon: 'explore', authRequired: true },
         ]
         : [
+            { href: '/explore', label: '탐색', icon: 'explore', authRequired: false },
             { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
             { href: '/about', label: '소개', icon: 'info', authRequired: false },
         ];
@@ -70,6 +71,7 @@ export default function Header() {
     // 사용자 드롭다운에서 접근하는 보조 메뉴 (탑 내비에서 강등된 것들)
     const secondaryLinks = [
         { href: '/travelogs', label: '여행기록', icon: 'auto_stories' },
+        { href: '/journey-atlas', label: '여행 지도', icon: 'map' },
         { href: '/wishlist', label: '위시리스트', icon: 'favorite' },
         { href: '/stats', label: '인텔리전스', icon: 'analytics' },
         { href: '/about', label: '소개', icon: 'info' },

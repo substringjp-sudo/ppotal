@@ -34,6 +34,7 @@ export * from './lib/userStatsService';
 export * from './lib/recordService';
 export * from './lib/travelog-places';
 export * from './lib/pathwalk-import';
+export * from './lib/spot-feed';
 export * from './lib/tripCollaborationService';
 
 
