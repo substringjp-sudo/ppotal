@@ -74,11 +74,13 @@ export default function JourneyGallery({
 
         const out: Journey[] = [];
 
-        // 계획(trip) 기반 여행 — 연동 여행기가 있으면 그 상태를 우선 반영
+        // 계획(trip) 기반 여행 — 연동 여행기가 있으면 그 상태 배지를 반영하되,
+        // 클릭은 항상 여행 허브(/trips/[id])로 보낸다(계획·점검·여행기·공유를 한 그릇으로).
         trips.forEach((t) => {
             const log = logByTrip.get(t.id);
+            const href = `/trips/${t.id}`;
             if (log) {
-                out.push(journeyFromLog(log, t));
+                out.push({ ...journeyFromLog(log, t), href });
                 return;
             }
             const start = t.dates?.startDate ? parseISO(t.dates.startDate) : null;
@@ -93,7 +95,7 @@ export default function JourneyGallery({
                 endDate: t.dates?.endDate,
                 theme: t.theme,
                 badge,
-                href: `/dashboard/${t.id}`,
+                href,
             });
         });
 
