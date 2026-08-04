@@ -109,6 +109,11 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
         return syncTravelogPlaces(travelog);
     }, [travelog]);
 
+    // 여행지도 템플릿이면 장소 보기로 시작
+    useEffect(() => {
+        if (travelog?.template === 'map') setViewMode('places');
+    }, [travelog?.template]);
+
     // 장소 마커 (좌표가 있는 장소만)
     const placeMarkers = useMemo(() => {
         return places
@@ -291,6 +296,16 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     </div>
                 </div>
 
+                {viewMode === 'places' && travelog.template === 'map' ? (
+                    <MapTemplateSection
+                        places={places}
+                        markers={placeMarkers}
+                        center={mapCenter}
+                        zoom={mapZoom}
+                        highlightedId={highlightedMarkerId}
+                        onFocusPlace={focusPlace}
+                    />
+                ) : (
                 <div className="flex flex-col lg:flex-row gap-20">
                     {/* Left Column: Content */}
                     <div className="flex-1 min-w-0">
@@ -404,6 +419,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         </div>
                     </aside>
                 </div>
+                )}
             </main>
 
             {/* Footer Signature */}
@@ -473,21 +489,84 @@ function StarRating({ value }: { value: number }) {
     );
 }
 
-/** 장소 중심 뷰: 각 장소마다 사진 + 소감 + 별점을 정리해 보여준다. */
+/** 장소 카드 하나 (목록/그리드/지도 템플릿에서 공용) */
+function PlaceCard({ place: p, index: i, highlighted, onClick }: {
+    place: TravelogPlace;
+    index: number;
+    highlighted: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <div
+            id={`place-${p.id}`}
+            onClick={onClick}
+            className={cn(
+                'group relative rounded-[2rem] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer h-full',
+                highlighted
+                    ? 'border-primary/50 ring-2 ring-primary/20'
+                    : 'border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10'
+            )}
+        >
+            {/* 사진 스트립 */}
+            {p.photoUrls && p.photoUrls.length > 0 && (
+                <div className="flex gap-1 h-44 overflow-x-auto">
+                    {p.photoUrls.slice(0, 5).map((url, idx) => (
+                        <div key={idx} className={cn('relative flex-shrink-0 h-full', idx === 0 ? 'w-1/2' : 'w-1/3')}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        </div>
+                    ))}
+                </div>
+            )}
+            <div className="p-7 space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-black shrink-0">
+                            {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <div className="min-w-0">
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{p.name}</h3>
+                            {(p.location?.address || p.visitDate) && (
+                                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                    {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    {typeof p.rating === 'number' && p.rating > 0 && <StarRating value={p.rating} />}
+                </div>
+                {p.impression && (
+                    <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {p.impression}
+                    </p>
+                )}
+                {p.category && (
+                    <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">
+                        {p.category}
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function PlacesEmpty() {
+    return (
+        <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+            <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">wrong_location</span>
+            <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 정리된 장소가 없어요.</p>
+            <p className="mt-1 text-sm text-slate-400 dark:text-white/25">사진을 올리거나 일정에 장소를 연결하면 여기 모여요.</p>
+        </div>
+    );
+}
+
+/** 장소 중심 뷰(사이드 지도와 함께 쓰는 세로 목록) */
 function PlaceListView({ places, highlightedId, onFocusPlace }: {
     places: TravelogPlace[];
     highlightedId: string | null;
     onFocusPlace: (place: TravelogPlace) => void;
 }) {
-    if (places.length === 0) {
-        return (
-            <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
-                <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">wrong_location</span>
-                <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 정리된 장소가 없어요.</p>
-                <p className="mt-1 text-sm text-slate-400 dark:text-white/25">사진을 올리거나 일정에 장소를 연결하면 여기 모여요.</p>
-            </div>
-        );
-    }
+    if (places.length === 0) return <PlacesEmpty />;
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -496,58 +575,53 @@ function PlaceListView({ places, highlightedId, onFocusPlace }: {
             </div>
             {places.map((p, i) => (
                 <ScrollReveal key={p.id}>
-                    <div
-                        id={`place-${p.id}`}
-                        onClick={() => onFocusPlace(p)}
-                        className={cn(
-                            'group relative rounded-[2rem] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer',
-                            highlightedId === p.id
-                                ? 'border-primary/50 ring-2 ring-primary/20'
-                                : 'border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10'
-                        )}
-                    >
-                        {/* 사진 스트립 */}
-                        {p.photoUrls && p.photoUrls.length > 0 && (
-                            <div className="flex gap-1 h-44 overflow-x-auto">
-                                {p.photoUrls.slice(0, 5).map((url, idx) => (
-                                    <div key={idx} className={cn('relative flex-shrink-0 h-full', idx === 0 ? 'w-1/2' : 'w-1/3')}>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <div className="p-7 space-y-3">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-black shrink-0">
-                                        {String(i + 1).padStart(2, '0')}
-                                    </span>
-                                    <div className="min-w-0">
-                                        <h3 className="text-xl font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{p.name}</h3>
-                                        {(p.location?.address || p.visitDate) && (
-                                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
-                                                {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                                {typeof p.rating === 'number' && p.rating > 0 && <StarRating value={p.rating} />}
-                            </div>
-                            {p.impression && (
-                                <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                                    {p.impression}
-                                </p>
-                            )}
-                            {p.category && (
-                                <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">
-                                    {p.category}
-                                </span>
-                            )}
-                        </div>
-                    </div>
+                    <PlaceCard place={p} index={i} highlighted={highlightedId === p.id} onClick={() => onFocusPlace(p)} />
                 </ScrollReveal>
             ))}
+        </div>
+    );
+}
+
+/** 여행지도 템플릿: 큰 지도(핀) + 장소 카드 그리드 (전체 폭) */
+function MapTemplateSection({ places, markers, center, zoom, highlightedId, onFocusPlace }: {
+    places: TravelogPlace[];
+    markers: { id: string; lat: number; lng: number; title: string; type: 'activity'; highlighted: boolean }[];
+    center: { lat: number; lng: number };
+    zoom: number;
+    highlightedId: string | null;
+    onFocusPlace: (place: TravelogPlace) => void;
+}) {
+    if (places.length === 0) return <PlacesEmpty />;
+    const path = markers.map((m) => ({ lat: m.lat, lng: m.lng }));
+    return (
+        <div>
+            {/* 큰 지도 */}
+            <div className="relative h-[460px] sm:h-[540px] rounded-[2.5rem] overflow-hidden border border-slate-200 dark:border-white/10 shadow-xl bg-[#020617]">
+                <MapComponent
+                    center={center}
+                    zoom={zoom}
+                    markers={markers}
+                    path={path}
+                    highlightedId={highlightedId || undefined}
+                    onMarkerClick={(mid) => {
+                        const p = places.find((pl) => pl.id === mid);
+                        if (p) onFocusPlace(p);
+                    }}
+                />
+                <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest text-white/80 pointer-events-none">
+                    <span className="material-symbols-rounded text-primary text-sm">map</span>
+                    여행지도 · 장소 {places.length}
+                </div>
+            </div>
+
+            {/* 장소 카드 그리드 */}
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {places.map((p, i) => (
+                    <ScrollReveal key={p.id}>
+                        <PlaceCard place={p} index={i} highlighted={highlightedId === p.id} onClick={() => onFocusPlace(p)} />
+                    </ScrollReveal>
+                ))}
+            </div>
         </div>
     );
 }

@@ -66,6 +66,15 @@ export type TravelogStatus = 'draft' | 'published' | 'private';
 export type SectionType = 'text' | 'route_map' | 'photo_gallery' | 'day_header' | 'event_block';
 
 /**
+ * 뷰어 표현 템플릿 (공유카드와 별개 — 여행기 전체 화면 레이아웃).
+ * - magazine: 큰 타이포 + 사진 흐름 (기본, 블로그형)
+ * - timeline: 일자별 순서 흐름
+ * - map: 지도 중심 + 장소 카드 (places[] 소비)
+ * - photobook: 사진 그리드 중심
+ */
+export type TravelogTemplate = 'magazine' | 'timeline' | 'map' | 'photobook';
+
+/**
  * 트래블로그 작성의 시작점 (컨텍스트)
  */
 export type TravelogSourceContext = 
@@ -234,6 +243,9 @@ export interface Travelog {
     
     // 신규 추가: 기록 모드 (기본: standard)
     recordingMode?: 'standard' | 'simple';
+
+    // 뷰어 표현 템플릿 (기본: magazine)
+    template?: TravelogTemplate;
     
     // 단순화된 타임라인 데이터
     timeline: TravelogDailyPlan[];

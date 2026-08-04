@@ -1342,6 +1342,20 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                                 간편 기록
                             </button>
                         </div>
+                        <div className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <span className="material-symbols-rounded text-base text-slate-400 pl-1">dashboard_customize</span>
+                            <select
+                                value={travelog.template || 'magazine'}
+                                onChange={(e) => setTravelog(prev => prev ? { ...prev, template: e.target.value as any } : prev)}
+                                className="bg-transparent text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 appearance-none outline-none cursor-pointer pr-1"
+                                title="여행기 표현 템플릿"
+                            >
+                                <option value="magazine">매거진</option>
+                                <option value="timeline">타임라인</option>
+                                <option value="map">여행지도</option>
+                                <option value="photobook">포토북</option>
+                            </select>
+                        </div>
                         <button
                             onClick={() => setShowPlacePanel(true)}
                             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-primary hover:text-primary transition-all"
