@@ -1,9 +1,10 @@
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useWizardStore, type TripSummary, type Travelog, cn } from '@pplaner/shared';
 import { parseISO, startOfDay, isAfter, isBefore, format } from 'date-fns';
+import PathwalkImportModal from '@/components/travelogs/PathwalkImportModal';
 
 /**
  * 홈 = 내 여행 갤러리 (컨셉 스파인 STEP 2-1).
@@ -56,12 +57,15 @@ export default function JourneyGallery({
     trips,
     travelogs,
     displayName,
+    userId,
 }: {
     trips: TripSummary[];
     travelogs: Travelog[];
     displayName?: string | null;
+    userId?: string;
 }) {
     const openWizard = useWizardStore((s) => s.open);
+    const [showPathwalk, setShowPathwalk] = useState(false);
 
     const journeys = useMemo<Journey[]>(() => {
         const now = startOfDay(new Date());
@@ -138,13 +142,15 @@ export default function JourneyGallery({
                         <span className="material-symbols-rounded text-white text-[22px]">photo_library</span>
                         <span><span className="block text-sm font-black text-white">사진으로</span><span className="block text-[11px] text-white/70">지난 여행을 기록</span></span>
                     </button>
-                    <div
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/5 px-4 py-3 text-left cursor-default"
-                        title="여행 중 자동 기록은 PATHWALK 앱에서 이어집니다"
+                    <button
+                        type="button"
+                        onClick={() => setShowPathwalk(true)}
+                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
+                        title="PATHWALK가 기록한 발자취를 여행기로 가져옵니다"
                     >
-                        <span className="material-symbols-rounded text-white/60 text-[22px]">footprint</span>
-                        <span><span className="block text-sm font-black text-white/70">PATHWALK</span><span className="block text-[11px] text-white/50">여행 중 자동 기록 · 곧</span></span>
-                    </div>
+                        <span className="material-symbols-rounded text-white text-[22px]">footprint</span>
+                        <span><span className="block text-sm font-black text-white">PATHWALK</span><span className="block text-[11px] text-white/70">발자취에서 가져오기</span></span>
+                    </button>
                 </div>
             </div>
 
@@ -179,6 +185,10 @@ export default function JourneyGallery({
                         </motion.div>
                     ))}
                 </div>
+            )}
+
+            {showPathwalk && userId && (
+                <PathwalkImportModal userId={userId} onClose={() => setShowPathwalk(false)} />
             )}
         </div>
     );

@@ -71,7 +71,7 @@ export default function HomePage() {
   // 로그인된 사용자: 홈 = 내 여행 갤러리
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <JourneyGallery trips={trips} travelogs={travelogs} displayName={profile?.displayName || user.displayName} />
+      <JourneyGallery trips={trips} travelogs={travelogs} displayName={profile?.displayName || user.displayName} userId={user.uid} />
 
       {showOnboarding && user && (
         <OnboardingWizard
