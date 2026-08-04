@@ -11,6 +11,7 @@ import {
     TravelogSection,
     TravelogSourceContext,
     calculateTravelogRepresentativeRegion,
+    hasMinimumContent,
     generateId,
     cn,
     calculateDistance,
@@ -1364,12 +1365,17 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                             장소 정리
                         </button>
                         <div className="h-4 w-[1px] bg-slate-100 dark:bg-slate-800 mx-2" />
-                        <div className={cn("text-[9px] font-black uppercase tracking-widest transition-opacity", isSaving ? "opacity-100 text-primary animate-pulse" : "opacity-30")}>
-                            {isSaving ? '변경사항 저장 중...' : '모든 변경사항 저장됨'}
+                        <div className={cn("text-[9px] font-black uppercase tracking-widest transition-opacity",
+                            isSaving ? "opacity-100 text-primary animate-pulse"
+                                : !hasMinimumContent(travelog) ? "opacity-100 text-amber-500"
+                                    : "opacity-30")}>
+                            {isSaving ? '변경사항 저장 중...' : !hasMinimumContent(travelog) ? '제목·내용을 입력하세요' : '모든 변경사항 저장됨'}
                         </div>
-                        <button 
+                        <button
                             onClick={() => handleSave()}
-                            className="bg-slate-950 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                            disabled={!hasMinimumContent(travelog)}
+                            title={!hasMinimumContent(travelog) ? '제목과 최소한의 내용을 입력해야 저장돼요' : undefined}
+                            className="bg-slate-950 dark:bg-white text-white dark:text-slate-900 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed"
                         >
                             기록 저장
                         </button>
@@ -1787,7 +1793,6 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                     <TravelogPlacePanel
                         travelog={travelog}
                         onChange={(places) => setTravelog(prev => prev ? { ...prev, places } : prev)}
-                        onCollectionsChange={(collections) => setTravelog(prev => prev ? { ...prev, collections } : prev)}
                         onClose={() => setShowPlacePanel(false)}
                     />
                 )}

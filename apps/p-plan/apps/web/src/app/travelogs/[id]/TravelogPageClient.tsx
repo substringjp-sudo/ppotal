@@ -9,8 +9,9 @@ import {
     TravelogSection,
     TravelogDailyPlan,
     TravelogPlace,
-    TravelogCollection,
     syncTravelogPlaces,
+    collectCategories,
+    colorForCategory,
     cn
 } from '@pplaner/shared';
 import { useAuth } from '@/hooks/useAuth';
@@ -111,10 +112,10 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
     }, [travelog]);
 
     // 커스텀 분류 필터
-    const [activeCollection, setActiveCollection] = useState<string | null>(null);
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const visiblePlaces = useMemo(() => (
-        activeCollection ? places.filter(p => p.collectionIds?.includes(activeCollection)) : places
-    ), [places, activeCollection]);
+        activeCategory ? places.filter(p => (p.category?.trim() || '') === activeCategory) : places
+    ), [places, activeCategory]);
 
     // 지도·포토북 템플릿이면 장소 보기로 시작
     useEffect(() => {
@@ -303,13 +304,12 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     </div>
                 </div>
 
-                {/* 커스텀 분류 필터 (장소 보기에서) */}
-                {viewMode === 'places' && (travelog.collections?.length ?? 0) > 0 && (
-                    <CollectionFilterBar
-                        collections={travelog.collections!}
+                {/* 분류 필터 (장소 보기에서, 자유 입력 분류 기준) */}
+                {viewMode === 'places' && (
+                    <CategoryFilterBar
                         places={places}
-                        active={activeCollection}
-                        onSelect={setActiveCollection}
+                        active={activeCategory}
+                        onSelect={setActiveCategory}
                     />
                 )}
 
@@ -516,15 +516,15 @@ function StarRating({ value }: { value: number }) {
     );
 }
 
-/** 커스텀 분류 필터 바 (칩 + 선택 시 분류 설명) */
-function CollectionFilterBar({ collections, places, active, onSelect }: {
-    collections: TravelogCollection[];
+/** 분류 필터 바 — 장소들의 자유 입력 분류(category)에서 칩을 만든다 */
+function CategoryFilterBar({ places, active, onSelect }: {
     places: TravelogPlace[];
     active: string | null;
-    onSelect: (id: string | null) => void;
+    onSelect: (c: string | null) => void;
 }) {
-    const countFor = (id: string) => places.filter((p) => p.collectionIds?.includes(id)).length;
-    const activeCol = collections.find((c) => c.id === active);
+    const categories = collectCategories(places);
+    if (categories.length === 0) return null;
+    const countFor = (c: string) => places.filter((p) => (p.category?.trim() || '') === c).length;
     const chip = (on: boolean, label: string, color: string | undefined, onClick: () => void, key: string) => (
         <button
             key={key}
@@ -541,13 +541,8 @@ function CollectionFilterBar({ collections, places, active, onSelect }: {
         <div className="mb-10">
             <div className="flex flex-wrap items-center justify-center gap-2">
                 {chip(!active, `전체 ${places.length}`, undefined, () => onSelect(null), 'all')}
-                {collections.map((c) => chip(active === c.id, `${c.name} ${countFor(c.id)}`, c.color, () => onSelect(c.id), c.id))}
+                {categories.map((c) => chip(active === c, `${c} ${countFor(c)}`, colorForCategory(c), () => onSelect(c), c))}
             </div>
-            {activeCol?.description && (
-                <p className="mt-4 text-center text-sm text-slate-500 dark:text-white/50 max-w-xl mx-auto leading-relaxed">
-                    {activeCol.description}
-                </p>
-            )}
         </div>
     );
 }

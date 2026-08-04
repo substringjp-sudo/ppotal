@@ -86,7 +86,9 @@ export const useTravelogStore = create<TravelogState>()(
                     travelogs: [newTravelog, ...state.travelogs]
                 }));
 
-                if (userId) {
+                // 빈 여행기는 서버에 만들지 않는다 — 최소 내용이 채워지면 편집기에서 저장된다.
+                const { hasMinimumContent } = await import('../lib/travelog-places');
+                if (userId && hasMinimumContent(newTravelog)) {
                     try {
                         await saveTravelog(newTravelog);
                     } catch (error) {

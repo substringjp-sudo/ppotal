@@ -14,19 +14,53 @@ import type {
     TravelogPlace,
 } from '../types/record';
 
-/** 컬렉션 기본 색 팔레트 (커스텀 분류 칩/핀) */
-export const COLLECTION_COLORS = [
+/** 분류(카테고리) 칩 색 팔레트 */
+export const CATEGORY_COLORS = [
     '#ef4444', '#f59e0b', '#10b981', '#3b82f6',
     '#8b5cf6', '#ec4899', '#14b8a6', '#f97316',
 ];
 
-/** 특정 컬렉션에 속한 장소만 추린다 */
-export function placesInCollection(places: TravelogPlace[], collectionId: string): TravelogPlace[] {
-    return places.filter((p) => p.collectionIds?.includes(collectionId));
+/** 분류 이름을 팔레트 색으로 결정적으로 매핑한다 */
+export function colorForCategory(name: string): string {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+    return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
+}
+
+/** 장소들에서 사용된 분류(카테고리)를 등장 순서대로 중복 없이 모은다 */
+export function collectCategories(places: TravelogPlace[]): string[] {
+    const seen: string[] = [];
+    for (const p of places) {
+        const c = p.category?.trim();
+        if (c && !seen.includes(c)) seen.push(c);
+    }
+    return seen;
 }
 
 /**
- * 장소 동일성 판별 키.
+ * 장소 식별 키 목록(우선순위 순): [구글 PlaceID, 좌표(≈11m), 이름].
+ * 정체성 우선순위 보강 — 같은 장소가 이름으로 태깅된 뒤 나중에 googlePlaceId가 붙어도
+ * 여러 키로 교차 조회해 사용자가 남긴 소감/분류를 잃지 않는다.
+ */
+function keysFor(googlePlaceId?: string, lat?: number, lng?: number, name?: string): string[] {
+    const keys: string[] = [];
+    if (googlePlaceId) keys.push(`g:${googlePlaceId}`);
+    if (typeof lat === 'number' && typeof lng === 'number') keys.push(`c:${lat.toFixed(4)},${lng.toFixed(4)}`);
+    const n = (name || '').trim().toLowerCase();
+    if (n) keys.push(`n:${n}`);
+    return keys;
+}
+
+function eventKeys(e: TravelogEvent): string[] {
+    const loc = e.location;
+    return keysFor(loc?.googlePlaceId, loc?.lat, loc?.lng, loc?.name);
+}
+function placeKeys(p: TravelogPlace): string[] {
+    return keysFor(p.googlePlaceId, p.location?.lat, p.location?.lng, p.name);
+}
+
+/**
+ * 장소 동일성 판별 키(대표 하나).
  * 1) 구글 Place ID가 있으면 그것으로, 2) 좌표가 있으면 소수 4자리(≈11m)로 반올림해서,
  * 3) 둘 다 없으면 이름(정규화)으로 묶는다.
  */
@@ -37,17 +71,6 @@ export function placeKeyForEvent(e: TravelogEvent): string | null {
         return `c:${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
     }
     const name = (loc?.name || '').trim().toLowerCase();
-    if (name) return `n:${name}`;
-    return null;
-}
-
-function placeKeyForPlace(p: TravelogPlace): string | null {
-    if (p.googlePlaceId) return `g:${p.googlePlaceId}`;
-    const loc = p.location;
-    if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-        return `c:${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
-    }
-    const name = (p.name || '').trim().toLowerCase();
     if (name) return `n:${name}`;
     return null;
 }
@@ -76,24 +99,33 @@ export function derivePlacesFromTimeline(
     timeline: TravelogDailyPlan[] | undefined,
     opts: DeriveOptions = {},
 ): TravelogPlace[] {
+    // 기존 장소를 모든 키(g/c/n)로 색인 → 정체성이 바뀌어도 교차 조회로 찾는다
     const existingByKey = new Map<string, TravelogPlace>();
     (opts.existing || []).forEach((p) => {
-        const k = placeKeyForPlace(p);
-        if (k) existingByKey.set(k, p);
+        placeKeys(p).forEach((k) => { if (!existingByKey.has(k)) existingByKey.set(k, p); });
     });
 
-    const order: string[] = [];
+    const ordered: TravelogPlace[] = [];       // 등장 순서 보존(장소당 1회)
     const byKey = new Map<string, TravelogPlace>();
 
-    const consider = (e: TravelogEvent, day?: number, date?: string) => {
-        const key = placeKeyForEvent(e);
-        if (!key) return;
+    const findExisting = (keys: string[]): TravelogPlace | undefined => {
+        for (const k of keys) { const p = existingByKey.get(k); if (p) return p; }
+        return undefined;
+    };
+    const findGroup = (keys: string[]): TravelogPlace | undefined => {
+        for (const k of keys) { const p = byKey.get(k); if (p) return p; }
+        return undefined;
+    };
 
-        let place = byKey.get(key);
+    const consider = (e: TravelogEvent, day?: number, date?: string) => {
+        const keys = eventKeys(e);
+        if (keys.length === 0) return;
+
+        let place = findGroup(keys);
         if (!place) {
-            const prior = existingByKey.get(key);
+            const prior = findExisting(keys);
             place = {
-                id: prior?.id || stablePlaceId(key),
+                id: prior?.id || stablePlaceId(keys[0]),
                 name: prior?.name || e.location?.name || e.title || '이름 없는 장소',
                 googlePlaceId: prior?.googlePlaceId || e.location?.googlePlaceId,
                 location: prior?.location || e.location,
@@ -105,14 +137,17 @@ export function derivePlacesFromTimeline(
                 rating: prior?.rating,
                 emotion: prior?.emotion,
                 category: prior?.category,
-                collectionIds: prior?.collectionIds,
                 order: prior?.order,
                 photoUrls: [],
                 linkedEventIds: [],
             };
-            byKey.set(key, place);
-            order.push(key);
+            ordered.push(place);
         }
+        // 이 이벤트의 모든 키를 이 장소에 등록(이후 다른 키의 이벤트도 합쳐지도록)
+        keys.forEach((k) => { if (!byKey.has(k)) byKey.set(k, place!); });
+        // 정체성 업그레이드: 좌표만 있던 장소에 나중에 googlePlaceId가 붙으면 채운다
+        if (!place.googlePlaceId && e.location?.googlePlaceId) place.googlePlaceId = e.location.googlePlaceId;
+        if (!place.location && e.location) place.location = e.location;
 
         // 사진 누적(중복 제거)
         if (e.imageUrls?.length) {
@@ -124,7 +159,7 @@ export function derivePlacesFromTimeline(
         if (e.id) place.linkedEventIds = [...(place.linkedEventIds || []), e.id];
 
         // 사용자가 손대지 않은 필드만 이벤트에서 채운다
-        const prior = existingByKey.get(key);
+        const prior = findExisting(keys);
         if (prior?.rating == null && place.rating == null && typeof e.details?.rating === 'number') {
             place.rating = e.details.rating;
         }
@@ -143,10 +178,7 @@ export function derivePlacesFromTimeline(
     (timeline || []).forEach((d) => d.events?.forEach((e) => consider(e, d.day, d.date)));
 
     // order 필드가 명시된 건 그 순서, 아니면 타임라인 등장 순서
-    const places = order.map((k, i) => {
-        const p = byKey.get(k)!;
-        return { ...p, order: p.order ?? i };
-    });
+    const places = ordered.map((p, i) => ({ ...p, order: p.order ?? i }));
     places.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     return places;
 }
@@ -157,4 +189,19 @@ export function derivePlacesFromTimeline(
  */
 export function syncTravelogPlaces(travelog: Travelog): TravelogPlace[] {
     return derivePlacesFromTimeline(travelog.timeline, { existing: travelog.places });
+}
+
+/**
+ * 저장할 만한 최소 내용이 있는지 판별한다 (빈 여행기 방지).
+ * 제목이 있고, 본문(타임라인 이벤트·섹션 내용·개요·장소 소감/사진) 중 하나라도 있어야 한다.
+ */
+export function hasMinimumContent(
+    t: Pick<Travelog, 'title' | 'summary' | 'timeline' | 'sections' | 'places'>,
+): boolean {
+    if (!t.title || !t.title.trim()) return false;
+    const hasTimeline = (t.timeline || []).some((d) => (d.events || []).length > 0);
+    const hasSection = (t.sections || []).some((s) => (s.content && s.content.trim()) || (s.imageUrls && s.imageUrls.length > 0));
+    const hasSummary = !!(t.summary && t.summary.trim());
+    const hasPlace = (t.places || []).some((p) => (p.impression && p.impression.trim()) || (p.photoUrls && p.photoUrls.length > 0));
+    return hasTimeline || hasSection || hasSummary || hasPlace;
 }

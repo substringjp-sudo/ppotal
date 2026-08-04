@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useCallback, useRef } from 'react';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db, Travelog } from '@pplaner/shared';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db, Travelog, hasMinimumContent } from '@pplaner/shared';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -40,7 +40,8 @@ export function useTravelogPersistence({
         if (docSnap.exists()) {
           setTravelog(docSnap.data() as Travelog);
         } else {
-          // 신규 생성 로직 (필요시)
+          // 신규: 로컬 상태로만 시작한다. 빈 여행기를 서버에 만들지 않기 위해
+          // 최소 내용이 채워져 저장될 때 비로소 문서가 생성된다.
           const newTravelog: Travelog = {
             id,
             userId: user.uid,
@@ -56,7 +57,6 @@ export function useTravelogPersistence({
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          await setDoc(docRef, newTravelog);
           setTravelog(newTravelog);
         }
       } catch (error) {
@@ -74,13 +74,20 @@ export function useTravelogPersistence({
   const handleSave = useCallback(async (silent = false) => {
     if (!travelog || !user) return;
 
+    // 빈 여행기는 저장하지 않는다 (제목 + 최소 내용 필요)
+    if (!hasMinimumContent(travelog)) {
+      if (!silent) toast.error('제목과 최소한의 내용을 입력해야 저장돼요.');
+      return;
+    }
+
     setIsSaving(true);
     try {
       const docRef = doc(db, 'travelogs', id);
-      await updateDoc(docRef, {
+      // setDoc+merge: 첫 저장이면 생성, 이후면 갱신 (빈 문서를 미리 만들지 않으므로)
+      await setDoc(docRef, {
         ...travelog,
         updatedAt: new Date().toISOString()
-      });
+      }, { merge: true });
       if (!silent) toast.success('저장되었습니다.');
     } catch (error) {
       console.error('Save error:', error);

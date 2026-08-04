@@ -81,9 +81,9 @@ service cloud.firestore {
 
     // Travelogs
     match /travelogs/{travelogId} {
-      allow read: if resource == null || 
-                   resource.data.userId == request.auth.uid || 
-                   (resource.data.status == 'published' && resource.data.visibility == 'public');
+      allow read: if resource == null ||
+                   resource.data.userId == request.auth.uid ||
+                   (resource.data.status == 'published' && resource.data.isPublic == true);
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
