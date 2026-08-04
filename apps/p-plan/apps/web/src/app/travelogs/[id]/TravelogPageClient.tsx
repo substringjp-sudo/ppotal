@@ -17,6 +17,7 @@ import MapComponent from '@/components/common/MapComponent';
 import { Skeleton } from '@/components/common/Skeleton';
 import Badge from '@/components/common/Badge';
 import ScrollReveal from '@/components/common/ScrollReveal';
+import ShareCardModal from '@/components/travelogs/ShareCardModal';
 // react-icons/fi 대신 프로젝트 표준인 Material Symbols Rounded를 사용합니다.
 import Image from 'next/image';
 
@@ -38,6 +39,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
 
     // 보기 방식: 블로그(글 흐름) ↔ 장소(지도·목록에서 장소별 사진·소감)
     const [viewMode, setViewMode] = useState<'blog' | 'places'>('blog');
+    const [showShare, setShowShare] = useState(false);
 
     // 스크롤 진행률
     const { scrollYProgress } = useScroll();
@@ -179,7 +181,10 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         <button className="p-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-rose-500 hover:border-rose-500/30 transition-all shadow-xl flex items-center justify-center">
                             <span className="material-symbols-rounded">favorite</span>
                         </button>
-                        <button className="p-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-primary hover:border-primary/30 transition-all shadow-xl flex items-center justify-center">
+                        <button
+                            onClick={() => setShowShare(true)}
+                            className="p-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-primary hover:border-primary/30 transition-all shadow-xl flex items-center justify-center"
+                        >
                             <span className="material-symbols-rounded">share</span>
                         </button>
                         {isAuthor && (
@@ -415,6 +420,16 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     </div>
                 </div>
             </footer>
+
+            {/* 공유 카드 */}
+            {showShare && (
+                <ShareCardModal
+                    travelog={travelog}
+                    isAuthor={isAuthor}
+                    onClose={() => setShowShare(false)}
+                    onPublished={(updated) => setTravelog(updated)}
+                />
+            )}
         </div>
     );
 }
