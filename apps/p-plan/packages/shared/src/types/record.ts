@@ -174,7 +174,7 @@ export interface TravelogDailyPlan {
  * 하나의 실체여야 한다. 이 엔티티가 그 정체성을 부여한다.
  *
  * - 뷰어의 지도/목록 뷰가 이 배열을 그대로 렌더한다(핀 = place, 카드 = 사진+소감+평점).
- * - "여행지도" 템플릿, 커스텀 분류(collectionIds/category)도 같은 배열을 소비한다.
+ * - "여행지도" 템플릿, 커스텀 분류(category)도 같은 배열을 소비한다.
  * - 타임라인 이벤트(TravelogEvent)와는 linkedEventIds로 느슨하게 연결되며,
  *   장소는 이벤트 없이 독립적으로도 작성될 수 있다(사진/기억만으로 시작한 경우).
  */
@@ -197,9 +197,8 @@ export interface TravelogPlace {
         anger: number;
     };
 
-    // 분류 (커스텀 분류 갭과 공유되는 부착점)
+    // 분류 (단일 자유 입력 축 — 사용자가 자유롭게 타이핑)
     category?: string;              // 사용자 지정 분류
-    collectionIds?: string[];       // 사용자 정의 컬렉션(태그) 참조
 
     // 타임라인과의 연결 및 정렬
     linkedEventIds?: string[];      // 이 장소를 구성하는 타임라인 이벤트들
@@ -214,21 +213,6 @@ export interface TravelogSection {
     imageUrls?: string[];          // 섹션 전용 이미지들
     linkedFootprintIds?: string[];  // 이 섹션의 바탕이 되는 원시 발자취 ID 목록 (모바일 전용)
     linkedEventId?: string;        // 타임라인 내 특정 일정(TravelogEvent)과 연결된 경우
-}
-
-/**
- * 사용자 정의 컬렉션 (커스텀 분류).
- * 장소를 사용자가 만든 묶음으로 분류한다. 컬렉션 자체에 이름·색뿐 아니라
- * 설명/요약을 달 수 있어(예: "골목 카페 투어 — 조용하고 오래 앉기 좋은 곳들"),
- * 뷰어에서 그 분류를 선택하면 소개글로 보여준다.
- * 장소는 TravelogPlace.collectionIds 로 컬렉션을 참조한다(다대다).
- */
-export interface TravelogCollection {
-    id: string;
-    name: string;
-    color?: string;          // 칩/핀 색 (hex)
-    description?: string;     // 컬렉션 설명·요약
-    icon?: string;           // 선택: material symbol 이름
 }
 
 export interface TravelogMemberCounts {
@@ -271,9 +255,6 @@ export interface Travelog {
     // 장소 중심 뷰의 데이터 (지도/목록 토글 · "여행지도" 템플릿의 원천)
     // 이벤트 좌표에서 파생되거나 사용자가 직접 작성할 수 있다.
     places?: TravelogPlace[];
-
-    // 사용자 정의 컬렉션 (커스텀 분류)
-    collections?: TravelogCollection[];
 
     createdAt: string;
     updatedAt: string;

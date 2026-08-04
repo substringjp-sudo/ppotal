@@ -5,41 +5,31 @@ import { motion } from 'framer-motion';
 import {
     Travelog,
     TravelogPlace,
-    TravelogCollection,
     syncTravelogPlaces,
-    COLLECTION_COLORS,
+    collectCategories,
     cn,
 } from '@pplaner/shared';
-
-let __cid = 0;
-const newCollectionId = () => `col_${Date.now().toString(36)}_${(__cid++).toString(36)}`;
 
 /**
  * 장소 정리 패널 (에디터).
  *
  * 에디터가 사진→타임라인으로 이미 모아둔 장소를 하나씩 보여주고, 각 장소에 대한
- * 소감·별점·분류를 작성하게 한다. 여기서 채운 내용이 뷰어의 "장소" 보기(지도/목록)와
- * 이후 "여행지도" 템플릿의 원천 데이터가 된다.
- *
- * 마운트 시 travelog에서 장소를 한 번 파생해 로컬 상태로 들고, 편집분을 onChange로
- * 상위(travelog.places)에 올린다. (파생은 사용자가 쓴 소감을 절대 덮어쓰지 않는다.)
+ * 소감·별점·분류를 작성하게 한다. 분류는 하나의 자유 입력 축(category)으로 통일하며,
+ * 이미 쓴 분류들은 자동완성으로 다시 고를 수 있다. 여기서 채운 내용이 뷰어의 "장소"
+ * 보기(지도/목록)와 "여행지도"·"포토북" 템플릿의 원천 데이터가 된다.
  */
 export default function TravelogPlacePanel({
     travelog,
     onChange,
-    onCollectionsChange,
     onClose,
 }: {
     travelog: Travelog;
     onChange: (places: TravelogPlace[]) => void;
-    onCollectionsChange: (collections: TravelogCollection[]) => void;
     onClose: () => void;
 }) {
     // 마운트 시 1회 파생 (이후에는 로컬 편집 상태가 원천)
     const initial = useMemo(() => syncTravelogPlaces(travelog), []); // eslint-disable-line react-hooks/exhaustive-deps
     const [places, setPlaces] = useState<TravelogPlace[]>(initial);
-    const [collections, setCollections] = useState<TravelogCollection[]>(travelog.collections || []);
-    const [managing, setManaging] = useState(false);
 
     const update = (id: string, patch: Partial<TravelogPlace>) => {
         setPlaces((prev) => {
@@ -49,42 +39,8 @@ export default function TravelogPlacePanel({
         });
     };
 
-    const commitCollections = (next: TravelogCollection[]) => {
-        setCollections(next);
-        onCollectionsChange(next);
-    };
-    const addCollection = () => {
-        const c: TravelogCollection = {
-            id: newCollectionId(),
-            name: `분류 ${collections.length + 1}`,
-            color: COLLECTION_COLORS[collections.length % COLLECTION_COLORS.length],
-        };
-        commitCollections([...collections, c]);
-    };
-    const updateCollection = (id: string, patch: Partial<TravelogCollection>) =>
-        commitCollections(collections.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-    const removeCollection = (id: string) => {
-        commitCollections(collections.filter((c) => c.id !== id));
-        // 장소에서도 참조 제거
-        setPlaces((prev) => {
-            const next = prev.map((p) => p.collectionIds?.includes(id)
-                ? { ...p, collectionIds: p.collectionIds.filter((x) => x !== id) }
-                : p);
-            onChange(next);
-            return next;
-        });
-    };
-    const togglePlaceCollection = (placeId: string, collId: string) => {
-        const p = places.find((x) => x.id === placeId);
-        if (!p) return;
-        const has = p.collectionIds?.includes(collId);
-        update(placeId, {
-            collectionIds: has
-                ? (p.collectionIds || []).filter((x) => x !== collId)
-                : [...(p.collectionIds || []), collId],
-        });
-    };
-
+    // 이미 쓰인 분류들 → 자유 입력 자동완성 목록
+    const usedCategories = collectCategories(places);
     const filledCount = places.filter((p) => (p.impression && p.impression.trim()) || (p.rating && p.rating > 0)).length;
 
     return (
@@ -104,7 +60,7 @@ export default function TravelogPlacePanel({
                                 장소 정리
                             </h2>
                             <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
-                                장소마다 소감과 별점을 남기면, 독자가 여행기를 <b className="text-slate-700 dark:text-slate-200">지도·목록</b>으로도 볼 수 있어요.
+                                장소마다 소감·별점·분류를 남기면, 독자가 여행기를 <b className="text-slate-700 dark:text-slate-200">지도·목록</b>으로도 보고 분류로 걸러볼 수 있어요.
                             </p>
                         </div>
                         <button
@@ -128,42 +84,6 @@ export default function TravelogPlacePanel({
                     )}
                 </div>
 
-                {/* 컬렉션 관리 */}
-                <div className="shrink-0 px-5 pt-4 pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <button
-                        onClick={() => setManaging((v) => !v)}
-                        className="w-full flex items-center justify-between text-left"
-                    >
-                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-                            <span className="material-symbols-rounded text-base text-primary">sell</span>
-                            컬렉션 {collections.length > 0 && `(${collections.length})`}
-                        </span>
-                        <span className="material-symbols-rounded text-slate-400">{managing ? 'expand_less' : 'expand_more'}</span>
-                    </button>
-                    {managing && (
-                        <div className="mt-3 space-y-2.5">
-                            {collections.map((c) => (
-                                <CollectionEditRow
-                                    key={c.id}
-                                    collection={c}
-                                    onUpdate={(patch) => updateCollection(c.id, patch)}
-                                    onRemove={() => removeCollection(c.id)}
-                                />
-                            ))}
-                            <button
-                                onClick={addCollection}
-                                className="w-full rounded-xl border border-dashed border-slate-300 dark:border-slate-700 py-2.5 text-xs font-black text-slate-500 hover:border-primary hover:text-primary transition flex items-center justify-center gap-1.5"
-                            >
-                                <span className="material-symbols-rounded text-base">add</span>
-                                분류 추가
-                            </button>
-                            <p className="text-[11px] text-slate-400 leading-relaxed">
-                                예: “골목 카페” · “아이와 가기 좋은 곳”. 설명을 달면 뷰어에서 소개글로 보여요.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
                 {/* 목록 */}
                 <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
                     {places.length === 0 ? (
@@ -178,9 +98,8 @@ export default function TravelogPlacePanel({
                                 key={p.id}
                                 place={p}
                                 index={i}
-                                collections={collections}
+                                categoryOptions={usedCategories}
                                 onUpdate={(patch) => update(p.id, patch)}
-                                onToggleCollection={(cid) => togglePlaceCollection(p.id, cid)}
                             />
                         ))
                     )}
@@ -190,12 +109,11 @@ export default function TravelogPlacePanel({
     );
 }
 
-function PlaceEditCard({ place, index, collections, onUpdate, onToggleCollection }: {
+function PlaceEditCard({ place, index, categoryOptions, onUpdate }: {
     place: TravelogPlace;
     index: number;
-    collections: TravelogCollection[];
+    categoryOptions: string[];
     onUpdate: (patch: Partial<TravelogPlace>) => void;
-    onToggleCollection: (collectionId: string) => void;
 }) {
     return (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
@@ -253,81 +171,18 @@ function PlaceEditCard({ place, index, collections, onUpdate, onToggleCollection
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none resize-none transition"
                 />
 
-                {/* 빠른 분류 (자유 입력) */}
+                {/* 분류 (자유 입력 + 기존 분류 자동완성) */}
                 <input
                     value={place.category || ''}
                     onChange={(e) => onUpdate({ category: e.target.value })}
-                    placeholder="빠른 분류 (예: 카페 · 관광 · 맛집)"
+                    list="place-category-options"
+                    placeholder="분류 (예: 카페 · 관광 · 맛집) — 자유롭게 입력"
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition"
                 />
-
-                {/* 컬렉션 태깅 */}
-                {collections.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {collections.map((c) => {
-                            const on = place.collectionIds?.includes(c.id);
-                            return (
-                                <button
-                                    key={c.id}
-                                    type="button"
-                                    onClick={() => onToggleCollection(c.id)}
-                                    className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black border transition',
-                                        on ? 'text-white border-transparent' : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-400')}
-                                    style={on ? { backgroundColor: c.color || '#64748b' } : undefined}
-                                >
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color || '#64748b' }} />
-                                    {c.name}
-                                </button>
-                            );
-                        })}
-                    </div>
-                )}
+                <datalist id="place-category-options">
+                    {categoryOptions.map((c) => <option key={c} value={c} />)}
+                </datalist>
             </div>
-        </div>
-    );
-}
-
-function CollectionEditRow({ collection: c, onUpdate, onRemove }: {
-    collection: TravelogCollection;
-    onUpdate: (patch: Partial<TravelogCollection>) => void;
-    onRemove: () => void;
-}) {
-    const cycleColor = () => {
-        const i = COLLECTION_COLORS.indexOf(c.color || '');
-        onUpdate({ color: COLLECTION_COLORS[(i + 1) % COLLECTION_COLORS.length] });
-    };
-    return (
-        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 space-y-2">
-            <div className="flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={cycleColor}
-                    className="w-6 h-6 rounded-full shrink-0 ring-2 ring-white dark:ring-slate-900 shadow"
-                    style={{ backgroundColor: c.color || '#64748b' }}
-                    title="색 바꾸기"
-                    aria-label="색 바꾸기"
-                />
-                <input
-                    value={c.name}
-                    onChange={(e) => onUpdate({ name: e.target.value })}
-                    placeholder="분류 이름"
-                    className="flex-1 min-w-0 bg-transparent text-sm font-black text-slate-900 dark:text-white placeholder:text-slate-400 outline-none"
-                />
-                <button
-                    type="button"
-                    onClick={onRemove}
-                    className="w-7 h-7 rounded-lg grid place-items-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20 transition shrink-0"
-                    aria-label="삭제"
-                >
-                    <span className="material-symbols-rounded text-lg">delete</span>
-                </button>
-            </div>
-            <input
-                value={c.description || ''}
-                onChange={(e) => onUpdate({ description: e.target.value })}
-                placeholder="설명·요약 (선택)"
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition"
-            />
         </div>
     );
 }

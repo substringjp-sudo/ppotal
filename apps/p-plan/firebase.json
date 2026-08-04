@@ -53,7 +53,19 @@
       },
       {
         "source": "/trips/**",
-        "destination": "/trips/index.html"
+        "destination": "/trips/placeholder/index.html"
+      },
+      {
+        "source": "/travelogs/*/edit",
+        "destination": "/travelogs/placeholder/edit/index.html"
+      },
+      {
+        "source": "/travelogs/*/edit/**",
+        "destination": "/travelogs/placeholder/edit/index.html"
+      },
+      {
+        "source": "/travelogs/**",
+        "destination": "/travelogs/placeholder/index.html"
       },
       {
         "source": "/friends/**",
