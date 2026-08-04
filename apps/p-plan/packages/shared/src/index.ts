@@ -32,6 +32,8 @@ export * from './lib/commentService';
 export * from './lib/tripInvitationService';
 export * from './lib/userStatsService';
 export * from './lib/recordService';
+export * from './lib/travelog-places';
+export * from './lib/pathwalk-import';
 export * from './lib/tripCollaborationService';
 
 

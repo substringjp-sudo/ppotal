@@ -3,11 +3,14 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
-import { 
-    getTravelog, 
-    Travelog, 
-    TravelogSection, 
+import {
+    getTravelog,
+    Travelog,
+    TravelogSection,
     TravelogDailyPlan,
+    TravelogPlace,
+    TravelogCollection,
+    syncTravelogPlaces,
     cn
 } from '@pplaner/shared';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,6 +18,7 @@ import MapComponent from '@/components/common/MapComponent';
 import { Skeleton } from '@/components/common/Skeleton';
 import Badge from '@/components/common/Badge';
 import ScrollReveal from '@/components/common/ScrollReveal';
+import ShareCardModal from '@/components/travelogs/ShareCardModal';
 // react-icons/fi 대신 프로젝트 표준인 Material Symbols Rounded를 사용합니다.
 import Image from 'next/image';
 
@@ -33,6 +37,10 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
     const [mapCenter, setMapCenter] = useState({ lat: 37.5665, lng: 126.9780 });
     const [mapZoom, setMapZoom] = useState(12);
     const [highlightedMarkerId, setHighlightedMarkerId] = useState<string | null>(null);
+
+    // 보기 방식: 블로그(글 흐름) ↔ 장소(지도·목록에서 장소별 사진·소감)
+    const [viewMode, setViewMode] = useState<'blog' | 'places'>('blog');
+    const [showShare, setShowShare] = useState(false);
 
     // 스크롤 진행률
     const { scrollYProgress } = useScroll();
@@ -96,10 +104,42 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
         return result;
     }, [travelog, highlightedMarkerId]);
 
-    // 전체 경로 데이터
+    // 장소 중심 데이터 (타임라인에서 파생하되 작성된 소감·분류는 보존)
+    const places = useMemo<TravelogPlace[]>(() => {
+        if (!travelog) return [];
+        return syncTravelogPlaces(travelog);
+    }, [travelog]);
+
+    // 커스텀 분류 필터
+    const [activeCollection, setActiveCollection] = useState<string | null>(null);
+    const visiblePlaces = useMemo(() => (
+        activeCollection ? places.filter(p => p.collectionIds?.includes(activeCollection)) : places
+    ), [places, activeCollection]);
+
+    // 지도·포토북 템플릿이면 장소 보기로 시작
+    useEffect(() => {
+        if (travelog?.template === 'map' || travelog?.template === 'photobook') setViewMode('places');
+    }, [travelog?.template]);
+
+    // 장소 마커 (좌표가 있는 장소만, 활성 분류 반영)
+    const placeMarkers = useMemo(() => {
+        return visiblePlaces
+            .filter(p => p.location && typeof p.location.lat === 'number' && typeof p.location.lng === 'number')
+            .map(p => ({
+                id: p.id,
+                lat: p.location!.lat as number,
+                lng: p.location!.lng as number,
+                title: p.name,
+                type: 'activity' as const,
+                highlighted: p.id === highlightedMarkerId,
+            }));
+    }, [visiblePlaces, highlightedMarkerId]);
+
+    // 현재 보기에 맞는 마커/경로
+    const activeMarkers = viewMode === 'places' ? placeMarkers : markers;
     const path = useMemo(() => {
-        return markers.map(m => ({ lat: m.lat, lng: m.lng }));
-    }, [markers]);
+        return activeMarkers.map(m => ({ lat: m.lat, lng: m.lng }));
+    }, [activeMarkers]);
 
     // 특정 이벤트로 이동
     const focusEvent = (eventId: string, lat: number, lng: number) => {
@@ -112,6 +152,17 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+    };
+
+    // 장소로 이동 (장소 뷰)
+    const focusPlace = (place: TravelogPlace) => {
+        setHighlightedMarkerId(place.id);
+        if (place.location?.lat != null && place.location?.lng != null) {
+            setMapCenter({ lat: place.location.lat, lng: place.location.lng });
+            setMapZoom(15);
+        }
+        const el = document.getElementById(`place-${place.id}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
     if (loading) return <TravelogSkeleton />;
@@ -142,7 +193,10 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         <button className="p-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-rose-500 hover:border-rose-500/30 transition-all shadow-xl flex items-center justify-center">
                             <span className="material-symbols-rounded">favorite</span>
                         </button>
-                        <button className="p-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-primary hover:border-primary/30 transition-all shadow-xl flex items-center justify-center">
+                        <button
+                            onClick={() => setShowShare(true)}
+                            className="p-3 rounded-full bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-primary hover:border-primary/30 transition-all shadow-xl flex items-center justify-center"
+                        >
                             <span className="material-symbols-rounded">share</span>
                         </button>
                         {isAuthor && (
@@ -231,33 +285,91 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
 
             {/* Main Content & Map Split View */}
             <main className="max-w-7xl mx-auto px-8 py-24">
+                {/* 보기 방식 토글 (블로그 ↔ 장소) */}
+                <div className="mb-14 flex justify-center">
+                    <div className="inline-flex items-center gap-1 p-1.5 rounded-2xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 shadow-sm">
+                        <ViewToggleButton
+                            active={viewMode === 'blog'}
+                            onClick={() => setViewMode('blog')}
+                            icon="article"
+                            label="여행기"
+                        />
+                        <ViewToggleButton
+                            active={viewMode === 'places'}
+                            onClick={() => setViewMode('places')}
+                            icon="pin_drop"
+                            label={`장소 ${places.length ? places.length : ''}`.trim()}
+                        />
+                    </div>
+                </div>
+
+                {/* 커스텀 분류 필터 (장소 보기에서) */}
+                {viewMode === 'places' && (travelog.collections?.length ?? 0) > 0 && (
+                    <CollectionFilterBar
+                        collections={travelog.collections!}
+                        places={places}
+                        active={activeCollection}
+                        onSelect={setActiveCollection}
+                    />
+                )}
+
+                {viewMode === 'places' && travelog.template === 'map' ? (
+                    <MapTemplateSection
+                        places={visiblePlaces}
+                        markers={placeMarkers}
+                        center={mapCenter}
+                        zoom={mapZoom}
+                        highlightedId={highlightedMarkerId}
+                        onFocusPlace={focusPlace}
+                    />
+                ) : viewMode === 'places' && travelog.template === 'photobook' ? (
+                    <PhotobookSection places={visiblePlaces} onFocusPlace={focusPlace} />
+                ) : (
                 <div className="flex flex-col lg:flex-row gap-20">
                     {/* Left Column: Content */}
                     <div className="flex-1 min-w-0">
-                        {/* Summary Block */}
-                        <ScrollReveal>
-                            <section className="space-y-8 mb-32">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-[2px] bg-primary" />
-                                    <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">개요</h2>
-                                </div>
-                                <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">
-                                    {travelog.summary}
-                                </p>
-                            </section>
-                        </ScrollReveal>
-
-                        {/* Sections Rendering */}
-                        <div className="space-y-32">
-                            {travelog.sections.map((section, idx) => (
-                                <ScrollReveal key={section.id}>
-                                    <SectionRenderer 
-                                        section={section} 
-                                        onFocusEvent={focusEvent}
-                                    />
+                        {viewMode === 'blog' ? (
+                            travelog.template === 'timeline' ? (
+                                <TimelineSection
+                                    timeline={travelog.timeline}
+                                    summary={travelog.summary}
+                                    onFocusEvent={focusEvent}
+                                />
+                            ) : (
+                            <>
+                                {/* Summary Block */}
+                                <ScrollReveal>
+                                    <section className="space-y-8 mb-32">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-[2px] bg-primary" />
+                                            <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">개요</h2>
+                                        </div>
+                                        <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">
+                                            {travelog.summary}
+                                        </p>
+                                    </section>
                                 </ScrollReveal>
-                            ))}
-                        </div>
+
+                                {/* Sections Rendering */}
+                                <div className="space-y-32">
+                                    {travelog.sections.map((section) => (
+                                        <ScrollReveal key={section.id}>
+                                            <SectionRenderer
+                                                section={section}
+                                                onFocusEvent={focusEvent}
+                                            />
+                                        </ScrollReveal>
+                                    ))}
+                                </div>
+                            </>
+                            )
+                        ) : (
+                            <PlaceListView
+                                places={visiblePlaces}
+                                highlightedId={highlightedMarkerId}
+                                onFocusPlace={focusPlace}
+                            />
+                        )}
                     </div>
 
                     {/* Right Column: Sticky Map */}
@@ -268,15 +380,20 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 to-cyan-500/40 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                                 
                                 <div className="relative h-[650px] rounded-[2.5rem] overflow-hidden border border-white/5 bg-[#020617] shadow-3xl">
-                                    <MapComponent 
+                                    <MapComponent
                                         center={mapCenter}
                                         zoom={mapZoom}
-                                        markers={markers}
+                                        markers={activeMarkers}
                                         path={path}
                                         highlightedId={highlightedMarkerId || undefined}
-                                        onMarkerClick={(id) => {
-                                            const m = markers.find(mark => mark.id === id);
-                                            if (m) focusEvent(id, m.lat, m.lng);
+                                        onMarkerClick={(mid) => {
+                                            if (viewMode === 'places') {
+                                                const p = places.find(pl => pl.id === mid);
+                                                if (p) focusPlace(p);
+                                            } else {
+                                                const m = markers.find(mark => mark.id === mid);
+                                                if (m) focusEvent(mid, m.lat, m.lng);
+                                            }
                                         }}
                                     />
                                     
@@ -307,7 +424,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                                 
                                 <div className="grid grid-cols-2 gap-12">
                                     <div className="space-y-2">
-                                        <div className="text-4xl font-black text-white">{markers.length}</div>
+                                        <div className="text-4xl font-black text-white">{places.length || markers.length}</div>
                                         <div className="text-[9px] text-white/30 font-black uppercase tracking-widest">방문 장소</div>
                                     </div>
                                     <div className="space-y-2">
@@ -329,6 +446,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         </div>
                     </aside>
                 </div>
+                )}
             </main>
 
             {/* Footer Signature */}
@@ -345,14 +463,351 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     </div>
                 </div>
             </footer>
+
+            {/* 공유 카드 */}
+            {showShare && (
+                <ShareCardModal
+                    travelog={travelog}
+                    isAuthor={isAuthor}
+                    onClose={() => setShowShare(false)}
+                    onPublished={(updated) => setTravelog(updated)}
+                />
+            )}
         </div>
     );
 }
 
-function SectionRenderer({ 
-    section, 
-    onFocusEvent 
-}: { 
+function ViewToggleButton({ active, onClick, icon, label }: {
+    active: boolean; onClick: () => void; icon: string; label: string;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            className={cn(
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all',
+                active
+                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                    : 'text-slate-500 dark:text-white/40 hover:text-slate-800 dark:hover:text-white/70'
+            )}
+            aria-pressed={active}
+        >
+            <span className="material-symbols-rounded text-base">{icon}</span>
+            {label}
+        </button>
+    );
+}
+
+function StarRating({ value }: { value: number }) {
+    return (
+        <div className="flex items-center gap-0.5" aria-label={`별점 ${value}점`}>
+            {[1, 2, 3, 4, 5].map((n) => (
+                <span
+                    key={n}
+                    className={cn(
+                        'material-symbols-rounded text-base',
+                        n <= value ? 'text-amber-400' : 'text-slate-300 dark:text-white/15'
+                    )}
+                    style={{ fontVariationSettings: n <= value ? "'FILL' 1" : "'FILL' 0" }}
+                >
+                    star
+                </span>
+            ))}
+        </div>
+    );
+}
+
+/** 커스텀 분류 필터 바 (칩 + 선택 시 분류 설명) */
+function CollectionFilterBar({ collections, places, active, onSelect }: {
+    collections: TravelogCollection[];
+    places: TravelogPlace[];
+    active: string | null;
+    onSelect: (id: string | null) => void;
+}) {
+    const countFor = (id: string) => places.filter((p) => p.collectionIds?.includes(id)).length;
+    const activeCol = collections.find((c) => c.id === active);
+    const chip = (on: boolean, label: string, color: string | undefined, onClick: () => void, key: string) => (
+        <button
+            key={key}
+            onClick={onClick}
+            className={cn('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-black border transition',
+                on ? 'text-white border-transparent shadow' : 'text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/15 hover:border-slate-400')}
+            style={on && color ? { backgroundColor: color } : on ? { backgroundColor: '#334155' } : undefined}
+        >
+            {color && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: on ? 'rgba(255,255,255,0.9)' : color }} />}
+            {label}
+        </button>
+    );
+    return (
+        <div className="mb-10">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                {chip(!active, `전체 ${places.length}`, undefined, () => onSelect(null), 'all')}
+                {collections.map((c) => chip(active === c.id, `${c.name} ${countFor(c.id)}`, c.color, () => onSelect(c.id), c.id))}
+            </div>
+            {activeCol?.description && (
+                <p className="mt-4 text-center text-sm text-slate-500 dark:text-white/50 max-w-xl mx-auto leading-relaxed">
+                    {activeCol.description}
+                </p>
+            )}
+        </div>
+    );
+}
+
+/** 장소 카드 하나 (목록/그리드/지도 템플릿에서 공용) */
+function PlaceCard({ place: p, index: i, highlighted, onClick }: {
+    place: TravelogPlace;
+    index: number;
+    highlighted: boolean;
+    onClick: () => void;
+}) {
+    return (
+        <div
+            id={`place-${p.id}`}
+            onClick={onClick}
+            className={cn(
+                'group relative rounded-[2rem] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer h-full',
+                highlighted
+                    ? 'border-primary/50 ring-2 ring-primary/20'
+                    : 'border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10'
+            )}
+        >
+            {/* 사진 스트립 */}
+            {p.photoUrls && p.photoUrls.length > 0 && (
+                <div className="flex gap-1 h-44 overflow-x-auto">
+                    {p.photoUrls.slice(0, 5).map((url, idx) => (
+                        <div key={idx} className={cn('relative flex-shrink-0 h-full', idx === 0 ? 'w-1/2' : 'w-1/3')}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        </div>
+                    ))}
+                </div>
+            )}
+            <div className="p-7 space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-black shrink-0">
+                            {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <div className="min-w-0">
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{p.name}</h3>
+                            {(p.location?.address || p.visitDate) && (
+                                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                    {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    {typeof p.rating === 'number' && p.rating > 0 && <StarRating value={p.rating} />}
+                </div>
+                {p.impression && (
+                    <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {p.impression}
+                    </p>
+                )}
+                {p.category && (
+                    <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">
+                        {p.category}
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function PlacesEmpty() {
+    return (
+        <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+            <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">wrong_location</span>
+            <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 정리된 장소가 없어요.</p>
+            <p className="mt-1 text-sm text-slate-400 dark:text-white/25">사진을 올리거나 일정에 장소를 연결하면 여기 모여요.</p>
+        </div>
+    );
+}
+
+/** 장소 중심 뷰(사이드 지도와 함께 쓰는 세로 목록) */
+function PlaceListView({ places, highlightedId, onFocusPlace }: {
+    places: TravelogPlace[];
+    highlightedId: string | null;
+    onFocusPlace: (place: TravelogPlace) => void;
+}) {
+    if (places.length === 0) return <PlacesEmpty />;
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-[2px] bg-primary" />
+                <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">장소별 기록</h2>
+            </div>
+            {places.map((p, i) => (
+                <ScrollReveal key={p.id}>
+                    <PlaceCard place={p} index={i} highlighted={highlightedId === p.id} onClick={() => onFocusPlace(p)} />
+                </ScrollReveal>
+            ))}
+        </div>
+    );
+}
+
+/** 여행지도 템플릿: 큰 지도(핀) + 장소 카드 그리드 (전체 폭) */
+function MapTemplateSection({ places, markers, center, zoom, highlightedId, onFocusPlace }: {
+    places: TravelogPlace[];
+    markers: { id: string; lat: number; lng: number; title: string; type: 'activity'; highlighted: boolean }[];
+    center: { lat: number; lng: number };
+    zoom: number;
+    highlightedId: string | null;
+    onFocusPlace: (place: TravelogPlace) => void;
+}) {
+    if (places.length === 0) return <PlacesEmpty />;
+    const path = markers.map((m) => ({ lat: m.lat, lng: m.lng }));
+    return (
+        <div>
+            {/* 큰 지도 */}
+            <div className="relative h-[460px] sm:h-[540px] rounded-[2.5rem] overflow-hidden border border-slate-200 dark:border-white/10 shadow-xl bg-[#020617]">
+                <MapComponent
+                    center={center}
+                    zoom={zoom}
+                    markers={markers}
+                    path={path}
+                    highlightedId={highlightedId || undefined}
+                    onMarkerClick={(mid) => {
+                        const p = places.find((pl) => pl.id === mid);
+                        if (p) onFocusPlace(p);
+                    }}
+                />
+                <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest text-white/80 pointer-events-none">
+                    <span className="material-symbols-rounded text-primary text-sm">map</span>
+                    여행지도 · 장소 {places.length}
+                </div>
+            </div>
+
+            {/* 장소 카드 그리드 */}
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {places.map((p, i) => (
+                    <ScrollReveal key={p.id}>
+                        <PlaceCard place={p} index={i} highlighted={highlightedId === p.id} onClick={() => onFocusPlace(p)} />
+                    </ScrollReveal>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/** 타임라인 템플릿: 일자별로 이벤트를 시간 순 레일에 세운다 */
+function TimelineSection({ timeline, summary, onFocusEvent }: {
+    timeline: TravelogDailyPlan[];
+    summary?: string;
+    onFocusEvent: (id: string, lat: number, lng: number) => void;
+}) {
+    const days = (timeline || []).filter((d) => d.events && d.events.length > 0);
+    if (days.length === 0) {
+        return (
+            <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+                <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">event_busy</span>
+                <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 일정이 없어요.</p>
+            </div>
+        );
+    }
+    return (
+        <div className="space-y-16">
+            {summary && (
+                <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">{summary}</p>
+            )}
+            {days.map((day) => (
+                <section key={day.day}>
+                    <div className="flex items-center gap-4 mb-8">
+                        <span className="text-5xl font-black text-primary/20 tabular-nums leading-none">D{day.day}</span>
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white">Day {day.day}</h2>
+                            {day.date && <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{day.date}</p>}
+                        </div>
+                    </div>
+                    <div className="relative pl-8 border-l-2 border-slate-200 dark:border-white/10 space-y-8">
+                        {day.events.map((e) => {
+                            const timeStr = e.time || (e.startTime ? `${e.startTime}${e.endTime ? ` – ${e.endTime}` : ''}` : '');
+                            const hasLoc = e.location?.lat != null && e.location?.lng != null;
+                            return (
+                                <div
+                                    key={e.id}
+                                    onClick={() => { if (hasLoc) onFocusEvent(e.id, e.location!.lat!, e.location!.lng!); }}
+                                    className={cn('relative', hasLoc && 'cursor-pointer')}
+                                >
+                                    <span className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-primary ring-4 ring-slate-50 dark:ring-[#030712]" />
+                                    {timeStr && <div className="text-[11px] font-black text-primary tabular-nums mb-1.5">{timeStr}</div>}
+                                    <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 hover:border-primary/30 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <h3 className="text-lg font-black text-slate-900 dark:text-white">{e.title}</h3>
+                                            {typeof e.details?.rating === 'number' && e.details.rating > 0 && <StarRating value={e.details.rating} />}
+                                        </div>
+                                        {e.location?.name && (
+                                            <p className="mt-1 text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                <span className="material-symbols-rounded text-sm">location_on</span>{e.location.name}
+                                            </p>
+                                        )}
+                                        {e.memo && <p className="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{e.memo}</p>}
+                                        {e.imageUrls && e.imageUrls.length > 0 && (
+                                            <div className="mt-3 flex gap-2 overflow-x-auto">
+                                                {e.imageUrls.slice(0, 4).map((url, idx) => (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img key={idx} src={url} alt="" className="h-24 w-24 object-cover rounded-xl flex-shrink-0 border border-slate-200 dark:border-white/5" />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+            ))}
+        </div>
+    );
+}
+
+/** 포토북 템플릿: 장소마다 사진을 매거진식 그리드로, 소감을 캡션으로 */
+function PhotobookSection({ places, onFocusPlace }: {
+    places: TravelogPlace[];
+    onFocusPlace: (place: TravelogPlace) => void;
+}) {
+    const withPhotos = places.filter((p) => p.photoUrls && p.photoUrls.length > 0);
+    if (withPhotos.length === 0) return <PlacesEmpty />;
+    return (
+        <div className="space-y-20">
+            {withPhotos.map((p, i) => (
+                <ScrollReveal key={p.id}>
+                    <section id={`place-${p.id}`} onClick={() => onFocusPlace(p)} className="cursor-pointer">
+                        <div className="flex items-end justify-between mb-6">
+                            <div className="flex items-center gap-4 min-w-0">
+                                <span className="text-6xl font-black text-slate-200 dark:text-white/10 tabular-nums leading-none">{String(i + 1).padStart(2, '0')}</span>
+                                <div className="min-w-0">
+                                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white truncate">{p.name}</h3>
+                                    {(p.visitDate || p.location?.address) && (
+                                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                            {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            {typeof p.rating === 'number' && p.rating > 0 && <StarRating value={p.rating} />}
+                        </div>
+                        <div className="columns-2 md:columns-3 gap-3 [column-fill:_balance]">
+                            {p.photoUrls!.map((url, idx) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img key={idx} src={url} alt="" className="w-full mb-3 rounded-2xl break-inside-avoid border border-slate-200 dark:border-white/5" />
+                            ))}
+                        </div>
+                        {p.impression && (
+                            <p className="mt-6 text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-relaxed font-light whitespace-pre-wrap">
+                                {p.impression}
+                            </p>
+                        )}
+                    </section>
+                </ScrollReveal>
+            ))}
+        </div>
+    );
+}
+
+function SectionRenderer({
+    section,
+    onFocusEvent
+}: {
     section: TravelogSection;
     onFocusEvent: (id: string, lat: number, lng: number) => void;
 }) {

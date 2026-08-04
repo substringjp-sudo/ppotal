@@ -66,6 +66,15 @@ export type TravelogStatus = 'draft' | 'published' | 'private';
 export type SectionType = 'text' | 'route_map' | 'photo_gallery' | 'day_header' | 'event_block';
 
 /**
+ * 뷰어 표현 템플릿 (공유카드와 별개 — 여행기 전체 화면 레이아웃).
+ * - magazine: 큰 타이포 + 사진 흐름 (기본, 블로그형)
+ * - timeline: 일자별 순서 흐름
+ * - map: 지도 중심 + 장소 카드 (places[] 소비)
+ * - photobook: 사진 그리드 중심
+ */
+export type TravelogTemplate = 'magazine' | 'timeline' | 'map' | 'photobook';
+
+/**
  * 트래블로그 작성의 시작점 (컨텍스트)
  */
 export type TravelogSourceContext = 
@@ -157,6 +166,46 @@ export interface TravelogDailyPlan {
     memo?: string;
 }
 
+/**
+ * 장소 중심 뷰의 1급 엔티티 (Place-centric substrate).
+ *
+ * 같은 여행기를 (1) 블로그 흐름으로 읽을 수도, (2) 지도/목록에서 장소마다 사진·소감을
+ * 정리해 볼 수도 있게 하려면, "장소"가 이벤트에 달린 좌표가 아니라 안정된 정체성을 가진
+ * 하나의 실체여야 한다. 이 엔티티가 그 정체성을 부여한다.
+ *
+ * - 뷰어의 지도/목록 뷰가 이 배열을 그대로 렌더한다(핀 = place, 카드 = 사진+소감+평점).
+ * - "여행지도" 템플릿, 커스텀 분류(collectionIds/category)도 같은 배열을 소비한다.
+ * - 타임라인 이벤트(TravelogEvent)와는 linkedEventIds로 느슨하게 연결되며,
+ *   장소는 이벤트 없이 독립적으로도 작성될 수 있다(사진/기억만으로 시작한 경우).
+ */
+export interface TravelogPlace {
+    id: string;                     // 안정적 장소 식별자 (place_...)
+    name: string;                   // 표시 이름
+    googlePlaceId?: string;         // 구글 Place ID (중복 판별 · POI 연결)
+    location?: EventLocation;       // 좌표 + 주소 (지도 렌더용)
+    visitDate?: string;             // 방문일 (YYYY-MM-DD)
+    day?: number;                   // 방문 일차
+
+    // 장소 뷰의 본문 (사용자가 이 장소에 대해 남긴 것)
+    impression?: string;            // 소감/후기 (텍스트 fallback)
+    impressionJson?: any;           // 리치 텍스트(TipTap) 버전
+    photoUrls?: string[];           // 이 장소에서 찍은 사진들
+    rating?: number;                // 별점 (1-5)
+    emotion?: {                     // 감정 (Barycentric weights)
+        joy: number;
+        sadness: number;
+        anger: number;
+    };
+
+    // 분류 (커스텀 분류 갭과 공유되는 부착점)
+    category?: string;              // 사용자 지정 분류
+    collectionIds?: string[];       // 사용자 정의 컬렉션(태그) 참조
+
+    // 타임라인과의 연결 및 정렬
+    linkedEventIds?: string[];      // 이 장소를 구성하는 타임라인 이벤트들
+    order?: number;                 // 장소 뷰/지도 목록 정렬 순서
+}
+
 export interface TravelogSection {
     id: string;
     type: SectionType;
@@ -165,6 +214,21 @@ export interface TravelogSection {
     imageUrls?: string[];          // 섹션 전용 이미지들
     linkedFootprintIds?: string[];  // 이 섹션의 바탕이 되는 원시 발자취 ID 목록 (모바일 전용)
     linkedEventId?: string;        // 타임라인 내 특정 일정(TravelogEvent)과 연결된 경우
+}
+
+/**
+ * 사용자 정의 컬렉션 (커스텀 분류).
+ * 장소를 사용자가 만든 묶음으로 분류한다. 컬렉션 자체에 이름·색뿐 아니라
+ * 설명/요약을 달 수 있어(예: "골목 카페 투어 — 조용하고 오래 앉기 좋은 곳들"),
+ * 뷰어에서 그 분류를 선택하면 소개글로 보여준다.
+ * 장소는 TravelogPlace.collectionIds 로 컬렉션을 참조한다(다대다).
+ */
+export interface TravelogCollection {
+    id: string;
+    name: string;
+    color?: string;          // 칩/핀 색 (hex)
+    description?: string;     // 컬렉션 설명·요약
+    icon?: string;           // 선택: material symbol 이름
 }
 
 export interface TravelogMemberCounts {
@@ -194,13 +258,23 @@ export interface Travelog {
     
     // 신규 추가: 기록 모드 (기본: standard)
     recordingMode?: 'standard' | 'simple';
+
+    // 뷰어 표현 템플릿 (기본: magazine)
+    template?: TravelogTemplate;
     
     // 단순화된 타임라인 데이터
     timeline: TravelogDailyPlan[];
     
     // 블로그 형식의 고급 섹션 에디팅 데이터
     sections: TravelogSection[];
-    
+
+    // 장소 중심 뷰의 데이터 (지도/목록 토글 · "여행지도" 템플릿의 원천)
+    // 이벤트 좌표에서 파생되거나 사용자가 직접 작성할 수 있다.
+    places?: TravelogPlace[];
+
+    // 사용자 정의 컬렉션 (커스텀 분류)
+    collections?: TravelogCollection[];
+
     createdAt: string;
     updatedAt: string;
 }
