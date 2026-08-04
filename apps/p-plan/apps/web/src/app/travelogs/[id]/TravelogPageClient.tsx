@@ -312,6 +312,13 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     {/* Left Column: Content */}
                     <div className="flex-1 min-w-0">
                         {viewMode === 'blog' ? (
+                            travelog.template === 'timeline' ? (
+                                <TimelineSection
+                                    timeline={travelog.timeline}
+                                    summary={travelog.summary}
+                                    onFocusEvent={focusEvent}
+                                />
+                            ) : (
                             <>
                                 {/* Summary Block */}
                                 <ScrollReveal>
@@ -338,6 +345,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                                     ))}
                                 </div>
                             </>
+                            )
                         ) : (
                             <PlaceListView
                                 places={places}
@@ -624,6 +632,77 @@ function MapTemplateSection({ places, markers, center, zoom, highlightedId, onFo
                     </ScrollReveal>
                 ))}
             </div>
+        </div>
+    );
+}
+
+/** 타임라인 템플릿: 일자별로 이벤트를 시간 순 레일에 세운다 */
+function TimelineSection({ timeline, summary, onFocusEvent }: {
+    timeline: TravelogDailyPlan[];
+    summary?: string;
+    onFocusEvent: (id: string, lat: number, lng: number) => void;
+}) {
+    const days = (timeline || []).filter((d) => d.events && d.events.length > 0);
+    if (days.length === 0) {
+        return (
+            <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+                <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">event_busy</span>
+                <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 일정이 없어요.</p>
+            </div>
+        );
+    }
+    return (
+        <div className="space-y-16">
+            {summary && (
+                <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">{summary}</p>
+            )}
+            {days.map((day) => (
+                <section key={day.day}>
+                    <div className="flex items-center gap-4 mb-8">
+                        <span className="text-5xl font-black text-primary/20 tabular-nums leading-none">D{day.day}</span>
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white">Day {day.day}</h2>
+                            {day.date && <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{day.date}</p>}
+                        </div>
+                    </div>
+                    <div className="relative pl-8 border-l-2 border-slate-200 dark:border-white/10 space-y-8">
+                        {day.events.map((e) => {
+                            const timeStr = e.time || (e.startTime ? `${e.startTime}${e.endTime ? ` – ${e.endTime}` : ''}` : '');
+                            const hasLoc = e.location?.lat != null && e.location?.lng != null;
+                            return (
+                                <div
+                                    key={e.id}
+                                    onClick={() => { if (hasLoc) onFocusEvent(e.id, e.location!.lat!, e.location!.lng!); }}
+                                    className={cn('relative', hasLoc && 'cursor-pointer')}
+                                >
+                                    <span className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-primary ring-4 ring-slate-50 dark:ring-[#030712]" />
+                                    {timeStr && <div className="text-[11px] font-black text-primary tabular-nums mb-1.5">{timeStr}</div>}
+                                    <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 hover:border-primary/30 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <h3 className="text-lg font-black text-slate-900 dark:text-white">{e.title}</h3>
+                                            {typeof e.details?.rating === 'number' && e.details.rating > 0 && <StarRating value={e.details.rating} />}
+                                        </div>
+                                        {e.location?.name && (
+                                            <p className="mt-1 text-xs font-bold text-slate-400 flex items-center gap-1">
+                                                <span className="material-symbols-rounded text-sm">location_on</span>{e.location.name}
+                                            </p>
+                                        )}
+                                        {e.memo && <p className="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{e.memo}</p>}
+                                        {e.imageUrls && e.imageUrls.length > 0 && (
+                                            <div className="mt-3 flex gap-2 overflow-x-auto">
+                                                {e.imageUrls.slice(0, 4).map((url, idx) => (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img key={idx} src={url} alt="" className="h-24 w-24 object-cover rounded-xl flex-shrink-0 border border-slate-200 dark:border-white/5" />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+            ))}
         </div>
     );
 }
