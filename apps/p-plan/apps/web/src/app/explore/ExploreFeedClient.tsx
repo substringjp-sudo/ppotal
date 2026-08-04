@@ -7,9 +7,16 @@ import {
     getPublicTravelogs,
     buildFeedSpots,
     rankSpots,
+    getSavedSpotKeys,
+    getLikedSpotKeys,
+    saveSpot,
+    unsaveSpot,
+    likeSpot,
+    unlikeSpot,
     cn,
     type FeedSpot,
 } from '@pplaner/shared';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * 스팟 피드 (탐색) — P2.
@@ -18,8 +25,10 @@ import {
  * 재밌으면 마음 찍기, 인상 깊으면(→P3) 저장, 궁금하면 스팟/여행기로.
  */
 export default function ExploreFeedClient() {
+    const { user, loginWithGoogle } = useAuth();
     const [spots, setSpots] = useState<FeedSpot[] | null>(null);
     const [liked, setLiked] = useState<Set<string>>(new Set());
+    const [saved, setSaved] = useState<Set<string>>(new Set());
     // 세션 동안 흔들리지 않는 세렌디피티 seed
     const [seed] = useState(() => Math.floor(Math.random() * 1_000_000_000));
 
@@ -33,12 +42,31 @@ export default function ExploreFeedClient() {
         return () => { alive = false; };
     }, [seed]);
 
-    const toggleLike = (key: string) => {
-        setLiked((prev) => {
-            const next = new Set(prev);
-            next.has(key) ? next.delete(key) : next.add(key);
-            return next;
+    // 로그인 시 내 좋아요/저장 상태를 불러와 반영 (크로스세션)
+    useEffect(() => {
+        if (!user) { setLiked(new Set()); setSaved(new Set()); return; }
+        let alive = true;
+        Promise.all([getLikedSpotKeys(user.uid), getSavedSpotKeys(user.uid)]).then(([l, s]) => {
+            if (alive) { setLiked(l); setSaved(s); }
         });
+        return () => { alive = false; };
+    }, [user]);
+
+    const toggleLike = (feed: FeedSpot) => {
+        const key = feed.key;
+        const willLike = !liked.has(key);
+        setLiked((prev) => { const n = new Set(prev); willLike ? n.add(key) : n.delete(key); return n; });
+        if (user) {
+            (willLike ? likeSpot : unlikeSpot)(user.uid, feed.travelogId, feed.spot.id).catch(console.error);
+        }
+    };
+
+    const toggleSave = (feed: FeedSpot) => {
+        if (!user) { loginWithGoogle(); return; }
+        const key = feed.key;
+        const willSave = !saved.has(key);
+        setSaved((prev) => { const n = new Set(prev); willSave ? n.add(key) : n.delete(key); return n; });
+        (willSave ? saveSpot(user.uid, feed) : unsaveSpot(user.uid, feed.travelogId, feed.spot.id)).catch(console.error);
     };
 
     if (spots === null) return <FeedSkeleton />;
@@ -53,7 +81,8 @@ export default function ExploreFeedClient() {
                 </div>
                 <div className="flex flex-col gap-5">
                     {spots.map((s) => (
-                        <SpotFeedCard key={s.key} feed={s} liked={liked.has(s.key)} onLike={() => toggleLike(s.key)} />
+                        <SpotFeedCard key={s.key} feed={s} liked={liked.has(s.key)} saved={saved.has(s.key)}
+                            onLike={() => toggleLike(s)} onSave={() => toggleSave(s)} />
                     ))}
                 </div>
                 <p className="mt-10 text-center text-xs font-medium text-slate-400">여기까지예요 · 여행기를 공개하면 이 피드에 스팟이 흐릅니다</p>
@@ -62,7 +91,7 @@ export default function ExploreFeedClient() {
     );
 }
 
-function SpotFeedCard({ feed, liked, onLike }: { feed: FeedSpot; liked: boolean; onLike: () => void }) {
+function SpotFeedCard({ feed, liked, saved, onLike, onSave }: { feed: FeedSpot; liked: boolean; saved: boolean; onLike: () => void; onSave: () => void }) {
     const { spot } = feed;
     const sub = [feed.region, feed.theme].filter(Boolean).join(' · ');
     const likeCount = feed.likeCount + (liked ? 1 : 0);
@@ -113,12 +142,14 @@ function SpotFeedCard({ feed, liked, onLike }: { feed: FeedSpot; liked: boolean;
                     {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
                 </button>
                 <button
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-black text-slate-400 dark:text-slate-500 cursor-default"
-                    title="가고 싶은 지도에 저장 · 곧"
-                    disabled
+                    onClick={onSave}
+                    className={cn('flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-black transition',
+                        saved ? 'text-primary bg-primary/10' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800')}
+                    aria-pressed={saved}
+                    title={saved ? '가고 싶은 지도에서 빼기' : '가고 싶은 지도에 저장'}
                 >
-                    <span className="material-symbols-rounded text-lg">bookmark</span>
-                    <span className="text-[11px] uppercase tracking-widest">곧</span>
+                    <span className="material-symbols-rounded text-lg" style={{ fontVariationSettings: saved ? "'FILL' 1" : "'FILL' 0" }}>bookmark</span>
+                    <span className="text-[11px] uppercase tracking-widest">{saved ? '저장됨' : '저장'}</span>
                 </button>
                 <div className="flex-1" />
                 <Link

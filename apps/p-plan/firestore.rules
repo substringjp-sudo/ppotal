@@ -88,6 +88,20 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
+    // 가고 싶은 지도 (스팟 북마크) — 본인 소유만
+    match /savedSpots/{docId} {
+      allow read, write: if isSignedIn()
+        && (request.resource == null ? resource.data.userId == request.auth.uid
+                                     : request.resource.data.userId == request.auth.uid);
+    }
+
+    // 스팟 좋아요 (크로스세션 상태) — 본인 소유만
+    match /spotLikes/{docId} {
+      allow read, write: if isSignedIn()
+        && (request.resource == null ? resource.data.userId == request.auth.uid
+                                     : request.resource.data.userId == request.auth.uid);
+    }
+
     // Users
     match /users/{userId} {
       allow read: if isSignedIn();
