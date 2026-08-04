@@ -469,6 +469,8 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                 <ShareCardModal
                     travelog={travelog}
                     isAuthor={isAuthor}
+                    authorName={user?.displayName}
+                    authorPhotoURL={user?.photoURL}
                     onClose={() => setShowShare(false)}
                     onPublished={(updated) => setTravelog(updated)}
                 />
