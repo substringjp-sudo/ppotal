@@ -26,6 +26,7 @@ import { useRef } from 'react';
 
 import WritingModeEditor from '@/components/travelogs/editor/WritingModeEditor';
 import TimelineModeBuilder from '@/components/travelogs/editor/TimelineModeBuilder';
+import TravelogPlacePanel from '@/components/travelogs/editor/TravelogPlacePanel';
 import { ScheduleItemModal } from '@/components/travelogs/editor/ScheduleItemModal';
 import MapComponent from '@/components/common/MapComponent';
 
@@ -135,6 +136,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [viewMode, setViewMode] = useState<'split' | 'writing' | 'timeline'>('split');
+    const [showPlacePanel, setShowPlacePanel] = useState(false);
     const [activeDayIndex, setActiveDayIndex] = useState(0);
     const [repRegion, setRepRegion] = useState<any>(null);
     const [isSimpleMode, setIsSimpleMode] = useState(false);
@@ -1340,6 +1342,13 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                                 간편 기록
                             </button>
                         </div>
+                        <button
+                            onClick={() => setShowPlacePanel(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-primary hover:text-primary transition-all"
+                        >
+                            <span className="material-symbols-rounded text-base">pin_drop</span>
+                            장소 정리
+                        </button>
                         <div className="h-4 w-[1px] bg-slate-100 dark:bg-slate-800 mx-2" />
                         <div className={cn("text-[9px] font-black uppercase tracking-widest transition-opacity", isSaving ? "opacity-100 text-primary animate-pulse" : "opacity-30")}>
                             {isSaving ? '변경사항 저장 중...' : '모든 변경사항 저장됨'}
@@ -1759,6 +1768,14 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                         )}
                     </aside>
                 </main>
+                {/* 장소 정리 패널 (장소별 소감·별점 → 뷰어의 지도/목록 보기) */}
+                {showPlacePanel && (
+                    <TravelogPlacePanel
+                        travelog={travelog}
+                        onChange={(places) => setTravelog(prev => prev ? { ...prev, places } : prev)}
+                        onClose={() => setShowPlacePanel(false)}
+                    />
+                )}
                 {/* 전역 상세 편집 모달 */}
                 {globalModalConfig.event && (
                     <ScheduleItemModal 
