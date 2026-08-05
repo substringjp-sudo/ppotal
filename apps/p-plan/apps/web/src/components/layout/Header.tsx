@@ -63,13 +63,14 @@ export default function Header() {
             { href: '/explore', label: '탐색', icon: 'explore', authRequired: true },
         ]
         : [
-            { href: '/explore', label: '탐색', icon: 'explore', authRequired: false },
+            { href: '/discover', label: '둘러보기', icon: 'explore', authRequired: false },
             { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
             { href: '/about', label: '소개', icon: 'info', authRequired: false },
         ];
 
     // 사용자 드롭다운에서 접근하는 보조 메뉴 (탑 내비에서 강등된 것들)
     const secondaryLinks = [
+        { href: '/discover', label: '둘러보기', icon: 'travel_explore' },
         { href: '/saved', label: '가고 싶은 지도', icon: 'bookmark' },
         { href: '/travelogs', label: '여행기록', icon: 'auto_stories' },
         { href: '/journey-atlas', label: '여행 지도', icon: 'map' },

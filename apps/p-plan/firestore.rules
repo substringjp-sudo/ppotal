@@ -102,6 +102,12 @@ service cloud.firestore {
                                      : request.resource.data.userId == request.auth.uid);
     }
 
+    // 공개 스냅샷 (hot 피드 등) — 누구나 읽기, 쓰기는 함수(admin)만
+    match /public/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Users
     match /users/{userId} {
       allow read: if isSignedIn();

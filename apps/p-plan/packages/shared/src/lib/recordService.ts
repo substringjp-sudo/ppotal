@@ -132,6 +132,32 @@ export const getUserTravelogs = async (userId: string, isPublicOnly: boolean = f
     }
 };
 
+export interface HotFeedSpot {
+    travelogId: string;
+    placeId: string;
+    name: string;
+    coverUrl?: string | null;
+    region?: string | null;
+    theme?: string | null;
+    authorName?: string | null;
+    saves: number;
+    likes: number;
+}
+
+/**
+ * 공개 포털용 hot 스냅샷을 읽는다 (스케줄 함수가 public/hotFeed 에 써 둔 것).
+ * 로그인 없이 읽을 수 있다(규칙이 public/* 읽기를 허용).
+ */
+export const getHotFeed = async (): Promise<{ updatedAt: string; spots: HotFeedSpot[] } | null> => {
+    try {
+        const snap = await getDoc(doc(db, 'public', 'hotFeed'));
+        return snap.exists() ? (snap.data() as { updatedAt: string; spots: HotFeedSpot[] }) : null;
+    } catch (error) {
+        console.error('[RecordService] Error getting hot feed:', error);
+        return null;
+    }
+};
+
 /**
  * 공개 발견용: 발행된 공개 여행기들을 최신순으로 가져온다 (스팟 피드의 후보 풀).
  * 로그인 없이도 읽을 수 있도록 보안 규칙이 status=='published' && isPublic==true 를 허용한다.
