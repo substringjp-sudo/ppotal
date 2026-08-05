@@ -3,18 +3,23 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getSavedSpots, unsaveSpot, cn, type SavedSpot } from '@pplaner/shared';
+import {
+    getSavedSpots, unsaveSpot, clusterSavedSpots, useWizardStore, colorForCategory, cn,
+    type SavedSpot, type InspirationCluster,
+} from '@pplaner/shared';
 import { useAuth } from '@/hooks/useAuth';
 import MapComponent from '@/components/common/MapComponent';
 
 /**
- * 가고 싶은 지도 (P3) — 피드에서 북마크한 스팟들의 개인 보드.
- * 지도에 핀이 쌓이는 내 세계지도 + 카드 목록. 계획으로 승격은 이후.
+ * 가고 싶은 지도 (P3 + P5) — 피드에서 북마크한 스팟들의 개인 보드.
+ * 지도/목록에 더해, 저장들이 그리는 여행 테마를 영감으로 제시해 계획으로 잇는다.
  */
 export default function SavedSpotsClient() {
     const { user, loading: authLoading, loginWithGoogle } = useAuth();
+    const openWizard = useWizardStore((s) => s.open);
     const [spots, setSpots] = useState<SavedSpot[] | null>(null);
     const [focus, setFocus] = useState<string | null>(null);
+    const [regionFilter, setRegionFilter] = useState<string | null>(null);
 
     useEffect(() => {
         if (authLoading) return;
@@ -24,10 +29,15 @@ export default function SavedSpotsClient() {
         return () => { alive = false; };
     }, [user, authLoading]);
 
-    const markers = useMemo(() => (spots || [])
+    const clusters = useMemo(() => clusterSavedSpots(spots || []), [spots]);
+    const visible = useMemo(() => (
+        regionFilter ? (spots || []).filter((s) => (s.region || '') === regionFilter) : (spots || [])
+    ), [spots, regionFilter]);
+
+    const markers = useMemo(() => visible
         .filter((s) => typeof s.lat === 'number' && typeof s.lng === 'number')
         .map((s) => ({ id: s.id, lat: s.lat as number, lng: s.lng as number, title: s.name, type: 'activity' as const, highlighted: s.id === focus })),
-        [spots, focus]);
+        [visible, focus]);
 
     const handleUnsave = async (s: SavedSpot) => {
         if (!user) return;
@@ -77,10 +87,33 @@ export default function SavedSpotsClient() {
                 </div>
             </div>
 
+            {/* 영감 — 저장들이 그리는 여행 (P5) */}
+            {clusters.length > 0 && (
+                <div className="mx-auto max-w-[720px] px-4 sm:px-6 pt-6">
+                    <div className="flex items-baseline justify-between mb-3">
+                        <h2 className="text-sm font-black text-slate-900 dark:text-white">이 저장들이 그리는 여행</h2>
+                        {regionFilter && (
+                            <button onClick={() => setRegionFilter(null)} className="text-[11px] font-bold text-primary">전체 보기</button>
+                        )}
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+                        {clusters.map((c) => (
+                            <InspirationCard
+                                key={c.key}
+                                cluster={c}
+                                active={regionFilter === c.region}
+                                onFocus={() => setRegionFilter(regionFilter === c.region ? null : c.region)}
+                                onStart={() => openWizard('PLAN')}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* 목록 */}
             <div className="mx-auto max-w-[720px] px-4 sm:px-6 py-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {spots.map((s) => (
+                    {visible.map((s) => (
                         <motion.div key={s.id} id={`saved-${s.id}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                             className={cn('group relative rounded-2xl overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm transition',
                                 focus === s.id ? 'border-primary/50 ring-2 ring-primary/20' : 'border-slate-200 dark:border-white/10')}>
@@ -109,6 +142,45 @@ export default function SavedSpotsClient() {
                     ))}
                 </div>
             </div>
+        </div>
+    );
+}
+
+function InspirationCard({ cluster: c, active, onFocus, onStart }: {
+    cluster: InspirationCluster;
+    active: boolean;
+    onFocus: () => void;
+    onStart: () => void;
+}) {
+    const accent = colorForCategory(c.region);
+    return (
+        <div className={cn('shrink-0 w-56 rounded-2xl overflow-hidden border bg-white dark:bg-white/[0.03] shadow-sm transition',
+            active ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 dark:border-white/10')}>
+            <button onClick={onFocus} className="block w-full text-left">
+                {/* 커버 콜라주 */}
+                <div className="relative grid grid-cols-2 grid-rows-2 gap-0.5 h-28 bg-slate-100 dark:bg-slate-900">
+                    {c.covers.length > 0 ? c.covers.slice(0, 4).map((u, i) => (
+                        <div key={i} className={cn('relative', c.covers.length === 1 && 'col-span-2 row-span-2', c.covers.length === 3 && i === 0 && 'row-span-2')}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={u} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        </div>
+                    )) : <div className="col-span-2 row-span-2" style={{ backgroundColor: accent }} />}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-2 left-2.5 right-2.5">
+                        <p className="text-white font-black text-sm leading-tight truncate">{c.region}</p>
+                        <p className="text-white/75 text-[10px] font-bold uppercase tracking-widest truncate">
+                            {[c.theme, `${c.count}곳`].filter(Boolean).join(' · ')}
+                        </p>
+                    </div>
+                </div>
+            </button>
+            <button
+                onClick={onStart}
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-black text-primary hover:bg-primary/5 transition"
+            >
+                <span className="material-symbols-rounded text-base">add_road</span>
+                이 테마로 여행 시작
+            </button>
         </div>
     );
 }

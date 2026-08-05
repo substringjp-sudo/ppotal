@@ -36,6 +36,7 @@ export * from './lib/travelog-places';
 export * from './lib/pathwalk-import';
 export * from './lib/spot-feed';
 export * from './lib/spot-social';
+export * from './lib/saved-inspiration';
 export * from './lib/tripCollaborationService';
 
 
