@@ -11,47 +11,60 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- 2. Public / Global Metadata (Always Allow Read) ---
-    // 이 규칙들이 상단에 있으면 정적 분석 시 혼동을 줄일 수 있습니다.
-    match /metadata/{document=**} {
-      allow read: if true;
-      allow write: if false;
-    }
-    
+    // --- 2. Public / Global Metadata ---
+    match /metadata/{document=**} { allow read: if true; }
     match /exchange_rates/{document=**} { allow read: if true; }
     match /nations/{document=**} { allow read: if true; }
-    match /regions/{document=**} { allow read: if true; }
-    match /cities/{document=**} { allow read: if true; }
-    match /places/{document=**} { allow read: if true; }
     match /countries/{document=**} { allow read: if true; }
     match /aviation_data/{document=**} { allow read: if true; }
     match /search_registry/{document=**} { allow read: if true; }
     match /feature_registry/{document=**} { allow read: if true; }
     match /tileset_manifest/{document=**} { allow read: if true; }
     match /geodata/{document=**} { allow read: if true; }
+    
+    // Regionevel specific metadata
+    match /regions/{document=**} { allow read: if true; }
+    match /cities/{document=**} { allow read: if true; }
+    match /places/{document=**} { allow read: if true; }
+    match /geometries/{document=**} { allow read: if true; }
+    match /geometries_bundles/{document=**} { allow read: if true; }
+    match /regionevel_geometries/{document=**} { allow read: if true; }
+    match /regionevel_geometries_bundles/{document=**} { allow read: if true; }
+    match /regionevel_maps/{document=**} { allow read: if true; }
 
+    // JP Rail specific metadata
+    match /jprail_companies/{document=**} { allow read: if true; }
+    match /jprail_lines/{document=**} { allow read: if true; }
+    match /jprail_stations/{document=**} { allow read: if true; }
+    match /jprail_sections/{document=**} { allow read: if true; }
+    match /jprail_platforms/{document=**} { allow read: if true; }
+    match /jprail_station_graph/{document=**} { allow read: if true; }
 
     // --- 3. Core Business Collections ---
 
-    // Trips
+    // Trips (p-plan)
     function canViewTrip(tripId) {
       let trip = get(/databases/$(database)/documents/trips/$(tripId)).data;
-      return isSignedIn() && (
-        trip.userId == request.auth.uid || 
-        (request.auth.uid in trip.get('members', [])) || 
+      return (
         trip.get('visibility', 'private') == 'public' ||
-        trip.get('isPublished', false) == true
+        trip.get('isPublished', false) == true ||
+        (isSignedIn() && (
+          trip.userId == request.auth.uid || 
+          (request.auth.uid in trip.get('members', []))
+        ))
       );
     }
 
     match /trips/{tripId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isSignedIn() && (
+      allow read: if (
         resource == null || 
-        resource.data.userId == request.auth.uid || 
-        (request.auth.uid in resource.data.get('members', [])) ||
         resource.data.get('visibility', 'private') == 'public' ||
-        resource.data.get('isPublished', false) == true
+        resource.data.get('isPublished', false) == true ||
+        (isSignedIn() && (
+          resource.data.userId == request.auth.uid || 
+          (request.auth.uid in resource.data.get('members', []))
+        ))
       );
       allow update: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
@@ -73,67 +86,99 @@ service cloud.firestore {
       }
     }
 
-    // Friendships
+    // Friendships & Requests
     match /friendships/{friendshipId} {
       allow read, update, delete: if isSignedIn() && (request.auth.uid in resource.data.uids);
       allow create: if isSignedIn() && (request.resource.data.initiatorUid == request.auth.uid);
     }
-
-    // Travelogs
-    match /travelogs/{travelogId} {
-      allow read: if resource == null ||
-                   resource.data.userId == request.auth.uid ||
-                   (resource.data.status == 'published' && resource.data.isPublic == true);
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-    }
-
-    // 가고 싶은 지도 (스팟 북마크) — 본인 소유만
-    match /savedSpots/{docId} {
-      allow read, write: if isSignedIn()
-        && (request.resource == null ? resource.data.userId == request.auth.uid
-                                     : request.resource.data.userId == request.auth.uid);
-    }
-
-    // 스팟 좋아요 (크로스세션 상태) — 본인 소유만
-    match /spotLikes/{docId} {
-      allow read, write: if isSignedIn()
-        && (request.resource == null ? resource.data.userId == request.auth.uid
-                                     : request.resource.data.userId == request.auth.uid);
-    }
-
-    // 공개 스냅샷 (hot 피드 등) — 누구나 읽기, 쓰기는 함수(admin)만
-    match /public/{docId} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    // Users
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'updatedAt']));
-
-      match /{allPaths=**} {
-        allow read, write: if isOwner(userId);
-      }
-    }
-
-    // Notifications & Other Social
-    match /notifications/{notificationId} {
-      allow create: if isSignedIn();
-      allow read, update, delete: if isSignedIn() && (resource.data.targetUid == request.auth.uid);
-    }
-
     match /friendRequests/{requestId} {
       allow create: if isSignedIn() && request.resource.data.senderUid == request.auth.uid;
       allow read, update, delete: if isSignedIn() && (resource.data.senderUid == request.auth.uid || resource.data.receiverUid == request.auth.uid);
     }
 
+    // Travelogs
+    match /travelogs/{travelogId} {
+      allow read: if resource == null || 
+                   (isSignedIn() && resource.data.userId == request.auth.uid) || 
+                   resource.data.status == 'published' ||
+                   resource.data.visibility == 'public' ||
+                   resource.data.isPublic == true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // 가고 싶은 지도 (savedSpots)
+    match /savedSpots/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 스팟 좋아요 (spotLikes)
+    match /spotLikes/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 위시리스트/버킷 리스트 (bucketItems)
     match /bucketItems/{itemId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 북마크 (bookmarks)
+    match /bookmarks/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 기록 (records)
+    match /records/{recordId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 템플릿 (travelTemplates, travel_templates)
+    match /travelTemplates/{docId} {
+      allow read: if resource == null || resource.data.isPublic == true || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    match /travel_templates/{docId} {
+      allow read: if resource == null || resource.data.isPublic == true || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 공개 스냅샷 (public)
+    match /public/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Users (Unified for all apps)
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'updatedAt']));
+
+      // Sub-collections (jprail visits, p-plan data, etc.)
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Notifications & Feedbacks
+    match /notifications/{notificationId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isSignedIn() && (resource == null || resource.data.targetUid == request.auth.uid);
+    }
+    match /feedbacks/{id} {
+      allow create: if true;
     }
 
     // --- 4. Default Deny ---

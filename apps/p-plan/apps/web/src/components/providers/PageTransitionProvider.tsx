@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { PAGE_TRANSITION_VARIANTS } from '@/lib/animations';
 
@@ -12,17 +12,14 @@ export default function PageTransitionProvider({
     const pathname = usePathname();
 
     return (
-        <AnimatePresence mode="wait">
-            <motion.div
-                key={pathname}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                variants={PAGE_TRANSITION_VARIANTS}
-                className="w-full flex-1 flex flex-col"
-            >
-                {children}
-            </motion.div>
-        </AnimatePresence>
+        <motion.div
+            key={pathname}
+            initial="initial"
+            animate="animate"
+            variants={PAGE_TRANSITION_VARIANTS}
+            className="w-full flex-1 flex flex-col"
+        >
+            {children}
+        </motion.div>
     );
 }

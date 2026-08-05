@@ -55,28 +55,29 @@ export default function Header() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isUserMenuOpen]);
 
-    // 라이프사이클 컨셉에 맞춘 최소 내비: 로그인 시 내 여행 / 탐색(+프로필 아바타).
-    // 위시리스트·여행기록·통계는 프로필 메뉴로 접어 넣는다(아래 사용자 드롭다운).
+    // 데스크탑 메인 내비게이션 항목
     const navLinks = user
         ? [
             { href: '/', label: '내 여행', icon: 'luggage', authRequired: true },
             { href: '/explore', label: '탐색', icon: 'explore', authRequired: true },
+            { href: '/travelogs', label: '여행기록', icon: 'auto_stories', authRequired: true },
+            { href: '/journey-atlas', label: '여행 지도', icon: 'map', authRequired: true },
+            { href: '/saved', label: '가고 싶은 지도', icon: 'bookmark', authRequired: true },
+            { href: '/wishlist', label: '위시리스트', icon: 'favorite', authRequired: true },
+            { href: '/stats', label: '인텔리전스', icon: 'analytics', authRequired: true },
         ]
         : [
             { href: '/discover', label: '둘러보기', icon: 'explore', authRequired: false },
+            { href: '/travelogs', label: '여행기록', icon: 'auto_stories', authRequired: false },
+            { href: '/journey-atlas', label: '여행 지도', icon: 'map', authRequired: false },
             { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
             { href: '/about', label: '소개', icon: 'info', authRequired: false },
         ];
 
-    // 사용자 드롭다운에서 접근하는 보조 메뉴 (탑 내비에서 강등된 것들)
+    // 프로필 드롭다운 팝업 메뉴
     const secondaryLinks = [
         { href: '/discover', label: '둘러보기', icon: 'travel_explore' },
         { href: '/blog', label: '블로그', icon: 'menu_book' },
-        { href: '/saved', label: '가고 싶은 지도', icon: 'bookmark' },
-        { href: '/travelogs', label: '여행기록', icon: 'auto_stories' },
-        { href: '/journey-atlas', label: '여행 지도', icon: 'map' },
-        { href: '/wishlist', label: '위시리스트', icon: 'favorite' },
-        { href: '/stats', label: '인텔리전스', icon: 'analytics' },
         { href: '/about', label: '소개', icon: 'info' },
     ];
 
@@ -120,7 +121,7 @@ export default function Header() {
                                         key={link.href}
                                         href={link.href}
                                         aria-current={isActive ? 'page' : undefined}
-                                        className={`relative px-4 py-2 text-sm font-black transition-all duration-300 ${
+                                        className={`relative px-2.5 py-1.5 xl:px-3.5 xl:py-2 text-xs xl:text-sm font-black transition-all duration-300 ${
                                             isActive 
                                                 ? 'text-white' 
                                                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

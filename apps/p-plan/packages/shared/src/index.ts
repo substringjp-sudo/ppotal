@@ -63,6 +63,8 @@ export * from './lib/aviation-engine';
 export * from './lib/geodata-engine';
 export * from './lib/firestore-geodata-provider';
 export * from './lib/firestore-aviation-provider';
+export * from './lib/firestore-admin-geodata-provider';
+export * from './lib/firestore-admin-aviation-provider';
 export * from './lib/region-service';
 // region-service contains searchRegions which overlaps with intelligence-service.
 // We'll let intelligence-service take precedence by exporting it later or using explicit exports.

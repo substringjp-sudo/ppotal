@@ -212,9 +212,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
           {/* Direct X Post Result Notice */}
           {xPostResult && (
-            <div className={`text-xs px-4 py-3 rounded-2xl flex items-center justify-between shadow-lg animate-in fade-in slide-in-from-top-2 ${
-              xPostResult.success ? "bg-emerald-600 text-white" : "bg-slate-900 text-amber-200"
-            }`}>
+            <div className={`text-xs px-4 py-3 rounded-2xl flex items-center justify-between shadow-lg animate-in fade-in slide-in-from-top-2 ${xPostResult.success ? "bg-emerald-600 text-white" : "bg-slate-900 text-amber-200"
+              }`}>
               <span className="font-medium">{xPostResult.message}</span>
               {xPostResult.link ? (
                 <a

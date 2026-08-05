@@ -23,31 +23,19 @@ export const TRANSITION_SPRING_BOUNCY = {
 } as const;
 
 /**
- * 페이지 전환 애니메이션
+ * 페이지 전환 애니메이션 (Next.js App Router 호환 프레임 깜빡임 제로 페이드인)
  */
 export const PAGE_TRANSITION_VARIANTS = {
   initial: {
     opacity: 0,
-    y: 8,
-    scale: 0.99
+    y: 4
   },
   animate: {
     opacity: 1,
     y: 0,
-    scale: 1,
     transition: {
-      duration: 0.5,
-      ease: [0.16, 1, 0.3, 1], // Custom premium ease (expo out)
-      staggerChildren: 0.1
-    }
-  },
-  exit: {
-    opacity: 0,
-    y: -4,
-    scale: 0.995,
-    transition: {
-      duration: 0.3,
-      ease: [0.32, 0, 0.67, 0] // Custom ease (expo in)
+      duration: 0.18,
+      ease: ANIMATION_EASE
     }
   }
 } as const;

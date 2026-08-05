@@ -12,12 +12,14 @@ service cloud.firestore {
     }
 
     // --- 2. Public / Global Metadata ---
-    // Includes metadata from p-plan and regionevel
     match /metadata/{document=**} { allow read: if true; }
     match /exchange_rates/{document=**} { allow read: if true; }
     match /nations/{document=**} { allow read: if true; }
     match /countries/{document=**} { allow read: if true; }
     match /aviation_data/{document=**} { allow read: if true; }
+    match /search_registry/{document=**} { allow read: if true; }
+    match /feature_registry/{document=**} { allow read: if true; }
+    match /tileset_manifest/{document=**} { allow read: if true; }
     match /geodata/{document=**} { allow read: if true; }
     
     // Regionevel specific metadata
@@ -43,22 +45,26 @@ service cloud.firestore {
     // Trips (p-plan)
     function canViewTrip(tripId) {
       let trip = get(/databases/$(database)/documents/trips/$(tripId)).data;
-      return isSignedIn() && (
-        trip.userId == request.auth.uid || 
-        (request.auth.uid in trip.get('members', [])) || 
+      return (
         trip.get('visibility', 'private') == 'public' ||
-        trip.get('isPublished', false) == true
+        trip.get('isPublished', false) == true ||
+        (isSignedIn() && (
+          trip.userId == request.auth.uid || 
+          (request.auth.uid in trip.get('members', []))
+        ))
       );
     }
 
     match /trips/{tripId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isSignedIn() && (
+      allow read: if (
         resource == null || 
-        resource.data.userId == request.auth.uid || 
-        (request.auth.uid in resource.data.get('members', [])) ||
         resource.data.get('visibility', 'private') == 'public' ||
-        resource.data.get('isPublished', false) == true
+        resource.data.get('isPublished', false) == true ||
+        (isSignedIn() && (
+          resource.data.userId == request.auth.uid || 
+          (request.auth.uid in resource.data.get('members', []))
+        ))
       );
       allow update: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
@@ -93,10 +99,65 @@ service cloud.firestore {
     // Travelogs
     match /travelogs/{travelogId} {
       allow read: if resource == null || 
-                   resource.data.userId == request.auth.uid || 
-                   (resource.data.status == 'published' && resource.data.visibility == 'public');
+                   (isSignedIn() && resource.data.userId == request.auth.uid) || 
+                   resource.data.status == 'published' ||
+                   resource.data.visibility == 'public' ||
+                   resource.data.isPublic == true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // 가고 싶은 지도 (savedSpots)
+    match /savedSpots/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 스팟 좋아요 (spotLikes)
+    match /spotLikes/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 위시리스트/버킷 리스트 (bucketItems)
+    match /bucketItems/{itemId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 북마크 (bookmarks)
+    match /bookmarks/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 기록 (records)
+    match /records/{recordId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 템플릿 (travelTemplates, travel_templates)
+    match /travelTemplates/{docId} {
+      allow read: if resource == null || resource.data.isPublic == true || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    match /travel_templates/{docId} {
+      allow read: if resource == null || resource.data.isPublic == true || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // 공개 스냅샷 (public)
+    match /public/{docId} {
+      allow read: if true;
+      allow write: if false;
     }
 
     // Users (Unified for all apps)
@@ -114,7 +175,7 @@ service cloud.firestore {
     // Notifications & Feedbacks
     match /notifications/{notificationId} {
       allow create: if isSignedIn();
-      allow read, update, delete: if isSignedIn() && (resource.data.targetUid == request.auth.uid);
+      allow read, update, delete: if isSignedIn() && (resource == null || resource.data.targetUid == request.auth.uid);
     }
     match /feedbacks/{id} {
       allow create: if true;

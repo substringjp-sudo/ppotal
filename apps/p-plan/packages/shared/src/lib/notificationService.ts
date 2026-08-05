@@ -35,6 +35,8 @@ export const subscribeToNotifications = (userId: string, callback: (notification
     return onSnapshot(q, (snapshot) => {
         const notifications = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Notification));
         callback(notifications);
+    }, (error) => {
+        console.warn("Notification subscription error:", error.message);
     });
 };
 

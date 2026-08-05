@@ -1,15 +1,16 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { User, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
-import { FirebaseError } from 'firebase/app';
+import { User, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@pplaner/shared';
-import { toast } from 'sonner';
+import { AuthModal } from '@ppotal/ui';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   loginWithGoogle: () => Promise<void>;
+  openAuthModal: () => void;
+  closeAuthModal: () => void;
   logout: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -28,19 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const openAuthModal = () => setIsAuthModalOpen(true);
+  const closeAuthModal = () => setIsAuthModalOpen(false);
+
   const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      if (error instanceof FirebaseError) {
-        toast.error(`로그인 실패: ${error.code}`, { duration: 8000 });
-        console.error("Firebase Auth Error:", error.code, error.message);
-      } else {
-        toast.error('로그인 중 오류가 발생했습니다.');
-        console.error("Login error:", error);
-      }
-    }
+    setIsAuthModalOpen(true);
   };
 
   const logout = async () => {
@@ -52,8 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, openAuthModal, closeAuthModal, logout }}>
       {children}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={closeAuthModal}
+        appName="PPLANER"
+        language="ko"
+      />
     </AuthContext.Provider>
   );
 }
