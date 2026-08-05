@@ -68,6 +68,10 @@
         "destination": "/travelogs/placeholder/index.html"
       },
       {
+        "source": "/spot/**",
+        "destination": "/spot/placeholder/placeholder/index.html"
+      },
+      {
         "source": "/friends/**",
         "destination": "/friends/index.html"
       },

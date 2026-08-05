@@ -51,11 +51,15 @@ function buildCardData(travelog: Travelog): ShareCardData {
 export default function ShareCardModal({
     travelog,
     isAuthor,
+    authorName,
+    authorPhotoURL,
     onClose,
     onPublished,
 }: {
     travelog: Travelog;
     isAuthor: boolean;
+    authorName?: string | null;
+    authorPhotoURL?: string | null;
     onClose: () => void;
     onPublished?: (updated: Travelog) => void;
 }) {
@@ -126,7 +130,16 @@ export default function ShareCardModal({
     const handlePublish = async () => {
         setBusy(true);
         try {
-            const updated: Travelog = { ...travelog, status: 'published', isPublic: true };
+            // 발행 시 작성자 정보를 비정규화하고 집계 카운터를 초기화한다 (소셜 발견용).
+            const updated: Travelog = {
+                ...travelog,
+                status: 'published',
+                isPublic: true,
+                authorName: authorName || travelog.authorName || '여행자',
+                authorPhotoURL: authorPhotoURL || travelog.authorPhotoURL || '',
+                saveCount: travelog.saveCount ?? 0,
+                likeCount: travelog.likeCount ?? 0,
+            };
             await saveTravelog(updated);
             setPublished(true);
             onPublished?.(updated);

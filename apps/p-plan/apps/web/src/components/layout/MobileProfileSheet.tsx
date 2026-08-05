@@ -73,6 +73,16 @@ export default function MobileProfileSheet({ isOpen, onClose }: MobileProfileShe
                                 </button>
 
                                 <Link
+                                    href="/saved"
+                                    onClick={onClose}
+                                    className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
+                                >
+                                    <span className="material-symbols-rounded text-xl text-primary">bookmark</span>
+                                    가고 싶은 지도
+                                    <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
+                                </Link>
+
+                                <Link
                                     href="/travelogs"
                                     onClick={onClose}
                                     className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
@@ -97,8 +107,8 @@ export default function MobileProfileSheet({ isOpen, onClose }: MobileProfileShe
                                     onClick={onClose}
                                     className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
                                 >
-                                    <span className="material-symbols-rounded text-xl text-primary">explore</span>
-                                    탐색 (Journey Atlas)
+                                    <span className="material-symbols-rounded text-xl text-primary">map</span>
+                                    여행 지도 (내 발자취)
                                     <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
                                 </Link>
 

@@ -190,6 +190,7 @@ export interface TravelogPlace {
     impression?: string;            // 소감/후기 (텍스트 fallback)
     impressionJson?: any;           // 리치 텍스트(TipTap) 버전
     photoUrls?: string[];           // 이 장소에서 찍은 사진들
+    coverPhotoUrl?: string;         // 창작자가 지정한 대표 컷 (스팟 피드용, 미지정 시 앞 사진)
     rating?: number;                // 별점 (1-5)
     emotion?: {                     // 감정 (Barycentric weights)
         joy: number;
@@ -239,7 +240,14 @@ export interface Travelog {
     
     status: TravelogStatus;
     isPublic: boolean;      // 외부 공유 허용 여부
-    
+
+    // 소셜 발견용 비정규화 필드 (발행 시 세팅) — 로그아웃 방문자도 작성자 표시,
+    // 피드 정렬키로 저장/좋아요 수를 함께 둔다.
+    authorName?: string;
+    authorPhotoURL?: string;
+    saveCount?: number;     // "가고 싶은 지도"에 저장된 횟수 (인기순 정렬키)
+    likeCount?: number;     // 가벼운 좋아요 (추천 신호)
+
     // 신규 추가: 기록 모드 (기본: standard)
     recordingMode?: 'standard' | 'simple';
 

@@ -294,3 +294,99 @@ export const searchAviationData = onCall({ cors: true }, async (request) => {
         throw new HttpsError("internal", error.message || "항공 데이터 검색 중 오류가 발생했습니다.");
     }
 });
+
+// ─── 스팟 소셜: 집계 카운터 유지 + hot 피드 스냅샷 ─────────────────
+
+import { syncTravelogPlaces, Travelog } from "@pplaner/shared";
+
+/** 여행기의 saveCount/likeCount 를 소유자-문서 변화에 맞춰 유지한다 */
+async function adjustCounter(travelogId: string | undefined, field: "saveCount" | "likeCount", delta: number) {
+    if (!travelogId) return;
+    try {
+        await db.collection("travelogs").doc(travelogId).set(
+            { [field]: FieldValue.increment(delta) }, { merge: true },
+        );
+    } catch (e) {
+        logger.error(`${field} 갱신 실패 (${travelogId}):`, e);
+    }
+}
+
+export const onSavedSpotWritten = onDocumentWritten({ document: "savedSpots/{docId}", database: "(default)" }, async (event) => {
+    const before = event.data?.before;
+    const after = event.data?.after;
+    const created = !before?.exists && !!after?.exists;
+    const deleted = !!before?.exists && !after?.exists;
+    if (!created && !deleted) return;
+    const data: any = (after?.data() || before?.data());
+    await adjustCounter(data?.travelogId, "saveCount", created ? 1 : -1);
+});
+
+export const onSpotLikeWritten = onDocumentWritten({ document: "spotLikes/{docId}", database: "(default)" }, async (event) => {
+    const before = event.data?.before;
+    const after = event.data?.after;
+    const created = !before?.exists && !!after?.exists;
+    const deleted = !!before?.exists && !after?.exists;
+    if (!created && !deleted) return;
+    const data: any = (after?.data() || before?.data());
+    await adjustCounter(data?.travelogId, "likeCount", created ? 1 : -1);
+});
+
+/**
+ * 6시간마다 최근 저장·좋아요를 집계해 공개 포털용 hot 스냅샷(public/hotFeed)을 만든다.
+ * 로그인 없이 읽는 공개 정문의 원천 — 정적 export 환경에서 "지금 뜨는 곳"을 서빙한다.
+ */
+export const buildHotFeed = onSchedule("30 */6 * * *", async () => {
+    try {
+        const since = new Date(Date.now() - 14 * 86400000).toISOString();
+        const [savesSnap, likesSnap] = await Promise.all([
+            db.collection("savedSpots").where("savedAt", ">=", since).limit(3000).get(),
+            db.collection("spotLikes").where("likedAt", ">=", since).limit(3000).get(),
+        ]);
+
+        const tally = new Map<string, { saves: number; likes: number }>();
+        const bump = (id: string | undefined, k: "saves" | "likes") => {
+            if (!id) return;
+            const t = tally.get(id) || { saves: 0, likes: 0 };
+            t[k] += 1; tally.set(id, t);
+        };
+        savesSnap.forEach((d) => bump((d.data() as any).travelogId, "saves"));
+        likesSnap.forEach((d) => bump((d.data() as any).travelogId, "likes"));
+
+        const ranked = [...tally.entries()]
+            .map(([id, c]) => ({ id, score: c.saves * 2 + c.likes, saves: c.saves, likes: c.likes }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+
+        const hotSpots: any[] = [];
+        for (const r of ranked) {
+            const snap = await db.collection("travelogs").doc(r.id).get();
+            if (!snap.exists) continue;
+            const t = snap.data() as Travelog;
+            if (t.status !== "published" || !t.isPublic) continue;
+            const places = syncTravelogPlaces(t).filter((p) => p.coverPhotoUrl || (p.photoUrls && p.photoUrls.length > 0));
+            for (const p of places.slice(0, 2)) {
+                hotSpots.push({
+                    travelogId: r.id,
+                    placeId: p.id,
+                    name: p.name,
+                    coverUrl: p.coverPhotoUrl || p.photoUrls?.[0] || null,
+                    region: p.location?.city || p.location?.prefecture || p.location?.country || null,
+                    theme: t.theme || null,
+                    authorName: t.authorName || null,
+                    saves: r.saves,
+                    likes: r.likes,
+                });
+                if (hotSpots.length >= 30) break;
+            }
+            if (hotSpots.length >= 30) break;
+        }
+
+        await db.collection("public").doc("hotFeed").set({
+            updatedAt: new Date().toISOString(),
+            spots: hotSpots,
+        });
+        logger.info(`hotFeed 갱신 완료: ${hotSpots.length} 스팟`);
+    } catch (error) {
+        logger.error("buildHotFeed 실패:", error);
+    }
+});
