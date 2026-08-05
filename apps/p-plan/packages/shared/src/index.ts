@@ -37,6 +37,7 @@ export * from './lib/pathwalk-import';
 export * from './lib/spot-feed';
 export * from './lib/spot-social';
 export * from './lib/saved-inspiration';
+export * from './lib/blog-feed';
 export * from './lib/tripCollaborationService';
 
 

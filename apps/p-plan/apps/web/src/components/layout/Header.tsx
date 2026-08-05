@@ -71,6 +71,7 @@ export default function Header() {
     // 사용자 드롭다운에서 접근하는 보조 메뉴 (탑 내비에서 강등된 것들)
     const secondaryLinks = [
         { href: '/discover', label: '둘러보기', icon: 'travel_explore' },
+        { href: '/blog', label: '블로그', icon: 'menu_book' },
         { href: '/saved', label: '가고 싶은 지도', icon: 'bookmark' },
         { href: '/travelogs', label: '여행기록', icon: 'auto_stories' },
         { href: '/journey-atlas', label: '여행 지도', icon: 'map' },

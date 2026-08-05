@@ -68,6 +68,7 @@ export default function DiscoverClient() {
                     </p>
                     <div className="mt-5 flex flex-wrap gap-2.5">
                         <Link href="/explore" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white hover:bg-primary/90 transition">스팟 피드 열기</Link>
+                        <Link href="/blog" className="rounded-xl border border-slate-200 dark:border-white/15 px-5 py-2.5 text-sm font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition">여행기 블로그</Link>
                         <Link href="/edit-trip/guest" className="rounded-xl border border-slate-200 dark:border-white/15 px-5 py-2.5 text-sm font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition">여행 계획 시작</Link>
                     </div>
                 </div>
