@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     Travelog,
@@ -117,14 +117,13 @@ function PlaceEditCard({ place, index, categoryOptions, onUpdate }: {
 }) {
     return (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
-            {/* 사진 스트립 */}
+            {/* 대표 사진 — 히어로 필름스트립 (보다가 마음에 드는 걸 앞으로) */}
             {place.photoUrls && place.photoUrls.length > 0 && (
-                <div className="flex gap-1 h-28 overflow-x-auto bg-slate-100 dark:bg-slate-950">
-                    {place.photoUrls.slice(0, 6).map((url, idx) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img key={idx} src={url} alt="" className="h-full w-28 object-cover flex-shrink-0" />
-                    ))}
-                </div>
+                <PlacePhotoPicker
+                    photos={place.photoUrls}
+                    cover={place.coverPhotoUrl}
+                    onPickCover={(url) => onUpdate({ coverPhotoUrl: url })}
+                />
             )}
             <div className="p-4 space-y-3">
                 <div className="flex items-center gap-2.5">
@@ -183,6 +182,93 @@ function PlaceEditCard({ place, index, categoryOptions, onUpdate }: {
                     {categoryOptions.map((c) => <option key={c} value={c} />)}
                 </datalist>
             </div>
+        </div>
+    );
+}
+
+/** 히어로 컷 점수 — 비전 모델 없이 로드 시점 치수(해상도 + 종횡비 상식)만으로 */
+function heroScore(w: number, h: number): number {
+    if (!w || !h) return 0;
+    const r = w / h;
+    let aspect = 1;                                   // 극단 파노라마/세로 페널티
+    if (r < 0.66) aspect = Math.max(0.2, r / 0.66);
+    else if (r > 1.6) aspect = Math.max(0.2, 1.6 / r);
+    const area = Math.min(w * h, 2_000_000) / 2_000_000; // 2MP에서 포화
+    return aspect * (0.5 + 0.5 * area);
+}
+
+/**
+ * 대표 사진 선택 — "고르는 과정" 없이 자연스럽게.
+ * 히어로 1장(=대표) + 아래 필름스트립. 대표 미지정이면 로드된 치수로 가장 히어로다운
+ * 컷을 한 번 자동 선택(유도)하고, 사용자가 다른 컷을 탭하면 그게 앞으로 온다.
+ * 썸네일은 어차피 렌더되므로 naturalWidth/Height를 공짜로 얻는다(추가 요청 없음).
+ */
+function PlacePhotoPicker({ photos, cover, onPickCover }: {
+    photos: string[];
+    cover?: string;
+    onPickCover: (url: string) => void;
+}) {
+    const [dims, setDims] = useState<Record<string, { w: number; h: number }>>({});
+    const autoPicked = useRef(false);
+    const hero = cover && photos.includes(cover) ? cover : photos[0];
+
+    // 치수 측정 — 렌더 onLoad에 의존하지 않고 명시적으로 로드해 안정적으로 잰다
+    useEffect(() => {
+        let alive = true;
+        photos.forEach((url) => {
+            if (dims[url]) return;
+            const im = new window.Image();
+            im.onload = () => {
+                if (!alive) return;
+                setDims((prev) => (prev[url] ? prev : { ...prev, [url]: { w: im.naturalWidth || 1, h: im.naturalHeight || 1 } }));
+            };
+            im.src = url;
+        });
+        return () => { alive = false; };
+    }, [photos, dims]);
+
+    // 대표 미지정 시, 측정된 치수로 가장 히어로다운 컷을 한 번 자동 선택 (유도)
+    useEffect(() => {
+        if (autoPicked.current || cover) return;
+        const measured = photos.filter((p) => dims[p]);
+        if (measured.length < Math.min(photos.length, 2)) return;
+        let best = photos[0]; let bestScore = -1;
+        for (const p of measured) {
+            const s = heroScore(dims[p].w, dims[p].h);
+            if (s > bestScore) { bestScore = s; best = p; }
+        }
+        autoPicked.current = true;
+        if (best && best !== hero) onPickCover(best);
+    }, [dims, cover, photos, hero, onPickCover]);
+
+    return (
+        <div className="space-y-1.5">
+            <div className="relative rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 aspect-[4/3]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={hero} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <span className="absolute top-2 left-2 rounded-full bg-black/55 backdrop-blur px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-1">
+                    <span className="material-symbols-rounded text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    대표
+                </span>
+            </div>
+            {photos.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+                    {photos.map((url, idx) => (
+                        <button
+                            key={idx}
+                            type="button"
+                            onClick={() => onPickCover(url)}
+                            className={cn('relative h-14 w-14 rounded-lg overflow-hidden flex-shrink-0 transition ring-2',
+                                url === hero ? 'ring-primary' : 'ring-transparent hover:ring-slate-300 dark:hover:ring-slate-600')}
+                            aria-label="이 사진을 대표로"
+                            aria-pressed={url === hero}
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
