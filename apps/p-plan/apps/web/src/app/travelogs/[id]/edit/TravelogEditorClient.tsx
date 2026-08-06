@@ -174,7 +174,20 @@ export default function TravelogEditorClient({ id }: { id: string }) {
         if (images.length === 0) return;
         try {
             const places = await intakePhotosToPlaces(images, user.uid, travelog.id, nextOrder, setProgress);
-            setTravelog((prev) => prev ? { ...prev, places: [...(prev.places || []), ...places] } : prev);
+            setTravelog((prev) => {
+                if (!prev) return prev;
+                // 사진에 찍힌 날짜로 여행 시작·끝을 인지한다 — 처음 채울 때만, 기존 범위는 넓히기만 한다
+                // (사용자가 사진 없는 날도 포함되게 손으로 넓혀둔 걸 도로 좁히지 않기 위해).
+                const newDates = places.map((p) => p.visitDate).filter(Boolean) as string[];
+                const newMin = newDates.length ? newDates.reduce((a, b) => (a < b ? a : b)) : undefined;
+                const newMax = newDates.length ? newDates.reduce((a, b) => (a > b ? a : b)) : undefined;
+                return {
+                    ...prev,
+                    places: [...(prev.places || []), ...places],
+                    startDate: newMin && (!prev.startDate || newMin < prev.startDate) ? newMin : prev.startDate,
+                    endDate: newMax && (!prev.endDate || newMax > prev.endDate) ? newMax : prev.endDate,
+                };
+            });
             toast.success(`사진 ${images.length}장 → 장소 ${places.length}곳으로 정리했어요`);
         } catch (e) {
             console.error(e);
