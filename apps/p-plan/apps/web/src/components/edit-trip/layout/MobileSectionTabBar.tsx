@@ -1,7 +1,8 @@
 'use client';
 import { useRef, useEffect } from 'react';
 import { cn } from '@pplaner/shared';
-import { SECTIONS, SectionId } from '@pplaner/shared';
+import { SECTIONS, SectionId, Trip } from '@pplaner/shared';
+import { getSectionStatus } from './sectionStatus';
 
 interface MobileSectionTabBarProps {
     activeSection: SectionId;
@@ -9,6 +10,7 @@ interface MobileSectionTabBarProps {
     isSaving: boolean;
     onSave: () => void;
     sectionWarnings: Record<string, { critical: number; warning: number; info: number }>;
+    currentTrip: Trip;
 }
 
 export default function MobileSectionTabBar({
@@ -17,6 +19,7 @@ export default function MobileSectionTabBar({
     isSaving,
     onSave,
     sectionWarnings,
+    currentTrip,
 }: MobileSectionTabBarProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -68,9 +71,8 @@ export default function MobileSectionTabBar({
                 className="flex items-center gap-1 px-2 py-2 overflow-x-auto scrollbar-hide"
             >
                 {SECTIONS.map((section) => {
-                    const holds = sectionWarnings[section.id] || { critical: 0, warning: 0, info: 0 };
                     const isActive = activeSection === section.id;
-                    const hasWarning = holds.critical > 0 || holds.warning > 0;
+                    const statusConfig = getSectionStatus(section.id as SectionId, currentTrip, sectionWarnings);
 
                     return (
                         <button
@@ -93,14 +95,17 @@ export default function MobileSectionTabBar({
                                 {section.icon}
                             </span>
                             {section.label}
-                            {hasWarning && (
-                                <span
-                                    className={cn(
-                                        'absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-white dark:border-slate-900',
-                                        holds.critical > 0 ? 'bg-red-500' : 'bg-amber-400'
-                                    )}
-                                />
-                            )}
+                            
+                            {/* Indicators */}
+                            <div className="absolute -top-1 -right-1 flex items-center justify-center bg-white dark:bg-slate-900 rounded-full">
+                                {statusConfig.icon ? (
+                                    <span className={cn("material-symbols-rounded text-[12px] bg-white dark:bg-slate-900 rounded-full", statusConfig.iconClass)}>
+                                        {statusConfig.icon}
+                                    </span>
+                                ) : (
+                                    <span className={cn("w-2 h-2 rounded-full border-[1.5px] border-white dark:border-slate-900", statusConfig.dotClass)} />
+                                )}
+                            </div>
                         </button>
                     );
                 })}

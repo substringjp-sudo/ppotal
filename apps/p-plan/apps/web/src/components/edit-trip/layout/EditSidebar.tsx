@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { cn, formatTripDuration } from '@pplaner/shared';
 import { SECTIONS, SectionId } from '@pplaner/shared';
 import { TRANSITION_SPRING, ANIMATION_EASE } from '@/lib/animations';
+import { getSectionStatus } from './sectionStatus';
 
 interface EditSidebarProps {
   tripId: string;
@@ -121,7 +122,21 @@ export default function EditSidebar({
                                 </span>
                             </div>
                             
-                            {/* Indicators removed */}
+                            {/* Indicators */}
+                            {(() => {
+                                const statusConfig = getSectionStatus(section.id as SectionId, currentTrip, sectionWarnings);
+                                return (
+                                    <div className="flex items-center justify-center w-5 h-5 shrink-0" title={statusConfig.tooltip}>
+                                        {statusConfig.icon ? (
+                                            <span className={cn("material-symbols-rounded text-[14px]", statusConfig.iconClass)}>
+                                                {statusConfig.icon}
+                                            </span>
+                                        ) : (
+                                            <span className={cn("w-1.5 h-1.5 rounded-full", statusConfig.dotClass)} />
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </motion.button>
                     );
                 })}

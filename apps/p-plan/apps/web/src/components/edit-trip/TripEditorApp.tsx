@@ -319,6 +319,7 @@ export default function TripEditorApp({ id }: { id: string }) {
                 isSaving={isSaving}
                 onSave={handleSaveEntireTrip}
                 sectionWarnings={sectionWarnings}
+                currentTrip={displayTrip}
             />
 
             <EditFloatingActions

@@ -142,6 +142,18 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
     }
 
+    // Footprints
+    match /footprintPoints/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+    match /footprintActivities/{docId} {
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
+    }
+
     // 템플릿 (travelTemplates, travel_templates)
     match /travelTemplates/{docId} {
       allow read: if resource == null || resource.data.isPublic == true || (isSignedIn() && resource.data.userId == request.auth.uid);

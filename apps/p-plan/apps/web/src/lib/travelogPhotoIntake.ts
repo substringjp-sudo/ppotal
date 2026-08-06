@@ -124,7 +124,7 @@ export async function intakePhotosToPlaces(
         const lng = withCoords.reduce((s, p) => s + p.lng!, 0) / withCoords.length;
         return { lat, lng };
     });
-    const validCentroids = centroids.filter((c): c is { lat: number; lng: number } => !!c);
+    const validCentroids = centroids.filter((c): c is { lat: number; lng: number } => !!c && !Number.isNaN(c.lat) && !Number.isNaN(c.lng));
     const geoResults = validCentroids.length ? await batchReverseGeocodeNames(validCentroids) : [];
 
     let geoIdx = 0;
@@ -132,7 +132,7 @@ export async function intakePhotosToPlaces(
     const places: TravelogPlace[] = clusters.map((cluster, i) => {
         const centroid = centroids[i];
         let name: string | undefined;
-        if (centroid) {
+        if (centroid && !Number.isNaN(centroid.lat) && !Number.isNaN(centroid.lng)) {
             const geo = geoResults[geoIdx++];
             name = geo?.city || geo?.prefecture || geo?.country;
         }

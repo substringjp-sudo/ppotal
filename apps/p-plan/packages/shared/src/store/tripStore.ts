@@ -15,13 +15,16 @@ const getStorage = () => {
         if (typeof window !== 'undefined' && window.localStorage) {
             return localStorage;
         }
-        // Obfuscate module name to prevent static build-time resolution by Webpack/Turbopack
-        const moduleName = '@react-native-async-storage/' + 'async-storage';
-        const AsyncStorage = require(moduleName).default;
-        return AsyncStorage;
+        // Obfuscate require to prevent static build-time resolution by Webpack/Turbopack
+        const nativeRequire = typeof eval !== 'undefined' ? eval('require') : null;
+        if (nativeRequire) {
+            const AsyncStorage = nativeRequire('@react-native-async-storage/async-storage')?.default;
+            return AsyncStorage;
+        }
     } catch (e) {
         return undefined;
     }
+    return undefined;
 };
 
 export const useTripStore = create<TripState>()(
