@@ -3,10 +3,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useWizardStore, generateId, getSavedSpots, type SavedSpot, type TripSummary, type Travelog, cn } from '@pplaner/shared';
+import { generateId, type TripSummary, type Travelog, cn } from '@pplaner/shared';
 import { parseISO, startOfDay, isAfter, isBefore, format } from 'date-fns';
-import PathwalkImportModal from '@/components/travelogs/PathwalkImportModal';
-import SavedSeedRow from '@/components/home/SavedSeedRow';
 
 /**
  * 홈 = 내 여행 갤러리 (컨셉 스파인 STEP 2-1).
@@ -66,24 +64,7 @@ export default function JourneyGallery({
     displayName?: string | null;
     userId?: string;
 }) {
-    const openWizard = useWizardStore((s) => s.open);
     const router = useRouter();
-    const [showPathwalk, setShowPathwalk] = useState(false);
-    const [savedSpots, setSavedSpots] = useState<SavedSpot[]>([]);
-
-    // 저장한 스팟은 다음 여행의 씨앗 — 홈에서 바로 보이게 가져온다.
-    useEffect(() => {
-        if (!userId) return;
-        let alive = true;
-        getSavedSpots(userId).then((s) => { if (alive) setSavedSpots(s); });
-        return () => { alive = false; };
-    }, [userId]);
-
-    // "사진으로"는 계획 위저드(날짜·지역·취향 4단계)를 거치지 않는다. 사진이 곧 시작이므로
-    // 빈 여행기의 에디터로 바로 보내고, 첫 화면인 사진 고르기를 자동으로 연다.
-    const startFromPhotos = () => {
-        router.push(`/travelogs/log_${generateId()}/edit?photos=1`);
-    };
 
     const journeys = useMemo<Journey[]>(() => {
         const now = startOfDay(new Date());
@@ -140,54 +121,6 @@ export default function JourneyGallery({
                 </p>
             </div>
 
-            {/* 새로 시작 — 네 개의 문 */}
-            <div className="mb-8 rounded-3xl bg-gradient-to-br from-primary to-indigo-600 p-5 sm:p-6 shadow-lg">
-                <p className="text-sm font-black text-white">새로 시작</p>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                    <button
-                        type="button"
-                        onClick={() => openWizard('PLAN')}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">edit_note</span>
-                        <span><span className="block text-sm font-black text-white">계획으로</span><span className="block text-[11px] text-white/70">일정을 짜며 시작</span></span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={startFromPhotos}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">photo_library</span>
-                        <span><span className="block text-sm font-black text-white">사진으로</span><span className="block text-[11px] text-white/70">사진을 올리면 바로 정리돼요</span></span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setShowPathwalk(true)}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                        title="PATHWALK가 기록한 발자취를 여행기로 가져옵니다"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">footprint</span>
-                        <span><span className="block text-sm font-black text-white">PATHWALK</span><span className="block text-[11px] text-white/70">발자취에서 가져오기</span></span>
-                    </button>
-                    {/* 네 번째 문 — 둘러보기에서 저장해 둔 곳이 출발점이 된다 */}
-                    <Link
-                        href={savedSpots.length > 0 ? '/saved' : '/discover?tab=spots'}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">bookmark</span>
-                        <span>
-                            <span className="block text-sm font-black text-white">저장한 곳에서</span>
-                            <span className="block text-[11px] text-white/70">
-                                {savedSpots.length > 0 ? `가고 싶은 지도 · ${savedSpots.length}곳` : '둘러보기에서 마음에 든 곳 저장'}
-                            </span>
-                        </span>
-                    </Link>
-                </div>
-            </div>
-
-            {/* 가고 싶은 곳 — 저장이 그리는 다음 여행 */}
-            <SavedSeedRow spots={savedSpots} />
-
             {/* 여행 갤러리 */}
             {journeys.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center">
@@ -221,9 +154,6 @@ export default function JourneyGallery({
                 </div>
             )}
 
-            {showPathwalk && userId && (
-                <PathwalkImportModal userId={userId} onClose={() => setShowPathwalk(false)} />
-            )}
         </div>
     );
 }

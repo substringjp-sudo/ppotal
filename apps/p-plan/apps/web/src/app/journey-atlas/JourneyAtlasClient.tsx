@@ -22,6 +22,7 @@ import dynamic from 'next/dynamic';
 const AtlasMapView = dynamic(() => import('@/components/journey-atlas/AtlasMapView'), { ssr: false });
 import TripFilterPanel from '@/components/journey-atlas/TripFilterPanel';
 import TimelineSlider from '@/components/journey-atlas/TimelineSlider';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 
 export default function JourneyAtlasClient() {
   const { user, loading } = useAuth();
@@ -155,7 +156,9 @@ export default function JourneyAtlasClient() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 bg-background-light dark:bg-background-dark overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-background-light dark:bg-background-dark overflow-hidden">
+      <MyPageTabs />
+      <div className="relative flex-1">
       {/* 상단 헤더 */}
       <header className="absolute top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between pointer-events-none">
         <motion.div
@@ -270,6 +273,7 @@ export default function JourneyAtlasClient() {
           </motion.div>
         </div>
       )}
+      </div>
     </div>
   );
 }

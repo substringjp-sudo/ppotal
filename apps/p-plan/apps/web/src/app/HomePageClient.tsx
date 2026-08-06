@@ -10,6 +10,7 @@ import { useUserStore } from '@pplaner/shared';
 import TripEditorApp from '@/components/edit-trip/TripEditorApp';
 import JourneyGallery from '@/components/home/JourneyGallery';
 import { subscribeToUserTravelogs, Travelog } from '@pplaner/shared';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -71,6 +72,7 @@ export default function HomePage() {
   // 로그인된 사용자: 홈 = 내 여행 갤러리
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <MyPageTabs />
       <JourneyGallery trips={trips} travelogs={travelogs} displayName={profile?.displayName || user.displayName} userId={user.uid} />
 
       {showOnboarding && user && (

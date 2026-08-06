@@ -13,9 +13,9 @@ import {
 } from '@pplaner/shared';
 import { useIntelligence } from '@/hooks/useIntelligence';
 
-import { motion, AnimatePresence } from 'framer-motion';
 import DashboardPageLayout from '@/components/layout/DashboardPageLayout';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 import DashboardFilterBar from '@/components/layout/DashboardFilterBar';
 import { LayoutGrid, List as ListIcon, Share2, Download, Sparkles, Compass, Heart, Search } from 'lucide-react';
 
@@ -91,8 +91,9 @@ export default function StatsPage() {
   }
 
   return (
-    <>
-    <DashboardPageLayout>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+      <MyPageTabs />
+      <DashboardPageLayout>
         <DashboardPageHeader 
           title="트래블 인텔리전스"
           description="나의 여행 스타일과 기록을 분석한 스마트 인사이트를 확인하세요."
@@ -267,6 +268,6 @@ export default function StatsPage() {
             onComplete={() => setShowPersonaWizard(false)}
           />
       )}
-    </>
+    </div>
   );
 }

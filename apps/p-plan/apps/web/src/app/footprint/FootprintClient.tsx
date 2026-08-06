@@ -19,6 +19,7 @@ import { saveTravelog } from '@pplaner/shared';
 import FootprintTimeline from '@/components/footprint/FootprintTimeline';
 import NewActivitySheet from '@/components/footprint/NewActivitySheet';
 import ActivityDetailSheet from '@/components/footprint/ActivityDetailSheet';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 
 const ymd = (iso: string) => iso.slice(0, 10);
 
@@ -161,6 +162,7 @@ export default function FootprintClient() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712] pb-24">
+            <MyPageTabs />
             <div className="mx-auto max-w-[720px] px-4 sm:px-6 pt-6">
                 <div className="flex items-start justify-between gap-3 mb-6">
                     <div>

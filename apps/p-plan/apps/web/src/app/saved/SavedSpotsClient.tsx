@@ -9,6 +9,7 @@ import {
 } from '@pplaner/shared';
 import { useAuth } from '@/hooks/useAuth';
 import MapComponent from '@/components/common/MapComponent';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 
 /**
  * 가고 싶은 지도 (P3 + P5) — 피드에서 북마크한 스팟들의 개인 보드.
@@ -72,6 +73,7 @@ export default function SavedSpotsClient() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">
+            <MyPageTabs />
             {/* 지도 */}
             <div className="relative h-[42vh] min-h-[280px] w-full border-b border-slate-200 dark:border-white/10 bg-[#020617]">
                 {markers.length > 0 ? (

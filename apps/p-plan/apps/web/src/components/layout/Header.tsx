@@ -8,6 +8,7 @@ import ProfileModal from '../user/ProfileModal';
 import { usePathname } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationBell from './NotificationBell';
+import CreateActionMenu from './CreateActionMenu';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ANIMATION_EASE, TRANSITION_DEFAULT, TRANSITION_SPRING, TRANSITION_SPRING_BOUNCY } from '@/lib/animations';
 
@@ -69,12 +70,8 @@ export default function Header() {
             { href: '/about', label: '소개', icon: 'info', authRequired: false },
         ];
 
-    // 프로필 드롭다운 — 내 데이터를 보는 방식들
+    // 프로필 드롭다운 — 순수 계정 관련
     const secondaryLinks = [
-        { href: '/travelogs', label: '내 여행기', icon: 'auto_stories' },
-        { href: '/footprint', label: '발자취', icon: 'footprint' },
-        { href: '/journey-atlas', label: '여행 지도', icon: 'map' },
-        { href: '/stats', label: '인텔리전스', icon: 'analytics' },
         { href: '/about', label: '소개', icon: 'info' },
     ];
 
@@ -145,8 +142,13 @@ export default function Header() {
                     {/* 우측 액션 영역 */}
                     <div className="flex flex-1 justify-end gap-3 items-center">
 
-                        {/* 알림 벨 */}
-                        {user && <NotificationBell />}
+                        {/* 알림 벨 및 새로 시작 액션 */}
+                        {user && (
+                            <div className="flex items-center gap-2">
+                                <CreateActionMenu />
+                                <NotificationBell />
+                            </div>
+                        )}
 
                         {/* 프로필 / 로그인 */}
                         {user ? (

@@ -11,6 +11,7 @@ import { LayoutGrid, List as ListIcon, Map as MapIcon, Plus, CheckSquare, Filter
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import DashboardFilterBar from '@/components/layout/DashboardFilterBar';
 import DashboardPageLayout from '@/components/layout/DashboardPageLayout';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 
 /**
  * TravelogListPageClient - 감성적인 여행 기록 대시보드
@@ -153,8 +154,10 @@ export default function TravelogListPageClient() {
     );
 
     return (
-        <DashboardPageLayout>
-            <DashboardPageHeader 
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+            <MyPageTabs />
+            <DashboardPageLayout>
+                <DashboardPageHeader 
                 title={<>여행 <span className="text-primary italic">기록</span></>}
                 description="소중한 여행의 순간들을 기록하고 공유합니다."
             />
@@ -357,6 +360,7 @@ export default function TravelogListPageClient() {
                     trips={trips}
                     onSelect={handleCreateFromTrip}
                 />
-        </DashboardPageLayout>
+            </DashboardPageLayout>
+        </div>
     );
 }
