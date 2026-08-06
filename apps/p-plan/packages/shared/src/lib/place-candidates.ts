@@ -35,6 +35,23 @@ export interface CandidateContext {
     photoCount?: number;
     /** 첫 사진 시각 HH:mm */
     timeOfDay?: string;
+    /** 방문 날짜 YYYY-MM-DD — 계획의 일정과 대조할 때 쓴다 */
+    visitDate?: string;
+    /**
+     * 이 여행의 계획에 적혀 있던 장소들.
+     * 계획대로 다녔는지와 무관하게 "후보 어휘"로서 유효하다 — 없으면 그냥 무시된다.
+     */
+    plannedPlaces?: PlannedPlaceHint[];
+}
+
+/** trip-priors.ts의 PlannedPlace 중 랭킹에 필요한 부분만 (순환 의존을 피하려고 여기 둔다) */
+export interface PlannedPlaceHint {
+    name: string;
+    lat?: number;
+    lng?: number;
+    googlePlaceId?: string;
+    date?: string;
+    source?: 'itinerary' | 'bucketlist';
 }
 
 export interface ScoredCandidate extends PlaceCandidate {
@@ -118,6 +135,74 @@ function dwellFit(types: string[], dwellMinutes?: number): number {
     return long ? 0.3 : 0;
 }
 
+/** 이름 비교용 정규화 — 공백·괄호·표기 흔들림을 흡수한다 */
+function normalizeName(s: string): string {
+    return s.toLowerCase().replace(/[\s\-_()[\]{}·・,.'"]/g, '');
+}
+
+function namesMatch(a: string, b: string): boolean {
+    const x = normalizeName(a);
+    const y = normalizeName(b);
+    if (!x || !y) return false;
+    if (x === y) return true;
+    // 한쪽이 다른 쪽을 포함하면 같은 곳으로 본다 ("긴카쿠지" ⊂ "긴카쿠지 은각사")
+    const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+    return short.length >= 2 && long.includes(short);
+}
+
+function metersBetween(aLat: number, aLng: number, bLat: number, bLng: number): number {
+    const R = 6371000;
+    const dLat = (bLat - aLat) * Math.PI / 180;
+    const dLng = (bLng - aLng) * Math.PI / 180;
+    const la1 = aLat * Math.PI / 180;
+    const la2 = bLat * Math.PI / 180;
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * 계획에 적혀 있던 장소와 얼마나 맞아떨어지는가 (0 ~ 1).
+ *
+ * 계획은 사용자가 직접 이름을 적어둔 것이라 후보 이름과 맞으면 거의 확실한 정답이다.
+ * 다만 계획대로 안 다녔을 수 있으므로 강하게 밀되 절대적으로 만들지는 않는다.
+ * 계획이 없거나 좌표·이름이 비어 있으면 0이 나와 기존 동작 그대로다.
+ */
+function plannedFit(c: PlaceCandidate, ctx: CandidateContext): { score: number; matched?: PlannedPlaceHint } {
+    const planned = ctx.plannedPlaces;
+    if (!planned?.length) return { score: 0 };
+
+    let best = 0;
+    let bestHit: PlannedPlaceHint | undefined;
+
+    for (const p of planned) {
+        let s = 0;
+
+        if (p.googlePlaceId && c.placeId && p.googlePlaceId === c.placeId) {
+            s = 1;                                    // 같은 장소 ID — 의심의 여지가 없다
+        } else if (namesMatch(p.name, c.name)) {
+            // 이름이 같으면 강하지만, 좌표가 있는데 멀면 동명이인일 수 있다
+            const far = (p.lat != null && p.lng != null && c.lat != null && c.lng != null)
+                && metersBetween(p.lat, p.lng, c.lat, c.lng) > 400;
+            s = far ? 0.35 : 0.9;
+        } else if (p.lat != null && p.lng != null && c.lat != null && c.lng != null) {
+            // 이름은 달라도 계획한 좌표 바로 위라면 그 계획의 실체일 가능성이 있다
+            const d = metersBetween(p.lat, p.lng, c.lat, c.lng);
+            if (d <= 60) s = 0.5;
+            else if (d <= 150) s = 0.25;
+        }
+
+        if (s === 0) continue;
+
+        // 일정(날짜 있음)이 버킷리스트보다 강하고, 날짜까지 맞으면 더 강하다
+        if (p.source === 'bucketlist') s *= 0.7;
+        if (p.date && ctx.visitDate) s *= p.date === ctx.visitDate ? 1 : 0.5;
+
+        if (s > best) { best = s; bestHit = p; }
+    }
+
+    return { score: best, matched: bestHit };
+}
+
 /**
  * 후보를 신호 기반으로 정렬한다. 점수가 낮아도 버리지 않고 돌려준다 —
  * "제안조차 없는" 상황을 만들지 않는 것이 이 함수의 목적이다.
@@ -142,16 +227,18 @@ export function rankPlaceCandidates(
         // 인지도는 약하게만 — 유명 랜드마크에 과하게 쏠리지 않도록
         const prominence = Math.min(Math.log10((c.userRatingsTotal ?? 0) + 1) / 4, 0.5);
         const closedPenalty = c.businessStatus && c.businessStatus !== 'OPERATIONAL' ? -1.5 : 0;
+        const planned = plannedFit(c, ctx);
 
         const score =
             1.6 * distance +
             1.1 * dwell +
             0.7 * time +
+            1.4 * planned.score +
             photoBonus +
             prominence +
             closedPenalty;
 
-        return { ...c, score, reason: explain(c, ctx, { dwell, time, photoBonus }) };
+        return { ...c, score, reason: explain(c, ctx, { dwell, time, photoBonus, planned }) };
     });
 
     scored.sort((a, b) => b.score - a.score);
@@ -161,8 +248,14 @@ export function rankPlaceCandidates(
 function explain(
     c: PlaceCandidate,
     ctx: CandidateContext,
-    parts: { dwell: number; time: number; photoBonus: number },
+    parts: { dwell: number; time: number; photoBonus: number; planned: { score: number; matched?: PlannedPlaceHint } },
 ): string | undefined {
+    // 계획과 맞은 건 가장 설득력 있는 이유라 맨 앞에 둔다
+    if (parts.planned.score >= 0.6) {
+        return parts.planned.matched?.source === 'bucketlist'
+            ? '가고 싶다고 저장한 곳'
+            : '계획에 있던 곳';
+    }
     if (parts.dwell >= 0.9 && ctx.dwellMinutes != null) {
         return `${Math.round(ctx.dwellMinutes)}분 머문 곳과 어울려요`;
     }

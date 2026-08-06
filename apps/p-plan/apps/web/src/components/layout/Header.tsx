@@ -8,6 +8,8 @@ import ProfileModal from '../user/ProfileModal';
 import { usePathname } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationBell from './NotificationBell';
+import NewTripMenu from './NewTripMenu';
+import { getSavedSpots } from '@pplaner/shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ANIMATION_EASE, TRANSITION_DEFAULT, TRANSITION_SPRING, TRANSITION_SPRING_BOUNCY } from '@/lib/animations';
 
@@ -43,6 +45,17 @@ export default function Header() {
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
 
+    // "저장한 곳에서" 문에 개수를 띄우기 위해서만 필요하다 — 실패해도 0으로 두고 넘어간다.
+    const [savedCount, setSavedCount] = useState(0);
+    useEffect(() => {
+        if (!user) { setSavedCount(0); return; }
+        let alive = true;
+        getSavedSpots(user.uid)
+            .then((s) => { if (alive) setSavedCount(s.length); })
+            .catch(() => { /* 개수 표시는 부가정보라 조용히 넘어간다 */ });
+        return () => { alive = false; };
+    }, [user]);
+
 
     // 사용자 메뉴 외부 클릭 시 닫기
     useEffect(() => {
@@ -69,12 +82,11 @@ export default function Header() {
             { href: '/about', label: '소개', icon: 'info', authRequired: false },
         ];
 
-    // 프로필 드롭다운 — 내 데이터를 보는 방식들
+    // 프로필 드롭다운은 '계정'만 담는다.
+    // 내 콘텐츠(여행기·발자취·여행지도·인텔리전스)는 계정 설정이 아니라 내가 만든 것이라,
+    // "내 여행" 안의 탭으로 옮겼다. 여기 두면 둘러보기에서도 똑같이 보여서
+    // '내 것 / 남의 것' 모드 경계가 무너진다.
     const secondaryLinks = [
-        { href: '/travelogs', label: '내 여행기', icon: 'auto_stories' },
-        { href: '/footprint', label: '발자취', icon: 'footprint' },
-        { href: '/journey-atlas', label: '여행 지도', icon: 'map' },
-        { href: '/stats', label: '인텔리전스', icon: 'analytics' },
         { href: '/about', label: '소개', icon: 'info' },
     ];
 
@@ -144,6 +156,10 @@ export default function Header() {
 
                     {/* 우측 액션 영역 */}
                     <div className="flex flex-1 justify-end gap-3 items-center">
+
+                        {/* 만들기 — 목적지가 아니라 상시 액션이라 어느 화면에서든 같은 자리에 둔다
+                            (모바일은 하단 내비 가운데 + 버튼이 같은 역할을 한다) */}
+                        {user && <div className="hidden md:block"><NewTripMenu userId={user.uid} savedCount={savedCount} /></div>}
 
                         {/* 알림 벨 */}
                         {user && <NotificationBell />}

@@ -55,12 +55,27 @@ export default function FootprintClient() {
 
     useEffect(() => { refetchPoints(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user]);
 
+    // 개요("내 여행 → 발자취")에서 지역 카드나 "여행기 쓰기"를 눌러 들어온 경우,
+    // 여기서부터는 날짜축이 의미를 갖는다 — 어느 지역/어느 시점을 볼지 좁혀서 연다.
+    const [filter, setFilter] = useState<{ region?: string; from?: string }>({});
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const q = new URLSearchParams(window.location.search);
+        setFilter({ region: q.get('region') || undefined, from: q.get('from') || undefined });
+    }, []);
+
     const days = useMemo(() => {
+        const inRegion = (a: FootprintActivity) => !filter.region || a.region === filter.region;
         const set = new Set<string>();
-        activities.forEach((a) => set.add(ymd(a.startAt)));
-        points.forEach((p) => set.add(ymd(p.timestamp)));
-        return Array.from(set).sort().reverse();
-    }, [activities, points]);
+        activities.filter(inRegion).forEach((a) => set.add(ymd(a.startAt)));
+        // 지역으로 좁힌 경우엔 활동이 없는 날(포인트만 있는 날)을 끌어오지 않는다
+        if (!filter.region) points.forEach((p) => set.add(ymd(p.timestamp)));
+        const all = Array.from(set).sort().reverse();
+        if (!filter.from) return all;
+        // 특정 기록으로 들어왔으면 그 날짜가 맨 위에 오게 한다
+        const fromDay = ymd(filter.from);
+        return [fromDay, ...all.filter((d) => d !== fromDay)].filter((d) => set.has(d) || d === fromDay);
+    }, [activities, points, filter]);
 
     const handleFiles = async (files: FileList | null) => {
         if (!files || files.length === 0 || !user) return;

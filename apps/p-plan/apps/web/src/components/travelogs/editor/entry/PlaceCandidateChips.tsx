@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     rankPlaceCandidates, cn,
     type PlaceCandidate, type ScoredCandidate, type CandidateContext,
@@ -21,23 +21,34 @@ export default function PlaceCandidateChips({
     onPick: (picked: { name: string; placeId?: string; lat?: number; lng?: number; address?: string }) => void;
     onOpenFull: () => void;
 }) {
-    const [candidates, setCandidates] = useState<ScoredCandidate[] | null>(null);
+    const [raw, setRaw] = useState<PlaceCandidate[] | null>(null);
 
     useEffect(() => {
         let alive = true;
-        if (lat == null || lng == null) { setCandidates([]); return; }
-        setCandidates(null);
-        getNearbyCandidates(lat, lng).then((raw: PlaceCandidate[]) => {
-            if (alive) setCandidates(rankPlaceCandidates(raw, context));
+        if (lat == null || lng == null) { setRaw([]); return; }
+        setRaw(null);
+        getNearbyCandidates(lat, lng).then((list: PlaceCandidate[]) => {
+            if (alive) setRaw(list);
         });
         return () => { alive = false; };
-        // context 값(체류시간 등)이 아주 미세하게 바뀔 때마다 재조회할 필요는 없다 —
-        // 좌표가 같으면 캐시로 즉시 응답되므로, 좌표 변경 시에만 다시 부른다.
+        // 조회는 좌표에만 의존한다 — 체류시간 등이 미세하게 흔들려도 다시 부를 이유가 없다.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [lat, lng]);
 
+    // 순위는 따로 계산한다. 계획 사전 정보는 여행을 비동기로 읽어온 뒤에야 도착하는데,
+    // 조회와 묶여 있으면 늦게 온 계획이 순위에 반영되지 않는다.
+    const candidates = useMemo<ScoredCandidate[] | null>(
+        () => (raw === null ? null : rankPlaceCandidates(raw, context)),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [raw, context.dwellMinutes, context.photoCount, context.timeOfDay, context.visitDate, context.plannedPlaces],
+    );
+
     if (lat == null || lng == null) return null;
     if (candidates && candidates.length === 0) return null; // 조용히 사라짐 — 강요하지 않는다
+
+    const top = candidates?.[0];
+    const topReason = (top?.reason === '계획에 있던 곳' || top?.reason === '가고 싶다고 저장한 곳')
+        ? top.reason : undefined;
 
     const choose = (c: ScoredCandidate) => {
         onPick({ name: c.name, placeId: c.placeId, lat: c.lat, lng: c.lng, address: c.address });
@@ -46,7 +57,13 @@ export default function PlaceCandidateChips({
 
     return (
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-0.5 px-0.5 pb-0.5">
-            <span className="shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-widest">여기 맞아요?</span>
+            {/* 1순위가 계획에서 온 거라면 그 사실을 라벨로 밝힌다 — 왜 이게 떴는지 알아야 믿고 누른다 */}
+            <span className={cn(
+                'shrink-0 text-[10px] font-black uppercase tracking-widest',
+                topReason ? 'text-primary' : 'text-slate-400',
+            )}>
+                {topReason || '여기 맞아요?'}
+            </span>
             {candidates === null ? (
                 <>
                     <div className="h-6 w-16 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse shrink-0" />

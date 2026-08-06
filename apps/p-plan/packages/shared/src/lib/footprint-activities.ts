@@ -63,9 +63,20 @@ function activityFromPointCluster(
         places.length > 1 ? 'wander' :
         'visit';
 
+    // 지역은 최빈값으로 잡는다 — 한 활동이 시 경계를 걸치더라도 대표 지역은 하나여야
+    // "도쿄 4번 방문" 같은 누적이 성립한다.
+    const regionTally = new Map<string, number>();
+    sorted.forEach((p) => {
+        if (p.region) regionTally.set(p.region, (regionTally.get(p.region) || 0) + 1);
+    });
+    let region: string | undefined;
+    let regionTop = 0;
+    regionTally.forEach((n, name) => { if (n > regionTop) { regionTop = n; region = name; } });
+
     return {
         userId: first.userId,
         tripId: first.tripId,
+        region,
         startAt: first.timestamp,
         endAt: last.departedAt || last.timestamp,
         order,

@@ -2,19 +2,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useWizardStore, generateId, getSavedSpots, type SavedSpot, type TripSummary, type Travelog, cn } from '@pplaner/shared';
+import { getSavedSpots, type SavedSpot, type TripSummary, type Travelog, cn } from '@pplaner/shared';
 import { parseISO, startOfDay, isAfter, isBefore, format } from 'date-fns';
-import PathwalkImportModal from '@/components/travelogs/PathwalkImportModal';
 import SavedSeedRow from '@/components/home/SavedSeedRow';
+import FootprintPanel from '@/components/home/FootprintPanel';
 
 /**
- * 홈 = 내 여행 갤러리 (컨셉 스파인 STEP 2-1).
+ * 홈 = 내 여행 = 마이페이지.
  *
- * 하나의 "여행(Journey)"을 그릇으로, 계획(trip)과 여행기(travelog)를 합쳐 카드로 보여준다.
- * 각 카드에 라이프사이클 상태 배지(계획·여행 중·여행기·공유됨)를 달고, 상단엔 "새로 시작"의
- * 네 문(계획으로 · 사진으로 · PATHWALK · 저장한 곳에서)을 둔다.
+ * "내 여행"과 "둘러보기"는 내 것 / 남의 것이라는 두 모드다. 그렇다면 내 콘텐츠는
+ * 전부 이 안에 있어야 하는데, 발자취·여행 지도·인텔리전스가 계정용 프로필 메뉴에
+ * 흩어져 있었다. 프로필 메뉴는 둘러보기에서도 똑같이 열리므로 모드 경계가 무너진다.
+ * 그래서 내 콘텐츠를 여기 탭으로 모았다.
+ *
+ * "새로 시작"은 반대로 여기서 빠졌다. 만들기는 내 것도 남의 것도 아닌 세 번째 축이라
+ * 어느 화면에 있든 같은 자리(헤더/하단 내비 가운데)에 있어야 하기 때문이다.
  */
+
+const TABS = [
+    { id: 'trips' as const, label: '여행' },
+    { id: 'footprint' as const, label: '발자취' },
+    { id: 'stats' as const, label: '인텔리전스' },
+];
+type TabId = typeof TABS[number]['id'];
 
 interface Journey {
     key: string;
@@ -27,12 +37,14 @@ interface Journey {
     href: string;
 }
 
+// 배지는 임의의 그라디언트/사진 커버 위에 얹히므로 배경이 불투명해야 읽힌다.
+// (bg-primary/10은 흰 배경에선 보이지만 파란 커버 위에선 거의 사라진다)
 const BADGE = {
-    plan: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
-    ongoing: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
-    write: 'bg-primary/10 text-primary',
-    journal: 'bg-primary/10 text-primary',
-    shared: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    plan: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    ongoing: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-200',
+    write: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
+    journal: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
+    shared: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200',
 };
 
 const THEME_GRADIENT: Record<string, string> = {
@@ -66,10 +78,8 @@ export default function JourneyGallery({
     displayName?: string | null;
     userId?: string;
 }) {
-    const openWizard = useWizardStore((s) => s.open);
-    const router = useRouter();
-    const [showPathwalk, setShowPathwalk] = useState(false);
     const [savedSpots, setSavedSpots] = useState<SavedSpot[]>([]);
+    const [tab, setTab] = useState<TabId>('trips');
 
     // 저장한 스팟은 다음 여행의 씨앗 — 홈에서 바로 보이게 가져온다.
     useEffect(() => {
@@ -79,10 +89,20 @@ export default function JourneyGallery({
         return () => { alive = false; };
     }, [userId]);
 
-    // "사진으로"는 계획 위저드(날짜·지역·취향 4단계)를 거치지 않는다. 사진이 곧 시작이므로
-    // 빈 여행기의 에디터로 바로 보내고, 첫 화면인 사진 고르기를 자동으로 연다.
-    const startFromPhotos = () => {
-        router.push(`/travelogs/log_${generateId()}/edit?photos=1`);
+    // 주소로 탭을 열 수 있게 (?tab=footprint) — 옛 /footprint·/stats 링크가 여기로 온다
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const t = new URLSearchParams(window.location.search).get('tab');
+        if (t && TABS.some((x) => x.id === t)) setTab(t as TabId);
+    }, []);
+
+    const selectTab = (id: TabId) => {
+        setTab(id);
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', id);
+            window.history.replaceState({}, '', url);
+        }
     };
 
     const journeys = useMemo<Journey[]>(() => {
@@ -140,51 +160,45 @@ export default function JourneyGallery({
                 </p>
             </div>
 
-            {/* 새로 시작 — 네 개의 문 */}
-            <div className="mb-8 rounded-3xl bg-gradient-to-br from-primary to-indigo-600 p-5 sm:p-6 shadow-lg">
-                <p className="text-sm font-black text-white">새로 시작</p>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {/* 내 콘텐츠 탭 — 여행(만든 것) · 발자취(다녀온 것) · 인텔리전스(나라는 여행자) */}
+            <div className="mb-6 flex gap-1 border-b border-slate-200 dark:border-slate-800 overflow-x-auto" role="tablist">
+                {TABS.map((t) => (
                     <button
-                        type="button"
-                        onClick={() => openWizard('PLAN')}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
+                        key={t.id}
+                        role="tab"
+                        aria-selected={tab === t.id}
+                        onClick={() => selectTab(t.id)}
+                        className={cn(
+                            'relative shrink-0 px-1 py-3 mr-6 text-sm font-black transition-colors',
+                            tab === t.id ? 'text-primary' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+                        )}
                     >
-                        <span className="material-symbols-rounded text-white text-[22px]">edit_note</span>
-                        <span><span className="block text-sm font-black text-white">계획으로</span><span className="block text-[11px] text-white/70">일정을 짜며 시작</span></span>
+                        {t.label}
+                        {tab === t.id && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
                     </button>
-                    <button
-                        type="button"
-                        onClick={startFromPhotos}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">photo_library</span>
-                        <span><span className="block text-sm font-black text-white">사진으로</span><span className="block text-[11px] text-white/70">사진을 올리면 바로 정리돼요</span></span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setShowPathwalk(true)}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                        title="PATHWALK가 기록한 발자취를 여행기로 가져옵니다"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">footprint</span>
-                        <span><span className="block text-sm font-black text-white">PATHWALK</span><span className="block text-[11px] text-white/70">발자취에서 가져오기</span></span>
-                    </button>
-                    {/* 네 번째 문 — 둘러보기에서 저장해 둔 곳이 출발점이 된다 */}
-                    <Link
-                        href={savedSpots.length > 0 ? '/saved' : '/discover?tab=spots'}
-                        className="flex items-center gap-2.5 rounded-2xl bg-white/15 hover:bg-white/25 transition px-4 py-3 text-left"
-                    >
-                        <span className="material-symbols-rounded text-white text-[22px]">bookmark</span>
-                        <span>
-                            <span className="block text-sm font-black text-white">저장한 곳에서</span>
-                            <span className="block text-[11px] text-white/70">
-                                {savedSpots.length > 0 ? `가고 싶은 지도 · ${savedSpots.length}곳` : '둘러보기에서 마음에 든 곳 저장'}
-                            </span>
-                        </span>
-                    </Link>
-                </div>
+                ))}
             </div>
 
+            {tab === 'footprint' && userId && <FootprintPanel userId={userId} />}
+
+            {tab === 'stats' && (
+                <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center">
+                    <span className="material-symbols-rounded text-3xl text-primary">analytics</span>
+                    <p className="mt-2 text-sm font-black text-slate-900 dark:text-white">여행자로서의 나</p>
+                    <p className="mt-1 text-xs font-semibold text-slate-400">
+                        성향·배지·지역 통계를 한곳에서 봅니다.
+                    </p>
+                    <Link
+                        href="/stats"
+                        className="mt-4 inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:bg-primary/90 transition"
+                    >
+                        인텔리전스 열기
+                    </Link>
+                </div>
+            )}
+
+            {tab === 'trips' && (
+            <>
             {/* 가고 싶은 곳 — 저장이 그리는 다음 여행 */}
             <SavedSeedRow spots={savedSpots} />
 
@@ -192,7 +206,9 @@ export default function JourneyGallery({
             {journeys.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center">
                     <span className="material-symbols-rounded text-4xl text-slate-300">luggage</span>
-                    <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">아직 여행이 없어요. 위에서 새로 시작해 보세요.</p>
+                    <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">
+                        아직 여행이 없어요. 오른쪽 위 <b className="text-primary">새로 시작</b>에서 시작해 보세요.
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -220,9 +236,7 @@ export default function JourneyGallery({
                     ))}
                 </div>
             )}
-
-            {showPathwalk && userId && (
-                <PathwalkImportModal userId={userId} onClose={() => setShowPathwalk(false)} />
+            </>
             )}
         </div>
     );

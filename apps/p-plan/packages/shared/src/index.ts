@@ -53,6 +53,8 @@ export * from './lib/currency-utils';
 export * from './lib/budget-utils';
 export * from './lib/flight-utils';
 export * from './lib/geo-utils';
+export * from './lib/trip-priors';
+export * from './lib/footprint-summary';
 export * from './lib/statsCalculator';
 export * from './lib/locationStatsCalculator';
 export * from './lib/trip-readiness-service';
