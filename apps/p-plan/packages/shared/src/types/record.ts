@@ -185,6 +185,8 @@ export interface TravelogPlace {
     location?: EventLocation;       // 좌표 + 주소 (지도 렌더용)
     visitDate?: string;             // 방문일 (YYYY-MM-DD)
     day?: number;                   // 방문 일차
+    startTime?: string;             // 첫 사진 시각 HH:mm — "그때 뭘 했더라" 기억 방아쇠
+    endTime?: string;               // 마지막 사진 시각 HH:mm (체류 시간 추정)
 
     // 장소 뷰의 본문 (사용자가 이 장소에 대해 남긴 것)
     impression?: string;            // 소감/후기 (텍스트 fallback)

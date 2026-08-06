@@ -146,12 +146,22 @@ export async function intakePhotosToPlaces(
             name = geo?.city || geo?.prefecture || geo?.country || name;
         }
         const first = cluster[0];
+        const last = cluster[cluster.length - 1];
+        const hhmm = (iso: string) => {
+            const d = new Date(iso);
+            return isNaN(d.getTime()) ? undefined
+                : `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        };
+        const startTime = hhmm(first.timestamp);
+        const endTime = hhmm(last.timestamp);
         onProgress?.({ stage: 'geocoding', done: i + 1, total: clusters.length });
         return {
             id: generateId(),
             name,
             location: centroid ? { name, lat: centroid.lat, lng: centroid.lng } : undefined,
             visitDate: first.timestamp.slice(0, 10),
+            startTime,
+            endTime: endTime !== startTime ? endTime : undefined,
             photoUrls: cluster.map((p) => p.url),
             order: startOrder + i,
         };

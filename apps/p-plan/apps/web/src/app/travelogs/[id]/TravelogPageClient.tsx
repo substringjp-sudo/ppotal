@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import {
     getTravelog,
     Travelog,
-    TravelogSection,
     TravelogDailyPlan,
     TravelogPlace,
     syncTravelogPlaces,
+    buildStoryEntries,
+    groupStoryEntriesByDay,
     collectCategories,
     colorForCategory,
     cn
@@ -329,40 +330,11 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     {/* Left Column: Content */}
                     <div className="flex-1 min-w-0">
                         {viewMode === 'blog' ? (
-                            travelog.template === 'timeline' ? (
-                                <TimelineSection
-                                    timeline={travelog.timeline}
-                                    summary={travelog.summary}
-                                    onFocusEvent={focusEvent}
-                                />
-                            ) : (
-                            <>
-                                {/* Summary Block */}
-                                <ScrollReveal>
-                                    <section className="space-y-8 mb-32">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-[2px] bg-primary" />
-                                            <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">개요</h2>
-                                        </div>
-                                        <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">
-                                            {travelog.summary}
-                                        </p>
-                                    </section>
-                                </ScrollReveal>
-
-                                {/* Sections Rendering */}
-                                <div className="space-y-32">
-                                    {travelog.sections.map((section) => (
-                                        <ScrollReveal key={section.id}>
-                                            <SectionRenderer
-                                                section={section}
-                                                onFocusEvent={focusEvent}
-                                            />
-                                        </ScrollReveal>
-                                    ))}
-                                </div>
-                            </>
-                            )
+                            <StoryView
+                                travelog={travelog}
+                                byDay={travelog.template === 'timeline'}
+                                onFocusPlace={focusPlace}
+                            />
                         ) : (
                             <PlaceListView
                                 places={visiblePlaces}
@@ -687,77 +659,112 @@ function MapTemplateSection({ places, markers, center, zoom, highlightedId, onFo
 }
 
 /** 타임라인 템플릿: 일자별로 이벤트를 시간 순 레일에 세운다 */
-function TimelineSection({ timeline, summary, onFocusEvent }: {
-    timeline: TravelogDailyPlan[];
-    summary?: string;
-    onFocusEvent: (id: string, lat: number, lng: number) => void;
+/**
+ * 스토리 뷰 — 에디터가 쓴 카드 스트림(장소 카드 + 글 카드)을 그대로 읽는 화면.
+ * "쓴 것이 곧 읽히는 것"이라, 별도의 문서(sections)를 렌더하지 않는다.
+ * byDay=true(타임라인 템플릿)면 장소의 날짜가 바뀔 때마다 날짜 헤더를 세운다.
+ */
+function StoryView({ travelog, byDay, onFocusPlace }: {
+    travelog: Travelog;
+    byDay?: boolean;
+    onFocusPlace: (place: TravelogPlace) => void;
 }) {
-    const days = (timeline || []).filter((d) => d.events && d.events.length > 0);
-    if (days.length === 0) {
+    const entries = buildStoryEntries(travelog);
+    if (entries.length === 0) {
         return (
             <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
-                <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">event_busy</span>
-                <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 일정이 없어요.</p>
+                <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">auto_stories</span>
+                <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 내용이 없어요.</p>
             </div>
         );
     }
+
+    const groups = byDay
+        ? groupStoryEntriesByDay(entries)
+        : [{ day: undefined, date: undefined, entries }];
+
     return (
         <div className="space-y-16">
-            {summary && (
-                <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">{summary}</p>
+            {travelog.summary && (
+                <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">
+                    {travelog.summary}
+                </p>
             )}
-            {days.map((day) => (
-                <section key={day.day}>
-                    <div className="flex items-center gap-4 mb-8">
-                        <span className="text-5xl font-black text-primary/20 tabular-nums leading-none">D{day.day}</span>
-                        <div>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white">Day {day.day}</h2>
-                            {day.date && <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{day.date}</p>}
+            {groups.map((g, gi) => (
+                <section key={gi} className="space-y-10">
+                    {byDay && (g.day != null || g.date) && (
+                        <div className="flex items-center gap-4">
+                            {g.day != null && (
+                                <span className="text-5xl font-black text-primary/20 tabular-nums leading-none">D{g.day}</span>
+                            )}
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                                    {g.day != null ? `Day ${g.day}` : g.date}
+                                </h2>
+                                {g.date && g.day != null && (
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{g.date}</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                    <div className="relative pl-8 border-l-2 border-slate-200 dark:border-white/10 space-y-8">
-                        {day.events.map((e) => {
-                            const timeStr = e.time || (e.startTime ? `${e.startTime}${e.endTime ? ` – ${e.endTime}` : ''}` : '');
-                            const hasLoc = e.location?.lat != null && e.location?.lng != null;
-                            return (
-                                <div
-                                    key={e.id}
-                                    onClick={() => { if (hasLoc) onFocusEvent(e.id, e.location!.lat!, e.location!.lng!); }}
-                                    className={cn('relative', hasLoc && 'cursor-pointer')}
-                                >
-                                    <span className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-primary ring-4 ring-slate-50 dark:ring-[#030712]" />
-                                    {timeStr && <div className="text-[11px] font-black text-primary tabular-nums mb-1.5">{timeStr}</div>}
-                                    <div className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-white/[0.02] p-5 hover:border-primary/30 transition-colors">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <h3 className="text-lg font-black text-slate-900 dark:text-white">{e.title}</h3>
-                                            {typeof e.details?.rating === 'number' && e.details.rating > 0 && <StarRating value={e.details.rating} />}
-                                        </div>
-                                        {e.location?.name && (
-                                            <p className="mt-1 text-xs font-bold text-slate-400 flex items-center gap-1">
-                                                <span className="material-symbols-rounded text-sm">location_on</span>{e.location.name}
-                                            </p>
-                                        )}
-                                        {e.memo && <p className="mt-2.5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{e.memo}</p>}
-                                        {e.imageUrls && e.imageUrls.length > 0 && (
-                                            <div className="mt-3 flex gap-2 overflow-x-auto">
-                                                {e.imageUrls.slice(0, 4).map((url, idx) => (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img key={idx} src={url} alt="" className="h-24 w-24 object-cover rounded-xl flex-shrink-0 border border-slate-200 dark:border-white/5" />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    )}
+                    {g.entries.map((entry) => (
+                        <ScrollReveal key={entry.kind === 'place' ? entry.place.id : entry.note.id}>
+                            {entry.kind === 'note' ? (
+                                <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.75] whitespace-pre-wrap">
+                                    {entry.note.text}
+                                </p>
+                            ) : (
+                                <StoryPlaceBlock place={entry.place} onClick={() => onFocusPlace(entry.place)} />
+                            )}
+                        </ScrollReveal>
+                    ))}
                 </section>
             ))}
         </div>
     );
 }
 
-/** 포토북 템플릿: 장소마다 사진을 매거진식 그리드로, 소감을 캡션으로 */
+/** 스토리 흐름 속 장소 한 덩어리 — 사진 + 이름/시각 + 소감 */
+function StoryPlaceBlock({ place, onClick }: { place: TravelogPlace; onClick: () => void }) {
+    const photos = place.coverPhotoUrl
+        ? [place.coverPhotoUrl, ...(place.photoUrls || []).filter((u) => u !== place.coverPhotoUrl)]
+        : (place.photoUrls || []);
+    const timeLabel = place.startTime
+        ? (place.endTime ? `${place.startTime}–${place.endTime}` : place.startTime)
+        : '';
+    const meta = [place.visitDate, timeLabel, place.category].filter(Boolean).join(' · ');
+
+    return (
+        <div id={`place-${place.id}`} onClick={onClick} className="cursor-pointer group">
+            {photos.length > 0 && (
+                <div className={cn('grid gap-2 mb-5', photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2')}>
+                    {photos.slice(0, 4).map((url, i) => (
+                        <div key={i} className={cn('relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900',
+                            photos.length === 1 ? 'aspect-[16/10]' : photos.length === 3 && i === 0 ? 'col-span-2 aspect-[16/9]' : 'aspect-square')}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" />
+                        </div>
+                    ))}
+                </div>
+            )}
+            <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight group-hover:text-primary transition-colors">
+                        {place.name}
+                    </h3>
+                    {meta && <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">{meta}</p>}
+                </div>
+                {typeof place.rating === 'number' && place.rating > 0 && <StarRating value={place.rating} />}
+            </div>
+            {place.impression && (
+                <p className="mt-4 text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-[1.75] whitespace-pre-wrap">
+                    {place.impression}
+                </p>
+            )}
+        </div>
+    );
+}
+
 function PhotobookSection({ places, onFocusPlace }: {
     places: TravelogPlace[];
     onFocusPlace: (place: TravelogPlace) => void;
@@ -799,129 +806,6 @@ function PhotobookSection({ places, onFocusPlace }: {
             ))}
         </div>
     );
-}
-
-function SectionRenderer({
-    section,
-    onFocusEvent
-}: {
-    section: TravelogSection;
-    onFocusEvent: (id: string, lat: number, lng: number) => void;
-}) {
-    switch (section.type) {
-        case 'day_header':
-            return (
-                <div className="relative py-12 group">
-                    <div className="absolute left-0 top-0 w-24 h-[1px] bg-gradient-to-r from-primary/50 to-transparent" />
-                    <h2 className="text-7xl md:text-9xl font-black text-white/[0.03] tracking-tighter absolute -top-4 -left-4 pointer-events-none group-hover:text-white/[0.05] transition-all duration-1000">
-                        {section.content.replace('Day ', '0')}
-                    </h2>
-                    <h3 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight relative z-10 flex items-center gap-6">
-                        {section.content}
-                        <span className="w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/40" />
-                    </h3>
-                </div>
-            );
-            
-        case 'text':
-            return (
-                <div className="max-w-none p-8 rounded-[2rem] bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
-                    <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.7] font-normal tracking-wide whitespace-pre-wrap">
-                        {section.content}
-                    </p>
-                </div>
-            );
-            
-        case 'photo_gallery':
-            return (
-                <div className="grid grid-cols-2 gap-6">
-                    {section.imageUrls?.map((url, i) => (
-                        <div key={i} className={cn(
-                            "relative rounded-[2rem] overflow-hidden group border border-white/5",
-                            i % 3 === 0 ? "col-span-2 aspect-[16/9]" : "aspect-[1/1]"
-                        )}>
-                            <Image 
-                                src={url} 
-                                alt={`Journey memory ${i}`} 
-                                fill 
-                                className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" 
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-8">
-                                <div className="text-white/60 text-[10px] font-black uppercase tracking-widest">추억 캡슐 #{i + 1}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            );
-            
-        case 'event_block':
-            const event = section.contentJson || {};
-            const emotion = event.emotion || { joy: 0, sadness: 0, anger: 0 };
-            
-            const getEmotionColor = () => {
-                if (emotion.joy > 0.5) return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
-                if (emotion.sadness > 0.5) return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-                if (emotion.anger > 0.5) return 'text-rose-400 bg-rose-400/10 border-rose-400/20';
-                return 'text-white/30 bg-white/5 border-white/10';
-            };
-
-            return (
-                <div 
-                    id={`section-${event.id}`}
-                    onClick={() => event.location && onFocusEvent(event.id, event.location.lat, event.location.lng)}
-                    className="group relative p-8 rounded-[2.5rem] bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:border-primary/20 dark:hover:border-white/10 transition-all duration-500 cursor-pointer overflow-hidden shadow-sm dark:shadow-none"
-                >
-                    {/* Background Subtle Accent */}
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-primary/10 transition-all duration-1000" />
-                    
-                    <div className="relative flex items-start gap-8">
-                        <div className={cn(
-                            "w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-2xl",
-                            event.type === 'activity' ? "bg-primary text-white" : "bg-white/5 text-white/30 border border-white/10"
-                        )}>
-                            {event.type === 'activity' ? <span className="material-symbols-rounded text-2xl">navigation</span> : <span className="material-symbols-rounded text-2xl">location_on</span>}
-                        </div>
-                        
-                        <div className="flex-1 space-y-4">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <h3 className="text-2xl font-black text-slate-900 dark:text-white group-hover:text-primary transition-colors tracking-tight">
-                                        {event.title || '제목 없는 장소'}
-                                    </h3>
-                                    <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-white/30">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="material-symbols-rounded text-primary text-xs">schedule</span>
-                                            {event.type === 'activity' ? `${event.startTime} - ${event.endTime}` : event.time}
-                                        </div>
-                                        <span className="w-1 h-1 rounded-full bg-white/10" />
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="material-symbols-rounded text-primary text-xs">location_on</span>
-                                            {typeof event.location === 'string' ? event.location : (event.location?.name || '알 수 없는 장소')}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                {/* Emotion Badge */}
-                                <div className={cn(
-                                    "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all",
-                                    getEmotionColor()
-                                )}>
-                                    {emotion.joy > 0.5 ? '찬란한 즐거움' : 
-                                     emotion.sadness > 0.5 ? '우울함' : 
-                                     emotion.anger > 0.5 ? '강렬함' : '평온함'}
-                                </div>
-                            </div>
-                            
-                            <p className="text-slate-400 text-lg leading-relaxed font-medium line-clamp-3 group-hover:text-slate-200 transition-colors">
-                                {event.memo || '이 좌표에 기록된 일지가 없습니다.'}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            );
-        default:
-            return null;
-    }
 }
 
 function TravelogSkeleton() {
