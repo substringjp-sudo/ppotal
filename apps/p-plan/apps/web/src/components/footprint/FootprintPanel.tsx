@@ -29,14 +29,30 @@ const AtlasMapView = dynamic(() => import('@/components/journey-atlas/AtlasMapVi
 export default function FootprintPanel({
     userId,
     activities: given,
+    onSelectRegion,
+    onSelectStretch,
 }: {
     userId: string;
     /** 이미 갖고 있는 활동을 넘기면 구독하지 않고 그걸 쓴다 (여행 상세에 끼워 넣거나 미리보기할 때) */
     activities?: FootprintActivity[];
+    /**
+     * 드릴다운 처리. 같은 라우트 안에서 쓰일 때는 이 콜백을 받아야 한다 —
+     * router.push('/footprint?region=…')는 같은 페이지라 컴포넌트가 다시 마운트되지 않아
+     * 쿼리를 마운트 시점에만 읽는 쪽에서는 아무 일도 일어나지 않는다.
+     */
+    onSelectRegion?: (region: string) => void;
+    onSelectStretch?: (startAt: string) => void;
 }) {
     const router = useRouter();
     const [fetched, setFetched] = useState<FootprintActivity[] | null>(null);
     const activities = given ?? fetched;
+
+    const goRegion = (region: string) => (
+        onSelectRegion ? onSelectRegion(region) : router.push(`/footprint?region=${encodeURIComponent(region)}`)
+    );
+    const goStretch = (startAt: string) => (
+        onSelectStretch ? onSelectStretch(startAt) : router.push(`/footprint?from=${encodeURIComponent(startAt)}`)
+    );
 
     useEffect(() => {
         if (!userId || given) return;
@@ -110,7 +126,7 @@ export default function FootprintPanel({
                         {summary.regions.map((r) => (
                             <button
                                 key={r.region}
-                                onClick={() => router.push(`/footprint?region=${encodeURIComponent(r.region)}`)}
+                                onClick={() => goRegion(r.region)}
                                 className="text-left rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-primary transition-colors"
                             >
                                 <div className="flex items-baseline justify-between gap-2">
@@ -160,7 +176,7 @@ export default function FootprintPanel({
                                     </p>
                                 </div>
                                 <button
-                                    onClick={() => router.push(`/footprint?from=${encodeURIComponent(s.startAt)}`)}
+                                    onClick={() => goStretch(s.startAt)}
                                     className="shrink-0 rounded-full border border-primary px-3 py-1.5 text-[11px] font-black text-primary hover:bg-primary/5 transition"
                                 >
                                     여행기 쓰기

@@ -10,6 +10,9 @@ import {
   subscribeToUserTravelogs,
   buildJourneyAtlas,
   buildJourneyAtlasFromTravelogs,
+  buildJourneyAtlasFromFootprint,
+  subscribeToFootprintActivities,
+  type FootprintActivity,
   JourneyAtlasData,
   TripMeta,
   Trip,
@@ -22,6 +25,7 @@ import dynamic from 'next/dynamic';
 const AtlasMapView = dynamic(() => import('@/components/journey-atlas/AtlasMapView'), { ssr: false });
 import TripFilterPanel from '@/components/journey-atlas/TripFilterPanel';
 import TimelineSlider from '@/components/journey-atlas/TimelineSlider';
+import MyPageTabs from '@/components/layout/MyPageTabs';
 
 export default function JourneyAtlasClient() {
   const { user, loading } = useAuth();
@@ -30,6 +34,7 @@ export default function JourneyAtlasClient() {
   const travelogs = useTravelogStore(state => state.travelogs);
   const setTravelogs = useTravelogStore(state => state.setTravelogs);
   const [mounted, setMounted] = useState(false);
+  const [footprint, setFootprint] = useState<FootprintActivity[]>([]);
 
   // 여행 필터 상태
   const [visibleTripIds, setVisibleTripIds] = useState<Set<string>>(new Set());
@@ -55,11 +60,27 @@ export default function JourneyAtlasClient() {
     return () => unsub();
   }, [user, setTravelogs]);
 
-  // Atlas 데이터 생성
+  // 발자취도 함께 읽는다. 여행기만 그리면 "다녀왔지만 안 쓴 곳"이 지도에서 빠지는데,
+  // 발자취 레이어를 따로 둔 이유가 바로 그 절반을 잃지 않으려는 것이었다.
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeToFootprintActivities(user.uid, setFootprint);
+    return () => unsub();
+  }, [user]);
+
+  // Atlas 데이터 생성 — 여행기(경로·일정)와 발자취(실제 방문)를 겹쳐 보여준다
   const atlasData = useMemo<JourneyAtlasData | null>(() => {
-    if (!travelogs || travelogs.length === 0) return null;
-    return buildJourneyAtlasFromTravelogs(travelogs);
-  }, [travelogs]);
+    const fromLogs = travelogs?.length ? buildJourneyAtlasFromTravelogs(travelogs) : null;
+    const fromFootprint = footprint.length ? buildJourneyAtlasFromFootprint(footprint) : null;
+    if (!fromLogs && !fromFootprint) return null;
+    if (!fromLogs) return fromFootprint;
+    if (!fromFootprint) return fromLogs;
+    return {
+      nodes: [...fromLogs.nodes, ...fromFootprint.nodes],
+      edges: [...fromLogs.edges, ...fromFootprint.edges],
+      tripMeta: [...fromLogs.tripMeta, ...fromFootprint.tripMeta],
+    };
+  }, [travelogs, footprint]);
 
   // 초기화: 모든 여행을 visible로 설정
   useEffect(() => {
@@ -155,7 +176,9 @@ export default function JourneyAtlasClient() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 bg-background-light dark:bg-background-dark overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-background-light dark:bg-background-dark overflow-hidden">
+      <MyPageTabs />
+      <div className="relative flex-1">
       {/* 상단 헤더 */}
       <header className="absolute top-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-between pointer-events-none">
         <motion.div
@@ -270,6 +293,7 @@ export default function JourneyAtlasClient() {
           </motion.div>
         </div>
       )}
+      </div>
     </div>
   );
 }

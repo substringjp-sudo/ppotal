@@ -2,29 +2,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { getSavedSpots, type SavedSpot, type TripSummary, type Travelog, cn } from '@pplaner/shared';
+import { useRouter } from 'next/navigation';
+import { generateId, type TripSummary, type Travelog, cn } from '@pplaner/shared';
 import { parseISO, startOfDay, isAfter, isBefore, format } from 'date-fns';
-import SavedSeedRow from '@/components/home/SavedSeedRow';
-import FootprintPanel from '@/components/home/FootprintPanel';
 
 /**
- * 홈 = 내 여행 = 마이페이지.
+ * 홈 = 내 여행 갤러리 (컨셉 스파인 STEP 2-1).
  *
- * "내 여행"과 "둘러보기"는 내 것 / 남의 것이라는 두 모드다. 그렇다면 내 콘텐츠는
- * 전부 이 안에 있어야 하는데, 발자취·여행 지도·인텔리전스가 계정용 프로필 메뉴에
- * 흩어져 있었다. 프로필 메뉴는 둘러보기에서도 똑같이 열리므로 모드 경계가 무너진다.
- * 그래서 내 콘텐츠를 여기 탭으로 모았다.
- *
- * "새로 시작"은 반대로 여기서 빠졌다. 만들기는 내 것도 남의 것도 아닌 세 번째 축이라
- * 어느 화면에 있든 같은 자리(헤더/하단 내비 가운데)에 있어야 하기 때문이다.
+ * 하나의 "여행(Journey)"을 그릇으로, 계획(trip)과 여행기(travelog)를 합쳐 카드로 보여준다.
+ * 각 카드에 라이프사이클 상태 배지(계획·여행 중·여행기·공유됨)를 달고, 상단엔 "새로 시작"의
+ * 네 문(계획으로 · 사진으로 · PATHWALK · 저장한 곳에서)을 둔다.
  */
-
-const TABS = [
-    { id: 'trips' as const, label: '여행' },
-    { id: 'footprint' as const, label: '발자취' },
-    { id: 'stats' as const, label: '인텔리전스' },
-];
-type TabId = typeof TABS[number]['id'];
 
 interface Journey {
     key: string;
@@ -78,32 +66,7 @@ export default function JourneyGallery({
     displayName?: string | null;
     userId?: string;
 }) {
-    const [savedSpots, setSavedSpots] = useState<SavedSpot[]>([]);
-    const [tab, setTab] = useState<TabId>('trips');
-
-    // 저장한 스팟은 다음 여행의 씨앗 — 홈에서 바로 보이게 가져온다.
-    useEffect(() => {
-        if (!userId) return;
-        let alive = true;
-        getSavedSpots(userId).then((s) => { if (alive) setSavedSpots(s); });
-        return () => { alive = false; };
-    }, [userId]);
-
-    // 주소로 탭을 열 수 있게 (?tab=footprint) — 옛 /footprint·/stats 링크가 여기로 온다
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const t = new URLSearchParams(window.location.search).get('tab');
-        if (t && TABS.some((x) => x.id === t)) setTab(t as TabId);
-    }, []);
-
-    const selectTab = (id: TabId) => {
-        setTab(id);
-        if (typeof window !== 'undefined') {
-            const url = new URL(window.location.href);
-            url.searchParams.set('tab', id);
-            window.history.replaceState({}, '', url);
-        }
-    };
+    const router = useRouter();
 
     const journeys = useMemo<Journey[]>(() => {
         const now = startOfDay(new Date());
@@ -160,54 +123,12 @@ export default function JourneyGallery({
                 </p>
             </div>
 
-            {/* 내 콘텐츠 탭 — 여행(만든 것) · 발자취(다녀온 것) · 인텔리전스(나라는 여행자) */}
-            <div className="mb-6 flex gap-1 border-b border-slate-200 dark:border-slate-800 overflow-x-auto" role="tablist">
-                {TABS.map((t) => (
-                    <button
-                        key={t.id}
-                        role="tab"
-                        aria-selected={tab === t.id}
-                        onClick={() => selectTab(t.id)}
-                        className={cn(
-                            'relative shrink-0 px-1 py-3 mr-6 text-sm font-black transition-colors',
-                            tab === t.id ? 'text-primary' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
-                        )}
-                    >
-                        {t.label}
-                        {tab === t.id && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
-                    </button>
-                ))}
-            </div>
-
-            {tab === 'footprint' && userId && <FootprintPanel userId={userId} />}
-
-            {tab === 'stats' && (
-                <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center">
-                    <span className="material-symbols-rounded text-3xl text-primary">analytics</span>
-                    <p className="mt-2 text-sm font-black text-slate-900 dark:text-white">여행자로서의 나</p>
-                    <p className="mt-1 text-xs font-semibold text-slate-400">
-                        성향·배지·지역 통계를 한곳에서 봅니다.
-                    </p>
-                    <Link
-                        href="/stats"
-                        className="mt-4 inline-flex rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:bg-primary/90 transition"
-                    >
-                        인텔리전스 열기
-                    </Link>
-                </div>
-            )}
-
-            {tab === 'trips' && (
-            <>
-            {/* 가고 싶은 곳 — 저장이 그리는 다음 여행 */}
-            <SavedSeedRow spots={savedSpots} />
-
             {/* 여행 갤러리 */}
             {journeys.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center">
                     <span className="material-symbols-rounded text-4xl text-slate-300">luggage</span>
                     <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">
-                        아직 여행이 없어요. 오른쪽 위 <b className="text-primary">새로 시작</b>에서 시작해 보세요.
+                        아직 여행이 없어요. 오른쪽 위 <b className="text-primary">+</b> 버튼에서 시작해 보세요.
                     </p>
                 </div>
             ) : (
@@ -236,8 +157,7 @@ export default function JourneyGallery({
                     ))}
                 </div>
             )}
-            </>
-            )}
+
         </div>
     );
 }
