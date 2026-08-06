@@ -188,7 +188,22 @@ export function derivePlacesFromTimeline(
  * 에디터 저장 시점이나 뷰어 진입 시 호출해 travelog.places를 최신화한다.
  */
 export function syncTravelogPlaces(travelog: Travelog): TravelogPlace[] {
-    return derivePlacesFromTimeline(travelog.timeline, { existing: travelog.places });
+    const existing = travelog.places || [];
+    const derived = derivePlacesFromTimeline(travelog.timeline, { existing });
+
+    // 타임라인이 없는 여행기(카드 스트림 에디터로 직접 쓴 글)는 places가 곧 원천이다.
+    if (derived.length === 0) {
+        return [...existing].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }
+    if (existing.length === 0) return derived;
+
+    // 혼합(가져오기 + 직접 추가): 파생분에 반영되지 않은 장소만 이어붙인다.
+    const seen = new Set<string>();
+    derived.forEach((p) => placeKeys(p).forEach((k) => seen.add(k)));
+    const extra = existing.filter((p) => !placeKeys(p).some((k) => seen.has(k)));
+    if (extra.length === 0) return derived;
+
+    return [...derived, ...extra].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 /**
@@ -196,12 +211,13 @@ export function syncTravelogPlaces(travelog: Travelog): TravelogPlace[] {
  * 제목이 있고, 본문(타임라인 이벤트·섹션 내용·개요·장소 소감/사진) 중 하나라도 있어야 한다.
  */
 export function hasMinimumContent(
-    t: Pick<Travelog, 'title' | 'summary' | 'timeline' | 'sections' | 'places'>,
+    t: Pick<Travelog, 'title' | 'summary' | 'timeline' | 'sections' | 'places' | 'notes'>,
 ): boolean {
     if (!t.title || !t.title.trim()) return false;
     const hasTimeline = (t.timeline || []).some((d) => (d.events || []).length > 0);
     const hasSection = (t.sections || []).some((s) => (s.content && s.content.trim()) || (s.imageUrls && s.imageUrls.length > 0));
     const hasSummary = !!(t.summary && t.summary.trim());
     const hasPlace = (t.places || []).some((p) => (p.impression && p.impression.trim()) || (p.photoUrls && p.photoUrls.length > 0));
-    return hasTimeline || hasSection || hasSummary || hasPlace;
+    const hasNote = (t.notes || []).some((n) => n.text && n.text.trim());
+    return hasTimeline || hasSection || hasSummary || hasPlace || hasNote;
 }

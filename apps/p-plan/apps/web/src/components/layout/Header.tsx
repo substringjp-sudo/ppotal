@@ -55,29 +55,25 @@ export default function Header() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isUserMenuOpen]);
 
-    // 데스크탑 메인 내비게이션 항목
+    // 목적지는 둘 — 내 것(만드는 곳)과 남의 것(보는 곳).
+    // 나머지는 그 안의 맥락이거나(점검·위시리스트는 여행 안, 여행기는 내 여행 안),
+    // 내 데이터를 보는 방식이라(여행 지도·인텔리전스) 프로필 메뉴로 내린다.
     const navLinks = user
         ? [
             { href: '/', label: '내 여행', icon: 'luggage', authRequired: true },
-            { href: '/explore', label: '탐색', icon: 'explore', authRequired: true },
-            { href: '/travelogs', label: '여행기록', icon: 'auto_stories', authRequired: true },
-            { href: '/journey-atlas', label: '여행 지도', icon: 'map', authRequired: true },
-            { href: '/saved', label: '가고 싶은 지도', icon: 'bookmark', authRequired: true },
-            { href: '/wishlist', label: '위시리스트', icon: 'favorite', authRequired: true },
-            { href: '/stats', label: '인텔리전스', icon: 'analytics', authRequired: true },
+            { href: '/discover', label: '둘러보기', icon: 'explore', authRequired: true },
         ]
         : [
             { href: '/discover', label: '둘러보기', icon: 'explore', authRequired: false },
-            { href: '/travelogs', label: '여행기록', icon: 'auto_stories', authRequired: false },
-            { href: '/journey-atlas', label: '여행 지도', icon: 'map', authRequired: false },
             { href: '/edit-trip/guest', label: '여행 계획하기', icon: 'edit_note', authRequired: false },
             { href: '/about', label: '소개', icon: 'info', authRequired: false },
         ];
 
-    // 프로필 드롭다운 팝업 메뉴
+    // 프로필 드롭다운 — 내 데이터를 보는 방식들
     const secondaryLinks = [
-        { href: '/discover', label: '둘러보기', icon: 'travel_explore' },
-        { href: '/blog', label: '블로그', icon: 'menu_book' },
+        { href: '/travelogs', label: '내 여행기', icon: 'auto_stories' },
+        { href: '/journey-atlas', label: '여행 지도', icon: 'map' },
+        { href: '/stats', label: '인텔리전스', icon: 'analytics' },
         { href: '/about', label: '소개', icon: 'info' },
     ];
 

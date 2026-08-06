@@ -15,7 +15,7 @@ import {
  * 여행기 블로그 피드 (v1) — 여행기 통째를 카드로 보는 깊이형 표면.
  * 팔로우 그래프 없이 인기·추천/최신으로 정렬. (팔로잉 피드는 팔로우 도입 후.)
  */
-export default function BlogFeedClient() {
+export default function BlogFeedClient({ embedded }: { embedded?: boolean } = {}) {
     const [cards, setCards] = useState<BlogCard[] | null>(null);
     const [sort, setSort] = useState<'popular' | 'recent'>('popular');
     const [seed] = useState(() => Math.floor(Math.random() * 1_000_000_000));
@@ -32,14 +32,15 @@ export default function BlogFeedClient() {
         return rankBlogCards(cards, { seed });
     }, [cards, sort, seed]);
 
-    return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">
-            <div className="mx-auto max-w-[1080px] px-5 sm:px-8 pt-6 pb-24">
-                <div className="flex items-end justify-between mb-5">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">여행기</h1>
-                        <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">여행자들의 기록을 통째로 읽어보세요.</p>
-                    </div>
+    const body = (
+        <div className={cn('mx-auto max-w-[1080px]', embedded ? 'pb-24' : 'px-5 sm:px-8 pt-6 pb-24')}>
+                <div className={cn('flex items-end justify-between mb-5', embedded && 'justify-end')}>
+                    {!embedded && (
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">여행기</h1>
+                            <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">여행자들의 기록을 통째로 읽어보세요.</p>
+                        </div>
+                    )}
                     <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/10">
                         <SortBtn on={sort === 'popular'} label="인기" onClick={() => setSort('popular')} />
                         <SortBtn on={sort === 'recent'} label="최신" onClick={() => setSort('recent')} />
@@ -59,9 +60,11 @@ export default function BlogFeedClient() {
                         {ordered.map((c) => <BlogCardView key={c.id} card={c} />)}
                     </div>
                 )}
-            </div>
         </div>
     );
+
+    if (embedded) return body;
+    return <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">{body}</div>;
 }
 
 function SortBtn({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) {

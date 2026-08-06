@@ -12,6 +12,9 @@ import {
     cn,
     type HotFeedSpot,
 } from '@pplaner/shared';
+import { useAuth } from '@/hooks/useAuth';
+import ExploreFeedClient from '../explore/ExploreFeedClient';
+import BlogFeedClient from '../blog/BlogFeedClient';
 
 /**
  * 둘러보기 포털 (P4) — 로그인 없이 보는 공개 정문.
@@ -19,9 +22,34 @@ import {
  * 스케줄 함수가 만든 hot 스냅샷(public/hotFeed)을 우선 읽고, 없으면 최신 공개 스팟으로
  * 폴백한다. 유입과 크리에이터 보상("N명이 저장")을 겸하는 큐레이션 랜딩.
  */
+const TABS = [
+    { id: 'spots' as const, label: '스팟' },
+    { id: 'travelogs' as const, label: '여행기' },
+    { id: 'hot' as const, label: '지금 뜨는 곳' },
+];
+type TabId = typeof TABS[number]['id'];
+
 export default function DiscoverClient() {
+    const { user } = useAuth();
+    const [tab, setTab] = useState<TabId>('spots');
     const [spots, setSpots] = useState<HotFeedSpot[] | null>(null);
     const [region, setRegion] = useState<string | null>(null);
+
+    // 주소로 탭을 열 수 있게 (?tab=travelogs) — 옛 /explore·/blog 링크가 여기로 온다
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const t = new URLSearchParams(window.location.search).get('tab');
+        if (t && TABS.some((x) => x.id === t)) setTab(t as TabId);
+    }, []);
+
+    const selectTab = (id: TabId) => {
+        setTab(id);
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', id);
+            window.history.replaceState({}, '', url);
+        }
+    };
 
     useEffect(() => {
         let alive = true;
@@ -56,45 +84,74 @@ export default function DiscoverClient() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">
-            {/* 히어로 */}
-            <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10">
-                <div className="mx-auto max-w-[1080px] px-5 sm:px-8 py-12 sm:py-16">
-                    <p className="text-[11px] font-black uppercase tracking-[0.25em] text-primary">둘러보기</p>
-                    <h1 className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                        여행자들이 지금<br className="sm:hidden" /> 저장하는 곳
-                    </h1>
-                    <p className="mt-3 text-base sm:text-lg font-medium text-slate-500 dark:text-slate-400 max-w-xl">
-                        긴 여행기를 읽지 않아도, 마음에 드는 장소 한 컷씩. 로그인 없이 둘러보고 마음에 들면 저장하세요.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-2.5">
-                        <Link href="/explore" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white hover:bg-primary/90 transition">스팟 피드 열기</Link>
-                        <Link href="/blog" className="rounded-xl border border-slate-200 dark:border-white/15 px-5 py-2.5 text-sm font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition">여행기 블로그</Link>
-                        <Link href="/edit-trip/guest" className="rounded-xl border border-slate-200 dark:border-white/15 px-5 py-2.5 text-sm font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition">여행 계획 시작</Link>
+            {/* 히어로 — 비로그인 방문자에게만 크게 (공개 정문) */}
+            {!user && (
+                <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10">
+                    <div className="mx-auto max-w-[1080px] px-5 sm:px-8 py-12 sm:py-16">
+                        <p className="text-[11px] font-black uppercase tracking-[0.25em] text-primary">둘러보기</p>
+                        <h1 className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+                            여행자들이 지금<br className="sm:hidden" /> 저장하는 곳
+                        </h1>
+                        <p className="mt-3 text-base sm:text-lg font-medium text-slate-500 dark:text-slate-400 max-w-xl">
+                            긴 여행기를 읽지 않아도, 마음에 드는 장소 한 컷씩. 로그인 없이 둘러보고 마음에 들면 저장하세요.
+                        </p>
+                        <div className="mt-5">
+                            <Link href="/edit-trip/guest" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white hover:bg-primary/90 transition">
+                                여행 계획 시작
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* 탭 — 스팟 · 여행기 · 지금 뜨는 곳이 한 목적지 안에 */}
+            <div className="sticky top-0 z-20 border-b border-slate-200 dark:border-white/10 bg-slate-50/90 dark:bg-[#030712]/90 backdrop-blur-xl">
+                <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
+                    <div className="flex gap-1 overflow-x-auto" role="tablist">
+                        {TABS.map((t) => (
+                            <button
+                                key={t.id}
+                                role="tab"
+                                aria-selected={tab === t.id}
+                                onClick={() => selectTab(t.id)}
+                                className={cn(
+                                    'relative shrink-0 px-4 py-3.5 text-sm font-black transition-colors',
+                                    tab === t.id ? 'text-primary' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
+                                )}
+                            >
+                                {t.label}
+                                {tab === t.id && <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />}
+                            </button>
+                        ))}
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <div className="mx-auto max-w-[1080px] px-5 sm:px-8 py-8">
-                {spots === null ? (
-                    <DiscoverSkeleton />
-                ) : spots.length === 0 ? (
-                    <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
-                        <span className="material-symbols-rounded text-5xl text-slate-300">travel_explore</span>
-                        <p className="mt-3 text-base font-black text-slate-600 dark:text-slate-300">아직 공개된 스팟이 없어요</p>
-                        <p className="mt-1 text-sm text-slate-400">여행기를 공개하면 여기에 뜨는 곳으로 소개됩니다.</p>
-                    </div>
-                ) : (
-                    <>
-                        {regions.length > 1 && (
-                            <div className="mb-6 flex flex-wrap gap-2">
-                                <Chip on={!region} label="전체" onClick={() => setRegion(null)} />
-                                {regions.map((r) => <Chip key={r} on={region === r} label={r} color={colorForCategory(r)} onClick={() => setRegion(r)} />)}
-                            </div>
-                        )}
-                        <div className="columns-2 md:columns-3 gap-4 [column-fill:_balance]">
-                            {visible.map((s, i) => <HotCard key={`${s.travelogId}:${s.placeId}:${i}`} spot={s} />)}
+            <div className="mx-auto max-w-[1080px] px-5 sm:px-8 py-6">
+                {tab === 'spots' && <ExploreFeedClient embedded />}
+                {tab === 'travelogs' && <BlogFeedClient embedded />}
+                {tab === 'hot' && (
+                    spots === null ? (
+                        <DiscoverSkeleton />
+                    ) : spots.length === 0 ? (
+                        <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+                            <span className="material-symbols-rounded text-5xl text-slate-300">travel_explore</span>
+                            <p className="mt-3 text-base font-black text-slate-600 dark:text-slate-300">아직 공개된 스팟이 없어요</p>
+                            <p className="mt-1 text-sm text-slate-400">여행기를 공개하면 여기에 뜨는 곳으로 소개됩니다.</p>
                         </div>
-                    </>
+                    ) : (
+                        <>
+                            {regions.length > 1 && (
+                                <div className="mb-6 flex flex-wrap gap-2">
+                                    <Chip on={!region} label="전체" onClick={() => setRegion(null)} />
+                                    {regions.map((r) => <Chip key={r} on={region === r} label={r} color={colorForCategory(r)} onClick={() => setRegion(r)} />)}
+                                </div>
+                            )}
+                            <div className="columns-2 md:columns-3 gap-4 [column-fill:_balance]">
+                                {visible.map((s, i) => <HotCard key={`${s.travelogId}:${s.placeId}:${i}`} spot={s} />)}
+                            </div>
+                        </>
+                    )
                 )}
             </div>
         </div>

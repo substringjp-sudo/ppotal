@@ -9,10 +9,13 @@ export default function robots(): MetadataRoute.Robots {
             allow: [
                 '/',
                 '/about',
+                '/discover',
+                '/spot/*',
                 '/travelogs/*',
             ],
             disallow: [
                 '/wishlist/',
+                '/saved/',
                 '/trips/',
                 '/dashboard/',
                 '/profile/',

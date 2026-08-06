@@ -17,9 +17,17 @@ import MapComponent from '@/components/common/MapComponent';
 export default function SavedSpotsClient() {
     const { user, loading: authLoading, loginWithGoogle } = useAuth();
     const openWizard = useWizardStore((s) => s.open);
+    const addLocation = useWizardStore((s) => s.addLocation);
     const [spots, setSpots] = useState<SavedSpot[] | null>(null);
     const [focus, setFocus] = useState<string | null>(null);
     const [regionFilter, setRegionFilter] = useState<string | null>(null);
+
+    // 홈의 씨앗 카드에서 넘어오면 그 지역에 바로 초점을 맞춘다 (?region=).
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const r = new URLSearchParams(window.location.search).get('region');
+        if (r) setRegionFilter(r);
+    }, []);
 
     useEffect(() => {
         if (authLoading) return;
@@ -57,7 +65,7 @@ export default function SavedSpotsClient() {
     if (spots.length === 0) {
         return (
             <Centered icon="explore" title="아직 저장한 곳이 없어요" desc="탐색 피드에서 마음에 드는 스팟을 북마크하면 여기 지도에 쌓입니다.">
-                <Link href="/explore" className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">탐색하러 가기</Link>
+                <Link href="/discover?tab=spots" className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">둘러보러 가기</Link>
             </Centered>
         );
     }
@@ -103,7 +111,8 @@ export default function SavedSpotsClient() {
                                 cluster={c}
                                 active={regionFilter === c.region}
                                 onFocus={() => setRegionFilter(regionFilter === c.region ? null : c.region)}
-                                onStart={() => openWizard('PLAN')}
+                                // open()이 reset()을 부르므로 지역 주입은 그 뒤에.
+                                onStart={() => { openWizard('PLAN'); addLocation(c.region); }}
                             />
                         ))}
                     </div>

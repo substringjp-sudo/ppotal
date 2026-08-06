@@ -196,6 +196,24 @@ export default function TripHubClient() {
                         </motion.div>
                     ))}
                 </div>
+
+                {/* 이 여행 안의 도구 — 위시리스트는 전역이 아니라 여행에 속한다 */}
+                <div className="mt-5 flex flex-wrap gap-2">
+                    <Link
+                        href={`/wishlist?tripId=${id}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-[11px] font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
+                    >
+                        <span className="material-symbols-rounded text-base">favorite</span>
+                        위시리스트
+                    </Link>
+                    <Link
+                        href="/saved"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-[11px] font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
+                    >
+                        <span className="material-symbols-rounded text-base">bookmark</span>
+                        가고 싶은 지도
+                    </Link>
+                </div>
             </div>
         </div>
     );

@@ -11,9 +11,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TRANSITION_SPRING, TRANSITION_SPRING_BOUNCY } from '@/lib/animations';
 
 // 라이프사이클 컨셉: 내 여행 / 탐색 + 가운데 "새로 시작" + 프로필 (위시·기록·통계는 프로필 시트로)
+// 상단 내비와 같은 목적지 둘 — 화면 크기가 달라도 구조는 같아야 한다.
 const NAV_ITEMS = [
     { href: '/', label: '내 여행', icon: 'luggage', exact: true, authRequired: true },
-    { href: '/explore', label: '탐색', icon: 'explore', exact: false, authRequired: true },
+    { href: '/discover', label: '둘러보기', icon: 'explore', exact: false, authRequired: true },
 ];
 
 function NavItem({ href, label, icon, isActive }: { href: string; label: string; icon: string; isActive: boolean }) {

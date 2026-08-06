@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, Travelog, hasMinimumContent } from '@pplaner/shared';
+import { db, Travelog, hasMinimumContent, removeUndefined } from '@pplaner/shared';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -84,10 +84,12 @@ export function useTravelogPersistence({
     try {
       const docRef = doc(db, 'travelogs', id);
       // setDoc+merge: 첫 저장이면 생성, 이후면 갱신 (빈 문서를 미리 만들지 않으므로)
-      await setDoc(docRef, {
+      // removeUndefined 필수: 클라이언트 Firestore는 ignoreUndefinedProperties가 꺼져 있어
+      // undefined 필드(좌표 없는 장소의 location, 미입력 category/rating 등)가 있으면 저장이 거부된다.
+      await setDoc(docRef, removeUndefined({
         ...travelog,
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
       if (!silent) toast.success('저장되었습니다.');
     } catch (error) {
       console.error('Save error:', error);
