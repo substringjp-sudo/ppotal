@@ -51,6 +51,17 @@ export default function TravelogEditorClient({ id }: { id: string }) {
         id, travelog, setTravelog, setIsLoading, setIsSaving,
     });
 
+    // "사진으로" 시작한 경우(?photos=1) 사진 고르기를 자동으로 연다 —
+    // 위저드를 거치지 않으므로 첫 동작이 곧 사진 올리기가 되게.
+    const autoOpened = useRef(false);
+    useEffect(() => {
+        if (autoOpened.current || isLoading || !travelog) return;
+        if (typeof window === 'undefined') return;
+        if (new URLSearchParams(window.location.search).get('photos') !== '1') return;
+        autoOpened.current = true;
+        setTimeout(() => fileRef.current?.click(), 250);
+    }, [isLoading, travelog]);
+
     // 가져오기(계획·PATHWALK)로 들어온 여행기는 타임라인만 있을 수 있다 →
     // 최초 1회 장소 카드로 씨앗을 뿌려 카드 스트림으로 이어받는다.
     useEffect(() => {

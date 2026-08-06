@@ -24,7 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
  * 공개 여행기들을 스팟 원자로 펼쳐 휴리스틱으로 정렬해 한 장씩 보여준다.
  * 재밌으면 마음 찍기, 인상 깊으면(→P3) 저장, 궁금하면 스팟/여행기로.
  */
-export default function ExploreFeedClient() {
+export default function ExploreFeedClient({ embedded }: { embedded?: boolean } = {}) {
     const { user, loginWithGoogle } = useAuth();
     const [spots, setSpots] = useState<FeedSpot[] | null>(null);
     const [liked, setLiked] = useState<Set<string>>(new Set());
@@ -69,26 +69,29 @@ export default function ExploreFeedClient() {
         (willSave ? saveSpot(user.uid, feed) : unsaveSpot(user.uid, feed.travelogId, feed.spot.id)).catch(console.error);
     };
 
-    if (spots === null) return <FeedSkeleton />;
-    if (spots.length === 0) return <EmptyFeed />;
+    if (spots === null) return <FeedSkeleton embedded={embedded} />;
+    if (spots.length === 0) return <EmptyFeed embedded={embedded} />;
 
-    return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">
-            <div className="mx-auto max-w-[540px] px-4 sm:px-5 pt-5 pb-24">
+    const body = (
+        <div className={cn('mx-auto max-w-[540px]', embedded ? 'pb-24' : 'px-4 sm:px-5 pt-5 pb-24')}>
+            {!embedded && (
                 <div className="mb-4 flex items-baseline justify-between">
                     <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">탐색</h1>
                     <span className="text-[11px] font-bold text-slate-400">여행자들의 장소 {spots.length}</span>
                 </div>
-                <div className="flex flex-col gap-5">
-                    {spots.map((s) => (
-                        <SpotFeedCard key={s.key} feed={s} liked={liked.has(s.key)} saved={saved.has(s.key)}
-                            onLike={() => toggleLike(s)} onSave={() => toggleSave(s)} />
-                    ))}
-                </div>
-                <p className="mt-10 text-center text-xs font-medium text-slate-400">여기까지예요 · 여행기를 공개하면 이 피드에 스팟이 흐릅니다</p>
+            )}
+            <div className="flex flex-col gap-5">
+                {spots.map((s) => (
+                    <SpotFeedCard key={s.key} feed={s} liked={liked.has(s.key)} saved={saved.has(s.key)}
+                        onLike={() => toggleLike(s)} onSave={() => toggleSave(s)} />
+                ))}
             </div>
+            <p className="mt-10 text-center text-xs font-medium text-slate-400">여기까지예요 · 여행기를 공개하면 이 피드에 스팟이 흐릅니다</p>
         </div>
     );
+
+    if (embedded) return body;
+    return <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">{body}</div>;
 }
 
 function SpotFeedCard({ feed, liked, saved, onLike, onSave }: { feed: FeedSpot; liked: boolean; saved: boolean; onLike: () => void; onSave: () => void }) {
@@ -168,31 +171,31 @@ function SpotFeedCard({ feed, liked, saved, onLike, onSave }: { feed: FeedSpot; 
     );
 }
 
-function FeedSkeleton() {
-    return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">
-            <div className="mx-auto max-w-[540px] px-4 pt-5 pb-24 flex flex-col gap-5">
-                <div className="h-7 w-24 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" />
-                {[0, 1].map((i) => (
-                    <div key={i} className="rounded-[2rem] overflow-hidden border border-slate-200 dark:border-white/10">
-                        <div className="aspect-[4/5] bg-slate-200 dark:bg-slate-800 animate-pulse" />
-                        <div className="h-14 bg-white dark:bg-slate-900" />
-                    </div>
-                ))}
-            </div>
+function FeedSkeleton({ embedded }: { embedded?: boolean }) {
+    const body = (
+        <div className={cn('mx-auto max-w-[540px] flex flex-col gap-5', embedded ? 'pb-24' : 'px-4 pt-5 pb-24')}>
+            {!embedded && <div className="h-7 w-24 rounded bg-slate-200 dark:bg-slate-800 animate-pulse" />}
+            {[0, 1].map((i) => (
+                <div key={i} className="rounded-[2rem] overflow-hidden border border-slate-200 dark:border-white/10">
+                    <div className="aspect-[4/5] bg-slate-200 dark:bg-slate-800 animate-pulse" />
+                    <div className="h-14 bg-white dark:bg-slate-900" />
+                </div>
+            ))}
         </div>
     );
+    if (embedded) return body;
+    return <div className="min-h-screen bg-slate-50 dark:bg-[#030712]">{body}</div>;
 }
 
-function EmptyFeed() {
-    return (
-        <div className="min-h-screen grid place-items-center bg-slate-50 dark:bg-[#030712] px-6 text-center">
-            <div>
-                <span className="material-symbols-rounded text-5xl text-slate-300">travel_explore</span>
-                <p className="mt-3 text-base font-black text-slate-600 dark:text-slate-300">아직 공개된 스팟이 없어요</p>
-                <p className="mt-1 text-sm text-slate-400">여행기를 공개하면 그 안의 장소들이 여기 흐릅니다.</p>
-                <Link href="/" className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">내 여행으로</Link>
-            </div>
+function EmptyFeed({ embedded }: { embedded?: boolean }) {
+    const body = (
+        <div className="text-center">
+            <span className="material-symbols-rounded text-5xl text-slate-300">travel_explore</span>
+            <p className="mt-3 text-base font-black text-slate-600 dark:text-slate-300">아직 공개된 스팟이 없어요</p>
+            <p className="mt-1 text-sm text-slate-400">여행기를 공개하면 그 안의 장소들이 여기 흐릅니다.</p>
+            <Link href="/" className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">내 여행으로</Link>
         </div>
     );
+    if (embedded) return <div className="py-20 grid place-items-center">{body}</div>;
+    return <div className="min-h-screen grid place-items-center bg-slate-50 dark:bg-[#030712] px-6">{body}</div>;
 }
