@@ -10,6 +10,9 @@ import {
   subscribeToUserTravelogs,
   buildJourneyAtlas,
   buildJourneyAtlasFromTravelogs,
+  buildJourneyAtlasFromFootprint,
+  subscribeToFootprintActivities,
+  type FootprintActivity,
   JourneyAtlasData,
   TripMeta,
   Trip,
@@ -31,6 +34,7 @@ export default function JourneyAtlasClient() {
   const travelogs = useTravelogStore(state => state.travelogs);
   const setTravelogs = useTravelogStore(state => state.setTravelogs);
   const [mounted, setMounted] = useState(false);
+  const [footprint, setFootprint] = useState<FootprintActivity[]>([]);
 
   // 여행 필터 상태
   const [visibleTripIds, setVisibleTripIds] = useState<Set<string>>(new Set());
@@ -56,11 +60,27 @@ export default function JourneyAtlasClient() {
     return () => unsub();
   }, [user, setTravelogs]);
 
-  // Atlas 데이터 생성
+  // 발자취도 함께 읽는다. 여행기만 그리면 "다녀왔지만 안 쓴 곳"이 지도에서 빠지는데,
+  // 발자취 레이어를 따로 둔 이유가 바로 그 절반을 잃지 않으려는 것이었다.
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeToFootprintActivities(user.uid, setFootprint);
+    return () => unsub();
+  }, [user]);
+
+  // Atlas 데이터 생성 — 여행기(경로·일정)와 발자취(실제 방문)를 겹쳐 보여준다
   const atlasData = useMemo<JourneyAtlasData | null>(() => {
-    if (!travelogs || travelogs.length === 0) return null;
-    return buildJourneyAtlasFromTravelogs(travelogs);
-  }, [travelogs]);
+    const fromLogs = travelogs?.length ? buildJourneyAtlasFromTravelogs(travelogs) : null;
+    const fromFootprint = footprint.length ? buildJourneyAtlasFromFootprint(footprint) : null;
+    if (!fromLogs && !fromFootprint) return null;
+    if (!fromLogs) return fromFootprint;
+    if (!fromFootprint) return fromLogs;
+    return {
+      nodes: [...fromLogs.nodes, ...fromFootprint.nodes],
+      edges: [...fromLogs.edges, ...fromFootprint.edges],
+      tripMeta: [...fromLogs.tripMeta, ...fromFootprint.tripMeta],
+    };
+  }, [travelogs, footprint]);
 
   // 초기화: 모든 여행을 visible로 설정
   useEffect(() => {

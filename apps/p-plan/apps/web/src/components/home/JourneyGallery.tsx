@@ -25,12 +25,14 @@ interface Journey {
     href: string;
 }
 
+// 배지는 임의의 그라디언트/사진 커버 위에 얹히므로 배경이 불투명해야 읽힌다.
+// (bg-primary/10은 흰 배경에선 보이지만 파란 커버 위에선 거의 사라진다)
 const BADGE = {
-    plan: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
-    ongoing: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
-    write: 'bg-primary/10 text-primary',
-    journal: 'bg-primary/10 text-primary',
-    shared: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    plan: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    ongoing: 'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-200',
+    write: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
+    journal: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
+    shared: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200',
 };
 
 const THEME_GRADIENT: Record<string, string> = {
@@ -125,7 +127,9 @@ export default function JourneyGallery({
             {journeys.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center">
                     <span className="material-symbols-rounded text-4xl text-slate-300">luggage</span>
-                    <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">아직 여행이 없어요. 위에서 새로 시작해 보세요.</p>
+                    <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">
+                        아직 여행이 없어요. 오른쪽 위 <b className="text-primary">+</b> 버튼에서 시작해 보세요.
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

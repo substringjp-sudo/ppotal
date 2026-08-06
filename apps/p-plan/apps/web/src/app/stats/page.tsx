@@ -13,6 +13,7 @@ import {
 } from '@pplaner/shared';
 import { useIntelligence } from '@/hooks/useIntelligence';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import DashboardPageLayout from '@/components/layout/DashboardPageLayout';
 import DashboardPageHeader from '@/components/layout/DashboardPageHeader';
 import MyPageTabs from '@/components/layout/MyPageTabs';

@@ -83,6 +83,12 @@ export interface FootprintPoint {
     lat: number;
     lng: number;
     placeName?: string;           // 역지오코딩/POI 매칭 결과
+    /**
+     * 도시/광역 단위 지역명. placeName과 따로 두는 이유: 계획에서 이름을 가져오면
+     * placeName이 "오사카성"처럼 구체적인 장소가 되는데, 지역별 누적("도쿄 4번 방문")은
+     * 도시명으로 묶여야 하기 때문이다.
+     */
+    region?: string;
     googlePlaceId?: string;
     address?: string;
 
@@ -126,6 +132,8 @@ export interface FootprintActivity {
     id: string;
     userId: string;
     tripId?: string;
+    /** 대표 지역(도시). 구성 포인트의 최빈 region — 지역별 누적 집계용 */
+    region?: string;
 
     startAt: string;               // ISO
     endAt: string;

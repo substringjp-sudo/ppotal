@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { cn, type TravelogPlace } from '@pplaner/shared';
+import { cn, type TravelogPlace, type PlannedPlaceHint } from '@pplaner/shared';
 import PhotoStrip from './PhotoStrip';
 import PlaceCandidatePicker from './PlaceCandidatePicker';
 import PlaceCandidateChips from './PlaceCandidateChips';
@@ -21,12 +21,14 @@ import { useCardStreamField } from './useCardStream';
  *  · 이름·날짜·분류는 접혀 있다가 필요할 때만 편다(대개 자동값이 맞다).
  */
 export default function PlaceEntryCard({
-    place, index, categoryOptions, dragHandleProps, isDragging,
+    place, index, categoryOptions, plannedPlaces, dragHandleProps, isDragging,
     onUpdate, onRemove, onRemovePhoto, onSplitPhoto, onAddPhotos,
 }: {
     place: TravelogPlace;
     index: number;
     categoryOptions: string[];
+    /** 이 여행의 계획에 적혀 있던 장소들 — 후보 순위를 잡는 데만 쓴다(없어도 됨) */
+    plannedPlaces?: PlannedPlaceHint[];
     dragHandleProps?: Record<string, any>;
     isDragging?: boolean;
     onUpdate: (patch: Partial<TravelogPlace>) => void;
@@ -142,7 +144,13 @@ export default function PlaceEntryCard({
                     <PlaceCandidateChips
                         lat={place.location?.lat}
                         lng={place.location?.lng}
-                        context={{ dwellMinutes, photoCount: place.photoUrls?.length, timeOfDay: place.startTime }}
+                        context={{
+                            dwellMinutes,
+                            photoCount: place.photoUrls?.length,
+                            timeOfDay: place.startTime,
+                            visitDate: place.visitDate,
+                            plannedPlaces,
+                        }}
                         onPick={applyPickedPlace}
                         onOpenFull={() => setPickingPlace(true)}
                     />
@@ -242,6 +250,8 @@ export default function PlaceEntryCard({
                         dwellMinutes,
                         photoCount: place.photoUrls?.length,
                         timeOfDay: place.startTime,
+                        visitDate: place.visitDate,
+                        plannedPlaces,
                     }}
                     onPick={applyPickedPlace}
                     onClose={() => setPickingPlace(false)}

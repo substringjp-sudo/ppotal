@@ -1,7 +1,7 @@
 'use client';
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, type PlaceCandidate } from '@pplaner/shared';
+import { db, isGoogleMapsReady, type PlaceCandidate } from '@pplaner/shared';
 
 /**
  * 좌표 주변 장소 후보 가져오기 (+ 공용 캐시).
@@ -55,8 +55,32 @@ function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: 
     return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+/**
+ * Places 라이브러리는 로그인 후에야 스크립트를 붙이므로(AuthedGoogleMaps), 페이지가
+ * 막 열렸을 때 카드가 곧바로 활성화되면 스크립트가 아직 로드 중일 수 있다. 그 순간에
+ * 한 번 확인하고 포기하면 "주변에서 찾지 못함"으로 보이니, 다른 화면들(GoogleMapsSearch,
+ * RegionScopedPlaceSearch)과 같은 방식으로 최대 몇 초간 폴링해 기다린다.
+ */
+function waitForPlacesReady(timeoutMs = 6000): Promise<boolean> {
+    if (isGoogleMapsReady(['places'])) return Promise.resolve(true);
+    return new Promise((resolve) => {
+        const start = Date.now();
+        const timer = setInterval(() => {
+            if (isGoogleMapsReady(['places'])) {
+                clearInterval(timer);
+                resolve(true);
+            } else if (Date.now() - start > timeoutMs) {
+                clearInterval(timer);
+                resolve(false);
+            }
+        }, 300);
+    });
+}
+
 /** 구글 주변 검색 (places 라이브러리 필요). 실패하면 빈 배열. */
-function searchNearby(lat: number, lng: number, radius: number): Promise<PlaceCandidate[]> {
+async function searchNearby(lat: number, lng: number, radius: number): Promise<PlaceCandidate[]> {
+    const ready = await waitForPlacesReady();
+    if (!ready) return [];
     return new Promise((resolve) => {
         const g = (typeof window !== 'undefined') ? (window as any).google : undefined;
         if (!g?.maps?.places?.PlacesService) { resolve([]); return; }

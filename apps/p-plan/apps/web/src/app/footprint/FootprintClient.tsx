@@ -20,6 +20,7 @@ import FootprintTimeline from '@/components/footprint/FootprintTimeline';
 import NewActivitySheet from '@/components/footprint/NewActivitySheet';
 import ActivityDetailSheet from '@/components/footprint/ActivityDetailSheet';
 import MyPageTabs from '@/components/layout/MyPageTabs';
+import FootprintPanel from '@/components/footprint/FootprintPanel';
 
 const ymd = (iso: string) => iso.slice(0, 10);
 
@@ -56,12 +57,27 @@ export default function FootprintClient() {
 
     useEffect(() => { refetchPoints(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [user]);
 
+    // 개요("내 여행 → 발자취")에서 지역 카드나 "여행기 쓰기"를 눌러 들어온 경우,
+    // 여기서부터는 날짜축이 의미를 갖는다 — 어느 지역/어느 시점을 볼지 좁혀서 연다.
+    const [filter, setFilter] = useState<{ region?: string; from?: string }>({});
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const q = new URLSearchParams(window.location.search);
+        setFilter({ region: q.get('region') || undefined, from: q.get('from') || undefined });
+    }, []);
+
     const days = useMemo(() => {
+        const inRegion = (a: FootprintActivity) => !filter.region || a.region === filter.region;
         const set = new Set<string>();
-        activities.forEach((a) => set.add(ymd(a.startAt)));
-        points.forEach((p) => set.add(ymd(p.timestamp)));
-        return Array.from(set).sort().reverse();
-    }, [activities, points]);
+        activities.filter(inRegion).forEach((a) => set.add(ymd(a.startAt)));
+        // 지역으로 좁힌 경우엔 활동이 없는 날(포인트만 있는 날)을 끌어오지 않는다
+        if (!filter.region) points.forEach((p) => set.add(ymd(p.timestamp)));
+        const all = Array.from(set).sort().reverse();
+        if (!filter.from) return all;
+        // 특정 기록으로 들어왔으면 그 날짜가 맨 위에 오게 한다
+        const fromDay = ymd(filter.from);
+        return [fromDay, ...all.filter((d) => d !== fromDay)].filter((d) => set.has(d) || d === fromDay);
+    }, [activities, points, filter]);
 
     const handleFiles = async (files: FileList | null) => {
         if (!files || files.length === 0 || !user) return;
@@ -160,17 +176,53 @@ export default function FootprintClient() {
         );
     }
 
+    const isDrilledDown = !!(filter.region || filter.from);
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712] pb-24">
             <MyPageTabs />
+
+            {/* 개요 — 지도와 지역 누적이 먼저. 여행 기록은 띄엄띄엄 생기므로 날짜 목록을
+                맨 앞에 두면 대부분이 빈 공간이고 쌓이는 감각도 없다. 날짜축은 아래
+                타임라인에서, 그리고 지역을 눌러 좁힌 다음에 의미를 갖는다. */}
+            {!isDrilledDown && activities.length > 0 && (
+                <div className="mx-auto max-w-[1100px] px-4 sm:px-6 pt-6">
+                    <FootprintPanel
+                        userId={user.uid}
+                        activities={activities}
+                        onSelectRegion={(region: string) => {
+                            setFilter({ region });
+                            window.history.replaceState({}, '', `/footprint?region=${encodeURIComponent(region)}`);
+                        }}
+                        onSelectStretch={(startAt: string) => {
+                            setFilter({ from: startAt });
+                            window.history.replaceState({}, '', `/footprint?from=${encodeURIComponent(startAt)}`);
+                        }}
+                    />
+                    <div className="mt-10 border-t border-slate-200 dark:border-slate-800" />
+                </div>
+            )}
+
             <div className="mx-auto max-w-[720px] px-4 sm:px-6 pt-6">
                 <div className="flex items-start justify-between gap-3 mb-6">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">발자취</h1>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                            {filter.region ? `발자취 · ${filter.region}` : '발자취'}
+                        </h1>
                         <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                            다녀온 곳의 원본 기록이에요. 여행기로 쓰지 않아도 여기 남습니다.
+                            {isDrilledDown
+                                ? '시간대를 끌어 활동을 만들고, 활동에서 여행기로 옮길 수 있어요.'
+                                : '다녀온 곳의 원본 기록이에요. 여행기로 쓰지 않아도 여기 남습니다.'}
                         </p>
                     </div>
+                    {isDrilledDown && (
+                        <button
+                            onClick={() => { setFilter({}); window.history.replaceState({}, '', '/footprint'); }}
+                            className="shrink-0 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-[11px] font-black text-slate-500 hover:border-primary hover:text-primary transition"
+                        >
+                            전체 보기
+                        </button>
+                    )}
                 </div>
 
                 <input

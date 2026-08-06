@@ -7,7 +7,7 @@
  */
 
 import { Trip, TripDocument, TripSummary, FlightSegment, AccommodationSegment, DailyPlan, TripEvent } from '../types/trip';
-import { Travelog, TravelogEvent, TravelogDailyPlan } from '../types/record';
+import { Travelog, TravelogEvent, TravelogDailyPlan, FootprintActivity } from '../types/record';
 
 // ─── 타입 정의 ──────────────────────────────────────────────────
 
@@ -561,4 +561,91 @@ function generateGreatCircleArc(
   }
 
   return points;
+}
+
+/**
+ * 발자취(FootprintActivity)에서 지도를 만든다.
+ *
+ * 기존 buildJourneyAtlasFromTravelogs는 **여행기만** 읽는다. 그런데 발자취 레이어를
+ * 따로 둔 이유가 "여행기로 안 쓴 방문도 남는다"는 것이었으니, 여행기만 그린 지도는
+ * 내가 다닌 곳의 일부만 보여준다. 이 함수는 그 나머지 절반을 채운다.
+ *
+ * 여행기로 쓴 활동과 기록만 남은 활동을 색으로 구분해, "어디를 아직 안 썼는지"가
+ * 지도 위에서 바로 보이게 한다.
+ */
+export function buildJourneyAtlasFromFootprint(
+  activities: FootprintActivity[],
+): JourneyAtlasData {
+  const nodes: AtlasNode[] = [];
+  const edges: AtlasEdge[] = [];
+
+  const WRITTEN_COLOR = 'hsl(20, 90%, 55%)';   // 여행기로 쓴 곳
+  const UNWRITTEN_COLOR = 'hsl(215, 15%, 60%)'; // 기록만 남은 곳
+
+  const sorted = [...activities].sort((a, b) => Date.parse(a.startAt) - Date.parse(b.startAt));
+  const placed: { node: AtlasNode; written: boolean }[] = [];
+
+  sorted.forEach((activity, idx) => {
+    const written = !!activity.travelogIds?.length;
+    const color = written ? WRITTEN_COLOR : UNWRITTEN_COLOR;
+    const groupId = written ? 'footprint-written' : 'footprint-unwritten';
+    const date = (activity.startAt || '').slice(0, 10);
+
+    (activity.places || []).forEach((place, pIdx) => {
+      if (!isValidCoord(place.lat, place.lng)) return;
+      const node: AtlasNode = {
+        id: `fp-${activity.id}-${place.id || pIdx}`,
+        tripId: groupId,
+        tripTitle: written ? '여행기로 쓴 곳' : '기록만 남은 곳',
+        tripColor: color,
+        lat: place.lat,
+        lng: place.lng,
+        timestamp: date,
+        type: 'event',
+        label: place.name || activity.title || '방문한 곳',
+        dayIndex: idx,
+      };
+      nodes.push(node);
+      placed.push({ node, written });
+    });
+  });
+
+  // 이동 경로 — 시간순으로 인접한 지점을 잇되, 비행 같은 장거리 점프는 잇지 않는다
+  const DISTANCE_THRESHOLD_KM = 500;
+  for (let i = 1; i < placed.length; i++) {
+    const prev = placed[i - 1].node;
+    const curr = placed[i].node;
+    const dist = haversineKm(prev.lat, prev.lng, curr.lat, curr.lng);
+    if (dist >= DISTANCE_THRESHOLD_KM) continue;
+    edges.push({
+      id: `fp-route-${prev.id}-${curr.id}`,
+      tripId: curr.tripId,
+      tripColor: curr.tripColor,
+      from: { lat: prev.lat, lng: prev.lng, label: prev.label },
+      to: { lat: curr.lat, lng: curr.lng, label: curr.label },
+      type: 'simple-route',
+      distanceKm: dist,
+      timestamp: curr.timestamp,
+    });
+  }
+
+  const dates = sorted.map((a) => (a.startAt || '').slice(0, 10)).filter(Boolean);
+  const meta = (id: string, title: string, color: string): TripMeta => ({
+    id, title, color,
+    startDate: dates[0] || '',
+    endDate: dates[dates.length - 1] || '',
+    nodeCount: nodes.filter((n) => n.tripId === id).length,
+    edgeCount: edges.filter((e) => e.tripId === id).length,
+    isOverseas: false,
+  });
+
+  const tripMeta: TripMeta[] = [];
+  if (nodes.some((n) => n.tripId === 'footprint-written')) {
+    tripMeta.push(meta('footprint-written', '여행기로 쓴 곳', WRITTEN_COLOR));
+  }
+  if (nodes.some((n) => n.tripId === 'footprint-unwritten')) {
+    tripMeta.push(meta('footprint-unwritten', '기록만 남은 곳', UNWRITTEN_COLOR));
+  }
+
+  return { nodes, edges, tripMeta };
 }

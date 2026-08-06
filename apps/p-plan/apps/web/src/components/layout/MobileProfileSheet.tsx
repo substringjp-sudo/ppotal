@@ -72,43 +72,25 @@ export default function MobileProfileSheet({ isOpen, onClose }: MobileProfileShe
                                     <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
                                 </button>
 
+                                {/* 내 콘텐츠(여행기·발자취·여행지도·인텔리전스·저장한 곳)는 계정 메뉴가 아니라
+                                    마이페이지 탭바(MyPageTabs)로 옮겼다 — 여기엔 계정 항목만 남긴다. */}
                                 <Link
-                                    href="/travelogs"
+                                    href="/"
                                     onClick={onClose}
                                     className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
                                 >
-                                    <span className="material-symbols-rounded text-xl text-primary">auto_stories</span>
-                                    내 여행기
+                                    <span className="material-symbols-rounded text-xl text-primary">luggage</span>
+                                    내 여행
                                     <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
                                 </Link>
 
                                 <Link
-                                    href="/footprint"
+                                    href="/about"
                                     onClick={onClose}
                                     className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
                                 >
-                                    <span className="material-symbols-rounded text-xl text-primary">footprint</span>
-                                    발자취
-                                    <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
-                                </Link>
-
-                                <Link
-                                    href="/stats"
-                                    onClick={onClose}
-                                    className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
-                                >
-                                    <span className="material-symbols-rounded text-xl text-primary">analytics</span>
-                                    인텔리전스 (통계)
-                                    <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
-                                </Link>
-
-                                <Link
-                                    href="/journey-atlas"
-                                    onClick={onClose}
-                                    className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
-                                >
-                                    <span className="material-symbols-rounded text-xl text-primary">map</span>
-                                    여행 지도
+                                    <span className="material-symbols-rounded text-xl text-primary">info</span>
+                                    소개
                                     <span className="material-symbols-rounded text-slate-300 ml-auto text-sm">chevron_right</span>
                                 </Link>
 

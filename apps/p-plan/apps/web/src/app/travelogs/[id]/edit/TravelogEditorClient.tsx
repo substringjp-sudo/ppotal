@@ -16,7 +16,9 @@ import { CSS } from '@dnd-kit/utilities';
 import {
     collectCategories, generateId, hasMinimumContent, syncTravelogPlaces,
     buildStoryEntries, reorderStoryEntries, cn,
+    getTrip, buildTripPriors, tripUtcOffsetMinutes,
     type Travelog, type TravelogPlace, type TravelogNote, type StoryEntry,
+    type TripPriors,
 } from '@pplaner/shared';
 import { useAuth } from '@/hooks/useAuth';
 import { useTravelogPersistence } from './hooks/useTravelogPersistence';
@@ -50,6 +52,24 @@ export default function TravelogEditorClient({ id }: { id: string }) {
     const { handleSave } = useTravelogPersistence({
         id, travelog, setTravelog, setIsLoading, setIsSaving,
     });
+
+    // ── 계획 사전 정보 ───────────────────────────────────────────
+    // 계획에서 여행기를 만들 수는 없다(계획은 의도, 기록은 증거). 하지만 계획은 증거를
+    // '해석'할 때 우리가 가진 가장 정밀한 신호다 — 어느 날 어디에 가려 했는지가 적혀 있다.
+    // 계획이 없으면(사진만 올린 경우) 아래는 전부 undefined로 남고 동작은 그대로다.
+    const [priors, setPriors] = useState<TripPriors | null>(null);
+    const [tzOffsetMinutes, setTzOffsetMinutes] = useState<number | undefined>();
+    const tripId = travelog?.tripId;
+    useEffect(() => {
+        if (!tripId) { setPriors(null); setTzOffsetMinutes(undefined); return; }
+        let alive = true;
+        getTrip(tripId).then((trip) => {
+            if (!alive || !trip) return;
+            setPriors(buildTripPriors(trip as any));
+            setTzOffsetMinutes(tripUtcOffsetMinutes(trip as any, -new Date().getTimezoneOffset()));
+        }).catch(() => { /* 계획을 못 읽어도 사진만으로 계속 쓸 수 있어야 한다 */ });
+        return () => { alive = false; };
+    }, [tripId]);
 
     // "사진으로" 시작한 경우(?photos=1) 사진 고르기를 자동으로 연다 —
     // 위저드를 거치지 않으므로 첫 동작이 곧 사진 올리기가 되게.
@@ -173,7 +193,10 @@ export default function TravelogEditorClient({ id }: { id: string }) {
         const images = files.filter((f) => f.type.startsWith('image/'));
         if (images.length === 0) return;
         try {
-            const places = await intakePhotosToPlaces(images, user.uid, travelog.id, nextOrder, setProgress);
+            const places = await intakePhotosToPlaces(
+                images, user.uid, travelog.id, nextOrder, setProgress,
+                { priors: priors || undefined, tzOffsetMinutes },
+            );
             setTravelog((prev) => {
                 if (!prev) return prev;
                 // 사진에 찍힌 날짜로 여행 시작·끝을 인지한다 — 처음 채울 때만, 기존 범위는 넓히기만 한다
@@ -195,7 +218,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
         } finally {
             setProgress(null);
         }
-    }, [user, travelog, nextOrder]);
+    }, [user, travelog, nextOrder, priors, tzOffsetMinutes]);
 
     const addPhotosToPlace = useCallback(async (placeId: string, files: File[]) => {
         if (!user || !travelog) return;
@@ -336,6 +359,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                                                         place={entry.place}
                                                         index={i}
                                                         categoryOptions={categoryOptions}
+                                                        plannedPlaces={priors?.plannedPlaces}
                                                         dragHandleProps={dragProps}
                                                         isDragging={isDragging}
                                                         onUpdate={(patch) => updatePlace(entry.place.id, patch)}

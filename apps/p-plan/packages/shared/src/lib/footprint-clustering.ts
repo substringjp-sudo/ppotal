@@ -28,19 +28,39 @@ export function clusterByTimeAndDistance<T extends TimedPoint>(
 
     const clusters: T[][] = [];
     let current: T[] = [];
+    // 거리는 "직전 점"이 아니라 지금까지 클러스터의 평균 좌표(centroid)에 대해 잰다.
+    // 직전 점과만 비교하면 한 걸음씩은 반경 안이어도 누적되면 클러스터 전체가
+    // 서서히 멀리까지 드리프트해, 실제로는 몇 km 떨어진 지점들이 "같은 장소"로
+    // 묶여버린다(연쇄 결합 문제).
+    let sumLat = 0;
+    let sumLng = 0;
+    let coordCount = 0;
+
+    const startCluster = (item: T) => {
+        current = [item];
+        if (item.lat != null && item.lng != null) {
+            sumLat = item.lat; sumLng = item.lng; coordCount = 1;
+        } else {
+            sumLat = 0; sumLng = 0; coordCount = 0;
+        }
+    };
+
     sorted.forEach((item, idx) => {
         if (current.length === 0) {
-            current.push(item);
+            startCluster(item);
         } else {
             const last = current[current.length - 1];
             const gapHrs = (new Date(item.timestamp).getTime() - new Date(last.timestamp).getTime()) / 3_600_000;
-            const distKm = (item.lat != null && item.lng != null && last.lat != null && last.lng != null)
-                ? calculateDistance(item.lat, item.lng, last.lat, last.lng) : 0;
+            const distKm = (item.lat != null && item.lng != null && coordCount > 0)
+                ? calculateDistance(item.lat, item.lng, sumLat / coordCount, sumLng / coordCount) : 0;
             if (gapHrs > maxGapHours || distKm > maxDistanceKm) {
                 clusters.push(current);
-                current = [item];
+                startCluster(item);
             } else {
                 current.push(item);
+                if (item.lat != null && item.lng != null) {
+                    sumLat += item.lat; sumLng += item.lng; coordCount++;
+                }
             }
         }
         if (idx === sorted.length - 1 && current.length > 0) clusters.push(current);
