@@ -1,0 +1,55 @@
+name: Deploy PPLANER (p-plan)
+
+# p-plan은 @ppotal/ui(루트 packages/ui, Firebase 설정)를 workspace:* 로 물고 있어
+# 루트 pnpm 워크스페이스 밖에서는 설치가 안 된다. 그래서 install은 루트에서 하되,
+# 빌드·배포 대상은 turbo 필터와 apps/p-plan/firebase.json으로 p-plan에만 한정한다.
+# portal/jprail/regionevel은 건드리지 않는다 — 그쪽은 deploy.yml이 그대로 맡는다.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/p-plan/apps/web/**'
+      - 'apps/p-plan/packages/**'
+      - 'apps/p-plan/firebase.json'
+      - 'apps/p-plan/firestore.rules'
+      - 'apps/p-plan/firestore.indexes.json'
+      - 'apps/p-plan/storage.rules'
+      - 'apps/p-plan/.firebaserc'
+      - 'packages/ui/**'
+      - 'packages/firebase/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/deploy-p-plan.yml'
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install -g pnpm@11.1.2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build p-plan web
+        run: pnpm exec turbo run build --filter=@pplaner/web...
+        env:
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
+
+      - name: Deploy hosting + rules + functions
+        working-directory: apps/p-plan
+        run: |
+          if [ ! -d "apps/web/out" ]; then
+            echo "build output missing — refusing to deploy" >&2
+            exit 1
+          fi
+          npx firebase-tools deploy --only hosting,firestore,storage,functions --token "${{ secrets.FIREBASE_TOKEN }}"

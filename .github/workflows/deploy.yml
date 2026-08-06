@@ -53,12 +53,9 @@ jobs:
             npx firebase-tools deploy --only hosting:regionevel --token "${{ secrets.FIREBASE_TOKEN }}"
           fi
 
-      - name: Deploy P-Plan
-        if: success()
-        run: |
-          if [ -d "apps/p-plan/apps/web/out" ]; then
-            npx firebase-tools deploy --only hosting:p-plan --token "${{ secrets.FIREBASE_TOKEN }}"
-          fi
+      # P-Plan은 deploy-p-plan.yml이 전담한다 (자체 firebase.json/rules로 배포).
+      # 여기서 같이 배포하면 이 워크플로가 쓰는 루트 firestore.rules가 최신이 아니라
+      # p-plan 쪽에서 방금 배포한 규칙을 다시 구버전으로 덮어쓸 수 있다.
 
       - name: Deploy Functions and Security Rules
         if: success()
