@@ -2,7 +2,7 @@
 import { generateId } from '@pplaner/shared';
 
 import { useState, useMemo } from 'react';
-import { useTripStore } from '@pplaner/shared';
+import { useTripStore, tripHasMapMarkers } from '@pplaner/shared';
 import TripMap from '@/components/common/TripMap';
 import { useRegionSearch, RegionMetadata } from '@/hooks/useRegionSearch';
 import { AIRPORTS, getRecommendedAirports } from '@pplaner/shared';
@@ -1013,6 +1013,14 @@ export default function BasicInfoEditor() {
                                 trip={trip}
                                 viewMode="basic"
                             />
+                            {!tripHasMapMarkers(trip) && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm text-center px-6 pointer-events-none">
+                                    <span className="material-symbols-rounded text-3xl text-slate-300 dark:text-slate-600">pin_drop</span>
+                                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                                        교통편·숙소·일정을 채우면<br />여기 지도에 표시돼요
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

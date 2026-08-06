@@ -120,8 +120,17 @@ export default function EditSidebar({
                                     {section.label}
                                 </span>
                             </div>
-                            
-                            {/* Indicators removed */}
+
+                            {(holds.critical > 0 || holds.warning > 0) && (
+                                <span
+                                    className={cn(
+                                        "w-1.5 h-1.5 rounded-full shrink-0 sm:block hidden",
+                                        holds.critical > 0 ? "bg-red-500" : "bg-amber-400",
+                                        isActive && "bg-white"
+                                    )}
+                                    aria-label={holds.critical > 0 ? `${section.label} 확인 필요` : `${section.label} 참고 사항 있음`}
+                                />
+                            )}
                         </motion.button>
                     );
                 })}

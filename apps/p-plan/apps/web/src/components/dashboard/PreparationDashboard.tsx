@@ -1,6 +1,5 @@
 'use client';
 
-import TripHeader from '@/components/dashboard/TripHeader';
 import StatsSection from '@/components/dashboard/StatsSection';
 import TransportationCard from '@/components/dashboard/TransportationCard';
 import AccommodationTimeline from '@/components/dashboard/AccommodationTimeline';
@@ -8,6 +7,7 @@ import BudgetDeepDive from '@/components/dashboard/BudgetDeepDive';
 import ChecklistWidget from '@/components/dashboard/ChecklistWidget';
 import ReservationsWidget from '@/components/dashboard/ReservationsWidget';
 import WishlistWidget from '@/components/dashboard/WishlistWidget';
+import ActionItemsWidget from '@/components/dashboard/ActionItemsWidget';
 import MapWidget from '@/components/dashboard/MapWidget';
 import TripWarnings from '@/components/dashboard/TripWarnings';
 import OnlineAdvisories from '@/components/dashboard/OnlineAdvisories';
@@ -41,6 +41,7 @@ const WIDGET_COMPONENTS: Record<string, React.ReactNode> = {
     checklist: <ChecklistWidget />,
     reservations: <ReservationsWidget />,
     wishlist: <WishlistWidget />,
+    action_items: <ActionItemsWidget />,
 };
 
 import { getTrip } from '@pplaner/shared';
@@ -182,8 +183,11 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
         }
     };
 
-    // order 기준으로 정렬된 위젯 목록
-    const sortedWidgets = [...widgets].sort((a, b) => a.order - b.order);
+    // order 기준으로 정렬된 위젯 목록 — 컴포넌트 매핑이 없는 항목(예: 예전 'warnings'
+    // 그리드 항목처럼 상단 배너로 옮겨간 것)은 빈 카드로 렌더링되지 않게 걸러낸다.
+    const sortedWidgets = [...widgets]
+        .filter((w) => WIDGET_COMPONENTS[w.id])
+        .sort((a, b) => a.order - b.order);
     const widgetIds = sortedWidgets.map((w) => w.id);
 
     return (

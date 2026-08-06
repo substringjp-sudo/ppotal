@@ -1,7 +1,7 @@
 'use client';
 import { useMemo } from 'react';
 import TripMap from '@/components/common/TripMap';
-import { useTripStore } from '@pplaner/shared';
+import { useTripStore, tripHasMapMarkers } from '@pplaner/shared';
 import { AIRPORTS } from '@pplaner/shared';
 import { useRouter } from 'next/navigation';
 
@@ -16,6 +16,8 @@ export default function MapWidget() {
     const handleNavigate = () => {
         router.push(`/edit-trip/${trip.id}?tab=schedule`);
     };
+
+    const hasMarkers = tripHasMapMarkers(trip);
 
     return (
         <section 
@@ -41,6 +43,19 @@ export default function MapWidget() {
                     viewMode="dashboard"
                     aria-label={`여행 지도: ${trip.locations?.regions?.[0]?.name || '위치 미지정'}`}
                 />
+
+                {!hasMarkers && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/85 dark:bg-slate-900/85 backdrop-blur-sm text-center px-6 pointer-events-none">
+                        <span className="material-symbols-rounded text-3xl text-slate-300 dark:text-slate-600">pin_drop</span>
+                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">아직 지도에 찍을 장소가 없어요</p>
+                        <button
+                            onClick={handleNavigate}
+                            className="pointer-events-auto px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
+                        >
+                            숙소·교통편 추가하기
+                        </button>
+                    </div>
+                )}
 
                 {/* Floating Map Legend/Controls overlay */}
                 <div className="absolute top-4 right-4 flex flex-col gap-2">

@@ -13,6 +13,10 @@ export default function TripWarnings() {
     const criticalCount = warnings.filter(w => w.severity === 'critical').length;
     const warningCount = warnings.filter(w => w.severity === 'warning').length;
     const infoCount = warnings.filter(w => w.severity === 'info').length;
+    // 참고(info)만 잔뜩 쌓여도 헤드라인 숫자가 커져서 실제로 손봐야 할 게 없어도
+    // 불안해 보였다 — 정말 확인이 필요한 것만 큰 숫자로 보여준다.
+    const actionableCount = criticalCount + warningCount;
+    const isInfoOnly = actionableCount === 0 && infoCount > 0;
 
     const getSeverityIcon = (severity: string) => {
         switch (severity) {
@@ -50,8 +54,8 @@ export default function TripWarnings() {
                 >
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-xl flex items-center justify-center ${
-                            criticalCount > 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 
-                            warningCount > 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                            criticalCount > 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                            warningCount > 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                         }`} aria-hidden="true">
                             <span className="material-symbols-rounded text-xl">
                                 {criticalCount > 0 ? 'gpp_maybe' : warningCount > 0 ? 'warning' : 'info'}
@@ -59,8 +63,10 @@ export default function TripWarnings() {
                         </div>
                         <div>
                             <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
-                                한번 더 확인해보세요
-                                <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full" aria-label={`총 ${warnings.length}개`}>{warnings.length}</span>
+                                {isInfoOnly ? '참고할 점이 있어요' : '한번 더 확인해보세요'}
+                                {!isInfoOnly && (
+                                    <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full" aria-label={`확인이 필요한 항목 ${actionableCount}개`}>{actionableCount}</span>
+                                )}
                             </h3>
                             <div className="flex items-center gap-2 mt-0.5">
                                 {criticalCount > 0 && (

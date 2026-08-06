@@ -20,9 +20,15 @@ export default function MobileSectionTabBar({
 }: MobileSectionTabBarProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
+    // 가로 탭 스크롤만 직접 계산해서 옮긴다 — scrollIntoView는 fixed 컨테이너 안에서도
+    // 문서(세로) 스크롤까지 건드리는 경우가 있어(크로미움에서 재현됨), 안내 배너가
+    // 헤더 뒤로 밀려 들어가는 원인이 됐다.
     useEffect(() => {
-        const btn = scrollRef.current?.querySelector(`[data-section="${activeSection}"]`);
-        btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const container = scrollRef.current;
+        const btn = container?.querySelector<HTMLElement>(`[data-section="${activeSection}"]`);
+        if (!container || !btn) return;
+        const target = btn.offsetLeft - (container.clientWidth - btn.clientWidth) / 2;
+        container.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
     }, [activeSection]);
 
     const handleSectionClick = (id: SectionId) => {

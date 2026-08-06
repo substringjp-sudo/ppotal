@@ -39,10 +39,11 @@ interface DashboardState {
     resetLayout: () => void;
 }
 
+// 'warnings'는 상단 고정 배너(TripWarnings)로 옮겨졌다 — 위젯 그리드에 다시 넣지 않는다
+// (예전엔 여기에도 있었는데 컴포넌트 매핑이 없어 빈 카드로 렌더링됐다).
 const DEFAULT_WIDGETS: WidgetConfig[] = [
     { id: 'map', visible: true, colSpan: 8, rowSpan: 2, order: 0 },
     { id: 'stats', visible: true, colSpan: 4, rowSpan: 2, order: 1 },
-    { id: 'warnings', visible: true, colSpan: 12, rowSpan: 1, order: 2 },
     { id: 'accommodation', visible: true, colSpan: 6, rowSpan: 2, order: 3 },
     { id: 'transportation', visible: true, colSpan: 6, rowSpan: 2, order: 4 },
     { id: 'checklist', visible: true, colSpan: 4, rowSpan: 2, order: 5 },

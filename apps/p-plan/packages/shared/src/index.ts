@@ -61,6 +61,7 @@ export * from './lib/fx-service';
 export * from './lib/design-tokens';
 export * from './lib/constants/common';
 export * from './lib/airports';
+export * from './lib/trip-map-signals';
 export * from './lib/aviation-engine';
 export * from './lib/geodata-engine';
 export * from './lib/firestore-geodata-provider';
