@@ -160,6 +160,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 좌표별 장소 후보 공용 캐시 — 같은 자리를 다녀온 사람끼리 나눠 쓰는 조회 결과.
+    // 개인 정보가 없고(공개 POI 목록), 로그인 사용자만 채울 수 있다.
+    match /placeCandidateCache/{cellId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
     // Users (Unified for all apps)
     match /users/{userId} {
       allow read: if isSignedIn();

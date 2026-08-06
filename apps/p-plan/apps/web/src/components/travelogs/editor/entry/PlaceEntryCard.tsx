@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { cn, type TravelogPlace } from '@pplaner/shared';
 import PhotoStrip from './PhotoStrip';
+import PlaceCandidatePicker from './PlaceCandidatePicker';
 import { useCardStreamField } from './useCardStream';
 
 /**
@@ -34,7 +35,16 @@ export default function PlaceEntryCard({
     onAddPhotos: (files: File[]) => void;
 }) {
     const [showDetails, setShowDetails] = useState(false);
+    const [pickingPlace, setPickingPlace] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    // 좌표에서 자동으로 붙은 이름은 대개 동네 이름이라 확인이 필요하다
+    const isAutoNamed = !place.googlePlaceId && !!place.name;
+    const dwellMinutes = (() => {
+        if (!place.startTime || !place.endTime) return undefined;
+        const toMin = (s: string) => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+        const d = toMin(place.endTime) - toMin(place.startTime);
+        return d > 0 ? d : undefined;
+    })();
     const field = useCardStreamField(place.id, {
         onRate: (n) => onUpdate({ rating: place.rating === n ? 0 : n }),
     });
@@ -68,12 +78,24 @@ export default function PlaceEntryCard({
                         {String(index + 1).padStart(2, '0')}
                     </button>
                     <div className="min-w-0 flex-1">
-                        <input
-                            value={place.name}
-                            onChange={(e) => onUpdate({ name: e.target.value })}
-                            placeholder="장소 이름"
-                            className="w-full bg-transparent text-sm font-black text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-primary/20 rounded px-1 -mx-1"
-                        />
+                        <button
+                            onClick={() => setPickingPlace(true)}
+                            className="group/name w-full flex items-center gap-1.5 text-left rounded px-1 -mx-1 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                            title="장소 고르기"
+                        >
+                            <span className={cn('text-sm font-black truncate',
+                                place.name ? 'text-slate-900 dark:text-white' : 'text-slate-400')}>
+                                {place.name || '장소 고르기'}
+                            </span>
+                            {isAutoNamed && (
+                                <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 text-[9px] font-black text-amber-600 dark:text-amber-400">
+                                    확인
+                                </span>
+                            )}
+                            <span className="material-symbols-rounded text-sm text-slate-300 group-hover/name:text-primary transition shrink-0">
+                                expand_more
+                            </span>
+                        </button>
                         {(timeLabel || place.visitDate) && (
                             <p className="mt-0.5 px-1 -mx-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums truncate">
                                 {[place.visitDate, timeLabel].filter(Boolean).join(' · ')}
@@ -183,6 +205,31 @@ export default function PlaceEntryCard({
                     </div>
                 )}
             </div>
+
+            {pickingPlace && (
+                <PlaceCandidatePicker
+                    lat={place.location?.lat}
+                    lng={place.location?.lng}
+                    currentName={place.name}
+                    context={{
+                        dwellMinutes,
+                        photoCount: place.photoUrls?.length,
+                        timeOfDay: place.startTime,
+                    }}
+                    onPick={(picked) => onUpdate({
+                        name: picked.name,
+                        googlePlaceId: picked.placeId,
+                        location: {
+                            ...(place.location || {}),
+                            name: picked.name,
+                            lat: picked.lat ?? place.location?.lat,
+                            lng: picked.lng ?? place.location?.lng,
+                            address: picked.address ?? place.location?.address,
+                        },
+                    })}
+                    onClose={() => setPickingPlace(false)}
+                />
+            )}
         </article>
     );
 }
