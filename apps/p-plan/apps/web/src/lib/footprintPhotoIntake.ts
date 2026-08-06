@@ -10,28 +10,22 @@ import {
     seedActivitiesFromPoints,
     saveFootprintPoints,
     saveFootprintActivities,
-    type TravelogPlace,
     type FootprintPoint,
+    type FootprintActivity,
 } from '@pplaner/shared';
 
 /**
- * 사진 업로드 → 클러스터링 → 장소 카드 파이프라인.
- *
- * 기존 에디터는 사진을 `URL.createObjectURL(file)`로만 다뤄 Storage에 올라가지 않는
- * blob URL을 그대로 photoUrls에 저장했다 — 새로고침·공유·스팟피드 전부에서 깨진다.
- * 이 모듈은 실제 Storage 업로드로 교체하고, 그 결과를 바로 TravelogPlace[]로 만든다
- * (타임라인을 거치지 않는다 — 카드 스트림 에디터는 장소를 직접 쓴다).
- *
- * 같은 클러스터링 결과를 발자취(FootprintPoint/FootprintActivity)에도 그대로 심는다 —
- * 여행기에 안 쓴 사진도 "다녀왔다"는 사실 자체는 발자취에 남아야 하니까. 이 부분은
- * 곁가지 기록이라 실패해도 여행기 작성 자체는 막지 않는다(로그만 남기고 무시).
+ * 사진 → 발자취(FootprintPoint/FootprintActivity) 직행 파이프라인.
+ * travelogPhotoIntake.ts와 EXIF/클러스터링/역지오코딩 로직은 같지만, 여행기를 거치지
+ * 않고 곧장 발자취에 쌓는다 — "그냥 사진만 넣기"가 여행기 쓰기보다 훨씬 가벼운 진입이어야
+ * 더 많은 사람이 쓸 수 있다는 판단.
  */
 
 interface RawPhoto {
     file: File;
     lat?: number;
     lng?: number;
-    timestamp: string; // ISO
+    timestamp: string;
 }
 
 function parseGPS(values: number[] | undefined, ref?: string): number | undefined {
@@ -65,45 +59,35 @@ async function readPhotoExif(file: File): Promise<{ lat?: number; lng?: number; 
     }
 }
 
-/** Firebase Storage에 실제로 올리고 영구 다운로드 URL을 받는다. */
-export async function uploadTravelogPhoto(file: File, userId: string, travelogId: string): Promise<string> {
+async function uploadFootprintPhoto(file: File, userId: string): Promise<string> {
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().slice(0, 8);
-    const path = `users/${userId}/travelogs/${travelogId}/${generateId()}.${ext}`;
+    const path = `users/${userId}/footprint/${generateId()}.${ext}`;
     const storageRef = ref(storage, path);
     await uploadBytes(storageRef, file);
     return getDownloadURL(storageRef);
 }
 
-export interface IntakeProgress {
-    stage: 'uploading' | 'clustering' | 'geocoding' | 'done';
+export interface FootprintIntakeProgress {
+    stage: 'uploading' | 'clustering' | 'geocoding' | 'saving' | 'done';
     done: number;
     total: number;
 }
 
-/**
- * 사진 파일들을 받아 업로드 + 시간/거리 클러스터링 + 역지오코딩까지 마친
- * 장소 카드(TravelogPlace) 배열을 돌려준다. 사진이 하나도 위치 정보가 없으면
- * 이름 없는 단일 장소 카드로 묶는다.
- *
- * 곁가지로, 같은 클러스터를 FootprintPoint/FootprintActivity로도 저장한다(실패해도 무시).
- */
-export async function intakePhotosToPlaces(
+/** 사진들을 업로드하고 FootprintPoint/FootprintActivity로 저장한다. */
+export async function intakePhotosToFootprint(
     files: File[],
     userId: string,
-    travelogId: string,
-    startOrder: number,
-    onProgress?: (p: IntakeProgress) => void,
-): Promise<TravelogPlace[]> {
+    onProgress?: (p: FootprintIntakeProgress) => void,
+): Promise<FootprintActivity[]> {
     const total = files.length;
     onProgress?.({ stage: 'uploading', done: 0, total });
 
-    // 1. EXIF 읽기 + Storage 업로드를 파일별로 병렬 수행
     let uploaded = 0;
     const photos: (RawPhoto & { url: string })[] = await Promise.all(
         files.map(async (file) => {
             const [exif, url] = await Promise.all([
                 readPhotoExif(file),
-                uploadTravelogPhoto(file, userId, travelogId),
+                uploadFootprintPhoto(file, userId),
             ]);
             uploaded++;
             onProgress?.({ stage: 'uploading', done: uploaded, total });
@@ -111,11 +95,9 @@ export async function intakePhotosToPlaces(
         }),
     );
 
-    // 2. 시간(2시간)/거리(50m) 기준 클러스터링 — 발자취와 공유하는 순수 함수
     onProgress?.({ stage: 'clustering', done: 0, total: 1 });
     const clusters = clusterByTimeAndDistance(photos);
 
-    // 3. 클러스터 대표 좌표 → 배치 역지오코딩
     onProgress?.({ stage: 'geocoding', done: 0, total: clusters.length });
     const centroids = clusters.map((cluster) => {
         const withCoords = cluster.filter((p) => p.lat != null && p.lng != null);
@@ -128,74 +110,37 @@ export async function intakePhotosToPlaces(
     const geoResults = validCentroids.length ? await batchReverseGeocodeNames(validCentroids) : [];
 
     let geoIdx = 0;
-    const clusterNames: (string | undefined)[] = [];
-    const places: TravelogPlace[] = clusters.map((cluster, i) => {
-        const centroid = centroids[i];
-        let name: string | undefined;
-        if (centroid) {
-            const geo = geoResults[geoIdx++];
-            name = geo?.city || geo?.prefecture || geo?.country;
-        }
-        clusterNames.push(name);
-        const displayName = name || '이름 없는 장소';
-        const first = cluster[0];
-        const last = cluster[cluster.length - 1];
-        const hhmm = (iso: string) => {
-            const d = new Date(iso);
-            return isNaN(d.getTime()) ? undefined
-                : `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        };
-        const startTime = hhmm(first.timestamp);
-        const endTime = hhmm(last.timestamp);
-        onProgress?.({ stage: 'geocoding', done: i + 1, total: clusters.length });
-        return {
-            id: generateId(),
-            name: displayName,
-            location: centroid ? { name: displayName, lat: centroid.lat, lng: centroid.lng } : undefined,
-            visitDate: first.timestamp.slice(0, 10),
-            startTime,
-            endTime: endTime !== startTime ? endTime : undefined,
-            photoUrls: cluster.map((p) => p.url),
-            order: startOrder + i,
-        };
-    });
-
-    onProgress?.({ stage: 'done', done: total, total });
-
-    // 발자취 저장은 곁가지 — 실패해도 여행기 작성 흐름을 막지 않는다.
-    persistFootprint(clusters, centroids, clusterNames, userId).catch((err) => {
-        console.error('[travelogPhotoIntake] Failed to persist footprint (non-fatal):', err);
-    });
-
-    return places;
-}
-
-async function persistFootprint(
-    clusters: (RawPhoto & { url: string })[][],
-    centroids: ({ lat: number; lng: number } | undefined)[],
-    names: (string | undefined)[],
-    userId: string,
-): Promise<void> {
     const pointInputs: Omit<FootprintPoint, 'id' | 'createdAt'>[] = [];
     clusters.forEach((cluster, i) => {
         const centroid = centroids[i];
+        onProgress?.({ stage: 'geocoding', done: i + 1, total: clusters.length });
         if (!centroid) return; // 좌표 없는 사진은 발자취 점을 만들지 않는다
+
+        const geo = geoResults[geoIdx++];
+        const placeName = geo?.city || geo?.prefecture || geo?.country;
         const first = cluster[0];
         const last = cluster[cluster.length - 1];
         pointInputs.push({
             userId,
             lat: centroid.lat,
             lng: centroid.lng,
-            placeName: names[i],
+            placeName,
             timestamp: first.timestamp,
             departedAt: last.timestamp !== first.timestamp ? last.timestamp : undefined,
             photoUrls: cluster.map((p) => p.url),
             source: 'photo',
         });
     });
-    if (pointInputs.length === 0) return;
 
+    onProgress?.({ stage: 'saving', done: 0, total: 1 });
+    if (pointInputs.length === 0) {
+        onProgress?.({ stage: 'done', done: total, total });
+        return [];
+    }
     const points = await saveFootprintPoints(pointInputs);
     const activityInputs = seedActivitiesFromPoints(points);
-    await saveFootprintActivities(activityInputs);
+    const activities = await saveFootprintActivities(activityInputs);
+
+    onProgress?.({ stage: 'done', done: total, total });
+    return activities;
 }

@@ -72,6 +72,7 @@ export default function Header() {
     // 프로필 드롭다운 — 내 데이터를 보는 방식들
     const secondaryLinks = [
         { href: '/travelogs', label: '내 여행기', icon: 'auto_stories' },
+        { href: '/footprint', label: '발자취', icon: 'footprint' },
         { href: '/journey-atlas', label: '여행 지도', icon: 'map' },
         { href: '/stats', label: '인텔리전스', icon: 'analytics' },
         { href: '/about', label: '소개', icon: 'info' },

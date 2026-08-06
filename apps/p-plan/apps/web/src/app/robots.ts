@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
             disallow: [
                 '/wishlist/',
                 '/saved/',
+                '/footprint/',
                 '/trips/',
                 '/dashboard/',
                 '/profile/',

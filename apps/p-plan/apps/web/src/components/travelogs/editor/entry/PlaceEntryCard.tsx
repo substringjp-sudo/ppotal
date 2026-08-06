@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { cn, type TravelogPlace } from '@pplaner/shared';
 import PhotoStrip from './PhotoStrip';
 import PlaceCandidatePicker from './PlaceCandidatePicker';
+import PlaceCandidateChips from './PlaceCandidateChips';
 import { useCardStreamField } from './useCardStream';
 
 /**
@@ -48,6 +49,20 @@ export default function PlaceEntryCard({
     const field = useCardStreamField(place.id, {
         onRate: (n) => onUpdate({ rating: place.rating === n ? 0 : n }),
     });
+
+    const applyPickedPlace = (picked: { name: string; placeId?: string; lat?: number; lng?: number; address?: string }) => {
+        onUpdate({
+            name: picked.name,
+            googlePlaceId: picked.placeId,
+            location: {
+                ...(place.location || {}),
+                name: picked.name,
+                lat: picked.lat ?? place.location?.lat,
+                lng: picked.lng ?? place.location?.lng,
+                address: picked.address ?? place.location?.address,
+            },
+        });
+    };
 
     // 기억 방아쇠 — 시각과 장소가 "그때 뭘 했더라"를 되살린다
     const timeLabel = place.startTime
@@ -120,6 +135,18 @@ export default function PlaceEntryCard({
                     onRemovePhoto={onRemovePhoto}
                     onSplitPhoto={onSplitPhoto}
                 />
+
+                {/* 카드가 활성화된 순간(= 이 장소를 막 떠올리기 시작하는 순간)에만 조용히 붙는 후보 —
+                    이름을 확정해야 할 타이밍과 기억을 떠올리는 타이밍이 같은 지점이 되게 한다. */}
+                {field.isActive && isAutoNamed && (
+                    <PlaceCandidateChips
+                        lat={place.location?.lat}
+                        lng={place.location?.lng}
+                        context={{ dwellMinutes, photoCount: place.photoUrls?.length, timeOfDay: place.startTime }}
+                        onPick={applyPickedPlace}
+                        onOpenFull={() => setPickingPlace(true)}
+                    />
+                )}
 
                 {/* 소감 — 항상 열려 있는 글 칸 */}
                 <textarea
@@ -216,17 +243,7 @@ export default function PlaceEntryCard({
                         photoCount: place.photoUrls?.length,
                         timeOfDay: place.startTime,
                     }}
-                    onPick={(picked) => onUpdate({
-                        name: picked.name,
-                        googlePlaceId: picked.placeId,
-                        location: {
-                            ...(place.location || {}),
-                            name: picked.name,
-                            lat: picked.lat ?? place.location?.lat,
-                            lng: picked.lng ?? place.location?.lng,
-                            address: picked.address ?? place.location?.address,
-                        },
-                    })}
+                    onPick={applyPickedPlace}
                     onClose={() => setPickingPlace(false)}
                 />
             )}
