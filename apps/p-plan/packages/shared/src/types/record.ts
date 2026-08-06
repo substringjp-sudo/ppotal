@@ -5,6 +5,8 @@
  * 웹/앱에서 사용자가 정제하는 '스토리텔링 데이터(Travelog)'를 분리 정의합니다.
  */
 
+import type { GeoPoint } from './common';
+
 export type ActivityType = 'stationary' | 'walking' | 'running' | 'automotive' | 'cycling' | 'unknown';
 export type MediaType = 'image' | 'video';
 
@@ -52,6 +54,96 @@ export interface TripFootprint {
         height?: number;
         isDeleted?: boolean; // 미디어 원본이 삭제되었더라도 발자취는 흔적으로 유지 가능
     };
+}
+
+// ─── 발자취 substrate (Footprint Points & Activities) ────────────
+
+/**
+ * 발자취의 4계층 중 아래 두 층.
+ *
+ *   rawFootprint (기기 초 단위 센서, TripFootprint 위 주석 참고)
+ *       ↓ PATHWALK 앱이 기기에서 정제
+ *   FootprintPoint  ← 여기부터 서버에 저장된다. 인텔리전스 통계의 근거.
+ *       ↓ 시간창으로 잘라 참조하다가, 확정되면 그 시점 값을 복사
+ *   FootprintActivity  ← "며칠 몇시부터 몇시까지 뭘 했다"는 사용자가 다듬는 단위
+ *       ↓ 발췌해서 복사
+ *   TravelogPlace / 스팟
+ *
+ * 세 가지 소스(PATHWALK, 사진, 수동 입력)가 밀도·형태 다 다르지만 전부
+ * FootprintPoint 하나의 모양으로 수렴한다 — 가장 정보가 많은 소스(PATHWALK)
+ * 기준으로 필드를 잡고, 나머지 소스는 해당 없는 필드를 비워둔다.
+ */
+export type FootprintSource = 'pathwalk' | 'photo' | 'manual';
+
+export interface FootprintPoint {
+    id: string;
+    userId: string;
+    tripId?: string;              // 계획과 연동된 경우만
+
+    lat: number;
+    lng: number;
+    placeName?: string;           // 역지오코딩/POI 매칭 결과
+    googlePlaceId?: string;
+    address?: string;
+
+    timestamp: string;            // ISO — departedAt이 없으면 순간의 경로 샘플
+    departedAt?: string;          // ISO — 있으면 "정지"(timestamp=도착, departedAt=출발)
+
+    photoUrls?: string[];
+
+    source: FootprintSource;
+    // PATHWALK 전용 — 다른 소스는 채우지 않는다
+    activityType?: ActivityType;
+    accuracy?: number;            // GPS 오차 반경(m)
+
+    activityId?: string;          // 이 포인트를 포함한 FootprintActivity (있으면)
+    createdAt: string;
+}
+
+/** 활동 하나에 딸린 장소 — 한 활동에 0개, 1개, 여러 개가 있을 수 있다. */
+export interface ActivityPlace {
+    id: string;
+    name?: string;
+    googlePlaceId?: string;
+    lat: number;
+    lng: number;
+    address?: string;
+    arrivedAt?: string;            // 활동 내부에서 이 장소에 머문 구간(선택)
+    departedAt?: string;
+    photoUrls?: string[];
+    pointIds?: string[];           // 이 장소를 구성한 FootprintPoint들(참조 흔적)
+}
+
+export type FootprintActivityType = 'visit' | 'wander' | 'transit' | 'unknown';
+
+/**
+ * "몇시부터 몇시까지 무엇을 했다" — 발자취의 실제 산출물.
+ * 경계를 조정하는 동안은 FootprintPoint를 그때그때 참조해서 채우고,
+ * 확정되면(사용자가 그 활동에서 손을 뗀 시점) 이 문서 자체에 값을 복사해 둔다.
+ * 그래서 나중에 포인트 매칭 알고리즘이 바뀌어도 이미 확정된 과거 기록은 흔들리지 않는다.
+ */
+export interface FootprintActivity {
+    id: string;
+    userId: string;
+    tripId?: string;
+
+    startAt: string;               // ISO
+    endAt: string;
+    day?: number;
+    order: number;                 // startAt이 부정확한 소스(수동 입력)를 위한 폴백 정렬
+
+    title?: string;                 // 사용자가 붙인 이름("공원 산책" 등), 없으면 대표 장소명으로 표시
+    type: FootprintActivityType;    // 휴리스틱 자동 추정 + 사용자 재정의
+
+    places: ActivityPlace[];        // 0개 이상
+    path?: GeoPoint[];              // 실측 경로 — pathwalk 소스에서만 채워진다
+
+    photoUrls?: string[];
+    source: FootprintSource;        // 이 활동을 만든 주된 소스(place가 섞이면 대표값)
+
+    travelogIds?: string[];         // 발췌되어 들어간 여행기들 — 0개, 1개, 여러 개 다 유효
+    createdAt: string;
+    updatedAt: string;
 }
 
 // ─── 사후 여행기 (Curated Journal) ──────────────────────────────
