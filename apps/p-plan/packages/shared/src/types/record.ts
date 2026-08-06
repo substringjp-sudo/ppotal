@@ -206,6 +206,17 @@ export interface TravelogPlace {
     order?: number;                 // 장소 뷰/지도 목록 정렬 순서
 }
 
+/**
+ * 장소가 아닌 순수한 글 카드 — 도입부/맺음말/장소 사이를 잇는 글.
+ * 에디터의 카드 스트림에서 장소 카드(TravelogPlace)와 함께 order로 뒤섞여 배열된다.
+ * 사진·좌표 등 구조화 데이터가 없는, 딱 문단 하나짜리 최소 단위.
+ */
+export interface TravelogNote {
+    id: string;
+    text: string;                   // 본문 텍스트
+    order?: number;                 // 장소 카드와 함께 정렬되는 순서
+}
+
 export interface TravelogSection {
     id: string;
     type: SectionType;
@@ -263,6 +274,9 @@ export interface Travelog {
     // 장소 중심 뷰의 데이터 (지도/목록 토글 · "여행지도" 템플릿의 원천)
     // 이벤트 좌표에서 파생되거나 사용자가 직접 작성할 수 있다.
     places?: TravelogPlace[];
+
+    // 장소가 아닌 글 카드들 (도입부·맺음말·연결 문단). places와 order로 함께 섞인다.
+    notes?: TravelogNote[];
 
     createdAt: string;
     updatedAt: string;
