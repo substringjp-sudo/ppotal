@@ -20,6 +20,7 @@ import {
 import { SECTIONS, SOURCE_TO_SECTION_MAP, SectionId } from '@pplaner/shared';
 import EditSidebar from '@/components/edit-trip/layout/EditSidebar';
 import EditMainContent from '@/components/edit-trip/layout/EditMainContent';
+import EditContextPanel from '@/components/edit-trip/layout/EditContextPanel';
 import EditFloatingActions from '@/components/edit-trip/layout/EditFloatingActions';
 import MobileSectionTabBar from '@/components/edit-trip/layout/MobileSectionTabBar';
 import Link from 'next/link';
@@ -309,6 +310,8 @@ export default function TripEditorApp({ id }: { id: string }) {
                         setActiveSection={setActiveSection}
                         onAddComment={setAddingCommentToEvent}
                     />
+
+                    <EditContextPanel />
                 </div>
             </motion.main>
 
