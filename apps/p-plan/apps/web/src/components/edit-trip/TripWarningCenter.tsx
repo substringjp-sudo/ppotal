@@ -80,7 +80,7 @@ export default function TripWarningCenter({ activeSection, onNavigateToSection }
                             {infoCount > 0 && <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white ring-2 ring-white dark:ring-slate-950 shadow-lg"><Info size={16} /></div>}
                         </div>
                         <div>
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white leading-none">혹시 이 부분 확인해보셨나요?</h3>
+                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white leading-none">혹시 이 부분 확인해보셨나요?</h3>
                             <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest leading-none">
                                 {criticalCount > 0 && `꼭 확인 ${criticalCount} • `}
                                 {warningCount > 0 && `확인 필요 ${warningCount} • `}
@@ -121,10 +121,10 @@ export default function TripWarningCenter({ activeSection, onNavigateToSection }
                                             <Icon className={cn("mt-0.5 flex-shrink-0", config.iconColor)} size={18} />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-0.5">
-                                                    <span className={cn("text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded", config.bg, "brightness-90")}>
+                                                    <span className={cn("text-xs font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded", config.bg, "brightness-90")}>
                                                         {config.label}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                                                         {warning.sourceType}
                                                     </span>
                                                 </div>
@@ -138,7 +138,7 @@ export default function TripWarningCenter({ activeSection, onNavigateToSection }
                                                         e.stopPropagation();
                                                         onNavigateToSection(sectionId);
                                                     }}
-                                                    className="px-3 py-1.5 bg-white dark:bg-slate-800 rounded-lg text-[10px] font-black text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1 shadow-sm"
+                                                    className="px-3 py-1.5 bg-white dark:bg-slate-800 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-1 shadow-sm"
                                                 >
                                                     이동하기
                                                     <span className="material-symbols-rounded text-xs">arrow_forward</span>

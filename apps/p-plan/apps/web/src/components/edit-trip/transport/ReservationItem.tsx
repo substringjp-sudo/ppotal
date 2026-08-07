@@ -33,13 +33,13 @@ export function ReservationItem({ res, onUpdate, onRemove }: { res: TransportRes
                     </div>
                     
                     <div className="md:col-span-8 lg:col-span-6 space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">제목 / 항목</label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">제목 / 항목</label>
                         <div className="relative">
                             <input 
                                 value={res.title} 
                                 onChange={(e) => onUpdate({ title: e.target.value })} 
                                 placeholder="예: 승차권 예매, 셔틀 예약" 
-                                className="w-full bg-slate-50 dark:bg-slate-800 px-5 py-3 rounded-2xl text-sm font-black outline-none border border-transparent focus:border-indigo-500/30 focus:ring-2 focus:ring-indigo-500/10 transition-all" 
+                                className="w-full bg-slate-50 dark:bg-slate-800 px-5 py-3 rounded-2xl text-sm font-semibold outline-none border border-transparent focus:border-indigo-500/30 focus:ring-2 focus:ring-indigo-500/10 transition-all" 
                             />
                             <span className="material-symbols-rounded absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 text-[18px]">confirmation_number</span>
                         </div>
@@ -57,7 +57,7 @@ export function ReservationItem({ res, onUpdate, onRemove }: { res: TransportRes
                 {/* 하단: 링크 및 메모 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200/60 dark:border-slate-800">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">참고 링크</label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">참고 링크</label>
                         <div className="relative">
                             <input 
                                 value={res.link || ''} 
@@ -69,7 +69,7 @@ export function ReservationItem({ res, onUpdate, onRemove }: { res: TransportRes
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">메모</label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">메모</label>
                         <div className="relative">
                             <textarea
                                 value={res.memo || ''}
@@ -87,7 +87,7 @@ export function ReservationItem({ res, onUpdate, onRemove }: { res: TransportRes
                 className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all opacity-0 group-hover/res:opacity-100"
                 title="삭제"
             >
-                <span className="material-symbols-rounded text-lg font-black">close</span>
+                <span className="material-symbols-rounded text-lg font-semibold">close</span>
             </button>
         </motion.div>
     );

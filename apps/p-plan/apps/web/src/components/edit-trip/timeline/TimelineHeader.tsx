@@ -26,11 +26,11 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
     return (
         <div className="p-6 md:p-8 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 shadow-sm">
             <div className="min-w-fit">
-                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                     <span className="material-symbols-rounded text-primary text-2xl leading-none">route</span>
                     상세 일정
                 </h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
                     {trip.dailyTimeline.length}일 간의 여행 • {timeline.reduce((acc, d) => acc + d.events.length, 0)}개 항목
                 </p>
             </div>
@@ -48,7 +48,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                             )}
                         >
                             <ListIcon size={12} />
-                            <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">타임라인</span>
+                            <span className="text-xs font-semibold uppercase tracking-wider hidden sm:inline">타임라인</span>
                         </button>
                         <button
                             onClick={() => setViewMode('map')}
@@ -60,7 +60,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                             )}
                         >
                             <MapIcon size={12} />
-                            <span className="text-[10px] font-black uppercase tracking-wider hidden sm:inline">지도</span>
+                            <span className="text-xs font-semibold uppercase tracking-wider hidden sm:inline">지도</span>
                         </button>
                     </div>
 
@@ -77,7 +77,7 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                         <span className="material-symbols-rounded text-[16px]">
                             {showOnlyBooked ? 'verified_user' : 'pending_actions'}
                         </span>
-                        <span className="text-[10px] font-black uppercase tracking-wider hidden lg:inline">
+                        <span className="text-xs font-semibold uppercase tracking-wider hidden lg:inline">
                             {showOnlyBooked ? '예약 완료만' : '전체 일정'}
                         </span>
                     </button>
@@ -88,14 +88,14 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => {/* Analysis Logic */}}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-[10px] font-black hover:bg-primary hover:text-white transition-all border border-primary/20"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-xl text-xs font-semibold hover:bg-primary hover:text-white transition-all border border-primary/20"
                     >
                         <span className="material-symbols-rounded text-sm">analytics</span>
                         타임라인 분석
                     </button>
                     <button 
                         onClick={() => {/* Optimization Logic */}}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-semibold hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20"
                     >
                         <span className="material-symbols-rounded text-sm">auto_fix_high</span>
                         경로 최적화
@@ -106,16 +106,16 @@ export const TimelineHeader: React.FC<TimelineHeaderProps> = ({
                                 /* Clear Logic */
                             }
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl text-xs font-semibold hover:bg-red-500 hover:text-white transition-all border border-red-500/20"
                     >
                         <span className="material-symbols-rounded text-sm">delete_sweep</span>
                         전체 삭제
                     </button>
                     <button
                         onClick={() => setIsWishlistOpen(true)}
-                        className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all flex items-center gap-2 border border-primary/20"
+                        className="px-4 py-2 bg-primary/10 text-primary text-xs font-semibold uppercase tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all flex items-center gap-2 border border-primary/20"
                     >
-                        <span className="material-symbols-rounded text-sm font-black">auto_awesome</span>
+                        <span className="material-symbols-rounded text-sm font-semibold">auto_awesome</span>
                         <span className="hidden sm:inline">위시리스트</span>
                     </button>
                 </div>

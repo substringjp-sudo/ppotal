@@ -13,14 +13,14 @@ export default function TripHeader() {
             <div>
                 <div className="flex items-center gap-2 mb-1">
                     <span 
-                        className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded"
+                        className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider rounded"
                         aria-label="여행 상태: 준비 단계"
                     >
                         준비 단계
                     </span>
                     {currentTrip.warnings?.some(w => w.severity === 'critical') && (
                         <span 
-                            className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded animate-pulse"
+                            className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 text-xs font-bold uppercase tracking-wider rounded animate-pulse"
                             role="status"
                             aria-live="assertive"
                         >
@@ -29,7 +29,7 @@ export default function TripHeader() {
                         </span>
                     )}
                 </div>
-                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+                <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white leading-tight">
                     {currentTrip.titleSuggestion || currentTrip.title}
                 </h1>
                 <div className="flex items-center gap-4 mt-2 text-slate-600 dark:text-slate-400">

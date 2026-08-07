@@ -39,7 +39,7 @@ export default function PreferencesStep() {
                             key={t.id}
                             onClick={() => setTheme(t.id)}
                             className={cn(
-                                "relative group p-6 rounded-[32px] border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-2",
+                                "relative group p-6 rounded-[20px] border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-2",
                                 theme === t.id
                                     ? "border-primary bg-primary/5 dark:bg-primary/20 shadow-xl shadow-primary/10"
                                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none"
@@ -92,7 +92,7 @@ export default function PreferencesStep() {
                             { label: '가족', sub: '직계 및 일가친척', icon: 'family_restroom', max: 4, limitLabel: '4+' },
                             { label: '친구', sub: '지인 및 동료', icon: 'groups', max: 5, limitLabel: '4+' },
                         ].map(cat => (
-                            <div key={cat.label} className="p-5 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 space-y-4 group/item hover:border-primary/20 transition-all shadow-sm">
+                            <div key={cat.label} className="p-5 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 space-y-4 group/item hover:border-primary/20 transition-all shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-primary group-hover/item:text-white group-hover/item:bg-primary transition-colors">

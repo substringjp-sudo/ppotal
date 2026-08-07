@@ -53,22 +53,22 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
         <section className="space-y-4" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
             <div className="flex items-center justify-between px-2">
                 <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none mb-2">숙박 타임라인</h3>
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest leading-none mb-2">숙박 타임라인</h3>
                     <p className="text-xs font-bold text-slate-500 uppercase">날짜를 드래그하여 숙소를 빠르게 예약해보세요</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-primary/20 border border-primary/30"></div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">예정</span>
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-tighter">예정</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-primary border border-primary/30"></div>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">예약됨</span>
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-tighter">예약됨</span>
                     </div>
                 </div>
             </div>
 
-            <div className="relative bg-white dark:bg-slate-900 rounded-3xl md:rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-xl p-3 md:p-5 overflow-x-auto no-scrollbar select-none">
+            <div className="relative bg-white dark:bg-slate-900 rounded-3xl md:rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-xl p-3 md:p-5 overflow-x-auto no-scrollbar select-none">
                 <div className="min-w-max relative">
                     {/* 1. Date Headers & Vertical Grid Lines */}
                     <div className="flex gap-0 relative z-0 border-b border-slate-200 dark:border-slate-800">
@@ -88,13 +88,13 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
                                 >
                                     <div className="py-4 text-center pointer-events-none w-full border-b border-slate-200/60 dark:border-slate-800/30">
                                         <p className={cn(
-                                            "text-[8px] font-black uppercase tracking-widest mb-0.5 transition-colors",
+                                            "text-xs font-semibold uppercase tracking-widest mb-0.5 transition-colors",
                                             isActualTripDay ? "text-slate-400 group-hover/day:text-primary" : "text-slate-300"
                                         )}>
                                             {format(date, 'EEE', { locale: ko })}
                                         </p>
                                         <p className={cn(
-                                            "text-base font-black leading-none tracking-tighter transition-all",
+                                            "text-base font-semibold leading-none tracking-tighter transition-all",
                                             isSameDay(date, new Date()) ? "text-primary scale-110" : 
                                             isActualTripDay ? "text-slate-900 dark:text-white" : "text-slate-400"
                                         )}>
@@ -180,10 +180,10 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
                                             {isHovered && !isEditing && (
                                                 <>
                                                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="absolute -left-2 bottom-full mb-1.5 z-[40]">
-                                                        <div className="bg-primary text-white text-[7px] font-black px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">IN {acc.checkInTime || '15:00'}</div>
+                                                        <div className="bg-primary text-white text-[7px] font-semibold px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">IN {acc.checkInTime || '15:00'}</div>
                                                     </motion.div>
                                                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="absolute -right-2 bottom-full mb-1.5 z-[40]">
-                                                        <div className="bg-primary text-white text-[7px] font-black px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">OUT {acc.checkOutTime || '11:00'}</div>
+                                                        <div className="bg-primary text-white text-[7px] font-semibold px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">OUT {acc.checkOutTime || '11:00'}</div>
                                                     </motion.div>
 
                                                     <motion.div
@@ -198,22 +198,22 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
                                                                     <span className="material-symbols-rounded text-[18px]">{typeInfo?.icon || 'home'}</span>
                                                                 </div>
                                                                 <div className="flex-1 min-w-0 text-left">
-                                                                    <div className="text-[11px] font-black text-white truncate uppercase tracking-tight">{acc.name || '미지정 숙소'}</div>
-                                                                    <div className="text-[9px] font-bold text-slate-400 truncate uppercase">{typeInfo?.label || '기타'}</div>
+                                                                    <div className="text-[11px] font-semibold text-white truncate uppercase tracking-tight">{acc.name || '미지정 숙소'}</div>
+                                                                    <div className="text-xs font-bold text-slate-400 truncate uppercase">{typeInfo?.label || '기타'}</div>
                                                                 </div>
                                                             </div>
                                                                  <div className="space-y-1.5 pt-2 border-t border-slate-700/50 text-left">
                                                                     <div className="flex items-center gap-1.5">
                                                                         <span className="material-symbols-rounded text-[12px] text-slate-500">place</span>
-                                                                        <span className="text-[9px] font-bold text-slate-300 truncate tracking-tighter uppercase">{getRegionPath(acc) || acc.location || '지역 정보 없음'}</span>
+                                                                        <span className="text-xs font-bold text-slate-300 truncate tracking-tighter uppercase">{getRegionPath(acc) || acc.location || '지역 정보 없음'}</span>
                                                                     </div>
                                                                     {!(acc.isPriceUndecided || !acc.price) && (
                                                                         <div className="flex items-center justify-between">
                                                                             <div className="flex items-center gap-1.5">
                                                                                 <span className="material-symbols-rounded text-[12px] text-slate-500">payments</span>
-                                                                                <span className="text-[10px] font-black text-primary">{`${acc.price.toLocaleString()}원`}</span>
+                                                                                <span className="text-xs font-semibold text-primary">{`${acc.price.toLocaleString()}원`}</span>
                                                                             </div>
-                                                                            {acc.status === 'booked' && <span className="text-[7px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase tracking-widest leading-none">BOOKED</span>}
+                                                                            {acc.status === 'booked' && <span className="text-[7px] font-semibold bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase tracking-widest leading-none">BOOKED</span>}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -226,7 +226,7 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
 
                                         <div className="flex items-center gap-1.5 overflow-hidden w-full h-8 shrink-0">
                                             <span className="material-symbols-rounded text-[16px] opacity-60">{typeInfo?.icon || 'home'}</span>
-                                            <span className={cn("font-bold truncate flex-1 uppercase tracking-tight transition-all", isHovered ? "text-xs" : "text-[10px]")}>
+                                            <span className={cn("font-bold truncate flex-1 uppercase tracking-tight transition-all", isHovered ? "text-xs" : "text-xs")}>
                                                 {acc.name || '미지정 숙소'}
                                             </span>
                                             {acc.status === 'booked' && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" />}

@@ -18,7 +18,7 @@ function FormSection({ title, children, icon }: { title: string, children: React
         <div className="space-y-3 p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-800 transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40">
             <div className="flex items-center gap-2 px-1">
                 {icon && <span className="material-symbols-rounded text-[16px] text-emerald-500/60">{icon}</span>}
-                <h4 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">{title}</h4>
+                <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">{title}</h4>
             </div>
             <div className="bg-white dark:bg-slate-900/50 rounded-xl p-3 border border-slate-200 dark:border-slate-800 shadow-sm">
                 {children}
@@ -74,7 +74,7 @@ export function DrivingList() {
                 </div>
                 <button
                     onClick={addDriving}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black text-slate-800 dark:text-slate-200 hover:border-emerald-500/30 hover:bg-emerald-50/5 transition-all shadow-sm uppercase tracking-widest"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-800 dark:text-slate-200 hover:border-emerald-500/30 hover:bg-emerald-50/5 transition-all shadow-sm uppercase tracking-widest"
                 >
                     <span className="material-symbols-rounded text-lg">add</span>
                     드라이브 추가하기
@@ -171,13 +171,13 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                         "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
                         isExpanded ? "bg-emerald-500 text-white" : "bg-emerald-500/5 text-emerald-500"
                     )}>
-                        <span className="material-symbols-rounded font-black text-2xl">
+                        <span className="material-symbols-rounded font-bold text-2xl">
                             {vehicleConfig.icon}
                         </span>
                     </div>
                     <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">
+                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
                                 {driving.isRental ? '렌터카' : '직접 운전'}
                                 {driving.pickupLocation && ` - ${driving.pickupLocation}`}
                             </span>
@@ -186,9 +186,9 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                             {driving.isRental && (
                                 <>
                                     <div className="flex items-center gap-1.5 overflow-hidden">
-                                        <span className="truncate max-w-[120px] font-black text-slate-600 dark:text-slate-300">{driving.pickupLocation || '출발'}</span>
+                                        <span className="truncate max-w-[120px] font-semibold text-slate-600 dark:text-slate-300">{driving.pickupLocation || '출발'}</span>
                                         <span className="material-symbols-rounded text-[14px]">arrow_forward</span>
-                                        <span className="truncate max-w-[120px] font-black text-slate-600 dark:text-slate-300">
+                                        <span className="truncate max-w-[120px] font-semibold text-slate-600 dark:text-slate-300">
                                             {driving.isReturnSameAsPickup ? '대여지 동일' : (driving.returnLocation || '도착')}
                                         </span>
                                     </div>
@@ -212,13 +212,13 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                 updateDriving(driving.id, { isBooked: !driving.isBooked });
                             }}
                             className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest border-2 shrink-0",
+                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all font-semibold text-xs uppercase tracking-widest border-2 shrink-0",
                                 driving.isBooked 
                                     ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20" 
                                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"
                             )}
                         >
-                            <span className="material-symbols-rounded text-base font-black">
+                            <span className="material-symbols-rounded text-base font-semibold">
                                 {driving.isBooked ? 'verified' : 'radio_button_unchecked'}
                             </span>
                             <span className="whitespace-nowrap">{driving.isBooked ? '예약 완료' : '예약 처리'}</span>
@@ -229,7 +229,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                         "w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-800 transition-all shadow-sm",
                         isExpanded ? "bg-emerald-500 text-white scale-110" : "bg-white text-slate-300 dark:bg-slate-800"
                     )}>
-                        <span className="material-symbols-rounded text-[20px] font-black">
+                        <span className="material-symbols-rounded text-[20px] font-semibold">
                             {isExpanded ? 'close' : 'expand_more'}
                         </span>
                     </div>
@@ -253,18 +253,18 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                         <div className="p-6 md:p-8 space-y-8 bg-slate-50/30 dark:bg-slate-900/30">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-800">
+                                    <span className="text-xs font-semibold text-emerald-500 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-800">
                                         {driving.isRental ? '렌터카 이용' : '운전' }
                                     </span>
                                     {driving.vehicleType && (
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
+                                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
                                             {vehicleConfig.label}
                                         </span>
                                     )}
                                 </div>
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); removeDriving(driving.id); }} 
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                                 >
                                     <span className="material-symbols-rounded text-[16px]">delete</span>
                                     삭제하기
@@ -312,7 +312,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                     {/* 대여 / 출발 */}
                                                     <div className="space-y-4">
                                                         <div className="flex items-center justify-between px-1">
-                                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">대여 장소 및 시각</label>
+                                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">대여 장소 및 시각</label>
                                                         </div>
                                                         <GoogleMapsSearch
                                                             initialValue={driving.pickupLocation || ''}
@@ -335,9 +335,9 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                             inputClassName="h-[48px] bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-bold border border-slate-200 dark:border-slate-800"
                                                         />
                                                         <div className="flex flex-wrap items-center gap-1.5 mt-1 px-1">
-                                                            {driving.pickupCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-[7px] font-black border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.pickupCountryName}</span>}
-                                                            {driving.pickupPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-[7px] font-black border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.pickupPrefectureName}</span>}
-                                                            {driving.pickupCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[7px] font-black border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.pickupCityName}</span>}
+                                                            {driving.pickupCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-[7px] font-semibold border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.pickupCountryName}</span>}
+                                                            {driving.pickupPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-[7px] font-semibold border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.pickupPrefectureName}</span>}
+                                                            {driving.pickupCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[7px] font-semibold border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.pickupCityName}</span>}
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-3">
@@ -359,7 +359,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                     {/* 반납 / 도착 */}
                                                     <div className="space-y-4">
                                                         <div className="flex items-center justify-between px-1">
-                                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">반납 장소 및 시각</label>
+                                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">반납 장소 및 시각</label>
                                                             <CustomCheckbox
                                                                 checked={!!driving.isReturnSameAsPickup}
                                                                 onChange={(checked) => updateDriving(driving.id, { isReturnSameAsPickup: checked })}
@@ -389,9 +389,9 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                             inputClassName="h-[48px] bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-bold border border-slate-200 dark:border-slate-800 disabled:opacity-50"
                                                         />
                                                         <div className="flex flex-wrap items-center gap-1.5 mt-1 px-1">
-                                                            {driving.returnCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-[7px] font-black border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.returnCountryName}</span>}
-                                                            {driving.returnPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-[7px] font-black border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.returnPrefectureName}</span>}
-                                                            {driving.returnCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[7px] font-black border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.returnCityName}</span>}
+                                                            {driving.returnCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-[7px] font-semibold border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.returnCountryName}</span>}
+                                                            {driving.returnPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-[7px] font-semibold border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.returnPrefectureName}</span>}
+                                                            {driving.returnCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[7px] font-semibold border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.returnCityName}</span>}
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-3">
@@ -416,9 +416,9 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                     <div className="py-2.5 px-6 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl flex items-center justify-between border border-emerald-100 dark:border-emerald-900/20 shadow-sm">
                                                         <div className="flex items-center gap-2">
                                                             <span className="material-symbols-rounded text-emerald-500 text-[18px]">timer</span>
-                                                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">총 소요 시간</span>
+                                                            <span className="text-xs font-semibold text-emerald-600 uppercase tracking-widest">총 소요 시간</span>
                                                         </div>
-                                                        <span className="text-sm font-black text-emerald-600">{getDurationText()}</span>
+                                                        <span className="text-sm font-semibold text-emerald-600">{getDurationText()}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -431,7 +431,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex items-center gap-2">
                                                         <span className="material-symbols-rounded text-slate-400">confirmation_number</span>
-                                                        <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
+                                                        <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
                                                     </div>
                                                     <CustomCheckbox
                                                         checked={!!driving.isBooked}
@@ -442,7 +442,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                 </div>
                                                 <button
                                                     onClick={() => addRes('driving', driving.id)}
-                                                    className="text-[10px] font-black text-white px-4 py-2 bg-slate-900 dark:bg-slate-700 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm uppercase tracking-widest"
+                                                    className="text-xs font-semibold text-white px-4 py-2 bg-slate-900 dark:bg-slate-700 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm uppercase tracking-widest"
                                                 >
                                                     예약 정보 추가
                                                 </button>

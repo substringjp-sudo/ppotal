@@ -23,14 +23,14 @@ export function OtherFlights() {
 
     return (
         <div className="space-y-4">
-            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">기타 비행 일정</h4>
+            <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest ml-1">기타 비행 일정</h4>
             <div className="space-y-3">
                 {others.map((f) => (
                     <OtherFlightItem key={f.id} f={f} />
                 ))}
                 <button
                     onClick={() => addFlight('other')}
-                    className="w-full py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black text-slate-400 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-400 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center gap-2"
                 >
                     <span className="material-symbols-rounded text-lg">add</span>
                     기타 비행 일정 추가
@@ -95,7 +95,7 @@ export function OtherFlightItem({ f }: { f: FlightSegment }) {
                     </div>
                     <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 sm:col-span-12 md:col-span-4 flex flex-col gap-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">날짜</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase ml-1">날짜</label>
                             <RestrictedDatePicker
                                 value={f.date}
                                 onChange={(v) => updateFlight(f.id, { date: v })}
@@ -118,7 +118,7 @@ export function OtherFlightItem({ f }: { f: FlightSegment }) {
                         </div>
                         <div className="col-span-12 sm:col-span-12 md:col-span-4 flex flex-col gap-1">
                             <div className="flex items-center justify-between px-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase">비용 (KRW)</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase">비용 (KRW)</label>
                                 <CustomCheckbox
                                     checked={f.isCostUndecided || false}
                                     onChange={(checked) => updateFlight(f.id, { isCostUndecided: checked })}
@@ -143,7 +143,7 @@ export function OtherFlightItem({ f }: { f: FlightSegment }) {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
                         <span className={cn(
-                            "text-[10px] font-black uppercase tracking-tight",
+                            "text-xs font-semibold uppercase tracking-tight",
                             f.isInternational ? "text-indigo-600" : "text-slate-400"
                         )}>
                             {f.isInternational ? '국제선' : '국내선'}
@@ -190,7 +190,7 @@ export function OtherFlightItem({ f }: { f: FlightSegment }) {
                                 align="left"
                             />
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">편명</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase ml-1">편명</label>
                                 <input
                                     value={f.flightNumber || ''}
                                     onChange={(e) => {
@@ -212,7 +212,7 @@ export function OtherFlightItem({ f }: { f: FlightSegment }) {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">상세 예약 관리</h5>
+                                    <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">상세 예약 관리</h5>
                                     <CustomCheckbox
                                         checked={!!f.isBooked}
                                         onChange={(checked) => updateFlight(f.id, { isBooked: checked })}
@@ -222,7 +222,7 @@ export function OtherFlightItem({ f }: { f: FlightSegment }) {
                                 </div>
                                 <button
                                     onClick={() => addRes('flight', f.id)}
-                                    className="text-[9px] font-black text-sky-600 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-100 dark:border-sky-800 transition-colors hover:bg-sky-100 dark:hover:bg-sky-800"
+                                    className="text-xs font-semibold text-sky-600 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-100 dark:border-sky-800 transition-colors hover:bg-sky-100 dark:hover:bg-sky-800"
                                 >
                                     예약 정보 추가
                                 </button>

@@ -28,7 +28,7 @@ export default function ReservationsWidget() {
                 {reservations.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-24 text-slate-400" role="status">
                         <span className="material-symbols-rounded text-3xl mb-1 opacity-20" aria-hidden="true">receipt_long</span>
-                        <p className="text-[10px] font-medium uppercase tracking-wider">예약 내역이 없습니다</p>
+                        <p className="text-xs font-medium uppercase tracking-wider">예약 내역이 없습니다</p>
                     </div>
                 ) : (
                     reservations.map(res => (
@@ -57,24 +57,24 @@ export default function ReservationsWidget() {
                                     )}
                                 </div>
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1" aria-hidden="true">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                                         {res.date || '미정'} {res.time && `• ${res.time}`}
                                     </span>
                                     {res.location && (
-                                        <span className="text-[10px] text-slate-500 flex items-center gap-0.5 truncate">
-                                            <span className="material-symbols-rounded text-[10px]">location_on</span>
+                                        <span className="text-xs text-slate-500 flex items-center gap-0.5 truncate">
+                                            <span className="material-symbols-rounded text-xs">location_on</span>
                                             {res.location}
                                         </span>
                                     )}
                                 </div>
                                  <div className="mt-1" aria-hidden="true">
-                                     <span className="text-[10px] font-black text-primary">
+                                     <span className="text-xs font-semibold text-primary">
                                          {res.cost && res.cost > 0 ? `${res.cost.toLocaleString()}원` : '미정'}
                                      </span>
                                  </div>
                             </div>
                             <div 
-                                className={`px-2 py-0.5 text-[9px] font-black rounded uppercase shrink-0 ${res.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                className={`px-2 py-0.5 text-xs font-semibold rounded uppercase shrink-0 ${res.status === 'confirmed' ? 'bg-green-100 text-green-700' :
                                     res.status === 'missing' ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-600'
                                 }`}
                                 aria-hidden="true"

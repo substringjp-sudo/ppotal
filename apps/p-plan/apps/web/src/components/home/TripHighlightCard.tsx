@@ -20,7 +20,7 @@ export default function TripHighlightCard({ ongoingTrip, nextTrip, user, nextMil
   const targetTrip = ongoingTrip || nextTrip;
 
   return (
-    <motion.section variants={itemVariants} className="relative group overflow-hidden bg-slate-900 rounded-[32px] p-4 lg:p-6 text-white min-h-[200px] lg:min-h-[240px] h-full flex flex-col justify-between shadow-xl">
+    <motion.section variants={itemVariants} className="relative group overflow-hidden bg-slate-900 rounded-[20px] p-4 lg:p-6 text-white min-h-[200px] lg:min-h-[240px] h-full flex flex-col justify-between shadow-xl">
       {targetTrip ? (
           <>
               <div className="absolute inset-0 opacity-60 group-hover:scale-105 transition-transform duration-[8s] ease-out">
@@ -190,7 +190,7 @@ export default function TripHighlightCard({ ongoingTrip, nextTrip, user, nextMil
               <motion.div 
                   animate={{ y: [0, -10, 0] }} 
                   transition={{ repeat: Infinity, duration: 3 }}
-                  className="w-24 h-24 bg-primary/20 rounded-[32px] flex items-center justify-center mb-8 backdrop-blur-md"
+                  className="w-24 h-24 bg-primary/20 rounded-[20px] flex items-center justify-center mb-8 backdrop-blur-md"
               >
                   <span className="material-symbols-rounded text-5xl text-primary font-black">explore</span>
               </motion.div>

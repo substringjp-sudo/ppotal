@@ -33,7 +33,7 @@ export default function TripSelectModal({ isOpen, onClose, trips, onSelect }: Tr
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 40, scale: 0.96 }}
                     transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-                    className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+                    className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[28px] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}

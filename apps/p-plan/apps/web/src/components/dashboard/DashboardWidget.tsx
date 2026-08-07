@@ -61,7 +61,7 @@ export default function DashboardWidget({ id, children, className = '', noPaddin
                 opacity: isHidden && isEditMode ? 0.4 : 1,
                 scale: 1,
             }}
-            className={`relative group h-full ${className} ${isHidden ? 'border-dashed border-2 border-slate-300 dark:border-slate-700 rounded-[32px]' : ''}`}
+            className={`relative group h-full ${className} ${isHidden ? 'border-dashed border-2 border-slate-300 dark:border-slate-700 rounded-[20px]' : ''}`}
             role="region"
             aria-label={`${id} 위젯${isHidden ? ' (숨김됨)' : ''}`}
         >
@@ -69,12 +69,12 @@ export default function DashboardWidget({ id, children, className = '', noPaddin
                 <div className="absolute inset-x-0 top-0 z-20 flex justify-center -translate-y-1/2 pointer-events-none">
                     <div className="flex items-center gap-1.5 pointer-events-auto bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full shadow-2xl border-2 border-primary/30 dark:border-primary/50 backdrop-blur-md">
                         {/* 위젯 이름 배지 */}
-                        <div className="px-2 py-0.5 bg-primary/10 rounded-md text-[10px] font-black text-primary whitespace-nowrap border border-primary/20 shrink-0">
+                        <div className="px-2 py-0.5 bg-primary/10 rounded-md text-xs font-semibold text-primary whitespace-nowrap border border-primary/20 shrink-0">
                             {WIDGET_NAMES[id] || id}
                         </div>
                         
                         {/* 크기 정보 배지 */}
-                        <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tighter mr-1 border border-slate-200 dark:border-slate-700 shrink-0">
+                        <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tighter mr-1 border border-slate-200 dark:border-slate-700 shrink-0">
                             {widget?.colSpan}/12 × {widget?.rowSpan}
                         </div>
 
@@ -140,7 +140,7 @@ export default function DashboardWidget({ id, children, className = '', noPaddin
                 </div>
             )}
             <div className={`h-full ${isHidden ? 'filter grayscale opacity-50' : ''}`}>
-                <div className={`h-full bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 overflow-hidden ${noPadding ? '' : 'p-4 md:p-5'} ${!isEditMode ? 'hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1' : ''}`}>
+                <div className={`h-full bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300 overflow-hidden ${noPadding ? '' : 'p-4 md:p-5'} ${!isEditMode ? 'hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1' : ''}`}>
                     <WidgetErrorBoundary widgetName={id}>
                         {children}
                     </WidgetErrorBoundary>

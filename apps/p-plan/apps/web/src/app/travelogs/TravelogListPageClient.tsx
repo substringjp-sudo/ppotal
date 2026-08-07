@@ -144,7 +144,7 @@ export default function TravelogListPageClient() {
 
     if (!user) return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 p-6 text-center">
-            <div className="w-20 h-20 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary mb-8">
+            <div className="w-20 h-20 rounded-[20px] bg-primary/10 flex items-center justify-center text-primary mb-8">
                 <span className="material-symbols-rounded text-4xl">auto_stories</span>
             </div>
             <h1 className="text-3xl font-black mb-4 tracking-tighter">당신의 발자취를 <span className="text-primary italic">기록하세요</span></h1>

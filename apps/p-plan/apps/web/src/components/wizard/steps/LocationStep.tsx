@@ -335,7 +335,7 @@ export default function LocationStep() {
                         hidden: { opacity: 0, x: 20 },
                         visible: { opacity: 1, x: 0 }
                     }}
-                    className="lg:col-span-8 relative rounded-[32px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none"
+                    className="lg:col-span-8 relative rounded-[20px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none"
                 >
                     <MapComponent
                         center={{ lat: 36.5, lng: 128.0 }} // 한국/일본 중심부 부근

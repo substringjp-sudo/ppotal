@@ -76,9 +76,9 @@ export default function OnlineAdvisories() {
                 <span className="material-symbols-rounded text-lg text-sky-500" aria-hidden="true">
                     cloud
                 </span>
-                <h3 className="text-sm font-black tracking-tight text-slate-900 dark:text-white">
+                <h3 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white">
                     실시간 정보
-                    <span className="ml-1.5 text-[10px] font-bold text-slate-400">날씨 · 공휴일</span>
+                    <span className="ml-1.5 text-xs font-bold text-slate-400">날씨 · 공휴일</span>
                 </h3>
             </div>
             <div className="space-y-2">
@@ -95,7 +95,7 @@ export default function OnlineAdvisories() {
                     </div>
                 ))}
             </div>
-            <p className="mt-2 text-[10px] text-slate-400">
+            <p className="mt-2 text-xs text-slate-400">
                 실시간 예보/공휴일 데이터 기반 안내예요. 상황에 따라 달라질 수 있어요.
             </p>
         </div>

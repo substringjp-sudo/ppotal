@@ -23,7 +23,7 @@ export default function ChecklistWidget() {
                     체크리스트
                 </h3>
                 <span 
-                    className="text-[10px] font-bold text-slate-500 uppercase leading-none"
+                    className="text-xs font-bold text-slate-500 uppercase leading-none"
                     aria-label={`총 ${checklist.length}개 중 ${doneCount}개 완료`}
                 >
                     {doneCount} / {checklist.length} 완료
@@ -54,7 +54,7 @@ export default function ChecklistWidget() {
                             {item.tags && item.tags.length > 0 && (
                                 <div className="ml-auto flex flex-wrap gap-1 justify-end" aria-label="태그">
                                     {item.tags.map((t, i) => (
-                                        <span key={i} className="text-[8px] font-bold text-blue-500 uppercase px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/40 rounded leading-none shrink-0">
+                                        <span key={i} className="text-xs font-bold text-blue-500 uppercase px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/40 rounded leading-none shrink-0">
                                             {t}
                                         </span>
                                     ))}

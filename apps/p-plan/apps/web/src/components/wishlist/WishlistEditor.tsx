@@ -240,7 +240,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[32px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border border-white/20 dark:border-slate-800"
+                className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[28px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border border-white/20 dark:border-slate-800"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="editor-title"

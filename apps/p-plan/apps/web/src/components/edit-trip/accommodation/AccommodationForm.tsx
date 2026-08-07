@@ -99,14 +99,14 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                             <Building2 className="w-6 h-6" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">숙소 기본 정보</h3>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">숙소 기본 정보</h3>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">이름과 위치 및 날짜를 설정하세요</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-slate-50/50 dark:bg-slate-800/20 rounded-[32px] border border-slate-200 dark:border-slate-800">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-slate-50/50 dark:bg-slate-800/20 rounded-[20px] border border-slate-200 dark:border-slate-800">
                         <div className="space-y-1.5 order-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
                                 {isGuest ? '장소이름' : '장소 검색 (구글 지도)'}
                             </label>
                                 {isGuest ? (
@@ -128,7 +128,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                             </div>
 
                         <div className="space-y-1.5 order-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">숙소 유형</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">숙소 유형</label>
                             <IconDropdown
                                 value={acc.type}
                                 onChange={(val) => handleChange('type', val)}
@@ -138,7 +138,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                         </div>
 
                         <div className="space-y-1.5 order-3">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">체크인 날짜</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">체크인 날짜</label>
                             <RestrictedDatePicker
                                 value={acc.startDate}
                                 onChange={(date) => handleChange('startDate', date)}
@@ -149,7 +149,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                         </div>
 
                         <div className="space-y-1.5 order-4">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">체크아웃 날짜 ({nightCount}박)</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">체크아웃 날짜 ({nightCount}박)</label>
                             <RestrictedDatePicker
                                 value={acc.endDate}
                                 onChange={(date) => handleChange('endDate', date)}
@@ -208,15 +208,15 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest">장소 상세 주소</p>
+                                        <p className="text-xs font-semibold text-primary uppercase tracking-widest">장소 상세 주소</p>
                                         {isResolving && (
-                                            <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-full text-[9px] font-black uppercase tracking-tighter animate-pulse">
+                                            <span className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-full text-xs font-semibold uppercase tracking-tighter animate-pulse">
                                                 <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
                                                 지역 분석 중...
                                             </span>
                                         )}
                                         {!isResolving && acc.location && (
-                                            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                                            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-semibold uppercase tracking-tighter">
                                                 <Check className="w-2.5 h-2.5" />
                                                 식별 완료
                                             </span>
@@ -235,20 +235,20 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                                 <div className="flex flex-wrap gap-2.5 pt-4 border-t border-slate-200/60 dark:border-slate-800">
                                     {acc.countryName && (
                                         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/80 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700/50">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest p-1 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">국가</span>
-                                            <span className="text-xs font-black text-slate-700 dark:text-slate-200">{acc.countryName}</span>
+                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest p-1 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">국가</span>
+                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{acc.countryName}</span>
                                         </div>
                                     )}
                                     {acc.prefectureName && (
                                         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/80 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700/50">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest p-1 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">주/도</span>
-                                            <span className="text-xs font-black text-slate-700 dark:text-slate-200">{acc.prefectureName}</span>
+                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest p-1 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">주/도</span>
+                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{acc.prefectureName}</span>
                                         </div>
                                     )}
                                     {acc.cityName && (
                                         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/80 rounded-xl flex items-center gap-3 border border-slate-200 dark:border-slate-700/50">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest p-1 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">도시</span>
-                                            <span className="text-xs font-black text-slate-700 dark:text-slate-200">{acc.cityName}</span>
+                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest p-1 bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800">도시</span>
+                                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{acc.cityName}</span>
                                         </div>
                                     )}
                                 </div>
@@ -257,7 +257,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                             {!acc.countryName && !isResolving && acc.location && (
                                 <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-900/30">
                                     <Info className="w-4 h-4 text-rose-500" />
-                                    <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400">행정구역 정보를 식별할 수 없습니다. 검색어를 더 구체적으로 입력해보세요.</p>
+                                    <p className="text-xs font-bold text-rose-600 dark:text-rose-400">행정구역 정보를 식별할 수 없습니다. 검색어를 더 구체적으로 입력해보세요.</p>
                                 </div>
                             )}
                         </div>
@@ -272,7 +272,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                         <Star className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">편의사항 및 옵션</h3>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">편의사항 및 옵션</h3>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">숙소에서 제공하는 주요 서비스를 체크하세요</p>
                     </div>
                 </div>
@@ -312,7 +312,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                                     <Icon className="w-5 h-5" />
                                 </div>
                                 <span className={cn(
-                                    "text-[10px] font-black uppercase tracking-widest transition-colors",
+                                    "text-xs font-semibold uppercase tracking-widest transition-colors",
                                     isChecked ? "text-primary" : "text-slate-400"
                                 )}>
                                     {amenity.label}
@@ -335,7 +335,7 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
             <div className="flex justify-between items-center pt-10 border-t border-slate-200 dark:border-slate-800 gap-4">
                 <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-2 px-6 py-4 rounded-2xl text-rose-500 font-black text-xs uppercase tracking-widest hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all"
+                    className="flex items-center gap-2 px-6 py-4 rounded-2xl text-rose-500 font-semibold text-xs uppercase tracking-widest hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all"
                 >
                     <Trash2 className="w-4 h-4" /> 숙소 삭제
                 </button>
@@ -343,13 +343,13 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
                 <div className="flex gap-4">
                     <button
                         onClick={onClose}
-                        className="px-8 py-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-black text-xs uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                        className="px-8 py-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold text-xs uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                     >
                         닫기
                     </button>
                     <button
                         onClick={onClose}
-                        className="px-8 py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                        className="px-8 py-4 rounded-2xl bg-primary text-white font-semibold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
                     >
                         변경사항 저장
                     </button>
@@ -358,17 +358,17 @@ export const AccommodationForm: React.FC<AccommodationFormProps> = ({ id, onClos
 
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-900 rounded-[32px] p-8 max-w-sm w-full shadow-2xl space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-[28px] p-8 max-w-sm w-full shadow-2xl space-y-6">
                         <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center text-rose-500 mx-auto">
                             <Trash2 className="w-8 h-8" />
                         </div>
                         <div className="text-center space-y-2">
-                            <h4 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">이 숙소를 삭제하시겠습니까?</h4>
+                            <h4 className="text-lg font-semibold text-slate-900 dark:text-white uppercase tracking-tight">이 숙소를 삭제하시겠습니까?</h4>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">삭제된 정보는 복구할 수 없습니다.</p>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-black text-[10px] uppercase tracking-widest">취소</button>
-                            <button onClick={() => { removeAccommodation(id); onClose(); }} className="flex-1 py-4 rounded-xl bg-rose-500 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-500/20">삭제하기</button>
+                            <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold text-xs uppercase tracking-widest">취소</button>
+                            <button onClick={() => { removeAccommodation(id); onClose(); }} className="flex-1 py-4 rounded-xl bg-rose-500 text-white font-semibold text-xs uppercase tracking-widest shadow-lg shadow-rose-500/20">삭제하기</button>
                         </div>
                     </div>
                 </div>

@@ -42,7 +42,7 @@ export default function DashboardFilterBar({
   children
 }: DashboardFilterBarProps) {
   return (
-    <div className="sticky top-[80px] z-30 mb-8 rounded-[32px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
+    <div className="sticky top-[80px] z-30 mb-8 rounded-[20px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
       {/* Row 1: Search & View Mode (Primary Interaction) */}
       <div className="flex items-center gap-3 h-10 mb-1">
         {/* Central Search Bar - Now More Prominent */}

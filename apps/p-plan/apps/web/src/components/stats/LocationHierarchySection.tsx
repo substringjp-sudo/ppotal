@@ -391,7 +391,7 @@ export default function LocationHierarchySection({ locationStats }: Props) {
             </div>
 
             {/* 메인 탐색기 패널 (일체형) */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[32px] md:rounded-[40px] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden h-auto xl:h-[700px] flex flex-col xl:flex-row">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[20px] md:rounded-[40px] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden h-auto xl:h-[700px] flex flex-col xl:flex-row">
                 
                 {/* 1. 사이드바: 트리 내비게이션 (좌측) */}
                 <div className="w-full xl:w-[320px] 2xl:w-[380px] bg-slate-50/50 dark:bg-slate-800/20 border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800 flex flex-col h-[400px] xl:h-full">

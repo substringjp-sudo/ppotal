@@ -57,7 +57,7 @@ export const ExpenseListTab: React.FC<ExpenseListTabProps> = ({
                     <select 
                         value={filterCategory}
                         onChange={(e) => setFilterCategory(e.target.value)}
-                        className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 text-xs font-black outline-none border-none cursor-pointer"
+                        className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 text-xs font-semibold outline-none border-none cursor-pointer"
                     >
                         <option value="all">전체 카테고리</option>
                         {CATEGORY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -65,7 +65,7 @@ export const ExpenseListTab: React.FC<ExpenseListTabProps> = ({
                     <select 
                         value={filterSource}
                         onChange={(e) => setFilterSource(e.target.value)}
-                        className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 text-xs font-black outline-none border-none cursor-pointer"
+                        className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 text-xs font-semibold outline-none border-none cursor-pointer"
                     >
                         <option value="all">전체 출처</option>
                         <option value="manual">자료 입력</option>
@@ -98,15 +98,15 @@ export const ExpenseListTab: React.FC<ExpenseListTabProps> = ({
                             
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                    <h5 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">{expense.title}</h5>
+                                    <h5 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{expense.title}</h5>
                                     {expense.isAuto && (
-                                        <span className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded uppercase tracking-widest">AUTO</span>
+                                        <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded uppercase tracking-widest">AUTO</span>
                                     )}
                                     {expense.status === 'planned' && (
-                                        <span className="text-[8px] font-black bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded uppercase tracking-widest">PLANNED</span>
+                                        <span className="text-xs font-semibold bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded uppercase tracking-widest">PLANNED</span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-tighter">
                                     {categoryInfo?.label}
                                     <div className="w-0.5 h-0.5 rounded-full bg-slate-300"></div>
                                     {paymentMethod?.label || '미지정'}
@@ -121,13 +121,13 @@ export const ExpenseListTab: React.FC<ExpenseListTabProps> = ({
 
                             <div className="text-right flex flex-col items-end gap-1">
                                 <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase">{expense.currency}</span>
-                                    <span className="text-base font-black text-slate-900 dark:text-white">
+                                    <span className="text-xs font-semibold text-slate-400 uppercase">{expense.currency}</span>
+                                    <span className="text-base font-semibold text-slate-900 dark:text-white">
                                         {formatAmount(expense.amount || 0)}
                                     </span>
                                 </div>
                                 {expense.currency !== (trip.budget?.baseCurrency || 'KRW') && (
-                                    <span className="text-[10px] font-black text-primary">
+                                    <span className="text-xs font-semibold text-primary">
                                         ≈ {currencySymbol} {formatAmount(Math.round((expense.amount || 0) * (expense.exchangeRate || 1)))}
                                     </span>
                                 )}
@@ -152,7 +152,7 @@ export const ExpenseListTab: React.FC<ExpenseListTabProps> = ({
                 {filteredExpenses.length === 0 && (
                     <div className="py-20 text-center text-slate-300">
                         <span className="material-symbols-rounded text-4xl mb-2">search_off</span>
-                        <p className="text-xs font-black uppercase tracking-widest">일치하는 지출 내역을 찾을 수 없습니다</p>
+                        <p className="text-xs font-semibold uppercase tracking-widest">일치하는 지출 내역을 찾을 수 없습니다</p>
                     </div>
                 )}
             </div>

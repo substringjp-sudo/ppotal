@@ -117,10 +117,10 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
             <div className="p-5 sm:p-6 flex flex-col gap-5">
                 {/* 원탭 입력 */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">지출 기록</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">지출 기록</p>
                     <div className="flex items-stretch gap-2">
                         <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">{symbol}</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">{symbol}</span>
                             <input
                                 type="number"
                                 inputMode="decimal"
@@ -135,14 +135,14 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                             type="button"
                             onClick={submit}
                             disabled={!amount || parseFloat(amount) <= 0}
-                            className="h-11 px-5 rounded-xl bg-primary text-white text-sm font-black shadow-sm transition enabled:hover:bg-primary/90 disabled:opacity-40"
+                            className="h-11 px-5 rounded-xl bg-primary text-white text-sm font-semibold shadow-sm transition enabled:hover:bg-primary/90 disabled:opacity-40"
                         >
                             추가
                         </button>
                     </div>
                     {settlementOn && participants.length > 0 && (
                         <div className="mt-2 flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">결제자</span>
+                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest shrink-0">결제자</span>
                             <select
                                 value={effectivePayer || ''}
                                 onChange={(e) => setPayerId(e.target.value || undefined)}
@@ -180,7 +180,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-4 py-3.5">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">오늘 쓴 돈</span>
-                        <span className={cn('text-xs font-black tabular-nums', overDay ? 'text-rose-500' : 'text-slate-800 dark:text-slate-100')}>
+                        <span className={cn('text-xs font-semibold tabular-nums', overDay ? 'text-rose-500' : 'text-slate-800 dark:text-slate-100')}>
                             {formatKRWMan(todaySpent)} <span className="text-slate-400 font-bold">/ {formatKRWMan(dailyCap)}</span>
                         </span>
                     </div>
@@ -202,9 +202,9 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-3">
                         <div>
                             <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">지금까지 쓴 총액</p>
-                            <p className="text-[10px] text-slate-400">예상 총액의 {estPct}%</p>
+                            <p className="text-xs text-slate-400">예상 총액의 {estPct}%</p>
                         </div>
-                        <span className="text-sm font-black text-slate-800 dark:text-slate-100 tabular-nums">{formatKRWMan(totalSpent)}</span>
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">{formatKRWMan(totalSpent)}</span>
                     </div>
                     {topCats.length > 0 && (
                         <div className="flex flex-wrap gap-x-4 gap-y-1 px-1">
@@ -220,7 +220,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                 {/* 최근 입력 */}
                 {recent.length > 0 && (
                     <div className="flex flex-col gap-1.5">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">최근 입력</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">최근 입력</p>
                         <AnimatePresence initial={false}>
                             {recent.map((e) => (
                                 <motion.div
@@ -233,10 +233,10 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                                 >
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                                         {catLabel(e.category)}
-                                        {e.date && <span className="ml-1.5 text-[10px] font-semibold text-slate-400">{e.date.slice(5)}</span>}
+                                        {e.date && <span className="ml-1.5 text-xs font-semibold text-slate-400">{e.date.slice(5)}</span>}
                                     </span>
                                     <span className="flex items-center gap-2">
-                                        <span className="text-xs font-black text-slate-800 dark:text-slate-100 tabular-nums">
+                                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
                                             {getCurrencySymbol(e.currency || 'KRW')}{e.amount.toLocaleString()}
                                         </span>
                                         <button

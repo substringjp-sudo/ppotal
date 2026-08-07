@@ -76,7 +76,7 @@ function AchievementCard({ badge }: { badge: Badge }) {
       exit={{ opacity: 0, scale: 0.9 }}
       whileHover={{ y: -5 }}
       className={cn(
-        "relative p-6 rounded-[32px] border transition-all overflow-hidden group aspect-square flex flex-col items-center justify-center text-center",
+        "relative p-6 rounded-[20px] border transition-all overflow-hidden group aspect-square flex flex-col items-center justify-center text-center",
         badge.isUnlocked 
           ? "bg-white/5 border-white/10 hover:border-primary/50 cursor-default" 
           : "bg-black/20 border-white/5 grayscale opacity-60"

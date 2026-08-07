@@ -60,7 +60,7 @@ export function PublicTransportList() {
                 </div>
                 <button
                     onClick={addPT}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black text-slate-800 dark:text-slate-200 hover:border-indigo-500/30 hover:bg-indigo-50/10 transition-all shadow-sm uppercase tracking-widest"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-800 dark:text-slate-200 hover:border-indigo-500/30 hover:bg-indigo-50/10 transition-all shadow-sm uppercase tracking-widest"
                 >
                     <span className="material-symbols-rounded text-lg">add</span>
                     대중교통 추가하기
@@ -148,13 +148,13 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
             >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                     <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", config.bg)}>
-                        <span className={cn("material-symbols-rounded font-black text-2xl", config.color)}>
+                        <span className={cn("material-symbols-rounded font-bold text-2xl", config.color)}>
                             {config.icon}
                         </span>
                     </div>
                     <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">
+                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
                                 {pt.name || config.label}
                             </span>
                         </div>
@@ -162,9 +162,9 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                             <div className="flex items-center gap-1.5 overflow-hidden">
                                 {pt.departureLocation ? (
                                     <>
-                                        <span className="truncate max-w-[80px] font-black text-slate-600 dark:text-slate-300">{pt.departureLocation}</span>
+                                        <span className="truncate max-w-[80px] font-semibold text-slate-600 dark:text-slate-300">{pt.departureLocation}</span>
                                         <span className="material-symbols-rounded text-[14px]">arrow_forward</span>
-                                        <span className="truncate max-w-[80px] font-black text-slate-600 dark:text-slate-300">{pt.arrivalLocation || '미정'}</span>
+                                        <span className="truncate max-w-[80px] font-semibold text-slate-600 dark:text-slate-300">{pt.arrivalLocation || '미정'}</span>
                                     </>
                                 ) : (
                                     <span>경로 미입력</span>
@@ -188,13 +188,13 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                 updatePT(pt.id, { isBooked: !pt.isBooked });
                             }}
                             className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest border-2 shrink-0",
+                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all font-semibold text-xs uppercase tracking-widest border-2 shrink-0",
                                 pt.isBooked 
                                     ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20" 
                                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"
                             )}
                         >
-                            <span className="material-symbols-rounded text-base font-black">
+                            <span className="material-symbols-rounded text-base font-semibold">
                                 {pt.isBooked ? 'verified' : 'radio_button_unchecked'}
                             </span>
                             <span className="whitespace-nowrap">{pt.isBooked ? '예약 완료' : '예약 처리'}</span>
@@ -205,7 +205,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                         "w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-800 transition-all shadow-sm shrink-0",
                         isExpanded ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rotate-180" : "text-slate-300 group-hover:text-slate-400"
                     )}>
-                        <span className="material-symbols-rounded text-[20px] font-black">expand_more</span>
+                        <span className="material-symbols-rounded text-[20px] font-semibold">expand_more</span>
                     </div>
                 </div>
             </div>
@@ -229,7 +229,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                             <div className="flex justify-end">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); removePT(pt.id); }} 
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                                 >
                                     <span className="material-symbols-rounded text-[16px]">delete</span>
                                     삭제하기
@@ -241,15 +241,15 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
                                     {/* Left Column: Transport Info & Locations */}
                                     <div className="space-y-6">
-                                        <div className="bg-white dark:bg-slate-800/50 p-8 rounded-[32px] border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 h-full flex flex-col">
+                                        <div className="bg-white dark:bg-slate-800/50 p-8 rounded-[20px] border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 h-full flex flex-col">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">이동 수단 및 경로</h3>
+                                                <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400">이동 수단 및 경로</h3>
                                             </div>
 
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">이동 수단</label>
+                                                    <label className="text-xs font-semibold text-slate-400 uppercase ml-1">이동 수단</label>
                                                     <IconDropdown
                                                         value={pt.type || 'train'}
                                                         options={[
@@ -269,13 +269,13 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">노선 / 편명</label>
+                                                    <label className="text-xs font-semibold text-slate-400 uppercase ml-1">노선 / 편명</label>
                                                     <div className="relative">
                                                         <input
                                                             value={pt.name || ''}
                                                             onChange={(e) => updatePT(pt.id, { name: e.target.value })}
                                                             placeholder="예: 2호선, 6001번"
-                                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-black outline-none h-[48px] border border-slate-100 dark:border-slate-800 focus:border-primary/30 transition-all shadow-inner"
+                                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-semibold outline-none h-[48px] border border-slate-100 dark:border-slate-800 focus:border-primary/30 transition-all shadow-inner"
                                                         />
                                                     </div>
                                                 </div>
@@ -285,7 +285,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                                 {!isTaxi ? (
                                                     <div className="space-y-3 relative">
                                                         <div className="space-y-1.5">
-                                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">출발 장소</label>
+                                                            <label className="text-xs font-semibold text-slate-400 uppercase ml-1">출발 장소</label>
                                                             <GoogleMapsSearch 
                                                                 defaultValue={pt.departureLocation || ''}
                                                                 onPlaceSelect={async (place) => {
@@ -338,7 +338,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                                         </div>
 
                                                         <div className="space-y-1.5">
-                                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">도착 장소</label>
+                                                            <label className="text-xs font-semibold text-slate-400 uppercase ml-1">도착 장소</label>
                                                             <GoogleMapsSearch 
                                                                 defaultValue={pt.arrivalLocation || ''}
                                                                 onPlaceSelect={async (place) => {
@@ -359,12 +359,12 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                                     </div>
                                                 ) : (
                                                     <div className="space-y-1.5">
-                                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">이동 정보 (택시/메모)</label>
+                                                        <label className="text-xs font-semibold text-slate-400 uppercase ml-1">이동 정보 (택시/메모)</label>
                                                         <input
                                                             value={pt.departureLocation || ''}
                                                             onChange={(e) => updatePT(pt.id, { departureLocation: e.target.value })}
                                                             placeholder="예: 호텔 -> 공항 택시 이동 정보"
-                                                            className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-black outline-none h-[48px] border border-slate-100 dark:border-slate-800 focus:border-primary/30 transition-all shadow-inner"
+                                                            className="w-full px-5 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-semibold outline-none h-[48px] border border-slate-100 dark:border-slate-800 focus:border-primary/30 transition-all shadow-inner"
                                                         />
                                                     </div>
                                                 )}
@@ -373,11 +373,11 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                     </div>
                                     {/* Right Column: Date & Time */}
                                     <div className="space-y-6">
-                                        <div className="bg-white dark:bg-slate-800/50 p-8 rounded-[32px] border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 h-full flex flex-col">
+                                        <div className="bg-white dark:bg-slate-800/50 p-8 rounded-[20px] border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 h-full flex flex-col">
                                             <div className="flex items-center justify-between px-1">
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">일정 및 시간</h3>
+                                                    <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400">일정 및 시간</h3>
                                                 </div>
                                                 <div className="flex items-center gap-4">
                                                     <CustomCheckbox
@@ -397,7 +397,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
 
                                             <div className="space-y-6">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">날짜</label>
+                                                    <label className="text-xs font-semibold text-slate-400 uppercase ml-1">날짜</label>
                                                     <RestrictedDatePicker
                                                         value={pt.date}
                                                         disabled={pt.isDateUndecided}
@@ -465,12 +465,12 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                                 ) : (
                                                     <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800/50">
                                                         <div className="flex items-center justify-between px-1">
-                                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                                                 <span className="material-symbols-rounded text-sm">schedule</span>
                                                                 예상 소요 시간
                                                             </label>
                                                             <div className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-full border border-indigo-100 dark:border-indigo-800/50">
-                                                                <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">
+                                                                <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
                                                                     {pt.duration ? `${Math.floor(pt.duration / 60)}시간 ${pt.duration % 60}분` : '시간 미정'}
                                                                 </span>
                                                             </div>
@@ -504,7 +504,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2">
                                             <span className="material-symbols-rounded text-slate-400">confirmation_number</span>
-                                            <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">상세 예약 정보</h5>
+                                            <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-[0.2em]">상세 예약 정보</h5>
                                         </div>
                                         <CustomCheckbox
                                             checked={!!pt.isBooked}
@@ -515,7 +515,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                     </div>
                                     <button 
                                         onClick={() => addRes('public', pt.id)} 
-                                        className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-1.5 uppercase tracking-widest"
+                                        className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all border border-indigo-100 dark:border-indigo-900/50 flex items-center gap-1.5 uppercase tracking-widest"
                                     >
                                         <span className="material-symbols-rounded text-[16px]">add</span>
                                         예약 추가

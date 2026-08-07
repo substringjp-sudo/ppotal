@@ -43,7 +43,7 @@ export default function IntegratedOverview() {
 
     return (
         <ScrollReveal>
-            <section className="h-full overflow-hidden rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none">
+            <section className="h-full overflow-hidden rounded-[20px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none">
                 <div className="relative h-full p-6 lg:p-8">
                     {/* Header with Background Accent */}
                     <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
@@ -58,7 +58,7 @@ export default function IntegratedOverview() {
                         <div className="mb-8">
                             <ScrollReveal delay={0.2}>
                                 <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
-                                    <h1 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight italic">
+                                    <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tighter leading-tight italic">
                                         {currentTrip.title}
                                     </h1>
                                     <motion.button 
@@ -68,7 +68,7 @@ export default function IntegratedOverview() {
                                         className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl flex items-center gap-2 shadow-xl shadow-slate-900/10 dark:shadow-none hover:shadow-2xl transition-all"
                                     >
                                         <span className="material-symbols-rounded text-sm">edit</span>
-                                        <span className="text-xs font-black uppercase tracking-tighter">일정 수정하기</span>
+                                        <span className="text-xs font-semibold uppercase tracking-tighter">일정 수정하기</span>
                                     </motion.button>
                                 </div>
                             </ScrollReveal>
@@ -106,9 +106,9 @@ export default function IntegratedOverview() {
                                         >
                                             <div className="flex items-center gap-2 mb-1.5">
                                                 <span className={`material-symbols-rounded text-[14px] ${stat.color}`}>{stat.icon}</span>
-                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">{stat.label}</span>
+                                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none">{stat.label}</span>
                                             </div>
-                                            <div className="text-base font-black text-slate-900 dark:text-white italic tracking-tighter leading-none">{stat.value}</div>
+                                            <div className="text-base font-semibold text-slate-900 dark:text-white italic tracking-tighter leading-none">{stat.value}</div>
                                         </motion.button>
                                     ))}
                                 </div>

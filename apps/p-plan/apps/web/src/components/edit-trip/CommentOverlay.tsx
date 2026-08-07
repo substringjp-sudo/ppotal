@@ -61,7 +61,7 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                         {comment.userPhotoURL ? (
                             <img src={comment.userPhotoURL} alt={comment.userName} className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[11px] font-black text-slate-400">
+                            <div className="w-full h-full flex items-center justify-center text-[11px] font-semibold text-slate-400">
                                 {comment.userName.charAt(0)}
                             </div>
                         )}
@@ -76,17 +76,17 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                     {/* 이름 + 시간 */}
                     <div className="flex items-center gap-2">
                         <span className={cn(
-                            "text-[11px] font-black",
+                            "text-[11px] font-semibold",
                             isOwn ? "text-primary" : "text-slate-800 dark:text-white"
                         )}>
                             {comment.userName}
                         </span>
                         {comment.isResolved && (
-                            <span className="px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">
+                            <span className="px-1.5 py-0.5 text-[7px] font-semibold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">
                                 Resolved
                             </span>
                         )}
-                        <span className="text-[9px] font-bold text-slate-400 ml-auto tabular-nums">
+                        <span className="text-xs font-bold text-slate-400 ml-auto tabular-nums">
                             {format(new Date(comment.createdAt), 'M/d HH:mm')}
                         </span>
                     </div>
@@ -107,13 +107,13 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                             <div className="flex justify-end gap-1.5">
                                 <button
                                     onClick={() => setIsEditing(false)}
-                                    className="px-3 py-1.5 text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors"
+                                    className="px-3 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={handleUpdate}
-                                    className="px-3 py-1.5 bg-primary text-white text-[9px] font-black rounded-lg uppercase tracking-widest shadow-sm shadow-primary/20 hover:opacity-90 transition-opacity"
+                                    className="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg uppercase tracking-widest shadow-sm shadow-primary/20 hover:opacity-90 transition-opacity"
                                 >
                                     저장
                                 </button>
@@ -136,36 +136,36 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                             {depth === 0 && (
                                 <button
                                     onClick={() => setIsReplying(!isReplying)}
-                                    className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors flex items-center gap-1"
+                                    className="text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-primary transition-colors flex items-center gap-1"
                                 >
-                                    <span className="material-symbols-rounded text-[10px]">reply</span>
+                                    <span className="material-symbols-rounded text-xs">reply</span>
                                     답글
                                 </button>
                             )}
                             <button
                                 onClick={() => onResolve(comment)}
                                 className={cn(
-                                    "text-[9px] font-black uppercase tracking-widest transition-colors flex items-center gap-1",
+                                    "text-xs font-semibold uppercase tracking-widest transition-colors flex items-center gap-1",
                                     comment.isResolved ? "text-amber-500 hover:text-amber-600" : "text-emerald-500 hover:text-emerald-600"
                                 )}
                             >
-                                <span className="material-symbols-rounded text-[10px]">{comment.isResolved ? 'unarchive' : 'check_circle'}</span>
+                                <span className="material-symbols-rounded text-xs">{comment.isResolved ? 'unarchive' : 'check_circle'}</span>
                                 {comment.isResolved ? '재열기' : '해결'}
                             </button>
                             {isOwn && (
                                 <>
                                     <button
                                         onClick={() => setIsEditing(true)}
-                                        className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1"
+                                        className="text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1"
                                     >
-                                        <span className="material-symbols-rounded text-[10px]">edit</span>
+                                        <span className="material-symbols-rounded text-xs">edit</span>
                                         편집
                                     </button>
                                     <button
                                         onClick={() => onDelete(comment.id)}
-                                        className="text-[9px] font-black uppercase tracking-widest text-rose-400/60 hover:text-rose-500 transition-colors flex items-center gap-1"
+                                        className="text-xs font-semibold uppercase tracking-widest text-rose-400/60 hover:text-rose-500 transition-colors flex items-center gap-1"
                                     >
-                                        <span className="material-symbols-rounded text-[10px]">delete</span>
+                                        <span className="material-symbols-rounded text-xs">delete</span>
                                         삭제
                                     </button>
                                 </>
@@ -191,7 +191,7 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                                 onClick={handleReply}
                                 disabled={!replyContent.trim()}
                                 className={cn(
-                                    "w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm text-[10px] shrink-0",
+                                    "w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm text-xs shrink-0",
                                     replyContent.trim()
                                         ? "bg-primary text-white hover:opacity-90"
                                         : "bg-slate-100 dark:bg-slate-800 text-slate-300"
@@ -309,10 +309,10 @@ export default function CommentOverlay({ targetId, targetLabel, onClose }: Comme
                                 <div className="w-7 h-7 rounded-[10px] bg-primary/10 flex items-center justify-center">
                                     <span className="material-symbols-rounded text-primary text-sm">chat_bubble</span>
                                 </div>
-                                <h3 className="text-sm font-black text-slate-900 dark:text-white">에디터 코멘트</h3>
+                                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">에디터 코멘트</h3>
                             </div>
                             {targetLabel && (
-                                <p className="text-[10px] font-bold text-slate-400 pl-0.5">
+                                <p className="text-xs font-bold text-slate-400 pl-0.5">
                                     <span className="text-primary"># </span>{targetLabel}
                                 </p>
                             )}
@@ -336,7 +336,7 @@ export default function CommentOverlay({ targetId, targetLabel, onClose }: Comme
                                 key={tab.id}
                                 onClick={() => setFilter(tab.id as typeof filter)}
                                 className={cn(
-                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all",
+                                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
                                     filter === tab.id
                                         ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900"
                                         : "bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700"
@@ -344,7 +344,7 @@ export default function CommentOverlay({ targetId, targetLabel, onClose }: Comme
                             >
                                 {tab.label}
                                 <span className={cn(
-                                    "px-1.5 py-0.5 rounded-full text-[8px]",
+                                    "px-1.5 py-0.5 rounded-full text-xs",
                                     filter === tab.id ? "bg-white/20 dark:bg-slate-900/20" : "bg-slate-200 dark:bg-slate-700"
                                 )}>
                                     {tab.count}
@@ -369,12 +369,12 @@ export default function CommentOverlay({ targetId, targetLabel, onClose }: Comme
                                         {filter === 'resolved' ? 'check_circle' : 'forum_off'}
                                     </span>
                                 </div>
-                                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-center">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-center">
                                     {filter === 'all' ? '코멘트가 없습니다' :
                                      filter === 'pending' ? '미해결 코멘트 없음' : '해결된 코멘트 없음'}
                                 </p>
                                 {filter === 'all' && (
-                                    <p className="text-[10px] text-slate-400 text-center">
+                                    <p className="text-xs text-slate-400 text-center">
                                         아래 입력창에서 의견을 남겨보세요
                                     </p>
                                 )}
@@ -435,7 +435,7 @@ export default function CommentOverlay({ targetId, targetLabel, onClose }: Comme
                             <span className="material-symbols-rounded text-base">send</span>
                         </button>
                     </div>
-                    <p className="text-center text-[9px] font-bold text-slate-300 mt-2">Enter로 전송 · Esc로 닫기</p>
+                    <p className="text-center text-xs font-bold text-slate-300 mt-2">Enter로 전송 · Esc로 닫기</p>
                 </div>
             </motion.div>
         </div>

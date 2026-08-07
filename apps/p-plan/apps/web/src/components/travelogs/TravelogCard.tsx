@@ -80,7 +80,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                 animate="visible"
                 whileHover="hover"
                 onClick={handleCardClick}
-                className="group relative flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
+                className="group relative flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
             >
                 {/* Thumbnail */}
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[20px] overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 relative">
@@ -172,7 +172,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
             animate="visible"
             whileHover="hover"
             onClick={handleCardClick}
-            className="group relative cursor-pointer aspect-[4/5] rounded-[32px] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-white/20"
+            className="group relative cursor-pointer aspect-[4/5] rounded-[20px] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-white/20"
         >
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">

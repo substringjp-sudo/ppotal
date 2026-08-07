@@ -75,7 +75,7 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
         animate="visible"
         whileHover="hover"
         onClick={() => router.push(`/dashboard/${trip.id}`)}
-        className="group relative bg-white dark:bg-slate-900 rounded-[32px] p-3 flex items-center gap-4 border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
+        className="group relative bg-white dark:bg-slate-900 rounded-[20px] p-3 flex items-center gap-4 border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
       >
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-[20px] overflow-hidden flex-shrink-0">
           <TripCoverImage 
@@ -135,7 +135,7 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
       variants={cardVariants}
       whileHover="hover"
       onClick={() => router.push(`/dashboard/${trip.id}`)}
-      className="group relative bg-white dark:bg-slate-900 rounded-[32px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col"
+      className="group relative bg-white dark:bg-slate-900 rounded-[20px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col"
     >
       <div className="relative aspect-[21/9] overflow-hidden">
         <TripCoverImage 
@@ -345,7 +345,7 @@ export default function TripListPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 p-6 text-center">
-        <div className="w-20 h-20 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary mb-8">
+        <div className="w-20 h-20 rounded-[20px] bg-primary/10 flex items-center justify-center text-primary mb-8">
           <span className="material-symbols-rounded text-4xl">travel_explore</span>
         </div>
         <h1 className="text-3xl font-black mb-4 tracking-tighter">나만의 여행을 <span className="text-primary italic">시작하세요</span></h1>
@@ -468,7 +468,7 @@ export default function TripListPage() {
           }
           isExpanded={isFiltersExpanded}
         >
-          <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-[32px] border border-slate-200/50 dark:border-slate-800 shadow-sm">
+          <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-[20px] border border-slate-200/50 dark:border-slate-800 shadow-sm">
             <div className="flex flex-wrap items-center gap-6">
               <div className="space-y-1.5">
                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">지역</label>
@@ -507,7 +507,7 @@ export default function TripListPage() {
               key="empty"
               className="py-32 flex flex-col items-center text-center max-w-lg mx-auto"
             >
-              <div className="w-32 h-32 bg-slate-50 dark:bg-slate-900 rounded-[32px] flex items-center justify-center mb-8">
+              <div className="w-32 h-32 bg-slate-50 dark:bg-slate-900 rounded-[20px] flex items-center justify-center mb-8">
                 <span className="material-symbols-rounded text-5xl text-primary/20">explore</span>
               </div>
               <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">

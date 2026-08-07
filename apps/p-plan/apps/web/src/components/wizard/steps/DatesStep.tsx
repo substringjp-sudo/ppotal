@@ -145,7 +145,7 @@ export default function DatesStep() {
                             <button
                                 key={preset.label}
                                 onClick={() => applyPreset(preset.days)}
-                                className="group shrink-0 h-20 w-32 lg:w-full rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-lg transition-all text-left px-4 flex flex-col justify-center active:scale-95"
+                                className="group shrink-0 h-20 w-32 lg:w-full rounded-[20px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-lg transition-all text-left px-4 flex flex-col justify-center active:scale-95"
                             >
                                 <span className="material-symbols-rounded text-slate-300 group-hover:text-primary transition-colors text-lg mb-1">{preset.icon}</span>
                                 <div className="text-[11px] font-black text-slate-900 dark:text-white leading-tight">{preset.label}</div>
@@ -166,7 +166,7 @@ export default function DatesStep() {
                         isDateUndecided && "opacity-20 grayscale scale-95 pointer-events-none"
                     )}
                 >
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[32px] p-6 lg:pt-8 lg:px-8 lg:pb-12 border border-slate-200/50 dark:border-slate-800 shadow-2xl relative">
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[20px] p-6 lg:pt-8 lg:px-8 lg:pb-12 border border-slate-200/50 dark:border-slate-800 shadow-2xl relative">
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-6">
                                 <h4 className="text-xl font-black text-slate-900 dark:text-white">
@@ -300,7 +300,7 @@ export default function DatesStep() {
                     className="lg:col-span-12 xl:col-span-4 space-y-6 order-3"
                 >
                     {isDateUndecided ? (
-                        <div className="p-8 bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[32px] text-center relative overflow-hidden shadow-2xl">
+                        <div className="p-8 bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[20px] text-center relative overflow-hidden shadow-2xl">
                             <div className="relative z-10 py-4">
                                 <span className="material-symbols-rounded text-white text-5xl mb-6 block">timer</span>
                                 <h4 className="text-xl font-black text-white mb-8">여행 기간 선택</h4>
@@ -327,7 +327,7 @@ export default function DatesStep() {
                     ) : (
                         <div className="space-y-6">
                             {/* Selected Period Summary */}
-                            <div className="p-8 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
+                            <div className="p-8 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
                                 <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-8">
@@ -365,7 +365,7 @@ export default function DatesStep() {
 
                             {/* Flexibility Toggle */}
                             <div className={cn(
-                                "p-8 rounded-[32px] border-2 transition-all duration-500",
+                                "p-8 rounded-[20px] border-2 transition-all duration-500",
                                 isFlexDays ? "border-primary bg-primary/5" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg shadow-slate-200/20"
                             )}>
                                 <div className="flex items-center justify-between mb-8">

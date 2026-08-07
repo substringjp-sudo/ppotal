@@ -25,8 +25,8 @@ export const ParticipantBudgetTab: React.FC<ParticipantBudgetTabProps> = ({
                     <span className="material-symbols-rounded text-3xl">person</span>
                 </div>
                 <div>
-                    <h5 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">개인 여행 모드</h5>
-                    <p className="text-[10px] font-bold text-slate-400 mt-1">참가자가 한 명인 경우 공동 예산 설정이 비활성화됩니다.</p>
+                    <h5 className="text-sm font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-widest">개인 여행 모드</h5>
+                    <p className="text-xs font-bold text-slate-400 mt-1">참가자가 한 명인 경우 공동 예산 설정이 비활성화됩니다.</p>
                 </div>
             </div>
         );
@@ -40,16 +40,16 @@ export const ParticipantBudgetTab: React.FC<ParticipantBudgetTabProps> = ({
                         <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                             <span className="material-symbols-rounded">groups</span>
                         </div>
-                        <span className="text-[8px] font-black bg-indigo-500 text-white px-2 py-1 rounded uppercase tracking-widest">COMMON</span>
+                        <span className="text-xs font-semibold bg-indigo-500 text-white px-2 py-1 rounded uppercase tracking-widest">COMMON</span>
                     </div>
-                    <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">공동 예산 배정액</label>
+                    <label className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">공동 예산 배정액</label>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className="text-2xl font-black text-indigo-600">{currencySymbol}</span>
+                        <span className="text-2xl font-bold text-indigo-600">{currencySymbol}</span>
                         <input 
                             type="number"
                             value={trip.budget?.commonAllocated || 0}
                             onChange={(e) => updateBudget({ commonAllocated: Number(e.target.value) })}
-                            className="bg-transparent border-none text-2xl font-black focus:ring-0 p-0 w-full text-indigo-600"
+                            className="bg-transparent border-none text-2xl font-bold focus:ring-0 p-0 w-full text-indigo-600"
                         />
                     </div>
                 </div>
@@ -59,23 +59,23 @@ export const ParticipantBudgetTab: React.FC<ParticipantBudgetTabProps> = ({
                         <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
                             <span className="material-symbols-rounded">person</span>
                         </div>
-                        <span className="text-[8px] font-black bg-emerald-500 text-white px-2 py-1 rounded uppercase tracking-widest">INDIVIDUAL</span>
+                        <span className="text-xs font-semibold bg-emerald-500 text-white px-2 py-1 rounded uppercase tracking-widest">INDIVIDUAL</span>
                     </div>
-                    <label className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">인당 개인 지출 배정액</label>
+                    <label className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">인당 개인 지출 배정액</label>
                     <div className="flex items-center gap-2 mt-1">
-                        <span className="text-2xl font-black text-emerald-600">{currencySymbol}</span>
+                        <span className="text-2xl font-bold text-emerald-600">{currencySymbol}</span>
                         <input 
                             type="number"
                             value={trip.budget?.individualAllocated || 0}
                             onChange={(e) => updateBudget({ individualAllocated: Number(e.target.value) })}
-                            className="bg-transparent border-none text-2xl font-black focus:ring-0 p-0 w-full text-emerald-600"
+                            className="bg-transparent border-none text-2xl font-bold focus:ring-0 p-0 w-full text-emerald-600"
                         />
                     </div>
                 </div>
             </div>
 
             <div className="space-y-4">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">멤버별 지출 현황</h4>
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-2">멤버별 지출 현황</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(trip.participants || []).map(p => {
                         const expenses = individualExpensesGrouped[p.id] || [];
@@ -90,15 +90,15 @@ export const ParticipantBudgetTab: React.FC<ParticipantBudgetTabProps> = ({
                                         <span className="material-symbols-rounded">person</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h6 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">{p.name || '무명 멤버'}</h6>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{expenses.length}개의 지출</p>
+                                        <h6 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{p.name || '무명 멤버'}</h6>
+                                        <p className="text-xs font-bold text-slate-400 uppercase">{expenses.length}개의 지출</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase">사용액</span>
+                                        <span className="text-xs font-semibold text-slate-400 uppercase">사용액</span>
                                         <span className={cn(
-                                            "text-sm font-black",
+                                            "text-sm font-semibold",
                                             percentage > 100 ? "text-rose-500" : "text-primary"
                                         )}>
                                             {currencySymbol} {formatAmount(spent)}
@@ -113,7 +113,7 @@ export const ParticipantBudgetTab: React.FC<ParticipantBudgetTabProps> = ({
                                             style={{ width: `${Math.min(100, percentage)}%` }}
                                         />
                                     </div>
-                                    <div className="flex justify-between text-[10px] font-black opacity-40 uppercase">
+                                    <div className="flex justify-between text-xs font-semibold opacity-40 uppercase">
                                         <span>배정액 대비 {Math.round(percentage)}%</span>
                                         {percentage > 100 && <span>초과!</span>}
                                     </div>

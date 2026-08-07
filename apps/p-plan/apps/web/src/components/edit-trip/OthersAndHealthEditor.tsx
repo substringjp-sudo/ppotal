@@ -301,21 +301,21 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                     <div className="space-y-2">
                         <div className="flex items-center gap-2 mb-1">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Health & Safety Dashboard</span>
+                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Health & Safety Dashboard</span>
                         </div>
-                        <h2 className="text-3xl font-black text-white leading-tight">
+                        <h2 className="text-3xl font-bold text-white leading-tight">
                             안전하고 쾌적한 여행을 위한 <span className="text-primary tracking-tighter">스마트 가이드</span>
                         </h2>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <div className="px-5 py-3 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center min-w-[100px]">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Medical Kit</span>
-                            <span className="text-xl font-black text-white">{overallStats.doneKit}/{overallStats.totalKit}</span>
+                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Medical Kit</span>
+                            <span className="text-xl font-bold text-white">{overallStats.doneKit}/{overallStats.totalKit}</span>
                         </div>
                         <div className="px-5 py-3 bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center min-w-[100px]">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Safety Info</span>
-                            <span className="text-xl font-black text-white">{overallStats.regionsCount}</span>
+                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Safety Info</span>
+                            <span className="text-xl font-bold text-white">{overallStats.regionsCount}</span>
                         </div>
                     </div>
                 </div>
@@ -330,27 +330,27 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                 <span className="material-symbols-rounded">schedule</span>
                             </div>
                             <div className="text-left">
-                                <h3 className="text-xl font-black text-slate-800 dark:text-white">시차 적응 가이드</h3>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-white">시차 적응 가이드</h3>
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{jetLagAdvice.departure} → {jetLagAdvice.arrival} ({jetLagAdvice.diff > 0 ? `+${jetLagAdvice.diff}` : jetLagAdvice.diff}시간)</p>
                             </div>
                         </div>
                         <div className="px-4 py-2 bg-slate-900 text-white rounded-2xl border border-white/10 flex flex-col items-end">
-                            <span className="text-[9px] font-black uppercase text-slate-500">Flight Duration</span>
-                            <span className="text-lg font-black">{jetLagAdvice.duration}h</span>
+                            <span className="text-xs font-semibold uppercase text-slate-500">Flight Duration</span>
+                            <span className="text-lg font-semibold">{jetLagAdvice.duration}h</span>
                         </div>
                     </div>
 
                     <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-200 dark:border-slate-700 text-left">
-                        <h4 className="text-base font-black text-slate-800 dark:text-white mb-2">{jetLagAdvice.summary}</h4>
+                        <h4 className="text-base font-semibold text-slate-800 dark:text-white mb-2">{jetLagAdvice.summary}</h4>
                         <p className="text-sm font-bold text-slate-500 leading-relaxed italic">"{jetLagAdvice.advice}"</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {jetLagAdvice.schedule.map((step, idx) => (
                             <div key={idx} className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-left">
-                                <span className="text-[10px] font-black text-primary uppercase mb-1 block">{step.time}</span>
-                                <h5 className="text-sm font-black text-slate-800 dark:text-white mb-1">{step.task}</h5>
-                                <p className="text-[10px] text-slate-500 font-medium">{step.sub}</p>
+                                <span className="text-xs font-semibold text-primary uppercase mb-1 block">{step.time}</span>
+                                <h5 className="text-sm font-semibold text-slate-800 dark:text-white mb-1">{step.task}</h5>
+                                <p className="text-xs text-slate-500 font-medium">{step.sub}</p>
                             </div>
                         ))}
                     </div>
@@ -370,8 +370,8 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                 <span className="material-symbols-rounded">medical_information</span>
                             </div>
                             <div className="text-left">
-                                <h3 className="text-base font-black text-slate-800 dark:text-white">나의 건강 정보 & 안내 카드</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Input allergies, medications and get translation cards</p>
+                                <h3 className="text-base font-semibold text-slate-800 dark:text-white">나의 건강 정보 & 안내 카드</h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase">Input allergies, medications and get translation cards</p>
                             </div>
                         </div>
                         <span className="material-symbols-rounded text-slate-300 transition-transform" style={{ transform: expandedSections.includes('health') ? 'rotate(180deg)' : 'none' }}>expand_more</span>
@@ -388,7 +388,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                 <div className="p-8 space-y-8">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
                                         <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Allergies (알레르기)</label>
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Allergies (알레르기)</label>
                                             <div className="relative">
                                                 <input 
                                                     value={allergies}
@@ -402,7 +402,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                             </div>
                                         </div>
                                         <div className="space-y-2.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Medications (복용 중인 약)</label>
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Medications (복용 중인 약)</label>
                                             <div className="relative">
                                                 <input 
                                                     value={medications}
@@ -420,20 +420,20 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                     {/* Translation Cards */}
                                     {healthValueAdds && healthValueAdds.length > 0 && (
                                         <div className="space-y-4">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Emergency Info Cards</h4>
+                                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Emergency Info Cards</h4>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {healthValueAdds.map((card, idx) => (
                                                     <div key={idx} className="p-6 bg-slate-900 text-white rounded-[2rem] border border-white/5 relative overflow-hidden group">
                                                         <div className="relative z-10">
                                                             <div className="flex items-center gap-2 mb-4">
                                                                 <span className="material-symbols-rounded text-primary text-base">{card.icon}</span>
-                                                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">{card.type}</span>
+                                                                <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">{card.type}</span>
                                                             </div>
-                                                            <h5 className="text-lg font-black mb-1 truncate">{card.local}</h5>
-                                                            <p className="text-[10px] font-bold text-slate-400">{card.desc}</p>
+                                                            <h5 className="text-lg font-semibold mb-1 truncate">{card.local}</h5>
+                                                            <p className="text-xs font-bold text-slate-400">{card.desc}</p>
                                                             <button 
                                                                 onClick={() => copyToClipboard(card.local)}
-                                                                className="mt-6 w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-black uppercase transition-all"
+                                                                className="mt-6 w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold uppercase transition-all"
                                                             >
                                                                 Copy Translation
                                                             </button>
@@ -460,14 +460,14 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                 <span className="material-symbols-rounded">medical_services</span>
                             </div>
                             <div className="text-left">
-                                <h3 className="text-base font-black text-slate-800 dark:text-white">비상 구급함 확인</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Check mandatory medications & supplies</p>
+                                <h3 className="text-base font-semibold text-slate-800 dark:text-white">비상 구급함 확인</h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase">Check mandatory medications & supplies</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="hidden md:flex flex-col items-end">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[10px] font-black text-emerald-600">{overallStats.kitProgress}%</span>
+                                    <span className="text-xs font-semibold text-emerald-600">{overallStats.kitProgress}%</span>
                                     <div className="w-24 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-emerald-500" style={{ width: `${overallStats.kitProgress}%` }} />
                                     </div>
@@ -487,8 +487,8 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                             >
                                 <div className="p-8 space-y-8">
                                     <div className="flex items-center justify-between">
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Recommended Kit Items</h4>
-                                        <button onClick={addAllToKit} className="text-[10px] font-black text-primary px-3 py-1 bg-primary/5 rounded-full border border-primary/10 hover:bg-primary/10">전체 추가</button>
+                                        <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Recommended Kit Items</h4>
+                                        <button onClick={addAllToKit} className="text-xs font-semibold text-primary px-3 py-1 bg-primary/5 rounded-full border border-primary/10 hover:bg-primary/10">전체 추가</button>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                         {firstAidKitStatus.map((item) => (
@@ -510,7 +510,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                         <span className="material-symbols-rounded text-base">{item.item?.isDone ? 'check' : item.icon}</span>
                                                     </div>
                                                     <div>
-                                                        <p className={cn("text-xs font-black", item.item?.isDone ? "text-emerald-700 dark:text-emerald-400 line-through opacity-70" : "text-slate-800 dark:text-slate-100")}>
+                                                        <p className={cn("text-xs font-semibold", item.item?.isDone ? "text-emerald-700 dark:text-emerald-400 line-through opacity-70" : "text-slate-800 dark:text-slate-100")}>
                                                             {item.name}
                                                         </p>
                                                     </div>
@@ -541,11 +541,11 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="text-left">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">REGION SAFETY INFO</span>
-                                            <h3 className="text-lg font-black text-slate-900 dark:text-white">{region.name}</h3>
+                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">REGION SAFETY INFO</span>
+                                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{region.name}</h3>
                                         </div>
                                         {region.info && (
-                                            <div className={cn("px-3 py-1 rounded-xl flex items-center gap-2 border text-[10px] font-black uppercase", getMofaStatus(region.info.mofaLevel).color.replace('bg-', 'text-').concat(' border-current border-opacity-10 bg-current bg-opacity-5'))}>
+                                            <div className={cn("px-3 py-1 rounded-xl flex items-center gap-2 border text-xs font-semibold uppercase", getMofaStatus(region.info.mofaLevel).color.replace('bg-', 'text-').concat(' border-current border-opacity-10 bg-current bg-opacity-5'))}>
                                                 <div className={cn("w-2 h-2 rounded-full", getMofaStatus(region.info.mofaLevel).color)} />
                                                 {getMofaStatus(region.info.mofaLevel).label}
                                             </div>
@@ -569,7 +569,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                         {/* Local Vaccinations */}
                                                         <div className="space-y-4">
-                                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                                                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
                                                                 <span className="material-symbols-rounded text-sm">vaccines</span> 권장 예방접종
                                                             </h4>
                                                             <div className="space-y-2">
@@ -577,9 +577,9 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                                     <div key={vIdx} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between">
                                                                         <div className="flex items-center gap-3">
                                                                             <span className="material-symbols-rounded text-slate-400 text-lg">{vac.icon}</span>
-                                                                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-100">{vac.disease}</span>
+                                                                            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">{vac.disease}</span>
                                                                         </div>
-                                                                        <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-md border border-slate-200 dark:border-slate-700">{vac.requirement}</span>
+                                                                        <span className="text-xs font-semibold uppercase px-2 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-md border border-slate-200 dark:border-slate-700">{vac.requirement}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -587,15 +587,15 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
 
                                                         {/* Emergency Contacts */}
                                                         <div className="space-y-4">
-                                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                                                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
                                                                 <span className="material-symbols-rounded text-sm">contact_emergency</span> 긴급 연락처
                                                             </h4>
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                 {region.info.emergencyContacts.map((contact, cIdx) => (
                                                                     <button key={cIdx} className="p-4 bg-slate-900 text-white rounded-2xl flex items-center justify-between group hover:bg-primary transition-all">
                                                                         <div className="flex flex-col text-left">
-                                                                            <span className="text-[8px] font-bold text-slate-500 uppercase mb-0.5">{contact.label}</span>
-                                                                            <span className="text-sm font-black tracking-tight">{contact.number}</span>
+                                                                            <span className="text-xs font-bold text-slate-500 uppercase mb-0.5">{contact.label}</span>
+                                                                            <span className="text-sm font-semibold tracking-tight">{contact.number}</span>
                                                                         </div>
                                                                         <span className="material-symbols-rounded text-base">call</span>
                                                                     </button>
@@ -605,7 +605,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                     </div>
 
                                                     <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center">
-                                                        <p className="text-[10px] font-bold text-slate-400 max-w-lg mx-auto leading-relaxed opacity-70">
+                                                        <p className="text-xs font-bold text-slate-400 max-w-lg mx-auto leading-relaxed opacity-70">
                                                             최신 안정 정보가 집계되었습니다.
                                                             <br /><span className="text-primary/70">이는 시스템상의 데이터 연동 단계이며, 지역의 실제 안전 여부와는 무관합니다.</span>
                                                             <br />현재는 주요 관광 국가를 중심으로 우선 제공 중입니다.
@@ -615,7 +615,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                                 href="https://www.0404.go.kr/dev/main.mofa" 
                                                                 target="_blank" 
                                                                 rel="noopener noreferrer"
-                                                                className="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-black/10"
+                                                                className="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-semibold uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-black/10"
                                                             >
                                                                 외교부 최신 안전정보 확인
                                                                 <span className="material-symbols-rounded text-sm">open_in_new</span>
@@ -625,8 +625,8 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                 </div>
                                             ) : (
                                                 <div className="p-12 text-center">
-                                                    <p className="text-sm font-black text-slate-400 uppercase tracking-tight">상세 분석 데이터 준비 중</p>
-                                                    <p className="text-[10px] font-bold text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">준비된 주요 관광지 이외의 지역은 현재 분석 중입니다. <br/>최신 안전 정보는 외교부 영사콜센터를 확인해 주세요.</p>
+                                                    <p className="text-sm font-semibold text-slate-400 uppercase tracking-tight">상세 분석 데이터 준비 중</p>
+                                                    <p className="text-xs font-bold text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">준비된 주요 관광지 이외의 지역은 현재 분석 중입니다. <br/>최신 안전 정보는 외교부 영사콜센터를 확인해 주세요.</p>
                                                 </div>
                                             )}
                                         </motion.div>
@@ -637,7 +637,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                     ) : (
                         <div className="p-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] bg-slate-50/50 dark:bg-slate-800/10">
                             <span className="material-symbols-rounded text-5xl mb-4 text-slate-300 font-bold">location_off</span>
-                            <p className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">기본 정보에서 목적지를 먼저 설정해 주세요</p>
+                            <p className="text-sm font-semibold text-slate-400 uppercase tracking-[0.2em]">기본 정보에서 목적지를 먼저 설정해 주세요</p>
                         </div>
                     )}
                 </section>

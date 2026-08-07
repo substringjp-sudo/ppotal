@@ -187,7 +187,7 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
     const durationFormatted = `${Math.floor(durationMin / 60)}h ${durationMin % 60}m`;
 
     return (
-        <div className="p-4 bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl border border-slate-200 dark:border-slate-800 w-full overflow-hidden select-none">
+        <div className="p-4 bg-white dark:bg-slate-900 rounded-[20px] shadow-2xl border border-slate-200 dark:border-slate-800 w-full overflow-hidden select-none">
             {/* Range Label */}
             <div className="flex items-center justify-between mb-4 px-2">
                 <div className="flex items-center gap-3">

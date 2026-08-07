@@ -42,7 +42,7 @@ export default function MobileSectionTabBar({
         >
             {/* 저장 버튼 + 현재 섹션 표시 */}
             <div className="flex items-center justify-between px-3 pt-2 pb-1 border-b border-slate-200 dark:border-slate-800">
-                <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate flex items-center gap-1.5">
                     <span className="material-symbols-rounded text-[14px] text-primary">
                         {activeSectionData?.icon}
                     </span>
@@ -52,7 +52,7 @@ export default function MobileSectionTabBar({
                     onClick={onSave}
                     disabled={isSaving}
                     className={cn(
-                        'compact-touch flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all',
+                        'compact-touch flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-widest transition-all',
                         isSaving
                             ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                             : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md'

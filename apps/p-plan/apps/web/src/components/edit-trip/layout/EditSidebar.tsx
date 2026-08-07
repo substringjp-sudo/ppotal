@@ -42,7 +42,7 @@ export default function EditSidebar({
         transition={TRANSITION_SPRING}
         className="hidden sm:flex w-[168px] lg:w-[185px] xl:w-[195px] h-full z-40 shrink-0 flex-col"
     >
-        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-[32px] shadow-2xl overflow-hidden flex flex-col h-full border-primary/10">
+        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200 dark:border-slate-800 rounded-[20px] shadow-2xl overflow-hidden flex flex-col h-full border-primary/10">
             
             <div className="p-2.5 lg:p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
                 <div className="flex items-center gap-2 mb-1.5">
@@ -55,13 +55,13 @@ export default function EditSidebar({
                       </Link>
                     </motion.div>
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-xs font-black text-slate-900 dark:text-white truncate tracking-tight leading-tight italic sm:block hidden">
+                        <h1 className="text-xs font-semibold text-slate-900 dark:text-white truncate tracking-tight leading-tight italic sm:block hidden">
                             {currentTrip.title}
                         </h1>
                         <div className="sm:flex hidden items-center gap-1 mt-0.5">
-                            <span className="material-symbols-rounded text-[10px] text-slate-400">calendar_month</span>
+                            <span className="material-symbols-rounded text-xs text-slate-400">calendar_month</span>
                             <div className="flex flex-col">
-                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter leading-none">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter leading-none">
                                     {currentTrip.dates?.startDate 
                                         ? `${format(new Date(currentTrip.dates.startDate), 'MMM dd')} - ${currentTrip.dates?.endDate ? format(new Date(currentTrip.dates.endDate), 'MMM dd') : '??'}`
                                         : formatTripDuration(undefined, undefined, currentTrip.dates?.durationDays)}
@@ -147,7 +147,7 @@ export default function EditSidebar({
                     onClick={onSaveEntireTrip}
                     disabled={isSaving}
                     className={cn(
-                        "w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-lg hover:translate-y-[-1px] active:translate-y-[0px]",
+                        "w-full py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-lg hover:translate-y-[-1px] active:translate-y-[0px]",
                         isSaving 
                             ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
                             : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-slate-200 dark:shadow-none"
@@ -161,7 +161,7 @@ export default function EditSidebar({
                 {showSuccess && (
                     <motion.p
                         initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                        className="text-center text-[8px] font-black text-emerald-500 uppercase mt-2 tracking-widest"
+                        className="text-center text-xs font-semibold text-emerald-500 uppercase mt-2 tracking-widest"
                     >
                         노트에 저장했어요 ✓
                     </motion.p>

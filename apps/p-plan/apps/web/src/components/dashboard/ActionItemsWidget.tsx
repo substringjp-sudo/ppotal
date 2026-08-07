@@ -79,7 +79,7 @@ export default function ActionItemsWidget() {
 
     return (
         <div className="h-full flex flex-col">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <span className="material-symbols-rounded text-sm">priority_high</span>
                 조치가 필요한 항목
             </h3>
@@ -130,7 +130,7 @@ export default function ActionItemsWidget() {
             
             <button 
                 onClick={() => router.push(`/edit-trip/${currentTrip.id}?tab=prep`)}
-                className="mt-4 w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+                className="mt-4 w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
             >
                 <span className="material-symbols-rounded text-sm">checklist</span>
                 전체 체크리스트 보기

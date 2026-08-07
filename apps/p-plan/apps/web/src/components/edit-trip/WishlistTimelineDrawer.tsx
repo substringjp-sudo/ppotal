@@ -231,11 +231,11 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
             {/* Header */}
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
                 <div>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-rounded text-primary">auto_awesome</span>
                         관심 리스트
                     </h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Timeline에 추가할 항목을 선택하세요</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Timeline에 추가할 항목을 선택하세요</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mr-2">
@@ -281,14 +281,14 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl relative">
                     <button
                         onClick={() => setListScope('trip')}
-                        className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${listScope === 'trip' ? 'bg-white dark:bg-slate-700 shadow-md text-primary' : 'text-slate-400'}`}
+                        className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold uppercase transition-all flex items-center justify-center gap-2 ${listScope === 'trip' ? 'bg-white dark:bg-slate-700 shadow-md text-primary' : 'text-slate-400'}`}
                     >
                         <span className="material-symbols-rounded text-sm">near_me</span>
                         현재 여행지
                     </button>
                     <button
                         onClick={() => setListScope('all')}
-                        className={`flex-1 py-1.5 px-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${listScope === 'all' ? 'bg-white dark:bg-slate-700 shadow-md text-primary' : 'text-slate-400'}`}
+                        className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold uppercase transition-all flex items-center justify-center gap-2 ${listScope === 'all' ? 'bg-white dark:bg-slate-700 shadow-md text-primary' : 'text-slate-400'}`}
                     >
                         <span className="material-symbols-rounded text-sm">public</span>
                         전체 위시리스트
@@ -297,7 +297,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                     {filteredItems.length > 0 && (
                         <button
                             onClick={toggleSelectAll}
-                            className={`absolute -bottom-7 right-1 text-[9px] font-black uppercase tracking-tighter transition-colors ${selectedIds.size === filteredItems.length ? 'text-primary' : 'text-slate-400'}`}
+                            className={`absolute -bottom-7 right-1 text-xs font-semibold uppercase tracking-tighter transition-colors ${selectedIds.size === filteredItems.length ? 'text-primary' : 'text-slate-400'}`}
                         >
                             {selectedIds.size === filteredItems.length ? '전체 해제' : '전체 선택'}
                         </button>
@@ -324,7 +324,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                             setSelectedRegion('all');
                             setSelectedCity('all');
                         }}
-                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-[10px] font-black uppercase py-2 px-3 focus:ring-1 focus:ring-primary/30 cursor-pointer appearance-none scrollbar-hide"
+                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-semibold uppercase py-2 px-3 focus:ring-1 focus:ring-primary/30 cursor-pointer appearance-none scrollbar-hide"
                     >
                         <option value="all">국가 전체</option>
                         {placeOptions.countries.map(c => <option key={c} value={c}>{c}</option>)}
@@ -336,7 +336,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                             setSelectedCity('all');
                         }}
                         disabled={selectedCountry === 'all'}
-                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-[10px] font-black uppercase py-2 px-3 focus:ring-1 focus:ring-primary/30 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed appearance-none scrollbar-hide"
+                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-semibold uppercase py-2 px-3 focus:ring-1 focus:ring-primary/30 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed appearance-none scrollbar-hide"
                     >
                         <option value="all">지역 전체</option>
                         {selectedCountry !== 'all' && placeOptions.regionsMap[selectedCountry]?.map(r => (
@@ -347,7 +347,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                         value={selectedCity}
                         onChange={(e) => setSelectedCity(e.target.value)}
                         disabled={selectedRegion === 'all'}
-                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-[10px] font-black uppercase py-2 px-3 focus:ring-1 focus:ring-primary/30 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed appearance-none scrollbar-hide"
+                        className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-semibold uppercase py-2 px-3 focus:ring-1 focus:ring-primary/30 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed appearance-none scrollbar-hide"
                     >
                         <option value="all">도시 전체</option>
                         {selectedRegion !== 'all' && placeOptions.citiesMap[selectedRegion]?.map(c => (
@@ -359,7 +359,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                     <button
                         onClick={() => setFilterCategory(null)}
-                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase whitespace-nowrap transition-all border ${!filterCategory
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase whitespace-nowrap transition-all border ${!filterCategory
                             ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
                             : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'
                             }`}
@@ -370,7 +370,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                         <button
                             key={cat}
                             onClick={() => setFilterCategory(cat)}
-                            className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase whitespace-nowrap transition-all border ${filterCategory === cat
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase whitespace-nowrap transition-all border ${filterCategory === cat
                                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
                                 : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'
                                 }`}
@@ -412,13 +412,13 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                                         return (
                                             <div className="bg-white dark:bg-slate-900/90 backdrop-blur-xl p-4 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4">
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="font-black text-slate-900 dark:text-white truncate">{item.title}</h4>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{item.place?.name}</p>
+                                                    <h4 className="font-semibold text-slate-900 dark:text-white truncate">{item.title}</h4>
+                                                    <p className="text-xs text-slate-400 font-bold uppercase truncate">{item.place?.name}</p>
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => onSelectItem(item)}
-                                                        className="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase rounded-xl hover:bg-primary/90 transition-all"
+                                                        className="px-4 py-2 bg-primary text-white text-xs font-semibold uppercase rounded-xl hover:bg-primary/90 transition-all"
                                                     >
                                                         추가하기
                                                     </button>
@@ -445,7 +445,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                         {listScope === 'trip' && (
                             <button 
                                 onClick={() => setListScope('all')}
-                                className="mt-4 text-[10px] font-black text-primary border-b border-primary/30 pb-0.5"
+                                className="mt-4 text-xs font-semibold text-primary border-b border-primary/30 pb-0.5"
                             >
                                 전체 위시리스트 보기
                             </button>
@@ -482,9 +482,9 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                         {(Object.entries(groupedItems) as [string, any[]][]).map(([cat, items]) => (
                             <div key={cat} className="space-y-3">
                                 <div className="flex items-center gap-2 mb-1 px-1">
-                                    <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">{cat}</span>
+                                    <span className="text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-widest">{cat}</span>
                                     <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800"></div>
-                                    <span className="text-[10px] font-bold text-slate-400">{items.length}</span>
+                                    <span className="text-xs font-bold text-slate-400">{items.length}</span>
                                 </div>
                                 <div className="space-y-3">
                                 {items.map((item: any) => (
@@ -514,8 +514,8 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                         className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-6 z-[110] min-w-[320px]"
                     >
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{selectedIds.size} Selected</span>
-                            <button onClick={() => { setSelectedIds(new Set()); setIsSelectionMode(false); }} className="text-[10px] font-bold text-primary text-left">Clear</button>
+                            <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">{selectedIds.size} Selected</span>
+                            <button onClick={() => { setSelectedIds(new Set()); setIsSelectionMode(false); }} className="text-xs font-bold text-primary text-left">Clear</button>
                         </div>
                         
                         <div className="h-8 w-px bg-slate-800"></div>
@@ -523,7 +523,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
                         <div className="flex items-center gap-2">
                             <select 
                                 onChange={(e) => handleBulkCategoryChange(e.target.value)}
-                                className="bg-slate-800 border-none rounded-xl text-[10px] font-black uppercase py-2 px-3 focus:ring-0 cursor-pointer"
+                                className="bg-slate-800 border-none rounded-xl text-xs font-semibold uppercase py-2 px-3 focus:ring-0 cursor-pointer"
                                 value=""
                             >
                                 <option value="" disabled>분류 변경</option>
@@ -546,7 +546,7 @@ export default function WishlistTimelineDrawer({ onSelectItem, onClose }: Wishli
             </div>
 
             <div className="p-6 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-200 dark:border-slate-800">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic text-center leading-relaxed">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest italic text-center leading-relaxed">
                     팁: 항목을 클릭하여 해당 일자의 타임라인에 즉시 추가할 수 있습니다.
                 </p>
             </div>
@@ -564,7 +564,7 @@ function WishlistSimpleRow({ item, isSelected, isSelectionMode, onToggle, onSele
             >
                 {isSelectionMode ? (
                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary' : 'border-slate-300'}`}>
-                        {isSelected && <span className="material-symbols-rounded text-[14px] text-white font-black">check</span>}
+                        {isSelected && <span className="material-symbols-rounded text-[14px] text-white font-semibold">check</span>}
                     </div>
                 ) : (
                     <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center border border-slate-200 dark:border-slate-800 relative">
@@ -586,16 +586,16 @@ function WishlistSimpleRow({ item, isSelected, isSelectionMode, onToggle, onSele
                 <div className="flex-1 min-w-0">
                     <h4 className="text-[13px] font-bold text-slate-700 dark:text-slate-200 truncate">{item.title}</h4>
                     <div className="flex items-center gap-2 -mt-0.5">
-                        <p className="text-[10px] text-slate-400 truncate flex-shrink-1">
+                        <p className="text-xs text-slate-400 truncate flex-shrink-1">
                             {item.place?.name}
                         </p>
                         {item.place?.country && (
-                            <span className="text-[8px] font-black text-slate-400/60 bg-slate-100 dark:bg-slate-800 px-1 rounded flex-shrink-0">
+                            <span className="text-xs font-semibold text-slate-400/60 bg-slate-100 dark:bg-slate-800 px-1 rounded flex-shrink-0">
                                 {item.place.country.substring(0, 2)}
                             </span>
                         )}
                         {item.place?.prefecture && (
-                            <span className="text-[8px] font-black text-slate-400/60 bg-slate-100 dark:bg-slate-800 px-1 rounded flex-shrink-0">
+                            <span className="text-xs font-semibold text-slate-400/60 bg-slate-100 dark:bg-slate-800 px-1 rounded flex-shrink-0">
                                 {item.place.prefecture}
                             </span>
                         )}
@@ -627,7 +627,7 @@ function WishlistItemCard({ item, isSelected, isSelectionMode, onToggle, onSelec
             >
                 {isSelectionMode ? (
                     <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all shrink-0 ${isSelected ? 'bg-primary border-primary' : 'border-slate-300'}`}>
-                        {isSelected && <span className="material-symbols-rounded text-xs text-white font-black">check</span>}
+                        {isSelected && <span className="material-symbols-rounded text-xs text-white font-semibold">check</span>}
                     </div>
                 ) : (
                     <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 flex-shrink-0 border border-slate-200 dark:border-slate-800 flex items-center justify-center relative">
@@ -650,19 +650,19 @@ function WishlistItemCard({ item, isSelected, isSelectionMode, onToggle, onSelec
                 )}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black text-primary/60 bg-primary/5 px-1.5 py-0.5 rounded uppercase tracking-wider">{item.mainCategory}</span>
+                        <span className="text-xs font-semibold text-primary/60 bg-primary/5 px-1.5 py-0.5 rounded uppercase tracking-wider">{item.mainCategory}</span>
                         {item.place?.country && (
-                            <span className="text-[9px] font-black text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded">
+                            <span className="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded">
                                 {item.place.country}
                             </span>
                         )}
                         {item.place?.prefecture && (
-                            <span className="text-[9px] font-black text-primary/60 bg-primary/10 dark:bg-primary/20 px-1.5 py-0.5 rounded">
+                            <span className="text-xs font-semibold text-primary/60 bg-primary/10 dark:bg-primary/20 px-1.5 py-0.5 rounded">
                                 {item.place.prefecture}
                             </span>
                         )}
                     </div>
-                    <h4 className="text-sm font-black text-slate-900 dark:text-white truncate mt-1">{item.title}</h4>
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate mt-1">{item.title}</h4>
                     {item.place && (
                         <div className="flex items-center gap-2 mt-1 opacity-70">
                             <p className="text-[11px] text-slate-500 font-bold truncate flex items-center gap-1">
@@ -670,7 +670,7 @@ function WishlistItemCard({ item, isSelected, isSelectionMode, onToggle, onSelec
                                 {item.place.name}
                             </p>
                             {item.place.city && (
-                                <span className="text-[9px] font-black text-primary/60 bg-primary/10 dark:bg-primary/20 px-1.5 rounded">
+                                <span className="text-xs font-semibold text-primary/60 bg-primary/10 dark:bg-primary/20 px-1.5 rounded">
                                     {item.place.city}
                                 </span>
                             )}

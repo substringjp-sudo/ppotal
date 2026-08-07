@@ -91,7 +91,7 @@ export default function MobileBottomNav() {
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2, ...TRANSITION_SPRING }}
-                className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800"
+                className="fixed bottom-0 left-0 right-0 z-50 md:hidden backdrop-blur-[20px] backdrop-saturate-[1.6] bg-white/[.72] dark:bg-slate-900/[.72] border-t border-slate-200/70 dark:border-slate-800"
                 role="navigation"
                 aria-label="모바일 하단 내비게이션"
                 style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}

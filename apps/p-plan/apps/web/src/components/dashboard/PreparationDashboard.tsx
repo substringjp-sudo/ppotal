@@ -143,7 +143,7 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                         <span className="material-symbols-rounded text-6xl text-slate-300 mb-4 block">
                             {tripLoadError === 'auth' ? 'lock' : 'cloud_off'}
                         </span>
-                        <h3 className="font-black text-slate-900 dark:text-white text-lg mb-2">
+                        <h3 className="font-semibold text-slate-900 dark:text-white text-lg mb-2">
                             {tripLoadError === 'auth' ? '로그인이 필요해요' : '여행을 불러오지 못했어요'}
                         </h3>
                         <p className="text-sm text-slate-500 mb-6">
@@ -246,15 +246,15 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                     className="flex justify-between items-center mb-6 px-2"
                 >
                     <div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-3 italic">
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-3 italic">
                             나의 여행 현황
                             {isEditMode && (
-                                <span className="text-[9px] not-italic bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse font-black leading-none">
+                                <span className="text-xs not-italic bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse font-semibold leading-none">
                                     편집 모드
                                 </span>
                             )}
                         </h2>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
                             {isEditMode ? '위젯 크기를 조절하거나 드래그하여 배치하세요' : '원하는 항목을 배치해 나만의 현황판을 만들어보세요'}
                         </p>
                     </div>
@@ -263,14 +263,14 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                             <>
                                 <button
                                     onClick={() => resetLayout()}
-                                    className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
+                                    className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
                                 >
                                     <span className="material-symbols-rounded text-xs">restart_alt</span>
                                     초기화
                                 </button>
                                 <button
                                     onClick={() => setEditMode(false)}
-                                    className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-black/10"
+                                    className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-black/10"
                                 >
                                     <span className="material-symbols-rounded text-xs">check_circle</span>
                                     변경사항 저장
@@ -279,7 +279,7 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                         ) : (
                             <button
                                 onClick={() => setEditMode(true)}
-                                className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
+                                className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
                             >
                                 <span className="material-symbols-rounded text-xs">tune</span>
                                 대시보드 편집

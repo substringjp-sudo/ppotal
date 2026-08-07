@@ -260,7 +260,7 @@ export default function TripEditorApp({ id }: { id: string }) {
             <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
                 <span className="material-symbols-rounded text-6xl text-slate-300 mb-4 font-light">search_off</span>
                 <p className="text-slate-500 font-bold mb-6">여행 데이터를 찾을 수 없습니다 (ID: {id})</p>
-                <Link href="/" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                <Link href="/" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
                     <span className="material-symbols-rounded">home</span>
                     홈으로 돌아가기
                 </Link>
@@ -272,11 +272,11 @@ export default function TripEditorApp({ id }: { id: string }) {
         <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 font-pretendard">
             {!user && (
                 <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-center text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center justify-center gap-2">
-                    <span className="material-symbols-rounded text-base font-black text-amber-600">info</span>
+                    <span className="material-symbols-rounded text-base font-semibold text-amber-600">info</span>
                     <span>비로그인 체험 모드입니다. 작성하신 여행 계획은 브라우저(로컬 캐시)에만 보관됩니다.</span>
                     <button
                         onClick={() => loginWithGoogle()}
-                        className="ml-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-[11px] font-black transition-all flex items-center gap-1 shadow-sm"
+                        className="ml-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 shadow-sm"
                     >
                         <span className="material-symbols-rounded text-xs">bolt</span>
                         Google로 계정에 저장하기

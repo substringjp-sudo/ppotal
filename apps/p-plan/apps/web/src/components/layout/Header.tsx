@@ -84,7 +84,7 @@ export default function Header() {
                     opacity: isVisible ? 1 : 0 
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 lg:px-6 xl:px-20 py-2 lg:py-3 w-full" 
+                className="sticky top-0 z-50 backdrop-blur-[20px] backdrop-saturate-[1.6] bg-white/[.72] dark:bg-slate-900/[.72] border-b border-slate-200/70 dark:border-slate-800 px-3 lg:px-6 xl:px-20 py-2 lg:py-3 w-full"
                 style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
             >
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">

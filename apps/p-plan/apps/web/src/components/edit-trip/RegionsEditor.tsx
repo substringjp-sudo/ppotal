@@ -124,8 +124,8 @@ export default function RegionsEditor() {
                     <span className="material-symbols-rounded">map</span>
                 </div>
                 <div>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">여행 지역 설정</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">방문할 국가와 도시를 선택하여 지도를 완성하세요.</p>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">여행 지역 설정</h3>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">방문할 국가와 도시를 선택하여 지도를 완성하세요.</p>
                 </div>
             </div>
 
@@ -133,7 +133,7 @@ export default function RegionsEditor() {
                 <div className="xl:col-span-5 space-y-6">
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">도시 / 국가 검색</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">도시 / 국가 검색</label>
                             <div className="relative">
                                 <span className="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
                                 <input
@@ -166,7 +166,7 @@ export default function RegionsEditor() {
                                                     <span className="material-symbols-rounded text-lg text-slate-400">location_on</span>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{s.name}</p>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{(s as any).parentName || s.type}</p>
+                                                        <p className="text-xs font-bold text-slate-400 uppercase">{(s as any).parentName || s.type}</p>
                                                     </div>
                                                 </button>
                                             ))}
@@ -176,7 +176,7 @@ export default function RegionsEditor() {
                             </div>
 
                             <div className="space-y-3 pt-4">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">선택된 여행지</p>
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">선택된 여행지</p>
                                 {((trip.locations?.regions?.length ?? 0) > 0) ? (
                                     <div className="flex flex-wrap gap-2">
                                         {trip.locations!.regions!.map((region) => (
@@ -191,7 +191,7 @@ export default function RegionsEditor() {
                                             >
                                                 <span className="material-symbols-rounded text-sm">{(region.type === 'country' ? 'public' : 'location_city')}</span>
                                                 {region.name}
-                                                <button onClick={() => removeLocation(String(region.id))} className="material-symbols-rounded text-sm opacity-40 hover:opacity-100 font-black hover:text-red-500 transition-colors ml-1">close</button>
+                                                <button onClick={() => removeLocation(String(region.id))} className="material-symbols-rounded text-sm opacity-40 hover:opacity-100 font-semibold hover:text-red-500 transition-colors ml-1">close</button>
                                             </span>
                                         ))}
                                     </div>

@@ -67,7 +67,7 @@ export default function TimelineDayColumn({
             <div className="sticky top-0 z-30 -ml-10 mb-8 py-3 bg-white dark:bg-slate-900 flex items-center gap-6 group">
                 {/* Marker */}
                 <div className="relative flex flex-col items-center">
-                    <div className="w-8 h-8 rounded-full bg-white border-4 border-primary shadow-[0_0_20px_rgba(236,91,19,0.3)] z-10 flex items-center justify-center text-primary text-[10px] font-black">
+                    <div className="w-8 h-8 rounded-full bg-white border-4 border-primary shadow-[0_0_20px_rgba(236,91,19,0.3)] z-10 flex items-center justify-center text-primary text-xs font-semibold">
                         {dayIdx + 1}
                     </div>
                 </div>
@@ -75,7 +75,7 @@ export default function TimelineDayColumn({
                 <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between border-b border-primary/10 pb-2 gap-1">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-3">
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white transition-colors group-hover:text-primary">{dayIdx + 1}일차</h3>
+                            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-primary">{dayIdx + 1}일차</h3>
                             {showDate ? (
                                 <span className="text-sm font-bold text-slate-400">{formattedDate} ({dayOfWeek})</span>
                             ) : (
@@ -126,7 +126,7 @@ export default function TimelineDayColumn({
                 <div className="mb-8 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 duration-500">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-rounded text-[14px] text-amber-500 font-bold">pending_actions</span>
-                        <span className="text-[11px] font-black text-amber-600/80 uppercase tracking-widest">일정 확정 대기</span>
+                        <span className="text-[11px] font-semibold text-amber-600/80 uppercase tracking-widest">일정 확정 대기</span>
                         <div className="h-px flex-1 bg-gradient-to-r from-amber-200/50 to-transparent"></div>
                     </div>
                     <div className="grid grid-cols-1 gap-2">
