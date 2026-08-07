@@ -31,10 +31,13 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 
-/** 위젯 ID → 컴포넌트 매핑 (warnings는 상단 고정으로 분리) */
+/**
+ * 위젯 ID → 컴포넌트 매핑.
+ * 'warnings'는 상단 경고 스트립으로, 'map'은 우측 고정 맥락 패널로 각각 분리되어
+ * 여기 없다 — 드래그해 재배치할 대상은 실제 준비 항목뿐이다.
+ */
 const WIDGET_COMPONENTS: Record<string, React.ReactNode> = {
     stats: <StatsSection />,
-    map: <MapWidget />,
     accommodation: <AccommodationTimeline />,
     transportation: <TransportationCard />,
     budget: <BudgetDeepDive />,
@@ -143,7 +146,7 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                         <span className="material-symbols-rounded text-6xl text-slate-300 mb-4 block">
                             {tripLoadError === 'auth' ? 'lock' : 'cloud_off'}
                         </span>
-                        <h3 className="font-black text-slate-900 dark:text-white text-lg mb-2">
+                        <h3 className="font-semibold text-slate-900 dark:text-white text-lg mb-2">
                             {tripLoadError === 'auth' ? '로그인이 필요해요' : '여행을 불러오지 못했어요'}
                         </h3>
                         <p className="text-sm text-slate-500 mb-6">
@@ -182,8 +185,11 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
         }
     };
 
-    // order 기준으로 정렬된 위젯 목록
-    const sortedWidgets = [...widgets].sort((a, b) => a.order - b.order);
+    // order 기준으로 정렬된 위젯 목록. 컴포넌트가 없는 id(예전 저장 상태에 남은
+    // 'map' · 'warnings')는 방어적으로 걸러 빈 카드가 뜨지 않게 한다.
+    const sortedWidgets = [...widgets]
+        .filter((w) => WIDGET_COMPONENTS[w.id])
+        .sort((a, b) => a.order - b.order);
     const widgetIds = sortedWidgets.map((w) => w.id);
 
     return (
@@ -215,140 +221,147 @@ export default function PreparationDashboard({ tripId }: { tripId?: string }) {
                     <OnlineAdvisories />
                 </motion.div>
 
-                {/* Integrated Dashboard Overview & Smart Hub */}
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 xl:gap-6 mb-8 items-stretch">
-                    <motion.div
-                        variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0 }
-                        }}
-                        className="xl:col-span-9"
-                    >
-                        <IntegratedOverview />
-                    </motion.div>
-                    <motion.div
-                        variants={{
-                            hidden: { opacity: 0, y: 20 },
-                            visible: { opacity: 1, y: 0 }
-                        }}
-                        className="xl:col-span-3 hover:scale-[1.02] transition-transform duration-300"
-                    >
-                        <SmartInsightHub />
-                    </motion.div>
-                </div>
+                {/*
+                    3열 골격: 가운데는 작업 대상(히어로 + 6열 위젯 그리드), 우측은
+                    맥락(지도 · 인사이트) 고정 패널. 지도와 인사이트는 준비 항목이
+                    아니라서 드래그 대상에서 빠지고, 페이지를 오르내려도 항상 같은
+                    자리에 떠 있는다(에디터의 우측 패널과 같은 위치 규칙).
+                */}
+                <div className="flex flex-col xl:flex-row gap-4 xl:gap-6 items-start">
+                    <div className="flex-1 min-w-0">
+                        {/* 준비 현황 히어로 — 진행률은 이 안에서만 말한다 */}
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0 }
+                            }}
+                            className="mb-8"
+                        >
+                            <IntegratedOverview />
+                        </motion.div>
 
-                {/* Dashboard Controls */}
-                <motion.div
-                    variants={{
-                        hidden: { opacity: 0, y: 10 },
-                        visible: { opacity: 1, y: 0 }
-                    }}
-                    className="flex justify-between items-center mb-6 px-2"
-                >
-                    <div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-3 italic">
-                            나의 여행 현황
-                            {isEditMode && (
-                                <span className="text-[9px] not-italic bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse font-black leading-none">
-                                    편집 모드
-                                </span>
-                            )}
-                        </h2>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-                            {isEditMode ? '위젯 크기를 조절하거나 드래그하여 배치하세요' : '원하는 항목을 배치해 나만의 현황판을 만들어보세요'}
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
-                        {isEditMode ? (
-                            <>
-                                <button
-                                    onClick={() => resetLayout()}
-                                    className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
-                                >
-                                    <span className="material-symbols-rounded text-xs">restart_alt</span>
-                                    초기화
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(false)}
-                                    className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-black/10"
-                                >
-                                    <span className="material-symbols-rounded text-xs">check_circle</span>
-                                    변경사항 저장
-                                </button>
-                            </>
-                        ) : (
-                            <button
-                                onClick={() => setEditMode(true)}
-                                className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
-                            >
-                                <span className="material-symbols-rounded text-xs">tune</span>
-                                대시보드 편집
-                            </button>
-                        )}
-                    </div>
-                </motion.div>
-
-                {/* DnD 위젯 그리드 */}
-                <motion.div
-                    variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                            opacity: 1,
-                            transition: { staggerChildren: 0.05 }
-                        }
-                    }}
-                >
-                    <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                    >
-                        <SortableContext items={widgetIds} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 grid-flow-row-dense gap-4 xl:gap-6 pb-20 auto-rows-[minmax(160px,auto)]">
-                                {sortedWidgets.map((widget) => {
-                                    const colSpanMappings = {
-                                        1: 'col-span-12 md:col-span-1',
-                                        2: 'col-span-12 md:col-span-2',
-                                        3: 'col-span-12 md:col-span-3',
-                                        4: 'col-span-12 md:col-span-4',
-                                        6: 'col-span-12 md:col-span-6',
-                                        8: 'col-span-12 md:col-span-8',
-                                        12: 'col-span-12',
-                                    };
-
-                                    const rowSpanMappings = {
-                                        1: 'row-span-1',
-                                        2: 'row-span-2',
-                                        3: 'row-span-3',
-                                        4: 'row-span-4',
-                                    };
-
-                                    return (
-                                        <motion.div
-                                            key={widget.id}
-                                            variants={{
-                                                hidden: { opacity: 0, scale: 0.9, y: 20 },
-                                                visible: { opacity: 1, scale: 1, y: 0 }
-                                            }}
-                                            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                                            className={cn(
-                                                colSpanMappings[widget.colSpan as keyof typeof colSpanMappings] || 'col-span-12',
-                                                rowSpanMappings[widget.rowSpan as keyof typeof rowSpanMappings] || 'row-span-1'
-                                            )}
-                                        >
-                                            <DashboardWidget
-                                                id={widget.id}
-                                                noPadding={widget.id === 'map'}
-                                            >
-                                                {WIDGET_COMPONENTS[widget.id]}
-                                            </DashboardWidget>
-                                        </motion.div>
-                                    );
-                                })}
+                        {/* Dashboard Controls */}
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 10 },
+                                visible: { opacity: 1, y: 0 }
+                            }}
+                            className="flex justify-between items-center mb-6 px-2"
+                        >
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-3 italic">
+                                    나의 여행 현황
+                                    {isEditMode && (
+                                        <span className="text-xs not-italic bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest animate-pulse font-semibold leading-none">
+                                            편집 모드
+                                        </span>
+                                    )}
+                                </h2>
+                                <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest mt-1">
+                                    {isEditMode ? '위젯 크기를 조절하거나 드래그하여 배치하세요' : '원하는 항목을 배치해 나만의 현황판을 만들어보세요'}
+                                </p>
                             </div>
-                        </SortableContext>
-                    </DndContext>
-                </motion.div>
+                            <div className="flex gap-2">
+                                {isEditMode ? (
+                                    <>
+                                        <button
+                                            onClick={() => resetLayout()}
+                                            className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-[10px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
+                                        >
+                                            <span className="material-symbols-rounded text-xs">restart_alt</span>
+                                            초기화
+                                        </button>
+                                        <button
+                                            onClick={() => setEditMode(false)}
+                                            className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-[10px] hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-black/10"
+                                        >
+                                            <span className="material-symbols-rounded text-xs">check_circle</span>
+                                            변경사항 저장
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() => setEditMode(true)}
+                                        className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest border border-slate-200 dark:border-slate-800 rounded-[10px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2"
+                                    >
+                                        <span className="material-symbols-rounded text-xs">tune</span>
+                                        대시보드 편집
+                                    </button>
+                                )}
+                            </div>
+                        </motion.div>
+
+                        {/* DnD 위젯 그리드 — 6열, 폭은 2 · 3 · 6만 허용 */}
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0 },
+                                visible: {
+                                    opacity: 1,
+                                    transition: { staggerChildren: 0.05 }
+                                }
+                            }}
+                        >
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
+                            >
+                                <SortableContext items={widgetIds} strategy={rectSortingStrategy}>
+                                    <div className="grid grid-cols-1 md:grid-cols-6 grid-flow-row-dense gap-4 xl:gap-6 pb-20 auto-rows-[minmax(160px,auto)]">
+                                        {sortedWidgets.map((widget) => {
+                                            const colSpanMappings = {
+                                                2: 'col-span-1 md:col-span-2',
+                                                3: 'col-span-1 md:col-span-3',
+                                                6: 'col-span-1 md:col-span-6',
+                                            };
+
+                                            const rowSpanMappings = {
+                                                1: 'row-span-1',
+                                                2: 'row-span-2',
+                                                3: 'row-span-3',
+                                                4: 'row-span-4',
+                                            };
+
+                                            return (
+                                                <motion.div
+                                                    key={widget.id}
+                                                    variants={{
+                                                        hidden: { opacity: 0, scale: 0.9, y: 20 },
+                                                        visible: { opacity: 1, scale: 1, y: 0 }
+                                                    }}
+                                                    transition={{ type: "spring", stiffness: 260, damping: 24 }}
+                                                    className={cn(
+                                                        colSpanMappings[widget.colSpan as keyof typeof colSpanMappings] || 'col-span-1 md:col-span-6',
+                                                        rowSpanMappings[widget.rowSpan as keyof typeof rowSpanMappings] || 'row-span-1'
+                                                    )}
+                                                >
+                                                    <DashboardWidget id={widget.id}>
+                                                        {WIDGET_COMPONENTS[widget.id]}
+                                                    </DashboardWidget>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </div>
+                                </SortableContext>
+                            </DndContext>
+                        </motion.div>
+                    </div>
+
+                    {/* 맥락 패널 — 지도 · 인사이트. 준비 항목이 아니라 드래그 대상에서 빠지고
+                        항상 같은 자리에 있는다. 모바일에서는 본문 아래로 접힌다. */}
+                    <motion.aside
+                        variants={{
+                            hidden: { opacity: 0, y: 20 },
+                            visible: { opacity: 1, y: 0 }
+                        }}
+                        className="w-full xl:w-[296px] xl:flex-shrink-0 xl:sticky xl:top-[84px] flex flex-col gap-4 xl:gap-6"
+                    >
+                        <div className="h-[280px] rounded-[20px] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-[0_1px_2px_rgba(15,23,42,.05)]">
+                            <MapWidget />
+                        </div>
+                        <SmartInsightHub />
+                    </motion.aside>
+                </div>
             </motion.main>
 
             <footer className="mt-12 py-8 border-t border-slate-200 dark:border-slate-800 px-4 lg:px-20 text-center">

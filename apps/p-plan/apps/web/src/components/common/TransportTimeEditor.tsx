@@ -67,14 +67,14 @@ export function TransportTimeEditor({
     return (
         <div className="space-y-3">
             {label && (
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1 block mb-1">
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em] px-1 block mb-1">
                     {label}
                 </label>
             )}
             
             <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">출발</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase ml-1">출발</label>
                     <TimeInput 
                         value={departureTime}
                         lat={lat}
@@ -84,7 +84,7 @@ export function TransportTimeEditor({
                     />
                 </div>
                 <div className="space-y-1">
-                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    <label className="text-xs font-semibold text-slate-400 uppercase ml-1">
                         {onArrivalChange ? '도착' : '도착 (자동)'}
                     </label>
                     {onArrivalChange ? (
@@ -96,9 +96,9 @@ export function TransportTimeEditor({
                             onChange={onArrivalChange}
                         />
                     ) : (
-                        <div className="h-[42px] px-4 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-center font-black text-xs text-slate-500 border border-slate-100 dark:border-slate-800 shadow-inner">
+                        <div className="h-[42px] px-4 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-center font-semibold text-xs text-slate-500 border border-slate-100 dark:border-slate-800 shadow-inner">
                             {arrivalTime || '--:--'}
-                            {isNextDayArrival && <span className="ml-1.5 text-[9px] text-primary font-bold">(+1일)</span>}
+                            {isNextDayArrival && <span className="ml-1.5 text-xs text-primary font-bold">(+1일)</span>}
                         </div>
                     )}
                 </div>
@@ -115,13 +115,13 @@ export function TransportTimeEditor({
                 <div className="flex items-center justify-between px-1 relative z-10">
                     <div className="flex items-center gap-1.5">
                         <span className="material-symbols-rounded text-[18px] text-primary/70">timelapse</span>
-                        <label className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">이동 소요</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">이동 소요</label>
                     </div>
                     <div className="flex items-center gap-1 px-3 py-1 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-all group-hover/editor:border-primary/30">
-                        <span className="text-[13px] font-black text-primary">
+                        <span className="text-[13px] font-semibold text-primary">
                             {Math.floor((durationMins || 0) / 60)}시간
                         </span>
-                        <span className="text-[13px] font-black text-primary ml-0.5">
+                        <span className="text-[13px] font-semibold text-primary ml-0.5">
                             {(durationMins || 0) % 60}분
                         </span>
                     </div>
@@ -145,7 +145,7 @@ export function TransportTimeEditor({
                     <div className="absolute inset-x-1 -top-4 flex justify-between pointer-events-none">
                         {ticks.map(mins => (
                             <div key={mins} className="flex flex-col items-center">
-                                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 mb-1">{mins / 60}시간</span>
+                                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-1">{mins / 60}시간</span>
                                 <div className="w-[1px] h-1.5 bg-slate-300 dark:bg-slate-700" />
                             </div>
                         ))}
@@ -165,7 +165,7 @@ export function TransportTimeEditor({
                 {expectedRangeStart !== undefined && expectedRangeEnd !== undefined && (
                     <div className="flex items-center gap-1.5 px-1 relative z-10">
                         <span className="material-symbols-rounded text-[14px] text-primary/40">info</span>
-                        <p className="text-[8px] font-bold text-slate-400">
+                        <p className="text-xs font-bold text-slate-400">
                             권장: {Math.floor(expectedRangeStart / 60)}시간 {expectedRangeStart % 60}분 ~ {Math.floor(expectedRangeEnd / 60)}시간 {expectedRangeEnd % 60}분
                         </p>
                     </div>

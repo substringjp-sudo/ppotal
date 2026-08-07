@@ -135,20 +135,20 @@ export default function TimelineEventCard({
                             </div>
                             <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <span className="px-2.5 py-1 bg-primary text-white text-[10px] font-black rounded-lg shadow-lg shadow-primary/20 uppercase tracking-widest">
+                                    <span className="px-2.5 py-1 bg-primary text-white text-xs font-semibold rounded-lg shadow-lg shadow-primary/20 uppercase tracking-widest">
                                         비행 {Math.floor(prevTransport.durationMinutes / 60)}시간 {prevTransport.durationMinutes % 60}분
                                     </span>
                                     {prevTransport.note && prevTransport.note.includes(' • ') && (
-                                        <span className="text-[10px] font-black text-primary bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-800">
+                                        <span className="text-xs font-semibold text-primary bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-lg border border-amber-100 dark:border-amber-800">
                                             {prevTransport.note.split(' • ').slice(-1)}
                                         </span>
                                     )}
                                 </div>
                                 {prevTransport.note && (
-                                    <div className="flex flex-col gap-1 text-[10px] font-bold text-slate-500 ml-1">
+                                    <div className="flex flex-col gap-1 text-xs font-bold text-slate-500 ml-1">
                                         {prevTransport.note.split(' • ').map((part, i) => (
                                             <div key={i} className="flex items-start gap-1.5 translate-y-0.5">
-                                                <span className="material-symbols-rounded text-[12px] mt-0.5 opacity-60">info</span>
+                                                <span className="material-symbols-rounded text-xs mt-0.5 opacity-60">info</span>
                                                 <span className="leading-tight">{part}</span>
                                             </div>
                                         ))}
@@ -163,7 +163,7 @@ export default function TimelineEventCard({
                                     <select 
                                         value={tempTransport.method}
                                         onChange={(e) => setTempTransport({...tempTransport, method: e.target.value as TransportationMethod})}
-                                        className="bg-slate-100 dark:bg-slate-800 text-[10px] font-black p-1.5 rounded-xl border-none focus:ring-2 focus:ring-primary/20"
+                                        className="bg-slate-100 dark:bg-slate-800 text-xs font-semibold p-1.5 rounded-xl border-none focus:ring-2 focus:ring-primary/20"
                                     >
                                         {Object.entries(TRANSPORT_LABELS).map(([val, label]) => (
                                             <option key={val} value={val}>{label}</option>
@@ -174,9 +174,9 @@ export default function TimelineEventCard({
                                             type="number" 
                                             value={tempTransport.durationMinutes}
                                             onChange={(e) => setTempTransport({...tempTransport, durationMinutes: parseInt(e.target.value) || 0})}
-                                            className="w-12 bg-transparent text-center text-[10px] font-black border-none focus:ring-0"
+                                            className="w-12 bg-transparent text-center text-xs font-semibold border-none focus:ring-0"
                                         />
-                                        <span className="text-[9px] font-bold text-slate-400 pr-1">분</span>
+                                        <span className="text-xs font-bold text-slate-400 pr-1">분</span>
                                     </div>
                                     <button 
                                         onClick={() => {
@@ -185,7 +185,7 @@ export default function TimelineEventCard({
                                         }}
                                         className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-xl shadow-lg shadow-primary/20"
                                     >
-                                        <span className="material-symbols-rounded text-sm font-black">check</span>
+                                        <span className="material-symbols-rounded text-sm font-semibold">check</span>
                                     </button>
                                     <button 
                                         onClick={() => setIsEditingTransport(false)}
@@ -207,12 +207,12 @@ export default function TimelineEventCard({
                                         <span className="material-symbols-rounded text-sm text-slate-400 group-hover/btn:text-primary transition-colors">
                                             {TRANSPORT_ICONS[prevTransport.method]}
                                         </span>
-                                        <span className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-1.5">
+                                        <span className="text-xs font-semibold text-slate-500 uppercase flex items-center gap-1.5">
                                             {TRANSPORT_LABELS[prevTransport.method]} • {prevTransport.durationMinutes}분
-                                            <span className="material-symbols-rounded text-[12px] opacity-0 group-hover/btn:opacity-100 transition-opacity">edit</span>
+                                            <span className="material-symbols-rounded text-xs opacity-0 group-hover/btn:opacity-100 transition-opacity">edit</span>
                                         </span>
                                         {prevTransport.note && (
-                                            <span className="text-[9px] text-slate-400 font-medium italic border-l border-slate-200 dark:border-slate-700 pl-2">
+                                            <span className="text-xs text-slate-400 font-medium italic border-l border-slate-200 dark:border-slate-700 pl-2">
                                                 {prevTransport.note}
                                             </span>
                                         )}
@@ -264,17 +264,17 @@ export default function TimelineEventCard({
                     {event.startTime ? (
                         <>
                             <span className={cn(
-                                "text-xs font-black text-slate-900 dark:text-white",
-                                isAccEvent && "text-[10px]"
+                                "text-xs font-semibold text-slate-900 dark:text-white",
+                                isAccEvent && "text-xs"
                             )}>{event.startTime}</span>
                             {event.endTime && !isAccEvent && (
-                                <span className="text-[9px] text-slate-400 font-bold">~ {event.endTime}</span>
+                                <span className="text-xs text-slate-400 font-bold">~ {event.endTime}</span>
                             )}
                         </>
                     ) : (
                         <div className="flex flex-col items-center">
                             <span className="material-symbols-rounded text-slate-300 text-base">schedule</span>
-                            <span className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter">자유 일정</span>
+                            <span className="text-xs text-slate-400 font-bold uppercase tracking-tighter">자유 일정</span>
                         </div>
                     )}
                 </div>
@@ -283,7 +283,7 @@ export default function TimelineEventCard({
                     "rounded-lg overflow-hidden flex items-center justify-center border shrink-0",
                     isAccEvent ? 'w-7 h-7' : 'w-10 h-10',
                     isAuto && (event.autoGeneratedType === 'flight' || event.autoGeneratedType === 'public-transport')
-                        ? 'bg-sky-100 dark:bg-sky-800 border-sky-200 dark:border-sky-700 font-black'
+                        ? 'bg-sky-100 dark:bg-sky-800 border-sky-200 dark:border-sky-700 font-semibold'
                         : isAuto && event.autoGeneratedType === 'check-in' ? 'bg-amber-100 border-amber-200'
                         : isAuto && event.autoGeneratedType === 'check-out' ? 'bg-orange-100 border-orange-200'
                         : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
@@ -317,14 +317,14 @@ export default function TimelineEventCard({
                                 <h4 className={cn(
                                     "font-bold text-slate-900 dark:text-white truncate",
                                     isAccEvent ? "text-xs" : "text-sm",
-                                    isFlightSegment && "text-sky-600 dark:text-sky-400 font-black flex items-center gap-2"
+                                    isFlightSegment && "text-sky-600 dark:text-sky-400 font-semibold flex items-center gap-2"
                                 )}>
                                     {isFlightSegment && <span className="material-symbols-rounded text-[16px]">double_arrow</span>}
-                                    {event.isFlexible && <span className="mr-1.5 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 text-[8px] font-black rounded uppercase tracking-tighter shrink-0">자유</span>}
+                                    {event.isFlexible && <span className="mr-1.5 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 text-xs font-semibold rounded uppercase tracking-tighter shrink-0">자유</span>}
                                     {event.title}
                                 </h4>
                                 {isAuto && !isFlightSegment && (
-                                    <span className="text-[8px] font-black bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 uppercase tracking-tighter">자동</span>
+                                    <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 uppercase tracking-tighter">자동</span>
                                 )}
                             </div>
                             
@@ -332,22 +332,22 @@ export default function TimelineEventCard({
                                 <div className="flex flex-wrap items-center gap-3 mt-1">
                                     {event.location && (
                                         <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 text-slate-400 rounded-lg border border-slate-200 dark:border-slate-800">
-                                            <span className="material-symbols-rounded text-[12px] font-bold">location_on</span>
-                                            <span className="text-[9px] font-black uppercase tracking-tight truncate max-w-[120px]">{event.location.name}</span>
+                                            <span className="material-symbols-rounded text-xs font-bold">location_on</span>
+                                            <span className="text-xs font-semibold uppercase tracking-tight truncate max-w-[120px]">{event.location.name}</span>
                                         </div>
                                     )}
                                     {!isCostUndecided && event.cost !== undefined && event.cost > 0 && (
                                         <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg border bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50">
-                                            <span className="material-symbols-rounded text-[12px] font-bold">payments</span>
-                                            <span className="text-[9px] font-black uppercase tracking-tight">
+                                            <span className="material-symbols-rounded text-xs font-bold">payments</span>
+                                            <span className="text-xs font-semibold uppercase tracking-tight">
                                                 {`${event.currency || 'KRW'} ${event.cost?.toLocaleString()}`}
                                             </span>
                                         </div>
                                     )}
                                     {duration && !isFlightEvent && (
                                         <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 text-slate-400 rounded-lg border border-slate-200 dark:border-slate-800">
-                                            <span className="material-symbols-rounded text-[12px] font-bold">timer</span>
-                                            <span className="text-[9px] font-black uppercase tracking-tight">{duration}</span>
+                                            <span className="material-symbols-rounded text-xs font-bold">timer</span>
+                                            <span className="text-xs font-semibold uppercase tracking-tight">{duration}</span>
                                         </div>
                                     )}
                                 </div>
@@ -355,11 +355,11 @@ export default function TimelineEventCard({
 
                             {isAccEvent && (
                                 <div className="flex flex-wrap items-center gap-1.5 xl:gap-3 md:gap-3 mt-1">
-                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-[9px] font-bold text-slate-500">
-                                        <span className="material-symbols-rounded text-[12px] text-slate-400 font-bold">info</span>
+                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-xs font-bold text-slate-500">
+                                        <span className="material-symbols-rounded text-xs text-slate-400 font-bold">info</span>
                                         <span className="tracking-tight">
                                             {event.autoGeneratedType === 'check-in' ? '입실 가능' : '퇴실 마감'}: 
-                                            <span className="text-slate-900 dark:text-slate-200 font-black ml-1">
+                                            <span className="text-slate-900 dark:text-slate-200 font-semibold ml-1">
                                                 {event.autoGeneratedType === 'check-in' 
                                                     ? (event.checkInTime === '' ? '제한 없음' : (event.checkInTime || '15:00')) 
                                                     : (event.checkOutTime === '' ? '제한 없음' : (event.checkOutTime || '11:00'))
@@ -367,7 +367,7 @@ export default function TimelineEventCard({
                                             </span>
                                         </span>
                                     </div>
-                                    <p className="text-[10px] text-slate-500 font-medium truncate italic opacity-70">{event.location?.name}</p>
+                                    <p className="text-xs text-slate-500 font-medium truncate italic opacity-70">{event.location?.name}</p>
                                     
 
                                 </div>
@@ -377,20 +377,20 @@ export default function TimelineEventCard({
                                 <div className="flex flex-wrap items-center gap-2 mt-1.5">
                                     {!isFlightSegment && (
                                         <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800/50">
-                                            <span className="material-symbols-rounded text-[12px] text-primary font-bold">timer</span>
+                                            <span className="material-symbols-rounded text-xs text-primary font-bold">timer</span>
                                             <div className="flex items-center gap-1">
-                                                <span className="text-[9px] font-black text-primary/80 dark:text-amber-400 uppercase tracking-widest whitespace-nowrap">
+                                                <span className="text-xs font-semibold text-primary/80 dark:text-amber-400 uppercase tracking-widest whitespace-nowrap">
                                                     {event.id.endsWith('-prep') ? '수속 예상' : '도착 수속'}
                                                 </span>
-                                                <span className="text-[9px] font-black text-primary mx-0.5">
+                                                <span className="text-xs font-semibold text-primary mx-0.5">
                                                     {event.id.endsWith('-prep') ? (event.prepDurationMinutes || 0) : (event.entryDurationMinutes || 0)}
                                                 </span>
-                                                <span className="text-[8px] text-primary font-bold">분</span>
+                                                <span className="text-xs text-primary font-bold">분</span>
                                             </div>
                                         </div>
                                     )}
                                     {event.id.endsWith('-dep') && event.transportToNext?.durationMinutes && (
-                                        <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400">
+                                        <div className="flex items-center gap-1 text-xs font-bold text-slate-400">
                                             <span className="material-symbols-rounded text-[14px]">flight_takeoff</span>
                                             <span>비행 {Math.floor(event.transportToNext.durationMinutes / 60)}시간 {event.transportToNext.durationMinutes % 60}분</span>
                                         </div>
@@ -404,14 +404,14 @@ export default function TimelineEventCard({
                         {isAccEvent && (
                             <div className="flex items-center gap-1.5 xl:gap-3 md:gap-3">
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[7px] font-black uppercase text-primary tracking-tighter opacity-60">실제 예정</span>
+                                    <span className="text-xs font-semibold uppercase text-primary tracking-tighter opacity-60">실제 예정</span>
                                     <div className="flex items-center gap-1 mt-0.5">
                                         <input
                                             type="time"
                                             value={expectedTime}
                                             onChange={(e) => handleTimeChange(e.target.value)}
                                             className={cn(
-                                                "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 text-[10px] xl:text-[11px] font-black focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all w-[85px] xl:w-auto",
+                                                "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 text-xs xl:text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all w-[85px] xl:w-auto",
                                                 isInvalid() && "border-red-500 text-red-500 focus:ring-red-500/20"
                                             )}
                                         />
@@ -433,7 +433,7 @@ export default function TimelineEventCard({
                                                         title={`항공편 도착 시각(${event.possibleCheckInTime})을 고려한 추천 시각으로 설정`}
                                                     >
                                                         <span className="material-symbols-rounded text-[14px] xl:text-xs group-hover/magic:scale-110 transition-transform">bolt</span>
-                                                        <span className="text-[9px] xl:text-[10px] font-black uppercase tracking-tighter">추천</span>
+                                                        <span className="text-xs xl:text-xs font-semibold uppercase tracking-tighter">추천</span>
                                                     </button>
                                                 ) : event.checkInTime ? (
                                                     <button
@@ -442,7 +442,7 @@ export default function TimelineEventCard({
                                                         title={`공식 체크인 개시 시각(${event.checkInTime})으로 설정`}
                                                     >
                                                         <span className="material-symbols-rounded text-[14px] xl:text-xs group-hover/magic:scale-110 transition-transform">key</span>
-                                                        <span className="text-[9px] xl:text-[10px] font-black uppercase tracking-tighter">추천</span>
+                                                        <span className="text-xs xl:text-xs font-semibold uppercase tracking-tighter">추천</span>
                                                     </button>
                                                 ) : null}
                                             </div>
@@ -450,7 +450,7 @@ export default function TimelineEventCard({
                                         {isFlightConflict() && (
                                             <div className="relative group/conflict">
                                                 <span className="material-symbols-rounded text-xs text-orange-500 animate-pulse cursor-help">flight_takeoff</span>
-                                                <div className="absolute bottom-full right-0 mb-2 w-40 p-2 bg-orange-500 text-white text-[8px] font-black rounded-lg opacity-0 group-hover/conflict:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
+                                                <div className="absolute bottom-full right-0 mb-2 w-40 p-2 bg-orange-500 text-white text-xs font-semibold rounded-lg opacity-0 group-hover/conflict:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
                                                     비행 시각과 겹칩니다. 실제 체크인 가능 여부를 확인하세요.
                                                 </div>
                                             </div>
@@ -458,7 +458,7 @@ export default function TimelineEventCard({
                                         {isInvalid() && (
                                             <div className="relative group/warn">
                                                 <span className="material-symbols-rounded text-xs text-red-500 animate-pulse cursor-help">warning</span>
-                                                <div className="absolute bottom-full right-0 mb-2 w-32 p-2 bg-red-500 text-white text-[8px] font-black rounded-lg opacity-0 group-hover/warn:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
+                                                <div className="absolute bottom-full right-0 mb-2 w-32 p-2 bg-red-500 text-white text-xs font-semibold rounded-lg opacity-0 group-hover/warn:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
                                                     {event.autoGeneratedType === 'check-in' ? '체크인 권장 시간보다 빠릅니다.' : '체크아웃 시간을 초과했습니다.'}
                                                 </div>
                                             </div>
@@ -470,8 +470,8 @@ export default function TimelineEventCard({
                                     className="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-0.5"
                                     title="숙소 상세로 이동"
                                 >
-                                    <span className="material-symbols-rounded text-sm font-black">info</span>
-                                    <span className="text-[7px] font-black uppercase">상세</span>
+                                    <span className="material-symbols-rounded text-sm font-semibold">info</span>
+                                    <span className="text-xs font-semibold uppercase">상세</span>
                                 </button>
                             </div>
                         )}
@@ -483,8 +483,8 @@ export default function TimelineEventCard({
                                     className="p-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-primary transition-all flex flex-col items-center gap-0.5"
                                     title="예약 상세로 이동"
                                 >
-                                    <span className="material-symbols-rounded text-sm font-black">info</span>
-                                    <span className="text-[7px] font-black uppercase">상세</span>
+                                    <span className="material-symbols-rounded text-sm font-semibold">info</span>
+                                    <span className="text-xs font-semibold uppercase">상세</span>
                                 </button>
                             </div>
                         )}
@@ -519,7 +519,7 @@ export default function TimelineEventCard({
                                     <span className="material-symbols-rounded text-sm font-bold">add_comment</span>
                                     {eventComments.length > 0 && (
                                         <span className={cn(
-                                            "text-[9px] font-black px-1 rounded-full min-w-[14px] h-[14px] flex items-center justify-center -ml-1",
+                                            "text-xs font-semibold px-1 rounded-full min-w-[14px] h-[14px] flex items-center justify-center -ml-1",
                                             pendingCount > 0 ? "bg-red-500 text-white" : "bg-slate-200 text-slate-600"
                                         )}>
                                             {eventComments.length}

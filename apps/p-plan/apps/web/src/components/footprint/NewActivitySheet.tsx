@@ -32,7 +32,7 @@ export default function NewActivitySheet({ range, onClose, onCreate }: NewActivi
                     onClick={(e) => e.stopPropagation()}
                     className="w-full sm:max-w-sm bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl p-5 pb-[calc(env(safe-area-inset-bottom,0px)+1.25rem)]"
                 >
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">새 활동</p>
+                    <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">새 활동</p>
                     <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-4 tabular-nums">
                         {format(range.start, 'HH:mm')} – {format(range.end, 'HH:mm')}
                     </p>
@@ -47,13 +47,13 @@ export default function NewActivitySheet({ range, onClose, onCreate }: NewActivi
                     <div className="flex gap-2 mt-4">
                         <button
                             onClick={onClose}
-                            className="flex-1 py-3 rounded-2xl text-sm font-black text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="flex-1 py-3 rounded-2xl text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         >
                             취소
                         </button>
                         <button
                             onClick={submit}
-                            className="flex-1 py-3 rounded-2xl bg-primary text-white text-sm font-black hover:bg-primary/90 transition-colors"
+                            className="flex-1 py-3 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
                         >
                             추가
                         </button>

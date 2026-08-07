@@ -82,12 +82,12 @@ export const InterestsImportSelector: React.FC<InterestsImportSelectorProps> = (
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-4xl max-h-[85vh] bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-4xl max-h-[85vh] bg-white dark:bg-slate-900 rounded-[28px] shadow-2xl overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800">
                 <div className="p-8 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <Sparkles className="w-5 h-5 text-indigo-500 animate-pulse" />
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">내 위시리스트에서 가져오기</h2>
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">내 위시리스트에서 가져오기</h2>
                         </div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">여행 지역 근처의 위시리스트 항목</p>
                     </div>
@@ -105,10 +105,10 @@ export const InterestsImportSelector: React.FC<InterestsImportSelectorProps> = (
                         {globalWishlist.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
                                 <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center"><PackageOpen className="w-10 h-10 text-slate-300" /></div>
-                                <div><h3 className="text-lg font-black text-slate-900 dark:text-white uppercase">위시리스트가 비어 있습니다</h3></div>
+                                <div><h3 className="text-lg font-semibold text-slate-900 dark:text-white uppercase">위시리스트가 비어 있습니다</h3></div>
                             </div>
                         ) : viewMode === 'map' ? (
-                            <div className="h-full min-h-[550px] rounded-[3rem] overflow-hidden border border-slate-200 dark:border-slate-800 relative">
+                            <div className="h-full min-h-[550px] rounded-[20px] overflow-hidden border border-slate-200 dark:border-slate-800 relative">
                                 <TripMap 
                                     trip={currentTrip!} 
                                     viewMode="bucketlist" 
@@ -130,7 +130,7 @@ export const InterestsImportSelector: React.FC<InterestsImportSelectorProps> = (
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="font-bold text-sm truncate">{rec.item.title}</h4>
-                                                <p className="text-[10px] text-slate-500 truncate">{rec.item.place?.name || rec.item.mainCategory}</p>
+                                                <p className="text-xs text-slate-500 truncate">{rec.item.place?.name || rec.item.mainCategory}</p>
                                             </div>
                                             {!isAdded && <button onClick={() => onImport(rec.item)} className="p-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900"><Plus className="w-4 h-4" /></button>}
                                         </div>

@@ -186,7 +186,7 @@ export default function RegionScopedPlaceSearch({
                 <button
                     type="button"
                     onClick={() => void loginWithGoogle()}
-                    className="shrink-0 rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900"
+                    className="shrink-0 rounded-md bg-slate-900 px-2.5 py-1 text-xs font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900"
                 >
                     로그인
                 </button>
@@ -233,7 +233,7 @@ export default function RegionScopedPlaceSearch({
             )}
 
             {scope?.label && (
-                <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                <p className="mt-1 flex items-center gap-1 text-xs font-bold text-slate-400">
                     <MapPin className="h-3 w-3" />
                     {scope.label} 인근으로 한정해 검색 중
                 </p>
@@ -254,7 +254,7 @@ export default function RegionScopedPlaceSearch({
                                     <span className="block truncate text-sm font-bold text-slate-700 dark:text-slate-200">
                                         {p.structured_formatting.main_text}
                                     </span>
-                                    <span className="block truncate text-[10px] text-slate-400">
+                                    <span className="block truncate text-xs text-slate-400">
                                         {p.structured_formatting.secondary_text}
                                     </span>
                                 </span>

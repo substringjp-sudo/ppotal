@@ -210,21 +210,21 @@ export const TimeRangeSlider = ({
     <div className={cn("space-y-3 py-2", className)}>
       <div className="flex justify-between items-end px-1">
         <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">{label}</p>
           <div className="flex items-center gap-3">
-             <div className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm font-black text-primary border border-slate-200 dark:border-slate-700">
+             <div className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm font-semibold text-primary border border-slate-200 dark:border-slate-700">
                {startTime || '--:--'}
              </div>
              <div className="w-8 h-[2px] bg-slate-200 dark:bg-slate-800 rounded-full" />
-             <div className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm font-black text-rose-500 border border-slate-200 dark:border-slate-700">
+             <div className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-sm font-semibold text-rose-500 border border-slate-200 dark:border-slate-700">
                {endTime || '--:--'}
              </div>
           </div>
         </div>
         {subLabel && (
           <div className="hidden sm:flex flex-col items-end gap-1">
-              <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black rounded-md uppercase tracking-tighter">Interactive Range</span>
-              <p className="text-[10px] font-bold text-slate-300 italic">{subLabel}</p>
+              <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-semibold rounded-md uppercase tracking-tighter">Interactive Range</span>
+              <p className="text-xs font-bold text-slate-300 italic">{subLabel}</p>
           </div>
         )}
       </div>
@@ -258,7 +258,7 @@ export const TimeRangeSlider = ({
                 i % 6 === 0 ? "h-full bg-slate-200 dark:bg-slate-800" : "h-3 bg-slate-100 dark:bg-slate-800/40 mt-auto"
               )} />
               {i % 3 === 0 && (
-                <span className="absolute bottom-0.5 text-[7px] font-black text-slate-400">{i.toString().padStart(2, '0')}</span>
+                <span className="absolute bottom-0.5 text-xs font-semibold text-slate-400">{i.toString().padStart(2, '0')}</span>
               )}
             </div>
           ))}
@@ -274,7 +274,7 @@ export const TimeRangeSlider = ({
               width: `${((range.end - range.start) / 1440) * 100}%`
             }}
           >
-            <span className="text-[8px] font-black text-slate-400/50 uppercase tracking-widest truncate">{range.title}</span>
+            <span className="text-xs font-semibold text-slate-400/50 uppercase tracking-widest truncate">{range.title}</span>
           </div>
         ))}
 
@@ -310,7 +310,7 @@ export const TimeRangeSlider = ({
               {/* Range Info */}
               {!hideDuration && (
                 <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none overflow-hidden px-1">
-                   <span className="text-[7px] font-black text-slate-400 truncate">
+                   <span className="text-xs font-semibold text-slate-400 truncate">
                       {Math.round((currentEnd - currentStart) / 60 * 10) / 10}h
                    </span>
                 </div>

@@ -295,7 +295,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                             <span className="material-symbols-rounded">arrow_back</span>
                         </Link>
                         <div className="flex-1 min-w-0 text-center">
-                            <span className={cn('text-[10px] font-black uppercase tracking-widest',
+                            <span className={cn('text-xs font-semibold uppercase tracking-widest',
                                 isSaving ? 'text-primary' : canSave ? 'text-slate-400' : 'text-amber-500')}>
                                 {isSaving ? '저장 중…' : canSave ? '자동 저장됨' : '제목과 내용을 입력하세요'}
                             </span>
@@ -303,7 +303,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                         <button
                             onClick={() => handleSave()}
                             disabled={!canSave}
-                            className="rounded-xl bg-primary px-4 py-2 text-xs font-black text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary/90 transition shrink-0"
+                            className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-primary/90 transition shrink-0"
                         >
                             저장
                         </button>
@@ -322,7 +322,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                         value={travelog.title}
                         onChange={(e) => setTravelog({ ...travelog, title: e.target.value })}
                         placeholder="여행기 제목"
-                        className="w-full bg-transparent text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700 outline-none"
+                        className="w-full bg-transparent text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-700 outline-none"
                     />
                     <input
                         value={travelog.summary}
@@ -342,7 +342,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                                 )}
                             >
                                 <span className="material-symbols-rounded text-5xl text-slate-300">add_photo_alternate</span>
-                                <p className="mt-3 text-base font-black text-slate-700 dark:text-slate-200">사진을 올리면 여행기가 시작돼요</p>
+                                <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200">사진을 올리면 여행기가 시작돼요</p>
                                 <p className="mt-1 text-sm text-slate-400">찍은 시간과 위치로 장소를 자동으로 나눠 드려요.<br />끌어다 놓거나 눌러서 고르세요.</p>
                             </button>
                         ) : (
@@ -396,7 +396,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
 
                     {/* 키보드 힌트 — 데스크탑에서만 */}
                     {!isEmpty && (
-                        <p className="mt-6 hidden sm:block text-center text-[11px] font-medium text-slate-400">
+                        <p className="mt-6 hidden sm:block text-center text-xs font-medium text-slate-400">
                             <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono">⌘</kbd>
                             <span className="mx-1">+</span>
                             <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono">Enter</kbd>
@@ -430,7 +430,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                             <span className="material-symbols-rounded">keyboard_arrow_up</span>
                         </button>
                         <button onClick={() => stream.focusRelative(stream.activeId!, 1)}
-                            className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-black text-white">
+                            className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white">
                             다음 장소
                         </button>
                         <button onClick={() => (document.activeElement as HTMLElement)?.blur()}
@@ -445,7 +445,7 @@ export default function TravelogEditorClient({ id }: { id: string }) {
                     <div className="fixed inset-0 z-50 bg-primary/10 backdrop-blur-sm grid place-items-center pointer-events-none">
                         <div className="rounded-3xl bg-white dark:bg-slate-900 px-8 py-6 shadow-2xl text-center">
                             <span className="material-symbols-rounded text-4xl text-primary">photo_library</span>
-                            <p className="mt-2 text-sm font-black text-slate-800 dark:text-slate-100">놓으면 장소로 정리돼요</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-100">놓으면 장소로 정리돼요</p>
                         </div>
                     </div>
                 )}
@@ -471,7 +471,7 @@ function ActionChip({ icon, label, onClick }: { icon: string; label: string; onC
     return (
         <button
             onClick={onClick}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
         >
             <span className="material-symbols-rounded text-base">{icon}</span>
             {label}
@@ -498,7 +498,7 @@ function NotFound() {
             <div>
                 <span className="material-symbols-rounded text-5xl text-slate-300">search_off</span>
                 <p className="mt-3 text-sm font-bold text-slate-500">여행기를 찾을 수 없어요.</p>
-                <Link href="/travelogs" className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">여행기록으로</Link>
+                <Link href="/travelogs" className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">여행기록으로</Link>
             </div>
         </div>
     );

@@ -65,7 +65,7 @@ function SortableItem({ id, isActive, onToggle }: { id: PrintSectionId; isActive
            {isActive && <Check className="w-3.5 h-3.5 stroke-[3px]" />}
          </button>
          <span className={cn(
-             "text-xs font-black uppercase tracking-tight",
+             "text-xs font-semibold uppercase tracking-tight",
              isActive ? "text-slate-900 dark:text-white" : "text-slate-400 line-through opacity-50"
          )}>
            {SECTION_LABELS[id]}
@@ -180,7 +180,7 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
                     )}
                 >
                     <tab.icon className={cn("w-5 h-5", activeTab === tab.id ? "text-white" : "group-hover:text-slate-600")} />
-                    <span className="text-[7px] font-black tracking-widest">{tab.label}</span>
+                    <span className="text-xs font-semibold tracking-widest">{tab.label}</span>
                 </button>
             ))}
             <div className="mt-auto">
@@ -193,26 +193,26 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
         {/* Sidebar Config Panel */}
         <div className="w-[340px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full shrink-0">
           <div className="p-6 border-b border-slate-200/60 dark:border-slate-800">
-            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight italic">EXPORT STUDIO</h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Customize your travel guide</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight italic">EXPORT STUDIO</h2>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Customize your travel guide</p>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 custom-scrollbar">
             {activeTab === 'templates' && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Select Preset</h3>
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Select Preset</h3>
                     <div className="grid grid-cols-1 gap-3">
                         {Object.entries(PRINT_THEMES).map(([id, t]) => (
                             <button
                                 key={id}
                                 onClick={() => setThemeId(id)}
                                 className={cn(
-                                    "p-4 rounded-[2rem] border-2 text-left transition-all relative overflow-hidden group",
+                                    "p-4 rounded-[20px] border-2 text-left transition-all relative overflow-hidden group",
                                     themeId === id ? "border-primary bg-primary/5 ring-4 ring-primary/5" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-200"
                                 )}
                             >
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className={cn("text-sm font-black italic", themeId === id ? "text-primary" : "text-slate-900 dark:text-white")}>{t.name}</span>
+                                    <span className={cn("text-sm font-semibold italic", themeId === id ? "text-primary" : "text-slate-900 dark:text-white")}>{t.name}</span>
                                     {themeId === id && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
                                 </div>
                                 <div className="flex gap-1.5 h-4">
@@ -229,7 +229,7 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
             {activeTab === 'style' && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
                     <section>
-                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Background Pattern</h3>
+                       <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Background Pattern</h3>
                        <div className="grid grid-cols-2 gap-2">
                          {patterns.map(p => (
                              <button
@@ -241,21 +241,21 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
                                 )}
                              >
                                 <span className="material-symbols-rounded text-xl">{p.icon}</span>
-                                <span className="text-[10px] font-black uppercase tracking-widest">{p.label}</span>
+                                <span className="text-xs font-semibold uppercase tracking-widest">{p.label}</span>
                              </button>
                          ))}
                        </div>
                     </section>
                     
                     <section>
-                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">View Format</h3>
+                       <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">View Format</h3>
                        <div className="flex bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-1.5 border border-slate-200 dark:border-slate-800">
                          {(['compact', 'detailed'] as const).map(l => (
                              <button 
                                 key={l}
                                 onClick={() => setLayout(l)}
                                 className={cn(
-                                    "flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                                    "flex-1 py-3 text-xs font-semibold uppercase tracking-widest rounded-xl transition-all",
                                     layout === l ? "bg-white dark:bg-slate-700 shadow-xl text-primary" : "text-slate-400"
                                 )}
                              >
@@ -269,8 +269,8 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
 
             {activeTab === 'content' && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Content Order</h3>
-                   <p className="text-[10px] text-slate-400 font-bold mb-4 italic truncate">Drag to reorder, toggle to hide</p>
+                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Content Order</h3>
+                   <p className="text-xs text-slate-400 font-bold mb-4 italic truncate">Drag to reorder, toggle to hide</p>
                    
                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                      <SortableContext items={sections} strategy={verticalListSortingStrategy}>
@@ -290,14 +290,14 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
              <button
                onClick={handleExportPNG}
                disabled={isExporting}
-               className="w-full flex items-center justify-center gap-3 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl transition-all disabled:opacity-50 group hover:scale-[1.02] active:scale-[0.98]"
+               className="w-full flex items-center justify-center gap-3 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-semibold text-xs uppercase tracking-widest shadow-2xl transition-all disabled:opacity-50 group hover:scale-[1.02] active:scale-[0.98]"
              >
                 <ImageIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                 SAVING TO GALLERY
              </button>
              <button
                onClick={() => window.print()}
-               className="w-full flex items-center justify-center gap-3 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all hover:bg-slate-50 dark:hover:bg-slate-700"
+               className="w-full flex items-center justify-center gap-3 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-xs uppercase tracking-widest transition-all hover:bg-slate-50 dark:hover:bg-slate-700"
              >
                 <Printer className="w-4 h-4" />
                 HARD COPY / PDF
@@ -310,9 +310,9 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
           <div className="w-full max-w-[1200px] mb-8 flex items-center justify-between px-4">
               <div className="flex items-center gap-4">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Live Studio Preview</span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Live Studio Preview</span>
               </div>
-              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">300 DPI / Retina Ready</div>
+              <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest italic">300 DPI / Retina Ready</div>
           </div>
           
           <div 

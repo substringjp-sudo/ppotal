@@ -63,6 +63,12 @@ export default function RootLayout({
           rel="stylesheet"
           crossOrigin="anonymous"
         />
+        {/* 에디토리얼 세리프 레이어(--font-editorial) — 여행기록/인쇄물/공유카드가 쓴다 */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+KR:wght@400;500;600&display=swap"
+          rel="stylesheet"
+          crossOrigin="anonymous"
+        />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       </head>
       <body suppressHydrationWarning className="antialiased bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">

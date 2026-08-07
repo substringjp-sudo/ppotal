@@ -25,7 +25,7 @@ export default function TimelineControlBar({
             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
                 <button 
                     onClick={() => onViewModeChange('timeline')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
                         viewMode === 'timeline' 
                         ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5' 
                         : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
@@ -37,7 +37,7 @@ export default function TimelineControlBar({
                 {!isGuest && (
                     <button 
                         onClick={() => onViewModeChange('map')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
                             viewMode === 'map' 
                             ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5' 
                             : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
@@ -49,7 +49,7 @@ export default function TimelineControlBar({
                 )}
                 <button 
                     onClick={() => onViewModeChange('gantt')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${
                         viewMode === 'gantt' 
                         ? 'bg-white dark:bg-slate-700 text-primary shadow-sm ring-1 ring-black/5' 
                         : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
@@ -63,7 +63,7 @@ export default function TimelineControlBar({
                 <button 
                     onClick={() => onShowOnlyBookedChange(!showOnlyBooked)}
                     title={showOnlyBooked ? '전체 일정 보기' : '예약 확정된 항목만 필터링'}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-200 border shrink-0 ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 border shrink-0 ${
                         showOnlyBooked 
                         ? 'bg-amber-500 border-amber-600 text-white shadow-sm ring-1 ring-amber-700/10' 
                         : 'bg-slate-100 dark:bg-slate-800 border-transparent text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'

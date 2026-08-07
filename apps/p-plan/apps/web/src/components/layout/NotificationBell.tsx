@@ -52,7 +52,7 @@ export default function NotificationBell() {
             >
                 <span className="material-symbols-rounded text-xl group-hover:text-primary transition-all">notifications</span>
                 {unreadNotificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-sm animate-bounce">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-xs font-semibold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-sm animate-bounce">
                         {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                     </span>
                 )}
@@ -67,11 +67,11 @@ export default function NotificationBell() {
                         className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden"
                     >
                         <div className="p-4 border-b border-slate-200/60 dark:border-slate-700 flex items-center justify-between">
-                            <h3 className="text-sm font-black text-slate-900 dark:text-white">알림</h3>
+                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">알림</h3>
                             {unreadNotificationCount > 0 && (
                                 <button 
                                     onClick={handleMarkAllRead}
-                                    className="text-[11px] font-bold text-primary hover:underline"
+                                    className="text-xs font-bold text-primary hover:underline"
                                 >
                                     모두 읽음 처리
                                 </button>
@@ -102,20 +102,20 @@ export default function NotificationBell() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start mb-0.5">
-                                                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">
+                                                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                                                         {notification.title}
                                                     </p>
-                                                    <span className="text-[10px] text-slate-400 whitespace-nowrap ml-2">
+                                                    <span className="text-xs text-slate-400 whitespace-nowrap ml-2">
                                                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: ko })}
                                                     </span>
                                                 </div>
-                                                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                                                     {notification.message}
                                                 </p>
                                                 {notification.link && (
                                                     <Link 
                                                         href={notification.link}
-                                                        className="inline-block mt-2 px-3 py-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-all"
+                                                        className="inline-block mt-2 px-3 py-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-all"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         자세히 보기
@@ -140,7 +140,7 @@ export default function NotificationBell() {
                             <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 text-center">
                                 <Link 
                                     href="/friends" // Or a dedicated notifications page if created
-                                    className="text-[11px] font-black text-slate-500 hover:text-primary transition-colors"
+                                    className="text-xs font-semibold text-slate-500 hover:text-primary transition-colors"
                                     onClick={() => setIsOpen(false)}
                                 >
                                     내 친구 및 활동 관리

@@ -19,7 +19,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                     <span className="material-symbols-rounded text-red-500 text-4xl">cloud_off</span>
                 </div>
 
-                <h1 className="text-2xl font-black text-slate-800 dark:text-white mb-3">
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-3">
                     서비스 오류가 발생했습니다
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">

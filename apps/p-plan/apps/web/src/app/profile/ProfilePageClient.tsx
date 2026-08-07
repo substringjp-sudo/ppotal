@@ -157,7 +157,7 @@ export default function ProfilePageClient() {
         });
     }, [upcomingEvents, pastEvents, selectedFilters]);
 
-    if (loading || !profile?.metadata?.travelStats) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white font-black italic tracking-widest animate-pulse">ANALYZING YOUR JOURNEY...</div>;
+    if (loading || !profile?.metadata?.travelStats) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white font-semibold italic tracking-widest animate-pulse">ANALYZING YOUR JOURNEY...</div>;
 
 
     return (
@@ -182,7 +182,7 @@ export default function ProfilePageClient() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={cn(
-                                    "px-6 py-3 rounded-[22px] text-xs font-black transition-all flex items-center gap-2",
+                                    "px-6 py-3 rounded-[22px] text-xs font-semibold transition-all flex items-center gap-2",
                                     activeTab === tab.id 
                                         ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105" 
                                         : "text-white/40 hover:text-white hover:bg-white/5"
@@ -208,7 +208,7 @@ export default function ProfilePageClient() {
                                 className="space-y-12"
                             >
                                 <div className="text-center max-w-2xl mx-auto space-y-4">
-                                    <h2 className="text-4xl font-black tracking-tighter">Traveler&apos;s Records</h2>
+                                    <h2 className="text-4xl font-bold tracking-tighter">Traveler&apos;s Records</h2>
                                     <p className="text-white/40 font-bold leading-relaxed italic">
                                         당신이 걸어온 모든 발자취가 특별한 기록이 됩니다. <br/>새로운 업적을 잠금 해제하고 세계를 정복하세요!
                                     </p>
@@ -237,14 +237,14 @@ export default function ProfilePageClient() {
                                 <div className="absolute top-8 left-8 flex gap-3 z-10">
                                     <select 
                                         onChange={(e) => setSelectedFilters({ ...selectedFilters, country: e.target.value || undefined })}
-                                        className="bg-slate-900/90 backdrop-blur-3xl border border-white/10 rounded-2xl px-5 py-3 text-xs font-black outline-none ring-primary/50 focus:ring-2 hover:bg-slate-800 transition-all appearance-none pr-10"
+                                        className="bg-slate-900/90 backdrop-blur-3xl border border-white/10 rounded-2xl px-5 py-3 text-xs font-semibold outline-none ring-primary/50 focus:ring-2 hover:bg-slate-800 transition-all appearance-none pr-10"
                                     >
                                         <option value="">All Countries</option>
                                         {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                     <select 
                                         onChange={(e) => setSelectedFilters({ ...selectedFilters, region: e.target.value || undefined })}
-                                        className="bg-slate-900/90 backdrop-blur-3xl border border-white/10 rounded-2xl px-5 py-3 text-xs font-black outline-none ring-primary/50 focus:ring-2 hover:bg-slate-800 transition-all appearance-none pr-10"
+                                        className="bg-slate-900/90 backdrop-blur-3xl border border-white/10 rounded-2xl px-5 py-3 text-xs font-semibold outline-none ring-primary/50 focus:ring-2 hover:bg-slate-800 transition-all appearance-none pr-10"
                                     >
                                         <option value="">All Regions</option>
                                         {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -320,18 +320,18 @@ function EventCard({ event, onDismiss }: { event: UnifiedEvent; onDismiss?: () =
                     </span>
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">{event.date}</p>
-                    <p className="text-sm font-black">{event.startTime || 'All Day'}</p>
+                    <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-1">{event.date}</p>
+                    <p className="text-sm font-semibold">{event.startTime || 'All Day'}</p>
                 </div>
             </div>
             <div className="relative z-10">
-                <h3 className="font-black text-xl mb-2 group-hover:text-primary transition-colors line-clamp-1 tracking-tight">{event.title}</h3>
+                <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors line-clamp-1 tracking-tight">{event.title}</h3>
                 <p className="text-xs font-bold text-white/40 flex items-center gap-1.5 mb-6">
                     <span className="material-symbols-rounded text-sm">location_on</span>
                     {event.location?.name || 'Location TBD'}
                 </p>
                 <div className="pt-5 border-t border-white/5 flex items-center justify-between">
-                    <span className="text-[10px] font-black px-3 py-1.5 bg-white/5 rounded-xl border border-white/10 text-white/40 uppercase tracking-wider">{event.tripTitle}</span>
+                    <span className="text-xs font-semibold px-3 py-1.5 bg-white/5 rounded-xl border border-white/10 text-white/40 uppercase tracking-wider">{event.tripTitle}</span>
                     <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 hover:bg-primary hover:text-white transition-all">
                         <span className="material-symbols-rounded text-sm">arrow_forward</span>
                     </button>

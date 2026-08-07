@@ -71,8 +71,8 @@ export function LocationHierarchyBadges({
     }[];
 
     const badgeSizeClass = compact
-        ? 'px-1.5 py-0.5 text-[9px] gap-1'
-        : 'px-2.5 py-1 text-[11px] gap-1.5';
+        ? 'px-1.5 py-0.5 text-xs gap-1'
+        : 'px-2.5 py-1 text-xs gap-1.5';
     const iconSizeClass = compact ? 'w-2.5 h-2.5' : 'w-3 h-3';
 
     if (!animated) {

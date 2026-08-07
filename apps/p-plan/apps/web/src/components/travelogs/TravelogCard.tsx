@@ -80,7 +80,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                 animate="visible"
                 whileHover="hover"
                 onClick={handleCardClick}
-                className="group relative flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
+                className="group relative flex items-center gap-4 p-3 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
             >
                 {/* Thumbnail */}
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[20px] overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 relative">
@@ -101,49 +101,49 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                        <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[8px] font-black rounded uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-semibold rounded uppercase tracking-wider">
                             {travelog.theme}
                         </span>
                         {travelog.status === 'published' && (
-                            <span className="text-primary text-[8px] font-black uppercase flex items-center gap-1">
-                                <span className="material-symbols-rounded text-[10px]">public</span>
+                            <span className="text-primary text-xs font-semibold uppercase flex items-center gap-1">
+                                <span className="material-symbols-rounded text-xs">public</span>
                                 Shared
                             </span>
                         )}
                         {travelog.status === 'draft' && (
-                            <span className="text-slate-400 text-[8px] font-black uppercase flex items-center gap-1">
-                                <span className="material-symbols-rounded text-[10px]">draft</span>
+                            <span className="text-slate-400 text-xs font-semibold uppercase flex items-center gap-1">
+                                <span className="material-symbols-rounded text-xs">draft</span>
                                 Draft
                             </span>
                         )}
                         <span className={cn(
-                            "text-[8px] font-black uppercase flex items-center gap-1 ml-auto px-1.5 py-0.5 rounded-full",
+                            "text-xs font-semibold uppercase flex items-center gap-1 ml-auto px-1.5 py-0.5 rounded-full",
                             travelog.recordingMode === 'simple' 
                                 ? "bg-amber-50 text-amber-600 border border-amber-100" 
                                 : "bg-indigo-50 text-indigo-600 border border-indigo-100"
                         )}>
-                            <span className="material-symbols-rounded text-[10px]">
+                            <span className="material-symbols-rounded text-xs">
                                 {travelog.recordingMode === 'simple' ? 'timeline' : 'edit_note'}
                             </span>
                             {travelog.recordingMode === 'simple' ? 'Simple' : 'Full'}
                         </span>
                     </div>
                     
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                    <h3 className="font-editorial text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
                         {travelog.title || 'Untitled Story'}
                     </h3>
-                    
-                    <p className="text-[11px] text-slate-400 line-clamp-1 font-medium mb-1.5">
+
+                    <p className="text-xs text-slate-400 line-clamp-1 font-medium mb-1.5">
                         {travelog.summary || 'A beautiful journey waiting to be told...'}
                     </p>
 
-                    <div className="flex items-center gap-3 text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                    <div className="flex items-center gap-3 text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                         <div className="flex items-center gap-1">
-                            <span className="material-symbols-rounded text-[12px]">calendar_month</span>
+                            <span className="material-symbols-rounded text-xs">calendar_month</span>
                             {formattedDate}
                         </div>
                         <div className="flex items-center gap-1">
-                            <span className="material-symbols-rounded text-[12px]">group</span>
+                            <span className="material-symbols-rounded text-xs">group</span>
                             {totalMembers} 명
                         </div>
                     </div>
@@ -172,7 +172,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
             animate="visible"
             whileHover="hover"
             onClick={handleCardClick}
-            className="group relative cursor-pointer aspect-[4/5] rounded-[32px] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-white/20"
+            className="group relative cursor-pointer aspect-[4/5] rounded-[20px] overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-sm hover:shadow-xl transition-all border border-transparent hover:border-white/20"
         >
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">
@@ -190,22 +190,22 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
 
             {/* Badges */}
             <div className="absolute top-4 left-4 flex flex-wrap gap-1.5">
-                <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black rounded-full uppercase tracking-wider">
+                <span className="px-2 py-0.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-semibold rounded-full uppercase tracking-wider">
                     {travelog.theme}
                 </span>
                 {travelog.status === 'published' && (
-                    <span className="px-2 py-0.5 bg-primary text-white text-[9px] font-black rounded-full uppercase tracking-wider flex items-center gap-1">
-                        <span className="material-symbols-rounded text-[11px]">public</span>
+                    <span className="px-2 py-0.5 bg-primary text-white text-xs font-semibold rounded-full uppercase tracking-wider flex items-center gap-1">
+                        <span className="material-symbols-rounded text-xs">public</span>
                         Shared
                     </span>
                 )}
                 <span className={cn(
-                    "px-2 py-0.5 backdrop-blur-md border text-[9px] font-black rounded-full uppercase tracking-wider flex items-center gap-1",
+                    "px-2 py-0.5 backdrop-blur-md border text-xs font-semibold rounded-full uppercase tracking-wider flex items-center gap-1",
                     travelog.recordingMode === 'simple' 
                         ? "bg-amber-500/20 text-amber-400 border-amber-500/30" 
                         : "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
                 )}>
-                    <span className="material-symbols-rounded text-[11px]">
+                    <span className="material-symbols-rounded text-xs">
                         {travelog.recordingMode === 'simple' ? 'timeline' : 'edit_note'}
                     </span>
                     {travelog.recordingMode === 'simple' ? 'Simple' : 'Full'}
@@ -226,19 +226,19 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
             {/* Content Container */}
             <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col gap-2">
                 {/* Meta Info */}
-                <div className="flex items-center gap-2 text-white/60 text-[9px] font-black uppercase tracking-tighter">
-                    <span className="material-symbols-rounded text-[11px]">calendar_month</span>
+                <div className="flex items-center gap-2 text-white/60 text-xs font-semibold uppercase tracking-tighter">
+                    <span className="material-symbols-rounded text-xs">calendar_month</span>
                     {formattedDate}
                     <span className="mx-0.5 opacity-30">•</span>
-                    <span className="material-symbols-rounded text-[11px]">group</span>
+                    <span className="material-symbols-rounded text-xs">group</span>
                     {totalMembers}명
                 </div>
 
-                <h2 className="text-lg font-black text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                <h2 className="font-editorial text-lg font-semibold text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                     {travelog.title || 'Untitled Story'}
                 </h2>
 
-                <p className="text-[11px] text-white/50 line-clamp-2 font-medium">
+                <p className="text-xs text-white/50 line-clamp-2 font-medium">
                     {travelog.summary || 'A beautiful journey waiting to be told...'}
                 </p>
 
@@ -246,10 +246,10 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                 <div className="mt-2 pt-3 border-t border-white/10 flex items-center justify-between">
                     <div className="flex -space-x-1.5">
                         <div className="w-5 h-5 rounded-full bg-primary/20 backdrop-blur-md border border-white/20 flex items-center justify-center">
-                            <span className="material-symbols-rounded text-white text-[9px]">person</span>
+                            <span className="material-symbols-rounded text-white text-xs">person</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1 text-white font-black text-[10px] uppercase group-hover:translate-x-1 transition-transform tracking-tight">
+                    <div className="flex items-center gap-1 text-white font-semibold text-xs uppercase group-hover:translate-x-1 transition-transform tracking-tight">
                         Explore
                         <span className="material-symbols-rounded text-xs">east</span>
                     </div>

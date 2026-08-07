@@ -59,15 +59,15 @@ export default function WishlistInsightsCard({ insights }: WishlistInsightsCardP
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Preferred Regions */}
         <div className="space-y-4">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top Preferred Regions</h3>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Top Preferred Regions</h3>
           <div className="space-y-3">
             {insights.preferredRegions.map((region, idx) => (
               <div key={region.id} className="flex items-center justify-between group">
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-pink-500/50 w-4">0{idx + 1}</span>
+                  <span className="text-xs font-semibold text-pink-500/50 w-4">0{idx + 1}</span>
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-pink-500 transition-colors">{region.name}</span>
                 </div>
-                <div className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800 text-[10px] font-black text-slate-500">
+                <div className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-500">
                   {region.count} ITEMS
                 </div>
               </div>
@@ -77,7 +77,7 @@ export default function WishlistInsightsCard({ insights }: WishlistInsightsCardP
 
         {/* Place Tendency */}
         <div className="space-y-4">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Place Tendency</h3>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Place Tendency</h3>
           <div className="space-y-4">
             {insights.placeTendency.slice(0, 4).map((tendency) => {
               const Icon = categoryIcons[tendency.category] || MapPin;
@@ -85,7 +85,7 @@ export default function WishlistInsightsCard({ insights }: WishlistInsightsCardP
               
               return (
                 <div key={tendency.category} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] font-black">
+                  <div className="flex items-center justify-between text-xs font-semibold">
                     <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                       <Icon className="w-3 h-3" />
                       {tendency.category}

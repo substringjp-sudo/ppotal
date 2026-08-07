@@ -72,7 +72,7 @@ export function AirlineSearchInput({ value, onChange, placeholder, className, in
 
     return (
         <div className={cn("space-y-1.5 relative", className)} ref={containerRef}>
-            {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+            {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1">{label}</label>}
             <div className="relative">
                 <input
                     value={searchTerm}
@@ -103,7 +103,7 @@ export function AirlineSearchInput({ value, onChange, placeholder, className, in
                                 {loading && displayResults.length === 0 && (
                                     <div className="px-5 py-8 flex flex-col items-center justify-center text-slate-400 gap-3">
                                         <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">글로벌 항공사 데이터 검색 중...</span>
+                                        <span className="text-xs font-semibold uppercase tracking-widest">글로벌 항공사 데이터 검색 중...</span>
                                     </div>
                                 )}
                                 {displayResults.map((airline) => (
@@ -114,19 +114,19 @@ export function AirlineSearchInput({ value, onChange, placeholder, className, in
                                     >
                                         <div className="flex flex-col gap-0.5">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                                                <span className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
                                                     {airline.nameKo}
                                                 </span>
-                                                <span className="text-[10px] font-black bg-indigo-50 dark:bg-indigo-900/40 px-2 py-0.5 rounded text-indigo-600 dark:text-indigo-400">
+                                                <span className="text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/40 px-2 py-0.5 rounded text-indigo-600 dark:text-indigo-400">
                                                     {airline.code}
                                                 </span>
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-400 leading-tight">
+                                            <span className="text-xs font-bold text-slate-400 leading-tight">
                                                 {airline.nameEn}
                                             </span>
                                         </div>
                                         <div className="text-right flex flex-col items-end gap-1 shrink-0 ml-4">
-                                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest whitespace-nowrap">
+                                            <span className="text-xs font-semibold text-slate-300 uppercase tracking-widest whitespace-nowrap">
                                                 {airline.countryKo}
                                             </span>
                                         </div>

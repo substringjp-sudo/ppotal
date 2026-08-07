@@ -31,15 +31,15 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[32px] p-8 flex flex-col items-center justify-center">
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[20px] p-8 flex flex-col items-center justify-center">
                 <div className="relative w-full aspect-square max-w-[320px]">
                     <BudgetDonutChart 
                         data={chartData}
                         total={totalConfirmedInBase}
                         centerText={
                             <div className="flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">누적 지출</span>
-                                <span className="text-2xl font-black">{currencySymbol} {formatAmount(totalConfirmedInBase)}</span>
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">누적 지출</span>
+                                <span className="text-2xl font-bold">{currencySymbol} {formatAmount(totalConfirmedInBase)}</span>
                             </div>
                         }
                     />
@@ -47,7 +47,7 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
             </div>
 
             <div className="space-y-4">
-                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 mb-4">카테고리별 상세</h4>
+                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-2 mb-4">카테고리별 상세</h4>
                 {CATEGORY_OPTIONS.map(category => {
                     const amount = categoryTotals[category.value] || 0;
                     const percentage = totalConfirmedInBase > 0 ? (amount / totalConfirmedInBase) * 100 : 0;
@@ -65,8 +65,8 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-end mb-1.5">
-                                    <span className="text-sm font-black text-slate-900 dark:text-slate-100">{category.label}</span>
-                                    <span className="text-sm font-black text-primary">{currencySymbol} {formatAmount(Math.round(amount))}</span>
+                                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{category.label}</span>
+                                    <span className="text-sm font-semibold text-primary">{currencySymbol} {formatAmount(Math.round(amount))}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -81,7 +81,7 @@ export const BudgetOverviewTab: React.FC<BudgetOverviewTabProps> = ({
                                             style={{ width: `${percentage}%` }}
                                         />
                                     </div>
-                                    <span className="text-[10px] font-black text-slate-400 min-w-[30px]">{Math.round(percentage)}%</span>
+                                    <span className="text-xs font-semibold text-slate-400 min-w-[30px]">{Math.round(percentage)}%</span>
                                 </div>
                             </div>
                         </div>

@@ -594,11 +594,11 @@ export default function BasicInfoEditor() {
                         <div className="grid grid-cols-1 gap-4 items-start">
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">여행 제목</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">여행 제목</label>
                                     {trip.isOverseas ? (
-                                        <span className="text-[9px] font-black px-1.5 py-0.5 bg-indigo-500 text-white rounded-md uppercase tracking-tighter">해외 여행</span>
+                                        <span className="text-xs font-semibold px-1.5 py-0.5 bg-indigo-500 text-white rounded-md uppercase tracking-tighter">해외 여행</span>
                                     ) : (
-                                        <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500 text-white rounded-md uppercase tracking-tighter">국내 여행</span>
+                                        <span className="text-xs font-semibold px-1.5 py-0.5 bg-emerald-500 text-white rounded-md uppercase tracking-tighter">국내 여행</span>
                                     )}
                                 </div>
                                 <input
@@ -632,15 +632,15 @@ export default function BasicInfoEditor() {
                                     <div className="relative z-10 flex flex-col gap-3">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="px-2 py-0.5 bg-primary text-white text-[10px] font-black rounded-lg italic">
+                                                <div className="px-2 py-0.5 bg-primary text-white text-xs font-semibold rounded-lg italic">
                                                     {scheduleSummary.nights}박 {scheduleSummary.days}일
                                                 </div>
-                                                <span className="text-[11px] font-black text-slate-800 dark:text-white italic">여행 일정 요약</span>
+                                                <span className="text-xs font-semibold text-slate-800 dark:text-white italic">여행 일정 요약</span>
                                             </div>
                                             {scheduleSummary.holidayCount > 0 && (
                                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-md">
-                                                    <span className="material-symbols-rounded text-[10px] text-red-500">weekend</span>
-                                                    <span className="text-[9px] font-black text-red-500">공휴일 {scheduleSummary.holidayCount}일 포함</span>
+                                                    <span className="material-symbols-rounded text-xs text-red-500">weekend</span>
+                                                    <span className="text-xs font-semibold text-red-500">공휴일 {scheduleSummary.holidayCount}일 포함</span>
                                                 </div>
                                             )}
                                         </div>
@@ -648,7 +648,7 @@ export default function BasicInfoEditor() {
                                         <div className="space-y-1">
                                             <div className="flex items-start gap-2">
                                                 <span className="material-symbols-rounded text-sm text-primary/60 shrink-0 mt-0.5">date_range</span>
-                                                <div className="text-[12px] font-bold text-slate-600 dark:text-slate-300">
+                                                <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
                                                     {scheduleSummary.dateRangeStr}
                                                 </div>
                                             </div>
@@ -656,8 +656,8 @@ export default function BasicInfoEditor() {
                                             {scheduleSummary.startTime && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="material-symbols-rounded text-sm text-primary/60 shrink-0">schedule</span>
-                                                    <div className="text-[11px] font-bold text-slate-500">
-                                                        여행의 시작: <span className="text-primary font-black uppercase tracking-tighter">{scheduleSummary.startTime}</span>
+                                                    <div className="text-xs font-bold text-slate-500">
+                                                        여행의 시작: <span className="text-primary font-semibold uppercase tracking-tighter">{scheduleSummary.startTime}</span>
                                                     </div>
                                                 </div>
                                             )}
@@ -665,15 +665,15 @@ export default function BasicInfoEditor() {
 
                                         <div className="pt-2 border-t border-primary/10 flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-1.5 overflow-hidden">
-                                                <span className="text-[9px] font-black text-slate-400 shrink-0">진행 예정</span>
+                                                <span className="text-xs font-semibold text-slate-400 shrink-0">진행 예정</span>
                                                 <div className="flex gap-0.5">
                                                     {Array.from({ length: Math.min(scheduleSummary.days, 10) }).map((_, i) => (
                                                         <div key={i} className="w-1.5 h-1 bg-primary/20 rounded-full" />
                                                     ))}
-                                                    {scheduleSummary.days > 10 && <span className="text-[8px] font-black text-slate-300 ml-0.5">...</span>}
+                                                    {scheduleSummary.days > 10 && <span className="text-xs font-semibold text-slate-300 ml-0.5">...</span>}
                                                 </div>
                                             </div>
-                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">P-Plan 최적화</span>
+                                            <span className="text-xs font-semibold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">P-Plan 최적화</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -708,8 +708,8 @@ export default function BasicInfoEditor() {
                                     <span className="material-symbols-rounded text-lg">{currentThemeInfo.icon}</span>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">여행 테마</p>
-                                    <h4 className="font-bold text-[11px] text-slate-900 dark:text-white truncate">
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none">여행 테마</p>
+                                    <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">
                                         {trip.theme || "여행 스타일 선택"}
                                     </h4>
                                 </div>
@@ -743,7 +743,7 @@ export default function BasicInfoEditor() {
                                                     )}
                                                 >
                                                     <span className="material-symbols-rounded text-base">{theme.icon}</span>
-                                                    <span className="text-[8px] font-black whitespace-nowrap">{theme.name}</span>
+                                                    <span className="text-xs font-semibold whitespace-nowrap">{theme.name}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -777,8 +777,8 @@ export default function BasicInfoEditor() {
                                     <span className="material-symbols-rounded text-lg">group</span>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">동행자</p>
-                                    <h4 className="font-bold text-[11px] text-slate-900 dark:text-white truncate">
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none">동행자</p>
+                                    <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">
                                         {trip.participants?.length > 0 ? `${trip.participants.length}명` : "누구와 함께 하나요?"}
                                     </h4>
                                 </div>
@@ -811,19 +811,19 @@ export default function BasicInfoEditor() {
                                                             <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
                                                                 <span className="material-symbols-rounded text-base">{role.icon}</span>
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{role.name}</span>
+                                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{role.name}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); updateParticipantRoleCount(role.id, -1); }}
-                                                                className="compact-touch w-7 h-7 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all font-black text-[10px]"
+                                                                className="compact-touch w-7 h-7 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all font-semibold text-xs"
                                                             >
                                                                 -
                                                             </button>
-                                                            <span className="text-[10px] font-black text-slate-900 dark:text-white min-w-[24px] text-center">{displayCount}</span>
+                                                            <span className="text-xs font-semibold text-slate-900 dark:text-white min-w-[24px] text-center">{displayCount}</span>
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); updateParticipantRoleCount(role.id, 1); }}
-                                                                className="compact-touch w-7 h-7 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all font-black text-[10px]"
+                                                                className="compact-touch w-7 h-7 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:bg-primary/10 hover:text-primary transition-all font-semibold text-xs"
                                                             >
                                                                 +
                                                             </button>
@@ -857,28 +857,28 @@ export default function BasicInfoEditor() {
                                 )}>
                                     <span className="material-symbols-rounded text-lg">location_on</span>
                                     {((trip.locations?.regions?.length ?? 0) > 0 || (trip.locations?.regionNames?.length ?? 0) > 0) && (
-                                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-white dark:border-slate-900 shadow-sm">
+                                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 text-white text-xs font-semibold rounded-full flex items-center justify-center border border-white dark:border-slate-900 shadow-sm">
                                             {Math.max(trip.locations?.regions?.length ?? 0, trip.locations?.regionNames?.length ?? 0)}
                                         </div>
                                     )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">여행지</p>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">여행지</p>
                                     <div className="flex flex-wrap gap-1 items-center">
                                         {(trip.locations?.regions?.length ?? 0) > 0 ? (
                                             trip.locations!.regions!.map(r => (
-                                                <span key={r.id} className="inline-flex px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[9px] font-bold rounded-md border border-emerald-100 dark:border-emerald-800/50">
+                                                <span key={r.id} className="inline-flex px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-md border border-emerald-100 dark:border-emerald-800/50">
                                                     {r.name}
                                                 </span>
                                             ))
                                         ) : (trip.locations?.regionNames?.length ?? 0) > 0 ? (
                                             trip.locations!.regionNames!.map(name => (
-                                                <span key={name} className="inline-flex px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[9px] font-bold rounded-md border border-emerald-100 dark:border-emerald-800/50">
+                                                <span key={name} className="inline-flex px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-md border border-emerald-100 dark:border-emerald-800/50">
                                                     {name}
                                                 </span>
                                             ))
                                         ) : (
-                                            <h4 className="font-bold text-[11px] text-slate-400">어디로 여행을 떠나시나요?</h4>
+                                            <h4 className="font-bold text-xs text-slate-400">어디로 여행을 떠나시나요?</h4>
                                         )}
                                     </div>
                                 </div>
@@ -907,7 +907,7 @@ export default function BasicInfoEditor() {
                                                     onCompositionStart={() => setIsComposing(true)}
                                                     onCompositionEnd={() => setIsComposing(false)}
                                                     placeholder="지역 추가..."
-                                                    className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-bold outline-none focus:border-primary transition-all"
+                                                    className="w-full pl-8 pr-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-bold outline-none focus:border-primary transition-all"
                                                 />
                                                 <AnimatePresence>
                                                     {suggestions.length > 0 && (
@@ -927,8 +927,8 @@ export default function BasicInfoEditor() {
                                                                 >
                                                                     <span className="material-symbols-rounded text-sm text-slate-400">location_on</span>
                                                                     <div className="min-w-0">
-                                                                        <p className="text-[10px] font-bold text-slate-900 dark:text-white truncate">{s.name}</p>
-                                                                        <p className="text-[8px] font-bold text-slate-400 uppercase">{(s as any).parentName || s.type}</p>
+                                                                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{s.name}</p>
+                                                                        <p className="text-xs font-bold text-slate-400 uppercase">{(s as any).parentName || s.type}</p>
                                                                     </div>
                                                                 </button>
                                                             ))}
@@ -940,8 +940,8 @@ export default function BasicInfoEditor() {
                                             {/* 선택된 여행지 목록 - 위치 이동 (검색창 하단) */}
                                             <div className="space-y-2 pt-1.5 border-t border-slate-200 dark:border-slate-800">
                                                 <div className="flex items-center justify-between px-0.5">
-                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">선택된 여행지</p>
-                                                    <span className="text-[8px] font-bold text-primary opacity-60 italic">Location Storage</span>
+                                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">선택된 여행지</p>
+                                                    <span className="text-xs font-bold text-primary opacity-60 italic">Location Storage</span>
                                                 </div>
                                                 
                                                 {((trip.locations?.regions?.length ?? 0) > 0 || (trip.locations?.regionNames?.length ?? 0) > 0) ? (
@@ -951,24 +951,24 @@ export default function BasicInfoEditor() {
                                                                 <span 
                                                                     key={`${region.type}-${region.id}`} 
                                                                     className={cn(
-                                                                        "px-2 py-0.5 text-[10px] font-bold rounded-lg flex items-center gap-1 border transition-all shrink-0 shadow-sm animate-in fade-in zoom-in duration-300",
+                                                                        "px-2 py-0.5 text-xs font-bold rounded-lg flex items-center gap-1 border transition-all shrink-0 shadow-sm animate-in fade-in zoom-in duration-300",
                                                                         region.type === 'country' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30' :
                                                                         region.type === 'prefecture' ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30' :
                                                                         'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/30'
                                                                     )}
                                                                 >
                                                                     {region.name}
-                                                                    <button onClick={(e) => { e.stopPropagation(); removeLocation(String(region.id)); }} className="material-symbols-rounded text-[14px] opacity-40 hover:opacity-100 font-black hover:text-red-500 transition-colors">close</button>
+                                                                    <button onClick={(e) => { e.stopPropagation(); removeLocation(String(region.id)); }} className="material-symbols-rounded text-[14px] opacity-40 hover:opacity-100 font-semibold hover:text-red-500 transition-colors">close</button>
                                                                 </span>
                                                             ))
                                                         ) : (
                                                             trip.locations!.regionNames!.map((name) => (
                                                                 <span 
                                                                     key={name} 
-                                                                    className="px-2 py-0.5 text-[10px] font-bold rounded-lg flex items-center gap-1 border border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 shadow-sm shrink-0"
+                                                                    className="px-2 py-0.5 text-xs font-bold rounded-lg flex items-center gap-1 border border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 shadow-sm shrink-0"
                                                                 >
                                                                     {name}
-                                                                    <button onClick={(e) => { e.stopPropagation(); removeLocation(name); }} className="material-symbols-rounded text-[14px] opacity-40 hover:opacity-100 font-black hover:text-red-500 transition-colors">close</button>
+                                                                    <button onClick={(e) => { e.stopPropagation(); removeLocation(name); }} className="material-symbols-rounded text-[14px] opacity-40 hover:opacity-100 font-semibold hover:text-red-500 transition-colors">close</button>
                                                                 </span>
                                                             ))
                                                         )}
@@ -976,7 +976,7 @@ export default function BasicInfoEditor() {
                                                 ) : (
                                                     <div className="py-6 flex flex-col items-center justify-center gap-2 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
                                                         <span className="material-symbols-rounded text-2xl text-slate-300">location_off</span>
-                                                        <p className="text-[10px] font-bold text-slate-400">아직 추가된 여행지가 없습니다.</p>
+                                                        <p className="text-xs font-bold text-slate-400">아직 추가된 여행지가 없습니다.</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -992,18 +992,18 @@ export default function BasicInfoEditor() {
                 {!isGuest && (
                     <div className="xl:col-span-7 flex flex-col gap-3 h-full">
                         <div className="flex items-center justify-between px-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <span className="material-symbols-rounded text-sm">map</span>
                                 인터랙티브 여행 지도
                             </label>
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-1">
                                     <span className="w-2 h-2 rounded-full bg-primary" />
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">일정</span>
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">일정</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <span className="w-2 h-2 rounded-full bg-blue-500" />
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">마커</span>
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">마커</span>
                                 </div>
                             </div>
                         </div>

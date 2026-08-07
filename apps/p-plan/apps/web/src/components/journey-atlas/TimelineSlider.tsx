@@ -74,8 +74,8 @@ export default function TimelineSlider({
         {/* 슬라이더 영역 */}
         <div className="flex-1 w-full flex flex-col gap-3">
           <div className="flex items-center justify-between px-1">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase">Timeline</span>
-            <span className="text-xs font-black text-primary tabular-nums">
+            <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase">Timeline</span>
+            <span className="text-xs font-semibold text-primary tabular-nums">
               {currentDateLabel}
             </span>
           </div>
@@ -110,10 +110,10 @@ export default function TimelineSlider({
           </div>
 
           <div className="flex justify-between px-1">
-            <span className="text-[9px] font-black text-slate-300 dark:text-slate-700">
+            <span className="text-xs font-semibold text-slate-300 dark:text-slate-700">
               {tripMeta.length > 0 ? new Date(start).getFullYear() : ''}
             </span>
-            <span className="text-[9px] font-black text-slate-300 dark:text-slate-700">
+            <span className="text-xs font-semibold text-slate-300 dark:text-slate-700">
               {tripMeta.length > 0 ? new Date(end).getFullYear() : ''}
             </span>
           </div>

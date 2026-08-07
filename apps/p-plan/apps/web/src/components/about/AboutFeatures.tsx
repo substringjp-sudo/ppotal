@@ -73,11 +73,11 @@ export default function AboutFeatures() {
                     <motion.span
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4 inline-block"
+                        className="text-xs font-semibold text-primary uppercase tracking-[0.3em] mb-4 inline-block"
                     >
                         점검 항목 전체 보기
                     </motion.span>
-                    <h2 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+                    <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white leading-tight">
                         여행 준비, 이렇게까지 확인합니다
                     </h2>
                 </div>
@@ -95,7 +95,7 @@ export default function AboutFeatures() {
                             <div className={`w-12 h-12 rounded-2xl ${f.bg} ${f.color} flex items-center justify-center mb-5`}>
                                 {f.icon}
                             </div>
-                            <h3 className="text-base font-black text-slate-900 dark:text-white mb-2">{f.title}</h3>
+                            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">{f.title}</h3>
                             <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
                         </motion.div>
                     ))}

@@ -144,12 +144,12 @@ export default function TravelogListPageClient() {
 
     if (!user) return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 p-6 text-center">
-            <div className="w-20 h-20 rounded-[32px] bg-primary/10 flex items-center justify-center text-primary mb-8">
+            <div className="w-20 h-20 rounded-[20px] bg-primary/10 flex items-center justify-center text-primary mb-8">
                 <span className="material-symbols-rounded text-4xl">auto_stories</span>
             </div>
-            <h1 className="text-3xl font-black mb-4 tracking-tighter">당신의 발자취를 <span className="text-primary italic">기록하세요</span></h1>
+            <h1 className="text-3xl font-bold mb-4 tracking-tighter">당신의 발자취를 <span className="text-primary italic">기록하세요</span></h1>
             <p className="text-slate-400 font-bold mb-8 max-w-sm">로그인하여 당신의 여행을 블로그처럼 아름답게 남겨보세요.</p>
-            <button onClick={() => loginWithGoogle()} className="px-8 py-4 bg-primary text-white font-black rounded-2xl transition-all shadow-xl shadow-primary/30">Google 로그인</button>
+            <button onClick={() => loginWithGoogle()} className="px-8 py-4 bg-primary text-white font-semibold rounded-2xl transition-all shadow-xl shadow-primary/30">Google 로그인</button>
         </div>
     );
 
@@ -202,16 +202,16 @@ export default function TravelogListPageClient() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setIsTripSelectOpen(true)}
-                                className="h-7 px-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-[9px] font-black shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
+                                className="h-7 px-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-semibold shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
                             >
-                                <span className="material-symbols-rounded font-black text-xs">auto_fix</span>
+                                <span className="material-symbols-rounded font-semibold text-xs">auto_fix</span>
                                 <span className="hidden sm:inline">여행 가져오기</span>
                             </button>
                             <button
                                 onClick={() => handleCreateScratch()}
-                                className="h-7 px-3 bg-primary text-white rounded-full text-[9px] font-black shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
+                                className="h-7 px-3 bg-primary text-white rounded-full text-xs font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
                             >
-                                <span className="material-symbols-rounded font-black text-xs">edit_square</span>
+                                <span className="material-symbols-rounded font-semibold text-xs">edit_square</span>
                                 <span className="hidden sm:inline">새 기록 작성</span>
                             </button>
                         </div>
@@ -228,7 +228,7 @@ export default function TravelogListPageClient() {
                             }
                           }}
                           className={cn(
-                            "h-7 px-2.5 rounded-full font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-2 border",
+                            "h-7 px-2.5 rounded-full font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-2 border",
                             isSelectionMode 
                               ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                               : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:text-primary"
@@ -241,7 +241,7 @@ export default function TravelogListPageClient() {
                         <button 
                           onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
                           className={cn(
-                            "h-7 px-2.5 rounded-full font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-2 border",
+                            "h-7 px-2.5 rounded-full font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-2 border",
                             isFiltersExpanded 
                               ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                               : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:text-primary"
@@ -257,11 +257,11 @@ export default function TravelogListPageClient() {
                     <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-[24px] border border-slate-200/50 dark:border-slate-800 shadow-sm">
                         <div className="flex flex-wrap items-center gap-6">
                             <div className="space-y-1.5">
-                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">정렬 기준</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">정렬 기준</label>
                                 <select 
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="h-8 px-3 py-0 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer min-w-[140px]"
+                                    className="h-8 px-3 py-0 bg-white dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer min-w-[140px]"
                                 >
                                     <option value="newest">최신순</option>
                                     <option value="oldest">오래된순</option>
@@ -269,14 +269,14 @@ export default function TravelogListPageClient() {
                                 </select>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">테마</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">테마</label>
                                 <div className="flex items-center gap-1">
                                     {['전체', '도시', '자연', '음식'].map(theme => (
                                         <button 
                                             key={theme}
                                             onClick={() => setSelectedTheme(theme)}
                                             className={cn(
-                                                "px-3 py-1.5 rounded-lg text-[9px] font-black transition-all border shadow-sm",
+                                                "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border shadow-sm",
                                                 selectedTheme === theme 
                                                     ? "bg-primary text-white border-primary" 
                                                     : "bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-600"
@@ -302,7 +302,7 @@ export default function TravelogListPageClient() {
                                 <div className="absolute inset-0 border-4 border-t-primary rounded-full animate-spin" />
                                 <div className="absolute inset-2 border-4 border-b-primary/40 rounded-full animate-spin-slow" />
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] animate-pulse">기록 동기화 중...</p>
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.3em] animate-pulse">기록 동기화 중...</p>
                         </motion.div>
                     ) : filteredLogs.length === 0 ? (
                         <motion.div 
@@ -312,7 +312,7 @@ export default function TravelogListPageClient() {
                             <div className="w-32 h-32 bg-slate-50 dark:bg-slate-900 rounded-[48px] flex items-center justify-center mb-8">
                                 <span className="material-symbols-rounded text-5xl text-primary/20">auto_stories</span>
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 italic">
                                 {searchQuery ? '검색 결과 없음' : '아직 기록이 없습니다'}
                             </h3>
                             <p className="text-sm text-slate-400 font-bold mb-8">
@@ -322,7 +322,7 @@ export default function TravelogListPageClient() {
                             </p>
                             <button 
                                 onClick={() => handleCreateScratch()}
-                                className="group relative px-10 py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-900 rounded-[24px] font-black text-sm overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-slate-200 dark:shadow-none"
+                                className="group relative px-10 py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-900 rounded-[24px] font-semibold text-sm overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-slate-200 dark:shadow-none"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 <span className="relative z-10 flex items-center gap-2">

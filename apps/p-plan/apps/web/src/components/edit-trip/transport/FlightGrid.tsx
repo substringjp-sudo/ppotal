@@ -18,7 +18,7 @@ function FormSection({ title, children, icon }: { title: string, children: React
         <div className="space-y-3 p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-800 transition-all hover:bg-slate-50 dark:hover:bg-slate-800/40">
             <div className="flex items-center gap-2 px-1">
                 {icon && <span className="material-symbols-rounded text-[16px] text-primary/60">{icon}</span>}
-                <h4 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">{title}</h4>
+                <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">{title}</h4>
             </div>
             <div className="bg-white dark:bg-slate-900/50 rounded-xl p-3 border border-slate-200 dark:border-slate-800 shadow-sm">
                 {children}
@@ -42,19 +42,19 @@ function FlightSegmentRow({ segment, icon = 'flight_takeoff', isRoundTrip = fals
             <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                 {/* Departure */}
                 <div className="flex flex-col min-w-[60px] md:min-w-[75px]">
-                    <span className="text-sm md:text-base font-black text-slate-800 dark:text-slate-100 leading-tight">
+                    <span className="text-sm md:text-base font-semibold text-slate-800 dark:text-slate-100 leading-tight">
                         {segment.departureTime || '--:--'}
                     </span>
                     <div className="flex flex-col items-start leading-tight">
-                        <span className="text-[10px] md:text-[11px] font-black text-slate-500 uppercase tracking-tight">{segment.departureLocation || '???'}</span>
-                        {depCity && <span className="text-[9px] font-bold text-slate-400 truncate">({depCity})</span>}
+                        <span className="text-xs md:text-xs font-semibold text-slate-500 uppercase tracking-tight">{segment.departureLocation || '???'}</span>
+                        {depCity && <span className="text-xs font-bold text-slate-400 truncate">({depCity})</span>}
                     </div>
                 </div>
 
                 {/* Path / Duration */}
                 <div className="flex flex-col items-center flex-1 px-2 relative">
                     {segment.flightDurationMinutes ? (
-                        <span className="text-[9px] font-black text-primary bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-primary/10 shadow-sm whitespace-nowrap italic mb-1">
+                        <span className="text-xs font-semibold text-primary bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-primary/10 shadow-sm whitespace-nowrap italic mb-1">
                              {Math.floor(segment.flightDurationMinutes / 60)}시간 {segment.flightDurationMinutes % 60}분
                         </span>
                     ) : null}
@@ -70,7 +70,7 @@ function FlightSegmentRow({ segment, icon = 'flight_takeoff', isRoundTrip = fals
 
                 {/* Arrival */}
                 <div className="flex flex-col min-w-[60px] md:min-w-[75px] text-right">
-                    <span className="text-sm md:text-base font-black text-slate-800 dark:text-slate-100 leading-tight flex items-center justify-end gap-1">
+                    <span className="text-sm md:text-base font-semibold text-slate-800 dark:text-slate-100 leading-tight flex items-center justify-end gap-1">
                         {segment.arrivalTime || '--:--'}
                         {(() => {
                             const depA = AIRPORTS.find(a => a.code === segment.departureLocation);
@@ -82,15 +82,15 @@ function FlightSegmentRow({ segment, icon = 'flight_takeoff', isRoundTrip = fals
                             const dayOffset = Math.floor(totalOriginMins / 1440);
                             if (dayOffset <= 0) return null;
                             return (
-                                <span className="text-[9px] font-black text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-1 rounded ml-0.5">
+                                <span className="text-xs font-semibold text-rose-500 bg-rose-50 dark:bg-rose-950/30 px-1 rounded ml-0.5">
                                      +{dayOffset}일
                                 </span>
                             );
                         })()}
                     </span>
                     <div className="flex flex-col items-end justify-end leading-tight">
-                        <span className="text-[10px] md:text-[11px] font-black text-slate-500 uppercase tracking-tight">{segment.arrivalLocation || '???'}</span>
-                        {arrCity && <span className="text-[9px] font-bold text-slate-400 truncate">({arrCity})</span>}
+                        <span className="text-xs md:text-xs font-semibold text-slate-500 uppercase tracking-tight">{segment.arrivalLocation || '???'}</span>
+                        {arrCity && <span className="text-xs font-bold text-slate-400 truncate">({arrCity})</span>}
                     </div>
                 </div>
             </div>
@@ -108,16 +108,16 @@ function AirportInfo({ code }: { code?: string }) {
     
     return (
         <div className="flex flex-col gap-1 mt-1.5 px-2">
-            <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[10px] font-bold text-slate-400">
+            <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs font-bold text-slate-400">
                 <div className="flex items-center gap-1 shrink-0 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
-                    <span className="material-symbols-rounded text-[12px] text-slate-400">public</span>
+                    <span className="material-symbols-rounded text-xs text-slate-400">public</span>
                     <span className="whitespace-nowrap">{info.regionIds.countryName}</span>
-                    <span className="text-[9px] opacity-70 font-medium ml-0.5">({info.timezone >= 0 ? `+${info.timezone}` : info.timezone})</span>
+                    <span className="text-xs opacity-70 font-medium ml-0.5">({info.timezone >= 0 ? `+${info.timezone}` : info.timezone})</span>
                 </div>
                 
                 {info.regionIds.cityName && (!nameIncludesCity) && (
                     <div className="flex items-center gap-1 min-w-0 overflow-hidden bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
-                        <span className="material-symbols-rounded text-[12px] text-slate-400 shrink-0">location_city</span>
+                        <span className="material-symbols-rounded text-xs text-slate-400 shrink-0">location_city</span>
                         <span className="truncate">{info.regionIds.cityName}</span>
                     </div>
                 )}
@@ -202,7 +202,7 @@ export function FlightGrid() {
                 </div>
                 <button
                     onClick={() => addFlight('other')}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black text-slate-800 dark:text-slate-200 hover:border-primary/30 hover:bg-primary/5 transition-all shadow-sm uppercase tracking-widest"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-800 dark:text-slate-200 hover:border-primary/30 hover:bg-primary/5 transition-all shadow-sm uppercase tracking-widest"
                 >
                     <span className="material-symbols-rounded text-lg">add</span>
                     항공편 추가하기
@@ -290,10 +290,10 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                             </span>
                         </div>
                         <div className="flex flex-col">
-                            <span className={cn("text-[10px] font-black uppercase tracking-widest leading-tight", isInbound ? "text-emerald-600 dark:text-emerald-400" : "text-primary")}>
+                            <span className={cn("text-xs font-semibold uppercase tracking-widest leading-tight", isInbound ? "text-emerald-600 dark:text-emerald-400" : "text-primary")}>
                                 {isInbound ? "귀국편" : "출국편"}
                             </span>
-                            <span className={cn("text-[13px] font-black", isInbound ? "text-emerald-700 dark:text-emerald-300" : "text-slate-800 dark:text-slate-200")}>
+                            <span className={cn("text-[13px] font-semibold", isInbound ? "text-emerald-700 dark:text-emerald-300" : "text-slate-800 dark:text-slate-200")}>
                                 {isInbound ? "귀국편 세부 정보" : "출국편 세부 정보"}
                             </span>
                         </div>
@@ -304,7 +304,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                 <FormSection title="일정 및 시간" icon="calendar_today">
                     <div className="grid grid-cols-12 gap-5">
                         <div className="col-span-12 space-y-1.5 font-bold">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">탑승 날짜</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">탑승 날짜</label>
                             <RestrictedDatePicker
                                 value={target.date}
                                 onChange={(v) => updateFlight(target.id, { date: v })}
@@ -405,10 +405,10 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                             align="left"
                         />
                         <div className="space-y-1.5 w-full">
-                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">편명</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase ml-1">편명</label>
                             <div className="flex items-center bg-slate-50 dark:bg-slate-900 rounded-2xl px-4 h-[48px] border border-slate-200 dark:border-slate-800 focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-inner">
                                 {targetAirline?.code && (
-                                    <span className="text-xs font-black text-primary mr-2 opacity-50">
+                                    <span className="text-xs font-semibold text-primary mr-2 opacity-50">
                                         {targetAirline.code}
                                     </span>
                                 )}
@@ -449,7 +449,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                     <AirportInfo code={layover.airportCode} />
                                 </div>
                                 <div className="w-24 space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">대기 시간</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase ml-1">대기 시간</label>
                                     <div className="flex items-center px-2 h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
                                         <input
                                             type="number"
@@ -462,7 +462,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                             className="w-full bg-transparent outline-none text-xs font-bold text-right pr-1"
                                             placeholder="0"
                                         />
-                                        <span className="text-[9px] font-black text-slate-400 shrink-0 uppercase">분</span>
+                                        <span className="text-xs font-semibold text-slate-400 shrink-0 uppercase">분</span>
                                     </div>
                                 </div>
                                 <button 
@@ -481,7 +481,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                 const newLayovers = [...(target.layovers || []), { id: Math.random().toString(36).substr(2, 9), airportCode: '' }];
                                 updateFlight(target.id, { layovers: newLayovers });
                             }}
-                            className="w-full py-2.5 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-[10px] font-black text-slate-500 transition-colors uppercase tracking-[0.2em]"
+                            className="w-full py-2.5 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-500 transition-colors uppercase tracking-[0.2em]"
                         >
                             + 경유지 추가
                         </button>
@@ -505,27 +505,27 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                 <div className="flex-1 min-w-0 space-y-3">
                     {/* Top Row: General Info & Badges */}
                     <div className="flex items-center flex-wrap gap-2">
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
+                        <span className="text-xs font-semibold text-primary uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
                             {flight.type === 'outbound' ? '출국' : flight.type === 'inbound' ? '귀국' : '일반'}
                         </span>
                         {flight.isRoundTrip && (
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800/50">
+                            <span className="text-xs font-semibold text-emerald-500 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800/50">
                                 왕복여정
                             </span>
                         )}
                         {(flight.isInternational || (flight.departureLocation && flight.arrivalLocation && 
                             AIRPORTS.find(a => a.code === flight.departureLocation)?.regionIds.countryId !== AIRPORTS.find(a => a.code === flight.arrivalLocation)?.regionIds.countryId)) && (
-                            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50">
+                            <span className="text-xs font-semibold text-indigo-500 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50">
                                 국제선
                             </span>
                         )}
                         <div className="h-3 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-100">
+                            <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                                 {flight.airline || '항공사 선택'}
                             </span>
                             {flight.flightNumber && (
-                                <span className="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded">
+                                <span className="text-xs font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded">
                                     {flight.flightNumber}
                                 </span>
                             )}
@@ -566,13 +566,13 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                 updateFlight(flight.id, { isBooked: !flight.isBooked });
                             }}
                             className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest border-2 shrink-0",
+                                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl transition-all font-semibold text-xs uppercase tracking-widest border-2 shrink-0",
                                 flight.isBooked 
                                     ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20" 
                                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"
                             )}
                         >
-                            <span className="material-symbols-rounded text-base font-black">
+                            <span className="material-symbols-rounded text-base font-semibold">
                                 {flight.isBooked ? 'verified' : 'radio_button_unchecked'}
                             </span>
                             <span className="whitespace-nowrap">{flight.isBooked ? '예약 완료' : '예약 처리'}</span>
@@ -583,7 +583,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                         "w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-800 transition-all shadow-sm shrink-0",
                         isExpanded ? "bg-primary text-white scale-110" : "bg-white text-slate-300 dark:bg-slate-800"
                     )}>
-                        <span className="material-symbols-rounded text-[20px] font-black">
+                        <span className="material-symbols-rounded text-[20px] font-semibold">
                             {isExpanded ? 'close' : 'expand_more'}
                         </span>
                     </div>
@@ -608,18 +608,18 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                         <div className="p-6 md:p-8 space-y-8 bg-slate-50/30 dark:bg-slate-900/30">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1.5 rounded-full border border-primary/10">
+                                    <span className="text-xs font-semibold text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1.5 rounded-full border border-primary/10">
                                         {flight.isRoundTrip ? '왕복 항공편' : (flight.type === 'outbound' ? '출국 비행기' : flight.type === 'inbound' ? '귀국 비행기' : '기타 비행기')}
                                     </span>
                                     {flight.isRoundTrip && (
-                                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-800">
+                                        <span className="text-xs font-semibold text-emerald-500 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-800">
                                             연결됨
                                         </span>
                                     )}
                                 </div>
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); removeFlight(flight.id); }} 
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                                 >
                                     <span className="material-symbols-rounded text-[16px]">delete</span>
                                     삭제하기
@@ -719,7 +719,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2">
                                             <span className="material-symbols-rounded text-slate-400">confirmation_number</span>
-                                            <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
+                                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
                                         </div>
                                         <CustomCheckbox
                                             checked={!!flight.isBooked}
@@ -732,7 +732,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                     </div>
                                     <button
                                         onClick={() => addRes('flight', flight.id)}
-                                        className="text-[10px] font-black text-white px-4 py-2 bg-slate-900 dark:bg-slate-700 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm uppercase tracking-widest"
+                                        className="text-xs font-semibold text-white px-4 py-2 bg-slate-900 dark:bg-slate-700 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm uppercase tracking-widest"
                                     >
                                         예약 정보 추가
                                     </button>

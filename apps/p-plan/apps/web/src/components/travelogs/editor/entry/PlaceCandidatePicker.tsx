@@ -52,7 +52,7 @@ export default function PlaceCandidatePicker({
                 className="w-full sm:max-w-md max-h-[80vh] rounded-t-3xl sm:rounded-3xl bg-white dark:bg-slate-900 shadow-2xl flex flex-col overflow-hidden"
             >
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white">여기가 어디였나요?</h3>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">여기가 어디였나요?</h3>
                     <button onClick={onClose} className="w-8 h-8 rounded-lg grid place-items-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="닫기">
                         <span className="material-symbols-rounded text-lg">close</span>
                     </button>
@@ -82,8 +82,8 @@ export default function PlaceCandidatePicker({
                                             </span>
                                         </span>
                                         <span className="min-w-0 flex-1">
-                                            <span className="block text-sm font-black text-slate-900 dark:text-white truncate">{c.name}</span>
-                                            <span className="block text-[11px] font-semibold text-slate-400 truncate">
+                                            <span className="block text-sm font-semibold text-slate-900 dark:text-white truncate">{c.name}</span>
+                                            <span className="block text-xs font-semibold text-slate-400 truncate">
                                                 {[
                                                     c.distanceMeters != null ? `${c.distanceMeters}m` : null,
                                                     c.reason,
@@ -111,7 +111,7 @@ export default function PlaceCandidatePicker({
                     />
                     <button
                         onClick={() => { if (manual.trim()) { onPick({ name: manual.trim() }); onClose(); } }}
-                        className="rounded-xl bg-primary px-4 text-xs font-black text-white shrink-0"
+                        className="rounded-xl bg-primary px-4 text-xs font-semibold text-white shrink-0"
                     >
                         확인
                     </button>

@@ -37,11 +37,11 @@ export default function WishlistWidget() {
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className="material-symbols-rounded text-indigo-500 font-variation-bold text-xl" aria-hidden="true">favorite</span>
-                    <h3 id="wishlist-widget-title" className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest italic">위시리스트</h3>
+                    <h3 id="wishlist-widget-title" className="text-sm font-semibold text-slate-800 dark:text-white uppercase tracking-widest italic">위시리스트</h3>
                 </div>
                 <Link
                     href={trip ? `/wishlist?tripId=${trip.id}` : "/wishlist"}
-                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors flex items-center gap-1"
+                    className="text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors flex items-center gap-1"
                     aria-label="위시리스트 전체 보기"
                 >
                     전체 보기 <ChevronRight className="w-3 h-3" aria-hidden="true" />
@@ -75,12 +75,12 @@ export default function WishlistWidget() {
                                         <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.title}</p>
                                         <div className="flex items-center gap-2 mt-0.5">
                                             {item.mainCategory && (
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                                                     {CATEGORY_MAP[item.mainCategory].label}
                                                 </span>
                                             )}
                                             {item.price && (
-                                                <span className="text-[10px] font-black text-indigo-500 italic">
+                                                <span className="text-xs font-semibold text-indigo-500 italic">
                                                     ₩{item.price.toLocaleString()}
                                                 </span>
                                             )}
@@ -95,7 +95,7 @@ export default function WishlistWidget() {
                         <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300" aria-hidden="true">
                             <Plus className="w-6 h-6" />
                         </div>
-                        <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest leading-relaxed">
+                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest leading-relaxed">
                             하고 싶은 것들을 <br />
                             리스트에 담아보세요
                         </p>
@@ -106,7 +106,7 @@ export default function WishlistWidget() {
             <div className="p-4 bg-slate-50/30 dark:bg-slate-800/20 border-t border-slate-200 dark:border-slate-800">
                 <button
                     onClick={() => setIsEditorOpen(true)}
-                    className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95"
+                    className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95"
                 >
                     <Plus className="w-3 h-3" aria-hidden="true" /> 아이템 추가하기
                 </button>

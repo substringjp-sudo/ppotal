@@ -91,7 +91,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                             stiffness: 260,
                             mass: 0.9
                         }}
-                        className="relative w-[calc(100%-48px)] max-w-3xl h-[calc(100%-80px)] max-h-[850px] bg-white dark:bg-slate-900 rounded-[32px] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.4)] border border-slate-200/50 dark:border-slate-800 overflow-hidden flex flex-col z-[151]"
+                        className="relative w-[calc(100%-48px)] max-w-3xl h-[calc(100%-80px)] max-h-[850px] bg-white dark:bg-slate-900 rounded-[28px] shadow-[0_32px_80px_-20px_rgba(0,0,0,0.4)] border border-slate-200/50 dark:border-slate-800 overflow-hidden flex flex-col z-[151]"
                     >
                         {!isAutoFlight ? (
                             <SimpleEventEditor 
@@ -106,14 +106,14 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                 {/* Header */}
                                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
                                     <div className="flex flex-col gap-1">
-                                        <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                             <span className="material-symbols-rounded text-primary">edit_calendar</span>
                                             항공편 자동 수속 일정
                                         </h3>
                                         {(dateStr || dayIdx !== undefined) && (
                                             <div className="flex items-center gap-1.5">
                                                 <Calendar className="w-3.5 h-3.5 text-primary" />
-                                                <span className="text-sm font-black text-primary uppercase tracking-tight">
+                                                <span className="text-sm font-semibold text-primary uppercase tracking-tight">
                                                     {dayIdx !== undefined ? `Day ${dayIdx + 1}` : ''}
                                                     {dayIdx !== undefined && dateStr ? ' • ' : ''}
                                                     {formatDateWithDay(dateStr)}
@@ -129,15 +129,15 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                 {/* Content */}
                                 <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                                     <div className="space-y-6">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">위치 정보</label>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">위치 정보</label>
                                         <div className="p-6 bg-sky-50 dark:bg-sky-900/10 rounded-[28px] border border-sky-100 dark:border-sky-800/50 space-y-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-12 h-12 rounded-2xl bg-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
                                                     <span className="material-symbols-rounded text-2xl">flight</span>
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-base font-black text-slate-900 dark:text-white">항공편 상세 정보</h4>
-                                                    <p className="text-[10px] font-bold text-sky-500 uppercase tracking-widest">자동 생성된 일정입니다</p>
+                                                    <h4 className="text-base font-semibold text-slate-900 dark:text-white">항공편 상세 정보</h4>
+                                                    <p className="text-xs font-bold text-sky-500 uppercase tracking-widest">자동 생성된 일정입니다</p>
                                                 </div>
                                             </div>
                                             <div className="p-5 bg-white dark:bg-slate-900/50 rounded-2xl border border-sky-100/50 dark:border-sky-800/30">
@@ -145,7 +145,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                     <span className="material-symbols-rounded text-slate-400">location_on</span>
                                                     <div className="flex-1">
                                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter mb-0.5">공항</p>
-                                                        <p className="text-sm font-black text-slate-900 dark:text-white italic">{event?.location?.name}</p>
+                                                        <p className="text-sm font-semibold text-slate-900 dark:text-white italic">{event?.location?.name}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -157,13 +157,13 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                                                             <span className="material-symbols-rounded text-xl">more_time</span>
                                                         </div>
-                                                        <label className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                                                        <label className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-widest">
                                                             {isDepartureFlightSegment ? '수속 예상 시간 (분)' : '도착 수속 시간 (분)'}
                                                         </label>
                                                     </div>
                                                     <button
                                                         onClick={() => setIsInternational(!isInternational)}
-                                                        className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all ${isInternational
+                                                        className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest transition-all ${isInternational
                                                             ? 'bg-primary text-white shadow-lg shadow-primary/20'
                                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                                                         }`}
@@ -183,9 +183,9 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                                     if (isDepartureFlightSegment) setPrepDuration(val);
                                                                     else setEntryDuration(val);
                                                                 }}
-                                                                className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/30 rounded-xl text-2xl font-black p-4 pr-14 outline-none transition-all"
+                                                                className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/30 rounded-xl text-2xl font-bold p-4 pr-14 outline-none transition-all"
                                                             />
-                                                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-slate-300">MIN</span>
+                                                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-300">MIN</span>
                                                         </div>
                                                         
                                                         <div className="flex gap-2">
@@ -193,7 +193,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                                 <button
                                                                     key={mins}
                                                                     onClick={() => isDepartureFlightSegment ? setPrepDuration(mins) : setEntryDuration(mins)}
-                                                                    className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${
+                                                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
                                                                         (isDepartureFlightSegment ? prepDuration : entryDuration) === mins
                                                                             ? 'bg-primary text-white'
                                                                             : 'bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-slate-100'
@@ -206,13 +206,13 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                     </div>
 
                                                     <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col justify-center gap-2">
-                                                        <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                        <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-widest">
                                                             <span>예상 {isDepartureFlightSegment ? '수속 시작' : '수속 종료'}</span>
                                                             <span className="text-primary">{isDepartureFlightSegment ? '이륙 시간 (고정)' : '착륙 시간 (고정)'}</span>
                                                         </div>
                                                         <div className="flex items-center gap-4">
                                                             <div className="flex-1 text-center">
-                                                                <p className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+                                                                <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
                                                                     {isDepartureFlightSegment 
                                                                         ? (() => {
                                                                             const anchor = event?.endTime || '00:00';
@@ -225,11 +225,11 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                                         : (event?.startTime)
                                                                     }
                                                                 </p>
-                                                                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">Start</p>
+                                                                <p className="text-xs font-bold text-slate-400 mt-1 uppercase">Start</p>
                                                             </div>
                                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 opacity-50" />
                                                             <div className="flex-1 text-center">
-                                                                <p className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+                                                                <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
                                                                     {isDepartureFlightSegment 
                                                                         ? (event?.endTime)
                                                                         : (() => {
@@ -242,13 +242,13 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                                         })()
                                                                     }
                                                                 </p>
-                                                                <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">End</p>
+                                                                <p className="text-xs font-bold text-slate-400 mt-1 uppercase">End</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <p className="text-[11px] font-medium text-slate-400 italic text-center p-2 leading-relaxed">
+                                                <p className="text-xs font-medium text-slate-400 italic text-center p-2 leading-relaxed">
                                                     {isDepartureFlightSegment 
                                                         ? `항공편 ${isInternational ? '출발 2시간 전' : '출발 1시간 전'} 권장 시간을 참고하여 조정해 보세요.` 
                                                         : `착륙 후 입국 심사 및 수하물 수령에 소요되는 시간을 설정합니다.`}
@@ -260,7 +260,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                     onNavigateToSection?.('transport');
                                                     onClose();
                                                 }}
-                                                className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-sky-500/20 transition-all flex items-center justify-center gap-2 group"
+                                                className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-xs font-semibold uppercase tracking-widest shadow-xl shadow-sky-500/20 transition-all flex items-center justify-center gap-2 group"
                                             >
                                                 <span className="material-symbols-rounded text-sm transition-transform group-hover:translate-x-1">rocket_launch</span>
                                                 항공편 수정으로 이동
@@ -273,7 +273,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                 <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-4">
                                     <button
                                         onClick={onClose}
-                                        className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                        className="flex-1 py-4 text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                                     >
                                         취소하기
                                     </button>
@@ -286,7 +286,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                             onSave(updates);
                                             onClose();
                                         }}
-                                        className="flex-[2] py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                        className="flex-[2] py-4 bg-primary text-white rounded-2xl text-xs font-semibold uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                                     >
                                         설정 저장하기
                                     </button>

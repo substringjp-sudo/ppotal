@@ -161,7 +161,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                     <div className="p-8 pb-0 shrink-0 border-b border-slate-200 dark:border-slate-800">
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <Globe className="w-6 h-6 text-primary" />
                                     프로필 및 인사이트
                                 </h2>
@@ -175,7 +175,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         <div className="flex gap-4 mb-4">
                             <button 
                                 onClick={() => setActiveTab('settings')}
-                                className={`flex items-center gap-2 pb-3 px-1 text-sm font-black transition-all relative ${
+                                className={`flex items-center gap-2 pb-3 px-1 text-sm font-semibold transition-all relative ${
                                     activeTab === 'settings' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'
                                 }`}
                             >
@@ -187,7 +187,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             </button>
                             <button 
                                 onClick={() => setActiveTab('stats')}
-                                className={`flex items-center gap-2 pb-3 px-1 text-sm font-black transition-all relative ${
+                                className={`flex items-center gap-2 pb-3 px-1 text-sm font-semibold transition-all relative ${
                                     activeTab === 'stats' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'
                                 }`}
                             >
@@ -205,7 +205,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             <div className="space-y-6">
                             {/* 이름 */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">사용자 이름</label>
+                                <label className="text-xs font-semibold text-slate-400 uppercase ml-1">사용자 이름</label>
                                 <input
                                     type="text"
                                     value={profile.displayName}
@@ -256,7 +256,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             />
                             {/* 선호 통화 */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1 flex items-center gap-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase ml-1 flex items-center gap-1">
                                     <Coins className="w-3 h-3" />
                                     선호 통화
                                 </label>
@@ -275,7 +275,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                     </div>
                                 </div>
                                 {residenceCountryRegionData?.currencies && residenceCountryRegionData.currencies.length > 0 && (
-                                    <p className="text-[10px] font-bold text-primary/70 ml-1">
+                                    <p className="text-xs font-bold text-primary/70 ml-1">
                                         💡 {profile.residenceCountry}의 기본 통화는 {residenceCountryRegionData.currencies.join(', ')}입니다.
                                     </p>
                                 )}
@@ -284,11 +284,11 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             {/* 여행 스타일 섹션 */}
                             <div className="space-y-6 pt-4 border-t border-slate-200 dark:border-slate-800">
                                 <div className="space-y-1">
-                                    <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase flex items-center gap-2">
+                                    <h3 className="text-xs font-semibold text-slate-900 dark:text-white uppercase flex items-center gap-2">
                                         <Ghost className="w-3.5 h-3.5 text-primary" />
                                         여행 스타일 설정
                                     </h3>
-                                    <p className="text-[10px] font-bold text-slate-400">스타일에 맞춰 시스템이 일정을 검토하고 경고를 조절합니다.</p>
+                                    <p className="text-xs font-bold text-slate-400">스타일에 맞춰 시스템이 일정을 검토하고 경고를 조절합니다.</p>
                                 </div>
 
                                 {/* 여행 DNA 분석 (Balanced Bar UI) */}
@@ -299,18 +299,18 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                 <BrainCircuit className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <h4 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                                <h4 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                                     여행 DNA 분석
                                                     <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                                                 </h4>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Precision AI Analysis</p>
+                                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">Precision AI Analysis</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-1">
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-[9px] font-black border border-primary/20">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/20">
                                                 AI 정밀 분석됨
                                             </span>
-                                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                                                 Last Check: {new Date((profile.metadata?.travelStats?.analysisDate || Date.now()) as any).toLocaleDateString()}
                                             </span>
                                         </div>
@@ -369,14 +369,14 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-1.5 ml-1">
                                                         <span className="text-slate-400">{dim.icon}</span>
-                                                        <span className="text-[10px] font-black text-slate-500">{dim.title}</span>
+                                                        <span className="text-xs font-semibold text-slate-500">{dim.title}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${leftPercent > 50 ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                                                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${leftPercent > 50 ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
                                                             {leftPercent}
                                                         </span>
-                                                        <span className="text-[8px] font-bold text-slate-300">:</span>
-                                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${rightPercent >= 50 ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                                                        <span className="text-xs font-bold text-slate-300">:</span>
+                                                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${rightPercent >= 50 ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
                                                             {rightPercent}
                                                         </span>
                                                     </div>
@@ -384,8 +384,8 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                 
                                                 <div className="group relative">
                                                     <div className="flex items-center justify-between mb-2 px-1">
-                                                        <span className={`text-[10px] font-black transition-all duration-500 ${leftPercent > 50 ? 'text-primary scale-110' : 'text-slate-400'}`}>{dim.left}</span>
-                                                        <span className={`text-[10px] font-black transition-all duration-500 ${rightPercent >= 50 ? 'text-primary scale-110' : 'text-slate-400'}`}>{dim.right}</span>
+                                                        <span className={`text-xs font-semibold transition-all duration-500 ${leftPercent > 50 ? 'text-primary scale-110' : 'text-slate-400'}`}>{dim.left}</span>
+                                                        <span className={`text-xs font-semibold transition-all duration-500 ${rightPercent >= 50 ? 'text-primary scale-110' : 'text-slate-400'}`}>{dim.right}</span>
                                                     </div>
                                                     
                                                     <div 
@@ -447,7 +447,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
                             {/* 즐겨찾기 공항 */}
                             <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1 flex items-center gap-1">
+                                <label className="text-xs font-semibold text-slate-400 uppercase ml-1 flex items-center gap-1">
                                     <Plane className="w-3 h-3" />
                                     즐겨찾는 공항 (최대 3개)
                                 </label>
@@ -461,10 +461,10 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                 className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl border border-transparent hover:border-primary/20 transition-all group"
                                             >
                                                 <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black text-slate-900 dark:text-white leading-tight">
+                                                    <span className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
                                                         {code}
                                                     </span>
-                                                    <span className="text-[9px] font-bold text-slate-400 truncate max-w-[80px]">
+                                                    <span className="text-xs font-bold text-slate-400 truncate max-w-[80px]">
                                                         {airport?.nameKo || '알 수 없음'}
                                                     </span>
                                                 </div>
@@ -481,7 +481,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                         );
                                     })}
                                     {profile.favoriteAirports.length === 0 && (
-                                        <p className="text-[11px] font-bold text-slate-400 italic px-1 py-1">
+                                        <p className="text-xs font-bold text-slate-400 italic px-1 py-1">
                                             공항 검색에서 별 아이콘을 눌러 추가하세요.
                                         </p>
                                     )}
@@ -493,7 +493,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                 {isStatsLoading ? (
                                     <div className="space-y-6 flex flex-col items-center justify-center py-12">
                                         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                        <p className="text-sm font-black text-slate-400">여행 데이터를 분석하는 중...</p>
+                                        <p className="text-sm font-semibold text-slate-400">여행 데이터를 분석하는 중...</p>
                                     </div>
                                 ) : stats ? (
                                     <>
@@ -502,28 +502,28 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                             <div className="p-4 bg-primary/5 dark:bg-primary/10 rounded-3xl border border-primary/10">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Plane className="w-4 h-4 text-primary" />
-                                                    <span className="text-[10px] font-black text-primary uppercase">총 여행</span>
+                                                    <span className="text-xs font-semibold text-primary uppercase">총 여행</span>
                                                 </div>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className="text-2xl font-black text-slate-900 dark:text-white">{stats.totalTrips}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400">회</span>
+                                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalTrips}</span>
+                                                    <span className="text-xs font-bold text-slate-400">회</span>
                                                 </div>
                                             </div>
                                             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <MapPin className="w-4 h-4 text-slate-400" />
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase">방문 지역</span>
+                                                    <span className="text-xs font-semibold text-slate-400 uppercase">방문 지역</span>
                                                 </div>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className="text-2xl font-black text-slate-900 dark:text-white">{stats.visitedRegions.length}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400">곳</span>
+                                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{stats.visitedRegions.length}</span>
+                                                    <span className="text-xs font-bold text-slate-400">곳</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* 상세 카테고리 통계 */}
                                         <section className="space-y-4">
-                                            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 ml-1">
+                                            <h3 className="text-xs font-semibold text-slate-900 dark:text-white uppercase flex items-center gap-2 ml-1">
                                                 <ClipboardCheck className="w-4 h-4 text-primary" />
                                                 여행 카테고리 분석
                                             </h3>
@@ -563,17 +563,17 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                         <section className="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
                                             <div className="flex items-center gap-2 mb-4">
                                                 <Bed className="w-5 h-5 text-primary" />
-                                                <h3 className="text-sm font-black text-slate-900 dark:text-white">숙박 패턴</h3>
+                                                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">숙박 패턴</h3>
                                             </div>
                                             <div className="flex justify-around items-center">
                                                 <div className="text-center">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">총 숙소 수</p>
-                                                    <p className="text-xl font-black text-slate-900 dark:text-white">{stats.stayStats.accommodationCount}</p>
+                                                    <p className="text-xs font-bold text-slate-400 uppercase">총 숙소 수</p>
+                                                    <p className="text-xl font-bold text-slate-900 dark:text-white">{stats.stayStats.accommodationCount}</p>
                                                 </div>
                                                 <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
                                                 <div className="text-center">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">선호 유형</p>
-                                                    <p className="text-sm font-black text-slate-900 dark:text-white truncate max-w-[100px]">
+                                                    <p className="text-xs font-bold text-slate-400 uppercase">선호 유형</p>
+                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate max-w-[100px]">
                                                         {Object.entries(stats.stayStats.types).sort((a,b) => b[1]-a[1])[0]?.[0] || '정보 없음'}
                                                     </p>
                                                 </div>
@@ -582,16 +582,16 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
                                         {/* 방문 국가 Top 3 */}
                                         <section className="space-y-4">
-                                            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 ml-1">
+                                            <h3 className="text-xs font-semibold text-slate-900 dark:text-white uppercase flex items-center gap-2 ml-1">
                                                 <Globe className="w-4 h-4 text-primary" />
                                                 자주 찾는 국가
                                             </h3>
                                             <div className="flex flex-wrap gap-2">
                                                 {stats.topCountries.slice(0, 5).map((country, idx) => (
                                                     <div key={idx} className="px-4 py-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center gap-2 shadow-sm">
-                                                        <span className="text-[10px] font-black text-primary">{idx + 1}</span>
+                                                        <span className="text-xs font-semibold text-primary">{idx + 1}</span>
                                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{country.name}</span>
-                                                        <span className="text-[10px] font-black bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-lg text-slate-400">{country.count}회</span>
+                                                        <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-lg text-slate-400">{country.count}회</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -603,7 +603,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                             <BarChart3 className="w-8 h-8 text-slate-300" />
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-sm font-black text-slate-600 dark:text-slate-300">표시할 데이터가 없습니다.</p>
+                                            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">표시할 데이터가 없습니다.</p>
                                             <p className="text-xs font-bold text-slate-400">첫 번째 여행을 계획해 보세요!</p>
                                         </div>
                                     </div>
@@ -617,7 +617,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                             <button 
                                 onClick={handleSave}
                                 disabled={isLoading || !profile.residenceCountry || !profile.displayName}
-                                className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/30 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100"
+                                className="w-full py-4 bg-primary text-white rounded-2xl font-semibold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100"
                             >
                                 {isLoading ? '저장 중...' : '설정 저장하기'}
                             </button>
@@ -635,13 +635,13 @@ function StatBar({ icon, label, value, color, total }: { icon: React.ReactNode, 
     
     return (
         <div className="space-y-1.5">
-            <div className="flex justify-between items-center text-[10px] font-bold">
+            <div className="flex justify-between items-center text-xs font-bold">
                 <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                     {icon}
                     {label}
                 </div>
                 <div className="flex items-center gap-1">
-                    <span className="text-slate-900 dark:text-white font-black">{value}</span>
+                    <span className="text-slate-900 dark:text-white font-semibold">{value}</span>
                     <span className="text-slate-400">건</span>
                 </div>
             </div>

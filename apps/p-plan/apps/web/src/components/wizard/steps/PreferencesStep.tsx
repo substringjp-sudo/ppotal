@@ -26,11 +26,11 @@ export default function PreferencesStep() {
             {/* Section 1: Themes */}
             <section className="space-y-6">
                 <div>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <span className="w-1.5 h-6 bg-primary rounded-full" />
                         어떤 컨셉의 여행인가요?
                     </h3>
-                    <p className="text-[10px] font-black text-slate-400 mt-1 pl-4 uppercase tracking-[0.2em]">여행 테마 및 분위기</p>
+                    <p className="text-xs font-semibold text-slate-400 mt-1 pl-4 uppercase tracking-[0.2em]">여행 테마 및 분위기</p>
                 </div>
 
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
@@ -39,7 +39,7 @@ export default function PreferencesStep() {
                             key={t.id}
                             onClick={() => setTheme(t.id)}
                             className={cn(
-                                "relative group p-6 rounded-[32px] border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-2",
+                                "relative group p-6 rounded-[20px] border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-2",
                                 theme === t.id
                                     ? "border-primary bg-primary/5 dark:bg-primary/20 shadow-xl shadow-primary/10"
                                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none"
@@ -54,8 +54,8 @@ export default function PreferencesStep() {
                                 <span className="material-symbols-rounded text-2xl" aria-hidden="true">{t.icon}</span>
                             </div>
                             <div className="text-center mt-2">
-                                <p className={cn("text-[11px] font-black mb-0.5", theme === t.id ? "text-primary dark:text-primary-light" : "text-slate-900 dark:text-white")}>{t.label}</p>
-                                <p className={cn("text-[8px] font-bold", theme === t.id ? "text-primary/60" : "text-slate-400")}>{t.desc}</p>
+                                <p className={cn("text-xs font-semibold mb-0.5", theme === t.id ? "text-primary dark:text-primary-light" : "text-slate-900 dark:text-white")}>{t.label}</p>
+                                <p className={cn("text-xs font-bold", theme === t.id ? "text-primary/60" : "text-slate-400")}>{t.desc}</p>
                             </div>
                             {theme === t.id && (
                                 <motion.div layoutId="active-theme-indicator" className="absolute top-3 right-3 w-1.5 h-1.5 bg-primary rounded-full" />
@@ -71,10 +71,10 @@ export default function PreferencesStep() {
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-rounded text-primary text-sm">groups</span>
-                            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">누구와 몇 명이?</h4>
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-widest">누구와 몇 명이?</h4>
                         </div>
                         <label className="flex items-center gap-2 cursor-pointer group">
-                            <span className="text-[10px] font-black text-slate-400 group-hover:text-primary transition-colors">인원 미정</span>
+                            <span className="text-xs font-semibold text-slate-400 group-hover:text-primary transition-colors">인원 미정</span>
                             <input
                                 type="checkbox"
                                 checked={isParticipantsUndecided}
@@ -92,15 +92,15 @@ export default function PreferencesStep() {
                             { label: '가족', sub: '직계 및 일가친척', icon: 'family_restroom', max: 4, limitLabel: '4+' },
                             { label: '친구', sub: '지인 및 동료', icon: 'groups', max: 5, limitLabel: '4+' },
                         ].map(cat => (
-                            <div key={cat.label} className="p-5 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 space-y-4 group/item hover:border-primary/20 transition-all shadow-sm">
+                            <div key={cat.label} className="p-5 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 space-y-4 group/item hover:border-primary/20 transition-all shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-primary group-hover/item:text-white group-hover/item:bg-primary transition-colors">
                                             <span className="material-symbols-rounded text-xl">{cat.icon}</span>
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-black text-slate-900 dark:text-white">{cat.label}</p>
-                                            <p className="text-[8px] font-bold text-slate-400">{cat.sub}</p>
+                                            <p className="text-xs font-semibold text-slate-900 dark:text-white">{cat.label}</p>
+                                            <p className="text-xs font-bold text-slate-400">{cat.sub}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export default function PreferencesStep() {
                                             <span className="material-symbols-rounded text-lg">remove</span>
                                         </button>
                                         <div className="min-w-[2rem] text-center">
-                                            <span className={cn("font-black text-sm", getCount(cat.label) > 0 ? "text-primary" : "text-slate-300")}>
+                                            <span className={cn("font-semibold text-sm", getCount(cat.label) > 0 ? "text-primary" : "text-slate-300")}>
                                                 {getCount(cat.label) >= cat.max && cat.max > 1 ? cat.limitLabel : `${getCount(cat.label)}명`}
                                             </span>
                                         </div>

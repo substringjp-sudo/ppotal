@@ -240,7 +240,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[32px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border border-white/20 dark:border-slate-800"
+                className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[28px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden border border-white/20 dark:border-slate-800"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="editor-title"
@@ -268,7 +268,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                     {/* 1. 제목 (Title) */}
                     <div className="space-y-4">
                         <div className="relative">
-                            <label htmlFor="title-input" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Title (필수)</label>
+                            <label htmlFor="title-input" className="block text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2 ml-1">Title (필수)</label>
                             <input
                                 id="title-input"
                                 ref={titleInputRef}
@@ -282,10 +282,10 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                 required
                             />
                             <div className="mt-2 flex items-center gap-3 px-1">
-                                <span className="text-[10px] text-indigo-500 font-bold flex items-center gap-1">
+                                <span className="text-xs text-indigo-500 font-bold flex items-center gap-1">
                                     <Check className="w-3 h-3" /> 클립보드 이미지 지원
                                 </span>
-                                <span className="text-[10px] text-indigo-500 font-bold flex items-center gap-1">
+                                <span className="text-xs text-indigo-500 font-bold flex items-center gap-1">
                                     <Check className="w-3 h-3" /> 구글맵 링크 자동인식
                                 </span>
                             </div>
@@ -294,7 +294,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
 
                     {/* 2. 카테고리 (Category) - 1줄 4개 */}
                     <div className="space-y-4 px-1">
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Category (필수)</label>
+                        <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400">Category (필수)</label>
                         <div className="grid grid-cols-8 gap-1.5">
                             {(Object.entries(CATEGORY_MAP) as [MainCategory, any][]).map(([key, info]) => {
                                 const Icon = CATEGORY_ICONS[key];
@@ -312,7 +312,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                         <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-white dark:bg-slate-800 text-slate-400 group-hover:text-slate-600'}`}>
                                             <Icon className="w-3.5 h-3.5" />
                                         </div>
-                                        <span className={`text-[8px] font-black leading-none text-center ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>{info.label}</span>
+                                        <span className={`text-xs font-semibold leading-none text-center ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>{info.label}</span>
                                     </button>
                                 );
                             })}
@@ -327,7 +327,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                     className="overflow-hidden"
                                 >
                                     <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                                        <p className="text-[10px] font-black text-slate-400 tracking-widest mb-2 uppercase">Detail Type</p>
+                                        <p className="text-xs font-semibold text-slate-400 tracking-widest mb-2 uppercase">Detail Type</p>
                                         <div className="flex flex-wrap gap-2">
                                             {CATEGORY_MAP[form.mainCategory as MainCategory].subCategories.map((sub: any) => (
                                                 <button
@@ -351,7 +351,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
 
                     {/* 3. 구글지도검색 (Google Place Search) */}
                     <div className="space-y-4 px-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">위치 정보 (Location)</label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">위치 정보 (Location)</label>
                         <div className="space-y-2">
                             <GoogleMapsSearch onPlaceSelect={onPlaceSelect} initialValue={form.place?.name} />
                             {form.place?.address && (
@@ -368,7 +368,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                                 key="country"
                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                 animate={{ opacity: 1, scale: 1 }}
-                                                className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-400 rounded-lg flex items-center gap-1"
+                                                className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 rounded-lg flex items-center gap-1"
                                             >
                                                 <span className="w-1 h-1 bg-slate-400 rounded-full" />
                                                 {form.place.country}
@@ -379,7 +379,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                                 key="prefecture"
                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                 animate={{ opacity: 1, scale: 1 }}
-                                                className="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/30 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 rounded-lg flex items-center gap-1 border border-indigo-100/50 dark:border-indigo-900/30"
+                                                className="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/30 text-xs font-bold text-indigo-600 dark:text-indigo-400 rounded-lg flex items-center gap-1 border border-indigo-100/50 dark:border-indigo-900/30"
                                             >
                                                 <span className="w-1 h-1 bg-indigo-400 rounded-full" />
                                                 {form.place.prefecture}
@@ -390,7 +390,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                                 key="city"
                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                 animate={{ opacity: 1, scale: 1 }}
-                                                className="px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-[10px] font-bold text-blue-600 dark:text-blue-400 rounded-lg flex items-center gap-1 border border-blue-100/50 dark:border-blue-900/30"
+                                                className="px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-xs font-bold text-blue-600 dark:text-blue-400 rounded-lg flex items-center gap-1 border border-blue-100/50 dark:border-blue-900/30"
                                             >
                                                 <span className="w-1 h-1 bg-blue-400 rounded-full" />
                                                 {form.place.city}
@@ -404,7 +404,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
 
                     {/* 4. 메모 (Memo/Description) */}
                     <div className="space-y-4 px-1">
-                        <label htmlFor="memo-input" className="block text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Memo</label>
+                        <label htmlFor="memo-input" className="block text-xs font-semibold uppercase tracking-widest text-slate-400 ml-1">Memo</label>
                         <textarea
                             id="memo-input"
                             name="description"
@@ -419,11 +419,11 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                     {/* 5. 사진추가 (Images) */}
                     <div className="space-y-4 px-1 pb-10">
                         <div className="flex items-center justify-between ml-1">
-                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400">Photos</label>
+                            <label className="block text-xs font-semibold uppercase tracking-widest text-slate-400">Photos</label>
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 underline underline-offset-2"
+                                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 underline underline-offset-2"
                             >
                                 <Camera className="w-3 h-3" /> 사진 찾아보기
                             </button>
@@ -460,7 +460,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                                 className="w-full h-32 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-slate-300 transition-colors"
                             >
                                 <ImageIcon className="w-8 h-8 text-slate-300" />
-                                <p className="text-[11px] text-slate-400 font-medium">붙여넣거나 클릭해서 사진 추가</p>
+                                <p className="text-xs text-slate-400 font-medium">붙여넣거나 클릭해서 사진 추가</p>
                             </div>
                         )}
                     </div>
@@ -471,7 +471,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 px-6 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-black tracking-widest uppercase text-[10px] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                        className="flex-1 px-6 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-semibold tracking-widest uppercase text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
                     >
                         Cancel
                     </button>
@@ -479,7 +479,7 @@ export default function WishlistEditor({ item, tripId, onClose, onSave }: Wishli
                         type="button"
                         onClick={handleSubmit}
                         disabled={!form.title.trim() || !form.mainCategory}
-                        className="flex-[2] px-6 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black tracking-widest uppercase text-[10px] shadow-xl disabled:bg-slate-200 dark:disabled:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-[2] px-6 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-semibold tracking-widest uppercase text-xs shadow-xl disabled:bg-slate-200 dark:disabled:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
                         {item ? 'Save Changes' : 'Create Item'}
                         <ChevronRight className="w-4 h-4" />

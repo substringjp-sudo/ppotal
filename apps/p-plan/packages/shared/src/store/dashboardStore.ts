@@ -22,10 +22,11 @@ export type WidgetId =
     | 'wishlist'
     | 'warnings';
 
+/** 6열 그리드 — 위젯 폭은 2(1/3) · 3(1/2) · 6(전체) 세 가지만 허용한다. */
 export interface WidgetConfig {
     id: WidgetId;
     visible: boolean;
-    colSpan: 1 | 2 | 3 | 4 | 6 | 8 | 12;
+    colSpan: 2 | 3 | 6;
     rowSpan: 1 | 2 | 3 | 4;
     order: number;
 }
@@ -39,15 +40,15 @@ interface DashboardState {
     resetLayout: () => void;
 }
 
+// 'map'과 'warnings'는 여기 없다 — 지도는 우측 고정 맥락 패널로, 경고는 히어로
+// 위에 상시 스트립으로 옮겨서 둘 다 드래그 대상(=이 목록)에서 빠졌다.
 const DEFAULT_WIDGETS: WidgetConfig[] = [
-    { id: 'map', visible: true, colSpan: 8, rowSpan: 2, order: 0 },
-    { id: 'stats', visible: true, colSpan: 4, rowSpan: 2, order: 1 },
-    { id: 'warnings', visible: true, colSpan: 12, rowSpan: 1, order: 2 },
-    { id: 'accommodation', visible: true, colSpan: 6, rowSpan: 2, order: 3 },
-    { id: 'transportation', visible: true, colSpan: 6, rowSpan: 2, order: 4 },
-    { id: 'checklist', visible: true, colSpan: 4, rowSpan: 2, order: 5 },
-    { id: 'reservations', visible: true, colSpan: 4, rowSpan: 1, order: 7 },
-    { id: 'wishlist', visible: true, colSpan: 4, rowSpan: 1, order: 8 },
+    { id: 'stats', visible: true, colSpan: 2, rowSpan: 2, order: 0 },
+    { id: 'accommodation', visible: true, colSpan: 3, rowSpan: 2, order: 1 },
+    { id: 'transportation', visible: true, colSpan: 3, rowSpan: 2, order: 2 },
+    { id: 'checklist', visible: true, colSpan: 2, rowSpan: 2, order: 3 },
+    { id: 'reservations', visible: true, colSpan: 2, rowSpan: 1, order: 4 },
+    { id: 'wishlist', visible: true, colSpan: 2, rowSpan: 1, order: 5 },
 ];
 
 export const useDashboardStore = create<DashboardState>()(
@@ -76,7 +77,7 @@ export const useDashboardStore = create<DashboardState>()(
             resetLayout: () => set({ widgets: DEFAULT_WIDGETS }),
         }),
         {
-            name: 'dashboard-storage-v3', // v3 to force reset for budget removal
+            name: 'dashboard-storage-v4', // v4: 6-col grid (colSpan 2/3/6), map+warnings pulled out of the widget list
         }
     )
 );

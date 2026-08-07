@@ -106,11 +106,11 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                         </span>
                     </div>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{getLabel()}</span>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{getLabel()}</span>
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{event.title}</span>
                             {!isBundle && event.startTime && (
-                                <span className="text-[10px] font-bold text-primary/60 bg-primary/5 px-1.5 py-0.5 rounded-md border border-primary/10">
+                                <span className="text-xs font-bold text-primary/60 bg-primary/5 px-1.5 py-0.5 rounded-md border border-primary/10">
                                     {event.startTime} 예약
                                 </span>
                             )}
@@ -121,7 +121,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                 {!isConfirming ? (
                     <button 
                         onClick={() => setIsConfirming(true)}
-                        className="px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-[10px] font-black transition-all whitespace-nowrap"
+                        className="px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
                     >
                         일정 확정하기
                     </button>
@@ -151,11 +151,11 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-1.5">
                                             <Plane className="w-2.5 h-2.5 text-primary/70" />
-                                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Flight Context</span>
+                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Flight Context</span>
                                         </div>
                                         <div className="flex items-center gap-1 px-1.5 py-0.5 bg-white/50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
                                             <Globe className="w-2.5 h-2.5 text-primary/60" />
-                                            <span className="text-[8px] font-black text-slate-500">
+                                            <span className="text-xs font-semibold text-slate-500">
                                                 {isInternational ? 'International' : 'Domestic'}
                                             </span>
                                         </div>
@@ -163,18 +163,18 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
-                                                <span className="text-[8px] font-bold text-slate-400 leading-none mb-0.5">DEP</span>
-                                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">{flightDep}</span>
+                                                <span className="text-xs font-bold text-slate-400 leading-none mb-0.5">DEP</span>
+                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{flightDep}</span>
                                             </div>
                                             <div className="flex flex-col items-center gap-0.5 px-2">
                                                 <div className="w-8 h-[1px] bg-slate-300 dark:bg-slate-700 relative">
                                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-primary/40 rounded-full" />
                                                 </div>
-                                                <span className="text-[8px] font-black text-primary/60 whitespace-nowrap">{flightDurFormatted}</span>
+                                                <span className="text-xs font-semibold text-primary/60 whitespace-nowrap">{flightDurFormatted}</span>
                                             </div>
                                             <div className="flex flex-col text-right">
-                                                <span className="text-[8px] font-bold text-slate-400 leading-none mb-0.5">ARR</span>
-                                                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">{flightArr}</span>
+                                                <span className="text-xs font-bold text-slate-400 leading-none mb-0.5">ARR</span>
+                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{flightArr}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -187,13 +187,13 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                         <div className="space-y-2">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center justify-between px-1">
-                                                    <label className="text-[9px] font-black text-slate-400 uppercase">출발공항 도착</label>
+                                                    <label className="text-xs font-semibold text-slate-400 uppercase">출발공항 도착</label>
                                                     <div className="flex items-center gap-1">
                                                         {(isInternational ? [4, 3, 2] : [2, 1.5, 1]).map(h => (
                                                             <button 
                                                                 key={h}
                                                                 onClick={() => handlePresetPrep(h)}
-                                                                className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 text-slate-500 hover:text-primary rounded text-[8px] font-black transition-colors"
+                                                                className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 text-slate-500 hover:text-primary rounded text-xs font-semibold transition-colors"
                                                             >
                                                                 {h}h
                                                             </button>
@@ -208,7 +208,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                             </div>
                                             <div className="flex items-center gap-1 px-1 opacity-80">
                                                 <Clock className="w-2.5 h-2.5 text-primary/50" />
-                                                <span className="text-[9px] font-bold text-slate-500">
+                                                <span className="text-xs font-bold text-slate-500">
                                                     체류: {Math.floor((timeToMinutes(flightDep) - timeToMinutes(prepTime)) / 60)}h {(timeToMinutes(flightDep) - timeToMinutes(prepTime)) % 60}m
                                                 </span>
                                             </div>
@@ -217,13 +217,13 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                         <div className="space-y-2">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center justify-between px-1">
-                                                    <label className="text-[9px] font-black text-slate-400 uppercase">도착공항 수속</label>
+                                                    <label className="text-xs font-semibold text-slate-400 uppercase">도착공항 수속</label>
                                                     <div className="flex items-center gap-1">
                                                         {(isInternational ? [2, 1.5, 1] : [1, 0.5]).map(h => (
                                                             <button 
                                                                 key={h}
                                                                 onClick={() => handlePresetEntry(h)}
-                                                                className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 text-slate-500 hover:text-primary rounded text-[8px] font-black transition-colors"
+                                                                className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 text-slate-500 hover:text-primary rounded text-xs font-semibold transition-colors"
                                                             >
                                                                 {h === 0.5 ? '30m' : `${h}h`}
                                                             </button>
@@ -238,7 +238,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                             </div>
                                             <div className="flex items-center gap-1 px-1 opacity-80">
                                                 <Clock className="w-2.5 h-2.5 text-primary/50" />
-                                                <span className="text-[9px] font-bold text-slate-500">
+                                                <span className="text-xs font-bold text-slate-500">
                                                     소요: {Math.floor((timeToMinutes(entryTime) - timeToMinutes(flightArr)) / 60)}h {(timeToMinutes(entryTime) - timeToMinutes(flightArr)) % 60}m
                                                 </span>
                                             </div>
@@ -266,7 +266,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                     {event.rangeStart && event.rangeEnd && (
                                         <div className="flex items-center gap-1.5 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-200/30 dark:border-amber-800/30">
                                             <span className="material-symbols-rounded text-[14px] text-amber-500">info</span>
-                                            <p className="text-[9px] font-black text-amber-600 dark:text-amber-400">
+                                            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
                                                 {event.autoGeneratedType === 'check-in' ? '체크인 가능' : '체크아웃 시간'}: {event.rangeStart} ~ {event.rangeEnd}
                                             </p>
                                         </div>
@@ -276,7 +276,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                             
                             <button 
                                 onClick={handleConfirm}
-                                className="w-full py-3 bg-primary text-white rounded-2xl text-[11px] font-black shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                className="w-full py-3 bg-primary text-white rounded-2xl text-xs font-semibold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                             >
                                 일정 확정 및 타임라인 반영
                             </button>

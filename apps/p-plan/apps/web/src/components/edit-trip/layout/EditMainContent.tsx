@@ -27,11 +27,11 @@ export default function EditMainContent({ activeSection, setActiveSection, onAdd
         animate={{ opacity: 1, x: 0 }}
         className="flex-1 min-w-0 h-full w-full overflow-hidden"
     >
-        <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden h-full flex flex-col relative transition-colors duration-500">
+        <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden h-full flex flex-col relative transition-colors duration-500">
             {/* Decorative section indicator */}
             <div className="p-2.5 sm:p-3 lg:px-6 lg:py-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 bg-slate-50/20 dark:bg-slate-800/10 backdrop-blur-sm">
                 <div className="flex items-center justify-between sm:justify-start sm:flex-1 gap-2">
-                    <h2 className="text-base lg:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2.5 italic tracking-tight">
+                    <h2 className="text-base lg:text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2.5 italic tracking-tight">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0">
                             <span className="material-symbols-rounded font-bold text-lg">
                                 {SECTIONS.find(s => s.id === activeSection)?.icon}
@@ -40,7 +40,7 @@ export default function EditMainContent({ activeSection, setActiveSection, onAdd
                         <span className="hidden sm:inline">{SECTIONS.find(s => s.id === activeSection)?.label}</span>
                     </h2>
                     <div className="sm:hidden px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
-                        <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">
                             {String(SECTIONS.findIndex(s => s.id === activeSection) + 1).padStart(2, '0')} / {String(SECTIONS.length).padStart(2, '0')}
                         </p>
                     </div>
@@ -60,7 +60,7 @@ export default function EditMainContent({ activeSection, setActiveSection, onAdd
 
                 <div className="hidden sm:flex items-center gap-4 flex-1 justify-end">
                     <div className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full">
-                        <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">
                             {String(SECTIONS.findIndex(s => s.id === activeSection) + 1).padStart(2, '0')} / {String(SECTIONS.length).padStart(2, '0')}
                         </p>
                     </div>

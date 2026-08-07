@@ -111,7 +111,7 @@ export function ExportModal({ onClose }: ExportModalProps) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 40, scale: 0.96 }}
                     transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-                    className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl overflow-hidden"
+                    className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[28px] shadow-2xl overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
@@ -119,7 +119,7 @@ export function ExportModal({ onClose }: ExportModalProps) {
                         <div>
                             <div className="flex items-center gap-2 mb-0.5">
                                 <span className="material-symbols-rounded text-xl text-primary">download</span>
-                                <h2 className="text-lg font-black text-slate-900 dark:text-white">내보내기</h2>
+                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">내보내기</h2>
                             </div>
                             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-7">
                                 {currentTrip.titleSuggestion || currentTrip.title}
@@ -155,10 +155,10 @@ export function ExportModal({ onClose }: ExportModalProps) {
                                         )}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-slate-800 dark:text-slate-100">{fmt.label}</p>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{fmt.sub}</p>
+                                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{fmt.label}</p>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{fmt.sub}</p>
                                     </div>
-                                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">{fmt.detail}</p>
+                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed">{fmt.detail}</p>
                                 </button>
                             );
                         })}
@@ -170,7 +170,7 @@ export function ExportModal({ onClose }: ExportModalProps) {
                             <div className="flex items-start gap-2">
                                 <span className="material-symbols-rounded text-sm text-slate-400 mt-0.5">info</span>
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">포함 항목</p>
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">포함 항목</p>
                                     <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
                                         {summaryItems.join(' · ')}
                                     </p>

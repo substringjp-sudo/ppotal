@@ -29,9 +29,9 @@ export default function StatsSection() {
     if (!trip || !aggregatedBudget) return (
         <div className="flex flex-col gap-4 p-1 animate-pulse">
             <div className="grid grid-cols-3 gap-3">
-                {[1,2,3].map(i => <div key={i} className="h-28 bg-slate-100 dark:bg-slate-800 rounded-[2rem]" />)}
+                {[1,2,3].map(i => <div key={i} className="h-28 bg-slate-100 dark:bg-slate-800 rounded-[20px]" />)}
             </div>
-            <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-[2rem]" />
+            <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-[20px]" />
         </div>
     );
 
@@ -111,7 +111,7 @@ export default function StatsSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         onClick={() => router.push(stat.path)}
-                        className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left group overflow-hidden relative"
+                        className="p-5 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left group overflow-hidden relative"
                     >
                         <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.gradient} opacity-[0.03] blur-3xl group-hover:opacity-10 transition-opacity`} />
                         
@@ -120,12 +120,12 @@ export default function StatsSection() {
                             <span className="material-symbols-rounded text-xl">{stat.icon}</span>
                         </div>
                         
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5 block">{stat.label}</span>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1.5 block">{stat.label}</span>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black italic tracking-tighter leading-none text-slate-900 dark:text-white">{stat.value}</span>
+                            <span className="text-3xl font-bold italic tracking-tighter leading-none text-slate-900 dark:text-white">{stat.value}</span>
                             <span className="text-xs font-bold text-slate-500">{stat.unit}</span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-2 font-medium truncate">{stat.detail}</p>
+                        <p className="text-xs text-slate-400 mt-2 font-medium truncate">{stat.detail}</p>
                     </motion.button>
                 ))}
             </div>
@@ -136,13 +136,13 @@ export default function StatsSection() {
                 
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white italic tracking-tight flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white italic tracking-tight flex items-center gap-2">
                             <span className="material-symbols-rounded text-rose-500 scale-75">analytics</span>
                             카테고리별 지출 분석
                         </h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Category Wise Breakdown</p>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">Category Wise Breakdown</p>
                     </div>
-                    <span className="text-[9px] text-primary font-black uppercase tracking-widest px-3 py-1 bg-primary/10 rounded-full border border-primary/10">Insights</span>
+                    <span className="text-xs text-primary font-semibold uppercase tracking-widest px-3 py-1 bg-primary/10 rounded-full border border-primary/10">Insights</span>
                 </div>
                 
                 <div className="space-y-6 flex-1 flex flex-col justify-around">
@@ -154,15 +154,15 @@ export default function StatsSection() {
                                         <span className="material-symbols-rounded text-sm">{expense.icon}</span>
                                     </div>
                                     <div>
-                                        <span className="text-xs font-black text-slate-800 dark:text-slate-200">{expense.category}</span>
+                                        <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">{expense.category}</span>
                                         <div className="h-0.5 w-0 group-hover:w-full bg-primary/30 transition-all duration-300" />
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="flex items-baseline gap-1.5">
-                                        <span className="text-sm font-black italic text-slate-900 dark:text-white">₩{expense.spent.toLocaleString()}</span>
+                                        <span className="text-sm font-semibold italic text-slate-900 dark:text-white">₩{expense.spent.toLocaleString()}</span>
                                         {expense.total > 0 && (
-                                            <span className="text-[9px] font-bold text-slate-400 italic">/ ₩{expense.total.toLocaleString()}</span>
+                                            <span className="text-xs font-bold text-slate-400 italic">/ ₩{expense.total.toLocaleString()}</span>
                                         )}
                                     </div>
                                 </div>
@@ -190,7 +190,7 @@ export default function StatsSection() {
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center relative z-10">
-                    <p className="text-[10px] text-slate-400 font-bold italic tracking-tight">지출 데이터를 기반으로 한 실시간 여행 예산 분석 리포트입니다.</p>
+                    <p className="text-xs text-slate-400 font-bold italic tracking-tight">지출 데이터를 기반으로 한 실시간 여행 예산 분석 리포트입니다.</p>
                 </div>
             </div>
         </div>

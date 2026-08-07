@@ -25,11 +25,11 @@ export default function AccommodationTimeline() {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5" aria-label="주요 숙소 표시 색상">
                         <div className="w-2.5 h-2.5 rounded-full bg-primary/80" role="img" aria-label="파란색"></div>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">주요 숙소</span>
+                        <span className="text-xs text-slate-500 uppercase font-bold tracking-tight">주요 숙소</span>
                     </div>
                     <div className="flex items-center gap-1.5" aria-label="비어있는 일정 표시 색상">
                         <div className="w-2.5 h-2.5 rounded-full bg-red-400" role="img" aria-label="빨간색"></div>
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">비어있음</span>
+                        <span className="text-xs text-slate-500 uppercase font-bold tracking-tight">비어있음</span>
                     </div>
                 </div>
             </div>
@@ -37,7 +37,7 @@ export default function AccommodationTimeline() {
                 <div className="relative w-full h-12 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden flex">
                     {(trip.accommodation || []).length === 0 ? (
                         <div 
-                            className="w-full h-full flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase tracking-widest"
+                            className="w-full h-full flex items-center justify-center text-xs text-slate-400 font-bold uppercase tracking-widest"
                             role="status"
                         >
                             등록된 숙소가 없습니다
@@ -62,7 +62,7 @@ export default function AccommodationTimeline() {
                             return (
                                 <div
                                     key={acc.id}
-                                    className={`absolute h-full ${acc.color === 'primary' ? 'bg-primary' : 'bg-blue-500'} border-r-2 border-white dark:border-slate-900 flex items-center justify-center text-[10px] text-white font-bold px-2 truncate transition-all`}
+                                    className={`absolute h-full ${acc.color === 'primary' ? 'bg-primary' : 'bg-blue-500'} border-r-2 border-white dark:border-slate-900 flex items-center justify-center text-xs text-white font-bold px-2 truncate transition-all`}
                                     style={{ width: `${width}%`, left: `${left}%` }}
                                     title={label}
                                     role="progressbar"
@@ -99,14 +99,14 @@ export default function AccommodationTimeline() {
                                 role="status"
                                 aria-label={`비어있는 일정: ${gap.days}박 (${gap.start}부터 ${gap.end}까지)`}
                             >
-                                <span className="material-symbols-rounded text-red-500/50 text-[10px]" aria-hidden="true">warning</span>
+                                <span className="material-symbols-rounded text-red-500/50 text-xs" aria-hidden="true">warning</span>
                             </div>
                         );
                     })}
                 </div>
                 <div className="flex justify-between mt-3 px-1">
-                    <span className="text-[10px] text-slate-400 font-bold">{trip.dates?.isUndecided ? '미정' : trip.dates?.startDate?.replace(/-/g, '.') || '미정'}</span>
-                    <span className="text-[10px] text-slate-400 font-bold">{trip.dates?.isUndecided ? '' : trip.dates?.endDate?.replace(/-/g, '.') || ''}</span>
+                    <span className="text-xs text-slate-400 font-bold">{trip.dates?.isUndecided ? '미정' : trip.dates?.startDate?.replace(/-/g, '.') || '미정'}</span>
+                    <span className="text-xs text-slate-400 font-bold">{trip.dates?.isUndecided ? '' : trip.dates?.endDate?.replace(/-/g, '.') || ''}</span>
                 </div>
                 
                 {/* Summary Alert Box */}
@@ -117,12 +117,12 @@ export default function AccommodationTimeline() {
                     >
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-rounded text-red-500 text-base font-bold" aria-hidden="true">priority_high</span>
-                            <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold">
+                            <span className="text-xs text-slate-700 dark:text-slate-300 font-bold">
                                 아직 예약이 비어있는 <strong className="text-red-600">{gaps.reduce((sum, g) => sum + g.days, 0)}박</strong> 일정이 있습니다.
                             </span>
                         </div>
                         <button 
-                            className="text-[10px] font-black text-primary hover:underline uppercase tracking-tight"
+                            className="text-xs font-semibold text-primary hover:underline uppercase tracking-tight"
                             aria-label="숙소 추가하기 페이지로 이동"
                         >
                             숙소 추가하기

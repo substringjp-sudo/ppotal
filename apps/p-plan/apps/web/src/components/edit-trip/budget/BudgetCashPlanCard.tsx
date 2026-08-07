@@ -101,11 +101,11 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
             <div className="p-5 sm:p-6 flex flex-col gap-5">
                 {/* 헤드라인: 환전·충전 권장 외화 */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1.5">
                         환전·충전 권장 <span className="text-slate-300">(현금 + 선불카드 몫)</span>
                     </p>
                     <div className="flex items-end gap-1.5">
-                        <span className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
+                        <span className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
                             약 {symbol}{prepareForeign.toLocaleString()}
                         </span>
                     </div>
@@ -120,7 +120,7 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
                         {bars.map((b) => (
                             <div
                                 key={b.key}
-                                className={cn('grid place-items-center text-[10px] font-black text-white', b.cls)}
+                                className={cn('grid place-items-center text-xs font-semibold text-white', b.cls)}
                                 style={{ width: `${local > 0 ? (b.krw / local) * 100 : 0}%` }}
                                 title={`${b.label} ${formatKRWMan(b.krw)}`}
                             >
@@ -130,7 +130,7 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
                         {bars.map((b) => (
-                            <span key={b.key} className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                            <span key={b.key} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
                                 <span className={cn('w-2.5 h-2.5 rounded-sm', b.cls)} />
                                 {b.label} <span className="tabular-nums text-slate-700 dark:text-slate-200">{formatKRWMan(b.krw)}</span>
                             </span>
@@ -140,7 +140,7 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
 
                 {/* 성향 프리셋 */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">결제 성향</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">결제 성향</p>
                     <div className="grid grid-cols-3 gap-2">
                         {PRESETS.map((p) => {
                             const on = presetId === p.id;
@@ -158,21 +158,21 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
                                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary/40'
                                     )}
                                 >
-                                    <span className="text-xs font-black">{p.label}</span>
-                                    <span className={cn('text-[9px] font-bold', on ? 'text-white/80' : 'text-slate-400')}>
+                                    <span className="text-xs font-semibold">{p.label}</span>
+                                    <span className={cn('text-xs font-bold', on ? 'text-white/80' : 'text-slate-400')}>
                                         현금 {p.cash}%
                                     </span>
                                 </button>
                             );
                         })}
                     </div>
-                    <p className="mt-1.5 text-[11px] text-slate-400">{preset.hint}</p>
+                    <p className="mt-1.5 text-xs text-slate-400">{preset.hint}</p>
                 </div>
 
                 {/* 환율 */}
                 <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-2.5">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">오늘 환율</span>
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 tabular-nums">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">오늘 환율</span>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
                         {symbol}{perUnit.toLocaleString()} ≈ {perUnitKRW.toLocaleString()}원
                     </span>
                 </div>

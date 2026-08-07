@@ -75,14 +75,14 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
             <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
                 <div>
                     <div className="flex flex-col gap-1">
-                        <h3 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-rounded text-primary">edit_calendar</span>
                             일정 편집
                         </h3>
                         {(date || dayIdx !== undefined) && (
                             <div className="flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5 text-primary" />
-                                <span className="text-sm font-black text-primary uppercase tracking-tight">
+                                <span className="text-sm font-semibold text-primary uppercase tracking-tight">
                                     {dayIdx !== undefined ? `Day ${dayIdx + 1}` : ''}
                                     {dayIdx !== undefined && date ? ' • ' : ''}
                                     {formatDateWithDay(date)}
@@ -100,20 +100,20 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 {/* Title Section */}
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">일정 제목</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">일정 제목</label>
                     <input
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="어디로 떠나시나요?"
-                        className="w-full text-3xl md:text-4xl font-black bg-transparent border-none outline-none placeholder:text-slate-200 dark:placeholder:text-slate-800 focus:ring-0 p-0 tracking-tight"
+                        className="w-full text-3xl md:text-4xl font-bold bg-transparent border-none outline-none placeholder:text-slate-200 dark:placeholder:text-slate-800 focus:ring-0 p-0 tracking-tight"
                         autoFocus
                     />
                 </div>
 
                 {/* Category Grid */}
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">카테고리</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">카테고리</label>
                     <div className="flex flex-col gap-4">
                         <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2 md:gap-3">
                             {(Object.entries(CATEGORY_MAP) as [MainCategory, any][]).map(([key, config]) => (
@@ -134,7 +134,7 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                                     }`}>
                                         <span className="material-symbols-rounded text-xl md:text-2xl">{config.icon}</span>
                                     </div>
-                                    <span className={`text-[9px] md:text-[10px] font-black whitespace-nowrap ${
+                                    <span className={`text-xs md:text-xs font-semibold whitespace-nowrap ${
                                         mainCategory === key ? 'text-primary' : 'text-slate-400'
                                     }`}>
                                         {config.label}
@@ -150,7 +150,7 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                                     <button
                                         key={sub.value}
                                         onClick={() => setSubCategory(sub.value)}
-                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                                             subCategory === sub.value
                                                 ? 'bg-primary text-white border-primary shadow-md'
                                                 : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300'
@@ -194,7 +194,7 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
 
                     {/* Location */}
                     <div className="space-y-4">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">장소 검색</label>
+                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">장소 검색</label>
                         <GoogleMapsSearch
                             initialValue={location?.name}
                             locationBias={regionCenter}
@@ -255,20 +255,20 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                         {!isGeoLoading && location && (location.country || location.countryName || location.prefecture || location.prefectureName || location.city || location.cityName) && (
                             <div className="flex flex-wrap gap-2 mt-2 px-1">
                                 {(location.country || location.countryName) && (
-                                    <span className="text-[10px] font-black bg-primary/5 text-primary px-2.5 py-1 rounded-lg uppercase tracking-tight border border-primary/10 flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-[12px]">flag</span>
+                                    <span className="text-xs font-semibold bg-primary/5 text-primary px-2.5 py-1 rounded-lg uppercase tracking-tight border border-primary/10 flex items-center gap-1">
+                                        <span className="material-symbols-rounded text-xs">flag</span>
                                         {location.country || location.countryName}
                                     </span>
                                 )}
                                 {(location.prefecture || location.prefectureName) && (
-                                    <span className="text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-tight border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-[12px]">map</span>
+                                    <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-tight border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
+                                        <span className="material-symbols-rounded text-xs">map</span>
                                         {location.prefecture || location.prefectureName}
                                     </span>
                                 )}
                                 {(location.city || location.cityName) && (
-                                    <span className="text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-tight border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-[12px]">location_city</span>
+                                    <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-tight border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
+                                        <span className="material-symbols-rounded text-xs">location_city</span>
                                         {location.city || location.cityName}
                                     </span>
                                 )}
@@ -279,7 +279,7 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
 
                 {/* Memo */}
                 <div className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">메모 및 링크</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">메모 및 링크</label>
                     <textarea
                         value={memo}
                         onChange={(e) => setMemo(e.target.value)}
@@ -293,14 +293,14 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
             <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-4">
                 <button
                     onClick={onClose}
-                    className="flex-1 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="flex-1 py-5 text-xs font-semibold uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                     취소하기
                 </button>
                 <button
                     onClick={handleSave}
                     disabled={!title.trim()}
-                    className="flex-[2] py-4 bg-primary disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    className="flex-[2] py-4 bg-primary disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white rounded-xl text-xs font-semibold uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                     일정 저장하기
                 </button>

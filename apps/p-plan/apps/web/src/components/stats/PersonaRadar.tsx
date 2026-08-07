@@ -125,7 +125,7 @@ export default function PersonaRadar({ stats }: PersonaRadarProps) {
         {/* Floating MBTI */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none select-none">
           <p 
-            className="text-5xl font-black text-orange-500 dark:text-orange-400 tracking-[0.2em] transition-all duration-700"
+            className="text-5xl font-bold text-orange-500 dark:text-orange-400 tracking-[0.2em] transition-all duration-700"
             style={{
               textShadow: '0 0 20px rgba(249, 115, 22, 0.4)',
               WebkitTextStroke: '3px var(--text-stroke-color, white)',
@@ -142,10 +142,10 @@ export default function PersonaRadar({ stats }: PersonaRadarProps) {
 
       <div className="flex-1 space-y-8 w-full">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">여행 DNA 분석</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">여행 DNA 분석</h2>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
-            <p className="text-[10px] font-black text-primary uppercase tracking-widest">Calculated by User Behavior Data</p>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest">Calculated by User Behavior Data</p>
           </div>
         </div>
 
@@ -157,7 +157,7 @@ export default function PersonaRadar({ stats }: PersonaRadarProps) {
             
             return (
               <div key={l.key} className="space-y-3">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <div className="flex justify-between items-center text-xs font-semibold uppercase tracking-widest text-slate-400">
                   <span className="flex items-center gap-1.5">
                     <span className="w-1 h-1 rounded-full bg-primary/40" />
                     {l.label}
@@ -171,8 +171,8 @@ export default function PersonaRadar({ stats }: PersonaRadarProps) {
                 
                 <div className="flex items-center gap-4">
                   {/* Left Label */}
-                  <div className={`flex-1 text-right transition-all duration-700 ${leftPercent > 50 ? 'text-slate-900 dark:text-white scale-105 font-black' : 'text-slate-300 dark:text-slate-700 font-bold'}`}>
-                    <p className="text-[10px] leading-tight">{l.sides[0]}</p>
+                  <div className={`flex-1 text-right transition-all duration-700 ${leftPercent > 50 ? 'text-slate-900 dark:text-white scale-105 font-semibold' : 'text-slate-300 dark:text-slate-700 font-bold'}`}>
+                    <p className="text-xs leading-tight">{l.sides[0]}</p>
                   </div>
 
                   {/* Enhanced Balanced Bar */}
@@ -208,8 +208,8 @@ export default function PersonaRadar({ stats }: PersonaRadarProps) {
                   </div>
 
                   {/* Right Label */}
-                  <div className={`flex-1 text-left transition-all duration-700 ${rightPercent >= 50 ? 'text-slate-900 dark:text-white scale-105 font-black' : 'text-slate-300 dark:text-slate-700 font-bold'}`}>
-                    <p className="text-[10px] leading-tight">{l.sides[1]}</p>
+                  <div className={`flex-1 text-left transition-all duration-700 ${rightPercent >= 50 ? 'text-slate-900 dark:text-white scale-105 font-semibold' : 'text-slate-300 dark:text-slate-700 font-bold'}`}>
+                    <p className="text-xs leading-tight">{l.sides[1]}</p>
                   </div>
                 </div>
               </div>
@@ -219,12 +219,12 @@ export default function PersonaRadar({ stats }: PersonaRadarProps) {
 
         <div className="pt-6 border-t border-slate-200/60 dark:border-slate-800 mt-auto flex items-center justify-between">
             <div className="space-y-1">
-                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1 leading-none">부여된 클래스</p>
-                <p className="text-xl font-black text-slate-900 dark:text-white leading-none">{fantasyClass}</p>
+                <p className="text-xs font-semibold text-primary uppercase tracking-[0.2em] mb-1 leading-none">부여된 클래스</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white leading-none">{fantasyClass}</p>
             </div>
             <button 
                 onClick={handleRetest}
-                className="px-4 py-2 bg-slate-50 dark:bg-white/5 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-xl border border-slate-200 dark:border-white/5 transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                className="px-4 py-2 bg-slate-50 dark:bg-white/5 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-xl border border-slate-200 dark:border-white/5 transition-all text-xs font-semibold uppercase tracking-widest flex items-center gap-2"
             >
                 <span className="material-symbols-rounded text-sm">restart_alt</span>
                 Retest

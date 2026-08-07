@@ -42,20 +42,20 @@ export default function DashboardFilterBar({
   children
 }: DashboardFilterBarProps) {
   return (
-    <div className="sticky top-[80px] z-30 mb-8 rounded-[32px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
+    <div className="sticky top-[80px] z-30 mb-8 rounded-[20px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 p-2 shadow-sm">
       {/* Row 1: Search & View Mode (Primary Interaction) */}
       <div className="flex items-center gap-3 h-10 mb-1">
         {/* Central Search Bar - Now More Prominent */}
         <div className="flex-1 relative min-w-0 flex items-center">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-            <span className="material-symbols-rounded text-sm font-black opacity-50">search</span>
+            <span className="material-symbols-rounded text-sm font-semibold opacity-50">search</span>
           </div>
           <input 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full h-8 pl-9 pr-4 bg-slate-100/30 dark:bg-slate-800/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 border border-slate-200/30 dark:border-slate-700/30 rounded-full text-[10px] font-black transition-all outline-none focus:ring-4 focus:ring-primary/5 placeholder:opacity-30 tracking-tight"
+            className="w-full h-8 pl-9 pr-4 bg-slate-100/30 dark:bg-slate-800/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 border border-slate-200/30 dark:border-slate-700/30 rounded-full text-xs font-semibold transition-all outline-none focus:ring-4 focus:ring-primary/5 placeholder:opacity-30 tracking-tight"
           />
         </div>
 
@@ -86,20 +86,20 @@ export default function DashboardFilterBar({
                 {tab.icon && (
                   <span className={cn(
                     "material-symbols-rounded text-xs",
-                    activeTab === tab.id ? "font-black" : "font-medium opacity-60"
+                    activeTab === tab.id ? "font-semibold" : "font-medium opacity-60"
                   )}>
                     {tab.icon}
                   </span>
                 )}
                 <span className={cn(
-                  "text-[9px] uppercase tracking-[0.1em]",
-                  activeTab === tab.id ? "font-black" : "font-bold"
+                  "text-xs uppercase tracking-[0.1em]",
+                  activeTab === tab.id ? "font-semibold" : "font-bold"
                 )}>
                   {tab.label}
                 </span>
                 {tab.count !== undefined && (
                   <span className={cn(
-                    "text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[16px] text-center",
+                    "text-xs font-semibold px-1.5 py-0.5 rounded-full min-w-[16px] text-center",
                     activeTab === tab.id 
                       ? "bg-primary text-white" 
                       : "bg-slate-200 dark:bg-slate-800 text-slate-400 group-hover:text-slate-600"

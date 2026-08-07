@@ -316,9 +316,9 @@ export default function WishlistPage() {
                                         setSelectedIds(filteredItems.map(i => i.id));
                                     }
                                 }}
-                                className="h-7 px-3 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full text-[9px] font-black hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                                className="h-7 px-3 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 rounded-full text-xs font-semibold hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                             >
-                                <span className="material-symbols-rounded font-black text-xs">
+                                <span className="material-symbols-rounded font-semibold text-xs">
                                     {selectedIds.length === filteredItems.length ? 'deselect' : 'select_all'}
                                 </span>
                                 <span>{selectedIds.length === filteredItems.length ? 'Deselect' : 'Select All'}</span>
@@ -326,18 +326,18 @@ export default function WishlistPage() {
                             <button
                                 onClick={handleBulkDelete}
                                 disabled={selectedIds.length === 0}
-                                className="h-7 px-3 bg-red-500 text-white rounded-full text-[9px] font-black shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:scale-100"
+                                className="h-7 px-3 bg-red-500 text-white rounded-full text-xs font-semibold shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:scale-100"
                             >
-                                <span className="material-symbols-rounded font-black text-xs">delete</span>
+                                <span className="material-symbols-rounded font-semibold text-xs">delete</span>
                                 <span>Delete ({selectedIds.length})</span>
                             </button>
                         </div>
                     ) : (
                         <button
                             onClick={handleAddItem}
-                            className="h-7 px-3 bg-primary text-white rounded-full text-[9px] font-black shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                            className="h-7 px-3 bg-primary text-white rounded-full text-xs font-semibold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                         >
-                            <span className="material-symbols-rounded font-black text-xs">bookmark_add</span>
+                            <span className="material-symbols-rounded font-semibold text-xs">bookmark_add</span>
                             <span className="hidden sm:inline">Add Spot</span>
                         </button>
                     )
@@ -352,7 +352,7 @@ export default function WishlistPage() {
                                 setIsSelectionMode(!isSelectionMode);
                             }}
                             className={cn(
-                                "h-7 px-3 rounded-full font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-2 border",
+                                "h-7 px-3 rounded-full font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-2 border",
                                 isSelectionMode 
                                     ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]" 
                                     : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:text-primary active:scale-[0.98]"
@@ -365,7 +365,7 @@ export default function WishlistPage() {
                         <button 
                             onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
                             className={cn(
-                                "h-7 px-3 rounded-full font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-2 border",
+                                "h-7 px-3 rounded-full font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-2 border",
                                 isFiltersExpanded 
                                   ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]" 
                                   : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:text-primary active:scale-[0.98]"
@@ -382,7 +382,7 @@ export default function WishlistPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Place Selectors */}
                         <div className="space-y-1.5">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Location Filter</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Location Filter</label>
                             <div className="flex flex-col gap-1.5">
                                 <select
                                     value={selectedRegion}
@@ -391,7 +391,7 @@ export default function WishlistPage() {
                                         setSelectedRegion(e.target.value);
                                         setSelectedCity('all');
                                     }}
-                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm disabled:opacity-30 cursor-pointer"
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm disabled:opacity-30 cursor-pointer"
                                 >
                                     <option value="all">Region (All)</option>
                                     {placeOptions.countries.length > 0 && Object.values(placeOptions.regions).flatMap(set => Array.from(set)).sort().map(r => (
@@ -402,7 +402,7 @@ export default function WishlistPage() {
                                     value={selectedCity}
                                     disabled={selectedRegion === 'all'}
                                     onChange={(e) => setSelectedCity(e.target.value)}
-                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm disabled:opacity-30 cursor-pointer"
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm disabled:opacity-30 cursor-pointer"
                                 >
                                     <option value="all">City (All)</option>
                                     {selectedRegion !== 'all' && placeOptions.cities[selectedRegion] && Array.from(placeOptions.cities[selectedRegion]).map(c => (
@@ -414,7 +414,7 @@ export default function WishlistPage() {
 
                         {/* View Settings */}
                         <div className="space-y-1.5">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Group & Sort</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Group & Sort</label>
                             <div className="flex flex-col gap-1.5">
                                 <div className="flex p-0.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                                     <CompactToggleBtn active={groupBy === 'none'} onClick={() => setGroupBy('none')} label="None" />
@@ -424,7 +424,7 @@ export default function WishlistPage() {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value as any)}
-                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
                                 >
                                     <option value="newest">Newest First</option>
                                     <option value="price-low">Price: Low to High</option>
@@ -435,12 +435,12 @@ export default function WishlistPage() {
 
                         {/* Quick Categories */}
                         <div className="space-y-1.5">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Quick Categories</label>
+                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Quick Categories</label>
                             <div className="flex flex-wrap gap-1">
                                 <button
                                     onClick={() => setSelectedMainCategory('all')}
                                     className={cn(
-                                        "px-2.5 py-1.5 rounded-lg text-[9px] font-black transition-all",
+                                        "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all",
                                         selectedMainCategory === 'all' ? "bg-primary text-white" : "bg-white dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-sm"
                                     )}
                                 >
@@ -451,7 +451,7 @@ export default function WishlistPage() {
                                         key={key}
                                         onClick={() => setSelectedMainCategory(key)}
                                         className={cn(
-                                            "px-2.5 py-1.5 rounded-lg text-[9px] font-black transition-all flex items-center gap-1.5 border shadow-sm",
+                                            "px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border shadow-sm",
                                             selectedMainCategory === key 
                                                 ? "bg-primary text-white border-primary" 
                                                 : "bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-600"
@@ -566,9 +566,9 @@ export default function WishlistPage() {
                                             <div className="p-2.5 bg-white dark:bg-slate-900 rounded-[14px] shadow-sm border border-slate-200 dark:border-slate-800">
                                                 <data.icon className="w-4 h-4 text-primary" />
                                             </div>
-                                            <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
+                                            <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
                                                 {data.label}
-                                                <span className="text-[10px] font-black text-slate-400 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg ml-1">
+                                                <span className="text-xs font-semibold text-slate-400 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg ml-1">
                                                     {data.items.length}
                                                 </span>
                                             </h2>
@@ -601,7 +601,7 @@ export default function WishlistPage() {
                             <div className="w-32 h-32 bg-slate-50 dark:bg-slate-900 rounded-[48px] flex items-center justify-center mb-8">
                                 <PackageOpen className="w-16 h-16 text-primary/20" />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 italic">
                                 {searchQuery ? 'No results found' : 'Your wishlist is empty'}
                             </h3>
                             <p className="text-sm text-slate-400 font-bold mb-8">
@@ -611,7 +611,7 @@ export default function WishlistPage() {
                             </p>
                             <button
                                 onClick={handleAddItem}
-                                className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs hover:scale-105 transition-all shadow-xl shadow-slate-900/10 dark:shadow-none"
+                                className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-semibold text-xs hover:scale-105 transition-all shadow-xl shadow-slate-900/10 dark:shadow-none"
                             >
                                 Add Your First Spot
                             </button>
@@ -630,13 +630,13 @@ export default function WishlistPage() {
                         exit={{ y: 100, opacity: 0 }}
                         className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl"
                     >
-                        <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] shadow-2xl p-4 flex items-center justify-between gap-4 border border-white/10 dark:border-slate-200">
+                        <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[28px] shadow-2xl p-4 flex items-center justify-between gap-4 border border-white/10 dark:border-slate-200">
                             <div className="flex items-center gap-4 px-2">
-                                <div className="w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center font-black text-white">
+                                <div className="w-10 h-10 rounded-2xl bg-indigo-500 flex items-center justify-center font-semibold text-white">
                                     {selectedIds.length}
                                 </div>
                                 <div className="hidden sm:block">
-                                    <p className="text-xs font-black uppercase tracking-widest opacity-50">Selected Items</p>
+                                    <p className="text-xs font-semibold uppercase tracking-widest opacity-50">Selected Items</p>
                                     <p className="text-sm font-bold">항목이 선택되었습니다</p>
                                 </div>
                             </div>
@@ -653,7 +653,7 @@ export default function WishlistPage() {
                                                 <button
                                                     key={key}
                                                     onClick={() => handleBulkCategoryChange(key)}
-                                                    className="w-full text-left px-3 py-2 rounded-lg text-[11px] font-bold hover:bg-slate-700 dark:hover:bg-slate-100 flex items-center gap-2"
+                                                    className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-700 dark:hover:bg-slate-100 flex items-center gap-2"
                                                 >
                                                     <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: info.color }} />
                                                     {info.label}
@@ -701,7 +701,7 @@ function CompactToggleBtn({ active, onClick, label, icon: Icon }: { active: bool
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-black transition-all ${active
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${active
                 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
         >

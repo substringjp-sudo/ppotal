@@ -122,10 +122,10 @@ export default function ReservationsEditor({
             {/* General Reservations Section */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">일반 예약 내역 ({generalResCount})</h3>
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">일반 예약 내역 ({generalResCount})</h3>
                     <button 
                         onClick={() => setIsAdding(true)}
-                        className="text-[11px] font-black text-primary hover:text-primary/80 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                        className="text-xs font-semibold text-primary hover:text-primary/80 uppercase tracking-widest flex items-center gap-1 transition-colors"
                     >
                         <span className="material-symbols-rounded text-sm">add_circle</span>
                         새 예약 추가
@@ -143,18 +143,18 @@ export default function ReservationsEditor({
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">예약 항목 명칭</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-2">예약 항목 명칭</label>
                                     <input
                                         autoFocus
                                         type="text"
                                         value={newRes.title}
                                         onChange={(e) => setNewRes({ ...newRes, title: e.target.value })}
                                         placeholder="예: 루브르 박물관 입장권"
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-sm font-black outline-none focus:ring-2 ring-primary/20 transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:ring-2 ring-primary/20 transition-all"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">장소 (선택)</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-2">장소 (선택)</label>
                                     <GoogleMapsSearch
                                         placeholder="장소 이름 또는 주소 검색"
                                         onPlaceSelect={async (place) => {
@@ -185,7 +185,7 @@ export default function ReservationsEditor({
                                             }
                                             setNewRes({ ...newRes, ...updates });
                                         }}
-                                        inputClassName="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 h-12 text-sm font-black outline-none focus:ring-2 ring-primary/20 transition-all"
+                                        inputClassName="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3 h-12 text-sm font-semibold outline-none focus:ring-2 ring-primary/20 transition-all"
                                     />
                                 </div>
 
@@ -193,19 +193,19 @@ export default function ReservationsEditor({
                                 {(newRes.countryId || newRes.prefectureId || newRes.cityId) && (
                                     <div className="col-span-1 md:col-span-2 flex flex-wrap items-center gap-2 -mt-2 mb-2 ml-2">
                                         {newRes.countryName && (
-                                            <span className="flex items-center gap-1 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl text-[10px] font-black border border-sky-100 dark:border-sky-800">
+                                            <span className="flex items-center gap-1 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl text-xs font-semibold border border-sky-100 dark:border-sky-800">
                                                 <Globe className="w-3 h-3" />
                                                 {newRes.countryName}
                                             </span>
                                         )}
                                         {newRes.prefectureName && (
-                                            <span className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl text-[10px] font-black border border-indigo-100 dark:border-indigo-800">
+                                            <span className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-semibold border border-indigo-100 dark:border-indigo-800">
                                                 <Flag className="w-3 h-3" />
                                                 {newRes.prefectureName}
                                             </span>
                                         )}
                                         {newRes.cityName && (
-                                            <span className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black border border-emerald-100 dark:border-emerald-800">
+                                            <span className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-semibold border border-emerald-100 dark:border-emerald-800">
                                                 <MapIcon className="w-3 h-3" />
                                                 {newRes.cityName}
                                             </span>
@@ -226,7 +226,7 @@ export default function ReservationsEditor({
                                     onChange={(v) => setNewRes({ ...newRes, time: v })}
                                 />
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">상태</label>
+                                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-2">상태</label>
                                     <IconDropdown
                                         value={newRes.status}
                                         onChange={(val) => setNewRes({ ...newRes, status: val as any })}
@@ -239,13 +239,13 @@ export default function ReservationsEditor({
                             <div className="flex justify-end gap-3">
                                 <button 
                                     onClick={() => setIsAdding(false)}
-                                    className="px-8 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                                    className="px-8 py-3 text-xs font-semibold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
                                 >
                                     취소
                                 </button>
                                 <button 
                                     onClick={handleAdd}
-                                    className="px-10 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                                    className="px-10 py-3 bg-primary text-white text-xs font-semibold uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all"
                                 >
                                     추가 완료
                                 </button>
@@ -288,11 +288,11 @@ export default function ReservationsEditor({
 
                                             <div className="flex-1 min-w-0 text-left">
                                                 <div className="flex items-center gap-3 mb-1.5">
-                                                    <h4 className="font-black text-base text-slate-800 dark:text-white truncate">
+                                                    <h4 className="font-semibold text-base text-slate-800 dark:text-white truncate">
                                                         {res.title}
                                                     </h4>
                                                     <span className={cn(
-                                                        "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
+                                                        "px-2.5 py-1 rounded-lg text-xs font-semibold uppercase tracking-widest border",
                                                         res.status === 'confirmed' ? "text-green-500 bg-green-50/50 border-green-100" :
                                                         res.status === 'missing' ? "text-red-500 bg-red-50/50 border-red-100" :
                                                         "text-slate-400 bg-slate-50/50 border-slate-200"
@@ -301,7 +301,7 @@ export default function ReservationsEditor({
                                                     </span>
                                                 </div>
                                                 
-                                                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[10px] font-bold text-slate-400">
+                                                <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-bold text-slate-400">
                                                     <span className="flex items-center gap-1.5">
                                                         <span className="material-symbols-rounded text-sm">calendar_month</span>
                                                         {res.date || '날짜 미정'}
@@ -320,7 +320,7 @@ export default function ReservationsEditor({
                                                     )}
                                                     {/* Inline region labels in summary view */}
                                                     {(res.countryName || res.prefectureName || res.cityName) && (
-                                                        <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[8px] font-black text-slate-500">
+                                                        <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold text-slate-500">
                                                             {[res.countryName, res.prefectureName, res.cityName].filter(Boolean).join(' • ')}
                                                         </span>
                                                     )}
@@ -368,17 +368,17 @@ export default function ReservationsEditor({
                                                     <div className="p-4 md:p-6 space-y-4 text-left">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                             <div className="space-y-2">
-                                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">예약 항목 명칭</label>
+                                                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">예약 항목 명칭</label>
                                                                 <input
                                                                     type="text"
                                                                     value={res.title}
                                                                     onChange={(e) => updateReservation(res.id, { title: e.target.value })}
                                                                     placeholder="명칭 입력"
-                                                                    className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-black outline-none focus:border-primary/20 transition-all"
+                                                                    className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:border-primary/20 transition-all"
                                                                 />
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">장소 검색</label>
+                                                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">장소 검색</label>
                                                                 <GoogleMapsSearch
                                                                     placeholder={res.location || "장소 검색"}
                                                                     onPlaceSelect={async (place) => {
@@ -404,7 +404,7 @@ export default function ReservationsEditor({
                                                                         }
                                                                         updateReservation(res.id, updates);
                                                                     }}
-                                                                    inputClassName="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 h-[52px] text-sm font-black outline-none focus:border-primary/20 transition-all"
+                                                                    inputClassName="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3.5 h-[52px] text-sm font-semibold outline-none focus:border-primary/20 transition-all"
                                                                 />
                                                             </div>
 
@@ -412,19 +412,19 @@ export default function ReservationsEditor({
                                                             {(res.countryId || res.prefectureId || res.cityId) && (
                                                                 <div className="col-span-1 md:col-span-2 flex flex-wrap items-center gap-2 -mt-4 mb-2 ml-1">
                                                                     {res.countryName && (
-                                                                        <span className="flex items-center gap-1 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl text-[10px] font-black border border-sky-100 dark:border-sky-800">
+                                                                        <span className="flex items-center gap-1 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-xl text-xs font-semibold border border-sky-100 dark:border-sky-800">
                                                                             <Globe className="w-3 h-3" />
                                                                             {res.countryName}
                                                                         </span>
                                                                     )}
                                                                     {res.prefectureName && (
-                                                                        <span className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl text-[10px] font-black border border-indigo-100 dark:border-indigo-800">
+                                                                        <span className="flex items-center gap-1 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-semibold border border-indigo-100 dark:border-indigo-800">
                                                                             <Flag className="w-3 h-3" />
                                                                             {res.prefectureName}
                                                                         </span>
                                                                     )}
                                                                     {res.cityName && (
-                                                                        <span className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-[10px] font-black border border-emerald-100 dark:border-emerald-800">
+                                                                        <span className="flex items-center gap-1 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-semibold border border-emerald-100 dark:border-emerald-800">
                                                                             <MapIcon className="w-3 h-3" />
                                                                             {res.cityName}
                                                                         </span>
@@ -445,7 +445,7 @@ export default function ReservationsEditor({
                                                                 onChange={(v) => updateReservation(res.id, { time: v })}
                                                             />
                                                             <div className="space-y-2">
-                                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">상태</label>
+                                                                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">상태</label>
                                                                 <IconDropdown
                                                                     value={res.status}
                                                                     onChange={(val) => updateReservation(res.id, { status: val as any })}
@@ -458,7 +458,7 @@ export default function ReservationsEditor({
                                                         <div className="flex justify-end pt-4">
                                                             <button 
                                                                 onClick={() => setEditingId(null)}
-                                                                className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg"
+                                                                className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg"
                                                             >
                                                                 편집 완료
                                                             </button>
@@ -474,7 +474,7 @@ export default function ReservationsEditor({
                     ) : (
                         <div key="empty-reservations" className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[28px] text-center">
                             <span className="material-symbols-rounded text-4xl text-slate-200 mb-2">confirmation_number</span>
-                            <p className="text-[11px] font-bold text-slate-400 italic">추가된 일반 예약 내역이 없습니다.</p>
+                            <p className="text-xs font-bold text-slate-400 italic">추가된 일반 예약 내역이 없습니다.</p>
                         </div>
                     )}
                 </AnimatePresence>
@@ -487,8 +487,8 @@ export default function ReservationsEditor({
                         <span className="material-symbols-rounded">auto_awesome</span>
                     </div>
                     <div>
-                        <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">예약 통합 브리핑</h4>
-                        <p className="text-[10px] font-bold text-slate-400">교통 및 숙소 섹션에서 관리되는 예약 현황입니다.</p>
+                        <h4 className="text-sm font-semibold text-slate-800 dark:text-white uppercase tracking-widest">예약 통합 브리핑</h4>
+                        <p className="text-xs font-bold text-slate-400">교통 및 숙소 섹션에서 관리되는 예약 현황입니다.</p>
                     </div>
                 </div>
 
@@ -530,8 +530,8 @@ function SummaryCard({ icon, label, count, color, bgColor, onClick }: {
             <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center mb-3", color)}>
                 <span className="material-symbols-rounded">{icon}</span>
             </div>
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{count}개</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">{label}</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{count}개</div>
         </button>
     );
 }
@@ -544,9 +544,9 @@ function StatusLink({ label, status, progress }: { label: string, status: 'compl
                     "w-2 h-2 rounded-full",
                     status === 'complete' ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
                 )} />
-                <span className="text-xs font-black text-slate-700 dark:text-slate-200">{label}</span>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{label}</span>
             </div>
-            <span className="text-[10px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg">
+            <span className="text-xs font-semibold text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-lg">
                 {progress}
             </span>
         </div>

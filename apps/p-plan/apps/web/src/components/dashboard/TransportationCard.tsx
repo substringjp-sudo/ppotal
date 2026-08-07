@@ -58,7 +58,7 @@ export default function TransportationCard() {
     return (
         <div className="flex flex-col h-full">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <h3 id="transport-title" className="text-sm font-black flex items-center gap-2">
+                <h3 id="transport-title" className="text-sm font-semibold flex items-center gap-2">
                     <span className="material-symbols-rounded text-primary text-xl" aria-hidden="true">commute</span>
                     교통수단 정보
                 </h3>
@@ -67,7 +67,7 @@ export default function TransportationCard() {
                 {transportItems.length === 0 ? (
                     <div className="text-center py-8" role="status">
                         <span className="material-symbols-rounded text-4xl text-slate-200 mb-2" aria-hidden="true">directions_bus</span>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">등록된 교통 정보가 없습니다</p>
+                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest">등록된 교통 정보가 없습니다</p>
                     </div>
                 ) : (
                     <>
@@ -79,18 +79,18 @@ export default function TransportationCard() {
                                     aria-label={`${t.type} 일정: ${t.from}에서 ${t.to}까지. ${t.status}`}
                                 >
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                                             {t.mode} • {t.type}
                                         </span>
                                         <div className="flex items-center gap-2">
                                             {(t.cost > 0) ? (
-                                                <span className="text-[10px] font-black text-primary" aria-label={`비용: ${t.cost.toLocaleString()}원`}>
+                                                <span className="text-xs font-semibold text-primary" aria-label={`비용: ${t.cost.toLocaleString()}원`}>
                                                     {t.cost.toLocaleString()}원
                                                 </span>
                                             ) : (
-                                                <span className="text-[10px] font-black text-slate-400 italic">미정</span>
+                                                <span className="text-xs font-semibold text-slate-400 italic">미정</span>
                                             )}
-                                            <span className={`px-2 py-0.5 text-[9px] font-black rounded-full uppercase tracking-widest ${
+                                            <span className={`px-2 py-0.5 text-xs font-semibold rounded-full uppercase tracking-widest ${
                                                 t.status === '예약 완료' ? 'bg-green-100 text-green-700' : 
                                                 t.status === '확정' ? 'bg-blue-100 text-blue-700' :
                                                 t.status === '계획됨' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'
@@ -102,16 +102,16 @@ export default function TransportationCard() {
 
                                     <div className="flex justify-between items-center text-slate-900 dark:text-slate-100">
                                         <div className="min-w-0 flex-1">
-                                            <div className="text-sm font-black truncate tracking-tighter" aria-label={`출발지: ${t.from}`}>{t.from}</div>
-                                            <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest" aria-label={`출발 시간: ${t.fromTime}`}>{t.fromTime}</div>
+                                            <div className="text-sm font-semibold truncate tracking-tighter" aria-label={`출발지: ${t.from}`}>{t.from}</div>
+                                            <div className="text-xs text-slate-500 font-semibold uppercase tracking-widest" aria-label={`출발 시간: ${t.fromTime}`}>{t.fromTime}</div>
                                         </div>
                                         <div className="px-4 flex flex-col items-center opacity-30">
                                             <span className="material-symbols-rounded text-sm" aria-hidden="true">{t.icon}</span>
                                             <div className="w-8 h-[1px] bg-slate-400 mt-1" aria-hidden="true"></div>
                                         </div>
                                         <div className="text-right min-w-0 flex-1">
-                                            <div className="text-sm font-black truncate tracking-tighter" aria-label={`도착지: ${t.to}`}>{t.to}</div>
-                                            <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest" aria-label={`도착 시간: ${t.toTime}`}>{t.toTime}</div>
+                                            <div className="text-sm font-semibold truncate tracking-tighter" aria-label={`도착지: ${t.to}`}>{t.to}</div>
+                                            <div className="text-xs text-slate-500 font-semibold uppercase tracking-widest" aria-label={`도착 시간: ${t.toTime}`}>{t.toTime}</div>
                                         </div>
                                     </div>
                                 </li>
@@ -121,7 +121,7 @@ export default function TransportationCard() {
                         {hasMore && (
                             <button 
                                 onClick={() => setIsExpanded(!isExpanded)}
-                                className="w-full py-2 text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest flex items-center justify-center gap-1 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl mt-2 group border border-transparent hover:border-primary/20"
+                                className="w-full py-2 text-xs font-semibold text-slate-400 hover:text-primary transition-colors uppercase tracking-widest flex items-center justify-center gap-1 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl mt-2 group border border-transparent hover:border-primary/20"
                             >
                                 {isExpanded ? (
                                     <>

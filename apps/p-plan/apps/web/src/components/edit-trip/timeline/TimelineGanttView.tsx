@@ -41,7 +41,7 @@ export default function TimelineGanttView({ dailyTimeline, onEditEvent }: Timeli
                         {HOURS.map((hour) => (
                             <div 
                                 key={hour}
-                                className="absolute text-[10px] font-black text-slate-400 -translate-x-1/2"
+                                className="absolute text-xs font-semibold text-slate-400 -translate-x-1/2"
                                 style={{ left: `${((hour - 8) / HOURS.length) * 100}%` }}
                             >
                                 {hour > 12 ? `PM ${hour - 12}` : `AM ${hour}`}
@@ -56,8 +56,8 @@ export default function TimelineGanttView({ dailyTimeline, onEditEvent }: Timeli
                         <div key={dayIdx} className="flex items-center group">
                             {/* Day Label */}
                             <div className="w-32 flex-shrink-0 flex flex-col">
-                                <span className="text-xs font-black text-slate-900 dark:text-white">{day.day}일차</span>
-                                <span className="text-[10px] font-bold text-slate-400">
+                                <span className="text-xs font-semibold text-slate-900 dark:text-white">{day.day}일차</span>
+                                <span className="text-xs font-bold text-slate-400">
                                     {day.date ? format(parseISO(day.date), 'MM.dd (eee)', { locale: ko }) : '날짜 미정'}
                                 </span>
                             </div>
@@ -96,8 +96,8 @@ export default function TimelineGanttView({ dailyTimeline, onEditEvent }: Timeli
                                             }}
                                             whileHover={{ y: -2 }}
                                         >
-                                            <span className="text-[10px] font-black truncate leading-tight">{event.title}</span>
-                                            <span className="text-[8px] font-bold opacity-70">{event.startTime}</span>
+                                            <span className="text-xs font-semibold truncate leading-tight">{event.title}</span>
+                                            <span className="text-xs font-bold opacity-70">{event.startTime}</span>
                                         </motion.button>
                                     );
                                 })}

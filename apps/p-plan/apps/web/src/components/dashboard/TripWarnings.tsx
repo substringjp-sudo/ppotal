@@ -58,19 +58,19 @@ export default function TripWarnings() {
                             </span>
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
+                            <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
                                 한번 더 확인해보세요
                                 <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full" aria-label={`총 ${warnings.length}개`}>{warnings.length}</span>
                             </h3>
                             <div className="flex items-center gap-2 mt-0.5">
                                 {criticalCount > 0 && (
-                                    <span className="text-[10px] font-black bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wider">꼭 확인 {criticalCount}</span>
+                                    <span className="text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-1.5 py-0.5 rounded uppercase tracking-wider">꼭 확인 {criticalCount}</span>
                                 )}
                                 {warningCount > 0 && (
-                                    <span className="text-[10px] font-black bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">확인 필요 {warningCount}</span>
+                                    <span className="text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">확인 필요 {warningCount}</span>
                                 )}
                                 {infoCount > 0 && (
-                                    <span className="text-[10px] font-black bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase tracking-wider">참고 {infoCount}</span>
+                                    <span className="text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase tracking-wider">참고 {infoCount}</span>
                                 )}
                             </div>
                         </div>
@@ -110,8 +110,8 @@ export default function TripWarnings() {
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-2 mt-2">
                                                     {warning.sourceType && (
-                                                        <span className="text-[9px] font-black bg-white/40 dark:bg-black/20 px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
-                                                            <span className="material-symbols-rounded text-[10px]" aria-hidden="true">
+                                                        <span className="text-xs font-semibold bg-white/40 dark:bg-black/20 px-1.5 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                                                            <span className="material-symbols-rounded text-xs" aria-hidden="true">
                                                                 {warning.sourceType === 'flight' ? 'flight' : 
                                                                 warning.sourceType === 'accommodation' ? 'hotel' : 
                                                                 warning.sourceType === 'budget' ? 'payments' : 'event'}
@@ -123,7 +123,7 @@ export default function TripWarnings() {
                                                         </span>
                                                     )}
                                                     {warning.type && (
-                                                        <span className="text-[9px] font-bold opacity-60 italic">
+                                                        <span className="text-xs font-bold opacity-60 italic">
                                                             #{warning.type}
                                                         </span>
                                                     )}
@@ -134,8 +134,8 @@ export default function TripWarnings() {
                                         {warning.suggestion && (
                                             <div className="px-4 py-3 bg-white/30 dark:bg-black/10 border-t border-white/20 dark:border-black/5 flex items-start gap-2">
                                                 <span className="material-symbols-rounded text-sm mt-0.5 text-primary/60" aria-hidden="true">lightbulb</span>
-                                                <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-normal">
-                                                    <span className="text-[9px] uppercase tracking-widest text-primary/80 mr-1.5 opacity-60">이렇게 해보세요 →</span>
+                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-300 leading-normal">
+                                                    <span className="text-xs uppercase tracking-widest text-primary/80 mr-1.5 opacity-60">이렇게 해보세요 →</span>
                                                     {warning.suggestion}
                                                 </p>
                                             </div>
@@ -144,7 +144,7 @@ export default function TripWarnings() {
                                 ))}
                                 <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                                     <span className="material-symbols-rounded text-slate-400 text-sm" aria-hidden="true">lightbulb</span>
-                                    <p className="text-[11px] font-medium text-slate-500">
+                                    <p className="text-xs font-medium text-slate-500">
                                         기록하신 내용을 검토한 항목이에요. 여행 전에 직접 한 번 더 확인해보시길 권장해요.
                                     </p>
                                 </div>

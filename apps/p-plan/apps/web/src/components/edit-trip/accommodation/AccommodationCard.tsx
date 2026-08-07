@@ -46,11 +46,11 @@ export const AccommodationCard: React.FC<AccommodationCardProps> = ({
                         </div>
                         <div className="flex flex-col gap-0 xl:gap-0.5 md:gap-0.5 min-w-0">
                             <div className="flex items-center gap-2">
-                                <h4 className="text-base font-black text-slate-900 dark:text-slate-100 tracking-tight truncate">
+                                <h4 className="text-base font-semibold text-slate-900 dark:text-slate-100 tracking-tight truncate">
                                     {acc.name || '미지정 숙소'}
                                 </h4>
                             </div>
-                            <div className="flex items-center gap-1 xl:gap-2 text-[9px] xl:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-1 xl:gap-2 text-xs xl:text-xs font-semibold text-slate-400 uppercase tracking-widest">
                                 <span>{acc.startDate} - {acc.endDate}</span>
                                 <div className="w-0.5 h-0.5 rounded-full bg-slate-200" />
                                 <span className="truncate">{ACCOMMODATION_TYPES.find(t => t.value === acc.type)?.label || '기타'}</span>
@@ -65,7 +65,7 @@ export const AccommodationCard: React.FC<AccommodationCardProps> = ({
                                 updateAccommodation(acc.id, { status: acc.status === 'booked' ? 'tentative' : 'booked' });
                             }}
                             className={cn(
-                                "flex items-center gap-2 px-3 py-2 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest border-2 shrink-0",
+                                "flex items-center gap-2 px-3 py-2 rounded-xl transition-all font-semibold text-xs uppercase tracking-widest border-2 shrink-0",
                                 acc.status === 'booked' 
                                     ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20" 
                                     : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"

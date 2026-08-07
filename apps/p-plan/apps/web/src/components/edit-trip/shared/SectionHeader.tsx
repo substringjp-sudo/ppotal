@@ -28,7 +28,7 @@ export function SectionHeader({
                     <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div>
-                    <h3 className="text-base font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                    <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
                         {title}
                     </h3>
                     {subtitle && (

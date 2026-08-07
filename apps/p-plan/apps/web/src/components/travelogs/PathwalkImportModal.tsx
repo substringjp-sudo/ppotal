@@ -75,7 +75,7 @@ export default function PathwalkImportModal({
                 className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden"
             >
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-                    <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-rounded text-primary">footprint</span>
                         PATHWALK에서 가져오기
                     </h2>
@@ -94,7 +94,7 @@ export default function PathwalkImportModal({
                     <button
                         onClick={() => runImport(samplePathwalkImport())}
                         disabled={busy}
-                        className="w-full rounded-2xl bg-primary/10 hover:bg-primary/15 text-primary py-3.5 text-sm font-black transition disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full rounded-2xl bg-primary/10 hover:bg-primary/15 text-primary py-3.5 text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-rounded text-lg">bolt</span>
                         샘플 발자취로 체험하기
@@ -102,7 +102,7 @@ export default function PathwalkImportModal({
 
                     <div className="flex items-center gap-3">
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">또는 직접 붙여넣기</span>
+                        <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">또는 직접 붙여넣기</span>
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
                     </div>
 
@@ -119,7 +119,7 @@ export default function PathwalkImportModal({
                     <button
                         onClick={handleImportJson}
                         disabled={busy || !json.trim()}
-                        className="w-full rounded-2xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 py-3.5 text-sm font-black hover:opacity-90 transition disabled:opacity-40 flex items-center justify-center gap-2"
+                        className="w-full rounded-2xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 py-3.5 text-sm font-semibold hover:opacity-90 transition disabled:opacity-40 flex items-center justify-center gap-2"
                     >
                         {busy ? '가져오는 중…' : '가져와서 여행기 만들기'}
                     </button>

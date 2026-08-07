@@ -13,7 +13,9 @@ export interface PrintTheme {
   accent: string;
   surface: string;
   border: string;
-  font: 'font-sans' | 'font-serif' | 'font-mono' | 'font-handwriting'; // font-handwriting은 가상의 클래스로 설정 후 CSS 주입 고려
+  // 'diary' 테마의 세리프는 브라우저 기본 세리프가 아니라 --font-editorial(Newsreader
+  // + Noto Serif KR)을 쓴다 — 읽는 화면과 같은 서체 규칙을 인쇄물도 물려받는다.
+  font: 'font-sans' | 'font-editorial' | 'font-mono' | 'font-handwriting'; // font-handwriting은 가상의 클래스로 설정 후 CSS 주입 고려
   pattern?: 'dots' | 'grid' | 'noise' | 'none';
   headerStyle?: 'default' | 'magazine' | 'minimal' | 'diary';
 }
@@ -55,7 +57,7 @@ export const PRINT_THEMES: Record<string, PrintTheme> = {
     accent: 'text-amber-700',
     surface: 'bg-stone-100/40',
     border: 'border-stone-200',
-    font: 'font-serif',
+    font: 'font-editorial',
     headerStyle: 'diary',
     pattern: 'grid'
   },
@@ -121,25 +123,25 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
     if (theme.headerStyle === 'magazine') {
         return (
             <div className={cn("mb-16 pt-12 relative overflow-hidden text-left border-b-8", theme.border)}>
-                <div className="absolute top-0 left-0 text-[120px] font-black opacity-[0.03] -z-10 select-none -translate-x-10 -translate-y-10 leading-none uppercase">
+                <div className="absolute top-0 left-0 text-[120px] font-semibold opacity-[0.03] -z-10 select-none -translate-x-10 -translate-y-10 leading-none uppercase">
                     JOURNEY
                 </div>
                 <div className="flex flex-col gap-6 mb-12">
                     <div className="flex items-center gap-4">
                         <div className={cn("h-px flex-1", theme.bg === 'bg-white' ? 'bg-black' : 'bg-white')} />
-                        <span className={cn("text-[10px] font-black uppercase tracking-[0.3em]", theme.secondary)}>제 1권 / 여행 가이드</span>
+                        <span className={cn("text-xs font-semibold uppercase tracking-[0.3em]", theme.secondary)}>제 1권 / 여행 가이드</span>
                     </div>
-                    <h1 className={cn("text-7xl font-black tracking-tighter leading-none italic uppercase", theme.primary)}>
+                    <h1 className={cn("text-7xl font-bold tracking-tighter leading-none italic uppercase", theme.primary)}>
                         {trip.title}
                     </h1>
                 </div>
                 <div className="grid grid-cols-2 gap-8 mb-8">
                     <div className="space-y-1">
-                        <span className={cn("text-[9px] font-black uppercase tracking-widest", theme.secondary)}>목적지</span>
+                        <span className={cn("text-xs font-semibold uppercase tracking-widest", theme.secondary)}>목적지</span>
                         <div className={cn("text-xl font-bold truncate", theme.primary)}>{regionNames || '장소 미지정'}</div>
                     </div>
                     <div className="space-y-1 text-right">
-                        <span className={cn("text-[9px] font-black uppercase tracking-widest", theme.secondary)}>여행 기간</span>
+                        <span className={cn("text-xs font-semibold uppercase tracking-widest", theme.secondary)}>여행 기간</span>
                         <div className={cn("text-xl font-bold", theme.primary)}>{startDate} - {endDate}</div>
                     </div>
                 </div>
@@ -150,10 +152,10 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
     if (theme.headerStyle === 'diary') {
         return (
             <div className={cn("mb-12 pb-10 pt-6 text-center border-b border-dashed", theme.border)}>
-                <div className="inline-flex items-center gap-2 mb-4 px-4 py-1 rounded-full border border-stone-300 text-[10px] font-bold uppercase tracking-widest text-stone-500">
+                <div className="inline-flex items-center gap-2 mb-4 px-4 py-1 rounded-full border border-stone-300 text-xs font-bold uppercase tracking-widest text-stone-500">
                     <span className="material-symbols-rounded text-xs">edit</span> 여행 일기
                 </div>
-                <h1 className={cn("text-5xl font-serif italic mb-6", theme.primary)}>{trip.title}</h1>
+                <h1 className={cn("text-5xl font-editorial italic mb-6", theme.primary)}>{trip.title}</h1>
                 <div className="flex flex-col items-center gap-3">
                     <div className={cn("flex items-center gap-4 text-sm font-medium", theme.secondary)}>
                         <span>{startDate}</span>
@@ -174,7 +176,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                 <span className={cn("text-xs font-bold uppercase tracking-[0.4em] mb-4 block", theme.accent)}>여행 계획</span>
                 <h1 className={cn("text-5xl font-light tracking-tight mb-8", theme.primary)}>{trip.title}</h1>
                 <div className={cn("h-0.5 w-12 mb-12", theme.accent.replace('text-', 'bg-'))} />
-                <div className={cn("grid grid-cols-3 gap-12 text-[11px] uppercase tracking-widest font-bold", theme.secondary)}>
+                <div className={cn("grid grid-cols-3 gap-12 text-xs uppercase tracking-widest font-bold", theme.secondary)}>
                     <div>
                         <div className="mb-2 opacity-50">날짜</div>
                         <div className={theme.primary}>{startDate}</div>
@@ -195,7 +197,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
     // Default Style
     return (
       <div className={`mb-10 pb-8 border-b-2 ${theme.border} text-center pt-8`}>
-        <h1 className={`text-4xl font-black mb-4 tracking-tight ${theme.primary}`}>{trip.title}</h1>
+        <h1 className={`text-4xl font-bold mb-4 tracking-tight ${theme.primary}`}>{trip.title}</h1>
         <div className={`flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-semibold ${theme.secondary}`}>
           {startDate && <span className="flex items-center gap-1.5"><span className={theme.accent}>📅</span> {startDate} ~ {endDate}</span>}
           {regionNames && <span className="flex items-center gap-1.5"><span className={theme.accent}>📍</span> {regionNames}</span>}
@@ -250,7 +252,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
 
     return (
       <div className="mb-16 page-break-inside-avoid">
-        <h2 className={cn("text-2xl font-black mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
+        <h2 className={cn("text-2xl font-bold mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
            <span className={cn("w-2 h-8", theme.accent.replace('text-', 'bg-'))} />
            주요 일정
         </h2>
@@ -259,7 +261,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
           <div className={cn("rounded-2xl border overflow-hidden shadow-sm bg-white dark:bg-transparent", theme.border)}>
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className={cn("text-left uppercase text-[9px] font-black tracking-widest border-b", theme.secondary, theme.border, theme.surface)}>
+                  <tr className={cn("text-left uppercase text-xs font-semibold tracking-widest border-b", theme.secondary, theme.border, theme.surface)}>
                     <th className="py-3 px-4">시간</th>
                     <th className="py-3 px-4">분류</th>
                     <th className="py-3 px-4">활동</th>
@@ -269,13 +271,13 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                   {allRows.map((r, i) => (
                     <tr key={i} className={cn("border-b last:border-0", theme.border)}>
                       <td className="py-4 px-4">
-                        <div className={cn("font-black italic", theme.primary)}>{r.date.slice(5).replace('-','.')}</div>
-                        <div className={cn("text-[10px] font-bold opacity-60", theme.secondary)}>{r.time || '하루 종일'}</div>
+                        <div className={cn("font-semibold italic", theme.primary)}>{r.date.slice(5).replace('-','.')}</div>
+                        <div className={cn("text-xs font-bold opacity-60", theme.secondary)}>{r.time || '하루 종일'}</div>
                       </td>
-                      <td className="py-4 px-4 overflow-hidden"><span className="mr-1.5">{r.typeIcon}</span><span className="font-bold text-[11px]">{r.type}</span></td>
+                      <td className="py-4 px-4 overflow-hidden"><span className="mr-1.5">{r.typeIcon}</span><span className="font-bold text-xs">{r.type}</span></td>
                       <td className="py-4 px-4">
                         <div className={cn("font-bold text-sm", theme.primary)}>{r.title}</div>
-                        {r.location && <div className={cn("text-[10px] mt-0.5 font-semibold opacity-60", theme.secondary)}>{r.location}</div>}
+                        {r.location && <div className={cn("text-xs mt-0.5 font-semibold opacity-60", theme.secondary)}>{r.location}</div>}
                       </td>
                     </tr>
                   ))}
@@ -287,16 +289,16 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
              <div className={cn("absolute left-[40px] top-6 bottom-6 w-0.5 border-l-2 border-dashed", theme.border)} />
              {allRows.map((r, i) => (
                <div key={i} className="flex items-start gap-4 group relative z-10">
-                  <div className={cn("w-20 shrink-0 text-center py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm font-black", theme.primary)}>
-                      <div className="text-[10px] opacity-40 uppercase">{r.date.slice(5).replace('-','.')}</div>
+                  <div className={cn("w-20 shrink-0 text-center py-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm font-semibold", theme.primary)}>
+                      <div className="text-xs opacity-40 uppercase">{r.date.slice(5).replace('-','.')}</div>
                       <div className="text-sm italic">{r.time || '--:--'}</div>
                   </div>
                   <div className={cn("w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-xl bg-white border-2 shadow-sm", theme.border)}>
                      {r.typeIcon}
                   </div>
                   <div className={cn("flex-1 p-4 rounded-2xl bg-white dark:bg-slate-800/40 border shadow-sm group-hover:shadow-md transition-all", theme.border)}>
-                     <h3 className={cn("text-base font-black italic", theme.primary)}>{r.title}</h3>
-                     {r.location && <p className={cn("text-[11px] font-bold mt-1.5 flex items-center gap-1", theme.secondary)}><span className="material-symbols-rounded text-[14px]">location_on</span>{r.location}</p>}
+                     <h3 className={cn("text-base font-semibold italic", theme.primary)}>{r.title}</h3>
+                     {r.location && <p className={cn("text-xs font-bold mt-1.5 flex items-center gap-1", theme.secondary)}><span className="material-symbols-rounded text-[14px]">location_on</span>{r.location}</p>}
                      {r.memo && <p className={cn("text-xs mt-3 opacity-80 border-l-2 pl-3 py-1 italic", theme.border, theme.text)}>{r.memo}</p>}
                   </div>
                </div>
@@ -315,14 +317,14 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
 
     return (
       <div className="mb-16 page-break-inside-avoid">
-        <h2 className={cn("text-2xl font-black mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
+        <h2 className={cn("text-2xl font-bold mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
            <span className={cn("w-2 h-8", theme.accent.replace('text-', 'bg-'))} />
            예산 요약
         </h2>
-        <div className={cn("rounded-[2rem] border overflow-hidden shadow-sm", theme.border)}>
+        <div className={cn("rounded-[20px] border overflow-hidden shadow-sm", theme.border)}>
            <table className="w-full text-sm border-collapse">
              <thead>
-               <tr className={cn("text-left text-[9px] uppercase tracking-widest font-black border-b", theme.secondary, theme.border, theme.surface)}>
+               <tr className={cn("text-left text-xs uppercase tracking-widest font-semibold border-b", theme.secondary, theme.border, theme.surface)}>
                  <th className="py-4 px-6">내용</th>
                  <th className="py-4 px-6 text-right">금액</th>
                </tr>
@@ -331,17 +333,17 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                {expenses.map((e: BudgetExpense, i: number) => (
                  <tr key={i} className={cn("border-b last:border-0", theme.border)}>
                    <td className="py-4 px-6">
-                       <div className={cn("font-black", theme.primary)}>{e.title}</div>
-                       <div className={cn("text-[10px] font-bold uppercase", theme.secondary)}>분류: {e.category}</div>
+                       <div className={cn("font-semibold", theme.primary)}>{e.title}</div>
+                       <div className={cn("text-xs font-bold uppercase", theme.secondary)}>분류: {e.category}</div>
                    </td>
-                   <td className={cn("py-4 px-6 text-right font-black italic", theme.primary)}>
-                       {e.amount?.toLocaleString()} <span className="text-[10px] ml-1 opacity-40 uppercase">{e.currency || baseCurrency}</span>
+                   <td className={cn("py-4 px-6 text-right font-semibold italic", theme.primary)}>
+                       {e.amount?.toLocaleString()} <span className="text-xs ml-1 opacity-40 uppercase">{e.currency || baseCurrency}</span>
                    </td>
                  </tr>
                ))}
                <tr className={cn("border-t-4", theme.border, theme.surface)}>
-                 <td className={cn("py-6 px-6 text-right font-black uppercase tracking-widest text-xs", theme.secondary)}>총 지출액</td>
-                 <td className={cn("py-6 px-6 text-right text-2xl font-black italic", theme.primary)}>
+                 <td className={cn("py-6 px-6 text-right font-semibold uppercase tracking-widest text-xs", theme.secondary)}>총 지출액</td>
+                 <td className={cn("py-6 px-6 text-right text-2xl font-bold italic", theme.primary)}>
                      {total.toLocaleString()} <span className="text-xs ml-1 opacity-50 uppercase">{baseCurrency}</span>
                  </td>
                </tr>
@@ -358,7 +360,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
      
      return (
        <div className="mb-16 page-break-inside-avoid">
-         <h2 className={cn("text-2xl font-black mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
+         <h2 className={cn("text-2xl font-bold mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
             <span className={cn("w-2 h-8", theme.accent.replace('text-', 'bg-'))} />
             준비 사항
          </h2>
@@ -372,8 +374,8 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                      {p.status === 'done' && <span className="material-symbols-rounded text-sm">check</span>}
                   </div>
                   <div className="flex-1 truncate">
-                     <div className={cn("text-sm font-black italic", p.status === 'done' ? "opacity-40" : theme.primary)}>{p.title}</div>
-                     {p.date && <div className={cn("text-[9px] mt-1 font-bold uppercase tracking-wider", theme.secondary)}>마감일: {p.date.slice(0, 10)}</div>}
+                     <div className={cn("text-sm font-semibold italic", p.status === 'done' ? "opacity-40" : theme.primary)}>{p.title}</div>
+                     {p.date && <div className={cn("text-xs mt-1 font-bold uppercase tracking-wider", theme.secondary)}>마감일: {p.date.slice(0, 10)}</div>}
                   </div>
                </div>
             ))}
@@ -388,7 +390,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
 
      return (
         <div className="mb-16 page-break-inside-avoid">
-         <h2 className={cn("text-2xl font-black mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
+         <h2 className={cn("text-2xl font-bold mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
             <span className={cn("w-2 h-8", theme.accent.replace('text-', 'bg-'))} />
             준비물 목록
          </h2>
@@ -402,7 +404,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                         "w-4 h-4 shrink-0 rounded flex items-center justify-center border",
                         p.isDone ? "bg-primary border-primary text-white" : theme.border
                     )}>
-                         {p.isDone && <span className="material-symbols-rounded text-[10px]">check</span>}
+                         {p.isDone && <span className="material-symbols-rounded text-xs">check</span>}
                     </span>
                     <span className={cn("truncate font-bold italic", theme.primary)}>{p.title || '제목 없음'}</span>
                 </div>
@@ -437,7 +439,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                 }
             })}
             
-            <div className={cn("mt-24 pt-10 border-t-2 text-center text-[10px] font-black uppercase tracking-[0.5em] italic", theme.border, theme.secondary)}>
+            <div className={cn("mt-24 pt-10 border-t-2 text-center text-xs font-semibold uppercase tracking-[0.5em] italic", theme.border, theme.secondary)}>
                 PPLANER 스튜디오에서 생성됨
             </div>
         </div>

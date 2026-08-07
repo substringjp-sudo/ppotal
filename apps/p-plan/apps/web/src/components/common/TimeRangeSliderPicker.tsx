@@ -187,7 +187,7 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
     const durationFormatted = `${Math.floor(durationMin / 60)}h ${durationMin % 60}m`;
 
     return (
-        <div className="p-4 bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl border border-slate-200 dark:border-slate-800 w-full overflow-hidden select-none">
+        <div className="p-4 bg-white dark:bg-slate-900 rounded-[20px] shadow-2xl border border-slate-200 dark:border-slate-800 w-full overflow-hidden select-none">
             {/* Range Label */}
             <div className="flex items-center justify-between mb-4 px-2">
                 <div className="flex items-center gap-3">
@@ -196,15 +196,15 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-slate-900 dark:text-white">{startValue}</span>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">{startValue}</span>
                             <span className="text-slate-300">→</span>
-                            <span className="text-sm font-black text-slate-900 dark:text-white">{endValue}</span>
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">{endValue}</span>
                         </div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Duration: {durationFormatted}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Duration: {durationFormatted}</p>
                     </div>
                 </div>
                 {startValue === endValue && (
-                    <span className="text-[10px] font-black text-rose-500 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">
+                    <span className="text-xs font-semibold text-rose-500 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">
                         종료시간 삭제됨
                     </span>
                 )}
@@ -222,7 +222,7 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
                                     initial={{ opacity: 0 }}
                                     animate={{ left: `${pos}%`, opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute -translate-x-1/2 text-[9px] font-black text-slate-500 dark:text-slate-300 whitespace-nowrap"
+                                    className="absolute -translate-x-1/2 text-xs font-semibold text-slate-500 dark:text-slate-300 whitespace-nowrap"
                                 >
                                     {h.toString().padStart(2, '0')}
                                 </motion.span>
@@ -240,8 +240,8 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
                                     animate={{ left: `${pos}%`, opacity: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
                                     className={cn(
-                                        "absolute -translate-x-1/2 text-[8px] font-black whitespace-nowrap",
-                                        mins % 60 === 0 ? "text-primary text-[10px]" : "text-slate-400"
+                                        "absolute -translate-x-1/2 text-xs font-semibold whitespace-nowrap",
+                                        mins % 60 === 0 ? "text-primary text-xs" : "text-slate-400"
                                     )}
                                 >
                                     {minutesToTime(mins)}
@@ -305,7 +305,7 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
                 >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-12 bg-white dark:bg-slate-900 border-2 border-primary rounded-full shadow-lg" />
                     {isPressing === 'start' && (
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-xs font-semibold rounded-lg">
                             {startValue}
                         </div>
                     )}
@@ -320,14 +320,14 @@ export function TimeRangeSliderPicker({ startValue, endValue, onChange, onClose,
                 >
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-12 bg-white dark:bg-slate-900 border-2 border-primary rounded-full shadow-lg" />
                     {isPressing === 'end' && (
-                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-white text-xs font-semibold rounded-lg">
                             {endValue}
                         </div>
                     )}
                 </motion.div>
             </div>
             
-            <p className="mt-4 text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
+            <p className="mt-4 text-xs font-bold text-slate-400 text-center uppercase tracking-widest">
                 드래그하여 시간 범위를 조절하세요. 두 시간이 겹치면 종료시간이 지워집니다.
             </p>
         </div>

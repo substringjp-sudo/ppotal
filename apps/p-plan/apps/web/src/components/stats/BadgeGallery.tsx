@@ -18,14 +18,14 @@ export default function BadgeGallery({ badges }: BadgeGalleryProps) {
   return (
     <section className="space-y-10">
       <div className="flex items-center gap-4">
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-widest uppercase">Hall of Achievements</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-widest uppercase">Hall of Achievements</h2>
         <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
         {(Object.keys(categories) as Array<keyof typeof categories>).map((cat) => (
           <div key={cat} className="space-y-6">
-            <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{categories[cat]}</h3>
+            <h3 className="text-xs font-semibold text-primary uppercase tracking-[0.3em]">{categories[cat]}</h3>
             
             <div className="grid grid-cols-1 gap-4">
               {badges.filter(b => b.category === cat).map((badge, i) => (
@@ -54,14 +54,14 @@ export default function BadgeGallery({ badges }: BadgeGalleryProps) {
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-slate-900 dark:text-white truncate">{badge.title}</p>
-                      <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{badge.title}</p>
+                      <p className="text-xs font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
                         {badge.isUnlocked ? badge.description : (badge.hint || '기록을 더 쌓아서 해금하세요')}
                       </p>
                       
                       {badge.maxProgress && (
                         <div className="mt-3 space-y-1">
-                          <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                          <div className="flex justify-between text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                             <span>Progress</span>
                             <span>{badge.progress} / {badge.maxProgress}</span>
                           </div>

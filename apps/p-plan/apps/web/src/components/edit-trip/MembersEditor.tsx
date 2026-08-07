@@ -161,7 +161,7 @@ function MemberCounter({ group, count, onChange }: MemberCounterProps) {
             </div>
 
             <div className="text-center mb-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{group.label}</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">{group.label}</p>
                 <AnimatePresence mode="wait">
                     <motion.p
                         key={displayCount}
@@ -170,14 +170,14 @@ function MemberCounter({ group, count, onChange }: MemberCounterProps) {
                         exit={{ opacity: 0, y: 8, scale: 0.8 }}
                         transition={{ duration: 0.15 }}
                         className={cn(
-                            "text-4xl font-black italic tracking-tighter leading-none",
+                            "text-4xl font-bold italic tracking-tighter leading-none",
                             count > 0 ? colors.text : "text-slate-200 dark:text-slate-700"
                         )}
                     >
                         {displayCount}
                     </motion.p>
                 </AnimatePresence>
-                <p className="text-[9px] font-bold text-slate-400 mt-1">{group.description}</p>
+                <p className="text-xs font-bold text-slate-400 mt-1">{group.description}</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -185,7 +185,7 @@ function MemberCounter({ group, count, onChange }: MemberCounterProps) {
                     onClick={decrement}
                     disabled={count <= 0}
                     className={cn(
-                        "w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black transition-all active:scale-90",
+                        "w-8 h-8 rounded-xl flex items-center justify-center text-sm font-semibold transition-all active:scale-90",
                         count > 0
                             ? `${colors.light} ${colors.text} hover:${colors.bg} hover:text-white`
                             : "bg-slate-100 dark:bg-slate-800 text-slate-300 cursor-not-allowed"
@@ -197,7 +197,7 @@ function MemberCounter({ group, count, onChange }: MemberCounterProps) {
                     onClick={increment}
                     disabled={count >= group.maxCount}
                     className={cn(
-                        "w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black transition-all active:scale-90",
+                        "w-8 h-8 rounded-xl flex items-center justify-center text-sm font-semibold transition-all active:scale-90",
                         count < group.maxCount
                             ? `${colors.bg} text-white shadow-lg hover:opacity-90`
                             : "bg-slate-100 dark:bg-slate-800 text-slate-300 cursor-not-allowed"
@@ -227,7 +227,7 @@ function ParticipantAvatar({ participant }: { participant: Participant }) {
                     style={{ backgroundImage: participant.avatarUrl ? `url('${participant.avatarUrl}')` : undefined }}
                 >
                     {!participant.avatarUrl && (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-black">
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-semibold">
                             {participant.name.charAt(0)}
                         </div>
                     )}
@@ -235,7 +235,7 @@ function ParticipantAvatar({ participant }: { participant: Participant }) {
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{participant.name}</p>
-                <p className="text-[10px] text-slate-400 font-medium capitalize">작성자</p>
+                <p className="text-xs text-slate-400 font-medium capitalize">작성자</p>
             </div>
         </motion.div>
     );
@@ -327,7 +327,7 @@ export default function MembersEditor() {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col gap-1">
-                <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <span className="material-symbols-rounded text-primary">groups</span>
                     여행 멤버 및 공유
                 </h2>
@@ -339,8 +339,8 @@ export default function MembersEditor() {
                     <span className="material-symbols-rounded">luggage</span>
                 </div>
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">총 여행 인원</p>
-                    <p className="text-2xl font-black italic text-slate-900 dark:text-white leading-tight">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">총 여행 인원</p>
+                    <p className="text-2xl font-bold italic text-slate-900 dark:text-white leading-tight">
                         {totalTravelers}명
                         <span className="text-sm font-bold text-slate-400 ml-1 not-italic">함께 여행</span>
                     </p>
@@ -353,7 +353,7 @@ export default function MembersEditor() {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as 'members' | 'invite')}
                         className={cn(
-                            "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                            "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all",
                             activeTab === tab.id
                                 ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
                                 : "text-slate-400 hover:text-slate-600"
@@ -401,8 +401,8 @@ export default function MembersEditor() {
                                     <span className="material-symbols-rounded text-2xl">share</span>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-primary">공유 링크 생성</h3>
-                                    <p className="text-[11px] text-primary/60 font-medium mt-0.5 leading-relaxed">
+                                    <h3 className="text-sm font-semibold text-primary">공유 링크 생성</h3>
+                                    <p className="text-xs text-primary/60 font-medium mt-0.5 leading-relaxed">
                                         링크를 생성하여 친구들에게 여행 정보를 공유하세요.<br />
                                         상대방은 로그인 없이도 고해상도 지도로 일정을 확인할 수 있습니다.
                                     </p>
@@ -413,7 +413,7 @@ export default function MembersEditor() {
                                 onClick={handleCopyInviteLink}
                                 disabled={isGeneratingLink}
                                 className={cn(
-                                    "w-full py-3.5 text-white text-[11px] font-black rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2",
+                                    "w-full py-3.5 text-white text-xs font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2",
                                     copiedSuccess
                                         ? "bg-emerald-500 shadow-emerald-500/20"
                                         : "bg-primary shadow-primary/20 hover:scale-[1.02] active:scale-95"
@@ -437,7 +437,7 @@ export default function MembersEditor() {
 
                         {friends.length > 0 && (
                             <section className="space-y-3">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PPlan 친구에게 공유하기</p>
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">PPlan 친구에게 공유하기</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {friends.map((friend) => (
                                         <div
@@ -450,7 +450,7 @@ export default function MembersEditor() {
                                             </div>
                                             <button 
                                                 onClick={handleCopyInviteLink}
-                                                className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 rounded-lg"
+                                                className="text-xs font-semibold text-primary px-3 py-1 bg-primary/10 rounded-lg"
                                             >
                                                 링크 전달
                                             </button>

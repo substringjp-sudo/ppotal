@@ -86,7 +86,7 @@ export default function FootprintPanel({
         return (
             <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center">
                 <span className="material-symbols-rounded text-4xl text-slate-300">footprint</span>
-                <p className="mt-3 text-sm font-black text-slate-600 dark:text-slate-300">아직 남은 발자취가 없어요</p>
+                <p className="mt-3 text-sm font-semibold text-slate-600 dark:text-slate-300">아직 남은 발자취가 없어요</p>
                 <p className="mt-1 text-xs font-semibold text-slate-400">
                     사진을 올리거나 PATHWALK에서 가져오면, 여행기로 쓰지 않아도 다녀온 기록은 여기 남습니다.
                 </p>
@@ -99,11 +99,11 @@ export default function FootprintPanel({
             {/* 누적 — 쌓이는 감각이 이 화면의 보상이다 */}
             {summary && (
                 <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
-                    <p className="text-base font-black text-slate-900 dark:text-white">
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">
                         <Count n={summary.regionCount} /> 개 지역{' '}
                         <Count n={summary.placeCount} /> 곳
                     </p>
-                    <p className="text-[11px] font-bold text-slate-400">
+                    <p className="text-xs font-bold text-slate-400">
                         여행기로 쓴 기록 {summary.writtenCount} · 기록만 남은 것 {summary.unwrittenCount}
                     </p>
                 </div>
@@ -130,16 +130,16 @@ export default function FootprintPanel({
                                 className="text-left rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 hover:border-primary transition-colors"
                             >
                                 <div className="flex items-baseline justify-between gap-2">
-                                    <b className="text-sm font-black text-slate-900 dark:text-white truncate">{r.region}</b>
-                                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary">
+                                    <b className="text-sm font-semibold text-slate-900 dark:text-white truncate">{r.region}</b>
+                                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                                         {r.visitCount}번 방문
                                     </span>
                                 </div>
-                                <p className="mt-1.5 text-[11px] font-bold text-slate-400 tabular-nums">
+                                <p className="mt-1.5 text-xs font-bold text-slate-400 tabular-nums">
                                     {r.placeCount}곳{r.lastVisit ? ` · 최근 ${r.lastVisit.slice(0, 7).replace('-', '.')}` : ''}
                                 </p>
                                 {!r.hasTravelog && (
-                                    <p className="mt-1.5 text-[10px] font-black text-amber-600 dark:text-amber-400">
+                                    <p className="mt-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
                                         아직 여행기 없음
                                     </p>
                                 )}
@@ -167,17 +167,17 @@ export default function FootprintPanel({
                             >
                                 <Thumb url={s.activities.find((a) => a.photoUrls?.length)?.photoUrls?.[0]} />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">
+                                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                                         {s.region || '이름 없는 기록'}
                                     </p>
-                                    <p className="text-[11px] font-semibold text-slate-400 tabular-nums truncate">
+                                    <p className="text-xs font-semibold text-slate-400 tabular-nums truncate">
                                         {fmtRange(s.startAt, s.endAt)} · {s.placeCount}곳
                                         {s.photoCount > 0 ? ` · 사진 ${s.photoCount}장` : ''}
                                     </p>
                                 </div>
                                 <button
                                     onClick={() => goStretch(s.startAt)}
-                                    className="shrink-0 rounded-full border border-primary px-3 py-1.5 text-[11px] font-black text-primary hover:bg-primary/5 transition"
+                                    className="shrink-0 rounded-full border border-primary px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/5 transition"
                                 >
                                     여행기 쓰기
                                 </button>
@@ -211,7 +211,7 @@ function Count({ n }: { n: number }) {
 
 function Legend({ color, label }: { color: string; label: string }) {
     return (
-        <span className="flex items-center gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+        <span className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
             {label}
         </span>
@@ -220,7 +220,7 @@ function Legend({ color, label }: { color: string; label: string }) {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
     return (
-        <p className="mb-3 text-[11px] font-black uppercase tracking-widest text-slate-400">{children}</p>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">{children}</p>
     );
 }
 

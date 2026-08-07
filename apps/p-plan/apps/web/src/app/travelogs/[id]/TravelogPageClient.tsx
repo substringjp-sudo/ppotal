@@ -174,7 +174,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
     const totalMembers = travelog.memberCounts.me + travelog.memberCounts.partner + travelog.memberCounts.family + travelog.memberCounts.friends;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 selection:bg-primary/30 font-display transition-colors duration-500">
+        <div className="min-h-screen bg-[#faf9f7] dark:bg-[#030712] text-slate-900 dark:text-slate-100 selection:bg-primary/30 font-display transition-colors duration-500">
             {/* 상단 프로그레스 바 */}
             <motion.div 
                 className="fixed top-0 left-0 right-0 h-1 bg-primary z-[100] origin-left"
@@ -204,10 +204,10 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         {isAuthor && (
                             <button 
                                 onClick={() => router.push(`/travelogs/${id}/edit`)}
-                                className="flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-primary text-white font-black shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+                                className="flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-primary text-white font-semibold shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
                             >
                                 <span className="material-symbols-rounded text-sm">edit</span>
-                                <span className="uppercase text-[9px] sm:text-[10px] tracking-widest whitespace-nowrap">여행 편집</span>
+                                <span className="uppercase text-xs sm:text-xs tracking-widest whitespace-nowrap">여행 편집</span>
                             </button>
                         )}
                     </div>
@@ -234,7 +234,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                         <div className="w-full h-full bg-gradient-to-br from-slate-900 to-slate-800" />
                     )}
                     {/* Overlay Gradients for Depth */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-slate-50 dark:to-[#030712] transition-colors duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#faf9f7] dark:to-[#030712] transition-colors duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent" />
                 </motion.div>
                 
@@ -247,15 +247,22 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                             className="max-w-3xl space-y-8"
                         >
                             <div className="flex flex-wrap gap-3">
-                                <Badge variant="primary" pulse className="px-4 py-1.5 text-[10px]">실시간 여행기</Badge>
-                                <Badge variant="glass" className="px-4 py-1.5 text-[10px] border-white/20 uppercase">{travelog.theme || '탐험'}</Badge>
+                                <Badge variant="primary" pulse className="px-4 py-1.5 text-xs">실시간 여행기</Badge>
+                                <Badge variant="glass" className="px-4 py-1.5 text-xs border-white/20 uppercase">{travelog.theme || '탐험'}</Badge>
                             </div>
-                            
-                            <h1 className="text-6xl md:text-8xl font-black tracking-tight leading-[1.1] text-white">
+
+                            {/* Kicker — 세리프 이탤릭. 표지는 곧 읽기 경험의 시작이라 여기서부터 세리프를 연다 */}
+                            {(travelog.startDate || travelog.endDate) && (
+                                <p className="font-editorial italic text-base text-white/75 tracking-wide -mb-4">
+                                    {[travelog.startDate, travelog.endDate].filter(Boolean).join(' – ')}
+                                </p>
+                            )}
+
+                            <h1 className="font-editorial text-6xl md:text-8xl font-semibold tracking-tight leading-[1.1] text-white">
                                 {travelog.title}
                             </h1>
-                            
-                            <div className="flex flex-wrap items-center gap-8 text-white/50 font-bold uppercase tracking-widest text-[11px]">
+
+                            <div className="flex flex-wrap items-center gap-8 text-white/50 font-semibold uppercase tracking-widest text-xs">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
                                         <span className="material-symbols-rounded text-primary text-base">calendar_today</span>
@@ -280,7 +287,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                     transition={{ delay: 2 }}
                     className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 text-white/20"
                 >
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em]">여행 탐색</span>
+                    <span className="text-xs font-semibold uppercase tracking-[0.3em]">여행 탐색</span>
                     <div className="w-[1px] h-12 bg-gradient-to-b from-primary/60 to-transparent animate-pulse" />
                 </motion.div>
             </section>
@@ -371,7 +378,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                                     
                                     {/* Map Control Overlays */}
                                     <div className="absolute top-6 left-6 flex flex-col gap-3">
-                                        <div className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-white/70">
+                                        <div className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center gap-3 text-xs font-semibold uppercase tracking-widest text-white/70">
                                             <span className="material-symbols-rounded text-primary text-sm">navigation</span>
                                             <span>실시간 경로</span>
                                         </div>
@@ -389,26 +396,26 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                             <div className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/5 backdrop-blur-3xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl -translate-y-1/2 translate-x-1/2 rounded-full group-hover:bg-primary/20 transition-all duration-1000" />
                                 
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-8 flex items-center gap-3">
+                                <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-white/30 mb-8 flex items-center gap-3">
                                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                     여행 데이터
                                 </h3>
                                 
                                 <div className="grid grid-cols-2 gap-12">
                                     <div className="space-y-2">
-                                        <div className="text-4xl font-black text-white">{places.length || markers.length}</div>
-                                        <div className="text-[9px] text-white/30 font-black uppercase tracking-widest">방문 장소</div>
+                                        <div className="text-4xl font-bold text-white">{places.length || markers.length}</div>
+                                        <div className="text-xs text-white/30 font-semibold uppercase tracking-widest">방문 장소</div>
                                     </div>
                                     <div className="space-y-2">
-                                        <div className="text-4xl font-black text-white">{travelog.timeline.length}</div>
-                                        <div className="text-[9px] text-white/30 font-black uppercase tracking-widest">여행 일수</div>
+                                        <div className="text-4xl font-bold text-white">{travelog.timeline.length}</div>
+                                        <div className="text-xs text-white/30 font-semibold uppercase tracking-widest">여행 일수</div>
                                     </div>
                                 </div>
                                 
                                 <div className="mt-8 pt-8 border-t border-white/5">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-white/30">동기화 상태</span>
-                                        <span className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-500">
+                                        <span className="text-xs font-semibold uppercase tracking-widest text-white/30">동기화 상태</span>
+                                        <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-emerald-500">
                                             <span className="w-1 h-1 rounded-full bg-emerald-500" />
                                             안전하게 연결됨
                                         </span>
@@ -424,14 +431,14 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
             {/* Footer Signature */}
             <footer className="max-w-7xl mx-auto px-8 py-24 border-t border-white/5 text-center">
                 <div className="inline-flex flex-col items-center gap-6">
-                    <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-primary to-orange-600 p-0.5 shadow-2xl">
+                    <div className="w-16 h-16 rounded-[20px] bg-gradient-to-br from-primary to-orange-600 p-0.5 shadow-2xl">
                         <div className="w-full h-full rounded-[1.8rem] bg-[#020617] flex items-center justify-center">
-                            <span className="text-2xl font-black text-white">P</span>
+                            <span className="text-2xl font-bold text-white">P</span>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <p className="text-slate-400 dark:text-white/20 text-xs font-black uppercase tracking-[0.5em]">여행 기록 보관소</p>
-                        <p className="text-slate-500 dark:text-white/40 text-[10px] font-bold">© 2026 PPLANER AI TRAVEL ENGINE. 모든 권리 보유.</p>
+                        <p className="text-slate-400 dark:text-white/20 text-xs font-semibold uppercase tracking-[0.5em]">여행 기록 보관소</p>
+                        <p className="text-slate-500 dark:text-white/40 text-xs font-bold">© 2026 PPLANER AI TRAVEL ENGINE. 모든 권리 보유.</p>
                     </div>
                 </div>
             </footer>
@@ -458,7 +465,7 @@ function ViewToggleButton({ active, onClick, icon, label }: {
         <button
             onClick={onClick}
             className={cn(
-                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all',
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all',
                 active
                     ? 'bg-primary text-white shadow-lg shadow-primary/25'
                     : 'text-slate-500 dark:text-white/40 hover:text-slate-800 dark:hover:text-white/70'
@@ -503,7 +510,7 @@ function CategoryFilterBar({ places, active, onSelect }: {
         <button
             key={key}
             onClick={onClick}
-            className={cn('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-black border transition',
+            className={cn('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold border transition',
                 on ? 'text-white border-transparent shadow' : 'text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/15 hover:border-slate-400')}
             style={on && color ? { backgroundColor: color } : on ? { backgroundColor: '#334155' } : undefined}
         >
@@ -533,7 +540,7 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
             id={`place-${p.id}`}
             onClick={onClick}
             className={cn(
-                'group relative rounded-[2rem] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer h-full',
+                'group relative rounded-[20px] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer h-full',
                 highlighted
                     ? 'border-primary/50 ring-2 ring-primary/20'
                     : 'border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10'
@@ -553,13 +560,13 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
             <div className="p-7 space-y-3">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
-                        <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-black shrink-0">
+                        <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary grid place-items-center text-xs font-semibold shrink-0">
                             {String(i + 1).padStart(2, '0')}
                         </span>
                         <div className="min-w-0">
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{p.name}</h3>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{p.name}</h3>
                             {(p.location?.address || p.visitDate) && (
-                                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
                                     {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
                                 </p>
                             )}
@@ -573,7 +580,7 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
                     </p>
                 )}
                 {p.category && (
-                    <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">
+                    <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-white/40">
                         {p.category}
                     </span>
                 )}
@@ -584,7 +591,7 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
 
 function PlacesEmpty() {
     return (
-        <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+        <div className="rounded-[20px] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
             <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">wrong_location</span>
             <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 정리된 장소가 없어요.</p>
             <p className="mt-1 text-sm text-slate-400 dark:text-white/25">사진을 올리거나 일정에 장소를 연결하면 여기 모여요.</p>
@@ -603,7 +610,7 @@ function PlaceListView({ places, highlightedId, onFocusPlace }: {
         <div className="space-y-6">
             <div className="flex items-center gap-4">
                 <div className="w-12 h-[2px] bg-primary" />
-                <h2 className="text-sm font-black uppercase tracking-[0.4em] text-primary">장소별 기록</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.4em] text-primary">장소별 기록</h2>
             </div>
             {places.map((p, i) => (
                 <ScrollReveal key={p.id}>
@@ -640,7 +647,7 @@ function MapTemplateSection({ places, markers, center, zoom, highlightedId, onFo
                         if (p) onFocusPlace(p);
                     }}
                 />
-                <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center gap-2.5 text-[10px] font-black uppercase tracking-widest text-white/80 pointer-events-none">
+                <div className="absolute top-6 left-6 px-4 py-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-widest text-white/80 pointer-events-none">
                     <span className="material-symbols-rounded text-primary text-sm">map</span>
                     여행지도 · 장소 {places.length}
                 </div>
@@ -672,7 +679,7 @@ function StoryView({ travelog, byDay, onFocusPlace }: {
     const entries = buildStoryEntries(travelog);
     if (entries.length === 0) {
         return (
-            <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+            <div className="rounded-[20px] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
                 <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">auto_stories</span>
                 <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 내용이 없어요.</p>
             </div>
@@ -683,10 +690,12 @@ function StoryView({ travelog, byDay, onFocusPlace }: {
         ? groupStoryEntriesByDay(entries)
         : [{ day: undefined, date: undefined, entries }];
 
+    // 읽는 화면 — 세리프는 폰트 교체가 아니라 레이아웃 규칙 한 벌을 데려온다.
+    // 한 줄 길이를 42~46자(≈660px)로 좁히고 행간을 넓힌다.
     return (
-        <div className="space-y-16">
+        <div className="max-w-[660px] space-y-16">
             {travelog.summary && (
-                <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-light leading-relaxed tracking-tight">
+                <p className="font-editorial text-2xl md:text-[28px] text-slate-800 dark:text-white font-normal leading-[1.55] tracking-tight">
                     {travelog.summary}
                 </p>
             )}
@@ -695,14 +704,14 @@ function StoryView({ travelog, byDay, onFocusPlace }: {
                     {byDay && (g.day != null || g.date) && (
                         <div className="flex items-center gap-4">
                             {g.day != null && (
-                                <span className="text-5xl font-black text-primary/20 tabular-nums leading-none">D{g.day}</span>
+                                <span className="text-5xl font-bold text-primary/20 tabular-nums leading-none">D{g.day}</span>
                             )}
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 dark:text-white">
+                                <h2 className="font-editorial text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
                                     {g.day != null ? `Day ${g.day}` : g.date}
                                 </h2>
                                 {g.date && g.day != null && (
-                                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">{g.date}</p>
+                                    <p className="mt-0.5 text-xs font-semibold uppercase tracking-widest text-slate-400 tabular-nums">{g.date}</p>
                                 )}
                             </div>
                         </div>
@@ -710,7 +719,7 @@ function StoryView({ travelog, byDay, onFocusPlace }: {
                     {g.entries.map((entry) => (
                         <ScrollReveal key={entry.kind === 'place' ? entry.place.id : entry.note.id}>
                             {entry.kind === 'note' ? (
-                                <p className="text-xl md:text-2xl text-slate-700 dark:text-slate-300 leading-[1.75] whitespace-pre-wrap">
+                                <p className="font-editorial text-lg text-slate-700 dark:text-slate-300 leading-[1.9] whitespace-pre-wrap">
                                     {entry.note.text}
                                 </p>
                             ) : (
@@ -749,15 +758,15 @@ function StoryPlaceBlock({ place, onClick }: { place: TravelogPlace; onClick: ()
             )}
             <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight group-hover:text-primary transition-colors">
+                    <h3 className="font-editorial text-[27px] font-semibold text-slate-900 dark:text-white tracking-tight group-hover:text-primary transition-colors">
                         {place.name}
                     </h3>
-                    {meta && <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">{meta}</p>}
+                    {meta && <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-slate-400 tabular-nums">{meta}</p>}
                 </div>
                 {typeof place.rating === 'number' && place.rating > 0 && <StarRating value={place.rating} />}
             </div>
             {place.impression && (
-                <p className="mt-4 text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-[1.75] whitespace-pre-wrap">
+                <p className="font-editorial mt-4 text-lg text-slate-700 dark:text-slate-300 leading-[1.9] whitespace-pre-wrap">
                     {place.impression}
                 </p>
             )}
@@ -778,11 +787,11 @@ function PhotobookSection({ places, onFocusPlace }: {
                     <section id={`place-${p.id}`} onClick={() => onFocusPlace(p)} className="cursor-pointer">
                         <div className="flex items-end justify-between mb-6">
                             <div className="flex items-center gap-4 min-w-0">
-                                <span className="text-6xl font-black text-slate-200 dark:text-white/10 tabular-nums leading-none">{String(i + 1).padStart(2, '0')}</span>
+                                <span className="text-6xl font-bold text-slate-200 dark:text-white/10 tabular-nums leading-none">{String(i + 1).padStart(2, '0')}</span>
                                 <div className="min-w-0">
-                                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white truncate">{p.name}</h3>
+                                    <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
                                     {(p.visitDate || p.location?.address) && (
-                                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
                                             {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
                                         </p>
                                     )}
@@ -811,7 +820,7 @@ function PhotobookSection({ places, onFocusPlace }: {
 function TravelogSkeleton() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712] p-8 space-y-12 transition-colors duration-500">
-            <Skeleton className="h-[80vh] w-full rounded-[3rem] bg-slate-200/50 dark:bg-slate-800/50" />
+            <Skeleton className="h-[80vh] w-full rounded-[20px] bg-slate-200/50 dark:bg-slate-800/50" />
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20">
                 <div className="flex-1 space-y-12">
                     <Skeleton className="h-20 w-3/4" />
@@ -830,11 +839,11 @@ function ErrorView({ message }: { message: string }) {
             <div className="w-32 h-32 rounded-[2.5rem] bg-rose-500/10 flex items-center justify-center text-rose-500 mb-8 border border-rose-500/20 shadow-xl">
                 <span className="material-symbols-rounded text-5xl">location_off</span>
             </div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">신호를 잃었습니다</h1>
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">신호를 잃었습니다</h1>
             <p className="text-slate-500 dark:text-white/40 max-w-md mx-auto mb-12 text-lg font-light leading-relaxed">{message}</p>
             <button 
                 onClick={() => window.location.reload()}
-                className="px-10 py-4 rounded-full bg-slate-200/50 dark:bg-white/5 hover:bg-slate-300/50 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 transition-all font-black uppercase text-[11px] tracking-widest text-slate-600 dark:text-white/70"
+                className="px-10 py-4 rounded-full bg-slate-200/50 dark:bg-white/5 hover:bg-slate-300/50 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 transition-all font-semibold uppercase text-xs tracking-widest text-slate-600 dark:text-white/70"
             >
                 연결 재시도
             </button>

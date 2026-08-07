@@ -47,7 +47,7 @@ export default function SummaryWidget() {
         <div className="h-full flex flex-col">
             <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1">
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
                         {currentTrip.title}
                     </h3>
                     <p className="text-sm text-slate-500 font-medium">
@@ -55,7 +55,7 @@ export default function SummaryWidget() {
                     </p>
                 </div>
                 <div className="flex flex-col items-end">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest ${
                         summary.status === '준비 완료' ? 'bg-green-100 text-green-700' : 'bg-primary/10 text-primary'
                     }`}>
                         {summary.status}
@@ -69,29 +69,29 @@ export default function SummaryWidget() {
             <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
                     <span className="material-symbols-rounded text-primary mb-2 opacity-80">calendar_today</span>
-                    <div className="text-lg font-black text-slate-900 dark:text-white">{summary.days}일</div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">여행 기간</div>
+                    <div className="text-lg font-semibold text-slate-900 dark:text-white">{summary.days}일</div>
+                    <div className="text-xs text-slate-500 font-bold uppercase tracking-tight">여행 기간</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
                     <span className="material-symbols-rounded text-amber-500 mb-2 opacity-80">hotel</span>
-                    <div className="text-lg font-black text-slate-900 dark:text-white">{summary.accommodations}개소</div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">예약된 숙소</div>
+                    <div className="text-lg font-semibold text-slate-900 dark:text-white">{summary.accommodations}개소</div>
+                    <div className="text-xs text-slate-500 font-bold uppercase tracking-tight">예약된 숙소</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
                     <span className="material-symbols-rounded text-blue-500 mb-2 opacity-80">direction_bus</span>
-                    <div className="text-lg font-black text-slate-900 dark:text-white">{summary.transports}개</div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">교통편 정보</div>
+                    <div className="text-lg font-semibold text-slate-900 dark:text-white">{summary.transports}개</div>
+                    <div className="text-xs text-slate-500 font-bold uppercase tracking-tight">교통편 정보</div>
                 </div>
                 <button 
                     onClick={() => router.push(`/edit-trip/${currentTrip.id}`)}
                     className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 text-left hover:border-primary/50 transition-colors group/edit"
                 >
                     <span className="material-symbols-rounded text-emerald-500 mb-2 opacity-80 group-hover/edit:animate-bounce">analytics</span>
-                    <div className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-1">
+                    <div className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-1">
                         상세 정보
                         <span className="material-symbols-rounded text-xs">arrow_forward</span>
                     </div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">상세 분석 & 입력</div>
+                    <div className="text-xs text-slate-500 font-bold uppercase tracking-tight">상세 분석 & 입력</div>
                 </button>
             </div>
 
@@ -99,7 +99,7 @@ export default function SummaryWidget() {
                 <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
                     <span className="material-symbols-rounded text-6xl">auto_awesome</span>
                 </div>
-                <h4 className="text-xs font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
+                <h4 className="text-xs font-semibold text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
                     <span className="material-symbols-rounded text-sm">magic_button</span>
                     스마트 요약 & 분석
                 </h4>

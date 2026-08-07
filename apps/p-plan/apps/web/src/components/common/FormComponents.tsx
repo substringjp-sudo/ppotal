@@ -46,7 +46,7 @@ export function CustomCheckbox({ checked, onChange, label, className, descriptio
                                 initial={{ scale: 0.5, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.5, opacity: 0 }}
-                                className={cn("material-symbols-rounded text-white font-black", isSmall ? "text-[12px]" : "text-[14px]")}
+                                className={cn("material-symbols-rounded text-white font-semibold", isSmall ? "text-xs" : "text-[14px]")}
                             >
                                 check
                             </motion.span>
@@ -57,7 +57,7 @@ export function CustomCheckbox({ checked, onChange, label, className, descriptio
             {(label || description) && (
                 <div className="flex flex-col">
                     {label && <span className={cn("text-xs font-bold transition-colors", checked ? "text-slate-900 dark:text-white" : "text-slate-500")}>{label}</span>}
-                    {description && <span className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">{description}</span>}
+                    {description && <span className="text-xs text-slate-400 font-medium leading-tight mt-0.5">{description}</span>}
                 </div>
             )}
         </label>
@@ -106,7 +106,7 @@ export function IconDropdown({ value, onChange, options, placeholder = '선택�
 
     return (
         <div className={cn("space-y-1 relative", className)} ref={containerRef}>
-            {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+            {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1">{label}</label>}
             <button
                 type="button"
                 disabled={disabled}
@@ -129,7 +129,7 @@ export function IconDropdown({ value, onChange, options, placeholder = '선택�
                     )}
                     <span className={cn(
                         "font-bold truncate",
-                        isSmall ? "text-[11px]" : "text-sm",
+                        isSmall ? "text-xs" : "text-sm",
                         selectedOption ? "text-slate-900 dark:text-white" : "text-slate-400"
                     )}>
                         {selectedOption ? selectedOption.label : placeholder}
@@ -177,7 +177,7 @@ export function IconDropdown({ value, onChange, options, placeholder = '선택�
                                         <span className="text-sm font-bold truncate">{option.label}</span>
                                         {option.tag && (
                                             <span className={cn(
-                                                "text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter shrink-0",
+                                                "text-xs font-semibold px-1.5 py-0.5 rounded-md uppercase tracking-tighter shrink-0",
                                                 value === option.value 
                                                     ? "bg-white/20 text-white" 
                                                     : option.tagColor || "bg-slate-100 dark:bg-slate-800 text-slate-500"
@@ -187,7 +187,7 @@ export function IconDropdown({ value, onChange, options, placeholder = '선택�
                                         )}
                                     </div>
                                     {value === option.value && (
-                                        <span className="material-symbols-rounded text-[16px] ml-2 font-black shrink-0">check</span>
+                                        <span className="material-symbols-rounded text-[16px] ml-2 font-semibold shrink-0">check</span>
                                     )}
                                 </button>
                             ))}
@@ -214,7 +214,7 @@ interface UndecidedFieldProps {
 export function UndecidedField({ label, message = '정보가 아직 입력되지 않았습니다.', icon = 'help_outline', onAction, actionLabel = '정보 입력하기', className }: UndecidedFieldProps) {
     return (
         <div className={cn("space-y-1.5", className)}>
-            {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+            {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1">{label}</label>}
             <div className="flex flex-col items-center justify-center p-6 bg-slate-50/50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl text-center space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shadow-sm">
                     <span className="material-symbols-rounded text-2xl text-slate-300">{icon}</span>
@@ -224,7 +224,7 @@ export function UndecidedField({ label, message = '정보가 아직 입력되지
                     {onAction && (
                         <button
                             onClick={onAction}
-                            className="text-[10px] font-black text-primary hover:underline uppercase"
+                            className="text-xs font-semibold text-primary hover:underline uppercase"
                         >
                             {actionLabel}
                         </button>
@@ -325,7 +325,7 @@ export function RestrictedDatePicker({ value, onChange, label, className, disabl
     if (allowedDates.length === 0) {
         return (
             <div className={cn("space-y-1.5", className)}>
-                {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+                {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1">{label}</label>}
                 <div className="relative">
                     <input
                         type="date"
@@ -403,7 +403,7 @@ export function TimeInput({ value, onChange, label, className, disabled, lat, ln
 
     return (
         <div className={cn("space-y-1.5 relative", className)} ref={containerRef}>
-            {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+            {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1">{label}</label>}
             <div className="relative group/time">
                 <input
                     type="time"
@@ -538,11 +538,11 @@ export function TimeRangeInput({
 
     return (
         <div className={cn("space-y-4", className)} ref={containerRef}>
-            {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1 tracking-widest">{label}</label>}
+            {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1 tracking-widest">{label}</label>}
             <div className="grid grid-cols-2 gap-4">
                 {/* Start Time Field */}
                 <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">시작</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">시작</label>
                     <div className="relative group/time">
                         <input
                             type="time"
@@ -571,7 +571,7 @@ export function TimeRangeInput({
 
                 {/* End Time Field */}
                 <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">종료</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">종료</label>
                     <div className="relative group/time">
                         <input
                             type="time"

@@ -33,19 +33,19 @@ export const InterestsCard: React.FC<InterestsCardProps> = ({ item, onEdit, onDe
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                         {mainCatInfo && (
-                            <span className="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded uppercase tracking-tighter">
+                            <span className="text-xs font-semibold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded uppercase tracking-tighter">
                                 {mainCatInfo.label}
                             </span>
                         )}
                         {item.wishlistId && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 rounded flex items-center gap-1">
+                            <span className="text-xs font-bold px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 rounded flex items-center gap-1">
                                 <Sparkles className="w-2.5 h-2.5" /> 위시리스트 연동
                             </span>
                         )}
                     </div>
                     <h4 className="font-bold text-slate-900 dark:text-white truncate">{item.title}</h4>
                     {item.place && (
-                        <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate mt-0.5">
+                        <div className="flex items-center gap-1 text-xs text-slate-500 truncate mt-0.5">
                             <MapPin className="w-3 h-3" />
                             {item.place.name}
                         </div>
@@ -66,7 +66,7 @@ export const InterestsCard: React.FC<InterestsCardProps> = ({ item, onEdit, onDe
     return (
         <motion.div
             layout
-            className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500"
+            className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500"
         >
             <div className="relative aspect-[16/10] bg-slate-100 dark:bg-slate-800">
                 {item.imageUrl ? (
@@ -79,7 +79,7 @@ export const InterestsCard: React.FC<InterestsCardProps> = ({ item, onEdit, onDe
                 
                 {mainCatInfo && (
                     <div 
-                        className="absolute bottom-3 left-3 px-2 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md border border-white/20"
+                        className="absolute bottom-3 left-3 px-2 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-widest text-white shadow-lg backdrop-blur-md border border-white/20"
                         style={{ backgroundColor: `${mainCatInfo.color}CC` }}
                     >
                         {mainCatInfo.label}
@@ -101,21 +101,21 @@ export const InterestsCard: React.FC<InterestsCardProps> = ({ item, onEdit, onDe
                             <Sparkles className="w-3 h-3" />
                         </div>
                     )}
-                    <h4 className="font-black text-slate-900 dark:text-white truncate group-hover:text-indigo-600 transition-colors">{item.title}</h4>
+                    <h4 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 transition-colors">{item.title}</h4>
                 </div>
                 
-                {item.description && <p className="text-[11px] text-slate-500 line-clamp-2 font-medium leading-relaxed">{item.description}</p>}
+                {item.description && <p className="text-xs text-slate-500 line-clamp-2 font-medium leading-relaxed">{item.description}</p>}
                 
                 <div className="mt-2 flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800 pt-4">
                     {item.place ? (
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 truncate max-w-[70%] text-left">
+                        <div className="flex items-center gap-1 text-xs font-bold text-slate-400 truncate max-w-[70%] text-left">
                             <MapPin className="w-3 h-3" /> {item.place.name}
                         </div>
                     ) : (
-                        <div className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No Location</div>
+                        <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">No Location</div>
                     )}
                     
-                    <button onClick={onEdit} className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group/btn">
+                    <button onClick={onEdit} className="text-xs font-semibold uppercase text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group/btn">
                         상세보기 <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
                     </button>
                 </div>

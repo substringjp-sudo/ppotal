@@ -48,7 +48,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                     <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
                         <span className="material-symbols-rounded text-red-500 text-3xl">error_outline</span>
                     </div>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">
+                    <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
                         예상치 못한 오류가 발생했습니다
                     </h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">

@@ -153,7 +153,7 @@ export default function FriendsPage() {
             
             <main className="max-w-4xl mx-auto px-4 py-12">
                 <div className="mb-12 text-center">
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">친구 관리</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">친구 관리</h1>
                     <p className="text-slate-500 dark:text-slate-400">파트너를 찾아 여행을 함께 계획해보세요.</p>
                 </div>
 
@@ -174,7 +174,7 @@ export default function FriendsPage() {
                         <button 
                             type="submit"
                             disabled={isSearching}
-                            className="px-6 py-3 bg-primary text-white font-black rounded-2xl hover:bg-primary/90 transition-all text-sm disabled:opacity-50"
+                            className="px-6 py-3 bg-primary text-white font-semibold rounded-2xl hover:bg-primary/90 transition-all text-sm disabled:opacity-50"
                         >
                             검색
                         </button>
@@ -189,7 +189,7 @@ export default function FriendsPage() {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="mt-6 pt-6 border-t border-slate-200/60 dark:border-slate-800 space-y-4"
                             >
-                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">검색 결과</h3>
+                                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">검색 결과</h3>
                                 {searchResults.map((result) => (
                                     <div key={result.userId} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl group cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700" onClick={() => openProfile(result)}>
                                         <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ export default function FriendsPage() {
                                             />
                                             <div>
                                                 <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">{result.displayName}</p>
-                                                <p className="text-[10px] text-slate-500">{result.email}</p>
+                                                <p className="text-xs text-slate-500">{result.email}</p>
                                             </div>
                                         </div>
                                         <button 
@@ -227,9 +227,9 @@ export default function FriendsPage() {
                     <section>
                         <div className="flex items-center gap-2 mb-4 px-2">
                             <span className="material-symbols-rounded text-xl text-primary font-bold">person_add</span>
-                            <h2 className="text-lg font-black text-slate-900 dark:text-white">대기 중인 요청</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">대기 중인 요청</h2>
                             {pendingFriendRequests.length > 0 && (
-                                <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-black">
+                                <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full font-semibold">
                                     {pendingFriendRequests.length}
                                 </span>
                             )}
@@ -278,7 +278,7 @@ export default function FriendsPage() {
                     <section>
                         <div className="flex items-center gap-2 mb-4 px-2">
                             <span className="material-symbols-rounded text-xl text-primary font-bold">group</span>
-                            <h2 className="text-lg font-black text-slate-900 dark:text-white">내 친구 목록</h2>
+                            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">내 친구 목록</h2>
                         </div>
                         
                         <div className="space-y-3">
@@ -292,7 +292,7 @@ export default function FriendsPage() {
                                             />
                                             <div>
                                                 <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">{friend.displayName}</p>
-                                                <p className="text-[10px] text-slate-500">{friend.email}</p>
+                                                <p className="text-xs text-slate-500">{friend.email}</p>
                                             </div>
                                         </div>
                                         <button 

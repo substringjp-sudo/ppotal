@@ -91,14 +91,14 @@ export default function AccommodationEditor() {
                 <section className="space-y-4">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-3">
-                            <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest leading-none">숙소 목록</h3>
+                            <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-widest leading-none">숙소 목록</h3>
                             <div className="h-4 w-[1px] bg-slate-200 dark:border-slate-800" />
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">총 {trip.accommodation?.length || 0}개</span>
+                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none">총 {trip.accommodation?.length || 0}개</span>
                         </div>
                         
                         <button
                             onClick={handleManualAdd}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary transition-all shadow-sm uppercase tracking-widest"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary transition-all shadow-sm uppercase tracking-widest"
                         >
                             <span className="material-symbols-rounded text-sm">add_circle</span>
                             숙소 직접 추가
@@ -124,12 +124,12 @@ export default function AccommodationEditor() {
                                 </div>
                                 <div className="space-y-4">
                                     <div>
-                                        <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-xs mb-2">등록된 숙소가 없습니다</p>
-                                        <p className="text-slate-300 font-bold uppercase text-[10px]">타임라인을 드래그하거나 아래 버튼으로 추가해보세요</p>
+                                        <p className="text-slate-400 font-semibold uppercase tracking-[0.2em] text-xs mb-2">등록된 숙소가 없습니다</p>
+                                        <p className="text-slate-300 font-bold uppercase text-xs">타임라인을 드래그하거나 아래 버튼으로 추가해보세요</p>
                                     </div>
                                     <button
                                         onClick={handleManualAdd}
-                                        className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl text-xs font-semibold uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                                     >
                                         <span className="material-symbols-rounded">add_circle</span>
                                         첫 숙소 추가하기

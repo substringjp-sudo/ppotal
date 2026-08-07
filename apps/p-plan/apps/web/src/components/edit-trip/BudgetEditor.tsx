@@ -102,7 +102,7 @@ export default function BudgetEditor() {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={cn(
-                                "flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                "flex-1 py-3 px-4 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all",
                                 activeTab === tab 
                                     ? "bg-white dark:bg-slate-900 text-primary shadow-lg scale-[1.02]" 
                                     : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
@@ -121,7 +121,7 @@ export default function BudgetEditor() {
                         setEditingExpense(null);
                         setIsAddExpenseOpen(true);
                     }}
-                    className="h-14 px-8 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                    className="h-14 px-8 bg-primary text-white rounded-2xl font-semibold text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
                 >
                     <span className="material-symbols-rounded">add_circle</span>
                     새로운 지출 추가

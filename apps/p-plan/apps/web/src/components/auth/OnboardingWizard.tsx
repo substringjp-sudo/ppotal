@@ -170,14 +170,14 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                 className="space-y-8"
                             >
                                 <div className="text-center">
-                                    <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{steps[0].title}</h2>
+                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{steps[0].title}</h2>
                                     <p className="text-slate-500 font-medium">{steps[0].desc}</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Name, Country, Language, Currency Inputs (Same as before) */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">이름</label>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">이름</label>
                                         <input 
                                             value={formData.displayName}
                                             onChange={(e) => setFormData({...formData, displayName: e.target.value})}
@@ -186,7 +186,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">국가</label>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">국가</label>
                                         <input 
                                             value={formData.residence?.country}
                                             onChange={(e) => setFormData({...formData, residence: { ...formData.residence!, country: e.target.value }})}
@@ -195,7 +195,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">사용 언어</label>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">사용 언어</label>
                                         <select 
                                             value={formData.preferences?.language}
                                             onChange={(e) => setFormData({...formData, preferences: { ...formData.preferences!, language: e.target.value }})}
@@ -207,7 +207,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">기본 통화</label>
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">기본 통화</label>
                                         <select 
                                             value={formData.preferences?.currency}
                                             onChange={(e) => setFormData({...formData, preferences: { ...formData.preferences!, currency: e.target.value }})}
@@ -220,7 +220,7 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                     </div>
                                 </div>
 
-                                <button onClick={handleSaveInfo} className="w-full py-5 bg-primary text-white font-black rounded-3xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-8">
+                                <button onClick={handleSaveInfo} className="w-full py-5 bg-primary text-white font-semibold rounded-3xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-8">
                                     다음 단계로
                                 </button>
                             </motion.div>
@@ -233,10 +233,10 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                 className="space-y-8"
                             >
                                 <div className="text-center">
-                                    <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{steps[1].title}</h2>
+                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{steps[1].title}</h2>
                                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full mb-4">
                                         <BrainCircuit className="w-3 h-3 text-primary" />
-                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest">Precision AI DNA Analysis</p>
+                                        <p className="text-xs font-semibold text-primary uppercase tracking-widest">Precision AI DNA Analysis</p>
                                     </div>
                                     <p className="text-slate-500 font-medium text-xs leading-relaxed max-w-sm mx-auto">
                                         기본 질문으로도 충분하지만, 더 자세한 분석을 통해<br/>완벽하게 일치하는 여행 정보를 추천해 드릴게요.
@@ -272,10 +272,10 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                                     <Zap className="w-4 h-4" />
                                                 </div>
                                                 <div className="text-left">
-                                                    <h4 className={`text-sm font-black transition-colors ${isDetailed ? 'text-primary' : 'text-slate-900 dark:text-white'}`}>
+                                                    <h4 className={`text-sm font-semibold transition-colors ${isDetailed ? 'text-primary' : 'text-slate-900 dark:text-white'}`}>
                                                         {isDetailed ? '정밀 분석 모드 활성화' : '더 자세하게 확인하기'}
                                                     </h4>
-                                                    <p className="text-[10px] font-bold text-slate-400">16개의 추가 질문으로 더욱 정확한 여행 DNA를 분석합니다.</p>
+                                                    <p className="text-xs font-bold text-slate-400">16개의 추가 질문으로 더욱 정확한 여행 DNA를 분석합니다.</p>
                                                 </div>
                                                 {isDetailed ? <ChevronUp className="w-5 h-5 text-primary ml-auto" /> : <ChevronDown className="w-5 h-5 text-slate-300 ml-auto" />}
                                             </div>
@@ -308,12 +308,12 @@ export default function OnboardingWizard({ user, onComplete }: OnboardingWizardP
                                 </div>
 
                                 <div className="flex gap-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-10">
-                                    <button onClick={() => onComplete()} className="flex-1 py-4 text-slate-400 font-black rounded-2xl hover:text-slate-600 dark:hover:text-slate-300 transition-all text-sm">
+                                    <button onClick={() => onComplete()} className="flex-1 py-4 text-slate-400 font-semibold rounded-2xl hover:text-slate-600 dark:hover:text-slate-300 transition-all text-sm">
                                         나중에 하기
                                     </button>
                                     <button 
                                         onClick={() => handleComplete()} 
-                                        className="flex-[2] py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
+                                        className="flex-[2] py-4 bg-primary text-white font-semibold rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm flex items-center justify-center gap-2"
                                     >
                                         <Sparkles className="w-4 h-4" />
                                         분석 완료
@@ -343,7 +343,7 @@ function TravelStyleQuestion({
 }) {
     return (
         <div className="space-y-4">
-            <h4 className={`${isMinimal ? 'text-xs' : 'text-sm'} font-black text-slate-900 dark:text-white ml-1 flex items-center gap-2`}>
+            <h4 className={`${isMinimal ? 'text-xs' : 'text-sm'} font-semibold text-slate-900 dark:text-white ml-1 flex items-center gap-2`}>
                 {isMinimal && <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />}
                 {question}
             </h4>
@@ -358,7 +358,7 @@ function TravelStyleQuestion({
                             : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:border-slate-200 dark:hover:border-slate-700'
                         }`}
                     >
-                        <p className={`${isMinimal ? 'text-[10px]' : 'text-xs'} font-bold`}>{opt.label}</p>
+                        <p className={`${isMinimal ? 'text-xs' : 'text-xs'} font-bold`}>{opt.label}</p>
                     </button>
                 ))}
             </div>

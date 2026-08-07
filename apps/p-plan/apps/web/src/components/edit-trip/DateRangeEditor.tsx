@@ -142,11 +142,11 @@ export default function DateRangeEditor({
 
     return (
         <div className="space-y-3" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
-            <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex justify-between items-center px-1">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex justify-between items-center px-1">
                 여행 일정
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-primary text-[10px] font-black uppercase hover:underline"
+                    className="text-primary text-xs font-semibold uppercase hover:underline"
                 >
                     {isExpanded ? '접기' : '변경하기'}
                 </button>
@@ -163,20 +163,20 @@ export default function DateRangeEditor({
                     </div>
                     <div className="flex-1 min-w-0">
                         {initialIsUndecided ? (
-                            <div className="text-xs font-black text-slate-900 dark:text-white">날짜 미정</div>
+                            <div className="text-xs font-semibold text-slate-900 dark:text-white">날짜 미정</div>
                         ) : (
                             <div className="space-y-0.5">
-                                <div className="text-[11px] font-black text-slate-900 dark:text-white flex items-center leading-none">
+                                <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center leading-none">
                                     <span className="whitespace-nowrap">{start ? format(start, 'yyyy.MM.dd') : '시작일'}</span>
                                     <span className="text-slate-300 dark:text-slate-600 mx-1.5">-</span>
                                     <span className="whitespace-nowrap">{end ? format(end, 'yyyy.MM.dd') : '종료일'}</span>
                                     {flexibility > 0 && (
-                                        <span className="text-[9px] bg-primary/10 text-primary px-1 py-0.5 rounded font-black whitespace-nowrap inline-flex items-center ml-1.5">
+                                        <span className="text-xs bg-primary/10 text-primary px-1 py-0.5 rounded font-semibold whitespace-nowrap inline-flex items-center ml-1.5">
                                             ±{flexibility}
                                         </span>
                                     )}
                                 </div>
-                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                                     {durationLabel}
                                 </div>
                             </div>
@@ -195,7 +195,7 @@ export default function DateRangeEditor({
                         <div className="w-full max-w-[320px] mx-auto">
                             <div className={cn("space-y-4 transition-all duration-300", initialIsUndecided ? "opacity-30 grayscale pointer-events-none" : "opacity-100")}>
                                 <div className="flex items-center justify-between px-2">
-                                    <h4 className="font-black text-slate-800 dark:text-white text-sm">
+                                    <h4 className="font-semibold text-slate-800 dark:text-white text-sm">
                                         {format(viewDate, 'yyyy년 M월')}
                                     </h4>
                                     <div className="flex gap-1">
@@ -210,7 +210,7 @@ export default function DateRangeEditor({
 
                                 <div className="grid grid-cols-7 gap-1">
                                     {['일', '월', '화', '수', '목', '금', '토'].map(d => (
-                                        <div key={d} className="text-center text-[10px] font-black text-slate-400 py-1">{d}</div>
+                                        <div key={d} className="text-center text-xs font-semibold text-slate-400 py-1">{d}</div>
                                     ))}
                                     {days.map(day => {
                                         const isSelectedRange = start && end && isWithinInterval(day, { start, end });
@@ -227,7 +227,7 @@ export default function DateRangeEditor({
                                                 }}
                                                 onMouseEnter={() => handleMouseEnter(day)}
                                                 className={cn(
-                                                    "aspect-square flex items-center justify-center text-[11px] font-bold rounded-lg cursor-pointer transition-all relative group",
+                                                    "aspect-square flex items-center justify-center text-xs font-bold rounded-lg cursor-pointer transition-all relative group",
                                                     !isCurrentMonth && "text-slate-300 dark:text-slate-700",
                                                     isSelectedRange && "bg-primary/10 text-primary rounded-none",
                                                     isStart && "bg-primary text-white rounded-l-lg scale-105 z-10 shadow-lg",
@@ -268,7 +268,7 @@ export default function DateRangeEditor({
                         {/* Controls - Positioned below the calendar */}
                         <div className="w-full space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                     {durationLabel || '기간 선택'}
                                 </h4>
                                 <CustomCheckbox
@@ -283,8 +283,8 @@ export default function DateRangeEditor({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">여행 기간</span>
-                                            <span className="text-primary text-[10px] font-black">{effectiveDuration}일</span>
+                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest pl-1">여행 기간</span>
+                                            <span className="text-primary text-xs font-semibold">{effectiveDuration}일</span>
                                         </div>
                                         <div className="relative pt-2">
                                             <input
@@ -303,16 +303,16 @@ export default function DateRangeEditor({
                                                 className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-primary"
                                             />
                                             <div className="flex justify-between mt-2">
-                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">1일</span>
-                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">31일</span>
+                                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">1일</span>
+                                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">31일</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">여유 일정 (플렉서블)</span>
-                                            <span className="text-primary text-[10px] font-black">±{flexibility}일</span>
+                                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest pl-1">여유 일정 (플렉서블)</span>
+                                            <span className="text-primary text-xs font-semibold">±{flexibility}일</span>
                                         </div>
                                         <input
                                             type="range"
@@ -336,15 +336,15 @@ export default function DateRangeEditor({
                                     >
                                         <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                                             <span className="material-symbols-rounded text-xl">warning</span>
-                                            <p className="text-xs font-black uppercase tracking-tight">선택한 날짜 범위에서 제외되는 일정이 있습니다</p>
+                                            <p className="text-xs font-semibold uppercase tracking-tight">선택한 날짜 범위에서 제외되는 일정이 있습니다</p>
                                         </div>
                                         <div className="space-y-1.5">
                                             {potentialLoss.map(loss => (
-                                                <div key={loss.date} className="flex items-center justify-between text-[10px] font-bold">
+                                                <div key={loss.date} className="flex items-center justify-between text-xs font-bold">
                                                     <span className="text-slate-600 dark:text-slate-300 italic">{format(parseISO(loss.date), 'M월 d일')}</span>
                                                     <div className="flex gap-1">
                                                         {loss.types.map(type => (
-                                                            <span key={type} className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded uppercase text-[8px]">
+                                                            <span key={type} className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded uppercase text-xs">
                                                                 {type === 'event' ? '일정' : type === 'accommodation' ? '숙소' : type === 'flight' ? '항공' : type === 'transport' ? '교통' : type === 'reservation' ? '예약' : type}
                                                             </span>
                                                         ))}
@@ -352,7 +352,7 @@ export default function DateRangeEditor({
                                                 </div>
                                             ))}
                                         </div>
-                                        <p className="text-[9px] font-bold text-red-500/80 italic leading-tight">
+                                        <p className="text-xs font-bold text-red-500/80 italic leading-tight">
                                             * 설정 완료를 누르면 해당 날짜의 위 항목들은 삭제됩니다. 신중하게 선택해 주세요.
                                         </p>
                                     </motion.div>
@@ -361,7 +361,7 @@ export default function DateRangeEditor({
 
                             {/* Tips - Wide layout at the bottom */}
                             <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 w-full">
-                                <p className="text-[10px] font-bold text-slate-500 leading-relaxed text-center italic flex items-center justify-center gap-2">
+                                <p className="text-xs font-bold text-slate-500 leading-relaxed text-center italic flex items-center justify-center gap-2">
                                     <span className="material-symbols-rounded text-sm text-primary/60">lightbulb</span>
                                     캘린더에서 날짜를 클릭하거나 드래그하여 기간을 설정할 수 있습니다. 슬라이더를 통해 기간을 미세 조정하세요.
                                 </p>
@@ -371,7 +371,7 @@ export default function DateRangeEditor({
 
                     <button
                         onClick={() => setIsExpanded(false)}
-                        className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black text-slate-600 dark:text-slate-400 hover:bg-slate-50 transition-all"
+                        className="w-full py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 transition-all"
                     >
                         설정 완료
                     </button>

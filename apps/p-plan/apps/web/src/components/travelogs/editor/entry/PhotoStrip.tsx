@@ -75,12 +75,12 @@ export default function PhotoStrip({
             )}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={hero} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                <span className="absolute top-2 left-2 rounded-full bg-black/55 backdrop-blur px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-1">
+                <span className="absolute top-2 left-2 rounded-full bg-black/55 backdrop-blur px-2.5 py-1 text-xs font-semibold uppercase tracking-widest text-white flex items-center gap-1">
                     <span className="material-symbols-rounded text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
                     대표
                 </span>
                 {photos.length > 1 && (
-                    <span className="absolute top-2 right-2 rounded-full bg-black/55 backdrop-blur px-2.5 py-1 text-[10px] font-black text-white tabular-nums">
+                    <span className="absolute top-2 right-2 rounded-full bg-black/55 backdrop-blur px-2.5 py-1 text-xs font-semibold text-white tabular-nums">
                         {photos.length}장
                     </span>
                 )}

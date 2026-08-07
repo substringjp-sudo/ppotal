@@ -67,7 +67,7 @@ export default function TimelineDayColumn({
             <div className="sticky top-0 z-30 -ml-10 mb-8 py-3 bg-white dark:bg-slate-900 flex items-center gap-6 group">
                 {/* Marker */}
                 <div className="relative flex flex-col items-center">
-                    <div className="w-8 h-8 rounded-full bg-white border-4 border-primary shadow-[0_0_20px_rgba(236,91,19,0.3)] z-10 flex items-center justify-center text-primary text-[10px] font-black">
+                    <div className="w-8 h-8 rounded-full bg-white border-4 border-primary shadow-[0_0_20px_rgba(236,91,19,0.3)] z-10 flex items-center justify-center text-primary text-xs font-semibold">
                         {dayIdx + 1}
                     </div>
                 </div>
@@ -75,7 +75,7 @@ export default function TimelineDayColumn({
                 <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between border-b border-primary/10 pb-2 gap-1">
                     <div className="flex flex-col">
                         <div className="flex items-baseline gap-3">
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white transition-colors group-hover:text-primary">{dayIdx + 1}일차</h3>
+                            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-primary">{dayIdx + 1}일차</h3>
                             {showDate ? (
                                 <span className="text-sm font-bold text-slate-400">{formattedDate} ({dayOfWeek})</span>
                             ) : (
@@ -96,21 +96,21 @@ export default function TimelineDayColumn({
                             {daySummary.weather && (
                                 <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                     <span className="material-symbols-rounded text-sm text-amber-500">{daySummary.weather.icon}</span>
-                                    <span className="text-[11px] font-bold hidden sm:inline">{daySummary.weather.temp}° • {daySummary.weather.condition}</span>
-                                    <span className="text-[11px] font-bold sm:hidden">{daySummary.weather.temp}°</span>
+                                    <span className="text-xs font-bold hidden sm:inline">{daySummary.weather.temp}° • {daySummary.weather.condition}</span>
+                                    <span className="text-xs font-bold sm:hidden">{daySummary.weather.temp}°</span>
                                 </div>
                             )}
 
                             {/* Summary Icons */}
                             <div className="flex items-center gap-2">
                                 {daySummary.flights?.length > 0 && (
-                                    <div className="flex items-center gap-1 text-[11px] font-bold text-primary px-2 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                                    <div className="flex items-center gap-1 text-xs font-bold text-primary px-2 py-1 bg-primary/5 rounded-lg border border-primary/10">
                                         <span className="material-symbols-rounded text-xs">flight</span>
                                         {daySummary.flights.length}
                                     </div>
                                 )}
                                 {daySummary.accommodations?.length > 0 && (
-                                    <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500 px-2 py-1 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                    <div className="flex items-center gap-1 text-xs font-bold text-emerald-500 px-2 py-1 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
                                         <span className="material-symbols-rounded text-xs">hotel</span>
                                         {daySummary.accommodations.length}
                                     </div>
@@ -126,7 +126,7 @@ export default function TimelineDayColumn({
                 <div className="mb-8 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 duration-500">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-rounded text-[14px] text-amber-500 font-bold">pending_actions</span>
-                        <span className="text-[11px] font-black text-amber-600/80 uppercase tracking-widest">일정 확정 대기</span>
+                        <span className="text-xs font-semibold text-amber-600/80 uppercase tracking-widest">일정 확정 대기</span>
                         <div className="h-px flex-1 bg-gradient-to-r from-amber-200/50 to-transparent"></div>
                     </div>
                     <div className="grid grid-cols-1 gap-2">

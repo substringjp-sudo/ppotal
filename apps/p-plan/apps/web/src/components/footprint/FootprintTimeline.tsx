@@ -112,7 +112,7 @@ export default function FootprintTimeline({
 
     return (
         <div className="select-none">
-            <div className="flex justify-between text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1 px-0.5">
+            <div className="flex justify-between text-xs font-semibold text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1 px-0.5">
                 <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
             </div>
             <div
@@ -154,7 +154,7 @@ export default function FootprintTimeline({
                             title={a.title || a.places[0]?.name || '활동'}
                         >
                             {width > 8 && (
-                                <span className="text-[9px] font-black text-white truncate">
+                                <span className="text-xs font-semibold text-white truncate">
                                     {a.title || a.places[0]?.name}
                                 </span>
                             )}

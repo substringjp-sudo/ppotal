@@ -181,7 +181,7 @@ export default function ConflictAwareTimePicker({
                             />
                         )}
                     </div>
-                    <div className="mt-0.5 flex justify-between text-[9px] text-slate-400">
+                    <div className="mt-0.5 flex justify-between text-xs text-slate-400">
                         <span>{toStr(winStart)}</span>
                         <span>{toStr(winEnd)}</span>
                     </div>
@@ -190,7 +190,7 @@ export default function ConflictAwareTimePicker({
 
             {/* 충돌 경고 */}
             {hasConflict && (
-                <p className="text-[11px] font-bold text-red-500">
+                <p className="text-xs font-bold text-red-500">
                     ⚠ {conflicts.map((c) => `${c.title}(${toStr(c.start)}~${toStr(c.end)})`).join(', ')} 와(과)
                     시간이 겹쳐요.
                 </p>
@@ -199,7 +199,7 @@ export default function ConflictAwareTimePicker({
             {/* 빈 시간대 빠른 선택 */}
             {freeSlots.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-slate-400">빈 시간</span>
+                    <span className="text-xs font-bold text-slate-400">빈 시간</span>
                     {freeSlots.map((slot, i) => (
                         <button
                             key={i}
@@ -210,7 +210,7 @@ export default function ConflictAwareTimePicker({
                                     endTime: toStr(Math.min(slot.end, slot.start + 120)),
                                 })
                             }
-                            className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300"
+                            className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300"
                         >
                             {toStr(slot.start)}~{toStr(slot.end)}
                         </button>

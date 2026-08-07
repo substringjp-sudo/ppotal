@@ -48,13 +48,13 @@ export default function InterestsEditor() {
         <div className="space-y-8 pb-32">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">관심 있는 장소 & 위시리스트</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">관심 있는 장소 & 위시리스트</h2>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">여행 중에 방문하고 싶은 장소나 해보고 싶은 활동을 자유롭게 담아보세요</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setIsImportOpen(true)}
-                        className="h-14 px-6 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border border-indigo-100 dark:border-indigo-800/30"
+                        className="h-14 px-6 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl font-semibold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border border-indigo-100 dark:border-indigo-800/30"
                     >
                         <Sparkles className="w-4 h-4" /> 내 위시리스트에서 가져오기
                     </button>
@@ -63,14 +63,14 @@ export default function InterestsEditor() {
                             setEditingItem(null);
                             setIsAddOpen(true);
                         }}
-                        className="h-14 px-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 dark:shadow-white/10 hover:scale-[1.05] active:scale-[0.95] transition-all flex items-center justify-center gap-3"
+                        className="h-14 px-8 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-semibold text-xs uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 dark:shadow-white/10 hover:scale-[1.05] active:scale-[0.95] transition-all flex items-center justify-center gap-3"
                     >
                         <Plus className="w-5 h-5" /> 새로운 항목 추가
                     </button>
                 </div>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-800/20 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="bg-slate-50 dark:bg-slate-800/20 p-6 rounded-[20px] border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -89,7 +89,7 @@ export default function InterestsEditor() {
                                     key={mode}
                                     onClick={() => logic.setGroupBy(mode)}
                                     className={cn(
-                                        "px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                                        "px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-widest transition-all",
                                         logic.groupBy === mode ? "bg-white dark:bg-slate-700 text-indigo-600 shadow-sm" : "text-slate-400"
                                     )}
                                 >
@@ -114,7 +114,7 @@ export default function InterestsEditor() {
                                     <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500">
                                         <group.icon className="w-4 h-4" />
                                     </div>
-                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{group.label} ({group.items.length})</h3>
+                                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">{group.label} ({group.items.length})</h3>
                                     <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
                                 </div>
                                 <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-3"}>
@@ -148,8 +148,8 @@ export default function InterestsEditor() {
                                     <PackageOpen className="w-10 h-10" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-slate-400 uppercase tracking-widest">일치하는 항목이 없습니다</p>
-                                    <p className="text-[10px] font-bold text-slate-300 mt-1 uppercase">검색어나 필터를 변경해보세요</p>
+                                    <p className="text-sm font-semibold text-slate-400 uppercase tracking-widest">일치하는 항목이 없습니다</p>
+                                    <p className="text-xs font-bold text-slate-300 mt-1 uppercase">검색어나 필터를 변경해보세요</p>
                                 </div>
                             </div>
                         )}

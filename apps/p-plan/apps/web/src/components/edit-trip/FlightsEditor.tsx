@@ -21,8 +21,8 @@ export default function FlightsEditor() {
                         <span className="material-symbols-rounded">flight</span>
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-white">항공권 관리</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">출국, 귀국 및 모든 국제/국내선 비행 일정을 관리합니다.</p>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">항공권 관리</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">출국, 귀국 및 모든 국제/국내선 비행 일정을 관리합니다.</p>
                     </div>
                 </div>
                 <CustomCheckbox
@@ -55,7 +55,7 @@ export default function FlightsEditor() {
                             <span className="material-symbols-rounded text-4xl opacity-20">flight_off</span>
                         </div>
                         <p className="text-sm font-bold">항공편 기능이 비활성화되었습니다.</p>
-                        <p className="text-[10px] font-medium opacity-60 mt-2">상단의 '비행기 미사용' 체크를 해제하면 다시 활성화됩니다.</p>
+                        <p className="text-xs font-medium opacity-60 mt-2">상단의 '비행기 미사용' 체크를 해제하면 다시 활성화됩니다.</p>
                     </motion.div>
                 )}
             </AnimatePresence>

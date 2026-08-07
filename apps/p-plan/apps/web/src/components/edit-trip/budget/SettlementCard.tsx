@@ -124,9 +124,9 @@ export default function SettlementCard() {
         return (
             <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/20 p-6 text-center">
                 <span className="material-symbols-rounded text-3xl text-slate-300">group</span>
-                <p className="mt-1 text-sm font-black text-slate-700 dark:text-slate-200">여럿이 함께 가나요?</p>
+                <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">여럿이 함께 가나요?</p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">정산 모드를 켜면 항공·숙소·지출을 누가 얼마씩 냈는지 정리하고 최종 송금을 계산해 드려요.</p>
-                <button onClick={enable} className="mt-4 rounded-xl bg-primary px-5 py-2.5 text-xs font-black text-white shadow-sm hover:bg-primary/90 transition">
+                <button onClick={enable} className="mt-4 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-primary/90 transition">
                     정산 모드 켜기
                 </button>
             </div>
@@ -140,9 +140,9 @@ export default function SettlementCard() {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className="material-symbols-rounded text-primary">receipt_long</span>
-                        <span className="text-sm font-black text-slate-900 dark:text-white">정산</span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white">정산</span>
                     </div>
-                    <button onClick={() => setSettlement({ enabled: false })} className="text-[11px] font-bold text-slate-400 hover:text-rose-500 transition">정산 모드 끄기</button>
+                    <button onClick={() => setSettlement({ enabled: false })} className="text-xs font-bold text-slate-400 hover:text-rose-500 transition">정산 모드 끄기</button>
                 </div>
 
                 {/* 기본 분할 모드 */}
@@ -152,8 +152,8 @@ export default function SettlementCard() {
                         return (
                             <button key={id} onClick={() => setSettlement({ mode: id })} aria-pressed={on}
                                 className={cn('flex-1 rounded-lg py-1.5 text-center transition-all', on ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-400')}>
-                                <span className={cn('text-xs font-black', on ? 'text-slate-900 dark:text-white' : '')}>{label}</span>
-                                <span className={cn('ml-1 text-[10px] font-bold', on ? 'text-primary' : 'text-slate-400')}>{sub}</span>
+                                <span className={cn('text-xs font-semibold', on ? 'text-slate-900 dark:text-white' : '')}>{label}</span>
+                                <span className={cn('ml-1 text-xs font-bold', on ? 'text-primary' : 'text-slate-400')}>{sub}</span>
                             </button>
                         );
                     })}
@@ -161,7 +161,7 @@ export default function SettlementCard() {
 
                 {/* 멤버 */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">멤버 {participants.length}명</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">멤버 {participants.length}명</p>
                     <div className="flex flex-col gap-1.5">
                         {participants.map((p) => (
                             <div key={p.id} className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export default function SettlementCard() {
                                 <button
                                     onClick={() => setSettlement({ defaultPayerId: p.id })}
                                     title="기본 결제자로 지정"
-                                    className={cn('px-2 h-9 rounded-lg text-[10px] font-black border transition', trip.settlement?.defaultPayerId === p.id ? 'bg-primary/10 border-primary/30 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary')}
+                                    className={cn('px-2 h-9 rounded-lg text-xs font-semibold border transition', trip.settlement?.defaultPayerId === p.id ? 'bg-primary/10 border-primary/30 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary')}
                                 >
                                     기본결제
                                 </button>
@@ -185,7 +185,7 @@ export default function SettlementCard() {
                             </div>
                         ))}
                     </div>
-                    <button onClick={addMember} className="mt-2 inline-flex items-center gap-1 text-[11px] font-black text-primary hover:opacity-80">
+                    <button onClick={addMember} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:opacity-80">
                         <span className="material-symbols-rounded text-[15px]">add</span> 멤버 추가
                     </button>
                 </div>
@@ -193,7 +193,7 @@ export default function SettlementCard() {
                 {/* 항목별 결제자·분담 */}
                 {rows.length > 0 && (
                     <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">비용 항목 {rows.length}개</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">비용 항목 {rows.length}개</p>
                         <div className="flex flex-col gap-1.5">
                             {rows.map((row) => {
                                 const sym = getCurrencySymbol(row.currency);
@@ -205,19 +205,19 @@ export default function SettlementCard() {
                                         <div className="flex items-center gap-2 px-3 py-2.5">
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{row.label}</p>
-                                                <p className="text-[10px] text-slate-400 tabular-nums">{sym}{row.amount.toLocaleString()}</p>
+                                                <p className="text-xs text-slate-400 tabular-nums">{sym}{row.amount.toLocaleString()}</p>
                                             </div>
                                             <select
                                                 value={row.payerId || ''}
                                                 onChange={(e) => patchRow(row, { payerId: e.target.value || undefined })}
-                                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-[11px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary max-w-[96px]"
+                                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary max-w-[96px]"
                                             >
                                                 <option value="">결제자</option>
                                                 {participants.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                                             </select>
                                             <button
                                                 onClick={() => setExpandedId(open ? null : `${row.kind}-${row.id}`)}
-                                                className={cn('h-8 px-2.5 rounded-lg text-[10px] font-black border transition inline-flex items-center gap-1', open ? 'bg-primary/10 border-primary/30 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-500')}
+                                                className={cn('h-8 px-2.5 rounded-lg text-xs font-semibold border transition inline-flex items-center gap-1', open ? 'bg-primary/10 border-primary/30 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-500')}
                                             >
                                                 {isExact ? '커스텀' : `${splitCount}명`}
                                                 <span className="material-symbols-rounded text-[14px]">{open ? 'expand_less' : 'group'}</span>
@@ -228,10 +228,10 @@ export default function SettlementCard() {
                                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                                                     <div className="px-3 pb-3 pt-1 flex flex-col gap-2 border-t border-slate-100 dark:border-slate-800">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase">누가 나눠 내나</span>
+                                                            <span className="text-xs font-semibold text-slate-400 uppercase">누가 나눠 내나</span>
                                                             <button
                                                                 onClick={() => patchRow(row, isExact ? { splitExact: undefined } : { splitExact: Object.fromEntries((row.splitWithIds || participants.map((p) => p.id)).map((id) => [id, Math.round(row.amount / (row.splitWithIds?.length || participants.length))])) })}
-                                                                className="text-[10px] font-black text-primary"
+                                                                className="text-xs font-semibold text-primary"
                                                             >
                                                                 {isExact ? '균등으로' : '정확 금액'}
                                                             </button>
@@ -250,13 +250,13 @@ export default function SettlementCard() {
                                                                         <>
                                                                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex-1">{p.name}</span>
                                                                             <div className="relative w-28">
-                                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-black text-slate-400">{sym}</span>
+                                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">{sym}</span>
                                                                                 <input
                                                                                     type="number" inputMode="decimal"
                                                                                     value={row.splitExact![p.id] ?? ''}
                                                                                     onChange={(e) => setExact(row, p.id, e.target.value)}
                                                                                     placeholder="0"
-                                                                                    className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-6 pr-2 text-[11px] font-bold text-slate-800 dark:text-white outline-none focus:border-primary tabular-nums"
+                                                                                    className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-6 pr-2 text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-primary tabular-nums"
                                                                                 />
                                                                             </div>
                                                                         </>
@@ -279,17 +279,17 @@ export default function SettlementCard() {
                 {settlement && (
                     <div className="rounded-2xl bg-slate-900 dark:bg-slate-950 text-white p-5">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">정산 결과</span>
-                            <span className="text-[11px] font-bold text-slate-400 tabular-nums">공동지출 {formatKRWMan(settlement.totalShared)}</span>
+                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">정산 결과</span>
+                            <span className="text-xs font-bold text-slate-400 tabular-nums">공동지출 {formatKRWMan(settlement.totalShared)}</span>
                         </div>
                         {settlement.transfers.length > 0 ? (
                             <div className="flex flex-col gap-2">
                                 {settlement.transfers.map((t, i) => (
                                     <div key={i} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
-                                        <span className="text-sm font-black flex items-center gap-2">
+                                        <span className="text-sm font-semibold flex items-center gap-2">
                                             {name(t.from)} <span className="material-symbols-rounded text-emerald-400 text-lg">arrow_forward</span> {name(t.to)}
                                         </span>
-                                        <span className="text-sm font-black text-emerald-400 tabular-nums">{t.amount.toLocaleString()}원</span>
+                                        <span className="text-sm font-semibold text-emerald-400 tabular-nums">{t.amount.toLocaleString()}원</span>
                                     </div>
                                 ))}
                             </div>

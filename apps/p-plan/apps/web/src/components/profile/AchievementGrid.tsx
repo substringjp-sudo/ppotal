@@ -40,7 +40,7 @@ export default function AchievementGrid({ badges }: AchievementGridProps) {
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
             className={cn(
-              "px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-2 border",
+              "px-4 py-2 rounded-2xl text-xs font-semibold transition-all flex items-center gap-2 border",
               activeCategory === cat.id 
                 ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
                 : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10"
@@ -76,7 +76,7 @@ function AchievementCard({ badge }: { badge: Badge }) {
       exit={{ opacity: 0, scale: 0.9 }}
       whileHover={{ y: -5 }}
       className={cn(
-        "relative p-6 rounded-[32px] border transition-all overflow-hidden group aspect-square flex flex-col items-center justify-center text-center",
+        "relative p-6 rounded-[20px] border transition-all overflow-hidden group aspect-square flex flex-col items-center justify-center text-center",
         badge.isUnlocked 
           ? "bg-white/5 border-white/10 hover:border-primary/50 cursor-default" 
           : "bg-black/20 border-white/5 grayscale opacity-60"
@@ -104,8 +104,8 @@ function AchievementCard({ badge }: { badge: Badge }) {
 
       {/* Title & Desc */}
       <div className="space-y-1">
-        <h3 className="text-sm font-black tracking-tight line-clamp-1">{badge.title}</h3>
-        <p className="text-[10px] font-bold text-white/40 leading-snug line-clamp-2 px-2">
+        <h3 className="text-sm font-semibold tracking-tight line-clamp-1">{badge.title}</h3>
+        <p className="text-xs font-bold text-white/40 leading-snug line-clamp-2 px-2">
             {badge.isUnlocked ? badge.description : "???"}
         </p>
       </div>

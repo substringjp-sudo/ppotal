@@ -210,7 +210,7 @@ function ChecklistForm({ initialTitle = '', initialTags = '', onSubmit, onCancel
         >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">준비물 이름</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">준비물 이름</label>
                     <input
                         autoFocus={autoFocus}
                         value={title}
@@ -220,7 +220,7 @@ function ChecklistForm({ initialTitle = '', initialTags = '', onSubmit, onCancel
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">태그 (쉼표 구분)</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">태그 (쉼표 구분)</label>
                     <input
                         value={tags}
                         onChange={(e) => setTags(e.target.value)}
@@ -229,7 +229,7 @@ function ChecklistForm({ initialTitle = '', initialTags = '', onSubmit, onCancel
                     />
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">메모 / 상세 설명 (선택)</label>
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">메모 / 상세 설명 (선택)</label>
                     <input
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
@@ -333,7 +333,7 @@ export default function ChecklistEditor() {
                 <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-1.5 shrink-0">
                         <span className="material-symbols-rounded text-base text-slate-400">badge</span>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">내 국적(거주국)</span>
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">내 국적(거주국)</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                         {SUPPORTED_HOME_COUNTRIES.map((c) => {
@@ -354,7 +354,7 @@ export default function ChecklistEditor() {
                             );
                         })}
                     </div>
-                    <p className="w-full text-[10px] font-medium text-slate-400">
+                    <p className="w-full text-xs font-medium text-slate-400">
                         비자·어댑터·전압 등 준비물은 이 국적을 기준으로 계산돼요. 로그인하면 프로필 설정값이 자동으로 대신 쓰여요.
                     </p>
                 </div>
@@ -365,18 +365,18 @@ export default function ChecklistEditor() {
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-sm font-black text-primary uppercase tracking-widest mb-1 flex items-center gap-2">
+                            <h3 className="text-sm font-semibold text-primary uppercase tracking-widest mb-1 flex items-center gap-2">
                                 <span className="material-symbols-rounded text-[16px]">magic_button</span>
                                 사용자님을 위한 추천 준비물
                             </h3>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">여행지, 기간, 테마를 분석하여 꼭 필요한 아이템을 골랐어요.</p>
-                            <p className="text-[10px] font-medium text-slate-400 mt-0.5 normal-case">
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-tighter">여행지, 기간, 테마를 분석하여 꼭 필요한 아이템을 골랐어요.</p>
+                            <p className="text-xs font-medium text-slate-400 mt-0.5 normal-case">
                                 거주국/여권: <b>{homeProfile?.aliases[0] || '대한민국'}</b> 기준 · 비자·입국 요건은 참고용이며 출발 전 대사관·공식 사이트에서 꼭 재확인하세요.
                             </p>
                         </div>
                         <button
                             onClick={addAllRecommended}
-                            className="text-[10px] font-black text-primary px-3 py-1 bg-primary/5 rounded-full border border-primary/10 hover:bg-primary/10 transition-all uppercase"
+                            className="text-xs font-semibold text-primary px-3 py-1 bg-primary/5 rounded-full border border-primary/10 hover:bg-primary/10 transition-all uppercase"
                         >
                             전체 추가하기
                         </button>
@@ -401,7 +401,7 @@ export default function ChecklistEditor() {
                                 >
                                     <div className="space-y-1.5">
                                         <div className="flex items-start justify-between gap-2">
-                                            <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 leading-tight flex items-center gap-1.5">
+                                            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight flex items-center gap-1.5">
                                                 {rec.isVisa && (
                                                     <span className="material-symbols-rounded text-[16px] text-red-500 shrink-0">warning</span>
                                                 )}
@@ -420,7 +420,7 @@ export default function ChecklistEditor() {
                                             </button>
                                         </div>
                                         <p className={cn(
-                                            "text-[10px] font-bold text-slate-500 dark:text-slate-400",
+                                            "text-xs font-bold text-slate-500 dark:text-slate-400",
                                             isEssential ? "" : "line-clamp-2"
                                         )}>
                                             {rec.reason}
@@ -438,7 +438,7 @@ export default function ChecklistEditor() {
                                                 <span
                                                     key={j}
                                                     className={cn(
-                                                        "px-1.5 py-0.5 text-[8px] font-black rounded-md uppercase tracking-widest border",
+                                                        "px-1.5 py-0.5 text-xs font-semibold rounded-md uppercase tracking-widest border",
                                                         isPriorityTag ? priorityColorCls : "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700"
                                                     )}
                                                 >
@@ -457,8 +457,8 @@ export default function ChecklistEditor() {
             {/* Presets Section */}
             <div className="space-y-6">
                 <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-1">기본 태그별 프리셋</h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">카테고리별 필수 짐들을 한 번에 추가해보세요.</p>
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-1">기본 태그별 프리셋</h3>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-tighter">카테고리별 필수 짐들을 한 번에 추가해보세요.</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                     {PRESETS.map((preset) => (
@@ -470,7 +470,7 @@ export default function ChecklistEditor() {
                             <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-all shadow-sm">
                                 <span className="material-symbols-rounded text-2xl">{preset.icon}</span>
                             </div>
-                            <span className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">{preset.name}</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">{preset.name}</span>
                         </button>
                     ))}
                 </div>
@@ -479,13 +479,13 @@ export default function ChecklistEditor() {
             {/* Main Checklist */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">체크리스트 ({trip.checklist.length})</h3>
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest">체크리스트 ({trip.checklist.length})</h3>
                     <button
                         onClick={() => {
                             setIsAdding(!isAdding);
                             setEditingId(null);
                         }}
-                        className="text-xs font-black text-primary px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-all flex items-center gap-1"
+                        className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-all flex items-center gap-1"
                     >
                         <span className="material-symbols-rounded text-[14px]">{isAdding ? 'close' : 'add'}</span>
                         {isAdding ? '취소' : '항목 추가'}
@@ -557,13 +557,13 @@ export default function ChecklistEditor() {
                                                     <div className="flex flex-col gap-1.5 mt-2">
                                                         <div className="flex flex-wrap gap-1">
                                                             {item.tags.filter(t => !t.startsWith('|')).map((t, i) => (
-                                                                <span key={i} className="text-[8px] bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md px-1.5 py-0.5 font-black uppercase tracking-widest inline-block">
+                                                                <span key={i} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md px-1.5 py-0.5 font-semibold uppercase tracking-widest inline-block">
                                                                     {t}
                                                                 </span>
                                                             ))}
                                                         </div>
                                                         {item.tags.some(t => t.startsWith('|')) && (
-                                                            <p className="text-[10px] font-bold text-slate-400 italic">
+                                                            <p className="text-xs font-bold text-slate-400 italic">
                                                                 {item.tags.find(t => t.startsWith('|'))?.replace('|', '').trim()}
                                                             </p>
                                                         )}

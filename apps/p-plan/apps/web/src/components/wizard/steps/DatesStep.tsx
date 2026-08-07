@@ -101,15 +101,15 @@ export default function DatesStep() {
                 className="flex items-center justify-between px-2"
             >
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3 truncate">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3 truncate">
                         <span className="w-1.5 h-6 bg-primary rounded-full shrink-0" />
                         언제 떠나시나요?
                     </h3>
-                    <p className="text-[10px] font-black text-slate-400 mt-1 pl-4 uppercase tracking-[0.2em] truncate">Travel period & Flexibility</p>
+                    <p className="text-xs font-semibold text-slate-400 mt-1 pl-4 uppercase tracking-[0.2em] truncate">Travel period & Flexibility</p>
                 </div>
                 <div className="flex items-center gap-6 shrink-0 ml-4">
                     <label className="flex items-center gap-3 cursor-pointer group">
-                        <span className="text-[10px] font-black text-slate-500 group-hover:text-primary transition-colors whitespace-nowrap">날짜 미정</span>
+                        <span className="text-xs font-semibold text-slate-500 group-hover:text-primary transition-colors whitespace-nowrap">날짜 미정</span>
                         <input
                             type="checkbox"
                             checked={isDateUndecided}
@@ -134,7 +134,7 @@ export default function DatesStep() {
                         isDateUndecided && "opacity-20 grayscale pointer-events-none"
                     )}
                 >
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 mb-2">Presets</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest pl-2 mb-2">Presets</p>
                     <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide">
                         {[
                             { label: '주말 힐링', sub: '2박 3일', days: 2, icon: 'wb_sunny' },
@@ -145,11 +145,11 @@ export default function DatesStep() {
                             <button
                                 key={preset.label}
                                 onClick={() => applyPreset(preset.days)}
-                                className="group shrink-0 h-20 w-32 lg:w-full rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-lg transition-all text-left px-4 flex flex-col justify-center active:scale-95"
+                                className="group shrink-0 h-20 w-32 lg:w-full rounded-[20px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-lg transition-all text-left px-4 flex flex-col justify-center active:scale-95"
                             >
                                 <span className="material-symbols-rounded text-slate-300 group-hover:text-primary transition-colors text-lg mb-1">{preset.icon}</span>
-                                <div className="text-[11px] font-black text-slate-900 dark:text-white leading-tight">{preset.label}</div>
-                                <div className="text-[9px] font-bold text-slate-400">{preset.sub}</div>
+                                <div className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">{preset.label}</div>
+                                <div className="text-xs font-bold text-slate-400">{preset.sub}</div>
                             </button>
                         ))}
                     </div>
@@ -166,10 +166,10 @@ export default function DatesStep() {
                         isDateUndecided && "opacity-20 grayscale scale-95 pointer-events-none"
                     )}
                 >
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[32px] p-6 lg:pt-8 lg:px-8 lg:pb-12 border border-slate-200/50 dark:border-slate-800 shadow-2xl relative">
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[20px] p-6 lg:pt-8 lg:px-8 lg:pb-12 border border-slate-200/50 dark:border-slate-800 shadow-2xl relative">
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-6">
-                                <h4 className="text-xl font-black text-slate-900 dark:text-white">
+                                <h4 className="text-xl font-bold text-slate-900 dark:text-white">
                                     {format(viewDate, 'yyyy년 MM월')}
                                 </h4>
                                 <div className="flex gap-2">
@@ -188,7 +188,7 @@ export default function DatesStep() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-7 gap-1 mb-4 text-[10px] font-black text-center uppercase text-slate-400">
+                            <div className="grid grid-cols-7 gap-1 mb-4 text-xs font-semibold text-center uppercase text-slate-400">
                                 {days.map(d => <div key={d} className={cn(d === '일' && "text-red-400/70", d === '토' && "text-blue-400/70")}>{d}</div>)}
                             </div>
 
@@ -251,10 +251,10 @@ export default function DatesStep() {
                                                     backgroundColor: isStart || isEnd ? 'var(--color-primary)' : 'transparent',
                                                 }}
                                                 className={cn(
-                                                    "absolute inset-1 rounded-xl text-[12px] font-black transition-all duration-300 z-10 flex items-center justify-center",
+                                                    "absolute inset-1 rounded-xl text-xs font-semibold transition-all duration-300 z-10 flex items-center justify-center",
                                                     isPast ? "text-slate-200 dark:text-slate-800 cursor-not-allowed" : "text-slate-600 dark:text-slate-400",
                                                     (isStart || isEnd) && "text-white shadow-lg shadow-primary/30 z-20",
-                                                    inRange && "text-primary font-black"
+                                                    inRange && "text-primary font-semibold"
                                                 )}
                                             >
                                                 <span className="relative z-10">{format(date, 'd')}</span>
@@ -300,10 +300,10 @@ export default function DatesStep() {
                     className="lg:col-span-12 xl:col-span-4 space-y-6 order-3"
                 >
                     {isDateUndecided ? (
-                        <div className="p-8 bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[32px] text-center relative overflow-hidden shadow-2xl">
+                        <div className="p-8 bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-[20px] text-center relative overflow-hidden shadow-2xl">
                             <div className="relative z-10 py-4">
                                 <span className="material-symbols-rounded text-white text-5xl mb-6 block">timer</span>
-                                <h4 className="text-xl font-black text-white mb-8">여행 기간 선택</h4>
+                                <h4 className="text-xl font-bold text-white mb-8">여행 기간 선택</h4>
                                 <div className="flex items-center justify-center gap-6">
                                     <button
                                         onClick={() => setDuration(Math.max(1, durationDays - 1))}
@@ -312,8 +312,8 @@ export default function DatesStep() {
                                         <span className="material-symbols-rounded">remove</span>
                                     </button>
                                     <div className="min-w-[80px]">
-                                        <div className="text-6xl font-black text-white">{durationDays}</div>
-                                        <div className="text-[11px] font-bold text-white/60">DAYS</div>
+                                        <div className="text-6xl font-bold text-white">{durationDays}</div>
+                                        <div className="text-xs font-bold text-white/60">DAYS</div>
                                     </div>
                                     <button
                                         onClick={() => setDuration(Math.min(30, durationDays + 1))}
@@ -327,15 +327,15 @@ export default function DatesStep() {
                     ) : (
                         <div className="space-y-6">
                             {/* Selected Period Summary */}
-                            <div className="p-8 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
+                            <div className="p-8 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
                                 <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-8">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full whitespace-nowrap">Selected</p>
+                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full whitespace-nowrap">Selected</p>
                                         {startDate && endDate && (
                                             <div className="flex items-center gap-2">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                                <span className="text-[12px] font-black text-primary">
+                                                <span className="text-xs font-semibold text-primary">
                                                     {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1}일 일정
                                                 </span>
                                             </div>
@@ -343,21 +343,21 @@ export default function DatesStep() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 relative items-center">
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Check-in</p>
-                                            <p className={cn("text-2xl font-black", startDate ? "text-slate-900 dark:text-white" : "text-slate-200 dark:text-slate-800")}>
+                                            <p className="text-xs font-bold text-slate-400 uppercase">Check-in</p>
+                                            <p className={cn("text-2xl font-bold", startDate ? "text-slate-900 dark:text-white" : "text-slate-200 dark:text-slate-800")}>
                                                 {startDate ? format(new Date(startDate), 'MM.dd') : '--.--'}
                                             </p>
-                                            {startDate && <p className="text-[10px] font-bold text-primary">{format(new Date(startDate), 'EEEE', { locale: ko })}</p>}
+                                            {startDate && <p className="text-xs font-bold text-primary">{format(new Date(startDate), 'EEEE', { locale: ko })}</p>}
                                         </div>
                                         <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-800">
                                             <span className="material-symbols-rounded text-slate-300 text-sm">trending_flat</span>
                                         </div>
                                         <div className="space-y-1 text-right">
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Check-out</p>
-                                            <p className={cn("text-2xl font-black", endDate ? "text-slate-900 dark:text-white" : "text-slate-200 dark:text-slate-800")}>
+                                            <p className="text-xs font-bold text-slate-400 uppercase">Check-out</p>
+                                            <p className={cn("text-2xl font-bold", endDate ? "text-slate-900 dark:text-white" : "text-slate-200 dark:text-slate-800")}>
                                                 {endDate ? format(new Date(endDate), 'MM.dd') : '--.--'}
                                             </p>
-                                            {endDate && <p className="text-[10px] font-bold text-primary">{format(new Date(endDate), 'EEEE', { locale: ko })}</p>}
+                                            {endDate && <p className="text-xs font-bold text-primary">{format(new Date(endDate), 'EEEE', { locale: ko })}</p>}
                                         </div>
                                     </div>
                                 </div>
@@ -365,7 +365,7 @@ export default function DatesStep() {
 
                             {/* Flexibility Toggle */}
                             <div className={cn(
-                                "p-8 rounded-[32px] border-2 transition-all duration-500",
+                                "p-8 rounded-[20px] border-2 transition-all duration-500",
                                 isFlexDays ? "border-primary bg-primary/5" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg shadow-slate-200/20"
                             )}>
                                 <div className="flex items-center justify-between mb-8">
@@ -377,8 +377,8 @@ export default function DatesStep() {
                                             <span className="material-symbols-rounded text-2xl">auto_awesome</span>
                                         </div>
                                         <div>
-                                            <p className={cn("text-sm font-black transition-colors", isFlexDays ? "text-primary" : "text-slate-900 dark:text-white")}>유연한 일정</p>
-                                            <p className="text-[9px] font-bold text-slate-400 mt-1">최적의 가격/날씨 추천</p>
+                                            <p className={cn("text-sm font-semibold transition-colors", isFlexDays ? "text-primary" : "text-slate-900 dark:text-white")}>유연한 일정</p>
+                                            <p className="text-xs font-bold text-slate-400 mt-1">최적의 가격/날씨 추천</p>
                                         </div>
                                     </div>
                                     <button 
@@ -398,7 +398,7 @@ export default function DatesStep() {
                                                             key={val}
                                                             onClick={() => setDates(startDate, endDate, val)}
                                                             className={cn(
-                                                                "flex-1 py-3 rounded-2xl text-[11px] font-black border-2 transition-all active:scale-95",
+                                                                "flex-1 py-3 rounded-2xl text-xs font-semibold border-2 transition-all active:scale-95",
                                                                 flexibility === val 
                                                                     ? "bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105" 
                                                                     : "bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:border-primary/30"
@@ -408,7 +408,7 @@ export default function DatesStep() {
                                                         </button>
                                                     ))}
                                                 </div>
-                                                <p className="text-[9px] font-black text-center text-slate-400 uppercase tracking-widest">
+                                                <p className="text-xs font-semibold text-center text-slate-400 uppercase tracking-widest">
                                                     Flexibility: ±{flexibility} Days
                                                 </p>
                                             </div>

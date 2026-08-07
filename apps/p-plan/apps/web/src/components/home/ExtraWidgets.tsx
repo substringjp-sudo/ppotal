@@ -25,17 +25,17 @@ export function TravelTipWidget({ itemVariants, nextTrip }: { itemVariants: any,
                 <span className="material-symbols-rounded text-6xl">{randomTip.icon}</span>
             </div>
             <div className="relative z-10">
-                <h3 className="text-[9px] font-black uppercase text-indigo-500 dark:text-indigo-400 tracking-widest mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold uppercase text-indigo-500 dark:text-indigo-400 tracking-widest mb-2 flex items-center gap-1.5">
                     <span className="material-symbols-rounded text-sm">lightbulb</span>
                     {countryCode === 'JP' ? '일본 여행 꿀팁' : countryCode === 'CN' ? '중국 여행 꿀팁' : '오늘의 여행 팁'}
                 </h3>
-                <h4 className="text-xs font-black text-slate-900 dark:text-white mb-1.5">{randomTip.title}</h4>
-                <p className="text-[10px] font-medium text-slate-600 dark:text-slate-400 leading-relaxed pr-8">
+                <h4 className="text-xs font-semibold text-slate-900 dark:text-white mb-1.5">{randomTip.title}</h4>
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed pr-8">
                     {randomTip.content}
                 </p>
             </div>
             <div className="mt-3 flex justify-end">
-                <span className="text-[8px] font-black uppercase text-indigo-300 dark:text-indigo-700 tracking-tighter">Pro Tip • Intelligence</span>
+                <span className="text-xs font-semibold uppercase text-indigo-300 dark:text-indigo-700 tracking-tighter">Pro Tip • Intelligence</span>
             </div>
         </motion.div>
     );
@@ -54,27 +54,27 @@ export function TravelStatsWidget({ itemVariants, stats }: { itemVariants: any, 
                 <span className="material-symbols-rounded text-5xl">travel_explore</span>
             </div>
             <div className="relative z-10">
-                <h3 className="text-[9px] font-black uppercase text-amber-600 dark:text-amber-400 tracking-widest mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold uppercase text-amber-600 dark:text-amber-400 tracking-widest mb-2 flex items-center gap-1.5">
                     <span className="material-symbols-rounded text-sm">leaderboard</span>
                     나의 여행 마스터리
                 </h3>
-                <p className="text-xs font-black text-slate-900 dark:text-white mb-1.5 italic">
+                <p className="text-xs font-semibold text-slate-900 dark:text-white mb-1.5 italic">
                     <span className="text-amber-600 dark:text-amber-400 mr-1">{title}</span>
                     LV.{level}
                 </p>
                 <div className="flex items-end gap-1 mb-3">
-                    <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">{countries}</span>
-                    <span className="text-[8px] font-black text-slate-500 mb-1 uppercase">Countries</span>
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tighter">{countries}</span>
+                    <span className="text-xs font-semibold text-slate-500 mb-1 uppercase">Countries</span>
                 </div>
             </div>
             <div className="grid grid-cols-2 gap-1.5 relative z-10">
                 <div className="bg-white/50 dark:bg-white/5 p-2 rounded-xl backdrop-blur-sm border border-white/50 dark:border-white/10">
-                    <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Cities</p>
-                    <p className="text-[11px] font-black text-slate-800 dark:text-slate-200">{cities}</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Cities</p>
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{cities}</p>
                 </div>
                 <div className="bg-white/50 dark:bg-white/5 p-2 rounded-xl backdrop-blur-sm border border-white/50 dark:border-white/10">
-                    <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Mileage</p>
-                    <p className="text-[11px] font-black text-slate-800 dark:text-slate-200">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Mileage</p>
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                         {Math.round(totalKm).toLocaleString()}km
                     </p>
                 </div>

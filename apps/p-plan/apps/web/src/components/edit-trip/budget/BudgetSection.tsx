@@ -46,8 +46,8 @@ export default function BudgetSection() {
                                 on ? 'bg-white dark:bg-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
                             )}
                         >
-                            <span className={cn('text-sm font-black', on ? 'text-slate-900 dark:text-white' : '')}>{label}</span>
-                            <span className={cn('ml-1 text-[10px] font-bold', on ? 'text-primary' : 'text-slate-400')}>{sub}</span>
+                            <span className={cn('text-sm font-semibold', on ? 'text-slate-900 dark:text-white' : '')}>{label}</span>
+                            <span className={cn('ml-1 text-xs font-bold', on ? 'text-primary' : 'text-slate-400')}>{sub}</span>
                         </button>
                     );
                 })}
@@ -82,7 +82,7 @@ export default function BudgetSection() {
                             type="button"
                             onClick={() => setDetailOpen((v) => !v)}
                             aria-expanded={detailOpen}
-                            className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/20 px-4 py-3 text-xs font-black text-slate-500 hover:border-primary/40 hover:text-primary transition-all"
+                            className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/20 px-4 py-3 text-xs font-semibold text-slate-500 hover:border-primary/40 hover:text-primary transition-all"
                         >
                             <span className="material-symbols-rounded text-base">{detailOpen ? 'expand_less' : 'receipt_long'}</span>
                             {detailOpen ? '상세 예산 접기' : '상세 예산·정산 열기 (지출 상세 · 공동 예산 · 정산)'}

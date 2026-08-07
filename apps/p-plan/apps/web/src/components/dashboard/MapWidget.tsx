@@ -29,10 +29,10 @@ export default function MapWidget() {
                 </h3>
                 <button 
                     onClick={handleNavigate}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all group"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-semibold uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all group"
                 >
                     일정 전체보기
-                    <span className="material-symbols-rounded text-[12px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-rounded text-xs group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                 </button>
             </div>
             <div className="flex-1 relative">
@@ -59,11 +59,11 @@ export default function MapWidget() {
                 >
                     <div className="flex items-center gap-2" role="listitem">
                         <div className="w-2.5 h-2.5 rounded-full bg-[#6366f1]" aria-hidden="true"></div>
-                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">공항/숙소</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">공항/숙소</span>
                     </div>
                     <div className="flex items-center gap-2" role="listitem">
                         <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]" aria-hidden="true"></div>
-                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">일정 장소</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">일정 장소</span>
                     </div>
                 </div>
             </div>

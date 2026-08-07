@@ -61,12 +61,12 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
             <div className="p-5 sm:p-6 flex flex-col gap-5">
                 {/* 총액 */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">예상 총액</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1.5">예상 총액</p>
                     <div className="flex items-end gap-1.5">
-                        <span className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white tabular-nums">
+                        <span className="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
                             ~{total.value}
                         </span>
-                        <span className="text-lg font-black text-slate-400 mb-1">{total.unit}</span>
+                        <span className="text-lg font-semibold text-slate-400 mb-1">{total.unit}</span>
                     </div>
                     <p className="mt-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
                         {est.days}일 · {est.participants}인
@@ -81,25 +81,25 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-3">
                         <div>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">고정비</p>
-                            <p className="text-[10px] text-slate-400">항공·숙소·교통·예약 입력분</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">고정비</p>
+                            <p className="text-xs text-slate-400">항공·숙소·교통·예약 입력분</p>
                         </div>
-                        <span className="text-sm font-black text-slate-800 dark:text-slate-100 tabular-nums">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
                             {est.fixedTotal > 0 ? `~${fixed.value}${fixed.unit}` : '0원'}
                         </span>
                     </div>
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-3">
                         <div>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">현지 지출 추정</p>
-                            <p className="text-[10px] text-slate-400">하루 {(est.dailyPerPerson / 10000)}만 × {est.days}일 × {est.participants}인</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">현지 지출 추정</p>
+                            <p className="text-xs text-slate-400">하루 {(est.dailyPerPerson / 10000)}만 × {est.days}일 × {est.participants}인</p>
                         </div>
-                        <span className="text-sm font-black text-slate-800 dark:text-slate-100 tabular-nums">~{local.value}{local.unit}</span>
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">~{local.value}{local.unit}</span>
                     </div>
                 </div>
 
                 {/* 하루 지출 수준 프리셋 */}
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">현지에서 하루 얼마쯤?</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">현지에서 하루 얼마쯤?</p>
                     <div className="grid grid-cols-3 gap-2">
                         {LEVEL_ORDER.map((lv) => {
                             const info = DAILY_SPEND_LEVELS[lv];
@@ -117,8 +117,8 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
                                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary/40'
                                     )}
                                 >
-                                    <span className="text-xs font-black">{info.label}</span>
-                                    <span className={cn('text-[10px] font-bold tabular-nums', on ? 'text-white/80' : 'text-slate-400')}>
+                                    <span className="text-xs font-semibold">{info.label}</span>
+                                    <span className={cn('text-xs font-bold tabular-nums', on ? 'text-white/80' : 'text-slate-400')}>
                                         하루 {info.perDay / 10000}만
                                     </span>
                                 </button>
@@ -127,7 +127,7 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
                     </div>
                 </div>
 
-                <p className="text-[11px] leading-relaxed text-slate-400">
+                <p className="text-xs leading-relaxed text-slate-400">
                     입력한 예약·비용은 자동으로 합산돼요. 현지 지출은 프리셋 기준 추정치이니, 정확한 관리가 필요하면 아래 상세 예산을 열어보세요.
                 </p>
             </div>

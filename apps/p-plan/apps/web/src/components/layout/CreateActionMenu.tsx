@@ -61,7 +61,7 @@ export default function CreateActionMenu() {
                         transition={TRANSITION_SPRING}
                         className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50 overflow-hidden"
                     >
-                        <p className="px-3 py-1.5 text-xs font-black text-slate-400 dark:text-slate-500">새로 시작</p>
+                        <p className="px-3 py-1.5 text-xs font-semibold text-slate-400 dark:text-slate-500">새로 시작</p>
                         
                         <button
                             onClick={() => { setIsOpen(false); openWizard('PLAN'); }}
@@ -70,7 +70,7 @@ export default function CreateActionMenu() {
                             <span className="material-symbols-rounded text-primary text-[20px] mt-0.5">edit_note</span>
                             <div>
                                 <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">계획으로</span>
-                                <span className="block text-[10px] text-slate-400 mt-0.5">여행 일정을 짜며 시작합니다</span>
+                                <span className="block text-xs text-slate-400 mt-0.5">여행 일정을 짜며 시작합니다</span>
                             </div>
                         </button>
                         
@@ -81,7 +81,7 @@ export default function CreateActionMenu() {
                             <span className="material-symbols-rounded text-indigo-500 text-[20px] mt-0.5">photo_library</span>
                             <div>
                                 <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">사진으로</span>
-                                <span className="block text-[10px] text-slate-400 mt-0.5">사진을 올리면 자동으로 정리돼요</span>
+                                <span className="block text-xs text-slate-400 mt-0.5">사진을 올리면 자동으로 정리돼요</span>
                             </div>
                         </button>
 
@@ -92,7 +92,7 @@ export default function CreateActionMenu() {
                             <span className="material-symbols-rounded text-emerald-500 text-[20px] mt-0.5">footprint</span>
                             <div>
                                 <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">PATHWALK</span>
-                                <span className="block text-[10px] text-slate-400 mt-0.5">기록된 발자취에서 가져옵니다</span>
+                                <span className="block text-xs text-slate-400 mt-0.5">기록된 발자취에서 가져옵니다</span>
                             </div>
                         </button>
 
@@ -104,7 +104,7 @@ export default function CreateActionMenu() {
                             <span className="material-symbols-rounded text-amber-500 text-[20px] mt-0.5">bookmark</span>
                             <div>
                                 <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">저장한 곳에서</span>
-                                <span className="block text-[10px] text-slate-400 mt-0.5">둘러보기에서 마음에 든 장소들</span>
+                                <span className="block text-xs text-slate-400 mt-0.5">둘러보기에서 마음에 든 장소들</span>
                             </div>
                         </Link>
                     </motion.div>
