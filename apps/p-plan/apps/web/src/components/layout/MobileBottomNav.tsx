@@ -41,7 +41,7 @@ function NavItem({ href, label, icon, isActive }: { href: string; label: string;
             <motion.span
                 initial={false}
                 animate={{ opacity: isActive ? 1 : 0.7, scale: isActive ? 1.05 : 1 }}
-                className={`text-[10px] font-bold transition-colors leading-none ${
+                className={`text-xs font-bold transition-colors leading-none ${
                     isActive ? 'text-primary' : 'text-slate-400 dark:text-slate-500'
                 }`}
             >
@@ -116,7 +116,7 @@ export default function MobileBottomNav() {
                         <span className="w-11 h-11 -mt-4 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/30">
                             <span className="material-symbols-rounded text-[24px]">{centerIcon}</span>
                         </span>
-                        <span className="text-[10px] font-bold leading-none text-slate-400 dark:text-slate-500">{centerLabel}</span>
+                        <span className="text-xs font-bold leading-none text-slate-400 dark:text-slate-500">{centerLabel}</span>
                     </button>
 
                     {/* 프로필 버튼 */}
@@ -145,7 +145,7 @@ export default function MobileBottomNav() {
                                 account_circle
                             </span>
                         )}
-                        <span className={`text-[10px] font-bold leading-none transition-colors ${isProfileActive ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
+                        <span className={`text-xs font-bold leading-none transition-colors ${isProfileActive ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>
                             프로필
                         </span>
                     </button>

@@ -98,7 +98,7 @@ export default function Header() {
                             >
                                 travel_explore
                             </motion.span>
-                            <h2 className="text-slate-900 dark:text-white text-xl font-black leading-tight tracking-tight">
+                            <h2 className="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">
                                 PPLANER
                             </h2>
                         </Link>
@@ -115,7 +115,7 @@ export default function Header() {
                                         key={link.href}
                                         href={link.href}
                                         aria-current={isActive ? 'page' : undefined}
-                                        className={`relative px-2.5 py-1.5 xl:px-3.5 xl:py-2 text-xs xl:text-sm font-black transition-all duration-300 ${
+                                        className={`relative px-2.5 py-1.5 xl:px-3.5 xl:py-2 text-xs xl:text-sm font-semibold transition-all duration-300 ${
                                             isActive 
                                                 ? 'text-white' 
                                                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -172,8 +172,8 @@ export default function Header() {
                                             className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50 overflow-hidden"
                                         >
                                         <div className="px-4 py-2 border-b border-slate-200/60 dark:border-slate-700 mb-1">
-                                            <p className="text-xs font-black text-slate-900 dark:text-white truncate">{user.displayName}</p>
-                                            <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
+                                            <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{user.displayName}</p>
+                                            <p className="text-xs text-slate-500 truncate">{user.email}</p>
                                         </div>
                                         <button
                                             onClick={() => {
@@ -209,9 +209,9 @@ export default function Header() {
                             <div className="flex items-center gap-3">
                                 <Link
                                     href="/edit-trip/guest"
-                                    className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-black rounded-full transition-all flex items-center gap-1.5"
+                                    className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-semibold rounded-full transition-all flex items-center gap-1.5"
                                 >
-                                    <span className="material-symbols-rounded text-sm font-black">edit_note</span>
+                                    <span className="material-symbols-rounded text-sm">edit_note</span>
                                     로그인 없이 계획 작성
                                 </Link>
                                 <button
