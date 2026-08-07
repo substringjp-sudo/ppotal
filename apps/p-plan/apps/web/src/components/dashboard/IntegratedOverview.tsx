@@ -13,19 +13,42 @@ export default function IntegratedOverview() {
     
     const analysis = useMemo(() => {
         if (!currentTrip) return null;
-        
-        const days = currentTrip.dates?.startDate && currentTrip.dates?.endDate 
+
+        const days = currentTrip.dates?.startDate && currentTrip.dates?.endDate
             ? Math.ceil((new Date(currentTrip.dates.endDate).getTime() - new Date(currentTrip.dates.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
             : (currentTrip.dates?.durationDays || 0);
-            
+
         const regions = currentTrip.locations?.regions || [];
         const accommodations = currentTrip.accommodation || [];
         const flightCount = currentTrip.flights?.length || 0;
         const totalTransports = flightCount + (currentTrip.driving?.length || 0) + (currentTrip.publicTransport?.length || 0);
+        const hasBudget = (currentTrip.budget?.expenses?.length || 0) > 0;
+
+        // 준비 진행률 — 히어로 한 곳에서만 말한다. 위젯마다 반복하던 퍼센트 표기는
+        // 여기로 모으고 나머지 위젯에서는 지운다(같은 숫자가 여러 곳에서 다르게
+        // 보이면 어느 쪽을 믿어야 할지 알 수 없어진다).
+        const parts = [
+            { key: 'regions', label: '지역', done: regions.length > 0, weight: 20 },
+            { key: 'accommodation', label: '숙소', done: accommodations.length > 0, weight: 30 },
+            { key: 'transport', label: '교통', done: totalTransports > 0, weight: 30 },
+            { key: 'budget', label: '예산', done: hasBudget, weight: 20 },
+        ];
+        const progress = parts.reduce((sum, p) => sum + (p.done ? p.weight : 0), 0);
+        const doneCount = parts.filter((p) => p.done).length;
+        const headline =
+            progress >= 100 ? '준비가 끝났어요. 이제 떠나기만 하면 돼요' :
+            progress >= 70 ? '거의 다 왔어요. 남은 항목만 채우면 돼요' :
+            progress >= 30 ? '한창 채우는 중이에요' :
+            '이제 막 시작했어요';
 
         return {
             days,
             regions: regions.map(r => r.name).join(', ') || '지역 미정',
+            progress,
+            doneCount,
+            totalCount: parts.length,
+            headline,
+            progressParts: parts,
             stats: [
                 { label: '여행 기간', value: `${days}일`, icon: 'calendar_today', color: 'text-blue-500', tab: 'basic' },
                 { label: '방문 지역', value: `${regions.length}곳`, icon: 'map', color: 'text-emerald-500', tab: 'schedule' },
@@ -90,6 +113,29 @@ export default function IntegratedOverview() {
                                 </div>
                             </ScrollReveal>
                         </div>
+
+                        {/* 준비 진행률 — 이 화면 전체에서 퍼센트를 말하는 유일한 곳 */}
+                        <ScrollReveal delay={0.35}>
+                            <div className="mb-6 p-5 rounded-[14px] bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-snug">{analysis.headline}</p>
+                                    <div className="text-right shrink-0">
+                                        <div className="text-2xl font-bold text-primary tabular-nums leading-none">{analysis.progress}%</div>
+                                        <div className="mt-1 text-xs text-slate-400">{analysis.totalCount}개 중 {analysis.doneCount}개 완료</div>
+                                    </div>
+                                </div>
+                                <div className="flex h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden gap-0.5">
+                                    {analysis.progressParts.map((p) => (
+                                        <div
+                                            key={p.key}
+                                            className={cn('transition-all', p.done ? 'bg-primary' : 'bg-transparent')}
+                                            style={{ width: `${p.weight}%` }}
+                                            title={`${p.label} ${p.done ? '완료' : '미완료'}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </ScrollReveal>
 
                         {/* Stats Grid (Very Compact) */}
                         <ScrollReveal delay={0.4}>

@@ -75,7 +75,7 @@ export default function DashboardWidget({ id, children, className = '', noPaddin
                         
                         {/* 크기 정보 배지 */}
                         <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-tighter mr-1 border border-slate-200 dark:border-slate-700 shrink-0">
-                            {widget?.colSpan}/12 × {widget?.rowSpan}
+                            {widget?.colSpan}/6 × {widget?.rowSpan}
                         </div>
 
                         {/* 드래그 핸들 */}
@@ -93,14 +93,14 @@ export default function DashboardWidget({ id, children, className = '', noPaddin
                         {/* 너비 조절 */}
                         <button
                             onClick={() => {
-                                const sizes: (3 | 4 | 6 | 8 | 12)[] = [3, 4, 6, 8, 12];
-                                const currentSize = widget?.colSpan || 12;
+                                const sizes: (2 | 3 | 6)[] = [2, 3, 6];
+                                const currentSize = widget?.colSpan || 6;
                                 const currentIndex = sizes.indexOf(currentSize as any);
                                 const nextIndex = (currentIndex + 1) % sizes.length;
                                 updateWidget(id, { colSpan: sizes[nextIndex] });
                             }}
                             className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-blue-500"
-                            title={`너비 조절 (현재: ${widget?.colSpan}/12)`}
+                            title={`너비 조절 (현재: ${widget?.colSpan}/6)`}
                         >
                             <span className="material-symbols-rounded text-sm">
                                 swap_horiz
