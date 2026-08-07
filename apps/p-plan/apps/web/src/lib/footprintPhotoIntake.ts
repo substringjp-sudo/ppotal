@@ -35,6 +35,37 @@ function parseGPS(values: number[] | undefined, ref?: string): number | undefine
     return res;
 }
 
+/**
+ * EXIF DateTimeOriginal은 시간대가 없는 '현지 벽시계' 문자열이라, 그냥 new Date(...)로
+ * 파싱하면 업로더 브라우저의 시간대로 해석돼 몇 시간이 밀린다(travelogPhotoIntake.ts의
+ * PLAN-3 수정과 동일한 문제). 이 경로는 여행 컨텍스트(tzOffsetMinutes)가 없어 폴백 오프셋을
+ * 못 받지만, 사진 자체의 OffsetTimeOriginal 태그(EXIF 2.31+)가 있으면 그것만으로도 교정된다.
+ */
+function parseExifLocalTime(dateStr: string, offsetMinutes?: number): Date | undefined {
+    const [datePart, timePart] = dateStr.split(' ');
+    if (!datePart || !timePart) return undefined;
+    const iso = `${datePart.replace(/:/g, '-')}T${timePart}`;
+    if (offsetMinutes == null) {
+        const naive = new Date(iso);
+        return isNaN(naive.getTime()) ? undefined : naive;
+    }
+    const sign = offsetMinutes < 0 ? '-' : '+';
+    const abs = Math.abs(offsetMinutes);
+    const hh = String(Math.floor(abs / 60)).padStart(2, '0');
+    const mm = String(abs % 60).padStart(2, '0');
+    const withZone = new Date(`${iso}${sign}${hh}:${mm}`);
+    return isNaN(withZone.getTime()) ? undefined : withZone;
+}
+
+/** "+09:00" / "+0900" → 540 */
+function parseOffsetTag(value?: string): number | undefined {
+    if (!value) return undefined;
+    const m = value.trim().match(/^([+-])(\d{2}):?(\d{2})$/);
+    if (!m) return undefined;
+    const mins = Number(m[2]) * 60 + Number(m[3]);
+    return m[1] === '-' ? -mins : mins;
+}
+
 async function readPhotoExif(file: File): Promise<{ lat?: number; lng?: number; timestamp: string }> {
     try {
         const tags = await ExifReader.load(file);
@@ -48,10 +79,9 @@ async function readPhotoExif(file: File): Promise<{ lat?: number; lng?: number; 
         }
         let timestamp = new Date(file.lastModified || Date.now()).toISOString();
         if (tags['DateTimeOriginal']) {
-            const dateStr = tags['DateTimeOriginal'].description as string;
-            const [datePart, timePart] = dateStr.split(' ');
-            const parsed = new Date(`${datePart.replace(/:/g, '-')}T${timePart}`);
-            if (!isNaN(parsed.getTime())) timestamp = parsed.toISOString();
+            const offset = parseOffsetTag((tags as any)['OffsetTimeOriginal']?.description);
+            const parsed = parseExifLocalTime(tags['DateTimeOriginal'].description as string, offset);
+            if (parsed) timestamp = parsed.toISOString();
         }
         return { lat, lng, timestamp };
     } catch {
