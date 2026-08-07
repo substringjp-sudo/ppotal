@@ -158,10 +158,10 @@ export default function ShareCardModal({
                 initial={{ scale: 0.96, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 shadow-2xl"
+                className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-[28px] bg-white dark:bg-slate-900 shadow-2xl"
             >
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-10">
-                    <h2 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-rounded text-primary">ios_share</span>
                         공유 카드
                     </h2>
@@ -186,7 +186,7 @@ export default function ShareCardModal({
                     {/* 컨트롤 */}
                     <div className="space-y-5">
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">템플릿</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">템플릿</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {TEMPLATES.map((t) => (
                                     <button
@@ -197,8 +197,8 @@ export default function ShareCardModal({
                                                 ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
                                                 : 'border-slate-200 dark:border-slate-700 hover:border-slate-300')}
                                     >
-                                        <span className="block text-xs font-black text-slate-900 dark:text-white">{t.label}</span>
-                                        <span className="block text-[10px] text-slate-400">{t.hint}</span>
+                                        <span className="block text-xs font-semibold text-slate-900 dark:text-white">{t.label}</span>
+                                        <span className="block text-xs text-slate-400">{t.hint}</span>
                                     </button>
                                 ))}
                             </div>
@@ -226,7 +226,7 @@ export default function ShareCardModal({
                                 <button
                                     onClick={handlePublish}
                                     disabled={busy}
-                                    className="w-full rounded-xl bg-primary text-white py-3 text-sm font-black hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full rounded-xl bg-primary text-white py-3 text-sm font-bold hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     <span className="material-symbols-rounded text-lg">public</span>
                                     {busy ? '공개 중…' : '공개하고 공유하기'}
@@ -235,7 +235,7 @@ export default function ShareCardModal({
                                 <button
                                     onClick={handleShare}
                                     disabled={busy || rendering}
-                                    className="w-full rounded-xl bg-primary text-white py-3 text-sm font-black hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full rounded-xl bg-primary text-white py-3 text-sm font-bold hover:bg-primary/90 transition disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     <span className="material-symbols-rounded text-lg">ios_share</span>
                                     {busy ? '준비 중…' : '공유하기'}
@@ -246,14 +246,14 @@ export default function ShareCardModal({
                                 <button
                                     onClick={handleDownload}
                                     disabled={rendering}
-                                    className="rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                                    className="rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition disabled:opacity-50 flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-rounded text-base">download</span>
                                     이미지 저장
                                 </button>
                                 <button
                                     onClick={handleCopyLink}
-                                    className="rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-black text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition flex items-center justify-center gap-1.5"
+                                    className="rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary transition flex items-center justify-center gap-1.5"
                                 >
                                     <span className="material-symbols-rounded text-base">{copied ? 'check' : 'link'}</span>
                                     {copied ? '복사됨' : '링크 복사'}
@@ -261,7 +261,7 @@ export default function ShareCardModal({
                             </div>
 
                             {needsPublish && (
-                                <p className="text-[11px] text-slate-400 leading-relaxed text-center pt-1">
+                                <p className="text-xs text-slate-400 leading-relaxed text-center pt-1">
                                     공개하면 링크를 가진 누구나 이 여행기를 볼 수 있어요.
                                 </p>
                             )}
