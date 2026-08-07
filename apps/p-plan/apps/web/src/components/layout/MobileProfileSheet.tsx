@@ -53,7 +53,7 @@ export default function MobileProfileSheet({ isOpen, onClose }: MobileProfileShe
                                         style={{ backgroundImage: `url('${user.photoURL || ''}')` }}
                                     />
                                     <div>
-                                        <p className="font-black text-slate-900 dark:text-white text-base leading-tight">
+                                        <p className="font-semibold text-slate-900 dark:text-white text-base leading-tight">
                                             {profile?.displayName || user.displayName || '사용자'}
                                         </p>
                                         <p className="text-xs text-slate-500 mt-0.5">{user.email}</p>

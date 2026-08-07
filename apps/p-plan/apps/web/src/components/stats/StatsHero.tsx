@@ -23,7 +23,7 @@ export default function StatsHero({ stats, userName = 'Traveler', onExport, hide
           <div className="absolute top-0 right-0 z-20">
             <button
               onClick={onExport}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 rounded-2xl border border-slate-200 dark:border-white/10 transition-all font-black text-[10px] uppercase tracking-widest"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 rounded-2xl border border-slate-200 dark:border-white/10 transition-all font-semibold text-xs uppercase tracking-widest"
             >
               <span className="material-symbols-rounded text-sm">share</span>
               Export / Share
@@ -40,8 +40,8 @@ export default function StatsHero({ stats, userName = 'Traveler', onExport, hide
           <div className="w-40 h-40 md:w-56 md:h-56 rounded-[48px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl flex items-center justify-center relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[48px]" />
             <div className="text-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Level</p>
-              <h2 className="text-7xl md:text-8xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.3em] mb-1">Level</p>
+              <h2 className="text-7xl md:text-8xl font-bold text-slate-900 dark:text-white tracking-tighter leading-none">
                 {level}
               </h2>
             </div>
@@ -72,7 +72,7 @@ export default function StatsHero({ stats, userName = 'Traveler', onExport, hide
             </svg>
           </div>
           
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white text-[10px] font-black italic rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest whitespace-nowrap">
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white text-xs font-semibold italic rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest whitespace-nowrap">
             {title}
           </div>
         </motion.div>
@@ -85,7 +85,7 @@ export default function StatsHero({ stats, userName = 'Traveler', onExport, hide
               animate={{ opacity: 1, x: 0 }}
               className="space-y-2"
             >
-              <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter">
+              <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white tracking-tighter">
                 {userName}&apos;s <span className="text-primary italic">Intelligence</span>
               </h1>
               <p className="text-lg font-bold text-slate-400 dark:text-slate-500 italic max-w-xl">
@@ -109,8 +109,8 @@ export default function StatsHero({ stats, userName = 'Traveler', onExport, hide
                 className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm group hover:border-primary/30 transition-all flex flex-col items-center lg:items-start"
               >
                 <span className="material-symbols-rounded text-slate-300 dark:text-slate-600 group-hover:text-primary transition-colors mb-2 text-lg">{item.icon}</span>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{item.label}</p>
-                <p className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">{item.value}</p>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none mb-1">{item.label}</p>
+                <p className="text-lg font-semibold text-slate-900 dark:text-white leading-none tracking-tight">{item.value}</p>
               </motion.div>
             ))}
           </div>

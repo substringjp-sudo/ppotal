@@ -166,11 +166,11 @@ export default function FootprintClient() {
             <div className="min-h-screen grid place-items-center bg-slate-50 dark:bg-[#030712] px-6 text-center">
                 <div>
                     <span className="material-symbols-rounded text-5xl text-slate-300">footprint</span>
-                    <p className="mt-3 text-base font-black text-slate-700 dark:text-slate-200">발자취</p>
+                    <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200">발자취</p>
                     <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">
                         로그인하면 사진에서 다녀온 곳을 시간축으로 정리해드려요. 여행기로 쓰지 않아도 기록은 남아요.
                     </p>
-                    <button onClick={loginWithGoogle} className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">로그인</button>
+                    <button onClick={loginWithGoogle} className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">로그인</button>
                 </div>
             </div>
         );
@@ -206,7 +206,7 @@ export default function FootprintClient() {
             <div className="mx-auto max-w-[720px] px-4 sm:px-6 pt-6">
                 <div className="flex items-start justify-between gap-3 mb-6">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                             {filter.region ? `발자취 · ${filter.region}` : '발자취'}
                         </h1>
                         <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -218,7 +218,7 @@ export default function FootprintClient() {
                     {isDrilledDown && (
                         <button
                             onClick={() => { setFilter({}); window.history.replaceState({}, '', '/footprint'); }}
-                            className="shrink-0 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-[11px] font-black text-slate-500 hover:border-primary hover:text-primary transition"
+                            className="shrink-0 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:border-primary hover:text-primary transition"
                         >
                             전체 보기
                         </button>
@@ -236,7 +236,7 @@ export default function FootprintClient() {
                 <button
                     onClick={() => fileRef.current?.click()}
                     disabled={!!progress}
-                    className="w-full mb-8 flex items-center justify-center gap-2 rounded-2xl bg-primary/10 hover:bg-primary/15 text-primary px-4 py-3.5 text-sm font-black transition-colors disabled:opacity-60"
+                    className="w-full mb-8 flex items-center justify-center gap-2 rounded-2xl bg-primary/10 hover:bg-primary/15 text-primary px-4 py-3.5 text-sm font-semibold transition-colors disabled:opacity-60"
                 >
                     {progress ? (
                         <>
@@ -272,7 +272,7 @@ export default function FootprintClient() {
                         const dayPoints = points.filter((p) => ymd(p.timestamp) === day);
                         return (
                             <section key={day}>
-                                <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2.5">{day}</h2>
+                                <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2.5">{day}</h2>
                                 <FootprintTimeline
                                     dayDate={day}
                                     activities={dayActivities}
@@ -287,14 +287,14 @@ export default function FootprintClient() {
                                             onClick={() => setSelected(a)}
                                             className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors text-left"
                                         >
-                                            <span className="text-[11px] font-black text-slate-400 tabular-nums shrink-0 w-10">
+                                            <span className="text-xs font-semibold text-slate-400 tabular-nums shrink-0 w-10">
                                                 {new Date(a.startAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                             </span>
                                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate flex-1">
                                                 {a.title || a.places[0]?.name || '이름 없는 활동'}
                                             </span>
                                             {a.places.length > 1 && (
-                                                <span className="text-[10px] font-black text-slate-400 shrink-0">{a.places.length}곳</span>
+                                                <span className="text-xs font-semibold text-slate-400 shrink-0">{a.places.length}곳</span>
                                             )}
                                         </button>
                                     ))}

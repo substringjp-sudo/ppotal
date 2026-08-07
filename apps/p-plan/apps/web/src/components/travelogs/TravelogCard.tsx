@@ -106,13 +106,13 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                         </span>
                         {travelog.status === 'published' && (
                             <span className="text-primary text-xs font-semibold uppercase flex items-center gap-1">
-                                <span className="material-symbols-rounded text-[10px]">public</span>
+                                <span className="material-symbols-rounded text-xs">public</span>
                                 Shared
                             </span>
                         )}
                         {travelog.status === 'draft' && (
                             <span className="text-slate-400 text-xs font-semibold uppercase flex items-center gap-1">
-                                <span className="material-symbols-rounded text-[10px]">draft</span>
+                                <span className="material-symbols-rounded text-xs">draft</span>
                                 Draft
                             </span>
                         )}
@@ -122,7 +122,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                                 ? "bg-amber-50 text-amber-600 border border-amber-100" 
                                 : "bg-indigo-50 text-indigo-600 border border-indigo-100"
                         )}>
-                            <span className="material-symbols-rounded text-[10px]">
+                            <span className="material-symbols-rounded text-xs">
                                 {travelog.recordingMode === 'simple' ? 'timeline' : 'edit_note'}
                             </span>
                             {travelog.recordingMode === 'simple' ? 'Simple' : 'Full'}
@@ -139,11 +139,11 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
 
                     <div className="flex items-center gap-3 text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                         <div className="flex items-center gap-1">
-                            <span className="material-symbols-rounded text-[12px]">calendar_month</span>
+                            <span className="material-symbols-rounded text-xs">calendar_month</span>
                             {formattedDate}
                         </div>
                         <div className="flex items-center gap-1">
-                            <span className="material-symbols-rounded text-[12px]">group</span>
+                            <span className="material-symbols-rounded text-xs">group</span>
                             {totalMembers} 명
                         </div>
                     </div>
@@ -195,7 +195,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                 </span>
                 {travelog.status === 'published' && (
                     <span className="px-2 py-0.5 bg-primary text-white text-xs font-semibold rounded-full uppercase tracking-wider flex items-center gap-1">
-                        <span className="material-symbols-rounded text-[11px]">public</span>
+                        <span className="material-symbols-rounded text-xs">public</span>
                         Shared
                     </span>
                 )}
@@ -205,7 +205,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                         ? "bg-amber-500/20 text-amber-400 border-amber-500/30" 
                         : "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
                 )}>
-                    <span className="material-symbols-rounded text-[11px]">
+                    <span className="material-symbols-rounded text-xs">
                         {travelog.recordingMode === 'simple' ? 'timeline' : 'edit_note'}
                     </span>
                     {travelog.recordingMode === 'simple' ? 'Simple' : 'Full'}
@@ -227,10 +227,10 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
             <div className="absolute inset-x-0 bottom-0 p-5 flex flex-col gap-2">
                 {/* Meta Info */}
                 <div className="flex items-center gap-2 text-white/60 text-xs font-semibold uppercase tracking-tighter">
-                    <span className="material-symbols-rounded text-[11px]">calendar_month</span>
+                    <span className="material-symbols-rounded text-xs">calendar_month</span>
                     {formattedDate}
                     <span className="mx-0.5 opacity-30">•</span>
-                    <span className="material-symbols-rounded text-[11px]">group</span>
+                    <span className="material-symbols-rounded text-xs">group</span>
                     {totalMembers}명
                 </div>
 
@@ -246,7 +246,7 @@ export default function TravelogCard({ travelog, onClick, onDelete, viewMode = '
                 <div className="mt-2 pt-3 border-t border-white/10 flex items-center justify-between">
                     <div className="flex -space-x-1.5">
                         <div className="w-5 h-5 rounded-full bg-primary/20 backdrop-blur-md border border-white/20 flex items-center justify-center">
-                            <span className="material-symbols-rounded text-white text-[9px]">person</span>
+                            <span className="material-symbols-rounded text-white text-xs">person</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-1 text-white font-semibold text-xs uppercase group-hover:translate-x-1 transition-transform tracking-tight">

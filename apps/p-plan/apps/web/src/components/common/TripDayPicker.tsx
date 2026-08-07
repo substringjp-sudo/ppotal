@@ -72,13 +72,13 @@ export default function TripDayPicker({
                                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
                         }`}
                     >
-                        <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">
+                        <span className="text-xs font-bold uppercase tracking-wider opacity-70">
                             {i + 1}일차
                         </span>
-                        <span className="text-xs font-black leading-tight">
+                        <span className="text-xs font-semibold leading-tight">
                             {Number(mm)}/{Number(dd)}
                         </span>
-                        <span className="text-[9px] opacity-60">{WEEKDAYS[d.getDay()]}</span>
+                        <span className="text-xs opacity-60">{WEEKDAYS[d.getDay()]}</span>
                     </button>
                 );
             })}

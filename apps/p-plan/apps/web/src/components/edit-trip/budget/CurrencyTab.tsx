@@ -61,7 +61,7 @@ export const CurrencyTab: React.FC<CurrencyTabProps> = ({
                                             <span className="material-symbols-rounded text-2xl">{opt?.icon || 'payments'}</span>
                                         </div>
                                         <div>
-                                            <h6 className="text-[11px] font-semibold text-slate-900 dark:text-white uppercase tracking-widest">{opt?.label?.split(' (')[0] || curr.code}</h6>
+                                            <h6 className="text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-widest">{opt?.label?.split(' (')[0] || curr.code}</h6>
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">심볼: {curr.symbol}</p>
                                         </div>
                                     </div>

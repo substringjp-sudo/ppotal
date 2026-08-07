@@ -88,15 +88,15 @@ export default function DiscoverClient() {
             {!user && (
                 <section className="relative overflow-hidden border-b border-slate-200 dark:border-white/10">
                     <div className="mx-auto max-w-[1080px] px-5 sm:px-8 py-12 sm:py-16">
-                        <p className="text-[11px] font-black uppercase tracking-[0.25em] text-primary">둘러보기</p>
-                        <h1 className="mt-2 text-3xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
+                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">둘러보기</p>
+                        <h1 className="mt-2 text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
                             여행자들이 지금<br className="sm:hidden" /> 저장하는 곳
                         </h1>
                         <p className="mt-3 text-base sm:text-lg font-medium text-slate-500 dark:text-slate-400 max-w-xl">
                             긴 여행기를 읽지 않아도, 마음에 드는 장소 한 컷씩. 로그인 없이 둘러보고 마음에 들면 저장하세요.
                         </p>
                         <div className="mt-5">
-                            <Link href="/edit-trip/guest" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white hover:bg-primary/90 transition">
+                            <Link href="/edit-trip/guest" className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition">
                                 여행 계획 시작
                             </Link>
                         </div>
@@ -115,7 +115,7 @@ export default function DiscoverClient() {
                                 aria-selected={tab === t.id}
                                 onClick={() => selectTab(t.id)}
                                 className={cn(
-                                    'relative shrink-0 px-4 py-3.5 text-sm font-black transition-colors',
+                                    'relative shrink-0 px-4 py-3.5 text-sm font-semibold transition-colors',
                                     tab === t.id ? 'text-primary' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200',
                                 )}
                             >
@@ -136,7 +136,7 @@ export default function DiscoverClient() {
                     ) : spots.length === 0 ? (
                         <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
                             <span className="material-symbols-rounded text-5xl text-slate-300">travel_explore</span>
-                            <p className="mt-3 text-base font-black text-slate-600 dark:text-slate-300">아직 공개된 스팟이 없어요</p>
+                            <p className="mt-3 text-base font-semibold text-slate-600 dark:text-slate-300">아직 공개된 스팟이 없어요</p>
                             <p className="mt-1 text-sm text-slate-400">여행기를 공개하면 여기에 뜨는 곳으로 소개됩니다.</p>
                         </div>
                     ) : (
@@ -161,7 +161,7 @@ export default function DiscoverClient() {
 function Chip({ on, label, color, onClick }: { on: boolean; label: string; color?: string; onClick: () => void }) {
     return (
         <button onClick={onClick}
-            className={cn('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-black border transition',
+            className={cn('inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold border transition',
                 on ? 'text-white border-transparent shadow' : 'text-slate-500 dark:text-white/50 border-slate-200 dark:border-white/15 hover:border-slate-400')}
             style={on ? { backgroundColor: color || '#334155' } : undefined}>
             {color && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: on ? 'rgba(255,255,255,0.9)' : color }} />}
@@ -183,15 +183,15 @@ function HotCard({ spot: s }: { spot: HotFeedSpot }) {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 {s.saves > 0 && (
-                    <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-[11px] font-black text-white">
+                    <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-xs font-semibold text-white">
                         <span className="material-symbols-rounded text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>bookmark</span>
                         <span className="tabular-nums">{s.saves}</span>
                     </span>
                 )}
                 <div className="absolute inset-x-0 bottom-0 p-4">
-                    <h3 className="text-base font-black text-white leading-tight">{s.name}</h3>
-                    {sub && <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-white/60">{sub}</p>}
-                    {s.authorName && <p className="mt-1 text-[11px] font-semibold text-white/70">{s.authorName}의 기록</p>}
+                    <h3 className="text-base font-semibold text-white leading-tight">{s.name}</h3>
+                    {sub && <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-white/60">{sub}</p>}
+                    {s.authorName && <p className="mt-1 text-xs font-semibold text-white/70">{s.authorName}의 기록</p>}
                 </div>
             </Link>
         </motion.div>

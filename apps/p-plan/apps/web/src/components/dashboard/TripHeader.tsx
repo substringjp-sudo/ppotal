@@ -24,7 +24,7 @@ export default function TripHeader() {
                             role="status"
                             aria-live="assertive"
                         >
-                            <span className="material-symbols-rounded text-[12px]" aria-hidden="true">gpp_maybe</span>
+                            <span className="material-symbols-rounded text-xs" aria-hidden="true">gpp_maybe</span>
                             검토 필요
                         </span>
                     )}

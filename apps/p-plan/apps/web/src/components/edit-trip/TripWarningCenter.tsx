@@ -81,7 +81,7 @@ export default function TripWarningCenter({ activeSection, onNavigateToSection }
                         </div>
                         <div>
                             <h3 className="text-sm font-semibold text-slate-900 dark:text-white leading-none">혹시 이 부분 확인해보셨나요?</h3>
-                            <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest leading-none">
+                            <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest leading-none">
                                 {criticalCount > 0 && `꼭 확인 ${criticalCount} • `}
                                 {warningCount > 0 && `확인 필요 ${warningCount} • `}
                                 {infoCount > 0 && `참고 ${infoCount} `}

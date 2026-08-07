@@ -18,7 +18,7 @@ export default function Badge({ children, variant = 'primary', className, pulse 
 
     return (
         <div className={cn(
-            "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest leading-none",
+            "px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-widest leading-none",
             variants[variant],
             pulse && "animate-pulse",
             className

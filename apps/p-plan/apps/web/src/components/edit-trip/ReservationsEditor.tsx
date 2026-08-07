@@ -125,7 +125,7 @@ export default function ReservationsEditor({
                     <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">일반 예약 내역 ({generalResCount})</h3>
                     <button 
                         onClick={() => setIsAdding(true)}
-                        className="text-[11px] font-semibold text-primary hover:text-primary/80 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                        className="text-xs font-semibold text-primary hover:text-primary/80 uppercase tracking-widest flex items-center gap-1 transition-colors"
                     >
                         <span className="material-symbols-rounded text-sm">add_circle</span>
                         새 예약 추가
@@ -458,7 +458,7 @@ export default function ReservationsEditor({
                                                         <div className="flex justify-end pt-4">
                                                             <button 
                                                                 onClick={() => setEditingId(null)}
-                                                                className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-semibold uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg"
+                                                                className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold uppercase tracking-widest rounded-2xl hover:scale-105 transition-all shadow-lg"
                                                             >
                                                                 편집 완료
                                                             </button>
@@ -474,7 +474,7 @@ export default function ReservationsEditor({
                     ) : (
                         <div key="empty-reservations" className="p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[28px] text-center">
                             <span className="material-symbols-rounded text-4xl text-slate-200 mb-2">confirmation_number</span>
-                            <p className="text-[11px] font-bold text-slate-400 italic">추가된 일반 예약 내역이 없습니다.</p>
+                            <p className="text-xs font-bold text-slate-400 italic">추가된 일반 예약 내역이 없습니다.</p>
                         </div>
                     )}
                 </AnimatePresence>

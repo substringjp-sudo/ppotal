@@ -19,7 +19,7 @@ export default function DashboardPageHeader({
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <h1 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+          <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tighter">
             {title}
           </h1>
           <p className="text-sm text-slate-400 font-bold mt-1 tracking-tight">

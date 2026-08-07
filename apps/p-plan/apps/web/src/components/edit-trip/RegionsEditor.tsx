@@ -183,7 +183,7 @@ export default function RegionsEditor() {
                                             <span 
                                                 key={`${region.type}-${region.id}`} 
                                                 className={cn(
-                                                    "px-3 py-1.5 text-[11px] font-bold rounded-xl flex items-center gap-2 border transition-all shadow-sm",
+                                                    "px-3 py-1.5 text-xs font-bold rounded-xl flex items-center gap-2 border transition-all shadow-sm",
                                                     region.type === 'country' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30' :
                                                     region.type === 'prefecture' ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30' :
                                                     'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/30'

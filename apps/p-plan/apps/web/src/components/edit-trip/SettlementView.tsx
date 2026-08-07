@@ -25,7 +25,7 @@ export function SettlementView({ trip, getRate, formatAmount, currencySymbol }: 
         <div className="space-y-8 pb-12">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-slate-900 text-white rounded-[2rem] p-8 shadow-xl relative overflow-hidden">
+                <div className="bg-slate-900 text-white rounded-[20px] p-8 shadow-xl relative overflow-hidden">
                     <div className="relative z-10">
                         <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 block">총 공동 지출액</span>
                         <div className="text-3xl font-bold mb-1">
@@ -40,7 +40,7 @@ export function SettlementView({ trip, getRate, formatAmount, currencySymbol }: 
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] p-8 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[20px] p-8 shadow-sm">
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 block">1인당 평균 분담액</span>
                     <div className="text-3xl font-bold text-primary mb-1">
                         {currencySymbol} {formatAmount(Math.round(totalSharedExpense / (trip.participants?.length || 1)))}
@@ -90,7 +90,7 @@ export function SettlementView({ trip, getRate, formatAmount, currencySymbol }: 
                     </div>
                 </div>
             ) : (
-                <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-dashed border-slate-200 dark:border-slate-700">
+                <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-[20px] border border-dashed border-slate-200 dark:border-slate-700">
                     <span className="material-symbols-rounded text-4xl text-slate-300 mb-2">done_all</span>
                     <p className="text-sm font-semibold text-slate-400">송금할 내역이 없습니다. 정산이 완료되었습니다!</p>
                 </div>
@@ -102,7 +102,7 @@ export function SettlementView({ trip, getRate, formatAmount, currencySymbol }: 
                     <span className="material-symbols-rounded text-slate-400">list_alt</span>
                     멤버별 정산 상세 내역
                 </h3>
-                <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <div className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-slate-200 dark:border-slate-800">

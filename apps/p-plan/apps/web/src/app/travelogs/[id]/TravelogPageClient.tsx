@@ -262,7 +262,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
                                 {travelog.title}
                             </h1>
 
-                            <div className="flex flex-wrap items-center gap-8 text-white/50 font-semibold uppercase tracking-widest text-[11px]">
+                            <div className="flex flex-wrap items-center gap-8 text-white/50 font-semibold uppercase tracking-widest text-xs">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
                                         <span className="material-symbols-rounded text-primary text-base">calendar_today</span>
@@ -431,7 +431,7 @@ export default function TravelogPageClient({ id }: TravelogPageClientProps) {
             {/* Footer Signature */}
             <footer className="max-w-7xl mx-auto px-8 py-24 border-t border-white/5 text-center">
                 <div className="inline-flex flex-col items-center gap-6">
-                    <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-primary to-orange-600 p-0.5 shadow-2xl">
+                    <div className="w-16 h-16 rounded-[20px] bg-gradient-to-br from-primary to-orange-600 p-0.5 shadow-2xl">
                         <div className="w-full h-full rounded-[1.8rem] bg-[#020617] flex items-center justify-center">
                             <span className="text-2xl font-bold text-white">P</span>
                         </div>
@@ -465,7 +465,7 @@ function ViewToggleButton({ active, onClick, icon, label }: {
         <button
             onClick={onClick}
             className={cn(
-                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-[11px] font-semibold uppercase tracking-widest transition-all',
+                'flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all',
                 active
                     ? 'bg-primary text-white shadow-lg shadow-primary/25'
                     : 'text-slate-500 dark:text-white/40 hover:text-slate-800 dark:hover:text-white/70'
@@ -540,7 +540,7 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
             id={`place-${p.id}`}
             onClick={onClick}
             className={cn(
-                'group relative rounded-[2rem] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer h-full',
+                'group relative rounded-[20px] overflow-hidden border bg-white dark:bg-white/[0.02] shadow-sm dark:shadow-none transition-all duration-500 cursor-pointer h-full',
                 highlighted
                     ? 'border-primary/50 ring-2 ring-primary/20'
                     : 'border-slate-200 dark:border-white/5 hover:border-primary/20 dark:hover:border-white/10'
@@ -566,7 +566,7 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
                         <div className="min-w-0">
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{p.name}</h3>
                             {(p.location?.address || p.visitDate) && (
-                                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
                                     {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
                                 </p>
                             )}
@@ -591,7 +591,7 @@ function PlaceCard({ place: p, index: i, highlighted, onClick }: {
 
 function PlacesEmpty() {
     return (
-        <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+        <div className="rounded-[20px] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
             <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">wrong_location</span>
             <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 정리된 장소가 없어요.</p>
             <p className="mt-1 text-sm text-slate-400 dark:text-white/25">사진을 올리거나 일정에 장소를 연결하면 여기 모여요.</p>
@@ -679,7 +679,7 @@ function StoryView({ travelog, byDay, onFocusPlace }: {
     const entries = buildStoryEntries(travelog);
     if (entries.length === 0) {
         return (
-            <div className="rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
+            <div className="rounded-[20px] border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
                 <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-white/20">auto_stories</span>
                 <p className="mt-4 text-lg font-bold text-slate-500 dark:text-white/40">아직 내용이 없어요.</p>
             </div>
@@ -791,7 +791,7 @@ function PhotobookSection({ places, onFocusPlace }: {
                                 <div className="min-w-0">
                                     <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
                                     {(p.visitDate || p.location?.address) && (
-                                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-white/30 truncate">
                                             {[p.visitDate, p.location?.address].filter(Boolean).join(' · ')}
                                         </p>
                                     )}
@@ -820,7 +820,7 @@ function PhotobookSection({ places, onFocusPlace }: {
 function TravelogSkeleton() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#030712] p-8 space-y-12 transition-colors duration-500">
-            <Skeleton className="h-[80vh] w-full rounded-[3rem] bg-slate-200/50 dark:bg-slate-800/50" />
+            <Skeleton className="h-[80vh] w-full rounded-[20px] bg-slate-200/50 dark:bg-slate-800/50" />
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-20">
                 <div className="flex-1 space-y-12">
                     <Skeleton className="h-20 w-3/4" />
@@ -843,7 +843,7 @@ function ErrorView({ message }: { message: string }) {
             <p className="text-slate-500 dark:text-white/40 max-w-md mx-auto mb-12 text-lg font-light leading-relaxed">{message}</p>
             <button 
                 onClick={() => window.location.reload()}
-                className="px-10 py-4 rounded-full bg-slate-200/50 dark:bg-white/5 hover:bg-slate-300/50 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 transition-all font-semibold uppercase text-[11px] tracking-widest text-slate-600 dark:text-white/70"
+                className="px-10 py-4 rounded-full bg-slate-200/50 dark:bg-white/5 hover:bg-slate-300/50 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 transition-all font-semibold uppercase text-xs tracking-widest text-slate-600 dark:text-white/70"
             >
                 연결 재시도
             </button>

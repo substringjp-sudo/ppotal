@@ -104,7 +104,7 @@ export const InterestsCard: React.FC<InterestsCardProps> = ({ item, onEdit, onDe
                     <h4 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 transition-colors">{item.title}</h4>
                 </div>
                 
-                {item.description && <p className="text-[11px] text-slate-500 line-clamp-2 font-medium leading-relaxed">{item.description}</p>}
+                {item.description && <p className="text-xs text-slate-500 line-clamp-2 font-medium leading-relaxed">{item.description}</p>}
                 
                 <div className="mt-2 flex items-center justify-between border-t border-slate-200/60 dark:border-slate-800 pt-4">
                     {item.place ? (

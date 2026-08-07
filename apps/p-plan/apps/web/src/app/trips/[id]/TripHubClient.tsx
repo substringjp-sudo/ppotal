@@ -148,8 +148,8 @@ export default function TripHubClient() {
                 {/* 헤더 */}
                 <div className={cn('relative rounded-3xl overflow-hidden shadow-sm bg-gradient-to-br p-6 text-white', gradientFor(trip.theme))}>
                     <div className="relative z-10">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-white/70">{dest || '여행'}</p>
-                        <h1 className="mt-1 text-2xl font-black tracking-tight">{trip.title}</h1>
+                        <p className="text-xs font-semibold uppercase tracking-widest text-white/70">{dest || '여행'}</p>
+                        <h1 className="mt-1 text-2xl font-bold tracking-tight">{trip.title}</h1>
                         <p className="mt-1.5 text-sm font-bold text-white/85 tabular-nums">{dateStr}</p>
                     </div>
                 </div>
@@ -160,13 +160,13 @@ export default function TripHubClient() {
                         <span className="material-symbols-rounded">{next.icon}</span>
                     </span>
                     <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">다음 할 일</p>
-                        <p className="text-sm font-black text-slate-900 dark:text-white truncate">{next.label}</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">다음 할 일</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{next.label}</p>
                     </div>
                     {next.href ? (
-                        <Link href={next.href} className="shrink-0 rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:bg-primary/90 transition">가기</Link>
+                        <Link href={next.href} className="shrink-0 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 transition">가기</Link>
                     ) : (
-                        <button onClick={next.action} disabled={creating} className="shrink-0 rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:bg-primary/90 transition disabled:opacity-50">{creating ? '…' : '시작'}</button>
+                        <button onClick={next.action} disabled={creating} className="shrink-0 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 transition disabled:opacity-50">{creating ? '…' : '시작'}</button>
                     )}
                 </div>
 
@@ -183,15 +183,15 @@ export default function TripHubClient() {
                             </span>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                    <p className="text-sm font-black text-slate-900 dark:text-white">{s.title}</p>
-                                    <span className="text-[9px] font-black text-slate-300 uppercase">{String(i + 1).padStart(2, '0')}</span>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{s.title}</p>
+                                    <span className="text-xs font-semibold text-slate-300 uppercase">{String(i + 1).padStart(2, '0')}</span>
                                 </div>
                                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate">{s.desc}</p>
                             </div>
                             {s.cta && (s.href ? (
-                                <Link href={s.href} className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-[11px] font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition">{s.cta}</Link>
+                                <Link href={s.href} className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition">{s.cta}</Link>
                             ) : (
-                                <button onClick={s.action} disabled={creating} className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-[11px] font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition disabled:opacity-50">{s.cta}</button>
+                                <button onClick={s.action} disabled={creating} className="shrink-0 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition disabled:opacity-50">{s.cta}</button>
                             ))}
                         </motion.div>
                     ))}
@@ -201,14 +201,14 @@ export default function TripHubClient() {
                 <div className="mt-5 flex flex-wrap gap-2">
                     <Link
                         href={`/wishlist?tripId=${id}`}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-[11px] font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
                     >
                         <span className="material-symbols-rounded text-base">favorite</span>
                         위시리스트
                     </Link>
                     <Link
                         href="/saved"
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-[11px] font-black text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition"
                     >
                         <span className="material-symbols-rounded text-base">bookmark</span>
                         가고 싶은 지도
@@ -232,7 +232,7 @@ function NotFound() {
             <div className="text-center">
                 <span className="material-symbols-rounded text-5xl text-slate-300">search_off</span>
                 <p className="mt-2 text-sm font-bold text-slate-500">여행을 찾을 수 없어요.</p>
-                <Link href="/" className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">내 여행으로</Link>
+                <Link href="/" className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">내 여행으로</Link>
             </div>
         </div>
     );

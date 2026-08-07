@@ -185,7 +185,7 @@ export function TimeSliderPicker({ value, onChange, label, onClose, lat, lng, da
                                     initial={{ opacity: 0 }}
                                     animate={{ left: `${pos}%`, opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute -translate-x-1/2 text-[9px] font-black text-slate-500 dark:text-slate-300 whitespace-nowrap"
+                                    className="absolute -translate-x-1/2 text-xs font-semibold text-slate-500 dark:text-slate-300 whitespace-nowrap"
                                 >
                                     {h.toString().padStart(2, '0')}
                                 </motion.span>
@@ -204,8 +204,8 @@ export function TimeSliderPicker({ value, onChange, label, onClose, lat, lng, da
                                     animate={{ left: `${pos}%`, opacity: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
                                     className={cn(
-                                        "absolute -translate-x-1/2 text-[8px] font-black whitespace-nowrap",
-                                        mins % 60 === 0 ? "text-primary text-[10px]" : "text-slate-400"
+                                        "absolute -translate-x-1/2 text-xs font-semibold whitespace-nowrap",
+                                        mins % 60 === 0 ? "text-primary text-xs" : "text-slate-400"
                                     )}
                                 >
                                     {minutesToTime(mins)}
@@ -339,7 +339,7 @@ export function TimeSliderPicker({ value, onChange, label, onClose, lat, lng, da
                                     initial={{ opacity: 0, scale: 0.8, y: 5 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.8, y: 5 }}
-                                    className="absolute -top-10 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black rounded-xl shadow-2xl flex flex-col items-center"
+                                    className="absolute -top-10 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold rounded-xl shadow-2xl flex flex-col items-center"
                                 >
                                     {minutesToTime(currentMins)}
                                     <div className="w-2 h-2 bg-slate-900 dark:bg-white rotate-45 -mb-2 mt-1" />

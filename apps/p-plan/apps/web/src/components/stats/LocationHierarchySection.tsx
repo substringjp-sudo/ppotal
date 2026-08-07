@@ -40,10 +40,10 @@ function SummaryCard({
             >
                 {icon}
             </span>
-            <span className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-none">
+            <span className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-none">
                 {value}
             </span>
-            <span className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-xs md:text-xs font-semibold uppercase tracking-widest text-slate-400">
                 {label}
             </span>
         </div>
@@ -53,28 +53,28 @@ function SummaryCard({
 function StatusBadge({ tripCount, plannedCount, wishlistCount, isMastered, isPlanned }: { tripCount: number; plannedCount: number; wishlistCount: number; isMastered?: boolean; isPlanned?: boolean }) {
     if (isMastered) {
         return (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-sm shadow-emerald-200 dark:shadow-none animate-pulse">
+            <span className="px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500 text-white shadow-sm shadow-emerald-200 dark:shadow-none animate-pulse">
                 Mastered
             </span>
         );
     }
     if (tripCount > 0) {
         return (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-orange-100 text-primary dark:bg-orange-900/40 dark:text-orange-400">
+            <span className="px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-orange-100 text-primary dark:bg-orange-900/40 dark:text-orange-400">
                 Visited
             </span>
         );
     }
     if (plannedCount > 0 || isPlanned) {
         return (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+            <span className="px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                 Planned
             </span>
         );
     }
     if (wishlistCount > 0) {
         return (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+            <span className="px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
                 Wishlist
             </span>
         );
@@ -114,8 +114,8 @@ function LocationDetailView({
                         </span>
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight">{node.name}</h3>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{node.name}</h3>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                             {isCountry ? '국가' : isPref ? '지역' : '도시'} 숙련도
                         </p>
                     </div>
@@ -133,7 +133,7 @@ function LocationDetailView({
                 {/* XP & Mastery 섹션 */}
                 <section className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">숙련도 상태</span>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">숙련도 상태</span>
                         <div className="flex items-center gap-2">
                              <StatusBadge 
                                 tripCount={node.tripCount} 
@@ -142,7 +142,7 @@ function LocationDetailView({
                                 isMastered={node.isMastered}
                                 isPlanned={node.isPlanned}
                             />
-                            <span className="text-[10px] font-black text-slate-900 dark:text-white">{Math.round((node.xp / node.maxXp) * 100)}%</span>
+                            <span className="text-xs font-semibold text-slate-900 dark:text-white">{Math.round((node.xp / node.maxXp) * 100)}%</span>
                         </div>
                     </div>
                     <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -152,14 +152,14 @@ function LocationDetailView({
                             className={`h-full ${node.isMastered ? 'bg-emerald-500' : 'bg-primary'}`}
                         />
                     </div>
-                    <p className="text-[9px] font-bold text-slate-400 italic">
+                    <p className="text-xs font-bold text-slate-400 italic">
                         이 지역에서 {node.xp} / {node.maxXp} XP를 획득했습니다.
                     </p>
                 </section>
 
                 {/* 방문 기록 섹션 */}
                 <section className="space-y-4">
-                    <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                    <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-widest">
                         <span className="material-symbols-rounded text-sm">history</span>
                         여행 기록 ({trips.length})
                     </h4>
@@ -173,10 +173,10 @@ function LocationDetailView({
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-[11px] font-black text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors line-clamp-1">
+                                            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors line-clamp-1">
                                                 {trip.title}
                                             </p>
-                                            <p className="text-[9px] font-bold text-slate-400 mt-0.5">
+                                            <p className="text-xs font-bold text-slate-400 mt-0.5">
                                                 {trip.dates?.startDate && new Date(trip.dates.startDate).toLocaleDateString()}
                                             </p>
                                         </div>
@@ -187,14 +187,14 @@ function LocationDetailView({
                         </div>
                     ) : (
                         <div className="py-8 text-center bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-                             <p className="text-[10px] font-bold text-slate-400 italic">아직 여행 기록이 없습니다.</p>
+                             <p className="text-xs font-bold text-slate-400 italic">아직 여행 기록이 없습니다.</p>
                         </div>
                     )}
                 </section>
 
                 {/* 위시리스트 섹션 */}
                 <section className="space-y-4">
-                    <h4 className="flex items-center gap-2 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                    <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-widest">
                         <span className="material-symbols-rounded text-sm">bookmark_heart</span>
                         위시리스트 ({wishes.length})
                     </h4>
@@ -211,11 +211,11 @@ function LocationDetailView({
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] font-black text-slate-800 dark:text-slate-200 truncate group-hover:text-primary transition-colors">
+                                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-primary transition-colors">
                                             {item.title}
                                         </p>
                                     </div>
-                                    <span className="material-symbols-rounded text-[10px] text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all">
+                                    <span className="material-symbols-rounded text-xs text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all">
                                         arrow_outward
                                     </span>
                                 </div>
@@ -223,7 +223,7 @@ function LocationDetailView({
                         </div>
                     ) : (
                         <div className="py-8 text-center bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-                             <p className="text-[10px] font-bold text-slate-400 italic">이 지역에 등록된 위시리스트가 없습니다.</p>
+                             <p className="text-xs font-bold text-slate-400 italic">이 지역에 등록된 위시리스트가 없습니다.</p>
                         </div>
                     )}
                 </section>
@@ -233,7 +233,7 @@ function LocationDetailView({
             <div className="p-6 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-200/60 dark:border-slate-800">
                  <button 
                     onClick={() => window.location.href = `/wishlist?location=${node.id || node.name}`}
-                    className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-semibold uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-2"
                  >
                     <span className="material-symbols-rounded text-sm">add_circle</span>
                     새 위시 추가하기
@@ -299,7 +299,7 @@ function TreeNode({
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                        <span className={`text-[11px] font-black truncate ${isSelected ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <span className={`text-xs font-semibold truncate ${isSelected ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}>
                             {node.key === 'str:_unknown' ? 'Others' : node.name}
                         </span>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -308,7 +308,7 @@ function TreeNode({
                              ) : node.plannedCount > 0 || node.isPlanned ? (
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
                              ) : null}
-                             <span className="text-[9px] font-bold text-slate-300 dark:text-slate-600">{xpPct}%</span>
+                             <span className="text-xs font-bold text-slate-300 dark:text-slate-600">{xpPct}%</span>
                         </div>
                     </div>
                 </div>
@@ -372,7 +372,7 @@ export default function LocationHierarchySection({ locationStats }: Props) {
         <section className="space-y-8">
             {/* 타이틀 */}
             <div className="flex items-center gap-4">
-                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-widest uppercase">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-widest uppercase">
                     내가 만들어가는 세계
                 </h2>
                 <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
@@ -397,13 +397,13 @@ export default function LocationHierarchySection({ locationStats }: Props) {
                 <div className="w-full xl:w-[320px] 2xl:w-[380px] bg-slate-50/50 dark:bg-slate-800/20 border-b xl:border-b-0 xl:border-r border-slate-200 dark:border-slate-800 flex flex-col h-[400px] xl:h-full">
                     {/* 사이드바 헤더: 필터 */}
                     <div className="p-6 space-y-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">탐색</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">탐색</p>
                         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
                             {tabs.map(tab => (
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold uppercase tracking-widest transition-all whitespace-nowrap ${
                                         activeTab === tab.key
                                             ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
                                             : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500'
@@ -420,11 +420,11 @@ export default function LocationHierarchySection({ locationStats }: Props) {
                     <div className="flex-1 overflow-y-auto px-4 pb-6 custom-scrollbar space-y-1">
                         {isEmpty ? (
                             <div className="py-20 text-center opacity-50">
-                                <p className="text-[10px] font-bold italic">No locations discovered yet.</p>
+                                <p className="text-xs font-bold italic">No locations discovered yet.</p>
                             </div>
                         ) : filteredCountries.length === 0 ? (
                             <div className="py-20 text-center opacity-50">
-                                <p className="text-[10px] font-bold italic">No matching locations.</p>
+                                <p className="text-xs font-bold italic">No matching locations.</p>
                             </div>
                         ) : (
                             filteredCountries.map(country => (
@@ -459,8 +459,8 @@ export default function LocationHierarchySection({ locationStats }: Props) {
                                 <div className="w-20 h-20 rounded-3xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-6">
                                     <span className="material-symbols-rounded text-4xl text-slate-200 animate-bounce">near_me</span>
                                 </div>
-                                <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest">장소를 선택해주세요</h4>
-                                <p className="text-[10px] font-bold text-slate-300 mt-2 max-w-[240px] leading-relaxed">
+                                <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-widest">장소를 선택해주세요</h4>
+                                <p className="text-xs font-bold text-slate-300 mt-2 max-w-[240px] leading-relaxed">
                                     탐색기에서 국가, 지역 또는 도시를 클릭하여 상세 여행 기록과 위시리스트를 확인하세요.
                                 </p>
                             </motion.div>

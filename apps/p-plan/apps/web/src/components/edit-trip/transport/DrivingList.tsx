@@ -182,7 +182,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                 {driving.pickupLocation && ` - ${driving.pickupLocation}`}
                             </span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
                             {driving.isRental && (
                                 <>
                                     <div className="flex items-center gap-1.5 overflow-hidden">
@@ -335,9 +335,9 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                             inputClassName="h-[48px] bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-bold border border-slate-200 dark:border-slate-800"
                                                         />
                                                         <div className="flex flex-wrap items-center gap-1.5 mt-1 px-1">
-                                                            {driving.pickupCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-[7px] font-semibold border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.pickupCountryName}</span>}
-                                                            {driving.pickupPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-[7px] font-semibold border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.pickupPrefectureName}</span>}
-                                                            {driving.pickupCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[7px] font-semibold border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.pickupCityName}</span>}
+                                                            {driving.pickupCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-xs font-semibold border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.pickupCountryName}</span>}
+                                                            {driving.pickupPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-xs font-semibold border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.pickupPrefectureName}</span>}
+                                                            {driving.pickupCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-xs font-semibold border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.pickupCityName}</span>}
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-3">
@@ -389,9 +389,9 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                             inputClassName="h-[48px] bg-slate-50 dark:bg-slate-900 rounded-2xl text-sm font-bold border border-slate-200 dark:border-slate-800 disabled:opacity-50"
                                                         />
                                                         <div className="flex flex-wrap items-center gap-1.5 mt-1 px-1">
-                                                            {driving.returnCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-[7px] font-semibold border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.returnCountryName}</span>}
-                                                            {driving.returnPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-[7px] font-semibold border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.returnPrefectureName}</span>}
-                                                            {driving.returnCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-[7px] font-semibold border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.returnCityName}</span>}
+                                                            {driving.returnCountryName && <span className="flex items-center gap-1 px-2 py-0.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded text-xs font-semibold border border-sky-100 dark:border-sky-800"><Globe className="w-1.5 h-1.5" />{driving.returnCountryName}</span>}
+                                                            {driving.returnPrefectureName && <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded text-xs font-semibold border border-indigo-100 dark:border-indigo-800"><Flag className="w-1.5 h-1.5" />{driving.returnPrefectureName}</span>}
+                                                            {driving.returnCityName && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded text-xs font-semibold border border-emerald-100 dark:border-emerald-800"><MapIcon className="w-1.5 h-1.5" />{driving.returnCityName}</span>}
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-3">
@@ -431,7 +431,7 @@ export function DrivingCard({ driving }: { driving: DrivingSegment }) {
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex items-center gap-2">
                                                         <span className="material-symbols-rounded text-slate-400">confirmation_number</span>
-                                                        <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
+                                                        <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
                                                     </div>
                                                     <CustomCheckbox
                                                         checked={!!driving.isBooked}

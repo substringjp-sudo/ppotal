@@ -26,7 +26,7 @@ export default function AboutHero() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-10 shadow-xl"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-xs font-semibold uppercase tracking-[0.2em] mb-10 shadow-xl"
                 >
                   <Sparkles className="w-3 h-3 text-amber-400" />
                   로그인 없는 여행 계획 점검
@@ -36,7 +36,7 @@ export default function AboutHero() {
                   initial={{ opacity: 0, x: -30 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="text-6xl lg:text-[84px] font-black text-slate-900 dark:text-white leading-[0.98] tracking-tighter mb-10"
+                  className="text-6xl lg:text-[84px] font-bold text-slate-900 dark:text-white leading-[0.98] tracking-tighter mb-10"
                 >
                   여행 계획,<br />
                   <span className="text-primary italic">먼저 확인</span>하고<br />
@@ -66,18 +66,18 @@ export default function AboutHero() {
                 >
                   <Link
                     href="/"
-                    className="group relative px-8 py-5 bg-primary text-white text-lg font-black rounded-[2rem] shadow-[0_20px_50px_-15px_rgba(79,70,229,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-transparent"
+                    className="group relative px-8 py-5 bg-primary text-white text-lg font-semibold rounded-full shadow-[0_20px_50px_-15px_rgba(79,70,229,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-transparent"
                   >
-                    <span className="material-symbols-rounded font-black bg-white/20 text-white p-2 rounded-xl">edit_note</span>
+                    <span className="material-symbols-rounded font-semibold bg-white/20 text-white p-2 rounded-xl">edit_note</span>
                     로그인 없이 바로 시작하기
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
 
                   <button
                     onClick={loginWithGoogle}
-                    className="px-8 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-lg font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-transparent hover:border-primary"
+                    className="px-8 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-lg font-semibold rounded-full shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border-2 border-transparent hover:border-primary"
                   >
-                    <span className="material-symbols-rounded font-black bg-primary text-white p-2 rounded-xl">bolt</span>
+                    <span className="material-symbols-rounded font-semibold bg-primary text-white p-2 rounded-xl">bolt</span>
                     Google로 5초 만에 시작
                   </button>
                 </motion.div>
@@ -95,7 +95,7 @@ export default function AboutHero() {
                 <div className="relative aspect-[4/5] rounded-[64px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] ring-1 ring-slate-200 dark:ring-white/10 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center p-10">
                   <div className="w-full space-y-5">
                     <div className="rounded-3xl bg-white dark:bg-slate-900 p-5 shadow-lg border border-slate-100 dark:border-slate-800">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Day 1 · 08:00-13:00</p>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Day 1 · 08:00-13:00</p>
                       <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 mb-2 relative overflow-hidden">
                         <div className="absolute inset-y-0 left-[20%] w-[35%] bg-primary/70 rounded-full" />
                         <div className="absolute inset-y-0 left-[45%] w-[30%] bg-red-400 rounded-full" />
@@ -112,8 +112,8 @@ export default function AboutHero() {
                         <ShieldAlert className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">겹치는 일정 발견</p>
-                        <p className="text-sm font-black dark:text-white">두 일정이 30분 겹쳐요</p>
+                        <p className="text-xs font-semibold text-red-500 uppercase tracking-widest">겹치는 일정 발견</p>
+                        <p className="text-sm font-semibold dark:text-white">두 일정이 30분 겹쳐요</p>
                       </div>
                     </motion.div>
 
@@ -126,8 +126,8 @@ export default function AboutHero() {
                         <ShieldCheck className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">국가별 입국 요건</p>
-                        <p className="text-sm font-black">비자 필요 여부 확인 완료</p>
+                        <p className="text-xs font-bold opacity-70 uppercase tracking-widest">국가별 입국 요건</p>
+                        <p className="text-sm font-semibold">비자 필요 여부 확인 완료</p>
                       </div>
                     </motion.div>
                   </div>
@@ -147,7 +147,7 @@ export default function AboutHero() {
         <section className="py-32 bg-white dark:bg-slate-950 relative overflow-hidden">
           <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-4xl lg:text-6xl font-black text-slate-900 dark:text-white mb-8 leading-none">
+              <h2 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-8 leading-none">
                 지금 확인해보세요.
               </h2>
               <p className="text-xl text-slate-500 font-bold mb-14 max-w-xl mx-auto">
@@ -157,16 +157,16 @@ export default function AboutHero() {
               <div className="flex flex-wrap justify-center gap-5">
                 <Link
                   href="/"
-                  className="px-10 py-5 bg-primary text-white text-lg font-black rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3"
+                  className="px-10 py-5 bg-primary text-white text-lg font-semibold rounded-full shadow-[0_25px_60px_-15px_rgba(79,70,229,0.5)] hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3"
                 >
-                  <span className="material-symbols-rounded font-black text-xl">edit_note</span>
+                  <span className="material-symbols-rounded font-bold text-xl">edit_note</span>
                   로그인 없이 바로 시작하기
                 </Link>
                 <button
                   onClick={loginWithGoogle}
-                  className="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-lg font-black rounded-[2rem] shadow-xl hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3"
+                  className="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-lg font-semibold rounded-full shadow-xl hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-3"
                 >
-                  <span className="material-symbols-rounded font-black text-xl">bolt</span>
+                  <span className="material-symbols-rounded font-bold text-xl">bolt</span>
                   Google로 5초 만에 시작
                 </button>
               </div>

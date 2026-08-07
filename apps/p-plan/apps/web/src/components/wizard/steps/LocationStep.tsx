@@ -154,14 +154,14 @@ export default function LocationStep() {
                 className="flex items-center justify-between px-2"
             >
                 <div>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <span className="w-1.5 h-6 bg-primary rounded-full" />
                         어디로 떠나시나요?
                     </h3>
-                    <p className="text-[10px] font-black text-slate-400 mt-1 pl-4 uppercase tracking-[0.2em]">지역 선택 (최대 5개)</p>
+                    <p className="text-xs font-semibold text-slate-400 mt-1 pl-4 uppercase tracking-[0.2em]">지역 선택 (최대 5개)</p>
                 </div>
                 <label className="flex items-center gap-3 cursor-pointer group">
-                    <span className="text-[10px] font-black text-slate-500 group-hover:text-primary transition-colors">장소 미정</span>
+                    <span className="text-xs font-semibold text-slate-500 group-hover:text-primary transition-colors">장소 미정</span>
                     <input
                         type="checkbox"
                         checked={isLocationUndecided}
@@ -199,7 +199,7 @@ export default function LocationStep() {
                                     {/* Internal Regions (Direct Match) */}
                                     {internalRegions.length > 0 && (
                                         <div className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-between">
-                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">Fast Direct Search</span>
+                                            <span className="text-xs font-semibold text-primary uppercase tracking-widest italic">Fast Direct Search</span>
                                             {isSearchingInternal && <div className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />}
                                         </div>
                                     )}
@@ -225,12 +225,12 @@ export default function LocationStep() {
                                             </span>
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2 mb-0.5">
-                                                    <p className="text-[11px] font-black text-slate-900 dark:text-white">{region.name}</p>
-                                                    <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[8px] font-black uppercase tracking-tighter shadow-sm">
+                                                    <p className="text-xs font-semibold text-slate-900 dark:text-white">{region.name}</p>
+                                                    <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold uppercase tracking-tighter shadow-sm">
                                                         {region.type}
                                                     </span>
                                                 </div>
-                                                {region.parentName && <p className="text-[9px] font-bold text-slate-400">{region.parentName}</p>}
+                                                {region.parentName && <p className="text-xs font-bold text-slate-400">{region.parentName}</p>}
                                             </div>
                                             <span className="material-symbols-rounded text-slate-200 text-sm">add_circle</span>
                                         </button>
@@ -239,7 +239,7 @@ export default function LocationStep() {
                                     {/* Google Results */}
                                     {predictions.length > 0 && (
                                         <div className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 px-4 py-2">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Global Places</span>
+                                            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest italic">Global Places</span>
                                         </div>
                                     )}
                                     {predictions.map(p => {
@@ -257,19 +257,19 @@ export default function LocationStep() {
                                                 </span>
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2 mb-0.5">
-                                                        <p className="text-[11px] font-black text-slate-900 dark:text-white">{p.mainText}</p>
+                                                        <p className="text-xs font-semibold text-slate-900 dark:text-white">{p.mainText}</p>
                                                         {isPrefecture && (
-                                                            <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[8px] font-black uppercase tracking-tighter shadow-sm">
+                                                            <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-semibold uppercase tracking-tighter shadow-sm">
                                                                 도/현
                                                             </span>
                                                         )}
                                                         {isCity && (
-                                                            <span className="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[8px] font-black uppercase tracking-tighter shadow-sm">
+                                                            <span className="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase tracking-tighter shadow-sm">
                                                                 시/지역
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <p className="text-[9px] font-bold text-slate-400">{p.secondaryText}</p>
+                                                    <p className="text-xs font-bold text-slate-400">{p.secondaryText}</p>
                                                 </div>
                                             </button>
                                         );
@@ -282,11 +282,11 @@ export default function LocationStep() {
 
                     <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 space-y-4 overflow-y-auto shadow-sm">
                         <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">선택된 장소 {locations.length}/5</h4>
+                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">선택된 장소 {locations.length}/5</h4>
                             {locations.length > 0 && (
                                 <button
                                     onClick={clearLocations}
-                                    className="text-[9px] font-black text-red-400 hover:text-red-500 transition-colors uppercase"
+                                    className="text-xs font-semibold text-red-400 hover:text-red-500 transition-colors uppercase"
                                 >
                                     전체 삭제
                                 </button>
@@ -304,10 +304,10 @@ export default function LocationStep() {
                                         className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 group/loc"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">
+                                            <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
                                                 {idx + 1}
                                             </span>
-                                            <span className="text-xs font-black text-slate-900 dark:text-white">{loc}</span>
+                                            <span className="text-xs font-semibold text-slate-900 dark:text-white">{loc}</span>
                                         </div>
                                         <button
                                             onClick={() => removeLocation(loc)}
@@ -322,7 +322,7 @@ export default function LocationStep() {
                             {locations.length === 0 && (
                                 <div className="py-12 text-center space-y-2">
                                     <span className="material-symbols-rounded text-slate-200 dark:text-slate-800 text-4xl">travel_explore</span>
-                                    <p className="text-[10px] font-bold text-slate-400 italic">가고 싶은 지역을<br />검색하여 추가해보세요</p>
+                                    <p className="text-xs font-bold text-slate-400 italic">가고 싶은 지역을<br />검색하여 추가해보세요</p>
                                 </div>
                             )}
                         </div>
@@ -348,7 +348,7 @@ export default function LocationStep() {
                     />
 
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full shadow-2xl border border-white/20 dark:border-slate-800">
-                        <p className="text-[10px] font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <p className="text-xs font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                             선택하고 싶은 지역을 자유롭게 검색하세요
                         </p>

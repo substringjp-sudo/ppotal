@@ -46,7 +46,7 @@ function FlightSegmentRow({ segment, icon = 'flight_takeoff', isRoundTrip = fals
                         {segment.departureTime || '--:--'}
                     </span>
                     <div className="flex flex-col items-start leading-tight">
-                        <span className="text-xs md:text-[11px] font-semibold text-slate-500 uppercase tracking-tight">{segment.departureLocation || '???'}</span>
+                        <span className="text-xs md:text-xs font-semibold text-slate-500 uppercase tracking-tight">{segment.departureLocation || '???'}</span>
                         {depCity && <span className="text-xs font-bold text-slate-400 truncate">({depCity})</span>}
                     </div>
                 </div>
@@ -89,7 +89,7 @@ function FlightSegmentRow({ segment, icon = 'flight_takeoff', isRoundTrip = fals
                         })()}
                     </span>
                     <div className="flex flex-col items-end justify-end leading-tight">
-                        <span className="text-xs md:text-[11px] font-semibold text-slate-500 uppercase tracking-tight">{segment.arrivalLocation || '???'}</span>
+                        <span className="text-xs md:text-xs font-semibold text-slate-500 uppercase tracking-tight">{segment.arrivalLocation || '???'}</span>
                         {arrCity && <span className="text-xs font-bold text-slate-400 truncate">({arrCity})</span>}
                     </div>
                 </div>
@@ -110,14 +110,14 @@ function AirportInfo({ code }: { code?: string }) {
         <div className="flex flex-col gap-1 mt-1.5 px-2">
             <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs font-bold text-slate-400">
                 <div className="flex items-center gap-1 shrink-0 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
-                    <span className="material-symbols-rounded text-[12px] text-slate-400">public</span>
+                    <span className="material-symbols-rounded text-xs text-slate-400">public</span>
                     <span className="whitespace-nowrap">{info.regionIds.countryName}</span>
                     <span className="text-xs opacity-70 font-medium ml-0.5">({info.timezone >= 0 ? `+${info.timezone}` : info.timezone})</span>
                 </div>
                 
                 {info.regionIds.cityName && (!nameIncludesCity) && (
                     <div className="flex items-center gap-1 min-w-0 overflow-hidden bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
-                        <span className="material-symbols-rounded text-[12px] text-slate-400 shrink-0">location_city</span>
+                        <span className="material-symbols-rounded text-xs text-slate-400 shrink-0">location_city</span>
                         <span className="truncate">{info.regionIds.cityName}</span>
                     </div>
                 )}
@@ -521,7 +521,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                         )}
                         <div className="h-3 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block"></div>
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+                            <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                                 {flight.airline || '항공사 선택'}
                             </span>
                             {flight.flightNumber && (
@@ -719,7 +719,7 @@ export function FlightCard({ flight }: { flight: FlightSegment }) {
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-2">
                                             <span className="material-symbols-rounded text-slate-400">confirmation_number</span>
-                                            <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
+                                            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em] px-1">상세 예약 관리</h4>
                                         </div>
                                         <CustomCheckbox
                                             checked={!!flight.isBooked}

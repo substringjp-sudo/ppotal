@@ -32,7 +32,7 @@ export default function MapWidget() {
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-semibold uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all group"
                 >
                     일정 전체보기
-                    <span className="material-symbols-rounded text-[12px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-rounded text-xs group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                 </button>
             </div>
             <div className="flex-1 relative">

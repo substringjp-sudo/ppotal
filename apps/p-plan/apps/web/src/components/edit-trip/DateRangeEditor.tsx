@@ -166,7 +166,7 @@ export default function DateRangeEditor({
                             <div className="text-xs font-semibold text-slate-900 dark:text-white">날짜 미정</div>
                         ) : (
                             <div className="space-y-0.5">
-                                <div className="text-[11px] font-semibold text-slate-900 dark:text-white flex items-center leading-none">
+                                <div className="text-xs font-semibold text-slate-900 dark:text-white flex items-center leading-none">
                                     <span className="whitespace-nowrap">{start ? format(start, 'yyyy.MM.dd') : '시작일'}</span>
                                     <span className="text-slate-300 dark:text-slate-600 mx-1.5">-</span>
                                     <span className="whitespace-nowrap">{end ? format(end, 'yyyy.MM.dd') : '종료일'}</span>
@@ -227,7 +227,7 @@ export default function DateRangeEditor({
                                                 }}
                                                 onMouseEnter={() => handleMouseEnter(day)}
                                                 className={cn(
-                                                    "aspect-square flex items-center justify-center text-[11px] font-bold rounded-lg cursor-pointer transition-all relative group",
+                                                    "aspect-square flex items-center justify-center text-xs font-bold rounded-lg cursor-pointer transition-all relative group",
                                                     !isCurrentMonth && "text-slate-300 dark:text-slate-700",
                                                     isSelectedRange && "bg-primary/10 text-primary rounded-none",
                                                     isStart && "bg-primary text-white rounded-l-lg scale-105 z-10 shadow-lg",

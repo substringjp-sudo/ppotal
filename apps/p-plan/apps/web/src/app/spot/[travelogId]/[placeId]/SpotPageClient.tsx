@@ -63,7 +63,7 @@ export default function SpotPageClient() {
                 </Link>
 
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                    className="rounded-[2rem] overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] shadow-sm">
+                    className="rounded-[20px] overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] shadow-sm">
                     {photos.length > 0 && (
                         <div className={cn('grid gap-1', photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2')}>
                             {photos.slice(0, 4).map((url, i) => (
@@ -80,8 +80,8 @@ export default function SpotPageClient() {
                     <div className="p-6 sm:p-7 space-y-4">
                         <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
-                                <h1 className="text-2xl font-black tracking-tight truncate">{place.name}</h1>
-                                {sub && <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">{sub}</p>}
+                                <h1 className="text-2xl font-bold tracking-tight truncate">{place.name}</h1>
+                                {sub && <p className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-400">{sub}</p>}
                             </div>
                             {typeof place.rating === 'number' && place.rating > 0 && (
                                 <div className="flex items-center gap-0.5 shrink-0" aria-label={`별점 ${place.rating}`}>
@@ -94,7 +94,7 @@ export default function SpotPageClient() {
                         </div>
 
                         {place.category && (
-                            <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/40">
+                            <span className="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-white/40">
                                 {place.category}
                             </span>
                         )}
@@ -110,8 +110,8 @@ export default function SpotPageClient() {
                                 <span className="material-symbols-rounded">auto_stories</span>
                             </span>
                             <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">출처 여행기</p>
-                                <p className="text-sm font-black truncate group-hover:text-primary transition">{travelog.title}</p>
+                                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">출처 여행기</p>
+                                <p className="text-sm font-semibold truncate group-hover:text-primary transition">{travelog.title}</p>
                             </div>
                             <span className="material-symbols-rounded text-slate-300 group-hover:text-primary transition">chevron_right</span>
                         </Link>
@@ -146,7 +146,7 @@ function NotFound({ travelogId }: { travelogId: string | null }) {
                 <span className="material-symbols-rounded text-5xl text-slate-300">wrong_location</span>
                 <p className="mt-3 text-sm font-bold text-slate-500">이 스팟을 찾을 수 없어요.</p>
                 <Link href={travelogId ? `/travelogs/${travelogId}` : '/'}
-                    className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">
+                    className="mt-4 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">
                     {travelogId ? '여행기로' : '홈으로'}
                 </Link>
             </div>

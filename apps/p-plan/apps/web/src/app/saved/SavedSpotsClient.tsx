@@ -59,14 +59,14 @@ export default function SavedSpotsClient() {
     if (!user) {
         return (
             <Centered icon="bookmark" title="가고 싶은 지도" desc="로그인하면 피드에서 저장한 장소가 지도에 모여요.">
-                <button onClick={loginWithGoogle} className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">로그인</button>
+                <button onClick={loginWithGoogle} className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">로그인</button>
             </Centered>
         );
     }
     if (spots.length === 0) {
         return (
             <Centered icon="explore" title="아직 저장한 곳이 없어요" desc="탐색 피드에서 마음에 드는 스팟을 북마크하면 여기 지도에 쌓입니다.">
-                <Link href="/discover?tab=spots" className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-black text-white">둘러보러 가기</Link>
+                <Link href="/discover?tab=spots" className="mt-5 inline-block rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">둘러보러 가기</Link>
             </Centered>
         );
     }
@@ -91,7 +91,7 @@ export default function SavedSpotsClient() {
                 ) : (
                     <div className="h-full grid place-items-center text-white/40 text-sm font-bold">저장한 장소에 좌표가 아직 없어요</div>
                 )}
-                <div className="absolute top-4 left-4 rounded-full bg-black/55 backdrop-blur-md px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white/85 pointer-events-none flex items-center gap-2">
+                <div className="absolute top-4 left-4 rounded-full bg-black/55 backdrop-blur-md px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white/85 pointer-events-none flex items-center gap-2">
                     <span className="material-symbols-rounded text-primary text-sm">bookmark</span>
                     가고 싶은 지도 · {spots.length}
                 </div>
@@ -101,9 +101,9 @@ export default function SavedSpotsClient() {
             {clusters.length > 0 && (
                 <div className="mx-auto max-w-[720px] px-4 sm:px-6 pt-6">
                     <div className="flex items-baseline justify-between mb-3">
-                        <h2 className="text-sm font-black text-slate-900 dark:text-white">이 저장들이 그리는 여행</h2>
+                        <h2 className="text-sm font-semibold text-slate-900 dark:text-white">이 저장들이 그리는 여행</h2>
                         {regionFilter && (
-                            <button onClick={() => setRegionFilter(null)} className="text-[11px] font-bold text-primary">전체 보기</button>
+                            <button onClick={() => setRegionFilter(null)} className="text-xs font-bold text-primary">전체 보기</button>
                         )}
                     </div>
                     <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
@@ -136,8 +136,8 @@ export default function SavedSpotsClient() {
                                     </div>
                                 )}
                                 <div className="min-w-0 flex-1 py-2.5 pr-2">
-                                    <p className="text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition">{s.name}</p>
-                                    {(s.region || s.theme) && <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate">{[s.region, s.theme].filter(Boolean).join(' · ')}</p>}
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition">{s.name}</p>
+                                    {(s.region || s.theme) && <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-slate-400 truncate">{[s.region, s.theme].filter(Boolean).join(' · ')}</p>}
                                     {s.authorName && <p className="mt-1 text-xs font-semibold text-slate-400 truncate">{s.authorName}의 기록</p>}
                                 </div>
                             </Link>
@@ -178,8 +178,8 @@ function InspirationCard({ cluster: c, active, onFocus, onStart }: {
                     )) : <div className="col-span-2 row-span-2" style={{ backgroundColor: accent }} />}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-2 left-2.5 right-2.5">
-                        <p className="text-white font-black text-sm leading-tight truncate">{c.region}</p>
-                        <p className="text-white/75 text-[10px] font-bold uppercase tracking-widest truncate">
+                        <p className="text-white font-semibold text-sm leading-tight truncate">{c.region}</p>
+                        <p className="text-white/75 text-xs font-bold uppercase tracking-widest truncate">
                             {[c.theme, `${c.count}곳`].filter(Boolean).join(' · ')}
                         </p>
                     </div>
@@ -187,7 +187,7 @@ function InspirationCard({ cluster: c, active, onFocus, onStart }: {
             </button>
             <button
                 onClick={onStart}
-                className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-black text-primary hover:bg-primary/5 transition"
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold text-primary hover:bg-primary/5 transition"
             >
                 <span className="material-symbols-rounded text-base">add_road</span>
                 이 테마로 여행 시작
@@ -201,7 +201,7 @@ function Centered({ icon, title, desc, children }: { icon: string; title: string
         <div className="min-h-screen grid place-items-center bg-slate-50 dark:bg-[#030712] px-6 text-center">
             <div>
                 <span className="material-symbols-rounded text-5xl text-slate-300">{icon}</span>
-                <p className="mt-3 text-base font-black text-slate-700 dark:text-slate-200">{title}</p>
+                <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200">{title}</p>
                 <p className="mt-1 text-sm text-slate-400 max-w-xs mx-auto">{desc}</p>
                 {children}
             </div>

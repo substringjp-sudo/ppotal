@@ -248,7 +248,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                     </div>
                                                 </div>
 
-                                                <p className="text-[11px] font-medium text-slate-400 italic text-center p-2 leading-relaxed">
+                                                <p className="text-xs font-medium text-slate-400 italic text-center p-2 leading-relaxed">
                                                     {isDepartureFlightSegment 
                                                         ? `항공편 ${isInternational ? '출발 2시간 전' : '출발 1시간 전'} 권장 시간을 참고하여 조정해 보세요.` 
                                                         : `착륙 후 입국 심사 및 수하물 수령에 소요되는 시간을 설정합니다.`}
@@ -260,7 +260,7 @@ export default function EventEditorModal({ event, dayIdx, isOpen, onClose, onSav
                                                     onNavigateToSection?.('transport');
                                                     onClose();
                                                 }}
-                                                className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-[11px] font-semibold uppercase tracking-widest shadow-xl shadow-sky-500/20 transition-all flex items-center justify-center gap-2 group"
+                                                className="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl text-xs font-semibold uppercase tracking-widest shadow-xl shadow-sky-500/20 transition-all flex items-center justify-center gap-2 group"
                                             >
                                                 <span className="material-symbols-rounded text-sm transition-transform group-hover:translate-x-1">rocket_launch</span>
                                                 항공편 수정으로 이동

@@ -277,7 +277,7 @@ export default function TripEditorApp({ id }: { id: string }) {
                     <span>비로그인 체험 모드입니다. 작성하신 여행 계획은 브라우저(로컬 캐시)에만 보관됩니다.</span>
                     <button
                         onClick={() => loginWithGoogle()}
-                        className="ml-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-[11px] font-semibold transition-all flex items-center gap-1 shadow-sm"
+                        className="ml-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-semibold transition-all flex items-center gap-1 shadow-sm"
                     >
                         <span className="material-symbols-rounded text-xs">bolt</span>
                         Google로 계정에 저장하기

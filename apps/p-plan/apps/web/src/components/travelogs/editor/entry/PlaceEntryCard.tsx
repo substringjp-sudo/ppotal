@@ -88,7 +88,7 @@ export default function PlaceEntryCard({
                 <div className="flex items-start gap-2.5">
                     <button
                         {...dragHandleProps}
-                        className="mt-0.5 w-7 h-7 rounded-lg bg-primary/10 text-primary grid place-items-center text-[11px] font-black shrink-0 cursor-grab active:cursor-grabbing touch-none"
+                        className="mt-0.5 w-7 h-7 rounded-lg bg-primary/10 text-primary grid place-items-center text-xs font-semibold shrink-0 cursor-grab active:cursor-grabbing touch-none"
                         aria-label="순서 바꾸기"
                         title="끌어서 순서 바꾸기"
                     >
@@ -100,12 +100,12 @@ export default function PlaceEntryCard({
                             className="group/name w-full flex items-center gap-1.5 text-left rounded px-1 -mx-1 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
                             title="장소 고르기"
                         >
-                            <span className={cn('text-sm font-black truncate',
+                            <span className={cn('text-sm font-semibold truncate',
                                 place.name ? 'text-slate-900 dark:text-white' : 'text-slate-400')}>
                                 {place.name || '장소 고르기'}
                             </span>
                             {isAutoNamed && (
-                                <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 text-[9px] font-black text-amber-600 dark:text-amber-400">
+                                <span className="shrink-0 rounded-full bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
                                     확인
                                 </span>
                             )}
@@ -114,7 +114,7 @@ export default function PlaceEntryCard({
                             </span>
                         </button>
                         {(timeLabel || place.visitDate) && (
-                            <p className="mt-0.5 px-1 -mx-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 tabular-nums truncate">
+                            <p className="mt-0.5 px-1 -mx-1 text-xs font-bold uppercase tracking-widest text-slate-400 tabular-nums truncate">
                                 {[place.visitDate, timeLabel].filter(Boolean).join(' · ')}
                             </p>
                         )}
@@ -191,7 +191,7 @@ export default function PlaceEntryCard({
                     <div className="flex-1" />
                     <button
                         onClick={() => fileRef.current?.click()}
-                        className="rounded-lg px-2.5 py-1.5 text-[11px] font-black text-slate-500 hover:text-primary hover:bg-primary/5 transition flex items-center gap-1"
+                        className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-primary hover:bg-primary/5 transition flex items-center gap-1"
                     >
                         <span className="material-symbols-rounded text-base">add_photo_alternate</span>
                         사진
@@ -232,7 +232,7 @@ export default function PlaceEntryCard({
                         </datalist>
                         <button
                             onClick={onRemove}
-                            className="text-[11px] font-black text-rose-500 hover:underline flex items-center gap-1"
+                            className="text-xs font-semibold text-rose-500 hover:underline flex items-center gap-1"
                         >
                             <span className="material-symbols-rounded text-sm">delete</span>
                             이 장소 삭제

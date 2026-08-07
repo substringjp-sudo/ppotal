@@ -635,7 +635,7 @@ export default function BasicInfoEditor() {
                                                 <div className="px-2 py-0.5 bg-primary text-white text-xs font-semibold rounded-lg italic">
                                                     {scheduleSummary.nights}박 {scheduleSummary.days}일
                                                 </div>
-                                                <span className="text-[11px] font-semibold text-slate-800 dark:text-white italic">여행 일정 요약</span>
+                                                <span className="text-xs font-semibold text-slate-800 dark:text-white italic">여행 일정 요약</span>
                                             </div>
                                             {scheduleSummary.holidayCount > 0 && (
                                                 <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-50 dark:bg-red-900/30 border border-red-100 dark:border-red-800 rounded-md">
@@ -648,7 +648,7 @@ export default function BasicInfoEditor() {
                                         <div className="space-y-1">
                                             <div className="flex items-start gap-2">
                                                 <span className="material-symbols-rounded text-sm text-primary/60 shrink-0 mt-0.5">date_range</span>
-                                                <div className="text-[12px] font-bold text-slate-600 dark:text-slate-300">
+                                                <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
                                                     {scheduleSummary.dateRangeStr}
                                                 </div>
                                             </div>
@@ -656,7 +656,7 @@ export default function BasicInfoEditor() {
                                             {scheduleSummary.startTime && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="material-symbols-rounded text-sm text-primary/60 shrink-0">schedule</span>
-                                                    <div className="text-[11px] font-bold text-slate-500">
+                                                    <div className="text-xs font-bold text-slate-500">
                                                         여행의 시작: <span className="text-primary font-semibold uppercase tracking-tighter">{scheduleSummary.startTime}</span>
                                                     </div>
                                                 </div>
@@ -709,7 +709,7 @@ export default function BasicInfoEditor() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none">여행 테마</p>
-                                    <h4 className="font-bold text-[11px] text-slate-900 dark:text-white truncate">
+                                    <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">
                                         {trip.theme || "여행 스타일 선택"}
                                     </h4>
                                 </div>
@@ -778,7 +778,7 @@ export default function BasicInfoEditor() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest leading-none">동행자</p>
-                                    <h4 className="font-bold text-[11px] text-slate-900 dark:text-white truncate">
+                                    <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">
                                         {trip.participants?.length > 0 ? `${trip.participants.length}명` : "누구와 함께 하나요?"}
                                     </h4>
                                 </div>
@@ -878,7 +878,7 @@ export default function BasicInfoEditor() {
                                                 </span>
                                             ))
                                         ) : (
-                                            <h4 className="font-bold text-[11px] text-slate-400">어디로 여행을 떠나시나요?</h4>
+                                            <h4 className="font-bold text-xs text-slate-400">어디로 여행을 떠나시나요?</h4>
                                         )}
                                     </div>
                                 </div>

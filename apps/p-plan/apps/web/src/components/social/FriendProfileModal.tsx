@@ -58,7 +58,7 @@ export default function FriendProfileModal({ friend, isOpen, onClose }: FriendPr
                                     className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-900 shadow-xl bg-slate-200 bg-cover bg-center mb-4"
                                     style={{ backgroundImage: `url('${friend.photoURL || ''}')` }}
                                 />
-                                <h2 className="text-2xl font-black text-slate-900 dark:text-white">{friend.displayName}</h2>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{friend.displayName}</h2>
                                 <p className="text-sm text-slate-500 font-medium">{friend.email}</p>
                             </div>
 
@@ -66,20 +66,20 @@ export default function FriendProfileModal({ friend, isOpen, onClose }: FriendPr
                             <div className="grid grid-cols-2 gap-4 mb-8">
                                 <div className="p-4 bg-primary/5 dark:bg-primary/10 rounded-3xl border border-primary/10 flex flex-col items-center">
                                     <span className="text-xs font-bold text-primary uppercase tracking-wider mb-1">총 여행 회수</span>
-                                    <span className="text-2xl font-black text-slate-900 dark:text-white">{isLoading ? '...' : summary?.totalTrips || 0}</span>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{isLoading ? '...' : summary?.totalTrips || 0}</span>
                                 </div>
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 flex flex-col items-center">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">방문 지역</span>
-                                    <span className="text-2xl font-black text-slate-900 dark:text-white">{isLoading ? '...' : summary?.locationCount || 0}</span>
+                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{isLoading ? '...' : summary?.locationCount || 0}</span>
                                 </div>
                             </div>
 
                             {/* Recent Trips Section */}
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between px-2">
-                                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">최근 여행 활동</h3>
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-tight">최근 여행 활동</h3>
                                     {!isLoading && summary?.recentTrips?.length > 0 && (
-                                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full font-bold">Latest 3</span>
+                                        <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full font-bold">Latest 3</span>
                                     )}
                                 </div>
 
@@ -96,7 +96,7 @@ export default function FriendProfileModal({ friend, isOpen, onClose }: FriendPr
                                                 <div className="flex justify-between items-center">
                                                     <div>
                                                         <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors">{trip.title}</h4>
-                                                        <p className="text-[10px] text-slate-400">
+                                                        <p className="text-xs text-slate-400">
                                                             {trip.dates?.isUndecided ? '날짜 미정' : `${trip.dates?.startDate} ~ ${trip.dates?.endDate}`}
                                                         </p>
                                                     </div>
@@ -117,10 +117,10 @@ export default function FriendProfileModal({ friend, isOpen, onClose }: FriendPr
                             {/* Representative Regions */}
                             {!isLoading && summary?.uniqueRegions?.length > 0 && (
                                 <div className="mt-6">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">대표 방문 지역</p>
+                                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3 px-2">대표 방문 지역</p>
                                     <div className="flex flex-wrap gap-2 px-1">
                                         {summary.uniqueRegions.map((region: string) => (
-                                            <span key={region} className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-full">
+                                            <span key={region} className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
                                                 {region}
                                             </span>
                                         ))}
@@ -131,7 +131,7 @@ export default function FriendProfileModal({ friend, isOpen, onClose }: FriendPr
                             {/* Close Button */}
                             <button 
                                 onClick={onClose}
-                                className="w-full mt-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
+                                className="w-full mt-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl"
                             >
                                 닫기
                             </button>

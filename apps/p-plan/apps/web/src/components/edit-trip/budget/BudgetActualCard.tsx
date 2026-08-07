@@ -146,7 +146,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                             <select
                                 value={effectivePayer || ''}
                                 onChange={(e) => setPayerId(e.target.value || undefined)}
-                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-[11px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary"
+                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary"
                             >
                                 {participants.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                             </select>
@@ -162,7 +162,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                                     onClick={() => setCat(c.key)}
                                     aria-pressed={on}
                                     className={cn(
-                                        'inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-bold border transition-all',
+                                        'inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold border transition-all',
                                         on
                                             ? 'bg-primary/10 border-primary/30 text-primary'
                                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary/30'
@@ -179,7 +179,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                 {/* 오늘 남은 예산 게이지 */}
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-4 py-3.5">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">오늘 쓴 돈</span>
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400">오늘 쓴 돈</span>
                         <span className={cn('text-xs font-semibold tabular-nums', overDay ? 'text-rose-500' : 'text-slate-800 dark:text-slate-100')}>
                             {formatKRWMan(todaySpent)} <span className="text-slate-400 font-bold">/ {formatKRWMan(dailyCap)}</span>
                         </span>
@@ -190,7 +190,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                             style={{ width: `${dayPct}%` }}
                         />
                     </div>
-                    <p className="mt-1.5 text-[11px] font-semibold text-slate-400">
+                    <p className="mt-1.5 text-xs font-semibold text-slate-400">
                         {overDay
                             ? `오늘 예산보다 ${formatKRWMan(todaySpent - dailyCap)} 더 썼어요`
                             : `오늘 ${formatKRWMan(Math.max(0, dailyCap - todaySpent))} 남았어요`}
@@ -201,7 +201,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                 <div className="flex flex-col gap-2.5">
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-3">
                         <div>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">지금까지 쓴 총액</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">지금까지 쓴 총액</p>
                             <p className="text-xs text-slate-400">예상 총액의 {estPct}%</p>
                         </div>
                         <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">{formatKRWMan(totalSpent)}</span>
@@ -209,7 +209,7 @@ export default function BudgetActualCard({ level }: { level: DailySpendLevel }) 
                     {topCats.length > 0 && (
                         <div className="flex flex-wrap gap-x-4 gap-y-1 px-1">
                             {topCats.map(([k, v]) => (
-                                <span key={k} className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                                <span key={k} className="text-xs font-bold text-slate-500 dark:text-slate-400">
                                     {catLabel(k)} <span className="tabular-nums text-slate-700 dark:text-slate-200">{formatKRWMan(v)}</span>
                                 </span>
                             ))}

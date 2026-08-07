@@ -89,16 +89,16 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
              {isOngoing && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />}
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+             <span className="text-xs font-semibold text-slate-400 uppercase tracking-tighter">
                {formattedDate}
              </span>
           </div>
-          <h2 className="text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
             {trip.title || '제목 없는 여행'}
           </h2>
           <div className="flex flex-wrap gap-1 mt-1">
             {locations.slice(0, 3).map((loc, idx) => (
-              <span key={idx} className="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-400 text-[8px] font-bold rounded-md">
+              <span key={idx} className="px-1.5 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-400 text-xs font-bold rounded-md">
                 {loc.name}
               </span>
             ))}
@@ -107,12 +107,12 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
 
         <div className="flex items-center gap-3 pr-2">
           <div className="flex items-center gap-2">
-             <div className="flex items-center gap-1 text-[8px] font-black text-slate-400">
-               <span className="material-symbols-rounded text-[10px] text-indigo-400">flight</span>
+             <div className="flex items-center gap-1 text-xs font-semibold text-slate-400">
+               <span className="material-symbols-rounded text-xs text-indigo-400">flight</span>
                {trip.flightCount || 0}
              </div>
-             <div className="flex items-center gap-1 text-[8px] font-black text-slate-400">
-               <span className="material-symbols-rounded text-[10px] text-emerald-400">bed</span>
+             <div className="flex items-center gap-1 text-xs font-semibold text-slate-400">
+               <span className="material-symbols-rounded text-xs text-emerald-400">bed</span>
                {trip.accommodationCount || 0}
              </div>
           </div>
@@ -147,12 +147,12 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
         
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
           {isOngoing && (
-            <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[6.5px] font-black rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+            <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[6.5px] font-semibold rounded-full shadow-lg flex items-center gap-1 animate-pulse">
               진행 중
             </span>
           )}
           {daysUntil !== null && daysUntil <= 7 && (
-            <span className="px-1.5 py-0.5 bg-amber-500 text-white text-[6.5px] font-black rounded-full shadow-lg">
+            <span className="px-1.5 py-0.5 bg-amber-500 text-white text-[6.5px] font-semibold rounded-full shadow-lg">
               D-{daysUntil}
             </span>
           )}
@@ -165,15 +165,15 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
           }}
           className="absolute top-2 right-2 w-5 h-5 bg-black/20 backdrop-blur-md text-white/40 hover:text-white hover:bg-rose-500 rounded-full opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center z-10"
         >
-          <span className="material-symbols-rounded text-[10px]">delete</span>
+          <span className="material-symbols-rounded text-xs">delete</span>
         </button>
 
         <div className="absolute bottom-2 left-2 right-2 text-white">
-          <div className="flex items-center gap-1 opacity-70 font-black text-[7px] uppercase tracking-tighter mb-0.5">
-            <span className="material-symbols-rounded text-[8px]">calendar_month</span>
+          <div className="flex items-center gap-1 opacity-70 font-semibold text-xs uppercase tracking-tighter mb-0.5">
+            <span className="material-symbols-rounded text-xs">calendar_month</span>
             {formattedDate}
           </div>
-          <h2 className="text-xs font-black leading-tight line-clamp-1 drop-shadow-md group-hover:text-primary transition-colors">
+          <h2 className="text-xs font-semibold leading-tight line-clamp-1 drop-shadow-md group-hover:text-primary transition-colors">
             {trip.title || '제목 없는 여행'}
           </h2>
         </div>
@@ -182,12 +182,12 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
       <div className="p-2 flex flex-col flex-1 justify-between gap-2">
         <div className="flex flex-wrap gap-1">
           {locations.slice(0, 3).map((loc, idx) => (
-            <span key={idx} className="px-1.2 py-0.4 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[7px] font-bold uppercase rounded-md tracking-tighter truncate max-w-[60px]">
+            <span key={idx} className="px-1.2 py-0.4 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-bold uppercase rounded-md tracking-tighter truncate max-w-[60px]">
               {loc.name}
             </span>
           ))}
           {locations.length > 3 && (
-            <span className="px-1.2 py-0.4 bg-slate-50 dark:bg-slate-800/50 text-slate-300 text-[7px] font-bold rounded-md">
+            <span className="px-1.2 py-0.4 bg-slate-50 dark:bg-slate-800/50 text-slate-300 text-xs font-bold rounded-md">
               +{locations.length - 3}
             </span>
           )}
@@ -196,22 +196,22 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
         <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <div className="flex gap-1.5">
-                <div className="flex items-center gap-1 text-[7.5px] font-black text-slate-400">
-                    <span className="material-symbols-rounded text-[9px] text-indigo-400">flight</span>
+                <div className="flex items-center gap-1 text-[7.5px] font-semibold text-slate-400">
+                    <span className="material-symbols-rounded text-xs text-indigo-400">flight</span>
                     {trip.flightCount || 0}
                 </div>
-                <div className="flex items-center gap-1 text-[7.5px] font-black text-slate-400">
-                    <span className="material-symbols-rounded text-[9px] text-emerald-400">bed</span>
+                <div className="flex items-center gap-1 text-[7.5px] font-semibold text-slate-400">
+                    <span className="material-symbols-rounded text-xs text-emerald-400">bed</span>
                     {trip.accommodationCount || 0}
                 </div>
             </div>
           </div>
           <motion.div 
             whileHover={{ x: 2 }}
-            className="flex items-center gap-1 text-primary/40 group-hover:text-primary transition-colors font-black text-[7.5px] uppercase"
+            className="flex items-center gap-1 text-primary/40 group-hover:text-primary transition-colors font-semibold text-[7.5px] uppercase"
           >
             이동
-            <span className="material-symbols-rounded text-[9px]">east</span>
+            <span className="material-symbols-rounded text-xs">east</span>
           </motion.div>
         </div>
       </div>
@@ -348,11 +348,11 @@ export default function TripListPage() {
         <div className="w-20 h-20 rounded-[20px] bg-primary/10 flex items-center justify-center text-primary mb-8">
           <span className="material-symbols-rounded text-4xl">travel_explore</span>
         </div>
-        <h1 className="text-3xl font-black mb-4 tracking-tighter">나만의 여행을 <span className="text-primary italic">시작하세요</span></h1>
+        <h1 className="text-3xl font-bold mb-4 tracking-tighter">나만의 여행을 <span className="text-primary italic">시작하세요</span></h1>
         <p className="text-slate-400 font-bold mb-8 max-w-sm">로그인하여 당신의 여행을 블로그처럼 아름답게 남겨보세요.</p>
         <button
           onClick={() => loginWithGoogle()}
-          className="px-8 py-4 bg-primary text-white font-black rounded-2xl transition-all shadow-xl shadow-primary/30"
+          className="px-8 py-4 bg-primary text-white font-semibold rounded-2xl transition-all shadow-xl shadow-primary/30"
         >
           Google 로그인
         </button>
@@ -386,15 +386,15 @@ export default function TripListPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => router.push('/stats')}
-                className="hidden sm:flex h-7 px-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-black text-[9px] uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all items-center gap-2 shadow-lg"
+                className="hidden sm:flex h-7 px-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-semibold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all items-center gap-2 shadow-lg"
               >
-                <span className="material-symbols-rounded text-xs font-black text-primary">insights</span>
+                <span className="material-symbols-rounded text-xs font-semibold text-primary">insights</span>
                 <span className="hidden lg:inline">여행 인사이트</span>
               </button>
               
               <button
                 onClick={() => openWizard()}
-                className="h-7 px-3 bg-primary text-white rounded-full font-black text-[9px] uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                className="h-7 px-3 bg-primary text-white rounded-full font-semibold text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
               >
                 <Plus size={12} strokeWidth={2.5} />
                 <span>새 여행 계획</span>
@@ -443,7 +443,7 @@ export default function TripListPage() {
               <button 
                 onClick={() => setIsSelectionMode(!isSelectionMode)}
                 className={cn(
-                  "h-7 px-2.5 rounded-full font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-2 border",
+                  "h-7 px-2.5 rounded-full font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-2 border",
                   isSelectionMode 
                     ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                     : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:text-primary"
@@ -455,7 +455,7 @@ export default function TripListPage() {
               <button 
                 onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
                 className={cn(
-                  "h-7 px-2.5 rounded-full font-black text-[9px] uppercase tracking-wider transition-all flex items-center gap-2 border",
+                  "h-7 px-2.5 rounded-full font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-2 border",
                   isFiltersExpanded 
                     ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" 
                     : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:text-primary"
@@ -471,14 +471,14 @@ export default function TripListPage() {
           <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-[20px] border border-slate-200/50 dark:border-slate-800 shadow-sm">
             <div className="flex flex-wrap items-center gap-6">
               <div className="space-y-1.5">
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">지역</label>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">지역</label>
                 <div className="flex items-center gap-1">
                   {['전체', '국내', '해외'].map(region => (
                     <button 
                       key={region}
                       onClick={() => setSelectedRegion(region)}
                       className={cn(
-                        "px-3 py-1.5 rounded-lg text-[9px] font-black transition-all border shadow-sm",
+                        "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border shadow-sm",
                         selectedRegion === region 
                           ? "bg-primary text-white border-primary" 
                           : "bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-600"
@@ -500,7 +500,7 @@ export default function TripListPage() {
               className="flex flex-col items-center justify-center py-40"
             >
               <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">데이터를 불러오는 중...</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">데이터를 불러오는 중...</p>
             </motion.div>
           ) : displayedItems.length === 0 ? (
             <motion.div 
@@ -510,7 +510,7 @@ export default function TripListPage() {
               <div className="w-32 h-32 bg-slate-50 dark:bg-slate-900 rounded-[20px] flex items-center justify-center mb-8">
                 <span className="material-symbols-rounded text-5xl text-primary/20">explore</span>
               </div>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 italic">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 italic">
                 {searchQuery ? '검색 결과가 없습니다' : '여행 갤러리가 비어 있습니다'}
               </h3>
               <p className="text-sm text-slate-400 font-bold mb-8">
@@ -520,7 +520,7 @@ export default function TripListPage() {
               </p>
               <button 
                 onClick={() => openWizard()}
-                className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs hover:scale-105 transition-all"
+                className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-semibold text-xs hover:scale-105 transition-all"
               >
                 첫 여행 계획하기
               </button>
@@ -537,7 +537,7 @@ export default function TripListPage() {
               {(activeTab === 'all' || activeTab === 'ongoing') && categories.ongoing.length > 0 && (
                 <div>
                   <div className="flex items-center gap-4 mb-6 px-4">
-                    <h3 className="text-sm font-black text-rose-500 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-rose-500 uppercase tracking-widest flex items-center gap-2">
                         <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
                         진행 중인 여행
                     </h3>
@@ -552,7 +552,7 @@ export default function TripListPage() {
               {(activeTab === 'all' || activeTab === 'upcoming') && categories.upcoming.length > 0 && (
                 <div>
                   <div className="flex items-center gap-4 mb-6 px-4">
-                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-2">
                         <span className="material-symbols-rounded text-primary text-lg">calendar_today</span>
                         예정된 여행
                     </h3>
@@ -567,7 +567,7 @@ export default function TripListPage() {
               {(activeTab === 'all' || activeTab === 'past') && categories.past.length > 0 && (
                 <div>
                   <div className="flex items-center gap-4 mb-6 px-4">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <span className="material-symbols-rounded text-lg">history</span>
                         지난 여행
                     </h3>

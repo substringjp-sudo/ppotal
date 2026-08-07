@@ -43,7 +43,7 @@ export default function ActivityDetailSheet({
                 >
                     <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="min-w-0 flex-1">
-                            <span className="inline-block text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full mb-1.5">
+                            <span className="inline-block text-xs font-semibold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-full mb-1.5">
                                 {TYPE_LABEL[activity.type] || activity.type}
                             </span>
                             {editing ? (
@@ -53,11 +53,11 @@ export default function ActivityDetailSheet({
                                     onChange={(e) => setTitle(e.target.value)}
                                     onBlur={() => { setEditing(false); onRename(activity, title.trim()); }}
                                     onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                                    className="w-full text-lg font-black text-slate-900 dark:text-white bg-transparent border-b-2 border-primary/40 focus:outline-none"
+                                    className="w-full text-lg font-semibold text-slate-900 dark:text-white bg-transparent border-b-2 border-primary/40 focus:outline-none"
                                 />
                             ) : (
                                 <button onClick={() => setEditing(true)} className="text-left group">
-                                    <h3 className="text-lg font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
                                         {activity.title || activity.places[0]?.name || '이름 없는 활동'}
                                     </h3>
                                 </button>
@@ -101,14 +101,14 @@ export default function ActivityDetailSheet({
                     <div className="flex gap-2">
                         <button
                             onClick={() => onDelete(activity)}
-                            className="px-4 py-3 rounded-2xl text-sm font-black text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            className="px-4 py-3 rounded-2xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                         >
                             삭제
                         </button>
                         <button
                             onClick={() => onWriteTravelog(activity)}
                             className={cn(
-                                'flex-1 py-3 rounded-2xl bg-primary text-white text-sm font-black hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5',
+                                'flex-1 py-3 rounded-2xl bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5',
                             )}
                         >
                             <span className="material-symbols-rounded text-base">auto_stories</span>

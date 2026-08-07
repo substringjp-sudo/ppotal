@@ -76,11 +76,11 @@ export default function AboutShowcase() {
                     <motion.span
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4 inline-block"
+                        className="text-xs font-semibold text-primary uppercase tracking-[0.3em] mb-4 inline-block"
                     >
                         무엇을 확인해주나요
                     </motion.span>
-                    <h2 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+                    <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white leading-tight">
                         여행자가 놓치기 쉬운 것들을<br />앱이 대신 확인합니다
                     </h2>
                     <p className="mt-6 text-slate-500 font-medium">스크롤을 내려 각 점검 항목을 자세히 살펴보세요.</p>
@@ -97,7 +97,7 @@ export default function AboutShowcase() {
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.9, y: -30 }}
                                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                    className={`absolute inset-0 bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl p-10 flex items-center justify-center border-2 ${activeData.borderColor}`}
+                                    className={`absolute inset-0 bg-white dark:bg-slate-900 rounded-[20px] shadow-2xl p-10 flex items-center justify-center border-2 ${activeData.borderColor}`}
                                 >
                                     {activeTab === 'conflict' && <ConflictMockup />}
                                     {activeTab === 'logistics' && <LogisticsMockup />}
@@ -137,11 +137,11 @@ function ContentSection({ data, onInView }: { data: typeof SHOWCASE_DATA[0]; onI
     return (
         <div ref={ref} className={`space-y-8 py-20 transition-opacity duration-500 ${isInView ? 'opacity-100' : 'opacity-30'}`}>
             <div className="space-y-6">
-                <span className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest inline-flex items-center gap-2 bg-white dark:bg-slate-800 shadow-sm border ${data.borderColor} ${data.color}`}>
+                <span className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-widest inline-flex items-center gap-2 bg-white dark:bg-slate-800 shadow-sm border ${data.borderColor} ${data.color}`}>
                     {data.icon}
                     {data.label}
                 </span>
-                <h3 className="text-4xl font-black text-slate-900 dark:text-white leading-tight">{data.title}</h3>
+                <h3 className="text-4xl font-bold text-slate-900 dark:text-white leading-tight">{data.title}</h3>
                 <p className="text-lg text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{data.description}</p>
             </div>
 
@@ -172,7 +172,7 @@ function ConflictMockup() {
         <div className="w-full space-y-5">
             <div className="rounded-3xl border border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-900/15 p-5">
                 <div className="flex items-start gap-3">
-                    <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                    <span className="shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
                         확인 필요
                     </span>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
@@ -182,7 +182,7 @@ function ConflictMockup() {
             </div>
             <div className="rounded-3xl border border-amber-200 bg-amber-50 dark:border-amber-900/30 dark:bg-amber-900/15 p-5">
                 <div className="flex items-start gap-3">
-                    <span className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    <span className="shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                         참고
                     </span>
                     <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
@@ -202,7 +202,7 @@ function LogisticsMockup() {
                     <Plane className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">환승 경고</p>
+                    <p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-1">환승 경고</p>
                     <p className="text-sm font-bold dark:text-white">LGW 도착 → LHR 출발, 공항이 달라요</p>
                 </div>
             </div>
@@ -211,7 +211,7 @@ function LogisticsMockup() {
                     <Bed className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">숙소 공백</p>
+                    <p className="text-xs font-semibold text-indigo-500 uppercase tracking-widest mb-1">숙소 공백</p>
                     <p className="text-sm font-bold dark:text-white">8/3 밤에 예약된 숙소가 없어요</p>
                 </div>
             </div>
@@ -227,7 +227,7 @@ function ReservationMockup() {
                     <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">미예약</p>
+                    <p className="text-xs font-semibold text-amber-500 uppercase tracking-widest mb-1">미예약</p>
                     <p className="text-sm font-bold dark:text-white">'디즈니랜드 입장권'이 아직 예약 전이에요</p>
                 </div>
             </div>
@@ -236,7 +236,7 @@ function ReservationMockup() {
                     <ClipboardCheck className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                    <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">확인 완료</p>
+                    <p className="text-xs font-semibold text-emerald-500 uppercase tracking-widest mb-1">확인 완료</p>
                     <p className="text-sm font-bold dark:text-white">오마카세 예약, 일정 충돌 없음</p>
                 </div>
             </div>
@@ -261,7 +261,7 @@ function PrepMockup() {
                     className="flex items-center justify-between bg-white dark:bg-slate-950 rounded-2xl p-4 shadow-sm ring-1 ring-slate-200 dark:ring-white/10"
                 >
                     <p className="text-sm font-bold dark:text-white">{item.label}</p>
-                    <span className={`text-xs font-black px-2.5 py-1 rounded-full ${item.ok ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${item.ok ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
                         {item.status}
                     </span>
                 </motion.div>
@@ -274,17 +274,17 @@ function LiveInfoMockup() {
     return (
         <div className="w-full grid grid-cols-2 gap-4">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="col-span-2 bg-sky-500 text-white rounded-3xl p-6 shadow-xl">
-                <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest mb-1">현지 연휴 안내</p>
-                <p className="text-sm font-black">골든위크 기간이에요 · 숙소가 아직 미확정입니다</p>
+                <p className="text-xs font-bold opacity-70 uppercase tracking-widest mb-1">현지 연휴 안내</p>
+                <p className="text-sm font-semibold">골든위크 기간이에요 · 숙소가 아직 미확정입니다</p>
             </motion.div>
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-white dark:bg-slate-950 rounded-3xl p-5 shadow-sm ring-1 ring-slate-200 dark:ring-white/10">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">날씨</p>
-                <p className="text-2xl font-black dark:text-white">28°C</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">날씨</p>
+                <p className="text-2xl font-bold dark:text-white">28°C</p>
                 <p className="text-xs text-slate-400 font-bold">여행 기간 평균</p>
             </motion.div>
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2 }} className="bg-white dark:bg-slate-950 rounded-3xl p-5 shadow-sm ring-1 ring-slate-200 dark:ring-white/10">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">환율</p>
-                <p className="text-2xl font-black dark:text-white">¥100</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">환율</p>
+                <p className="text-2xl font-bold dark:text-white">¥100</p>
                 <p className="text-xs text-slate-400 font-bold">≈ 920원</p>
             </motion.div>
         </div>

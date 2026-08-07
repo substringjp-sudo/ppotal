@@ -41,7 +41,7 @@ export default function TripSelectModal({ isOpen, onClose, trips, onSelect }: Tr
                         <div>
                             <div className="flex items-center gap-2 mb-0.5">
                                 <span className="material-symbols-rounded text-xl text-primary">auto_stories</span>
-                                <h2 className="text-lg font-black text-slate-900 dark:text-white">여행 계획에서 기록 생성</h2>
+                                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">여행 계획에서 기록 생성</h2>
                             </div>
                             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-7">
                                 완료된 여행 계획을 선택하여 멋진 여행기를 시작해보세요.
@@ -90,10 +90,10 @@ export default function TripSelectModal({ isOpen, onClose, trips, onSelect }: Tr
 
                                         {/* Info */}
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
+                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
                                                 {trip.title}
                                             </h3>
-                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs font-bold text-slate-400 uppercase tracking-tight">
                                                 <div className="flex items-center gap-1">
                                                     <Calendar className="w-3 h-3" />
                                                     {format(parseISO(trip.dates.startDate), 'yyyy.MM.dd')}
@@ -107,18 +107,18 @@ export default function TripSelectModal({ isOpen, onClose, trips, onSelect }: Tr
                                             {/* Stats summary */}
                                             <div className="flex items-center gap-3 mt-2">
                                                 {trip.flightCount !== undefined && trip.flightCount > 0 && (
-                                                    <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
+                                                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-400">
                                                         <Plane className="w-2.5 h-2.5" />
                                                         {trip.flightCount}
                                                     </div>
                                                 )}
                                                 {trip.accommodationCount !== undefined && trip.accommodationCount > 0 && (
-                                                    <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
+                                                    <div className="flex items-center gap-1 text-xs font-semibold text-slate-400">
                                                         <Building className="w-2.5 h-2.5" />
                                                         {trip.accommodationCount}
                                                     </div>
                                                 )}
-                                                <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
+                                                <div className="flex items-center gap-1 text-xs font-semibold text-slate-400">
                                                     <Activity className="w-2.5 h-2.5" />
                                                     PLAN READY
                                                 </div>

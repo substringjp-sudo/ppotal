@@ -92,7 +92,7 @@ export function RegionSearchInput({
 
     return (
         <div className={cn("space-y-1.5 relative", className)} ref={containerRef}>
-            {label && <label className="text-[10px] font-black text-slate-400 uppercase ml-1">{label}</label>}
+            {label && <label className="text-xs font-semibold text-slate-400 uppercase ml-1">{label}</label>}
             <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-primary text-slate-400">
                     <Search className="w-4 h-4" />
@@ -149,7 +149,7 @@ export function RegionSearchInput({
                                                 {result.name}
                                             </span>
                                             <span className={cn(
-                                                "text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
+                                                "text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-tighter",
                                                 result.type === 'country' ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" :
                                                 result.type === 'prefecture' ? "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" :
                                                 "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
@@ -157,7 +157,7 @@ export function RegionSearchInput({
                                                 {result.type === 'country' ? '국가' : result.type === 'prefecture' ? '주/도' : '도시'}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 font-bold truncate mt-0.5">{result.fullName}</p>
+                                        <p className="text-xs text-slate-400 font-bold truncate mt-0.5">{result.fullName}</p>
                                     </div>
                                 </button>
                             ))}

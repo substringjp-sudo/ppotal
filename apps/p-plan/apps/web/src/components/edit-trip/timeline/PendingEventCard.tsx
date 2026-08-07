@@ -164,7 +164,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                         <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
                                                 <span className="text-xs font-bold text-slate-400 leading-none mb-0.5">DEP</span>
-                                                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">{flightDep}</span>
+                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{flightDep}</span>
                                             </div>
                                             <div className="flex flex-col items-center gap-0.5 px-2">
                                                 <div className="w-8 h-[1px] bg-slate-300 dark:bg-slate-700 relative">
@@ -174,7 +174,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                                             </div>
                                             <div className="flex flex-col text-right">
                                                 <span className="text-xs font-bold text-slate-400 leading-none mb-0.5">ARR</span>
-                                                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">{flightArr}</span>
+                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{flightArr}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -276,7 +276,7 @@ export default function PendingEventCard({ event, onConfirm }: PendingEventCardP
                             
                             <button 
                                 onClick={handleConfirm}
-                                className="w-full py-3 bg-primary text-white rounded-2xl text-[11px] font-semibold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                className="w-full py-3 bg-primary text-white rounded-2xl text-xs font-semibold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                             >
                                 일정 확정 및 타임라인 반영
                             </button>

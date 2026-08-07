@@ -42,7 +42,7 @@ function CountryItem({ country }: { country: MasteryLevel }) {
                         <span className="material-symbols-rounded text-emerald-600 dark:text-emerald-400">flag</span>
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                             {country.name}
                             {country.isMastered && (
                                 <span className="material-symbols-rounded text-emerald-500 text-sm">verified</span>
@@ -56,7 +56,7 @@ function CountryItem({ country }: { country: MasteryLevel }) {
                                     className="h-full bg-emerald-500"
                                 />
                             </div>
-                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">
+                            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">
                                 {Math.round((country.xp / country.maxXp) * 100)}% Mastered
                             </span>
                         </div>
@@ -65,7 +65,7 @@ function CountryItem({ country }: { country: MasteryLevel }) {
                 <div className="flex items-center gap-4">
                     <div className="text-right hidden sm:block">
                         <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Total XP</div>
-                        <div className="text-sm font-black text-slate-700 dark:text-slate-300">{Math.round(country.xp).toLocaleString()}</div>
+                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{Math.round(country.xp).toLocaleString()}</div>
                     </div>
                     <span className={`material-symbols-rounded text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
                         expand_more
@@ -86,7 +86,7 @@ function CountryItem({ country }: { country: MasteryLevel }) {
                             
                             {sortedPrefs.length > 0 && (
                                 <div className="mt-8 space-y-3">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Detailed Regions</h4>
+                                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Detailed Regions</h4>
                                     {sortedPrefs.map((pref) => (
                                         <PrefectureItem key={pref.id} pref={pref} countryId={country.id} />
                                     ))}
@@ -113,7 +113,7 @@ function PrefectureItem({ pref, countryId }: { pref: MasteryLevel, countryId: st
                 <div className="flex items-center gap-3">
                     <span className="material-symbols-rounded text-slate-400 text-sm">location_on</span>
                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{pref.name}</span>
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter ml-2">
+                    <span className="text-xs font-semibold text-emerald-500 uppercase tracking-tighter ml-2">
                         {Math.round((pref.xp / pref.maxXp) * 100)}%
                     </span>
                 </div>
@@ -136,12 +136,12 @@ function PrefectureItem({ pref, countryId }: { pref: MasteryLevel, countryId: st
 
                         {sortedCities.length > 0 && (
                             <div className="space-y-2">
-                                <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-2">Visited Cities</h5>
+                                <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-widest pl-2">Visited Cities</h5>
                                 <div className="flex flex-wrap gap-2">
                                     {sortedCities.map((city) => (
                                         <div key={city.id} className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-full border border-emerald-100 dark:border-emerald-800/50 flex items-center gap-2">
                                             <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{city.name}</span>
-                                            <span className="text-[9px] font-black text-emerald-500/50">{Math.round(city.xp)} XP</span>
+                                            <span className="text-xs font-semibold text-emerald-500/50">{Math.round(city.xp)} XP</span>
                                         </div>
                                     ))}
                                 </div>
@@ -170,9 +170,9 @@ function StatsGrid({ stats, compact = false }: { stats?: any, compact?: boolean 
                 <div key={item.label} className="flex flex-col">
                     <div className="flex items-center gap-1.5 mb-1">
                         <span className="material-symbols-rounded text-[14px] text-slate-400">{item.icon}</span>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{item.label}</span>
                     </div>
-                    <div className={`${compact ? 'text-sm' : 'text-lg'} font-black text-slate-800 dark:text-slate-100`}>
+                    <div className={`${compact ? 'text-sm' : 'text-lg'} font-semibold text-slate-800 dark:text-slate-100`}>
                         {item.value}
                     </div>
                 </div>
@@ -181,26 +181,26 @@ function StatsGrid({ stats, compact = false }: { stats?: any, compact?: boolean 
             {!compact && (stats.airports?.length > 0 || stats.accommodations?.length > 0) && (
                 <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 py-4 border-t border-slate-200 dark:border-slate-800">
                     <div>
-                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                             <span className="material-symbols-rounded text-[14px]">flight_land</span>
                             Airports
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                             {stats.airports.map((p: string, i: number) => (
-                                <span key={i} className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                                <span key={i} className="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">
                                     {p}
                                 </span>
                             ))}
                         </div>
                     </div>
                     <div>
-                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                             <span className="material-symbols-rounded text-[14px]">hotel</span>
                             Accommodations
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                             {stats.accommodations.map((a: string, i: number) => (
-                                <span key={i} className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 truncate max-w-[150px]">
+                                <span key={i} className="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300 truncate max-w-[150px]">
                                     {a}
                                 </span>
                             ))}

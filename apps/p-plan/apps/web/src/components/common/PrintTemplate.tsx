@@ -176,7 +176,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                 <span className={cn("text-xs font-bold uppercase tracking-[0.4em] mb-4 block", theme.accent)}>여행 계획</span>
                 <h1 className={cn("text-5xl font-light tracking-tight mb-8", theme.primary)}>{trip.title}</h1>
                 <div className={cn("h-0.5 w-12 mb-12", theme.accent.replace('text-', 'bg-'))} />
-                <div className={cn("grid grid-cols-3 gap-12 text-[11px] uppercase tracking-widest font-bold", theme.secondary)}>
+                <div className={cn("grid grid-cols-3 gap-12 text-xs uppercase tracking-widest font-bold", theme.secondary)}>
                     <div>
                         <div className="mb-2 opacity-50">날짜</div>
                         <div className={theme.primary}>{startDate}</div>
@@ -274,7 +274,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                         <div className={cn("font-semibold italic", theme.primary)}>{r.date.slice(5).replace('-','.')}</div>
                         <div className={cn("text-xs font-bold opacity-60", theme.secondary)}>{r.time || '하루 종일'}</div>
                       </td>
-                      <td className="py-4 px-4 overflow-hidden"><span className="mr-1.5">{r.typeIcon}</span><span className="font-bold text-[11px]">{r.type}</span></td>
+                      <td className="py-4 px-4 overflow-hidden"><span className="mr-1.5">{r.typeIcon}</span><span className="font-bold text-xs">{r.type}</span></td>
                       <td className="py-4 px-4">
                         <div className={cn("font-bold text-sm", theme.primary)}>{r.title}</div>
                         {r.location && <div className={cn("text-xs mt-0.5 font-semibold opacity-60", theme.secondary)}>{r.location}</div>}
@@ -298,7 +298,7 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                   </div>
                   <div className={cn("flex-1 p-4 rounded-2xl bg-white dark:bg-slate-800/40 border shadow-sm group-hover:shadow-md transition-all", theme.border)}>
                      <h3 className={cn("text-base font-semibold italic", theme.primary)}>{r.title}</h3>
-                     {r.location && <p className={cn("text-[11px] font-bold mt-1.5 flex items-center gap-1", theme.secondary)}><span className="material-symbols-rounded text-[14px]">location_on</span>{r.location}</p>}
+                     {r.location && <p className={cn("text-xs font-bold mt-1.5 flex items-center gap-1", theme.secondary)}><span className="material-symbols-rounded text-[14px]">location_on</span>{r.location}</p>}
                      {r.memo && <p className={cn("text-xs mt-3 opacity-80 border-l-2 pl-3 py-1 italic", theme.border, theme.text)}>{r.memo}</p>}
                   </div>
                </div>

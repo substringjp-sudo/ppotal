@@ -180,10 +180,10 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
                                             {isHovered && !isEditing && (
                                                 <>
                                                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="absolute -left-2 bottom-full mb-1.5 z-[40]">
-                                                        <div className="bg-primary text-white text-[7px] font-semibold px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">IN {acc.checkInTime || '15:00'}</div>
+                                                        <div className="bg-primary text-white text-xs font-semibold px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">IN {acc.checkInTime || '15:00'}</div>
                                                     </motion.div>
                                                     <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="absolute -right-2 bottom-full mb-1.5 z-[40]">
-                                                        <div className="bg-primary text-white text-[7px] font-semibold px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">OUT {acc.checkOutTime || '11:00'}</div>
+                                                        <div className="bg-primary text-white text-xs font-semibold px-1.5 py-0.5 rounded-sm shadow-md whitespace-nowrap uppercase">OUT {acc.checkOutTime || '11:00'}</div>
                                                     </motion.div>
 
                                                     <motion.div
@@ -198,22 +198,22 @@ export const AccommodationTimeline: React.FC<AccommodationTimelineProps> = ({
                                                                     <span className="material-symbols-rounded text-[18px]">{typeInfo?.icon || 'home'}</span>
                                                                 </div>
                                                                 <div className="flex-1 min-w-0 text-left">
-                                                                    <div className="text-[11px] font-semibold text-white truncate uppercase tracking-tight">{acc.name || '미지정 숙소'}</div>
+                                                                    <div className="text-xs font-semibold text-white truncate uppercase tracking-tight">{acc.name || '미지정 숙소'}</div>
                                                                     <div className="text-xs font-bold text-slate-400 truncate uppercase">{typeInfo?.label || '기타'}</div>
                                                                 </div>
                                                             </div>
                                                                  <div className="space-y-1.5 pt-2 border-t border-slate-700/50 text-left">
                                                                     <div className="flex items-center gap-1.5">
-                                                                        <span className="material-symbols-rounded text-[12px] text-slate-500">place</span>
+                                                                        <span className="material-symbols-rounded text-xs text-slate-500">place</span>
                                                                         <span className="text-xs font-bold text-slate-300 truncate tracking-tighter uppercase">{getRegionPath(acc) || acc.location || '지역 정보 없음'}</span>
                                                                     </div>
                                                                     {!(acc.isPriceUndecided || !acc.price) && (
                                                                         <div className="flex items-center justify-between">
                                                                             <div className="flex items-center gap-1.5">
-                                                                                <span className="material-symbols-rounded text-[12px] text-slate-500">payments</span>
+                                                                                <span className="material-symbols-rounded text-xs text-slate-500">payments</span>
                                                                                 <span className="text-xs font-semibold text-primary">{`${acc.price.toLocaleString()}원`}</span>
                                                                             </div>
-                                                                            {acc.status === 'booked' && <span className="text-[7px] font-semibold bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase tracking-widest leading-none">BOOKED</span>}
+                                                                            {acc.status === 'booked' && <span className="text-xs font-semibold bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase tracking-widest leading-none">BOOKED</span>}
                                                                         </div>
                                                                     )}
                                                                 </div>

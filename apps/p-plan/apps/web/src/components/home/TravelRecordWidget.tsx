@@ -26,13 +26,13 @@ export default function TravelRecordWidget({ travelogs, stats, itemVariants }: T
                         <span className="material-symbols-rounded text-base">auto_stories</span>
                     </div>
                     <div>
-                        <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight italic">Travel Journals</h3>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{travelogs.length} Memories</p>
+                        <h3 className="text-xs font-semibold text-slate-800 dark:text-white uppercase tracking-tight italic">Travel Journals</h3>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{travelogs.length} Memories</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-50 dark:bg-slate-800 rounded-full">
                     <span className="w-1 h-1 bg-emerald-500 rounded-full" />
-                    <span className="text-[8px] font-black text-slate-500">{publishedCount} Published</span>
+                    <span className="text-xs font-semibold text-slate-500">{publishedCount} Published</span>
                 </div>
             </div>
 
@@ -48,15 +48,15 @@ export default function TravelRecordWidget({ travelogs, stats, itemVariants }: T
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-2.5 left-2.5 right-2.5">
-                            <h4 className="text-xs font-black text-white line-clamp-1">{latestLog.title}</h4>
-                            <p className="text-[9px] text-white/70 font-bold mt-0.5">
+                            <h4 className="text-xs font-semibold text-white line-clamp-1">{latestLog.title}</h4>
+                            <p className="text-xs text-white/70 font-bold mt-0.5">
                                 {format(parseISO(latestLog.createdAt), 'MMM dd, yyyy')}
                             </p>
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between text-[9px] font-black uppercase text-slate-400">
+                        <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-400">
                             <span>Overall Mastery</span>
                             <span className="text-primary italic">{Math.round(stats?.breakdown?.averageProgress || 0)}% Mastery</span>
                         </div>
@@ -74,14 +74,14 @@ export default function TravelRecordWidget({ travelogs, stats, itemVariants }: T
                     <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-200 mb-3">
                         <span className="material-symbols-rounded text-2xl">edit_note</span>
                     </div>
-                    <h4 className="text-xs font-black text-slate-900 dark:text-white mb-1 italic">No records found</h4>
-                    <p className="text-[10px] text-slate-400 font-bold max-w-[160px]">
+                    <h4 className="text-xs font-semibold text-slate-900 dark:text-white mb-1 italic">No records found</h4>
+                    <p className="text-xs text-slate-400 font-bold max-w-[160px]">
                         Start journaling your recent trips to keep the memories alive.
                     </p>
                 </div>
             )}
 
-            <button className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+            <button className="mt-4 w-full py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
                 View All Journals
             </button>
         </motion.div>

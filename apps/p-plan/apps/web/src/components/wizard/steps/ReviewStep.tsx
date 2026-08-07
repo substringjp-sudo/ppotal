@@ -18,10 +18,10 @@ export default function ReviewStep() {
 
     return (
         <div className="space-y-10">
-            <div className="p-10 bg-primary/5 dark:bg-primary/10 rounded-[3rem] border-2 border-primary/10 relative overflow-hidden text-center">
+            <div className="p-10 bg-primary/5 dark:bg-primary/10 rounded-[20px] border-2 border-primary/10 relative overflow-hidden text-center">
                 <div className="relative z-10 max-w-2xl mx-auto">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-4">나만의 여행 노트 시작하기</p>
-                    <h2 className="text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-8 leading-tight">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-[0.3em] mb-4">나만의 여행 노트 시작하기</p>
+                    <h2 className="text-5xl font-bold text-slate-900 dark:text-white tracking-tight mb-8 leading-tight">
                         {isLocationUndecided ? '어디든' : (locations[0] || '미지의')} {theme || '낭만'} 여행
                     </h2>
                     <div className="flex items-center justify-center gap-6 text-sm font-bold text-slate-500">
@@ -51,15 +51,15 @@ export default function ReviewStep() {
                 ].map(item => (
                     <div 
                         key={item.label} 
-                        className="p-6 bg-white dark:bg-slate-900 rounded-[2rem] flex items-center gap-5 border border-slate-200 dark:border-slate-800 shadow-sm"
+                        className="p-6 bg-white dark:bg-slate-900 rounded-[20px] flex items-center gap-5 border border-slate-200 dark:border-slate-800 shadow-sm"
                         aria-label={`${item.label}: ${item.value}`}
                     >
                         <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary border border-slate-200 dark:border-slate-700">
                             <span className="material-symbols-rounded text-2xl" aria-hidden="true">{item.icon}</span>
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
-                            <p className="text-base font-black text-slate-900 dark:text-white">{item.value}</p>
+                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                            <p className="text-base font-semibold text-slate-900 dark:text-white">{item.value}</p>
                         </div>
                     </div>
                 ))}
@@ -67,8 +67,8 @@ export default function ReviewStep() {
 
             <div className="p-8 bg-slate-900 dark:bg-white rounded-[2.5rem] flex items-center justify-between group overflow-hidden relative">
                 <div className="relative z-10">
-                    <h4 className="text-white dark:text-slate-900 text-lg font-black mb-1">이제 직접 하나씩 채워나갈 차례예요</h4>
-                    <p className="text-white/60 dark:text-slate-500 text-[11px] font-bold">노트 시작하기를 누르면 나만의 여행 노트가 펼쳐집니다.</p>
+                    <h4 className="text-white dark:text-slate-900 text-lg font-semibold mb-1">이제 직접 하나씩 채워나갈 차례예요</h4>
+                    <p className="text-white/60 dark:text-slate-500 text-xs font-bold">노트 시작하기를 누르면 나만의 여행 노트가 펼쳐집니다.</p>
                 </div>
                 <div className="w-16 h-16 rounded-full bg-white/10 dark:bg-slate-900/10 flex items-center justify-center text-white dark:text-slate-900 relative z-10 transition-transform group-hover:scale-110">
                     <span className="material-symbols-rounded text-3xl">edit_note</span>

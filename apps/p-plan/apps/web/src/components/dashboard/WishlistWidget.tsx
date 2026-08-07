@@ -95,7 +95,7 @@ export default function WishlistWidget() {
                         <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300" aria-hidden="true">
                             <Plus className="w-6 h-6" />
                         </div>
-                        <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-widest leading-relaxed">
+                        <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest leading-relaxed">
                             하고 싶은 것들을 <br />
                             리스트에 담아보세요
                         </p>

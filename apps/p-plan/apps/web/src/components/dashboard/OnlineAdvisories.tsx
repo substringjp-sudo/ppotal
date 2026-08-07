@@ -88,7 +88,7 @@ export default function OnlineAdvisories() {
                             {a.message}
                         </p>
                         {a.suggestion && (
-                            <p className="mt-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                            <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
                                 {a.suggestion}
                             </p>
                         )}

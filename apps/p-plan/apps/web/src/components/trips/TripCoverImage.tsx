@@ -76,14 +76,14 @@ export default function TripCoverImage({ trip, className = '', showTitle = true 
       
       {showTitle && (
         <div className="absolute bottom-0 left-0 right-0 z-10 p-5 pt-8 bg-gradient-to-t from-black/60 to-transparent backdrop-blur-[2px]">
-          <h3 className="text-xl font-black text-white truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mb-1">{trip.title}</h3>
+          <h3 className="text-xl font-bold text-white truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mb-1">{trip.title}</h3>
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] text-white font-black drop-shadow-sm flex items-center gap-1.5 bg-black/40 w-fit px-2.5 py-1.5 rounded-xl backdrop-blur-md border border-white/5 whitespace-nowrap overflow-hidden shadow-lg">
-              <span className="material-symbols-rounded text-[11px] text-primary">calendar_month</span>
+            <p className="text-xs text-white font-semibold drop-shadow-sm flex items-center gap-1.5 bg-black/40 w-fit px-2.5 py-1.5 rounded-xl backdrop-blur-md border border-white/5 whitespace-nowrap overflow-hidden shadow-lg">
+              <span className="material-symbols-rounded text-xs text-primary">calendar_month</span>
               {displayDate}
             </p>
             {trip.locations?.regions?.[0] && (
-              <span className="text-[9px] font-black text-white/50 uppercase tracking-widest">{trip.locations.regions[0].name}</span>
+              <span className="text-xs font-semibold text-white/50 uppercase tracking-widest">{trip.locations.regions[0].name}</span>
             )}
           </div>
         </div>

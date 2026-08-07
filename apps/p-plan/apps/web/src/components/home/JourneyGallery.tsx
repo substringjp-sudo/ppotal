@@ -115,7 +115,7 @@ export default function JourneyGallery({
         <div className="mx-auto max-w-[1100px] px-4 sm:px-6 pt-6 pb-24">
             {/* 인사 */}
             <div className="mb-6">
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                     {displayName ? `${displayName}님의 여행` : '내 여행'}
                 </h1>
                 <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -144,12 +144,12 @@ export default function JourneyGallery({
                                         // eslint-disable-next-line @next/next/no-img-element
                                         <img src={j.coverImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
                                     )}
-                                    <span className={cn('absolute top-3 left-3 rounded-full px-2.5 py-1 text-[10px] font-black', j.badge.cls)}>
+                                    <span className={cn('absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-semibold', j.badge.cls)}>
                                         {j.badge.label}
                                     </span>
                                 </div>
                                 <div className="p-4">
-                                    <h3 className="text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{j.title}</h3>
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">{j.title}</h3>
                                     <p className="mt-1 text-xs font-semibold text-slate-400 tabular-nums">{fmtRange(j.startDate, j.endDate)}</p>
                                 </div>
                             </Link>

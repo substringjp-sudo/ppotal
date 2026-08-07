@@ -130,7 +130,7 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
                         {bars.map((b) => (
-                            <span key={b.key} className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                            <span key={b.key} className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
                                 <span className={cn('w-2.5 h-2.5 rounded-sm', b.cls)} />
                                 {b.label} <span className="tabular-nums text-slate-700 dark:text-slate-200">{formatKRWMan(b.krw)}</span>
                             </span>
@@ -166,12 +166,12 @@ export default function BudgetCashPlanCard({ level }: { level: DailySpendLevel }
                             );
                         })}
                     </div>
-                    <p className="mt-1.5 text-[11px] text-slate-400">{preset.hint}</p>
+                    <p className="mt-1.5 text-xs text-slate-400">{preset.hint}</p>
                 </div>
 
                 {/* 환율 */}
                 <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-2.5">
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">오늘 환율</span>
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">오늘 환율</span>
                     <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
                         {symbol}{perUnit.toLocaleString()} ≈ {perUnitKRW.toLocaleString()}원
                     </span>

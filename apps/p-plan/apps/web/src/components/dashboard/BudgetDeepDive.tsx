@@ -133,7 +133,7 @@ export default function BudgetDeepDive() {
                             </div>
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">전체 예정 금액 (예정 포함)</span>
-                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 italic">₩{(aggregatedBudget.spent + aggregatedBudget.planned).toLocaleString()}</span>
+                                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 italic">₩{(aggregatedBudget.spent + aggregatedBudget.planned).toLocaleString()}</span>
                             </div>
                             
                             <div className="space-y-1.5">
@@ -265,7 +265,7 @@ export default function BudgetDeepDive() {
                     </div>
 
                     <div className="space-y-6 flex-1">
-                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-[2rem] border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-[20px] border border-slate-200 dark:border-slate-800">
                             <div className="flex-1 text-center min-w-0">
                                 <div className="text-xs font-semibold text-slate-400 uppercase mb-1 truncate">기준 (KRW)</div>
                                 <div className="text-lg md:text-xl font-bold italic tracking-tighter truncate">₩1,000</div>
@@ -281,7 +281,7 @@ export default function BudgetDeepDive() {
                             </div>
                         </div>
 
-                        <div className="p-6 bg-emerald-500/5 rounded-[2rem] border border-emerald-500/10 relative overflow-hidden group">
+                        <div className="p-6 bg-emerald-500/5 rounded-[20px] border border-emerald-500/10 relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
                                 <span className="material-symbols-rounded text-5xl text-emerald-600">currency_exchange</span>
                             </div>
@@ -293,8 +293,8 @@ export default function BudgetDeepDive() {
                             <p className="text-xs font-bold text-emerald-600/60 leading-tight">준비 일정을 반영한 추천일입니다.</p>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 italic flex-1 flex items-center justify-center mt-auto">
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold text-center px-4 leading-relaxed tracking-tight">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[20px] border border-slate-200 dark:border-slate-800 italic flex-1 flex items-center justify-center mt-auto">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold text-center px-4 leading-relaxed tracking-tight">
                                 {aggregatedBudget.balances.creditCardTotal > (aggregatedBudget.total * 0.4) 
                                     ? "💡 현재 신용카드 결제 비중이 높습니다. 현지에서의 현금/선불카드 사용 비중을 늘려 수수료를 절약해보세요."
                                     : aggregatedBudget.total - aggregatedBudget.spent < (aggregatedBudget.total * 0.2)
@@ -311,7 +311,7 @@ export default function BudgetDeepDive() {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => router.push(`/edit-trip/${trip.id}?tab=budget`)}
-                className="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[2rem] font-semibold italic text-lg shadow-2xl shadow-slate-900/10 flex items-center justify-center gap-3"
+                className="w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[20px] font-semibold italic text-lg shadow-2xl shadow-slate-900/10 flex items-center justify-center gap-3"
             >
                 GO TO BUDGET EDITOR
                 <span className="material-symbols-rounded">east</span>

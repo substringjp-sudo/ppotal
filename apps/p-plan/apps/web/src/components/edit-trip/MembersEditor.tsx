@@ -402,7 +402,7 @@ export default function MembersEditor() {
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-semibold text-primary">공유 링크 생성</h3>
-                                    <p className="text-[11px] text-primary/60 font-medium mt-0.5 leading-relaxed">
+                                    <p className="text-xs text-primary/60 font-medium mt-0.5 leading-relaxed">
                                         링크를 생성하여 친구들에게 여행 정보를 공유하세요.<br />
                                         상대방은 로그인 없이도 고해상도 지도로 일정을 확인할 수 있습니다.
                                     </p>
@@ -413,7 +413,7 @@ export default function MembersEditor() {
                                 onClick={handleCopyInviteLink}
                                 disabled={isGeneratingLink}
                                 className={cn(
-                                    "w-full py-3.5 text-white text-[11px] font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2",
+                                    "w-full py-3.5 text-white text-xs font-semibold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2",
                                     copiedSuccess
                                         ? "bg-emerald-500 shadow-emerald-500/20"
                                         : "bg-primary shadow-primary/20 hover:scale-[1.02] active:scale-95"

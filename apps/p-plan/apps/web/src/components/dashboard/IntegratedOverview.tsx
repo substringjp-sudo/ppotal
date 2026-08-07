@@ -97,7 +97,7 @@ export default function IntegratedOverview() {
                             </ScrollReveal>
                             
                             <ScrollReveal delay={0.3}>
-                                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-slate-400 font-bold text-[11px] uppercase tracking-tight">
+                                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-slate-400 font-bold text-xs uppercase tracking-tight">
                                     <div className="flex items-center gap-1.5">
                                         <span className="material-symbols-rounded text-[16px] text-primary/60">location_on</span>
                                         <span className="truncate max-w-[250px]">{analysis.regions}</span>

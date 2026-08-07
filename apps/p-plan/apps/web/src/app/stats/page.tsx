@@ -121,7 +121,7 @@ export default function StatsPage() {
                    alert('Exporting your Intelligence card...');
                 }
               }}
-              className="h-7 px-4 bg-primary text-white rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all font-black text-[9px] uppercase tracking-widest flex items-center gap-2 group"
+              className="h-7 px-4 bg-primary text-white rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all font-semibold text-xs uppercase tracking-widest flex items-center gap-2 group"
             >
               <Download size={13} strokeWidth={2.5} className="group-hover:translate-y-0.5 transition-transform" />
               <span>Export</span>
@@ -141,7 +141,7 @@ export default function StatsPage() {
               {isAnalyzing ? (
                 <>
                   <div className="w-10 h-10 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-4" />
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Analyzing your memories...</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Analyzing your memories...</p>
                 </>
               ) : (
                 <div className="text-center max-w-sm mx-auto">
@@ -168,7 +168,7 @@ export default function StatsPage() {
                     ) : (
                         <>
                           <div className="w-10 h-10 border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-4 mx-auto" />
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Loading data...</p>
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Loading data...</p>
                         </>
                     )}
                 </div>
@@ -195,7 +195,7 @@ export default function StatsPage() {
                     <Compass className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Regional Mastery</h2>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Regional Mastery</h2>
                     <p className="text-xs font-bold text-slate-400">Regional proficiency tree based on actual visit records, plans, and wishlists.</p>
                   </div>
                 </div>
@@ -213,7 +213,7 @@ export default function StatsPage() {
                       <Heart className="w-5 h-5 text-pink-500" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Wishlist Insights</h2>
+                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Wishlist Insights</h2>
                       <p className="text-xs font-bold text-slate-400">Analysis of your preferences through the places you want to visit.</p>
                     </div>
                   </div>
@@ -226,7 +226,7 @@ export default function StatsPage() {
                       <Sparkles className="w-5 h-5 text-indigo-500" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Planning Style</h2>
+                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Planning Style</h2>
                       <p className="text-xs font-bold text-slate-400">Analysis of travel planning habits and preferred schedule styles.</p>
                     </div>
                   </div>
@@ -245,7 +245,7 @@ export default function StatsPage() {
                  <div className="mt-8 flex justify-center">
                     <button 
                         onClick={() => router.push('/trips')}
-                        className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black text-slate-600 dark:text-slate-300 hover:text-primary transition-all flex items-center gap-2 group"
+                        className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-primary transition-all flex items-center gap-2 group"
                     >
                         <span className="material-symbols-rounded text-sm group-hover:-translate-x-1 transition-transform">west</span>
                         Back to my trips

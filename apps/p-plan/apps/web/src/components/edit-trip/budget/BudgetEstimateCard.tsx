@@ -81,7 +81,7 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-3">
                         <div>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">고정비</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">고정비</p>
                             <p className="text-xs text-slate-400">항공·숙소·교통·예약 입력분</p>
                         </div>
                         <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">
@@ -90,7 +90,7 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
                     </div>
                     <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 px-3.5 py-3">
                         <div>
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">현지 지출 추정</p>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">현지 지출 추정</p>
                             <p className="text-xs text-slate-400">하루 {(est.dailyPerPerson / 10000)}만 × {est.days}일 × {est.participants}인</p>
                         </div>
                         <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 tabular-nums">~{local.value}{local.unit}</span>
@@ -127,7 +127,7 @@ export default function BudgetEstimateCard({ level, onLevelChange }: BudgetEstim
                     </div>
                 </div>
 
-                <p className="text-[11px] leading-relaxed text-slate-400">
+                <p className="text-xs leading-relaxed text-slate-400">
                     입력한 예약·비용은 자동으로 합산돼요. 현지 지출은 프리셋 기준 추정치이니, 정확한 관리가 필요하면 아래 상세 예산을 열어보세요.
                 </p>
             </div>

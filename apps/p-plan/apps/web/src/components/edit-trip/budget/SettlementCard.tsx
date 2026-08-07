@@ -142,7 +142,7 @@ export default function SettlementCard() {
                         <span className="material-symbols-rounded text-primary">receipt_long</span>
                         <span className="text-sm font-semibold text-slate-900 dark:text-white">정산</span>
                     </div>
-                    <button onClick={() => setSettlement({ enabled: false })} className="text-[11px] font-bold text-slate-400 hover:text-rose-500 transition">정산 모드 끄기</button>
+                    <button onClick={() => setSettlement({ enabled: false })} className="text-xs font-bold text-slate-400 hover:text-rose-500 transition">정산 모드 끄기</button>
                 </div>
 
                 {/* 기본 분할 모드 */}
@@ -185,7 +185,7 @@ export default function SettlementCard() {
                             </div>
                         ))}
                     </div>
-                    <button onClick={addMember} className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:opacity-80">
+                    <button onClick={addMember} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:opacity-80">
                         <span className="material-symbols-rounded text-[15px]">add</span> 멤버 추가
                     </button>
                 </div>
@@ -210,7 +210,7 @@ export default function SettlementCard() {
                                             <select
                                                 value={row.payerId || ''}
                                                 onChange={(e) => patchRow(row, { payerId: e.target.value || undefined })}
-                                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-[11px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary max-w-[96px]"
+                                                className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary max-w-[96px]"
                                             >
                                                 <option value="">결제자</option>
                                                 {participants.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -250,13 +250,13 @@ export default function SettlementCard() {
                                                                         <>
                                                                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200 flex-1">{p.name}</span>
                                                                             <div className="relative w-28">
-                                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400">{sym}</span>
+                                                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">{sym}</span>
                                                                                 <input
                                                                                     type="number" inputMode="decimal"
                                                                                     value={row.splitExact![p.id] ?? ''}
                                                                                     onChange={(e) => setExact(row, p.id, e.target.value)}
                                                                                     placeholder="0"
-                                                                                    className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-6 pr-2 text-[11px] font-bold text-slate-800 dark:text-white outline-none focus:border-primary tabular-nums"
+                                                                                    className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 pl-6 pr-2 text-xs font-bold text-slate-800 dark:text-white outline-none focus:border-primary tabular-nums"
                                                                                 />
                                                                             </div>
                                                                         </>
@@ -280,7 +280,7 @@ export default function SettlementCard() {
                     <div className="rounded-2xl bg-slate-900 dark:bg-slate-950 text-white p-5">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">정산 결과</span>
-                            <span className="text-[11px] font-bold text-slate-400 tabular-nums">공동지출 {formatKRWMan(settlement.totalShared)}</span>
+                            <span className="text-xs font-bold text-slate-400 tabular-nums">공동지출 {formatKRWMan(settlement.totalShared)}</span>
                         </div>
                         {settlement.transfers.length > 0 ? (
                             <div className="flex flex-col gap-2">

@@ -117,7 +117,7 @@ export default function AccommodationTimeline() {
                     >
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-rounded text-red-500 text-base font-bold" aria-hidden="true">priority_high</span>
-                            <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold">
+                            <span className="text-xs text-slate-700 dark:text-slate-300 font-bold">
                                 아직 예약이 비어있는 <strong className="text-red-600">{gaps.reduce((sum, g) => sum + g.days, 0)}박</strong> 일정이 있습니다.
                             </span>
                         </div>

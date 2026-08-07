@@ -96,21 +96,21 @@ export default function TimelineDayColumn({
                             {daySummary.weather && (
                                 <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                     <span className="material-symbols-rounded text-sm text-amber-500">{daySummary.weather.icon}</span>
-                                    <span className="text-[11px] font-bold hidden sm:inline">{daySummary.weather.temp}° • {daySummary.weather.condition}</span>
-                                    <span className="text-[11px] font-bold sm:hidden">{daySummary.weather.temp}°</span>
+                                    <span className="text-xs font-bold hidden sm:inline">{daySummary.weather.temp}° • {daySummary.weather.condition}</span>
+                                    <span className="text-xs font-bold sm:hidden">{daySummary.weather.temp}°</span>
                                 </div>
                             )}
 
                             {/* Summary Icons */}
                             <div className="flex items-center gap-2">
                                 {daySummary.flights?.length > 0 && (
-                                    <div className="flex items-center gap-1 text-[11px] font-bold text-primary px-2 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                                    <div className="flex items-center gap-1 text-xs font-bold text-primary px-2 py-1 bg-primary/5 rounded-lg border border-primary/10">
                                         <span className="material-symbols-rounded text-xs">flight</span>
                                         {daySummary.flights.length}
                                     </div>
                                 )}
                                 {daySummary.accommodations?.length > 0 && (
-                                    <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500 px-2 py-1 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
+                                    <div className="flex items-center gap-1 text-xs font-bold text-emerald-500 px-2 py-1 bg-emerald-500/5 rounded-lg border border-emerald-500/10">
                                         <span className="material-symbols-rounded text-xs">hotel</span>
                                         {daySummary.accommodations.length}
                                     </div>
@@ -126,7 +126,7 @@ export default function TimelineDayColumn({
                 <div className="mb-8 flex flex-col gap-3 animate-in fade-in slide-in-from-left-4 duration-500">
                     <div className="flex items-center gap-2 px-1">
                         <span className="material-symbols-rounded text-[14px] text-amber-500 font-bold">pending_actions</span>
-                        <span className="text-[11px] font-semibold text-amber-600/80 uppercase tracking-widest">일정 확정 대기</span>
+                        <span className="text-xs font-semibold text-amber-600/80 uppercase tracking-widest">일정 확정 대기</span>
                         <div className="h-px flex-1 bg-gradient-to-r from-amber-200/50 to-transparent"></div>
                     </div>
                     <div className="grid grid-cols-1 gap-2">

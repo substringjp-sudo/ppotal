@@ -311,14 +311,14 @@ export function LocationSelector({
                             {/* Calculated Identity (Administrative Path) */}
                             <div className="space-y-2">
                                 <div className="flex items-center gap-1.5 pl-1">
-                                    <span className="material-symbols-rounded text-[12px] text-emerald-500">verified_user</span>
+                                    <span className="material-symbols-rounded text-xs text-emerald-500">verified_user</span>
                                     <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Calculated Identity</span>
                                 </div>
                                 <div className={cn("flex flex-wrap items-center", compact ? "gap-1.5" : "gap-2")}>
                                     {regionPath?.country ? (
                                         <div className={cn(
                                             "flex items-center gap-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:border-primary/30",
-                                            compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-[11px]"
+                                            compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"
                                         )}>
                                             <Globe className={cn(compact ? "w-2.5 h-2.5" : "w-3 h-3", "text-primary")} />
                                             {regionPath.country}
@@ -327,7 +327,7 @@ export function LocationSelector({
                                     ) : selectedPlace.countryId ? (
                                         <div className={cn(
                                             "flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 font-semibold text-slate-400 dark:text-slate-500 shadow-sm",
-                                            compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-[11px]"
+                                            compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"
                                         )}>
                                             <Globe className={cn(compact ? "w-2.5 h-2.5" : "w-3 h-3", "text-slate-400")} />
                                             {selectedPlace.countryId}
@@ -346,7 +346,7 @@ export function LocationSelector({
                                             <span className="text-slate-300 dark:text-slate-700">/</span>
                                             <div className={cn(
                                                 "flex items-center gap-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:border-amber-500/30",
-                                                compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-[11px]"
+                                                compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"
                                             )}>
                                                 <Flag className={cn(compact ? "w-2.5 h-2.5" : "w-3 h-3", "text-amber-500")} />
                                                 {regionPath.prefecture}
@@ -360,7 +360,7 @@ export function LocationSelector({
                                             <span className="text-slate-300 dark:text-slate-700">/</span>
                                             <div className={cn(
                                                 "flex items-center gap-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:border-emerald-500/30",
-                                                compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-[11px]"
+                                                compact ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"
                                             )}>
                                                 <MapIcon className={cn(compact ? "w-2.5 h-2.5" : "w-3 h-3", "text-emerald-500")} />
                                                 {regionPath.city}
@@ -406,7 +406,7 @@ export function LocationSelector({
                             <div className="space-y-1">
                                 <div className="flex items-start gap-2">
                                     <MapPin className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                                    <p className={cn("font-medium text-slate-500 dark:text-slate-400 leading-relaxed", compact ? "text-[11px]" : "text-xs")}>
+                                    <p className={cn("font-medium text-slate-500 dark:text-slate-400 leading-relaxed", compact ? "text-xs" : "text-xs")}>
                                         {selectedPlace.address || '주소 정보 없음'}
                                     </p>
                                 </div>

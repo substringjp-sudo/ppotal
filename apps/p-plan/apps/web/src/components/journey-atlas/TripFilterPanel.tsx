@@ -45,7 +45,7 @@ export default function TripFilterPanel({
         {/* 헤더 */}
         <div className="p-5 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-slate-900 dark:text-white font-black text-sm flex items-center gap-2">
+            <h3 className="text-slate-900 dark:text-white font-semibold text-sm flex items-center gap-2">
               <Calendar className="w-4 h-4 text-primary" />
               나의 여행 목록
             </h3>
@@ -70,7 +70,7 @@ export default function TripFilterPanel({
 
           <button
             onClick={onToggleAll}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[11px] font-black text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all"
           >
             {allVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
             {allVisible ? '모두 숨기기' : '모두 보이기'}
@@ -109,25 +109,25 @@ export default function TripFilterPanel({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h4 className={`text-xs font-black truncate transition-colors ${
+                      <h4 className={`text-xs font-semibold truncate transition-colors ${
                         isVisible ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-600'
                       }`}>
                         {trip.title}
                       </h4>
-                      <p className={`text-[10px] font-bold transition-colors ${
+                      <p className={`text-xs font-bold transition-colors ${
                         isVisible ? 'text-slate-500 dark:text-slate-400' : 'text-slate-300 dark:text-slate-700'
                       }`}>
                         {trip.startDate} ~ {trip.endDate}
                       </p>
                       
                       <div className="flex items-center gap-3 mt-2">
-                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${
+                        <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${
                           isVisible ? 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-300 dark:text-slate-700'
                         }`}>
                           {trip.nodeCount} Spots
                         </span>
                         {trip.isOverseas && (
-                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
+                          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
                             Overseas
                           </span>
                         )}
@@ -151,7 +151,7 @@ export default function TripFilterPanel({
         
         {/* 하단 정보 */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold text-center">
             총 {tripMeta.length}개의 여행 중 {visibleTripIds.size}개 표시 중
           </p>
         </div>

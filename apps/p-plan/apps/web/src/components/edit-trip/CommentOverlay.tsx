@@ -61,7 +61,7 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                         {comment.userPhotoURL ? (
                             <img src={comment.userPhotoURL} alt={comment.userName} className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[11px] font-semibold text-slate-400">
+                            <div className="w-full h-full flex items-center justify-center text-xs font-semibold text-slate-400">
                                 {comment.userName.charAt(0)}
                             </div>
                         )}
@@ -76,13 +76,13 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                     {/* 이름 + 시간 */}
                     <div className="flex items-center gap-2">
                         <span className={cn(
-                            "text-[11px] font-semibold",
+                            "text-xs font-semibold",
                             isOwn ? "text-primary" : "text-slate-800 dark:text-white"
                         )}>
                             {comment.userName}
                         </span>
                         {comment.isResolved && (
-                            <span className="px-1.5 py-0.5 text-[7px] font-semibold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">
+                            <span className="px-1.5 py-0.5 text-xs font-semibold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20">
                                 Resolved
                             </span>
                         )}
@@ -121,7 +121,7 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                         </div>
                     ) : (
                         <div className={cn(
-                            "px-3.5 py-2.5 rounded-[14px] rounded-tl-none text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap break-words border transition-all",
+                            "px-3.5 py-2.5 rounded-[14px] rounded-tl-none text-xs text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap break-words border transition-all",
                             comment.isResolved
                                 ? "bg-slate-50/60 dark:bg-slate-800/20 border-slate-200 dark:border-slate-800/40 opacity-40"
                                 : "bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/50 group-hover/comment:border-slate-200 dark:group-hover/comment:border-slate-700 shadow-sm"
@@ -181,7 +181,7 @@ function CommentItem({ comment, user, onUpdate, onDelete, onResolve, onReply, re
                                 value={replyContent}
                                 onChange={e => setReplyContent(e.target.value)}
                                 placeholder="답글을 남겨보세요..."
-                                className="flex-1 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-[11px] outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/20"
+                                className="flex-1 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/20"
                                 onKeyDown={e => {
                                     if (e.key === 'Enter') handleReply();
                                     if (e.key === 'Escape') setIsReplying(false);
@@ -369,7 +369,7 @@ export default function CommentOverlay({ targetId, targetLabel, onClose }: Comme
                                         {filter === 'resolved' ? 'check_circle' : 'forum_off'}
                                     </span>
                                 </div>
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-center">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-center">
                                     {filter === 'all' ? '코멘트가 없습니다' :
                                      filter === 'pending' ? '미해결 코멘트 없음' : '해결된 코멘트 없음'}
                                 </p>

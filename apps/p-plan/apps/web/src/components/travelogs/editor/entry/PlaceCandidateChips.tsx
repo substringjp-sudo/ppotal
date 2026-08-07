@@ -59,7 +59,7 @@ export default function PlaceCandidateChips({
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-0.5 px-0.5 pb-0.5">
             {/* 1순위가 계획에서 온 거라면 그 사실을 라벨로 밝힌다 — 왜 이게 떴는지 알아야 믿고 누른다 */}
             <span className={cn(
-                'shrink-0 text-[10px] font-black uppercase tracking-widest',
+                'shrink-0 text-xs font-semibold uppercase tracking-widest',
                 topReason ? 'text-primary' : 'text-slate-400',
             )}>
                 {topReason || '여기 맞아요?'}
@@ -77,7 +77,7 @@ export default function PlaceCandidateChips({
                             type="button"
                             onClick={() => choose(c)}
                             className={cn(
-                                'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition-colors',
+                                'shrink-0 rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap transition-colors',
                                 i === 0
                                     ? 'bg-primary/10 text-primary hover:bg-primary/20'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700',
@@ -89,7 +89,7 @@ export default function PlaceCandidateChips({
                     <button
                         type="button"
                         onClick={onOpenFull}
-                        className="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold text-slate-400 hover:text-primary transition-colors"
+                        className="shrink-0 rounded-full px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-primary transition-colors"
                     >
                         다른 곳…
                     </button>

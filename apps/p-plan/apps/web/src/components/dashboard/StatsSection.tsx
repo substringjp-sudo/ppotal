@@ -29,9 +29,9 @@ export default function StatsSection() {
     if (!trip || !aggregatedBudget) return (
         <div className="flex flex-col gap-4 p-1 animate-pulse">
             <div className="grid grid-cols-3 gap-3">
-                {[1,2,3].map(i => <div key={i} className="h-28 bg-slate-100 dark:bg-slate-800 rounded-[2rem]" />)}
+                {[1,2,3].map(i => <div key={i} className="h-28 bg-slate-100 dark:bg-slate-800 rounded-[20px]" />)}
             </div>
-            <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-[2rem]" />
+            <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-[20px]" />
         </div>
     );
 
@@ -111,7 +111,7 @@ export default function StatsSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         onClick={() => router.push(stat.path)}
-                        className="p-5 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left group overflow-hidden relative"
+                        className="p-5 bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left group overflow-hidden relative"
                     >
                         <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.gradient} opacity-[0.03] blur-3xl group-hover:opacity-10 transition-opacity`} />
                         
@@ -125,7 +125,7 @@ export default function StatsSection() {
                             <span className="text-3xl font-bold italic tracking-tighter leading-none text-slate-900 dark:text-white">{stat.value}</span>
                             <span className="text-xs font-bold text-slate-500">{stat.unit}</span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-2 font-medium truncate">{stat.detail}</p>
+                        <p className="text-xs text-slate-400 mt-2 font-medium truncate">{stat.detail}</p>
                     </motion.button>
                 ))}
             </div>

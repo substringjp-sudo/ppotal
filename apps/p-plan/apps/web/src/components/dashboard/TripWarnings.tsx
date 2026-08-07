@@ -134,7 +134,7 @@ export default function TripWarnings() {
                                         {warning.suggestion && (
                                             <div className="px-4 py-3 bg-white/30 dark:bg-black/10 border-t border-white/20 dark:border-black/5 flex items-start gap-2">
                                                 <span className="material-symbols-rounded text-sm mt-0.5 text-primary/60" aria-hidden="true">lightbulb</span>
-                                                <p className="text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-normal">
+                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-300 leading-normal">
                                                     <span className="text-xs uppercase tracking-widest text-primary/80 mr-1.5 opacity-60">이렇게 해보세요 →</span>
                                                     {warning.suggestion}
                                                 </p>
@@ -144,7 +144,7 @@ export default function TripWarnings() {
                                 ))}
                                 <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                                     <span className="material-symbols-rounded text-slate-400 text-sm" aria-hidden="true">lightbulb</span>
-                                    <p className="text-[11px] font-medium text-slate-500">
+                                    <p className="text-xs font-medium text-slate-500">
                                         기록하신 내용을 검토한 항목이에요. 여행 전에 직접 한 번 더 확인해보시길 권장해요.
                                     </p>
                                 </div>

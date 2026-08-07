@@ -360,7 +360,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
             {/* Main Content Grid: Collapsible Sections */}
             <div className="grid grid-cols-1 gap-6">
                 {/* 1. Health & Medical Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <section className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <button 
                         onClick={() => toggleSection('health')}
                         className="w-full px-8 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
@@ -423,7 +423,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                             <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">Emergency Info Cards</h4>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {healthValueAdds.map((card, idx) => (
-                                                    <div key={idx} className="p-6 bg-slate-900 text-white rounded-[2rem] border border-white/5 relative overflow-hidden group">
+                                                    <div key={idx} className="p-6 bg-slate-900 text-white rounded-[20px] border border-white/5 relative overflow-hidden group">
                                                         <div className="relative z-10">
                                                             <div className="flex items-center gap-2 mb-4">
                                                                 <span className="material-symbols-rounded text-primary text-base">{card.icon}</span>
@@ -450,7 +450,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                 </section>
 
                 {/* 2. First Aid Kit Section */}
-                <section className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <section className="bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <button 
                         onClick={() => toggleSection('kit')}
                         className="w-full px-8 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
@@ -577,7 +577,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                                                                     <div key={vIdx} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-between">
                                                                         <div className="flex items-center gap-3">
                                                                             <span className="material-symbols-rounded text-slate-400 text-lg">{vac.icon}</span>
-                                                                            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">{vac.disease}</span>
+                                                                            <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{vac.disease}</span>
                                                                         </div>
                                                                         <span className="text-xs font-semibold uppercase px-2 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-md border border-slate-200 dark:border-slate-700">{vac.requirement}</span>
                                                                     </div>
@@ -635,7 +635,7 @@ function OthersAndHealthEditorContent({ trip }: { trip: Trip }) {
                             </motion.div>
                         ))
                     ) : (
-                        <div className="p-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem] bg-slate-50/50 dark:bg-slate-800/10">
+                        <div className="p-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[20px] bg-slate-50/50 dark:bg-slate-800/10">
                             <span className="material-symbols-rounded text-5xl mb-4 text-slate-300 font-bold">location_off</span>
                             <p className="text-sm font-semibold text-slate-400 uppercase tracking-[0.2em]">기본 정보에서 목적지를 먼저 설정해 주세요</p>
                         </div>

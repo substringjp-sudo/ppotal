@@ -205,7 +205,7 @@ export default function ShareCardModal({
                         </div>
 
                         <div>
-                            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">테마</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">테마</p>
                             <div className="flex flex-wrap gap-2">
                                 {CARD_THEMES.map((th) => (
                                     <button

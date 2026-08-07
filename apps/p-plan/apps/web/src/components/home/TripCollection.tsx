@@ -22,14 +22,14 @@ export default function TripCollection({ trips, itemVariants }: TripCollectionPr
       <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
               <div className="section-bar" />
-              <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   나의 컬렉션
-                  <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full text-[9px] font-black text-slate-400 tabular-nums">{trips.length}</span>
+                  <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-semibold text-slate-400 tabular-nums">{trips.length}</span>
               </h3>
           </div>
-          <Link href="/trips" className="px-3 py-1.5 bg-white dark:bg-slate-900 rounded-full text-[9px] font-black text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-1">
+          <Link href="/trips" className="px-3 py-1.5 bg-white dark:bg-slate-900 rounded-full text-xs font-semibold text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800 transition-all flex items-center gap-1">
               전체 보기
-              <span className="material-symbols-rounded text-[10px]">chevron_right</span>
+              <span className="material-symbols-rounded text-xs">chevron_right</span>
           </Link>
       </div>
       
@@ -46,7 +46,7 @@ export default function TripCollection({ trips, itemVariants }: TripCollectionPr
                       <div className="aspect-[4/5] rounded-[16px] overflow-hidden mb-2 relative">
                           <TripCoverImage trip={trip} className="h-full scale-100 group-hover:scale-110 transition-transform duration-1000" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                              <div className="flex items-center gap-1.5 text-white/80 text-[8px] font-black uppercase tracking-widest">
+                              <div className="flex items-center gap-1.5 text-white/80 text-xs font-semibold uppercase tracking-widest">
                                   <span className="material-symbols-rounded text-xs">flight</span>
                                   {trip.flightCount || 0}편의 항공
                               </div>
@@ -76,15 +76,15 @@ export default function TripCollection({ trips, itemVariants }: TripCollectionPr
                           </div>
                       </div>
                       <div className="px-2 pb-2 flex-1">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-white mb-1 line-clamp-1 group-hover:text-primary transition-colors">{trip.title || 'Untitled'}</h4>
+                          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-1 line-clamp-1 group-hover:text-primary transition-colors">{trip.title || 'Untitled'}</h4>
                           <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight truncate">
+                              <span className="text-xs font-semibold text-slate-400 uppercase tracking-tight truncate">
                                   {trip.locations?.regions?.[0]?.name || trip.locations?.regionNames?.[0] || 'TBD'}
                               </span>
                               {trip.dates?.startDate && (
                                   <>
                                       <span className="w-0.5 h-0.5 rounded-full bg-slate-300" />
-                                      <span className="text-[9px] font-bold text-slate-400 tabular-nums">
+                                      <span className="text-xs font-bold text-slate-400 tabular-nums">
                                           {format(parseISO(trip.dates.startDate), 'MMM dd')}
                                       </span>
                                   </>
@@ -102,7 +102,7 @@ export default function TripCollection({ trips, itemVariants }: TripCollectionPr
                      <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:rotate-45 transition-all mb-4">
                          <span className="material-symbols-rounded">add</span>
                      </div>
-                     <p className="text-[10px] font-black text-slate-400 group-hover:text-primary uppercase tracking-widest">더 보기</p>
+                     <p className="text-xs font-semibold text-slate-400 group-hover:text-primary uppercase tracking-widest">더 보기</p>
                  </motion.div>
               )}
           </div>
@@ -111,11 +111,11 @@ export default function TripCollection({ trips, itemVariants }: TripCollectionPr
               <div className="w-20 h-20 bg-white dark:bg-slate-900 rounded-[24px] flex items-center justify-center mx-auto mb-6 shadow-premium ring-1 ring-slate-100 dark:ring-slate-800">
                   <span className="material-symbols-rounded text-4xl text-slate-300 dark:text-slate-600">navigation</span>
               </div>
-              <p className="text-slate-900 dark:text-white font-black uppercase tracking-[0.25em] text-xs mb-2">당신의 첫 번째 여정을 기록해보세요</p>
-              <p className="text-slate-400 font-medium text-[10px] mb-8">PPLANER와 함께 완벽한 여행을 설계할 준비가 되셨나요?</p>
+              <p className="text-slate-900 dark:text-white font-semibold uppercase tracking-[0.25em] text-xs mb-2">당신의 첫 번째 여정을 기록해보세요</p>
+              <p className="text-slate-400 font-medium text-xs mb-8">PPLANER와 함께 완벽한 여행을 설계할 준비가 되셨나요?</p>
               <button 
                   onClick={() => openWizard('PLAN')}
-                  className="px-8 py-3 bg-primary text-white font-black rounded-xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-[10px] uppercase tracking-widest"
+                  className="px-8 py-3 bg-primary text-white font-semibold rounded-xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-xs uppercase tracking-widest"
               >
                   첫 번째 여행 만들기
               </button>

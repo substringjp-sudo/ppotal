@@ -230,10 +230,10 @@ export function GoogleMapsSearch({
                                             <MapPin className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-black text-slate-700 dark:text-slate-200 truncate">
+                                            <div className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
                                                 {prediction.structured_formatting.main_text}
                                             </div>
-                                            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate">
+                                            <div className="text-xs text-slate-400 font-bold uppercase tracking-tight truncate">
                                                 {prediction.structured_formatting.secondary_text}
                                             </div>
                                         </div>
@@ -244,8 +244,8 @@ export function GoogleMapsSearch({
                                     <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-3 text-slate-300">
                                         <Search className="w-6 h-6" />
                                     </div>
-                                    <p className="text-sm font-black text-slate-600 dark:text-slate-300 mb-1">검색 결과가 없습니다</p>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter leading-tight">정확한 장소 명칭이나<br/>주소로 검색해보세요</p>
+                                    <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">검색 결과가 없습니다</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter leading-tight">정확한 장소 명칭이나<br/>주소로 검색해보세요</p>
                                 </div>
                             )}
                         </div>

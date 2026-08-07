@@ -45,7 +45,7 @@ export default function SmartInsightHub() {
             {/* Quick Actions / Export */}
             <button
                 onClick={() => setShowExport(true)}
-                className="w-full py-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-[20px] border border-slate-200 dark:border-slate-800 flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-semibold text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl active:scale-[0.98] group"
+                className="w-full py-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-[20px] border border-slate-200 dark:border-slate-800 flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-semibold text-xs uppercase tracking-[0.2em] shadow-xl shadow-slate-200/40 dark:shadow-none hover:shadow-2xl active:scale-[0.98] group"
             >
                 <span className="material-symbols-rounded text-lg group-hover:rotate-12 transition-transform">ios_share</span>
                 계획 내보내기

@@ -158,7 +158,7 @@ export function PublicTransportCard({ pt }: { pt: PublicTransportSegment }) {
                                 {pt.name || config.label}
                             </span>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <div className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
                             <div className="flex items-center gap-1.5 overflow-hidden">
                                 {pt.departureLocation ? (
                                     <>

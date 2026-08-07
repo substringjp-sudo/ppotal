@@ -665,7 +665,7 @@ function WishlistItemCard({ item, isSelected, isSelectionMode, onToggle, onSelec
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate mt-1">{item.title}</h4>
                     {item.place && (
                         <div className="flex items-center gap-2 mt-1 opacity-70">
-                            <p className="text-[11px] text-slate-500 font-bold truncate flex items-center gap-1">
+                            <p className="text-xs text-slate-500 font-bold truncate flex items-center gap-1">
                                 <span className="material-symbols-rounded text-[13px]">location_on</span>
                                 {item.place.name}
                             </p>

@@ -98,14 +98,14 @@ export default function WizardModal() {
                 <div className="px-4 pt-5 pb-3 sm:px-8 sm:pt-8 sm:pb-4 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <p className="text-primary text-xs font-black uppercase tracking-widest mb-1">
+                            <p className="text-primary text-xs font-semibold uppercase tracking-widest mb-1">
                                 {currentIndex + 1}단계 / {steps.length}
                             </p>
                             <h3 
                                 id="wizard-title"
                                 ref={titleRef}
                                 tabIndex={-1}
-                                className="text-2xl font-black text-slate-900 dark:text-white outline-none"
+                                className="text-2xl font-bold text-slate-900 dark:text-white outline-none"
                             >
                                 {getStepTitle(currentStep)}
                             </h3>
@@ -238,7 +238,7 @@ export default function WizardModal() {
                         }}
                         disabled={isCreating}
                         className={cn(
-                            "px-10 py-3 bg-primary text-white text-sm font-black rounded-xl transition-all shadow-lg overflow-hidden relative group",
+                            "px-10 py-3 bg-primary text-white text-sm font-semibold rounded-xl transition-all shadow-lg overflow-hidden relative group",
                             "hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0",
                             isCreating && "opacity-100 cursor-wait pointer-events-none bg-stone-800"
                         )}
@@ -302,7 +302,7 @@ export default function WizardModal() {
 
                         {/* 메시지 */}
                         <div className="text-center relative z-10 max-w-xs">
-                            <h2 className="text-xl font-black text-white mb-3 tracking-tight">
+                            <h2 className="text-xl font-bold text-white mb-3 tracking-tight">
                                 {getLoadingTitle()}
                             </h2>
                             <LoadingMessage messages={[

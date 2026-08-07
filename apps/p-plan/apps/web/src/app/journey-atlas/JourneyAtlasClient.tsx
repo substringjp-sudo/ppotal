@@ -193,8 +193,8 @@ export default function JourneyAtlasClient() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Journey Atlas</h1>
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">나의 여행 결산 지도</p>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Journey Atlas</h1>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">나의 여행 결산 지도</p>
           </div>
         </motion.div>
 
@@ -215,7 +215,7 @@ export default function JourneyAtlasClient() {
               className="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2"
             >
               <Icon className={`w-3.5 h-3.5 ${color}`} />
-              <span className="text-xs font-black text-slate-700 dark:text-slate-200">{value}</span>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{value}</span>
             </div>
           ))}
         </motion.div>
@@ -277,7 +277,7 @@ export default function JourneyAtlasClient() {
             <div className="w-20 h-20 rounded-[28px] bg-primary/10 flex items-center justify-center mx-auto mb-8">
               <MapPin className="w-10 h-10 text-primary" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
               아직 지도에 표시할<br />여행 기록이 없습니다
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-bold mb-10 leading-relaxed">
@@ -286,7 +286,7 @@ export default function JourneyAtlasClient() {
             </p>
             <button
               onClick={() => router.push('/trips')}
-              className="w-full px-8 py-4 bg-primary text-white rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+              className="w-full px-8 py-4 bg-primary text-white rounded-2xl font-semibold text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
             >
               여행 기록하러 가기
             </button>

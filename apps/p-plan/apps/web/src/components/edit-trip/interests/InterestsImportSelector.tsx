@@ -108,7 +108,7 @@ export const InterestsImportSelector: React.FC<InterestsImportSelectorProps> = (
                                 <div><h3 className="text-lg font-semibold text-slate-900 dark:text-white uppercase">위시리스트가 비어 있습니다</h3></div>
                             </div>
                         ) : viewMode === 'map' ? (
-                            <div className="h-full min-h-[550px] rounded-[3rem] overflow-hidden border border-slate-200 dark:border-slate-800 relative">
+                            <div className="h-full min-h-[550px] rounded-[20px] overflow-hidden border border-slate-200 dark:border-slate-800 relative">
                                 <TripMap 
                                     trip={currentTrip!} 
                                     viewMode="bucketlist" 

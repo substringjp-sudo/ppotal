@@ -83,7 +83,7 @@ export default function EditFloatingActions({
           </motion.div>
           
           {/* Tooltip - Premium Style */}
-          <div className="absolute bottom-full right-0 mb-6 px-4 py-2 bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-bold rounded-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-none shadow-2xl border border-white/10 ring-1 ring-black/5">
+          <div className="absolute bottom-full right-0 mb-6 px-4 py-2 bg-slate-900/90 backdrop-blur-md text-white text-xs font-bold rounded-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-none shadow-2xl border border-white/10 ring-1 ring-black/5">
             <span className="bg-gradient-to-r from-orange-200 to-rose-200 bg-clip-text text-transparent">가고 싶은 곳 확인하기</span>
             {/* Tooltip Arrow */}
             <div className="absolute top-full right-6 w-3 h-3 bg-slate-900/90 rotate-45 -translate-y-1.5 border-r border-b border-white/10" />

@@ -63,7 +63,7 @@ export default function PlanningStyleCard({ style }: PlanningStyleCardProps) {
           <config.icon className={`w-7 h-7 ${config.color}`} />
         </div>
         <div className="space-y-1">
-          <h3 className={`text-lg font-black ${config.color}`}>{config.label}</h3>
+          <h3 className={`text-lg font-semibold ${config.color}`}>{config.label}</h3>
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{config.description}</p>
         </div>
       </div>
@@ -71,15 +71,15 @@ export default function PlanningStyleCard({ style }: PlanningStyleCardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Characteristics */}
         <div className="space-y-4">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Characteristics</h3>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Core Characteristics</h3>
           <div className="flex flex-wrap gap-2">
             {style.characteristics.map((char) => (
-              <div key={char} className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-black flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-500/20">
+              <div key={char} className="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-500/20">
                 <CheckCircle2 className="w-3 h-3" />
                 {char}
               </div>
             ))}
-            <div className="px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 text-[11px] font-black flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
+            <div className="px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-500 text-xs font-semibold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
               <Clock className="w-3 h-3" />
               {Math.round(style.preparationLeadTime)}일 전 준비
             </div>
@@ -88,11 +88,11 @@ export default function PlanningStyleCard({ style }: PlanningStyleCardProps) {
 
         {/* Categories */}
         <div className="space-y-4">
-          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plan Preferences</h3>
+          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Plan Preferences</h3>
           <div className="space-y-3">
              {style.categoryPreference.slice(0, 3).map((pref) => (
                <div key={pref.category} className="flex items-center gap-3">
-                 <div className="text-[11px] font-black text-slate-600 dark:text-slate-300 w-12">{pref.category}</div>
+                 <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 w-12">{pref.category}</div>
                  <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
@@ -100,7 +100,7 @@ export default function PlanningStyleCard({ style }: PlanningStyleCardProps) {
                       className="h-full bg-indigo-500"
                     />
                  </div>
-                 <div className="text-[10px] font-black text-slate-400">{Math.round(pref.weight)}%</div>
+                 <div className="text-xs font-semibold text-slate-400">{Math.round(pref.weight)}%</div>
                </div>
              ))}
           </div>

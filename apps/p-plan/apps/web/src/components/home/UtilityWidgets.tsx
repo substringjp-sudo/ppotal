@@ -32,7 +32,7 @@ export function CurrencyWidget({ itemVariants }: { itemVariants: any }) {
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                        <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest italic">실시간 주요 환율</h4>
+                        <h4 className="text-xs font-semibold uppercase text-slate-400 tracking-widest italic">실시간 주요 환율</h4>
                     </div>
                     <button 
                         onClick={() => fetchRates()}
@@ -50,16 +50,16 @@ export function CurrencyWidget({ itemVariants }: { itemVariants: any }) {
                                 <div className="flex items-center gap-2.5">
                                     <span className="text-base filter saturate-[0.8] group-hover/row:saturate-100 transition-all">{curr.flag}</span>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-900 dark:text-white leading-none mb-0.5">{curr.code}</span>
-                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{curr.name}</span>
+                                        <span className="text-xs font-semibold text-slate-900 dark:text-white leading-none mb-0.5">{curr.code}</span>
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">{curr.name}</span>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-black text-slate-900 dark:text-white flex items-center justify-end gap-1">
-                                        <span className="text-[10px] text-slate-400 font-bold">{curr.symbol}</span>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white flex items-center justify-end gap-1">
+                                        <span className="text-xs text-slate-400 font-bold">{curr.symbol}</span>
                                         {rate.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                                     </p>
-                                    <p className="text-[8px] font-bold text-slate-400">KRW 기준</p>
+                                    <p className="text-xs font-bold text-slate-400">KRW 기준</p>
                                 </div>
                             </div>
                         );
@@ -68,8 +68,8 @@ export function CurrencyWidget({ itemVariants }: { itemVariants: any }) {
             </div>
 
             <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-center">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="material-symbols-rounded text-[10px]">schedule</span>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-rounded text-xs">schedule</span>
                     {formatTime(lastUpdated)}
                 </p>
             </div>
@@ -83,17 +83,17 @@ export function TodoWidget({ recommendations, itemVariants }: { recommendations:
     return (
         <motion.div variants={itemVariants} className="p-3.5 bg-primary/5 rounded-2xl border border-primary/10 relative overflow-hidden group flex flex-col justify-between h-full flex-1">
             <div>
-                <h3 className="text-[9px] font-black mb-2 flex items-center gap-1.5 text-primary uppercase tracking-widest">
+                <h3 className="text-xs font-semibold mb-2 flex items-center gap-1.5 text-primary uppercase tracking-widest">
                     <span className="material-symbols-rounded text-sm">auto_fix_high</span>
                     추천 항목
                 </h3>
-                <p className="text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-3 leading-relaxed italic">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3 leading-relaxed italic">
                     "{displayItem.desc}"
                 </p>
             </div>
-            <button className="w-full py-2 bg-primary text-white text-[10px] font-black rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-1.5">
+            <button className="w-full py-2 bg-primary text-white text-xs font-semibold rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-1.5">
                 {displayItem.action}
-                <span className="material-symbols-rounded text-[12px] font-black">chevron_right</span>
+                <span className="material-symbols-rounded text-xs font-semibold">chevron_right</span>
             </button>
         </motion.div>
     );

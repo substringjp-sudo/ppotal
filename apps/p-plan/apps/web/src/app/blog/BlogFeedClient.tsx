@@ -37,7 +37,7 @@ export default function BlogFeedClient({ embedded }: { embedded?: boolean } = {}
                 <div className={cn('flex items-end justify-between mb-5', embedded && 'justify-end')}>
                     {!embedded && (
                         <div>
-                            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">여행기</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">여행기</h1>
                             <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">여행자들의 기록을 통째로 읽어보세요.</p>
                         </div>
                     )}
@@ -52,7 +52,7 @@ export default function BlogFeedClient({ embedded }: { embedded?: boolean } = {}
                 ) : ordered.length === 0 ? (
                     <div className="rounded-3xl border border-dashed border-slate-200 dark:border-white/10 p-16 text-center">
                         <span className="material-symbols-rounded text-5xl text-slate-300">menu_book</span>
-                        <p className="mt-3 text-base font-black text-slate-600 dark:text-slate-300">아직 공개된 여행기가 없어요</p>
+                        <p className="mt-3 text-base font-semibold text-slate-600 dark:text-slate-300">아직 공개된 여행기가 없어요</p>
                         <p className="mt-1 text-sm text-slate-400">여행기를 공개하면 여기 블로그 피드에 올라옵니다.</p>
                     </div>
                 ) : (
@@ -70,7 +70,7 @@ export default function BlogFeedClient({ embedded }: { embedded?: boolean } = {}
 function SortBtn({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) {
     return (
         <button onClick={onClick}
-            className={cn('px-3.5 py-1.5 rounded-lg text-xs font-black transition',
+            className={cn('px-3.5 py-1.5 rounded-lg text-xs font-semibold transition',
                 on ? 'bg-primary text-white' : 'text-slate-500 dark:text-white/50 hover:text-slate-800 dark:hover:text-white/80')}>
             {label}
         </button>
@@ -97,15 +97,15 @@ function BlogCardView({ card: c }: { card: BlogCard }) {
                         <img src={c.cover} alt="" className="absolute inset-0 h-full w-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
                     )}
                     {c.saveCount > 0 && (
-                        <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-[11px] font-black text-white">
+                        <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-xs font-semibold text-white">
                             <span className="material-symbols-rounded text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>bookmark</span>
                             <span className="tabular-nums">{c.saveCount}</span>
                         </span>
                     )}
                 </div>
                 <div className="p-4">
-                    <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition">{c.title}</h3>
-                    {sub && <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">{sub}</p>}
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition">{c.title}</h3>
+                    {sub && <p className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-400">{sub}</p>}
                     {c.summary && <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{c.summary}</p>}
                     <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-slate-400">
                         {c.authorPhotoURL

@@ -184,12 +184,12 @@ function WishlistCardComponent({
                     <div className="flex items-center gap-2 mb-0.5">
                         <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate leading-tight">{item.title}</h4>
                         {mainCatInfo && (
-                            <span className="text-[8px] font-black px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded shrink-0">
+                            <span className="text-xs font-semibold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded shrink-0">
                                 {mainCatInfo.label}
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold truncate">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-bold truncate">
                         {item.place?.name && (
                             <span className="text-indigo-500 dark:text-indigo-400 shrink-0">{item.place.name}</span>
                         )}
@@ -237,7 +237,7 @@ function WishlistCardComponent({
             <div className={`pl-10 pr-3 py-1.5 border-b ${config.borderColor} ${config.bgColor} flex items-center justify-between relative`}>
                 <div className="flex items-center gap-1.5">
                     <config.icon className={`w-3 h-3 ${config.accentColor}`} />
-                    <span className={`text-[9px] font-black tracking-widest uppercase ${config.accentColor}`}>
+                    <span className={`text-xs font-semibold tracking-widest uppercase ${config.accentColor}`}>
                         {config.label}
                     </span>
                 </div>
@@ -274,7 +274,7 @@ function WishlistCardComponent({
                                     const Icon = CATEGORY_ICONS[item.mainCategory!] || config.icon;
                                     return <Icon className="w-10 h-10 mb-2 opacity-50 group-hover:scale-110 group-hover:opacity-80 transition-all duration-500" style={{ color: mainCatInfo?.color }} />;
                                 })()}
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate w-full px-2">{item.place?.name}</span>
+                                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 truncate w-full px-2">{item.place?.name}</span>
                             </div>
                         </div>
                     )}
@@ -282,7 +282,7 @@ function WishlistCardComponent({
                     {/* Category Overlay (Text Only) */}
                     {mainCatInfo && (
                         <div
-                            className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md border border-white/20"
+                            className="absolute bottom-2.5 left-2.5 px-2 py-1 rounded-lg text-xs font-semibold uppercase tracking-widest text-white shadow-lg backdrop-blur-md border border-white/20"
                             style={{ backgroundColor: `${mainCatInfo.color}CC` }}
                         >
                             {mainCatInfo.label}
@@ -298,20 +298,20 @@ function WishlistCardComponent({
                         {!hasPhoto && !hasPlace && mainCatInfo && (
                             <div className="flex items-center gap-1.5 mb-1">
                                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: mainCatInfo.color }} />
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{mainCatInfo.label}</span>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{mainCatInfo.label}</span>
                             </div>
                         )}
-                        <h3 className="text-sm font-black text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {item.title}
                         </h3>
                         {item.place && (item.place.country || item.place.prefecture || item.place.city) && (
                             <div className="flex flex-wrap gap-1 mt-1">
                                 {item.place.country && (
-                                    <span className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 text-[8px] font-bold text-slate-500 rounded">
+                                    <span className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500 rounded">
                                         {item.place.country}
                                     </span>
                                 )}
-                                <span className="text-[8px] font-bold text-slate-400 truncate max-w-full">
+                                <span className="text-xs font-bold text-slate-400 truncate max-w-full">
                                     {[item.place.prefecture, item.place.city].filter(Boolean).join(' ')}
                                 </span>
                             </div>
@@ -319,7 +319,7 @@ function WishlistCardComponent({
                     </div>
 
                     {item.description && (
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 font-medium leading-normal whitespace-pre-wrap">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 font-medium leading-normal whitespace-pre-wrap">
                             {renderDescriptionWithLinks(item.description)}
                         </p>
                     )}
@@ -329,7 +329,7 @@ function WishlistCardComponent({
                 <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div>
                         {item.place && !hasPhoto && (
-                            <div className="text-[9px] font-bold text-slate-400 flex items-center gap-1">
+                            <div className="text-xs font-bold text-slate-400 flex items-center gap-1">
                                 <span className="w-1 h-1 rounded-full bg-slate-200" /> {subCatInfo?.label || '기록'}
                             </div>
                         )}

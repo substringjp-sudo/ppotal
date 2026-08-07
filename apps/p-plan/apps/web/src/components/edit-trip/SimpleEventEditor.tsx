@@ -150,7 +150,7 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                                     <button
                                         key={sub.value}
                                         onClick={() => setSubCategory(sub.value)}
-                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all border ${
+                                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                                             subCategory === sub.value
                                                 ? 'bg-primary text-white border-primary shadow-md'
                                                 : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300'
@@ -256,19 +256,19 @@ export default function SimpleEventEditor({ event, dayIdx, date, onSave, onClose
                             <div className="flex flex-wrap gap-2 mt-2 px-1">
                                 {(location.country || location.countryName) && (
                                     <span className="text-xs font-semibold bg-primary/5 text-primary px-2.5 py-1 rounded-lg uppercase tracking-tight border border-primary/10 flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-[12px]">flag</span>
+                                        <span className="material-symbols-rounded text-xs">flag</span>
                                         {location.country || location.countryName}
                                     </span>
                                 )}
                                 {(location.prefecture || location.prefectureName) && (
                                     <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-tight border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-[12px]">map</span>
+                                        <span className="material-symbols-rounded text-xs">map</span>
                                         {location.prefecture || location.prefectureName}
                                     </span>
                                 )}
                                 {(location.city || location.cityName) && (
                                     <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-tight border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
-                                        <span className="material-symbols-rounded text-[12px]">location_city</span>
+                                        <span className="material-symbols-rounded text-xs">location_city</span>
                                         {location.city || location.cityName}
                                     </span>
                                 )}

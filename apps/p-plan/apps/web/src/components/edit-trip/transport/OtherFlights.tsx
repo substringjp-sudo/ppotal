@@ -23,7 +23,7 @@ export function OtherFlights() {
 
     return (
         <div className="space-y-4">
-            <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest ml-1">기타 비행 일정</h4>
+            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">기타 비행 일정</h4>
             <div className="space-y-3">
                 {others.map((f) => (
                     <OtherFlightItem key={f.id} f={f} />
