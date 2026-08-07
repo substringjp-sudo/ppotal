@@ -43,6 +43,8 @@ export const CARD_W = 1080;
 export const CARD_H = 1350;
 
 const FONT = "'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif";
+/** 타이틀 전용 — 읽는 화면(여행기록/인쇄물)과 같은 에디토리얼 세리프 규칙을 공유 카드도 물려받는다 */
+const FONT_EDITORIAL = "'Newsreader', 'Noto Serif KR', serif";
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
@@ -179,7 +181,7 @@ async function renderA(ctx: CanvasRenderingContext2D, theme: CardTheme, data: Sh
     ctx.fillText(data.dateText, 72, titleY - 86);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = `900 92px ${FONT}`;
+    ctx.font = `600 92px ${FONT_EDITORIAL}`;
     const used = wrapText(ctx, data.title, 72, titleY, CARD_W - 144, lineH, 2);
 
     ctx.textBaseline = 'middle';
@@ -210,7 +212,7 @@ async function renderB(ctx: CanvasRenderingContext2D, theme: CardTheme, data: Sh
     ctx.fillText(data.dateText, 72, photoH + 132);
 
     ctx.fillStyle = theme.text;
-    ctx.font = `900 76px ${FONT}`;
+    ctx.font = `600 76px ${FONT_EDITORIAL}`;
     const used = wrapText(ctx, data.title, 72, photoH + 210, CARD_W - 144, 84, 2);
 
     ctx.textBaseline = 'middle';
@@ -235,7 +237,7 @@ async function renderC(ctx: CanvasRenderingContext2D, theme: CardTheme, data: Sh
     ctx.fillText(data.dateText, CARD_W / 2, CARD_H / 2 - 170);
 
     ctx.fillStyle = theme.text;
-    ctx.font = `900 104px ${FONT}`;
+    ctx.font = `600 104px ${FONT_EDITORIAL}`;
     wrapText2Centered(ctx, data.title, CARD_W / 2, CARD_H / 2 - 60, CARD_W - 180, 112, 3);
 
     // 구분선
@@ -286,7 +288,7 @@ async function renderD(ctx: CanvasRenderingContext2D, theme: CardTheme, data: Sh
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = theme.text;
-    ctx.font = `900 68px ${FONT}`;
+    ctx.font = `600 68px ${FONT_EDITORIAL}`;
     const used = wrapText(ctx, data.title, pad + 32, gridH + pad + 150, CARD_W - pad * 2 - 64, 76, 1);
     ctx.fillStyle = theme.sub;
     ctx.font = `700 28px ${FONT}`;
@@ -323,7 +325,15 @@ export async function renderShareCard(
     canvas.height = CARD_H;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    try { await (document as any).fonts?.ready; } catch { /* noop */ }
+    // document.fonts.ready 는 "이미 요청된" 폰트만 기다린다 — 캔버스는 CSS처럼 폰트를
+    // 자동 요청하지 않으므로, 실제로 그릴 굵기/크기로 명시 로드해야 첫 렌더에서
+    // 폴백 세리프로 그려지는 걸 막을 수 있다.
+    try {
+        await Promise.all([
+            (document as any).fonts?.load?.(`600 104px ${FONT_EDITORIAL}`),
+            (document as any).fonts?.ready,
+        ]);
+    } catch { /* noop */ }
     ctx.clearRect(0, 0, CARD_W, CARD_H);
     ctx.textBaseline = 'alphabetic';
     await RENDERERS[template](ctx, theme, data);
