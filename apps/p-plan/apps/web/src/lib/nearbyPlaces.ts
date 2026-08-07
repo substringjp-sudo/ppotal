@@ -104,6 +104,7 @@ async function searchNearby(lat: number, lng: number, radius: number): Promise<P
                             userRatingsTotal: r.user_ratings_total,
                             rating: r.rating,
                             businessStatus: r.business_status,
+                            googlePhotoCount: Array.isArray(r.photos) ? r.photos.length : undefined,
                             distanceMeters: (pLat != null && pLng != null)
                                 ? Math.round(distanceMeters({ lat, lng }, { lat: pLat, lng: pLng }))
                                 : radius,

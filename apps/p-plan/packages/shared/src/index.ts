@@ -34,6 +34,7 @@ export * from './lib/userStatsService';
 export * from './lib/recordService';
 export * from './lib/footprintService';
 export * from './lib/footprint-clustering';
+export * from './lib/trajectory-hotspots';
 export * from './lib/footprint-activities';
 export * from './lib/footprint-to-travelog';
 export * from './lib/travelog-places';

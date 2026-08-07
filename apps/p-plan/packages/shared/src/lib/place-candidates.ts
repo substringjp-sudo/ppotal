@@ -26,6 +26,13 @@ export interface PlaceCandidate {
     rating?: number;
     /** 'OPERATIONAL' | 'CLOSED_TEMPORARILY' | 'CLOSED_PERMANENTLY' */
     businessStatus?: string;
+    /**
+     * 구글에 이 장소로 올라와 있는 사진 수 — nearbySearch 응답의 `photos` 배열 길이.
+     * 사용자가 이 여행에서 찍은 사진 수(CandidateContext.photoCount)와는 다른 값이다.
+     * 이 배열엔 상한이 있어(정확한 값은 API 버전마다 다름), "많다"는 신호로만 쓴다 —
+     * 정확한 임계값을 가정하지 않도록 버킷 대신 로그 스케일로 반영한다.
+     */
+    googlePhotoCount?: number;
 }
 
 export interface CandidateContext {
@@ -226,6 +233,9 @@ export function rankPlaceCandidates(
         const photoBonus = (ctx.photoCount ?? 0) >= 3 && has(c.types, PHOTO_WORTHY) ? 0.5 : 0;
         // 인지도는 약하게만 — 유명 랜드마크에 과하게 쏠리지 않도록
         const prominence = Math.min(Math.log10((c.userRatingsTotal ?? 0) + 1) / 4, 0.5);
+        // 평점 수(상한 없음)가 주력 신호고, 구글 사진 수는 상한이 있어 보조 신호로만 약하게.
+        // "0장" vs "몇 장이라도 있음"을 가르는 게 핵심이라, 로그 스케일이 절대 임계값 추측보다 안전하다.
+        const communityPhotos = Math.min(Math.log10((c.googlePhotoCount ?? 0) + 1) / 3, 0.3);
         const closedPenalty = c.businessStatus && c.businessStatus !== 'OPERATIONAL' ? -1.5 : 0;
         const planned = plannedFit(c, ctx);
 
@@ -236,9 +246,10 @@ export function rankPlaceCandidates(
             1.4 * planned.score +
             photoBonus +
             prominence +
+            communityPhotos +
             closedPenalty;
 
-        return { ...c, score, reason: explain(c, ctx, { dwell, time, photoBonus, planned }) };
+        return { ...c, score, reason: explain(c, ctx, { dwell, time, photoBonus, planned, communityPhotos }) };
     });
 
     scored.sort((a, b) => b.score - a.score);
@@ -248,7 +259,11 @@ export function rankPlaceCandidates(
 function explain(
     c: PlaceCandidate,
     ctx: CandidateContext,
-    parts: { dwell: number; time: number; photoBonus: number; planned: { score: number; matched?: PlannedPlaceHint } },
+    parts: {
+        dwell: number; time: number; photoBonus: number;
+        planned: { score: number; matched?: PlannedPlaceHint };
+        communityPhotos: number;
+    },
 ): string | undefined {
     // 계획과 맞은 건 가장 설득력 있는 이유라 맨 앞에 둔다
     if (parts.planned.score >= 0.6) {
@@ -261,6 +276,8 @@ function explain(
     }
     if (parts.time >= 0.8 && ctx.timeOfDay) return `${ctx.timeOfDay}에 어울려요`;
     if (parts.photoBonus > 0) return '사진을 여러 장 찍은 곳';
+    if ((c.userRatingsTotal ?? 0) >= 100) return '많은 사람이 다녀간 곳';
+    if (parts.communityPhotos >= 0.2) return '구글에 사진이 많이 올라온 곳';
     if (c.distanceMeters <= 25) return '바로 그 자리';
     return undefined;
 }
