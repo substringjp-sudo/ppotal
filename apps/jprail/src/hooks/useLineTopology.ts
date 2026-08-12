@@ -28,7 +28,7 @@ export interface TopologyLoop {
     cx: number;
     cy: number;
     a: number;  // 수평 반축
-    b: number;  // 수직 반축 (a * 0.5)
+    b: number;  // 수직 반축 (a * 0.6)
     stationIds: Set<string>;
 }
 
@@ -192,7 +192,7 @@ export function useLineTopology(
         const labelWidth = (id: string) => {
             const node = nodes.get(id);
             if (!node) return 40;
-            return Math.max((node.name || '').length * 9, (node.name_en || '').length * 4.5, 40);
+            return Math.max((node.name || '').length * 11, (node.name_en || '').length * 5.5, 44);
         };
 
         // Columns are sized to the widest label they hold, so names never
@@ -202,8 +202,8 @@ export function useLineTopology(
             halfWidth[placed.column] = Math.max(halfWidth[placed.column], labelWidth(placed.id) / 2);
         });
 
-        const COLUMN_GAP = 26;
-        const ROW_HEIGHT = 46;
+        const COLUMN_GAP = 30;
+        const ROW_HEIGHT = 56;
         const BASE_X = 40;
         const BASE_Y = 60;
 
@@ -240,7 +240,7 @@ export function useLineTopology(
             const spanX = (columnX[Math.min(ring.startColumn + ring.columnSpan, columnX.length - 1)] ?? 400)
                 - (columnX[ring.startColumn] ?? BASE_X);
             const a = Math.max(120, spanX / 2, (count * 70) / (2 * Math.PI));
-            const b = a * 0.5;
+            const b = a * 0.6;
             const cx = (columnX[ring.startColumn] ?? BASE_X) + a;
             const cy = BASE_Y + ring.row * ROW_HEIGHT;
 

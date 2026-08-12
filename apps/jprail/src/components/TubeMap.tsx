@@ -52,10 +52,10 @@ const TubeMap: React.FC<TubeMapProps> = ({
 
     const xs = nodes.map(n => n.x);
     const ys = nodes.map(n => n.y);
-    const minX = xs.length > 0 ? Math.min(...xs) - 40 : 0;
-    const maxX = xs.length > 0 ? Math.max(...xs) + 40 : 1000;
-    const minY = ys.length > 0 ? Math.min(...ys) - 40 : 0;
-    const maxY = ys.length > 0 ? Math.max(...ys) + 120 : 350;
+    const minX = xs.length > 0 ? Math.min(...xs) - 60 : 0;
+    const maxX = xs.length > 0 ? Math.max(...xs) + 60 : 1000;
+    const minY = ys.length > 0 ? Math.min(...ys) - 60 : 0;
+    const maxY = ys.length > 0 ? Math.max(...ys) + 160 : 350;
 
     const svgWidth = Math.max(maxX - minX, 800);
     const svgHeight = maxY - minY;
@@ -416,7 +416,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
         const dy = toNode.y - fromNode.y;
 
         if (kind === 'express') {
-            const lift = 14 + Math.min(passes, 8) * 5;
+            const lift = 18 + Math.min(passes, 8) * 8;
             const midX = (fromNode.x + toNode.x) / 2;
             const midY = Math.min(fromNode.y, toNode.y) - lift;
             return (
@@ -449,8 +449,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
         <div
             id="tube-minimap"
             style={{
-                width: '80px',
-                height: '30px',
+                width: '100px',
+                height: '36px',
                 backgroundColor: 'rgba(255, 255, 255, 0.5)',
                 backdropFilter: 'blur(8px)',
                 borderRadius: '10px',
@@ -549,8 +549,8 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     if (!fromNode || !toNode) return null;
 
                     const stroke = edge.isVisited ? '#2ecc71' : lineColor;
-                    const strokeWidth = edge.isVisited ? 3 : 1.5;
-                    const opacity = edge.isVisited ? 1.0 : 0.3;
+                    const strokeWidth = edge.isVisited ? 4.5 : 3;
+                    const opacity = edge.isVisited ? 1.0 : 0.45;
 
                     return drawEdge(fromNode, toNode, `edge-${i}`, stroke, strokeWidth, opacity, false, undefined, edge.kind, edge.passes);
                 })}
@@ -613,11 +613,11 @@ const TubeMap: React.FC<TubeMapProps> = ({
                             onTouchEnd={() => handleEnd(node.id)}
                             style={{ cursor: 'pointer' }}
                         >
-                            <circle cx={node.x} cy={node.y} r={12} fill="transparent" />
+                            <circle cx={node.x} cy={node.y} r={16} fill="transparent" />
                             <circle
                                 cx={node.x}
                                 cy={node.y}
-                                r={isSelected ? 3.5 : 2.5}
+                                r={isSelected ? 6 : 4.5}
                                 fill="#ffffff"
                                 filter="url(#nodeShadow)"
                                 style={{ transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
@@ -625,25 +625,25 @@ const TubeMap: React.FC<TubeMapProps> = ({
                             <circle
                                 cx={node.x}
                                 cy={node.y}
-                                r={isSelected ? 3.5 : 2.5}
+                                r={isSelected ? 6 : 4.5}
                                 fill="none"
                                 stroke={node.isVisited ? '#2ecc71' : lineColor}
-                                strokeWidth={1}
+                                strokeWidth={1.5}
                                 style={{ transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
                             />
-                            {node.isVisited && <circle cx={node.x} cy={node.y} r={1.5} fill="#2ecc71" />}
+                            {node.isVisited && <circle cx={node.x} cy={node.y} r={2.5} fill="#2ecc71" />}
                             <text
-                                x={node.x} y={node.y + 7.5}
+                                x={node.x} y={node.y + 12}
                                 textAnchor="middle"
                                 style={{
-                                    fontSize: '8px', fontWeight: '900', fill: '#0f172a',
+                                    fontSize: '11px', fontWeight: '900', fill: '#0f172a',
                                     userSelect: 'none', paintOrder: 'stroke',
-                                    stroke: '#ffffff', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round'
+                                    stroke: '#ffffff', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round'
                                 }}
                             >
                                 <tspan x={node.x} dy="0">{getLocalizedName(node, language)}</tspan>
                                 {language !== 'ja' && (
-                                    <tspan x={node.x} dy="6" style={{ fontSize: '5px', fontWeight: '700', fill: '#64748b', opacity: 0.9 }}>
+                                    <tspan x={node.x} dy="8" style={{ fontSize: '7px', fontWeight: '700', fill: '#64748b', opacity: 0.9 }}>
                                         {node.name}
                                     </tspan>
                                 )}

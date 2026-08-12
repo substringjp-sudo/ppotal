@@ -5,8 +5,6 @@ import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
 import SidebarGroup from './SidebarGroup';
-import { useAuth } from '../lib/auth-context';
-import AuthModal from './auth/AuthModal';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 

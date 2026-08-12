@@ -59,6 +59,7 @@ const ExportModal = dynamic<ExportModalProps>(() => import('./ExportModal'), { s
 const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: false });
 const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
 
+import { useRegionNames } from '../hooks/useRegionNames';
 import type { RouteGeneratorModalProps } from './RouteGeneratorModal';
 const RouteGeneratorModal = dynamic<RouteGeneratorModalProps>(() => import('./RouteGeneratorModal').then(m => m.RouteGeneratorModal), { ssr: false });
 
@@ -93,8 +94,8 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
         weight: 1.0,
     },
     unvisited: {
-        weight: 2.5,
-        showOutline: true,
+        weight: 1.0,
+        showOutline: false,
         stationSize: 1.0,
     },
     visited: {
@@ -103,7 +104,7 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
         stationSize: 1.2,
     },
     showLabels: false,
-    showAirports: true
+    showAirports: false
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
@@ -159,7 +160,7 @@ const MainPageClient = () => {
     const profileDropdownRef = React.useRef<HTMLDivElement>(null);
     const [isSyncSummaryOpen, setIsSyncSummaryOpen] = React.useState(false);
     const [syncSummaryData, setSyncSummaryData] = React.useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
-    const [regionNames, setRegionNames] = React.useState<any>(null);
+    const regionNames = useRegionNames();
     const [isRouteGeneratorOpen, setIsRouteGeneratorOpen] = React.useState(false);
 
     const { language, isKorean } = useI18n();
@@ -210,12 +211,7 @@ const MainPageClient = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    React.useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(data => setRegionNames(data))
-            .catch(err => console.error("Failed to load region names in client:", err));
-    }, []);
+
 
     const exportMap = async () => {
         const mapElement = document.querySelector('.leaflet-container') as HTMLElement;
@@ -291,9 +287,7 @@ const MainPageClient = () => {
         }
     };
 
-    const handleLogout = async () => {
-        const { logout } = await import('../lib/auth-context').then(m => m.useAuth()); // This won't work easily here due to hook rules, but I'll use logout from context
-    };
+
 
     const { railData, isLoading: isRailLoading } = useRailData();
     const { isLoading: isMapDataLoading } = useMapData();
@@ -334,12 +328,16 @@ const MainPageClient = () => {
                     });
 
                     if (cloudTrips.length === 0 && localTrips.length > 0) {
-                        const batch = writeBatch(db);
-                        localTrips.forEach(trip => {
-                            const tRef = doc(db, `users/${user.uid}/trips`, trip.id);
-                            batch.set(tRef, toFirestoreTrip(trip));
-                        });
-                        await batch.commit();
+                        const BATCH_SIZE = 400;
+                        for (let i = 0; i < localTrips.length; i += BATCH_SIZE) {
+                            const batch = writeBatch(db);
+                            const chunk = localTrips.slice(i, i + BATCH_SIZE);
+                            chunk.forEach(trip => {
+                                const tRef = doc(db, `users/${user.uid}/trips`, trip.id);
+                                batch.set(tRef, toFirestoreTrip(trip));
+                            });
+                            await batch.commit();
+                        }
                         setRecordedTrips(localTrips);
                     } else {
                         setRecordedTrips(cloudTrips.length > 0 ? cloudTrips : localTrips);
@@ -582,20 +580,16 @@ const MainPageClient = () => {
         const station = (railData.stations as { [key: string]: Station })[stationId];
 
         if (station) {
-            // Close any existing popups by temporarily setting to null
-            setSelectedStation(null);
+            setSelectedStation(station);
+            setActiveLine(null);
+            if (isMobile) {
+                setIsMobileSheetOpen(false);
+            }
+            trackEvent('station_click', 'interaction', station.name);
 
-            setTimeout(async () => {
-                setSelectedStation(station);
-                setActiveLine(null);
-                if (isMobile) {
-                    setIsMobileSheetOpen(false);
-                }
-                trackEvent('station_click', 'interaction', station.name);
-
-                // Fetch extra station info (like neighbors) from remote
-                try {
-                    const remoteInfo = await getStationInfoRemote(stationId);
+            // Fetch extra station info (like neighbors) from remote
+            getStationInfoRemote(stationId)
+                .then(remoteInfo => {
                     if (remoteInfo) {
                         setSelectedStation(prev => {
                             if (prev && prev.id === stationId) {
@@ -604,19 +598,20 @@ const MainPageClient = () => {
                             return prev;
                         });
                     }
-                } catch (err) {
-                    console.error("Failed to fetch remote station info:", err);
-                }
+                })
+                .catch(err => console.error("Failed to fetch remote station info:", err));
 
-                // Preview trip path if one is in progress
-                if (tripStartStation && lineDetailData) {
-                    try {
-                        const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined);
+            // Preview trip path if one is in progress
+            if (tripStartStation && lineDetailData) {
+                lineDetailData.getShortestPath(tripStartStation.id, station.id, undefined)
+                    .then(pathResult => {
                         if (pathResult) {
                             const previewTrip: Trip = {
                                 id: 'preview',
                                 start: tripStartStation.name,
                                 end: station.name,
+                                startId: tripStartStation.id,
+                                endId: station.id,
                                 path: pathResult.path,
                                 waypoints: [tripStartStation.id, station.id],
                                 geometries: pathResult.geometries,
@@ -625,11 +620,9 @@ const MainPageClient = () => {
                             };
                             setDraftTrip(previewTrip);
                         }
-                    } catch (err) {
-                        console.error("Station click remote search failed:", err);
-                    }
-                }
-            }, 0);
+                    })
+                    .catch(err => console.error("Station click remote search failed:", err));
+            }
         }
     }, [isMobile, railData, tripStartStation, lineDetailData]);
 
@@ -697,14 +690,16 @@ const MainPageClient = () => {
             trackEvent('reset_all_trips', 'engagement', 'confirm');
 
             if (user) {
-                const batch = writeBatch(db);
-                // In some versions it was users/${user.uid}/trips, let's keep it consistent
                 const tripsRef = collection(db, `users/${user.uid}/trips`);
                 const querySnapshot = await getDocs(query(tripsRef));
-                querySnapshot.forEach((doc) => {
-                    batch.delete(doc.ref);
-                });
-                await batch.commit();
+                const docs = querySnapshot.docs;
+                const BATCH_SIZE = 400;
+                for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+                    const batch = writeBatch(db);
+                    const chunk = docs.slice(i, i + BATCH_SIZE);
+                    chunk.forEach((d) => batch.delete(d.ref));
+                    await batch.commit();
+                }
             }
         } catch (e) {
             console.error("Cloud reset failed", e);
@@ -777,14 +772,19 @@ const MainPageClient = () => {
         try {
             const pathData = await lineDetailData.getShortestPath(startId, endId, [activeLine]);
             if (pathData) {
-                const trip = {
+                const trip: Trip = {
                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     start: lineDetailData.nodes.get(startId)?.name || startId,
                     end: lineDetailData.nodes.get(endId)?.name || endId,
-                    ...pathData,
+                    startId,
+                    endId,
+                    path: pathData.path,
+                    distance: pathData.distance,
+                    geometries: pathData.geometries,
+                    sectionIds: pathData.sectionIds,
                     waypoints: [startId, endId]
                 };
-                setDraftTrip(trip as any);
+                setDraftTrip(trip);
                 setTempPath([]);
             }
         } catch (err) {

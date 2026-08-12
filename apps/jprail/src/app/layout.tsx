@@ -63,65 +63,48 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-K586RNZD1F"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              
-              // Google Consent Mode v2 Default Settings
-              gtag('consent', 'default', {
-                'ad_storage': 'granted',
-                'ad_user_data': 'granted',
-                'ad_personalization': 'granted',
-                'analytics_storage': 'granted'
-              });
-
-              gtag('js', new Date());
-              gtag('config', 'G-K586RNZD1F');
-            `
-          }}
-        />
         {/* Redirect old web.app domain to custom domain immediately */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (window.location.hostname === 'jprail.web.app' || window.location.hostname === 'jprail.firebaseapp.com') {
-                window.location.replace('https://jprail.pplaner.com' + window.location.pathname + window.location.search);
-              }
-            `
-          }}
+        <Script id="domain-redirect" strategy="beforeInteractive">
+          {`
+            if (typeof window !== 'undefined' && (window.location.hostname === 'jprail.web.app' || window.location.hostname === 'jprail.firebaseapp.com')) {
+              window.location.replace('https://jprail.pplaner.com' + window.location.pathname + window.location.search);
+            }
+          `}
+        </Script>
+        {/* Google tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-K586RNZD1F"
+          strategy="afterInteractive"
         />
+        <Script id="google-gtag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            
+            // Google Consent Mode v2 Default Settings
+            gtag('consent', 'default', {
+              'ad_storage': 'granted',
+              'ad_user_data': 'granted',
+              'ad_personalization': 'granted',
+              'analytics_storage': 'granted'
+            });
+
+            gtag('js', new Date());
+            gtag('config', 'G-K586RNZD1F');
+          `}
+        </Script>
         {/* Preconnect to Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* Preload stylesheet for early download */}
         <link
-          rel="preload"
-          as="style"
+          rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
-        {/* Inject stylesheet dynamically to bypass React Server Component event handler restriction */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var link = document.createElement('link');
-                link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
-                link.rel = 'stylesheet';
-                link.media = 'print';
-                link.onload = function() { this.media = 'all'; };
-                document.head.appendChild(link);
-              })();
-            `
-          }}
-        />
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        <script
-          async
+        {/* Google AdSense */}
+        <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2007288082586284"
+          strategy="afterInteractive"
           crossOrigin="anonymous"
         />
       </head>

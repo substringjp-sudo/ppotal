@@ -3,7 +3,8 @@ import styles from './StationDetailPane.module.css';
 import { Station, RailData, Platform } from '../types/railData';
 import { getLineColor } from '../lib/lineColors';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName, getLocalizedAddress, RegionNames, Language } from '../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress, Language } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 
 import { STATION_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { buildRouteGraph, groupOf } from '../lib/routeSearch';
@@ -41,12 +42,13 @@ const NeighbourRow: React.FC<{
   right: NeighbourEntry[];
   color: string;
   language: Language;
-}> = ({ left, right, color, language }) => {
+  platformNumber: number;
+}> = ({ left, right, color, language, platformNumber }) => {
   const Side: React.FC<{ entries: NeighbourEntry[]; side: 'left' | 'right' }> = ({ entries, side }) => (
     <div className={`flex-1 min-w-0 flex flex-col gap-1 ${side === 'left' ? 'items-end' : 'items-start'}`}>
       {entries.length === 0 ? (
-        <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest px-1">
-          {side === 'left' ? '—' : '—'}
+        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider px-1">
+          - terminal
         </span>
       ) : (
         entries.map(entry => (
@@ -55,11 +57,11 @@ const NeighbourRow: React.FC<{
             className={`max-w-full flex items-center gap-1.5 ${side === 'left' ? 'flex-row' : 'flex-row-reverse'}`}
           >
             <div className={`min-w-0 flex flex-col ${side === 'left' ? 'items-end' : 'items-start'}`}>
-              <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 truncate max-w-[110px] sm:max-w-[150px]">
+              <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 truncate max-w-[100px] sm:max-w-[160px] md:max-w-[200px]">
                 {getLocalizedName(entry.station, language)}
               </span>
               {language !== 'ja' && (
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate max-w-[110px] sm:max-w-[150px]">
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate max-w-[100px] sm:max-w-[160px] md:max-w-[200px]">
                   {entry.station.name}
                 </span>
               )}
@@ -87,13 +89,15 @@ const NeighbourRow: React.FC<{
     <div className="flex items-center gap-2 sm:gap-3 py-1">
       <Side entries={left} side="left" />
 
-      {/* The station itself, sitting on a bar in the line's colour */}
+      {/* The station itself, with platform number inside the center circle */}
       <div className="relative shrink-0 flex flex-col items-center px-1">
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full" style={{ backgroundColor: color }} />
         <div
-          className="relative size-4 rounded-full border-[3px] bg-white dark:bg-slate-900"
+          className="relative size-6 sm:size-7 rounded-full border-[2.5px] bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm text-[10px] sm:text-[11px] font-black text-slate-800 dark:text-slate-100 z-10"
           style={{ borderColor: color }}
-        />
+        >
+          {platformNumber}
+        </div>
       </div>
 
       <Side entries={right} side="right" />
@@ -113,14 +117,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 }) => {
   const { isKorean, language } = useI18n();
   const t = getTranslations(STATION_DETAIL_TRANSLATIONS, language);
-  const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
-
-  useEffect(() => {
-    fetch('/data/region_names.json')
-      .then(res => res.json())
-      .then(data => setRegionNames(data))
-      .catch(err => console.error("Failed to load region names:", err));
-  }, []);
+  const regionNames = useRegionNames();
 
   const localizedAddress = getLocalizedAddress(station.prefecture_id, station.city_id, regionNames, language);
 
@@ -299,7 +296,15 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-950/20">
-        <div className="w-full p-2 sm:px-4 sm:py-2 space-y-1.5 sm:space-y-2">
+        <div className="w-full p-2 sm:px-4 sm:py-2 space-y-2">
+          {/* Column Header */}
+          {sortedStationPlatforms.length > 0 && (
+            <div className="flex items-center px-2 sm:px-3 py-1.5 text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800/60 mb-1.5">
+              <div className="w-40 sm:w-44 md:w-56 shrink-0 text-center">{t.lineName}</div>
+              <div className="flex-1 text-center">{t.platformInfo}</div>
+            </div>
+          )}
+
           {sortedStationPlatforms.map((p, index) => {
             const line = allLines[p.line];
             if (!line) return null;
@@ -307,30 +312,21 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
             const finalColor = line.color || getLineColor(`${line.corp_id}::${p.line}`, railData) || '#3498db';
             const { left, right } = getDirectionalNeighbors(p);
 
-            // Ordinal number helper
-            const getOrdinal = (n: number) => {
-              if (language === 'en') {
-                const s = ["th", "st", "nd", "rd"];
-                const v = n % 100;
-                return n + (s[(v - 20) % 10] || s[v] || s[0]);
-              }
-              return n;
-            };
-
             return (
-              <div key={p.pid} className="group/row relative w-full rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 p-2 sm:p-3 transition-all hover:shadow-lg">
-                <div className="flex items-center justify-between mb-1 pb-1.5 border-b border-slate-50 dark:border-slate-800/50">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black w-4 h-4 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
-                      {getOrdinal(index + 1)}
-                    </span>
-                    <div className="w-1 h-3 rounded-full" style={{ backgroundColor: finalColor }}></div>
-                    <div className="flex flex-col">
-                      <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-white tracking-tight leading-none">
+              <div
+                key={p.pid}
+                className="group/row relative w-full rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 p-2 sm:p-2.5 transition-all hover:shadow-lg flex flex-col sm:flex-row sm:items-stretch sm:gap-3"
+              >
+                {/* Left side: Station/Line Name category box with shaded background (rounded left, straight right) */}
+                <div className="flex items-center justify-start p-2.5 sm:p-3 rounded-l-xl rounded-r-none bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 mb-1 sm:mb-0 sm:w-44 md:w-56 sm:shrink-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-1.5 h-4 rounded-full shrink-0" style={{ backgroundColor: finalColor }}></div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
                         {language === 'ja' ? line.name : (isKorean ? (line.name_kr || line.name_en) : line.name_en)}
                       </span>
                       {language !== 'ja' && (
-                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic mt-0.5">
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic mt-0.5 truncate">
                           {line.name}
                         </span>
                       )}
@@ -338,8 +334,10 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                   </div>
                 </div>
 
-                {/* Neighbouring stations, laid out along the line rather than stacked */}
-                <NeighbourRow left={left} right={right} color={finalColor} language={language} />
+                {/* Right side: Platform Info column with center-circle platform number */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center px-1 sm:px-2 py-1">
+                  <NeighbourRow left={left} right={right} color={finalColor} language={language} platformNumber={index + 1} />
+                </div>
               </div>
             );
           })}

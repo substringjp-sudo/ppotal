@@ -90,7 +90,7 @@ export default function TripWarnings() {
                         >
                             <div id="warning-list" className="px-5 pb-5 pt-0 space-y-3">
                                 <div className="h-px bg-slate-100 dark:bg-slate-800 mb-4" />
-                                {warnings.sort((a, b) => {
+                                {[...warnings].sort((a, b) => {
                                     const severityMap = { critical: 0, warning: 1, info: 2 };
                                     return severityMap[a.severity as keyof typeof severityMap] - severityMap[b.severity as keyof typeof severityMap];
                                 }).map((warning) => (

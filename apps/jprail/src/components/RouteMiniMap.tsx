@@ -310,21 +310,38 @@ export const RouteMiniMap: React.FC<RouteMiniMapProps> = ({
                         />
                     )}
 
-                {/* Candidate routes that are not currently highlighted */}
+                {/* Candidate routes */}
                 {drawn.map(route => {
-                    if (route.id === activeId) return null;
                     const isSettled = settled.some(s => s.id === route.id);
+                    const isActive = route.id === activeId;
+                    const isAlternative = alternatives.some(a => a.id === route.id);
+
                     return (
                         <g
-                            key={`dim-${route.id}`}
-                            onMouseEnter={() => onHoverCandidate?.(route.id)}
-                            onMouseLeave={() => onHoverCandidate?.(null)}
-                            onClick={() => onSelectCandidate?.(route.id)}
-                            style={{ cursor: onSelectCandidate ? 'pointer' : 'default' }}
+                            key={`route-${route.id}`}
+                            onMouseEnter={() => isAlternative && onHoverCandidate?.(route.id)}
+                            onMouseLeave={() => isAlternative && onHoverCandidate?.(null)}
+                            onClick={() => isAlternative && onSelectCandidate?.(route.id)}
+                            style={{ cursor: isAlternative ? 'pointer' : 'default' }}
                         >
-                            {route.geometries.map((geometry, index) => (
+                            {/* Wide transparent hit-area stroke for smooth mouse hover and click */}
+                            {isAlternative && route.geometries.map((geometry, index) => (
                                 <path
-                                    key={index}
+                                    key={`hit-${index}`}
+                                    d={toPath(geometry)}
+                                    fill="none"
+                                    stroke="transparent"
+                                    strokeWidth={22}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    style={{ pointerEvents: 'stroke' }}
+                                />
+                            ))}
+
+                            {/* Base line path when not actively highlighted */}
+                            {!isActive && route.geometries.map((geometry, index) => (
+                                <path
+                                    key={`base-${index}`}
                                     d={toPath(geometry)}
                                     fill="none"
                                     className="stroke-slate-500 dark:stroke-slate-300"

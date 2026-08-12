@@ -3,7 +3,8 @@ import React from 'react';
 import { getLineColor } from '../../lib/lineColors';
 import { RailData, Station } from '../../types/railData';
 import { useI18n } from '../../lib/i18n-context';
-import { getLocalizedName, getLocalizedAddress, RegionNames } from '../../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress } from '../../lib/i18n-utils';
+import { useRegionNames } from '../../hooks/useRegionNames';
 
 import { MOBILE_STATION_PREVIEW_TRANSLATIONS, getTranslations } from '../../lib/translations';
 
@@ -33,14 +34,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MOBILE_STATION_PREVIEW_TRANSLATIONS, language);
-    const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
-
-    React.useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(data => setRegionNames(data))
-            .catch(err => console.error("Failed to load region names:", err));
-    }, []);
+    const regionNames = useRegionNames();
 
     const address = getLocalizedAddress(station.prefecture_id, station.city_id, regionNames, language);
     const stationName = getLocalizedName(station, language);

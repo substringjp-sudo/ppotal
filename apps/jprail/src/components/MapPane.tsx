@@ -27,6 +27,7 @@ import { usePassengerGrid } from '../hooks/usePassengerGrid';
 
 import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
+import { useZoomBounce } from '../hooks/useZoomBounce';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -127,6 +128,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
     const [mapReady, setMapReady] = useState(false);
+    const { triggerBounce } = useZoomBounce(map, { minZoom: 4, maxZoom: 18 });
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
     const [floatingTooltip, setFloatingTooltip] = useState<{
         content: string | null;
@@ -607,6 +609,9 @@ const MapPane: React.FC<MapPaneProps> = ({
         <>
             {!isMobile && <MapControls
                 zoom={zoomLevel}
+                minZoom={4}
+                maxZoom={18}
+                onBounce={triggerBounce}
             />}
 
             {activePrefectures && (

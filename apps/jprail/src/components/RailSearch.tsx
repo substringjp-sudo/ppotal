@@ -5,7 +5,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { RailData, Station, Line } from '../types/railData';
 import { trackEvent } from '../lib/gtag';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 
 interface RailSearchProps {
     railData: RailData | null;
@@ -44,7 +45,7 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
     const t = getTranslations(RAIL_SEARCH_TRANSLATIONS, language);
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
-    const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
+    const regionNames = useRegionNames();
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [recentSearches, setRecentSearches] = useState<{ id: string, name: string, name_en?: string, name_kr?: string, type: 'station' | 'line' }[]>([]);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -76,12 +77,7 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
         localStorage.removeItem('jprail_recent_searches');
     };
 
-    useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(data => setRegionNames(data))
-            .catch(err => console.error("Failed to load region names:", err));
-    }, []);
+
 
     // Global shortcut Ctrl+K / Cmd+K
     useEffect(() => {

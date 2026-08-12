@@ -231,6 +231,9 @@ export const MY_LINES_TRANSLATIONS = {
         totalTransfersLabel: '총 환승',
         createTrip: '이 경로로 여행 기록 생성',
         noRouteHint: '두 역이 철도로 이어져 있지 않을 수 있습니다. 다른 역을 선택해 보세요.',
+        selectLegHeader: '구간별 경로 선택',
+        allLegsRequired: '모든 구간의 경로를 선택해야 합니다',
+        needSelect: '선택 필요',
     },
     en: {
         title: 'My Travels',
@@ -279,6 +282,9 @@ export const MY_LINES_TRANSLATIONS = {
         totalTransfersLabel: 'Transfers',
         createTrip: 'Save this route as a trip',
         noRouteHint: 'These stations may not be connected by rail. Try different stations.',
+        selectLegHeader: 'Select Route per Segment',
+        allLegsRequired: 'Select a route for all segments',
+        needSelect: 'Select Required',
     },
     ja: {
         title: 'マイ履歴',
@@ -327,6 +333,9 @@ export const MY_LINES_TRANSLATIONS = {
         totalTransfersLabel: '乗換回数',
         createTrip: 'この経路で履歴を作成',
         noRouteHint: '2つの駅が鉄道でつながっていない可能性があります。別の駅をお試しください。',
+        selectLegHeader: '区間別ルート選択',
+        allLegsRequired: 'すべての区間のルートを選択してください',
+        needSelect: '選択が必要',
     }
 };
 
@@ -476,18 +485,27 @@ export const STATION_DETAIL_TRANSLATIONS = {
         cancel: '취소',
         start: '시작',
         platform: '번 승강장',
+        lineName: '노선명',
+        platformInfo: '플랫폼 정보',
+        terminal: 'terminal',
     },
     en: {
         arr: 'Arr',
         cancel: 'Cancel',
         start: 'Start',
         platform: ' Platform',
+        lineName: 'Line Name',
+        platformInfo: 'Platform Info',
+        terminal: 'terminal',
     },
     ja: {
         arr: '到着',
         cancel: 'キャンセル',
         start: '開始',
         platform: '番線',
+        lineName: '路線名',
+        platformInfo: 'プラットフォーム情報',
+        terminal: 'terminal',
     }
 };
 

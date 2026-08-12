@@ -115,9 +115,9 @@ path {
   box-shadow: none !important;
 }
 
-/* Clear selection styling for the entire app except form elements */
 ::selection {
-  background-color: transparent !important;
+  background-color: rgba(28, 116, 233, 0.25) !important;
+  color: inherit !important;
 }
 
 input::selection,
