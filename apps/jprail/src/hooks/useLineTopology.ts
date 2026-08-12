@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { RailData } from '../types/railData';
+import { layoutLine } from '../lib/lineLayout';
 
 export interface TopologyNode {
     id: string;
@@ -17,6 +18,10 @@ export interface TopologyEdge {
     from: string;
     to: string;
     isVisited: boolean;
+    /** How the connection should be drawn. */
+    kind: 'track' | 'express' | 'ring';
+    /** Stations an express service runs past, sizing its arc. */
+    passes: number;
 }
 
 export interface TopologyLoop {
@@ -169,294 +174,122 @@ export function useLineTopology(
             }
         }
 
-        // === Phase 4: 레이아웃 (collapsed 그래프 기반 - 실제 역만) ===
-        const [_, lineName] = lineId.split('::');
+        // === Phase 4: 스키매틱 레이아웃 ===
+        const [, lineName] = lineId.split('::');
         const lineSequence = railData?.railroadNetwork?.line_data?.[lineName]?.stations || [];
 
-        const getLabelWidth = (nodeId: string) => {
-            const node = nodes.get(nodeId);
-            if (!node) return 0;
-            return Math.max((node.name || "").length * 9, (node.name_en || "").length * 4.5);
+        const coordinates = new Map<string, [number, number]>();
+        collapsedAdj.forEach((_neighbours, id) => {
+            const coord = nodes.get(id)?.coords;
+            if (coord) coordinates.set(id, coord);
+        });
+
+        const layout = layoutLine(collapsedAdj, {
+            preferredOrder: lineSequence,
+            coordinates
+        });
+
+        const labelWidth = (id: string) => {
+            const node = nodes.get(id);
+            if (!node) return 40;
+            return Math.max((node.name || '').length * 9, (node.name_en || '').length * 4.5, 40);
         };
 
-        const calculateSpacingX = (idA: string, idB: string) => {
-            const gap = (getLabelWidth(idA) + getLabelWidth(idB)) / 2 + 35;
-            return Math.max(80, gap);
-        };
+        // Columns are sized to the widest label they hold, so names never
+        // collide and stations still line up vertically across rows.
+        const halfWidth = new Array(Math.max(1, layout.columnCount)).fill(24);
+        layout.nodes.forEach(placed => {
+            halfWidth[placed.column] = Math.max(halfWidth[placed.column], labelWidth(placed.id) / 2);
+        });
 
-        // 분기 방향 계산: 실제 역 좌표(coords) 또는 joint 좌표(jointCoords)를 이용
-        const getBranchDirection = (u: string, v: string, prevU: string | null): number => {
-            if (!prevU) return 1;
+        const COLUMN_GAP = 26;
+        const ROW_HEIGHT = 46;
+        const BASE_X = 40;
+        const BASE_Y = 60;
 
-            // prevU → u 방향각 (실제 좌표 기반)
-            let inAngle = 0;
-            {
-                const coordPrevU = nodes.get(prevU)?.coords;
-                const coordU = nodes.get(u)?.coords;
-                if (coordPrevU && coordU) {
-                    inAngle = Math.atan2(coordU[1] - coordPrevU[1], coordU[0] - coordPrevU[0]);
-                } else {
-                    // 기하학 fallback
-                    const geomKey = collapsedEdgeGeomKeys.get([prevU, u].sort().join('<->'));
-                    if (geomKey) {
-                        const geom = edgeGeomMap.get(geomKey.endKey);
-                        if (geom && geom.length >= 2) {
-                            const last = geom.length - 1;
-                            inAngle = Math.atan2(geom[last][1] - geom[last - 1][1], geom[last][0] - geom[last - 1][0]);
-                        }
-                    }
-                }
-            }
-
-            // u → v 방향각
-            let outAngle = 0;
-            {
-                const coordU = nodes.get(u)?.coords;
-                const coordV = nodes.get(v)?.coords;
-                if (coordU && coordV) {
-                    outAngle = Math.atan2(coordV[1] - coordU[1], coordV[0] - coordU[0]);
-                } else {
-                    const geomKey = collapsedEdgeGeomKeys.get([u, v].sort().join('<->'));
-                    if (geomKey) {
-                        const geom = edgeGeomMap.get(geomKey.startKey);
-                        if (geom && geom.length >= 2) {
-                            outAngle = Math.atan2(geom[1][1] - geom[0][1], geom[1][0] - geom[0][0]);
-                        }
-                    }
-                }
-            }
-
-            let diff = outAngle - inAngle;
-            while (diff > Math.PI) diff -= 2 * Math.PI;
-            while (diff < -Math.PI) diff += 2 * Math.PI;
-            if (diff > 0.1) return -1;
-            if (diff < -0.1) return 1;
-            return 0;
-        };
-
-        const getLongestSimplePath = (starts: string[], available: Set<string>): { path: string[], score: number } => {
-            let best: string[] = [];
-            let bestScore = -1;
-            let ops = 0;
-            const MAX_OPS = 20000;
-
-            for (const start of starts) {
-                if (!available.has(start)) continue;
-                const stack: { node: string, path: string[], visited: Set<string>, score: number }[] = [
-                    { node: start, path: [start], visited: new Set([start]), score: 10 }
-                ];
-                while (stack.length > 0) {
-                    ops++;
-                    if (ops > MAX_OPS) return { path: best, score: bestScore };
-                    const curr = stack.pop()!;
-                    if (curr.score > bestScore || (curr.score === bestScore && curr.path.length > best.length)) {
-                        bestScore = curr.score; best = curr.path;
-                    }
-                    for (const n of collapsedAdj.get(curr.node) || []) {
-                        if (available.has(n) && !curr.visited.has(n)) {
-                            const nv = new Set(curr.visited); nv.add(n);
-                            stack.push({ node: n, path: [...curr.path, n], visited: nv, score: curr.score + 10 });
-                        }
-                    }
-                }
-            }
-            return { path: best, score: bestScore };
-        };
+        const columnX: number[] = [];
+        for (let c = 0; c < halfWidth.length; c++) {
+            columnX[c] = c === 0
+                ? BASE_X + halfWidth[0]
+                : columnX[c - 1] + halfWidth[c - 1] + COLUMN_GAP + halfWidth[c];
+        }
 
         const topoNodes = new Map<string, TopologyNode>();
-        const unvisited = new Set(Array.from(collapsedAdj.keys()));
-        const laneUsage = new Map<number, number>();
-        const loopMetadata: TopologyLoop[] = [];
-        const OCCUPATION_BUFFER = 120;
-        const spacingY = 40;
-        const baseY = 75;
-
-        const findAvailableLane = (startX: number, preferredOffset: number): number => {
-            let offset = preferredOffset;
-            for (let step = 0; step < 20; step++) {
-                if ((laneUsage.get(offset) || 0) < startX) return offset;
-                offset = preferredOffset + (step + 1) * (preferredOffset >= 0 ? 1 : -1);
-            }
-            return offset;
+        const place = (id: string, x: number, y: number) => {
+            const data = nodes.get(id);
+            topoNodes.set(id, {
+                id,
+                name: data?.name || id,
+                name_en: data?.name_en,
+                name_kr: data?.name_kr,
+                x,
+                y,
+                isJoint: false,
+                isVisited: visitedStations.has(id)
+            });
         };
 
-        while (unvisited.size > 0) {
-            const candidates: { u: string, v: string }[] = [];
-            for (const u of topoNodes.keys()) {
-                for (const v of collapsedAdj.get(u) || []) {
-                    if (unvisited.has(v)) candidates.push({ u, v });
-                }
-            }
+        layout.nodes.forEach(placed => {
+            place(placed.id, columnX[placed.column] ?? BASE_X, BASE_Y + placed.row * ROW_HEIGHT);
+        });
 
-            let basePath: string[] = [];
-            let juncU: string | null = null;
-            let juncV: string | null = null;
+        // Circle lines are drawn as a circle rather than unrolled into a strip.
+        const loopMetadata: TopologyLoop[] = [];
+        layout.rings.forEach(ring => {
+            const count = ring.members.length;
+            const spanX = (columnX[Math.min(ring.startColumn + ring.columnSpan, columnX.length - 1)] ?? 400)
+                - (columnX[ring.startColumn] ?? BASE_X);
+            const a = Math.max(120, spanX / 2, (count * 70) / (2 * Math.PI));
+            const b = a * 0.5;
+            const cx = (columnX[ring.startColumn] ?? BASE_X) + a;
+            const cy = BASE_Y + ring.row * ROW_HEIGHT;
 
-            if (candidates.length > 0) {
-                let bestScore = -1;
-                let bestCand = candidates[0];
-                for (const cand of candidates) {
-                    const res = getLongestSimplePath([cand.v], unvisited);
-                    if (res.score > bestScore || (res.score === bestScore && res.path.length > basePath.length)) {
-                        bestScore = res.score; basePath = res.path; bestCand = cand;
-                    }
-                }
-                juncU = bestCand.u; juncV = bestCand.v;
-            } else {
-                const availableArray = Array.from(unvisited);
-                let degree1 = availableArray.filter(n =>
-                    Array.from(collapsedAdj.get(n) || []).filter(nx => unvisited.has(nx)).length === 1
-                );
-                if (degree1.length === 0) {
-                    const officialStart = availableArray.find(n => n === lineSequence[0]);
-                    if (officialStart) degree1 = [officialStart];
-                    else if (lineSequence.length > 0) {
-                        const any = availableArray.find(n => lineSequence.indexOf(n) !== -1);
-                        if (any) degree1 = [any];
-                    }
-                }
-                const starts = degree1.length > 0 ? degree1 : [availableArray[0]];
-                basePath = getLongestSimplePath(starts, unvisited).path;
-            }
+            ring.members.forEach((id, index) => {
+                const angle = -Math.PI / 2 + (index / count) * 2 * Math.PI;
+                place(id, cx + a * Math.cos(angle), cy + b * Math.sin(angle));
+            });
 
-            // 순환선 루프 감지
-            if (basePath.length > 2) {
-                const last = basePath[basePath.length - 1];
-                const cycleNeighbors = Array.from(collapsedAdj.get(last) || [])
-                    .filter(n => basePath.includes(n) && n !== basePath[basePath.length - 2]);
-                if (cycleNeighbors.length > 0) {
-                    let earliestIdx = basePath.length;
-                    for (const n of cycleNeighbors) {
-                        const idx = basePath.indexOf(n);
-                        if (idx < earliestIdx) earliestIdx = idx;
-                    }
-                    if (basePath.length - earliestIdx > 3 && earliestIdx > 0) {
-                        basePath = juncU ? basePath.slice(0, earliestIdx) : basePath.slice(earliestIdx);
-                    }
-                }
-            }
+            loopMetadata.push({ cx, cy, a, b, stationIds: new Set(ring.members) });
+        });
 
-            let laneOffset = 0;
-            let startX = 25;
-
-            if (juncU && juncV) {
-                const uData = topoNodes.get(juncU)!;
-                startX = uData.x + calculateSpacingX(juncU, juncV);
-
-                // juncU가 순환선 소속이면 → 루프 중심 높이로 본선을 직선 연장
-                const parentLoop = loopMetadata.find(lm => lm.stationIds.has(juncU));
-                if (parentLoop) {
-                    const loopCenterLane = Math.round((parentLoop.cy - baseY) / spacingY);
-                    laneOffset = loopCenterLane;
-                    // 순환선의 오른쪽 끝(cx + a)에서 적절한 간격만큼 띄웁니다.
-                    startX = Math.max(startX, parentLoop.cx + parentLoop.a + calculateSpacingX(juncU, juncV));
-                } else {
-                    const assignedNeighbors = Array.from(collapsedAdj.get(juncU) || []).filter(n => topoNodes.has(n));
-                    const prevU = assignedNeighbors.find(n => topoNodes.get(n)!.x < uData.x) || assignedNeighbors[0] || null;
-                    const idealOffsetDir = getBranchDirection(juncU, juncV, prevU);
-                    const uLane = Math.round((uData.y - baseY) / spacingY);
-                    laneOffset = findAvailableLane(startX, uLane + idealOffsetDir);
-                }
-            } else {
-                if (topoNodes.size > 0) {
-                    let maxLane = 0;
-                    for (const l of laneUsage.keys()) maxLane = Math.max(maxLane, Math.abs(l));
-                    laneOffset = maxLane + 2;
-                }
-                startX = 25;
-            }
-
-            const currentY = baseY + laneOffset * spacingY;
-            const N = basePath.length;
-            const isLoop = N > 3 && collapsedAdj.get(basePath[N - 1])?.has(basePath[0]);
-
-            if (isLoop) {
-                // === 방향 결정 ===
-                // juncU 있음(본선 → 순환): junction은 왼쪽(angle=π), 본선이 왼쪽에 이미 있음
-                // juncU 없음(순환 → 본선): junction은 오른쪽(angle=0), 이후 본선이 오른쪽으로 연장
-                const loopFacesRight = !juncU; // true = junction이 오른쪽
-
-                // 본선 연결역(juncV) 인덱스 결정
-                let junctionIdx = 0;
-                if (juncV) {
-                    const idx = basePath.indexOf(juncV);
-                    if (idx !== -1) junctionIdx = idx;
-                } else {
-                    // 독립 순환선: 이미 배치된 노드와 연결되는 역을 junction으로
-                    for (let i = 0; i < N; i++) {
-                        const ext = Array.from(collapsedAdj.get(basePath[i]) || [])
-                            .filter(n => !basePath.includes(n) && topoNodes.has(n));
-                        if (ext.length > 0) { junctionIdx = i; break; }
-                    }
-                }
-
-                // 타원 크기: 역 간 최소 180px 확보
-                const VR = 0.5; // 수직 반축 비율 (위아래 줄인 타원)
-                const factor = 2 * Math.PI * Math.sqrt((1 + VR ** 2) / 2);
-                const a = Math.max(90, (N * 90) / factor);
-                const b = a * VR;
-
-                // 타원 중심 위치
-                // 루프가 먼저 그려지든 나중에 그려지든, 현재의 startX(여유 공간 시작점)의 오른쪽에
-                // 그려져야 하므로 cx는 항상 startX + a 입니다.
-                const cx = startX + a;
-                const cy = currentY;
-
-                // junction 기준 각도: 오른쪽이면 0, 왼쪽이면 π
-                const junctionAngle = loopFacesRight ? 0 : Math.PI;
-
-                for (let i = 0; i < N; i++) {
-                    const relIdx = (i - junctionIdx + N) % N;
-                    // 시계 방향으로 배열
-                    const angle = junctionAngle - relIdx * (2 * Math.PI / N);
-                    const x = cx + a * Math.cos(angle);
-                    const y = cy + b * Math.sin(angle);
-
-                    const node = basePath[i];
-                    const nodeData = nodes.get(node);
-                    topoNodes.set(node, {
-                        id: node, name: nodeData?.name || node,
-                        name_en: nodeData?.name_en, name_kr: nodeData?.name_kr,
-                        x, y, isJoint: false,
-                        isVisited: nodeData ? visitedStations.has(node) : false
-                    });
-                    unvisited.delete(node);
-                }
-
-                loopMetadata.push({ cx, cy, a, b, stationIds: new Set(basePath) });
-
-                const topLane = Math.floor((cy - b - baseY) / spacingY);
-                const bottomLane = Math.ceil((cy + b - baseY) / spacingY);
-                for (let l = topLane; l <= bottomLane; l++) {
-                    laneUsage.set(l, Math.max(laneUsage.get(l) || 0, Math.abs(cx) + a + OCCUPATION_BUFFER));
-                }
-            } else {
-                let currX = startX;
-                for (let i = 0; i < basePath.length; i++) {
-                    const node = basePath[i];
-                    if (i > 0) currX += calculateSpacingX(basePath[i - 1], node);
-                    const nodeData = nodes.get(node);
-                    topoNodes.set(node, {
-                        id: node, name: nodeData?.name || node,
-                        name_en: nodeData?.name_en, name_kr: nodeData?.name_kr,
-                        x: currX, y: currentY, isJoint: false,
-                        isVisited: nodeData ? visitedStations.has(node) : false
-                    });
-                    unvisited.delete(node);
-                }
-                laneUsage.set(laneOffset, Math.max(laneUsage.get(laneOffset) || 0, currX + OCCUPATION_BUFFER));
-            }
+        // A circle line reaches above its own row, so slide everything down
+        // until nothing is cut off at the top.
+        const topMost = Math.min(...Array.from(topoNodes.values()).map(n => n.y), BASE_Y);
+        const shift = topMost < BASE_Y ? BASE_Y - topMost : 0;
+        if (shift > 0) {
+            topoNodes.forEach(node => { node.y += shift; });
+            loopMetadata.forEach(loop => { loop.cy += shift; });
         }
 
-        // 최종 엣지 목록
+        // === Phase 5: 엣지 ===
         const finalEdges: TopologyEdge[] = [];
         const finalEdgeInfos = new Map<string, { from: string, to: string, isVisited: boolean }>();
-        for (const [key, isVisited] of collapsedEdgeVisited) {
-            const [from, to] = key.split('<->');
-            const edge = { from, to, isVisited };
+
+        const pushEdge = (from: string, to: string, kind: TopologyEdge['kind'], passes: number) => {
+            const key = [from, to].sort().join('<->');
+            if (finalEdgeInfos.has(key)) return;
+            const isVisited = collapsedEdgeVisited.get(key) ?? false;
+            const edge: TopologyEdge = { from, to, isVisited, kind, passes };
             finalEdges.push(edge);
             finalEdgeInfos.set(key, edge);
-        }
+        };
+
+        layout.edges.forEach(edge => pushEdge(edge.from, edge.to, edge.kind, edge.passes));
+
+        // Ring segments are not part of the layered result; add them directly.
+        layout.rings.forEach(ring => {
+            ring.members.forEach((id, index) => {
+                const next = ring.members[(index + 1) % ring.members.length];
+                if (collapsedAdj.get(id)?.has(next)) pushEdge(id, next, 'ring', 0);
+            });
+        });
+
+        // Anything the layout could not account for still needs drawing.
+        collapsedAdj.forEach((neighbours, from) => {
+            neighbours.forEach(to => {
+                if (topoNodes.has(from) && topoNodes.has(to)) pushEdge(from, to, 'track', 0);
+            });
+        });
 
         return {
             nodes: Array.from(topoNodes.values()),

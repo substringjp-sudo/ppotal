@@ -346,79 +346,103 @@ const TubeMap: React.FC<TubeMapProps> = ({
     const lastNodeObj = nodes.find(n => n.id === (lastNodeId || dragStartNode));
     const startNodeObj = nodes.find(n => n.id === dragStartNode);
 
-    const drawEdge = (fromNode: TopologyNode, toNode: TopologyNode, key: string, stroke: string, strokeWidth: number, opacity: number, isPreview: boolean = false, dashArray?: string) => {
+    /**
+     * Draws one connection.
+     *
+     * Runs of track on the same row are straight. A branch leaving for another
+     * row turns through a 45° elbow rather than cutting across the diagram as
+     * a long diagonal, which is what made branchy lines unreadable. Skip-stop
+     * services arc over the stations they pass.
+     */
+    const drawEdge = (
+        fromNode: TopologyNode,
+        toNode: TopologyNode,
+        key: string,
+        stroke: string,
+        strokeWidth: number,
+        opacity: number,
+        isPreview: boolean = false,
+        dashArray?: string,
+        kind: TopologyEdge['kind'] = 'track',
+        passes: number = 0
+    ) => {
         if (!fromNode || !toNode) return null;
 
-        // 1. Loop boundaries logic
-        if (loops) {
-            for (const loop of loops) {
-                const fromInLoop = loop.stationIds.has(fromNode.id);
-                const toInLoop = loop.stationIds.has(toNode.id);
-                if ((fromInLoop && !toInLoop) || (!fromInLoop && toInLoop)) {
-                    const loopNode = fromInLoop ? fromNode : toNode;
-                    const extNode = fromInLoop ? toNode : fromNode;
-                    const mx = (loopNode.x + extNode.x) / 2;
-                    const my = (loopNode.y + extNode.y) / 2;
-                    const inside = ((mx - loop.cx) / loop.a) ** 2 + ((my - loop.cy) / loop.b) ** 2 < 0.9;
-                    if (inside) {
-                        const odx = loopNode.x - loop.cx;
-                        const ody = loopNode.y - loop.cy;
-                        const olen = Math.sqrt(odx ** 2 + ody ** 2) || 1;
-                        const cpX = loopNode.x + (odx / olen) * 25;
-                        const cpY = loopNode.y + (ody / olen) * 25;
-                        const d = `M ${fromNode.x} ${fromNode.y} Q ${cpX} ${cpY} ${toNode.x} ${toNode.y}`;
-                        return (
-                            <path
-                                key={key} d={d} fill="none"
-                                stroke={stroke} strokeWidth={strokeWidth}
-                                strokeDasharray={dashArray}
-                                strokeLinecap="round"
-                                style={{ opacity, transition: 'all 0.3s ease', pointerEvents: isPreview ? 'none' : 'auto' }}
-                            />
-                        );
-                    }
-                }
+        const style = {
+            opacity,
+            transition: 'all 0.3s ease',
+            pointerEvents: (isPreview ? 'none' : 'auto') as React.CSSProperties['pointerEvents']
+        };
+        const common = {
+            fill: 'none' as const,
+            stroke,
+            strokeWidth,
+            strokeDasharray: dashArray,
+            strokeLinecap: 'round' as const,
+            strokeLinejoin: 'round' as const,
+            style
+        };
+
+        // A circle line's own segments follow the ellipse it is drawn on.
+        if (kind === 'ring' && loops) {
+            const loop = loops.find(l => l.stationIds.has(fromNode.id) && l.stationIds.has(toNode.id));
+            if (loop) {
+                const midX = (fromNode.x + toNode.x) / 2;
+                const midY = (fromNode.y + toNode.y) / 2;
+
+                // Halfway along the ellipse means halfway in its parameter, not
+                // halfway round in plain angle — the two differ on a squashed
+                // ellipse, and using the angle throws the curve into a spike.
+                const parameterOf = (x: number, y: number) =>
+                    Math.atan2((y - loop.cy) / loop.b, (x - loop.cx) / loop.a);
+
+                const start = parameterOf(fromNode.x, fromNode.y);
+                let sweep = parameterOf(toNode.x, toNode.y) - start;
+                while (sweep > Math.PI) sweep -= 2 * Math.PI;
+                while (sweep < -Math.PI) sweep += 2 * Math.PI;
+
+                const mid = start + sweep / 2;
+                // Control point placed so the curve passes through that point.
+                const cx = 2 * (loop.cx + loop.a * Math.cos(mid)) - midX;
+                const cy = 2 * (loop.cy + loop.b * Math.sin(mid)) - midY;
+
+                return (
+                    <path key={key} d={`M ${fromNode.x} ${fromNode.y} Q ${cx} ${cy} ${toNode.x} ${toNode.y}`} {...common} />
+                );
             }
         }
 
-        // 2. Row skipping logic
-        const ROW_THRESHOLD = 10;
-        const skippedNodes = nodes.filter(n =>
-            n.id !== fromNode.id && n.id !== toNode.id && !n.isJoint &&
-            Math.abs(n.y - fromNode.y) < ROW_THRESHOLD &&
-            Math.abs(n.y - toNode.y) < ROW_THRESHOLD &&
-            n.x > Math.min(fromNode.x, toNode.x) + 5 &&
-            n.x < Math.max(fromNode.x, toNode.x) - 5
-        );
-        const isSkipping = skippedNodes.length > 0 && Math.abs(fromNode.y - toNode.y) < ROW_THRESHOLD;
+        const dx = toNode.x - fromNode.x;
+        const dy = toNode.y - fromNode.y;
 
-        if (isSkipping) {
-            const arcHeight = 10 + skippedNodes.length * 6;
-            const mx = (fromNode.x + toNode.x) / 2;
-            const my = Math.min(fromNode.y, toNode.y) - arcHeight;
+        if (kind === 'express') {
+            const lift = 14 + Math.min(passes, 8) * 5;
+            const midX = (fromNode.x + toNode.x) / 2;
+            const midY = Math.min(fromNode.y, toNode.y) - lift;
             return (
-                <path
-                    key={key}
-                    d={`M ${fromNode.x} ${fromNode.y} Q ${mx} ${my} ${toNode.x} ${toNode.y}`}
-                    fill="none" stroke={stroke} strokeWidth={strokeWidth}
-                    strokeDasharray={dashArray}
-                    strokeLinecap="round"
-                    style={{ opacity, transition: 'all 0.3s ease', pointerEvents: isPreview ? 'none' : 'auto' }}
-                />
+                <path key={key} d={`M ${fromNode.x} ${fromNode.y} Q ${midX} ${midY} ${toNode.x} ${toNode.y}`} {...common} />
             );
         }
 
-        return (
-            <line
-                key={key}
-                x1={fromNode.x} y1={fromNode.y}
-                x2={toNode.x} y2={toNode.y}
-                stroke={stroke} strokeWidth={strokeWidth}
-                strokeDasharray={dashArray}
-                strokeLinecap="round"
-                style={{ opacity, transition: 'all 0.3s ease', pointerEvents: isPreview ? 'none' : 'auto' }}
-            />
-        );
+        if (Math.abs(dy) < 1) {
+            return (
+                <line key={key} x1={fromNode.x} y1={fromNode.y} x2={toNode.x} y2={toNode.y} {...common} />
+            );
+        }
+
+        // 45° elbow: run out level, change row, run back level.
+        const stepX = Math.sign(dx) || 1;
+        const diagonal = Math.min(Math.abs(dy), Math.max(Math.abs(dx) - 12, 0));
+        const spare = (Math.abs(dx) - diagonal) / 2;
+        const cornerA = fromNode.x + stepX * spare;
+        const cornerB = toNode.x - stepX * spare;
+
+        const d = diagonal > 4
+            ? `M ${fromNode.x} ${fromNode.y} L ${cornerA} ${fromNode.y} L ${cornerB} ${toNode.y} L ${toNode.x} ${toNode.y}`
+            // Too steep for an elbow — a gentle curve reads better than a kink.
+            : `M ${fromNode.x} ${fromNode.y} C ${fromNode.x + dx * 0.4} ${fromNode.y}, ${toNode.x - dx * 0.4} ${toNode.y}, ${toNode.x} ${toNode.y}`;
+
+        return <path key={key} d={d} {...common} />;
     };
 
     const minimapJsx = (
@@ -528,7 +552,7 @@ const TubeMap: React.FC<TubeMapProps> = ({
                     const strokeWidth = edge.isVisited ? 3 : 1.5;
                     const opacity = edge.isVisited ? 1.0 : 0.3;
 
-                    return drawEdge(fromNode, toNode, `edge-${i}`, stroke, strokeWidth, opacity);
+                    return drawEdge(fromNode, toNode, `edge-${i}`, stroke, strokeWidth, opacity, false, undefined, edge.kind, edge.passes);
                 })}
 
 
