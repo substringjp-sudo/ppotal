@@ -233,3 +233,14 @@ textarea::selection {
 canvas.leaflet-canvas {
   pointer-events: auto !important;
 }
+/* Pull towards the next station while drawing a route on the map. */
+@keyframes drag-snap-pulse {
+  0%   { stroke-opacity: 0.9; stroke-width: 2.5; }
+  50%  { stroke-opacity: 0.35; stroke-width: 5; }
+  100% { stroke-opacity: 0.9; stroke-width: 2.5; }
+}
+
+.drag-snap-hint {
+  animation: drag-snap-pulse 1.1s ease-in-out infinite;
+  transition: d 120ms ease-out;
+}
