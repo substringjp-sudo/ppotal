@@ -1,5 +1,6 @@
 "use client";
 
+import { rankByRelevance } from '../lib/searchRanking';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { RailData, Station, Line } from '../types/railData';
 import { trackEvent } from '../lib/gtag';
@@ -112,29 +113,13 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
 
         // Search Stations - Deduplicate by name and prefecture for cleaner list
         const stationsMap = new Map<string, Station>();
-        Object.values(railData.stations).forEach(s => {
+        rankByRelevance(Object.values(railData.stations), q).forEach(s => {
             const key = `${s.name}-${s.prefecture_id}`;
-            if (!stationsMap.has(key)) {
-                if (
-                    s.name.toLowerCase().includes(q) ||
-                    (s.name_en && s.name_en.toLowerCase().includes(q)) ||
-                    (s.name_kr && s.name_kr.toLowerCase().includes(q))
-                ) {
-                    stationsMap.set(key, s);
-                }
-            }
+            if (!stationsMap.has(key)) stationsMap.set(key, s);
         });
 
         const matchedStations = Array.from(stationsMap.values()).slice(0, 15);
-
-        // Search Lines
-        const matchedLines = Object.values(railData.lines)
-            .filter(l =>
-                l.name.toLowerCase().includes(q) ||
-                (l.name_en && l.name_en.toLowerCase().includes(q)) ||
-                (l.name_kr && l.name_kr.toLowerCase().includes(q))
-            )
-            .slice(0, 10);
+        const matchedLines = rankByRelevance(Object.values(railData.lines), q, 10);
 
         return { stations: matchedStations, lines: matchedLines };
     }, [railData, query]);

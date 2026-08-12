@@ -122,6 +122,10 @@ export interface ConnectOptions {
     maxHops?: number;
     /** Give up once the route is this much longer than the straight-line gap. */
     maxDistanceKm?: number;
+    /** Only ride these lines. Used when a drag is scoped to one line's diagram. */
+    allowedLines?: Set<number>;
+    /** Edges to ignore, keyed `from|to`. Used to look for a route that avoids one. */
+    bannedEdges?: Set<string>;
 }
 
 /**
@@ -139,6 +143,13 @@ export function findConnectingPath(
 
     const maxHops = options.maxHops ?? 40;
     const maxDistanceKm = options.maxDistanceKm ?? Infinity;
+    const { allowedLines, bannedEdges } = options;
+
+    const usable = (from: string, edge: RouteEdge) => {
+        if (bannedEdges?.has(`${from}|${edge.to}`) || bannedEdges?.has(`${edge.to}|${from}`)) return false;
+        if (allowedLines && !edge.lineIds.some(id => allowedLines.has(id))) return false;
+        return true;
+    };
 
     const best = new Map<string, number>([[fromId, 0]]);
     const hops = new Map<string, number>([[fromId, 0]]);
@@ -166,6 +177,7 @@ export function findConnectingPath(
         if (nodeHops >= maxHops) continue;
 
         for (const edge of railNeighbours(graph, node)) {
+            if (!usable(node, edge)) continue;
             const cost = nodeCost + edge.distance;
             if (cost > maxDistanceKm) continue;
             if (cost >= (best.get(edge.to) ?? Infinity) - 1e-9) continue;
@@ -443,4 +455,29 @@ export function advanceTrail(
 
     pushSegment(index.graph, trail, { path: bridge.stationIds, sectionIds: bridge.sectionIds });
     return true;
+}
+
+/**
+ * How many stations an edge runs past without stopping.
+ *
+ * Skip-stop services are modelled as a direct edge alongside the local edges
+ * that cover the same rails, so the count is the length of the shortest route
+ * between the same two stations that does not use the direct edge.
+ */
+export function countSkippedStations(graph: RouteGraph, fromId: string, toId: string): number {
+    const direct = findEdge(graph, fromId, toId);
+    if (!direct) return 0;
+
+    // The local alternative has to be the same line, or the count picks up
+    // stations on whatever else happens to run between the two.
+    const local = findConnectingPath(graph, fromId, toId, {
+        maxHops: 12,
+        maxDistanceKm: direct.distance * 1.6 + 1,
+        allowedLines: new Set(direct.lineIds),
+        bannedEdges: new Set([`${fromId}|${toId}`])
+    });
+    if (!local) return 0;
+
+    // stationIds includes both ends, so anything beyond those two was passed.
+    return Math.max(0, local.stationIds.length - 2);
 }

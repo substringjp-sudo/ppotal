@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import styles from './StationDetailPane.module.css';
 import { Station, RailData, Platform } from '../types/railData';
 import { getLineColor } from '../lib/lineColors';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress, RegionNames, Language } from '../lib/i18n-utils';
 
 import { STATION_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { buildRouteGraph, groupOf } from '../lib/routeSearch';
+import { countSkippedStations, railNeighbours } from '../lib/dragRouting';
 
 
 export interface StationDetailPaneProps {
@@ -19,6 +21,85 @@ export interface StationDetailPaneProps {
   onCancel?: () => void;
 }
 
+
+
+interface NeighbourEntry {
+  station: Station;
+  ratio: number;
+  skippedCount: number;
+}
+
+/**
+ * One line's neighbours, laid out the way the track runs: previous stops to the
+ * left, this station in the middle, next stops to the right. The old version
+ * drew each line as its own 160px SVG with hairline bezier curves and hardcoded
+ * light-mode colours, so six platforms meant a very tall scroll in a pane that
+ * is only 500px, and none of it themed.
+ */
+const NeighbourRow: React.FC<{
+  left: NeighbourEntry[];
+  right: NeighbourEntry[];
+  color: string;
+  language: Language;
+}> = ({ left, right, color, language }) => {
+  const Side: React.FC<{ entries: NeighbourEntry[]; side: 'left' | 'right' }> = ({ entries, side }) => (
+    <div className={`flex-1 min-w-0 flex flex-col gap-1 ${side === 'left' ? 'items-end' : 'items-start'}`}>
+      {entries.length === 0 ? (
+        <span className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest px-1">
+          {side === 'left' ? '—' : '—'}
+        </span>
+      ) : (
+        entries.map(entry => (
+          <div
+            key={entry.station.id}
+            className={`max-w-full flex items-center gap-1.5 ${side === 'left' ? 'flex-row' : 'flex-row-reverse'}`}
+          >
+            <div className={`min-w-0 flex flex-col ${side === 'left' ? 'items-end' : 'items-start'}`}>
+              <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 truncate max-w-[110px] sm:max-w-[150px]">
+                {getLocalizedName(entry.station, language)}
+              </span>
+              {language !== 'ja' && (
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate max-w-[110px] sm:max-w-[150px]">
+                  {entry.station.name}
+                </span>
+              )}
+            </div>
+            {entry.skippedCount > 0 && (
+              <span
+                className="shrink-0 px-1 py-px rounded text-[8px] font-black text-white"
+                style={{ backgroundColor: color }}
+                title={`${entry.skippedCount}`}
+              >
+                +{entry.skippedCount}
+              </span>
+            )}
+            <span
+              className="shrink-0 size-2 rounded-full ring-2 ring-white dark:ring-slate-900"
+              style={{ backgroundColor: color }}
+            />
+          </div>
+        ))
+      )}
+    </div>
+  );
+
+  return (
+    <div className="flex items-center gap-2 sm:gap-3 py-1">
+      <Side entries={left} side="left" />
+
+      {/* The station itself, sitting on a bar in the line's colour */}
+      <div className="relative shrink-0 flex flex-col items-center px-1">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+        <div
+          className="relative size-4 rounded-full border-[3px] bg-white dark:bg-slate-900"
+          style={{ borderColor: color }}
+        />
+      </div>
+
+      <Side entries={right} side="right" />
+    </div>
+  );
+};
 
 const StationDetailPane: React.FC<StationDetailPaneProps> = ({
   station,
@@ -45,6 +126,8 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 
   const { stations, platforms, lines: allLines, companies } = railData || { stations: {}, platforms: {}, lines: {}, companies: {} };
 
+  const routeGraph = useMemo(() => (railData ? buildRouteGraph(railData) : null), [railData]);
+
   const sortedStationPlatforms = station.platform_ids
     .map(pid => ({ ...platforms[pid], pid }))
     .filter(p => p && allLines[p.line])
@@ -63,129 +146,69 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
     .map(lid => allLines[lid])
     .filter(Boolean);
 
+  /**
+   * Previous and next stops for one platform's line.
+   *
+   * Neighbours come from the routing graph and are filtered by the line each
+   * edge is actually signed with. The old version read `available_lines`, which
+   * also lists every line merely touching the endpoint stations, and then fell
+   * back to showing *all* connections when nothing matched — so every line at
+   * 東京 listed the same eight neighbours, Shinkansen stops included.
+   */
   const getDirectionalNeighbors = (platform: Platform & { pid: string }) => {
-    const left: { station: Station; ratio: number; skippedCount: number }[] = [];
-    const right: { station: Station; ratio: number; skippedCount: number }[] = [];
-    const railroadNetwork = railData.railroadNetwork;
+    const left: NeighbourEntry[] = [];
+    const right: NeighbourEntry[] = [];
+    if (!routeGraph) return { left, right };
 
     const stationId = station.id;
-    const currentLineId = platform.line;
+    const lineGroup = groupOf(routeGraph, platform.line);
 
-    // Use station.neighbors if available (hydrated from remote), otherwise fallback to railroadNetwork.station_graph
-    const neighborsMap = station.neighbors || railroadNetwork?.station_graph?.[stationId];
-    
-    if (!neighborsMap) return { left, right };
+    const onThisLine = railNeighbours(routeGraph, stationId).filter(edge =>
+      edge.lineIds.some(id => groupOf(routeGraph, id) === lineGroup)
+    );
+    if (onThisLine.length === 0) return { left, right };
 
-    const lineData = railroadNetwork?.line_data?.[String(currentLineId)];
-    const lineSequence = lineData?.stations || [];
+    const lineSequence = railData.railroadNetwork?.line_data?.[String(platform.line)]?.stations || [];
+    const ownIndex = lineSequence.indexOf(stationId);
 
-    // 1. Group neighbors by their 'first step' from the current station.
-    // This represents a distinct physical direction/track leaving the station.
-    const groups = new Map<string, { neighborIds: string[]; avgIdx: number; avgLon: number }>();
-
-    Object.entries(neighborsMap).forEach(([neighborId, data]) => {
-      const neighbor = stations[neighborId];
-      if (!neighbor) return;
-
-      // 1. Check if the neighbor station itself belongs to the current platform's line.
-      const neighborPlatforms = (neighbor.platform_ids || []).map(pid => platforms[pid]);
-      // Relaxed check: if the graph explicitly says they are connected on this line_id, trust it.
-      // But we still prefer neighbors that actually have a platform on this line for better UI.
-      const isNeighborOnThisLine = neighborPlatforms.some(pm => pm && String(pm.line) === String(currentLineId));
-
-      // The remote station info hydrates neighbours as { connections: [...] },
-      // but the local station_graph fallback stores { available_lines, section_ids }.
-      // Normalise so opening a station never depends on that request having landed.
-      const raw = data as any;
-      const connections: any[] = Array.isArray(raw?.connections)
-        ? raw.connections
-        : (raw?.available_lines || []).map((lineId: number | string) => ({
-            line_id: lineId,
-            via_joints: [],
-            section_ids: raw?.section_ids || []
-          }));
-
-      // 2. Find connections that explicitly match the current line ID.
-      let validConnections = connections.filter((c: any) => String(c.line_id) === String(currentLineId));
-
-      // 3. Fallback: If no connections found for this specific line_id, 
-      // but the stations are physically connected, show all connections.
-      if (validConnections.length === 0) {
-        validConnections = connections;
-      }
-
-      if (validConnections.length === 0) return;
-
-      const conn = validConnections[0];
-      const firstStep = (conn.via_joints && conn.via_joints.length > 0) ? conn.via_joints[0] : neighborId;
-
-      if (!groups.has(firstStep)) {
-        groups.set(firstStep, { neighborIds: [], avgIdx: 0, avgLon: 0 });
-      }
-      const g = groups.get(firstStep)!;
-      g.neighborIds.push(neighborId);
-
-      const idx = lineSequence.indexOf(neighborId);
-      const stationIdx = lineSequence.indexOf(stationId);
-      
-      // If we have line sequence data, use it for direction.
-      if (idx !== -1 && stationIdx !== -1) {
-          g.avgIdx += idx;
-      } else {
-          // If no line sequence, use relative longitude as a fallback for sorting.
-          g.avgIdx += neighbor.lon > station.lon ? 1000 : -1000;
-      }
-      g.avgLon += neighbor.lon;
+    // Keep the nearest edge per neighbour, so parallel sections do not double up.
+    const nearest = new Map<string, (typeof onThisLine)[number]>();
+    onThisLine.forEach(edge => {
+      const held = nearest.get(edge.to);
+      if (!held || edge.distance < held.distance) nearest.set(edge.to, edge);
     });
 
-    // Finalize averages and sort groups by a stable direction (heuristic: line sequence or longitude)
-    const sortedGroups = Array.from(groups.entries()).map(([stepId, g]) => {
-      const count = g.neighborIds.length;
-      return {
-        stepId,
-        neighborIds: g.neighborIds,
-        avgIdx: g.avgIdx / count,
-        avgLon: g.avgLon / count
+    const candidates = Array.from(nearest.values())
+      .map(edge => {
+        const neighbour = stations[edge.to];
+        if (!neighbour) return null;
+        const index = lineSequence.indexOf(edge.to);
+        return {
+          station: neighbour,
+          // Direction along the line where the sequence knows it, longitude otherwise.
+          order: index !== -1 && ownIndex !== -1 ? index - ownIndex : neighbour.lon - station.lon,
+          skippedCount: countSkippedStations(routeGraph, stationId, edge.to)
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+      .sort((a, b) => a.order - b.order);
+
+    candidates.forEach(entry => {
+      const item: NeighbourEntry = {
+        station: entry.station,
+        ratio: entry.order < 0 ? 0 : 1,
+        skippedCount: entry.skippedCount
       };
-    }).sort((a, b) => a.avgIdx - b.avgIdx || a.avgLon - b.avgLon);
-
-    // 2. Assign groups to Left or Right. 
-    // If only one direction (terminal), put all on one side based on lon.
-    // If multiple directions, split them to create a "balance".
-    const currentIdx = lineSequence.indexOf(stationId);
-
-    sortedGroups.forEach((group, groupIdx) => {
-      let isLeft = false;
-      if (sortedGroups.length === 1) {
-        // Terminal case: use longitude comparison.
-        isLeft = group.avgLon < station.lon;
-      } else {
-        // Multi-direction case:
-        // By default, groups with lower sequence indices go Left, higher go Right.
-        // This usually corresponds to Upstream vs Downstream.
-        if (currentIdx !== -1) {
-          isLeft = group.avgIdx < currentIdx;
-          // If all groups are on one side of currentIdx, use order in sortedGroups to split.
-          if (sortedGroups.every(g => g.avgIdx < currentIdx)) {
-            isLeft = groupIdx < Math.ceil(sortedGroups.length / 2);
-          } else if (sortedGroups.every(g => g.avgIdx > currentIdx)) {
-            isLeft = groupIdx < Math.floor(sortedGroups.length / 2);
-          }
-        } else {
-          // Fallback to purely positional split if no sequence available.
-          isLeft = groupIdx < sortedGroups.length / 2;
-        }
-      }
-
-      group.neighborIds.forEach(nid => {
-        const nStation = stations[nid];
-        if (nStation) {
-          const entry = { station: nStation, ratio: isLeft ? 0 : 1, skippedCount: 0 };
-          if (isLeft) left.push(entry);
-          else right.push(entry);
-        }
-      });
+      if (entry.order < 0) left.push(item);
+      else right.push(item);
     });
+
+    // A terminal has every neighbour on one side; split so it still reads as a line.
+    if (left.length === 0 && right.length > 1) {
+      left.push(right.shift()!);
+    } else if (right.length === 0 && left.length > 1) {
+      right.push(left.pop()!);
+    }
 
     return { left, right };
   };
@@ -315,129 +338,8 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                   </div>
                 </div>
 
-                {/* Refined Compact Diagram Visual */}
-                {(() => {
-                  const maxN = Math.max(left.length, right.length, 1);
-                  const vSpacing = 80; // reduced
-                  const totalHeight = 200 + (maxN - 1) * vSpacing; // reduced
-                  const centerY = totalHeight / 2;
-
-                  // Adjusted display height for a more compact look
-                  const displayHeight = Math.min(160, totalHeight * 0.5); // reduced
-
-                  const basePWidth = 140;
-                  const pLength = p.length || 200;
-                  const pWidth = Math.min(300, Math.max(80, basePWidth * (pLength / 220)));
-                  const pL = 500 - pWidth / 2;
-                  const pR = 500 + pWidth / 2;
-
-                  return (
-                    <div className="relative w-full overflow-hidden flex justify-center bg-slate-50/30 dark:bg-slate-900/10 rounded-xl" style={{ height: `${displayHeight}px` }}>
-                      <svg
-                        viewBox={`0 0 1000 ${totalHeight}`}
-                        className="h-full aspect-[1000/totalHeight]"
-                        preserveAspectRatio="xMidYMid meet"
-                      >
-                        {/* Center Platform Indicator - More refined */}
-                        <g>
-                          <rect
-                            x={pL} y={centerY - 18} width={pWidth} height={36}
-                            fill="#0f172a" rx="4"
-                          />
-                          <rect
-                            x={pL + 4} y={centerY - 2} width={pWidth - 8} height={4}
-                            fill={finalColor} rx="2"
-                          />
-                        </g>
-
-                        {/* Connections and Neighbor Signs */}
-                        <g>
-                          {left.map((entry, i) => {
-                            const y = centerY + (i - (left.length - 1) / 2) * vSpacing;
-                            const signW = 220;
-                            const signH = 70;
-                            const signX = 10; // Closer to left edge
-                            const anchorX = signX + signW + 30;
-                            const platAnchorX = pL - 60; // Increased distance from platform
-
-                            const cp1X = anchorX + (platAnchorX - anchorX) * 0.5;
-                            const d = `M ${anchorX},${y} C ${cp1X},${y} ${platAnchorX - (platAnchorX - anchorX) * 0.5},${centerY} ${platAnchorX},${centerY}`;
-
-                            const mainName = language === 'ja' ? entry.station.name : getLocalizedName(entry.station, language);
-                            const subName = entry.station.name;
-
-                            return (
-                              <g key={entry.station.id}>
-                                <path d={d} stroke={finalColor} strokeWidth="3" fill="none" opacity="0.3" strokeLinecap="round" />
-                                <circle cx={anchorX} cy={y} r="7" fill="white" stroke={finalColor} strokeWidth="2" />
-                                <circle cx={platAnchorX} cy={centerY} r="7" fill="white" stroke={finalColor} strokeWidth="2" />
-
-                                <g transform={`translate(${signX}, ${y - signH / 2})`}>
-                                  <rect width={signW} height={signH} rx="10" fill="white" stroke="#e2e8f0" strokeWidth="1.5" />
-                                  <text x={signW / 2} y={32} textAnchor="middle" fontSize="20" fontWeight="900" fill="#1e293b" fontFamily="Pretendard">
-                                    {mainName}
-                                  </text>
-                                  {language !== 'ja' && (
-                                    <text x={signW / 2} y={56} textAnchor="middle" fontSize="11" fontWeight="700" fill="#64748b" fontFamily="Pretendard">
-                                      {subName}
-                                    </text>
-                                  )}
-                                  {entry.skippedCount > 0 && (
-                                    <g transform={`translate(${signW - 38}, 6)`}>
-                                      <rect width={30} height={16} rx="8" fill="#fef2f2" />
-                                      <text x="15" y="12" textAnchor="middle" fontSize="9" fontWeight="900" fill="#ef4444">+{entry.skippedCount}</text>
-                                    </g>
-                                  )}
-                                </g>
-                              </g>
-                            );
-                          })}
-
-                          {right.map((entry, i) => {
-                            const y = centerY + (i - (right.length - 1) / 2) * vSpacing;
-                            const signW = 220;
-                            const signH = 70;
-                            const signX = 1000 - signW - 10; // Closer to right edge
-                            const anchorX = signX - 30;
-                            const platAnchorX = pR + 60; // Increased distance from platform
-
-                            const cp1X = platAnchorX + (anchorX - platAnchorX) * 0.5;
-                            const d = `M ${platAnchorX},${centerY} C ${cp1X},${centerY} ${anchorX - (anchorX - platAnchorX) * 0.5},${y} ${anchorX},${y}`;
-
-                            const mainName = language === 'ja' ? entry.station.name : getLocalizedName(entry.station, language);
-                            const subName = entry.station.name;
-
-                            return (
-                              <g key={entry.station.id}>
-                                <path d={d} stroke={finalColor} strokeWidth="3" fill="none" opacity="0.3" strokeLinecap="round" />
-                                <circle cx={anchorX} cy={y} r="7" fill="white" stroke={finalColor} strokeWidth="2" />
-                                <circle cx={platAnchorX} cy={centerY} r="7" fill="white" stroke={finalColor} strokeWidth="2" />
-
-                                <g transform={`translate(${signX}, ${y - signH / 2})`}>
-                                  <rect width={signW} height={signH} rx="10" fill="white" stroke="#e2e8f0" strokeWidth="1.5" />
-                                  <text x={signW / 2} y={32} textAnchor="middle" fontSize="20" fontWeight="900" fill="#1e293b" fontFamily="Pretendard">
-                                    {mainName}
-                                  </text>
-                                  {language !== 'ja' && (
-                                    <text x={signW / 2} y={56} textAnchor="middle" fontSize="11" fontWeight="700" fill="#64748b" fontFamily="Pretendard">
-                                      {subName}
-                                    </text>
-                                  )}
-                                  {entry.skippedCount > 0 && (
-                                    <g transform={`translate(${signW - 38}, 6)`}>
-                                      <rect width={30} height={16} rx="8" fill="#fef2f2" />
-                                      <text x="15" y="12" textAnchor="middle" fontSize="9" fontWeight="900" fill="#ef4444">+{entry.skippedCount}</text>
-                                    </g>
-                                  )}
-                                </g>
-                              </g>
-                            );
-                          })}
-                        </g>
-                      </svg>
-                    </div>
-                  );
-                })()}
+                {/* Neighbouring stations, laid out along the line rather than stacked */}
+                <NeighbourRow left={left} right={right} color={finalColor} language={language} />
               </div>
             );
           })}

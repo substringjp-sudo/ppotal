@@ -81,7 +81,10 @@ const TubeMap: React.FC<TubeMapProps> = ({
         return { x: minX + x, y: minY + y };
     }, [minX, minY]);
 
+    const settledRef = useRef(false);
+
     const handleStart = (nodeId: string, e: React.MouseEvent | React.TouchEvent) => {
+        settledRef.current = false;
         setDragStartNode(nodeId);
         setDragHistory([nodeId]);
         setMousePos(getSvgCoord(e));
@@ -181,41 +184,36 @@ const TubeMap: React.FC<TubeMapProps> = ({
         }
     }, [dragStartNode, dragHistory, nodes, adj, getSvgCoord, minX, minY, scrollRef]);
 
-    const handleEnd = (nodeId: string) => {
+    /**
+     * Releasing over a station runs the node's own handler and then the window
+     * one, and React has not flushed the reset between them — so a drag that
+     * ended the normal way used to record the trip twice. A ref settles it
+     * synchronously; whichever fires first wins.
+     */
+    const finishDrag = useCallback((nodeId?: string) => {
         if (scrollIntervalRef.current) {
             clearInterval(scrollIntervalRef.current);
             scrollIntervalRef.current = null;
         }
+        if (settledRef.current) return;
+        settledRef.current = true;
+
         if (dragStartNode) {
-            const lastNode = dragHistory[dragHistory.length - 1];
-            if (dragHistory.length > 1 && (nodeId === lastNode || !nodeId)) {
+            if (dragHistory.length > 1) {
                 onPathCreate?.(dragHistory);
-            } else if (dragHistory.length === 1) {
+            } else if (dragHistory.length === 1 && nodeId) {
                 const node = nodes.find(n => n.id === nodeId);
-                if (node && !node.isJoint) {
-                    onStationClick?.(node.id);
-                }
+                if (node && !node.isJoint) onStationClick?.(node.id);
             }
         }
         setDragStartNode(null);
         setDragHistory([]);
         setMousePos(null);
         setNearestNode(null);
-    };
+    }, [dragStartNode, dragHistory, nodes, onPathCreate, onStationClick]);
 
-    const handleGlobalEnd = useCallback(() => {
-        if (scrollIntervalRef.current) {
-            clearInterval(scrollIntervalRef.current);
-            scrollIntervalRef.current = null;
-        }
-        if (dragStartNode && dragHistory.length > 1) {
-            onPathCreate?.(dragHistory);
-        }
-        setDragStartNode(null);
-        setDragHistory([]);
-        setMousePos(null);
-        setNearestNode(null);
-    }, [dragStartNode, dragHistory, onPathCreate]);
+    const handleEnd = (nodeId: string) => finishDrag(nodeId);
+    const handleGlobalEnd = useCallback(() => finishDrag(), [finishDrag]);
 
     useEffect(() => {
         if (dragStartNode) {

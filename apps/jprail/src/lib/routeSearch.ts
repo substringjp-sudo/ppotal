@@ -316,7 +316,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
 }
 
 /** The id all same-line variants collapse to; used everywhere a transfer is judged. */
-function groupOf(graph: RouteGraph, lineId: number): number {
+export function groupOf(graph: RouteGraph, lineId: number): number {
     return graph.lineGroup.get(lineId) ?? lineId;
 }
 
