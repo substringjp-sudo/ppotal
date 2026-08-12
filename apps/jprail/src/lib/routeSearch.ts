@@ -1,4 +1,5 @@
 import { RailData, Station, Section } from '../types/railData';
+import { haversineDistance } from './graphUtils';
 
 export interface RouteLineInfo {
     id: number;
@@ -8,19 +9,40 @@ export interface RouteLineInfo {
     color?: string;
 }
 
+/**
+ * One continuous ride on a single line (or one walking transfer between
+ * co-located stations). This is what the UI draws as a coloured bar / map stroke.
+ */
+export interface RouteSegment {
+    kind: 'rail' | 'walk';
+    line: RouteLineInfo | null;
+    fromStationId: string;
+    toStationId: string;
+    fromName: string;
+    toName: string;
+    stationIds: string[];
+    distance: number;
+    sectionIds: number[];
+    geometries: [number, number][][];
+}
+
 export interface CandidateRoute {
     id: string;
     distance: number; // in km
-    transferCount: number; // number of line transfers
-    category: 'distance' | 'transfer';
-    rank: number; // 1 or 2
+    transferCount: number; // number of line transfers (incl. walking transfers)
+    walkCount: number;
     stationIds: string[];
     stationNames: string[];
     sectionIds: number[];
     geometries: [number, number][][];
     lines: RouteLineInfo[];
+    segments: RouteSegment[];
     transfers: string[]; // Names of transfer stations
+    transferStationIds: string[];
+    score: number;
     isShortest?: boolean;
+    isFewestTransfers?: boolean;
+    isRecommended?: boolean;
 }
 
 export interface LegSearchResult {
@@ -36,66 +58,752 @@ export interface RouteSearchResult {
     hasTooManyCandidates: boolean;
 }
 
-interface PathState {
-    currentNode: string;
-    visitedNodes: Set<string>;
-    distance: number;
-    cost: number;
-    lastLineId: number;
-    stationIds: string[];
-    sectionIds: number[];
+/* ------------------------------------------------------------------ *
+ * Graph
+ * ------------------------------------------------------------------ */
+
+const WALK_LINE = 0; // pseudo line id for a walking transfer
+const UNBOARDED = -1; // state line id meaning "not on a train yet"
+
+/** Walking transfers are only created between same-named stations closer than this. */
+const MAX_WALK_TRANSFER_KM = 1.5;
+
+interface RouteEdge {
+    to: string;
+    distance: number; // km
+    /** Real line ids serving this edge, ordered by how much of the edge they cover. */
     lineIds: number[];
+    sectionIds: number[];
+    isWalk: boolean;
 }
 
-interface GraphEdge {
-    neighborId: string;
-    sectionId: number;
-    dist: number;
-    lineId: number;
+interface RouteGraph {
+    adj: Map<string, RouteEdge[]>;
+    sections: Map<number, Section>;
+    stationsByName: Map<string, string[]>;
+    /**
+     * Some lines are split into several ids at a company border (e.g. 本四備讃線
+     * is one id on the JR West side and another on the JR Shikoku side). Riders
+     * stay on the same train there, so those ids share a group and crossing
+     * between them is not a transfer.
+     */
+    lineGroup: Map<number, number>;
 }
 
-/**
- * Filter out negligible line segments (e.g. platform joints < 0.8 km)
- * to compute true line sequence and accurate transfer count.
- */
-function getSignificantLines(
-    sectionIds: number[],
-    lineIds: number[],
-    sectionsMap: Map<number, Section>
-): { lineId: number; dist: number }[] {
-    const rawSegments: { lineId: number; dist: number }[] = [];
+/** Groups line ids that carry the same name and physically meet at a station. */
+function buildLineGroups(adj: Map<string, RouteEdge[]>, railData: RailData): Map<number, number> {
+    const parent = new Map<number, number>();
+    const find = (id: number): number => {
+        const p = parent.get(id);
+        if (p === undefined || p === id) return id;
+        const root = find(p);
+        parent.set(id, root);
+        return root;
+    };
+    const union = (a: number, b: number) => {
+        const ra = find(a);
+        const rb = find(b);
+        if (ra !== rb) parent.set(rb, ra);
+    };
 
-    sectionIds.forEach((sid, i) => {
-        const sec = sectionsMap.get(sid);
-        const lenKm = sec && sec.length ? sec.length / 1000 : 0.5;
-        const lid = (sec && sec.line_id) ? sec.line_id : (lineIds[i] || 0);
+    const nameOf = (id: number) => railData.lines?.[String(id)]?.name;
 
-        if (lid > 0) {
-            if (rawSegments.length === 0 || rawSegments[rawSegments.length - 1].lineId !== lid) {
-                rawSegments.push({ lineId: lid, dist: lenKm });
-            } else {
-                rawSegments[rawSegments.length - 1].dist += lenKm;
+    adj.forEach(edges => {
+        const lineIds = new Set<number>();
+        edges.forEach(edge => {
+            if (!edge.isWalk) edge.lineIds.forEach(id => lineIds.add(id));
+        });
+        if (lineIds.size < 2) return;
+
+        const ids = Array.from(lineIds);
+        for (let i = 0; i < ids.length; i++) {
+            for (let j = i + 1; j < ids.length; j++) {
+                const nameA = nameOf(ids[i]);
+                if (nameA && nameA === nameOf(ids[j])) union(ids[i], ids[j]);
             }
         }
     });
 
-    const totalDist = rawSegments.reduce((sum, s) => sum + s.dist, 0);
+    const groups = new Map<number, number>();
+    parent.forEach((_, id) => groups.set(id, find(id)));
+    return groups;
+}
 
-    // Keep line segments if length >= 0.8 km or >= 2% of total distance
-    const significant = rawSegments.filter(s => {
-        if (rawSegments.length === 1) return true;
-        if (s.dist >= 0.8 || (totalDist > 0 && (s.dist / totalDist) >= 0.02)) {
-            return true;
-        }
-        return false;
+const graphCache = new WeakMap<RailData, RouteGraph>();
+
+/** Longest chain of joints we will collapse into a single station-to-station edge. */
+const MAX_JOINT_CHAIN = 40;
+
+/**
+ * station_graph.json is missing a handful of station-to-station links — most
+ * importantly the Seto-Ohashi crossing, which leaves all of Shikoku
+ * unreachable. The raw section data does contain them, so we rebuild any
+ * missing link by collapsing chains of pass-through joints (degree 2) into a
+ * single edge. Junction joints are left alone; station_graph already covers
+ * those and guessing a through-route there would invent services.
+ */
+function addContractedJointEdges(
+    railData: RailData,
+    sections: Map<number, Section>,
+    adj: Map<string, RouteEdge[]>
+) {
+    const incident = new Map<string, { sectionId: number; other: string }[]>();
+    const link = (node: string, sectionId: number, other: string) => {
+        const list = incident.get(node);
+        if (list) list.push({ sectionId, other });
+        else incident.set(node, [{ sectionId, other }]);
+    };
+
+    sections.forEach(section => {
+        if (!section.start || !section.end || section.start === section.end) return;
+        link(section.start, section.id, section.end);
+        link(section.end, section.id, section.start);
     });
 
-    return significant.length > 0 ? significant : rawSegments.slice(0, 1);
+    const isStation = (id: string) => Boolean(railData.stations?.[id]);
+
+    const existing = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => existing.add(`${from}|${edge.to}`)));
+
+    incident.forEach((startEdges, stationId) => {
+        if (!isStation(stationId)) return;
+
+        startEdges.forEach(first => {
+            const sectionIds = [first.sectionId];
+            let previousSection = first.sectionId;
+            let cursor = first.other;
+
+            while (!isStation(cursor) && sectionIds.length < MAX_JOINT_CHAIN) {
+                const next = (incident.get(cursor) || []).filter(e => e.sectionId !== previousSection);
+                if (next.length !== 1) break; // junction or dead end — do not guess
+                previousSection = next[0].sectionId;
+                sectionIds.push(previousSection);
+                cursor = next[0].other;
+            }
+
+            if (!isStation(cursor) || cursor === stationId) return;
+            if (existing.has(`${stationId}|${cursor}`)) return;
+
+            const lengthByLine = new Map<number, number>();
+            let distance = 0;
+            sectionIds.forEach(sid => {
+                const section = sections.get(sid);
+                if (!section) return;
+                const km = (section.length || 0) / 1000;
+                distance += km;
+                if (section.line_id > 0) {
+                    lengthByLine.set(section.line_id, (lengthByLine.get(section.line_id) || 0) + km);
+                }
+            });
+
+            const lineIds = Array.from(lengthByLine.entries())
+                .sort((a, b) => b[1] - a[1])
+                .map(([lineId]) => lineId);
+            if (lineIds.length === 0) return;
+
+            const edge: RouteEdge = {
+                to: cursor,
+                distance: distance > 0 ? distance : 0.4,
+                lineIds,
+                sectionIds,
+                isWalk: false
+            };
+            const list = adj.get(stationId);
+            if (list) list.push(edge);
+            else adj.set(stationId, [edge]);
+            existing.add(`${stationId}|${cursor}`);
+        });
+    });
 }
 
 /**
- * Searches candidate routes connecting a series of waypoints (Start -> Via 1 -> ... -> End)
- * Groups candidates by leg and ranks top 2 by Distance + top 2 by Least Transfers.
+ * Builds a station-level routing graph.
+ *
+ * Only `section_ids` are used to decide which lines serve an edge — the
+ * `available_lines` field in station_graph.json also contains every line that
+ * merely *touches* the endpoint stations, so trusting it invents through
+ * services that do not exist (and therefore fake "0 transfer" routes).
+ */
+function buildRouteGraph(railData: RailData): RouteGraph {
+    const cached = graphCache.get(railData);
+    if (cached) return cached;
+
+    const sections = new Map<number, Section>();
+    railData.sections?.sections?.forEach(s => sections.set(s.id, s));
+
+    const adj = new Map<string, RouteEdge[]>();
+    const pushEdge = (from: string, edge: RouteEdge) => {
+        const list = adj.get(from);
+        if (list) list.push(edge);
+        else adj.set(from, [edge]);
+    };
+
+    const stationGraph = railData.railroadNetwork?.station_graph as
+        | Record<string, Record<string, { section_ids?: (number | string)[]; available_lines?: (number | string)[] }>>
+        | undefined;
+
+    if (stationGraph) {
+        Object.entries(stationGraph).forEach(([from, neighbors]) => {
+            if (!adj.has(from)) adj.set(from, []);
+
+            Object.entries(neighbors || {}).forEach(([to, conn]) => {
+                if (!conn || from === to) return;
+
+                const sectionIds: number[] = [];
+                const lengthByLine = new Map<number, number>();
+                let distance = 0;
+
+                (conn.section_ids || []).forEach(raw => {
+                    const sid = Number(raw);
+                    const sec = sections.get(sid);
+                    if (!sec) return;
+                    sectionIds.push(sid);
+                    const km = (sec.length || 0) / 1000;
+                    distance += km;
+                    if (sec.line_id > 0) {
+                        lengthByLine.set(sec.line_id, (lengthByLine.get(sec.line_id) || 0) + km);
+                    }
+                });
+
+                if (sectionIds.length === 0) return;
+                if (distance <= 0) distance = 0.4;
+
+                const lineIds = Array.from(lengthByLine.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([lineId]) => lineId);
+
+                if (lineIds.length === 0) return;
+
+                pushEdge(from, { to, distance, lineIds, sectionIds, isWalk: false });
+            });
+        });
+    }
+
+    addContractedJointEdges(railData, sections, adj);
+
+    const lineGroup = buildLineGroups(adj, railData);
+
+    // Same-name stations that are not linked by rails (e.g. JR 東京 / 京葉線 東京)
+    // get a walking transfer so multi-company itineraries stay reachable.
+    const stationsByName = new Map<string, string[]>();
+    Object.values(railData.stations || {}).forEach(st => {
+        const list = stationsByName.get(st.name);
+        if (list) list.push(st.id);
+        else stationsByName.set(st.name, [st.id]);
+    });
+
+    stationsByName.forEach(ids => {
+        if (ids.length < 2) return;
+        for (let i = 0; i < ids.length; i++) {
+            for (let j = i + 1; j < ids.length; j++) {
+                const a = railData.stations[ids[i]];
+                const b = railData.stations[ids[j]];
+                if (!a || !b) continue;
+                if (!adj.has(a.id) || !adj.has(b.id)) continue;
+
+                const km = haversineDistance([a.lon, a.lat], [b.lon, b.lat]);
+                if (km > MAX_WALK_TRANSFER_KM) continue;
+
+                pushEdge(a.id, { to: b.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+                pushEdge(b.id, { to: a.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+            }
+        }
+    });
+
+    const graph: RouteGraph = { adj, sections, stationsByName, lineGroup };
+    graphCache.set(railData, graph);
+    return graph;
+}
+
+/** The id all same-line variants collapse to; used everywhere a transfer is judged. */
+function groupOf(graph: RouteGraph, lineId: number): number {
+    return graph.lineGroup.get(lineId) ?? lineId;
+}
+
+/** Every graph node that can stand in for the station the user picked. */
+function resolveEndpoints(station: Station, graph: RouteGraph, railData: RailData): Set<string> {
+    const ids = new Set<string>();
+
+    if (graph.adj.has(station.id)) ids.add(station.id);
+    station.platform_ids?.forEach(pid => {
+        if (graph.adj.has(pid)) ids.add(pid);
+    });
+
+    // Same-name stations nearby belong to the same "place" for the traveller.
+    (graph.stationsByName.get(station.name) || []).forEach(id => {
+        if (id === station.id || !graph.adj.has(id)) return;
+        const other = railData.stations[id];
+        if (!other) return;
+        if (haversineDistance([station.lon, station.lat], [other.lon, other.lat]) <= MAX_WALK_TRANSFER_KM) {
+            ids.add(id);
+        }
+    });
+
+    return ids;
+}
+
+/* ------------------------------------------------------------------ *
+ * Dijkstra over (station, boarded line) states
+ * ------------------------------------------------------------------ */
+
+interface HeapItem {
+    cost: number;
+    node: string;
+    line: number;
+}
+
+class MinHeap {
+    private items: HeapItem[] = [];
+
+    get size() {
+        return this.items.length;
+    }
+
+    push(item: HeapItem) {
+        const items = this.items;
+        items.push(item);
+        let i = items.length - 1;
+        while (i > 0) {
+            const parent = (i - 1) >> 1;
+            if (items[parent].cost <= items[i].cost) break;
+            [items[parent], items[i]] = [items[i], items[parent]];
+            i = parent;
+        }
+    }
+
+    pop(): HeapItem | undefined {
+        const items = this.items;
+        if (items.length === 0) return undefined;
+        const top = items[0];
+        const last = items.pop()!;
+        if (items.length > 0) {
+            items[0] = last;
+            let i = 0;
+            for (;;) {
+                const l = i * 2 + 1;
+                const r = l + 1;
+                let smallest = i;
+                if (l < items.length && items[l].cost < items[smallest].cost) smallest = l;
+                if (r < items.length && items[r].cost < items[smallest].cost) smallest = r;
+                if (smallest === i) break;
+                [items[smallest], items[i]] = [items[i], items[smallest]];
+                i = smallest;
+            }
+        }
+        return top;
+    }
+}
+
+interface SearchOptions {
+    /** Extra cost (in km) charged for every line change. */
+    transferPenalty: number;
+    /** Line groups whose usage is multiplied in cost, used to force genuinely different alternatives. */
+    penalizedLines?: Set<number>;
+}
+
+interface RawPath {
+    /** nodes[i] -> nodes[i+1] is travelled with lineIds[i] (0 = walking transfer). */
+    nodes: string[];
+    lineIds: number[];
+    /** Same as lineIds, collapsed onto line groups — this is what decides transfers. */
+    groupIds: number[];
+    edges: RouteEdge[];
+    distance: number;
+    transfers: number;
+}
+
+const PENALIZED_LINE_MULTIPLIER = 3;
+
+function searchPath(
+    graph: RouteGraph,
+    startIds: Set<string>,
+    targetIds: Set<string>,
+    options: SearchOptions
+): RawPath | null {
+    if (startIds.size === 0 || targetIds.size === 0) return null;
+
+    const { transferPenalty, penalizedLines } = options;
+
+    const best = new Map<string, number>();
+    const prev = new Map<string, { key: string | null; edge: RouteEdge | null; from: string | null }>();
+    const heap = new MinHeap();
+
+    const stateKey = (node: string, line: number) => `${node}|${line}`;
+
+    startIds.forEach(id => {
+        const key = stateKey(id, UNBOARDED);
+        best.set(key, 0);
+        prev.set(key, { key: null, edge: null, from: null });
+        heap.push({ cost: 0, node: id, line: UNBOARDED });
+    });
+
+    let goalKey: string | null = null;
+
+    while (heap.size > 0) {
+        const current = heap.pop()!;
+        const currentKey = stateKey(current.node, current.line);
+        if (current.cost > (best.get(currentKey) ?? Infinity) + 1e-9) continue;
+
+        // Reaching the target while already on a train ends the search: the
+        // heap is ordered by cost, so this is the optimal path for the objective.
+        if (current.line !== UNBOARDED && targetIds.has(current.node)) {
+            goalKey = currentKey;
+            break;
+        }
+
+        const edges = graph.adj.get(current.node);
+        if (!edges) continue;
+
+        for (const edge of edges) {
+            if (edge.isWalk) {
+                // Walking only makes sense between two rides.
+                if (current.line === UNBOARDED) continue;
+                const nextKey = stateKey(edge.to, UNBOARDED);
+                const nextCost = current.cost + transferPenalty * 0.7 + edge.distance * 2;
+                if (nextCost < (best.get(nextKey) ?? Infinity) - 1e-9) {
+                    best.set(nextKey, nextCost);
+                    prev.set(nextKey, { key: currentKey, edge, from: current.node });
+                    heap.push({ cost: nextCost, node: edge.to, line: UNBOARDED });
+                }
+                continue;
+            }
+
+            // States are keyed by line *group*, so riding across a company
+            // border on the same line never looks like a transfer.
+            const seenGroups = new Set<number>();
+            for (const lineId of edge.lineIds) {
+                const group = groupOf(graph, lineId);
+                if (seenGroups.has(group)) continue;
+                seenGroups.add(group);
+
+                const isTransfer = current.line !== UNBOARDED && current.line !== group;
+                const multiplier = penalizedLines?.has(group) ? PENALIZED_LINE_MULTIPLIER : 1;
+                const nextCost =
+                    current.cost + edge.distance * multiplier + (isTransfer ? transferPenalty : 0);
+                const nextKey = stateKey(edge.to, group);
+                if (nextCost < (best.get(nextKey) ?? Infinity) - 1e-9) {
+                    best.set(nextKey, nextCost);
+                    prev.set(nextKey, { key: currentKey, edge, from: current.node });
+                    heap.push({ cost: nextCost, node: edge.to, line: group });
+                }
+            }
+        }
+    }
+
+    if (!goalKey) return null;
+
+    const nodes: string[] = [];
+    const lineIds: number[] = [];
+    const groupIds: number[] = [];
+    const edges: RouteEdge[] = [];
+
+    let cursor: string | null = goalKey;
+    while (cursor) {
+        const link = prev.get(cursor);
+        if (!link) break;
+        const [node, line] = cursor.split('|');
+        nodes.push(node);
+        if (link.edge && link.key) {
+            const edge = link.edge;
+            edges.push(edge);
+            if (edge.isWalk) {
+                lineIds.push(WALK_LINE);
+                groupIds.push(WALK_LINE);
+            } else {
+                const group = Number(line);
+                groupIds.push(group);
+                // Show the concrete line this edge is signed with, not the group id.
+                lineIds.push(edge.lineIds.find(id => groupOf(graph, id) === group) ?? group);
+            }
+        }
+        cursor = link.key;
+    }
+
+    nodes.reverse();
+    lineIds.reverse();
+    groupIds.reverse();
+    edges.reverse();
+
+    if (nodes.length < 2) return null;
+
+    let distance = 0;
+    edges.forEach(edge => {
+        if (!edge.isWalk) distance += edge.distance;
+    });
+
+    let transfers = 0;
+    let boarded = UNBOARDED;
+    groupIds.forEach(group => {
+        if (group === WALK_LINE) {
+            transfers += 1;
+            boarded = UNBOARDED;
+            return;
+        }
+        if (boarded !== UNBOARDED && boarded !== group) transfers += 1;
+        boarded = group;
+    });
+
+    return { nodes, lineIds, groupIds, edges, distance, transfers };
+}
+
+/* ------------------------------------------------------------------ *
+ * Candidate assembly
+ * ------------------------------------------------------------------ */
+
+/** Objectives, in the order they are attempted. */
+const MIN_TRANSFER_PENALTY = 1_000_000; // effectively lexicographic: transfers first, then km
+const BALANCED_PENALTY = 25; // a transfer is worth ~25 km of detour
+const FAST_PENALTY = 6; // mostly distance, but still avoids nonsense line-hopping
+
+/** How much worse than the best result an alternative may be before it is dropped. */
+const ALT_DISTANCE_SLACK = 1.45;
+const ALT_DISTANCE_MARGIN = 5;
+const ALT_TRANSFER_SLACK = 2;
+
+const MAX_CANDIDATES_PER_LEG = 4;
+
+/** Score used to order the list — distance with a realistic price on transfers. */
+function routeScore(distance: number, transfers: number) {
+    return distance + transfers * 12;
+}
+
+function buildSegments(path: RawPath, graph: RouteGraph, railData: RailData): RouteSegment[] {
+    const nameOf = (id: string) => railData.stations[id]?.name || id;
+    const lineInfo = (lineId: number): RouteLineInfo | null => {
+        if (lineId === WALK_LINE) return null;
+        const meta = railData.lines?.[String(lineId)];
+        return {
+            id: lineId,
+            name: meta?.name || `Line ${lineId}`,
+            name_en: meta?.name_en,
+            name_kr: meta?.name_kr,
+            color: meta?.color || '#64748b'
+        };
+    };
+
+    const segments: RouteSegment[] = [];
+    const segmentGroups: number[] = [];
+
+    for (let i = 0; i < path.lineIds.length; i++) {
+        const lineId = path.lineIds[i];
+        const group = path.groupIds[i];
+        const edge = path.edges[i];
+        const from = path.nodes[i];
+        const to = path.nodes[i + 1];
+        const isWalk = lineId === WALK_LINE;
+
+        const last = segments[segments.length - 1];
+        const continues =
+            last && !isWalk && last.kind === 'rail' && segmentGroups[segments.length - 1] === group;
+
+        const geometries: [number, number][][] = [];
+        edge.sectionIds.forEach(sid => {
+            const geometry = graph.sections.get(sid)?.geometry;
+            if (geometry && geometry.length > 0) geometries.push(geometry);
+        });
+
+        if (continues) {
+            last.toStationId = to;
+            last.toName = nameOf(to);
+            last.stationIds.push(to);
+            last.distance += edge.distance;
+            last.sectionIds.push(...edge.sectionIds);
+            last.geometries.push(...geometries);
+        } else {
+            segments.push({
+                kind: isWalk ? 'walk' : 'rail',
+                line: lineInfo(lineId),
+                fromStationId: from,
+                toStationId: to,
+                fromName: nameOf(from),
+                toName: nameOf(to),
+                stationIds: [from, to],
+                distance: isWalk ? 0 : edge.distance,
+                sectionIds: [...edge.sectionIds],
+                geometries
+            });
+            segmentGroups.push(group);
+        }
+    }
+
+    segments.forEach(seg => {
+        seg.distance = Math.round(seg.distance * 10) / 10;
+    });
+
+    return segments;
+}
+
+function toCandidate(
+    path: RawPath,
+    graph: RouteGraph,
+    railData: RailData,
+    legIndex: number,
+    index: number
+): CandidateRoute {
+    const segments = buildSegments(path, graph, railData);
+
+    const sectionIds: number[] = [];
+    const geometries: [number, number][][] = [];
+    segments.forEach(seg => {
+        sectionIds.push(...seg.sectionIds);
+        geometries.push(...seg.geometries);
+    });
+
+    const lines: RouteLineInfo[] = [];
+    segments.forEach(seg => {
+        if (seg.line && (lines.length === 0 || lines[lines.length - 1].id !== seg.line.id)) {
+            lines.push(seg.line);
+        }
+    });
+
+    const transferStationIds: string[] = [];
+    const transfers: string[] = [];
+    for (let i = 1; i < segments.length; i++) {
+        const id = segments[i].fromStationId;
+        if (!transferStationIds.includes(id)) {
+            transferStationIds.push(id);
+            transfers.push(segments[i].fromName);
+        }
+    }
+
+    const distance = Math.round(path.distance * 10) / 10;
+
+    return {
+        id: `leg${legIndex}_cand${index}`,
+        distance,
+        transferCount: path.transfers,
+        walkCount: segments.filter(s => s.kind === 'walk').length,
+        stationIds: path.nodes,
+        stationNames: path.nodes.map(id => railData.stations[id]?.name || id),
+        sectionIds,
+        geometries,
+        lines,
+        segments,
+        transfers,
+        transferStationIds,
+        score: routeScore(distance, path.transfers)
+    };
+}
+
+/** Lines that carry most of a route — banning these produces a genuinely different itinerary. */
+function dominantLines(path: RawPath): number[] {
+    const byLine = new Map<number, number>();
+    path.groupIds.forEach((group, i) => {
+        if (group === WALK_LINE) return;
+        byLine.set(group, (byLine.get(group) || 0) + path.edges[i].distance);
+    });
+    return Array.from(byLine.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([group]) => group);
+}
+
+function lineSignature(path: RawPath): string {
+    const seq: number[] = [];
+    path.groupIds.forEach(group => {
+        if (seq.length === 0 || seq[seq.length - 1] !== group) seq.push(group);
+    });
+    return seq.join('-');
+}
+
+/** Fraction of the shorter route's sections that the two routes share. */
+function overlapRatio(a: RawPath, b: RawPath): number {
+    const setA = new Set<number>();
+    a.edges.forEach(e => e.sectionIds.forEach(s => setA.add(s)));
+    const setB = new Set<number>();
+    b.edges.forEach(e => e.sectionIds.forEach(s => setB.add(s)));
+    if (setA.size === 0 || setB.size === 0) return 0;
+
+    let shared = 0;
+    setA.forEach(s => {
+        if (setB.has(s)) shared += 1;
+    });
+    return shared / Math.min(setA.size, setB.size);
+}
+
+function searchLeg(
+    graph: RouteGraph,
+    railData: RailData,
+    startStation: Station,
+    endStation: Station,
+    legIndex: number
+): CandidateRoute[] {
+    const startIds = resolveEndpoints(startStation, graph, railData);
+    const targetIds = resolveEndpoints(endStation, graph, railData);
+
+    // A leg whose endpoints resolve to the same place has nothing to search.
+    const isSamePlace =
+        startIds.size > 0 &&
+        startIds.size === targetIds.size &&
+        Array.from(startIds).every(id => targetIds.has(id));
+    if (isSamePlace) return [];
+
+    const found: RawPath[] = [];
+    const signatures = new Set<string>();
+
+    const accept = (path: RawPath | null): boolean => {
+        if (!path) return false;
+        const signature = lineSignature(path);
+        if (signatures.has(signature)) return false;
+        if (found.some(existing => overlapRatio(existing, path) >= 0.9)) return false;
+        signatures.add(signature);
+        found.push(path);
+        return true;
+    };
+
+    // Primary objectives: fewest transfers, a realistic balance, and near-shortest.
+    [MIN_TRANSFER_PENALTY, BALANCED_PENALTY, FAST_PENALTY].forEach(transferPenalty => {
+        if (found.length >= MAX_CANDIDATES_PER_LEG) return;
+        accept(searchPath(graph, startIds, targetIds, { transferPenalty }));
+    });
+
+    if (found.length === 0) return [];
+
+    const bestDistance = Math.min(...found.map(p => p.distance));
+    const bestTransfers = Math.min(...found.map(p => p.transfers));
+
+    // Alternatives: push the search away from the lines already proposed, but
+    // discard anything that is only "different" because it detours absurdly.
+    const penalizedLines = new Set<number>();
+    for (let attempt = 0; attempt < 3 && found.length < MAX_CANDIDATES_PER_LEG; attempt++) {
+        found.forEach(path => dominantLines(path).forEach(id => penalizedLines.add(id)));
+
+        const alternative = searchPath(graph, startIds, targetIds, {
+            transferPenalty: BALANCED_PENALTY,
+            penalizedLines
+        });
+        if (!alternative) break;
+        if (alternative.distance > bestDistance * ALT_DISTANCE_SLACK + ALT_DISTANCE_MARGIN) break;
+        if (alternative.transfers > bestTransfers + ALT_TRANSFER_SLACK) break;
+        if (!accept(alternative)) break;
+    }
+
+    const candidates = found.map((path, index) => toCandidate(path, graph, railData, legIndex, index));
+
+    candidates.sort((a, b) => a.score - b.score || a.distance - b.distance);
+
+    // Badges describe what each route actually is, rather than which query found it.
+    let shortest = candidates[0];
+    let fewest = candidates[0];
+    candidates.forEach(candidate => {
+        if (candidate.distance < shortest.distance) shortest = candidate;
+        if (
+            candidate.transferCount < fewest.transferCount ||
+            (candidate.transferCount === fewest.transferCount && candidate.distance < fewest.distance)
+        ) {
+            fewest = candidate;
+        }
+    });
+    shortest.isShortest = true;
+    fewest.isFewestTransfers = true;
+    candidates[0].isRecommended = true;
+
+    return candidates;
+}
+
+/**
+ * Searches candidate routes connecting a series of waypoints (Start -> Via 1 -> ... -> End).
+ * Each leg is solved independently and returns up to 4 meaningfully different itineraries.
  */
 export function findCandidateRoutes(
     waypoints: Station[],
@@ -105,297 +813,26 @@ export function findCandidateRoutes(
         return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
     }
 
-    const stationsMap = railData.stations || {};
-    const linesMetaMap = railData.lines || {};
+    const graph = buildRouteGraph(railData);
 
-    // 1. Quick lookup for sections
-    const sectionsMap = new Map<number, Section>();
-    if (railData.sections && railData.sections.sections) {
-        railData.sections.sections.forEach(s => sectionsMap.set(s.id, s));
-    }
-
-    // 2. Build unified adjacency graph
-    const adj = new Map<string, GraphEdge[]>();
-
-    const addEdge = (u: string, v: string, secId: number, distKm: number, lineId: number) => {
-        if (!u || !v || u === v) return;
-        if (!adj.has(u)) adj.set(u, []);
-        if (!adj.has(v)) adj.set(v, []);
-        adj.get(u)!.push({ neighborId: v, sectionId: secId, dist: distKm, lineId });
-        adj.get(v)!.push({ neighborId: u, sectionId: secId, dist: distKm, lineId });
-    };
-
-    // Add edges from sections metadata
-    if (railData.sections && railData.sections.sections) {
-        railData.sections.sections.forEach(s => {
-            const dist = (s.length || 500) / 1000;
-            addEdge(s.start, s.end, s.id, dist, s.line_id);
-        });
-    }
-
-    // Add edges from station_graph if available
-    if (railData.railroadNetwork && railData.railroadNetwork.station_graph) {
-        const sg = railData.railroadNetwork.station_graph;
-        Object.entries(sg).forEach(([u, neighbors]) => {
-            Object.entries(neighbors).forEach(([v, connData]: [string, any]) => {
-                const secIds = (connData.section_ids || []).map(Number);
-                const lines = (connData.available_lines || []).map(Number);
-                const lineId = lines.length > 0 ? lines[0] : 0;
-                const secId = secIds.length > 0 ? secIds[0] : 0;
-                let dist = 0;
-                secIds.forEach((sid: number) => {
-                    const sec = sectionsMap.get(sid);
-                    if (sec && sec.length) dist += sec.length / 1000;
-                });
-                if (dist === 0) dist = 0.5;
-                addEdge(u, v, secId, dist, lineId);
-            });
-        });
-    }
-
-    // Single leg route finder with 2 Distance + 2 Transfer candidates
-    const searchLegCandidates = (startSt: Station, endSt: Station, legIndex: number): CandidateRoute[] => {
-        const startIds = new Set<string>();
-        startIds.add(startSt.id);
-        if (startSt.platform_ids) startSt.platform_ids.forEach(pid => startIds.add(pid));
-        if (startSt.name) {
-            Object.values(stationsMap).forEach(s => {
-                if (s.name === startSt.name) {
-                    startIds.add(s.id);
-                    if (s.platform_ids) s.platform_ids.forEach(pid => startIds.add(pid));
-                }
-            });
-        }
-
-        const targetIds = new Set<string>();
-        targetIds.add(endSt.id);
-        if (endSt.platform_ids) endSt.platform_ids.forEach(pid => targetIds.add(pid));
-        if (endSt.name) {
-            Object.values(stationsMap).forEach(s => {
-                if (s.name === endSt.name) {
-                    targetIds.add(s.id);
-                    if (s.platform_ids) s.platform_ids.forEach(pid => targetIds.add(pid));
-                }
-            });
-        }
-
-        const rawCandidates: PathState[] = [];
-        const bannedEdges = new Set<string>();
-
-        for (let attempt = 0; attempt < 8; attempt++) {
-            const visitCount = new Map<string, number>();
-            const queue: PathState[] = [];
-
-            startIds.forEach(sid => {
-                visitCount.set(sid, 1);
-                queue.push({
-                    currentNode: sid,
-                    visitedNodes: new Set([sid]),
-                    distance: 0,
-                    cost: 0,
-                    lastLineId: 0,
-                    stationIds: [sid],
-                    sectionIds: [],
-                    lineIds: []
-                });
-            });
-
-            let foundPath: PathState | null = null;
-            let processed = 0;
-            const maxProcessed = 15000;
-
-            while (queue.length > 0 && processed < maxProcessed) {
-                queue.sort((a, b) => a.cost - b.cost);
-                const curr = queue.shift()!;
-                processed++;
-
-                const stObj = stationsMap[curr.currentNode];
-                const isGoal = targetIds.has(curr.currentNode) || (stObj && endSt.name && stObj.name === endSt.name);
-
-                if (isGoal && curr.stationIds.length > 1) {
-                    foundPath = curr;
-                    break;
-                }
-
-                const neighbors = adj.get(curr.currentNode) || [];
-                for (const edge of neighbors) {
-                    const edgeKey = `${curr.currentNode}-${edge.neighborId}`;
-                    const banPenalty = bannedEdges.has(edgeKey) ? 100 : 0;
-
-                    // Only penalize transfer if the edge is longer than 0.2 km (ignores tiny station platform joint edges)
-                    const isTransfer = curr.lastLineId > 0 && edge.lineId > 0 && curr.lastLineId !== edge.lineId && edge.dist >= 0.2;
-                    const transferPenalty = isTransfer ? 15 : 0;
-
-                    const count = visitCount.get(edge.neighborId) || 0;
-                    if (count >= 2) continue;
-
-                    visitCount.set(edge.neighborId, count + 1);
-                    const nextVisited = new Set(curr.visitedNodes);
-                    nextVisited.add(edge.neighborId);
-
-                    queue.push({
-                        currentNode: edge.neighborId,
-                        visitedNodes: nextVisited,
-                        distance: curr.distance + edge.dist,
-                        cost: curr.cost + edge.dist + transferPenalty + banPenalty,
-                        lastLineId: edge.lineId || curr.lastLineId,
-                        stationIds: [...curr.stationIds, edge.neighborId],
-                        sectionIds: edge.sectionId ? [...curr.sectionIds, edge.sectionId] : curr.sectionIds,
-                        lineIds: edge.lineId ? [...curr.lineIds, edge.lineId] : curr.lineIds
-                    });
-                }
-            }
-
-            if (foundPath) {
-                let trueDist = 0;
-                foundPath.sectionIds.forEach(sid => {
-                    const sec = sectionsMap.get(sid);
-                    if (sec && sec.length) trueDist += sec.length / 1000;
-                });
-                if (trueDist === 0) trueDist = foundPath.distance;
-                foundPath.distance = trueDist;
-
-                rawCandidates.push(foundPath);
-
-                if (foundPath.sectionIds.length > 0) {
-                    const midSecId = foundPath.sectionIds[Math.floor(foundPath.sectionIds.length / 2)];
-                    const sec = sectionsMap.get(midSecId);
-                    if (sec) {
-                        bannedEdges.add(`${sec.start}-${sec.end}`);
-                        bannedEdges.add(`${sec.end}-${sec.start}`);
-                    }
-                } else break;
-            } else break;
-        }
-
-        // Deduplicate raw candidates by line sequence
-        const uniqueMap = new Map<string, PathState>();
-        rawCandidates.forEach(c => {
-            const key = c.lineIds.join('-') || c.stationIds.join('-');
-            if (!uniqueMap.has(key) || c.distance < uniqueMap.get(key)!.distance) {
-                uniqueMap.set(key, c);
-            }
-        });
-
-        const allPaths = Array.from(uniqueMap.values());
-
-        // Convert PathState to CandidateRoute object with significant lines filtering
-        const mapToCandidateRoute = (state: PathState, category: 'distance' | 'transfer', rank: number): CandidateRoute => {
-            const stationNames = state.stationIds.map(sid => {
-                const st = stationsMap[sid];
-                return st ? st.name : sid;
-            });
-
-            // Get significant lines list (filters out station platform connections < 0.8 km)
-            const sigLines = getSignificantLines(state.sectionIds, state.lineIds, sectionsMap);
-            const transferCount = Math.max(0, sigLines.length - 1);
-
-            const linesUsed: RouteLineInfo[] = sigLines.map(sl => {
-                const meta = linesMetaMap[String(sl.lineId)];
-                return {
-                    id: sl.lineId,
-                    name: meta?.name || `Line ${sl.lineId}`,
-                    name_en: meta?.name_en,
-                    name_kr: meta?.name_kr,
-                    color: meta?.color || '#3b82f6'
-                };
-            });
-
-            const geometries: [number, number][][] = [];
-            state.sectionIds.forEach(secId => {
-                const sec = sectionsMap.get(secId);
-                if (sec && sec.geometry && sec.geometry.length > 0) {
-                    geometries.push(sec.geometry);
-                }
-            });
-
-            const transfers: string[] = [];
-            for (let j = 1; j < state.stationIds.length - 1; j++) {
-                const st = stationsMap[state.stationIds[j]];
-                if (st && !transfers.includes(st.name)) {
-                    transfers.push(st.name);
-                }
-            }
-
-            return {
-                id: `leg_${legIndex}_cand_${category}_${rank}_${Date.now()}_${Math.random()}`,
-                distance: Math.round(state.distance * 10) / 10,
-                transferCount,
-                category,
-                rank,
-                stationIds: state.stationIds,
-                stationNames,
-                sectionIds: state.sectionIds,
-                geometries,
-                lines: linesUsed,
-                transfers,
-                isShortest: category === 'distance' && rank === 1
-            };
-        };
-
-        // 1. Top 2 by Distance (거리순 2개)
-        const byDistance = [...allPaths].sort((a, b) => a.distance - b.distance);
-        const distCandidates = byDistance.slice(0, 2).map((c, i) => mapToCandidateRoute(c, 'distance', i + 1));
-
-        const chosenLineKeys = new Set(distCandidates.map(c => c.lines.map(l => l.id).join('-')));
-
-        // 2. Top 2 by Transfer Count (최소환승순 2개)
-        const byTransfer = [...allPaths].sort((a, b) => {
-            const sigA = getSignificantLines(a.sectionIds, a.lineIds, sectionsMap);
-            const sigB = getSignificantLines(b.sectionIds, b.lineIds, sectionsMap);
-            const tA = Math.max(0, sigA.length - 1);
-            const tB = Math.max(0, sigB.length - 1);
-            if (tA !== tB) return tA - tB;
-            return a.distance - b.distance;
-        });
-
-        const transferCandidates: CandidateRoute[] = [];
-        for (const c of byTransfer) {
-            const sig = getSignificantLines(c.sectionIds, c.lineIds, sectionsMap);
-            const key = sig.map(s => s.lineId).join('-');
-            if (!chosenLineKeys.has(key)) {
-                chosenLineKeys.add(key);
-                transferCandidates.push(mapToCandidateRoute(c, 'transfer', transferCandidates.length + 1));
-                if (transferCandidates.length >= 2) break;
-            }
-        }
-
-        // Fill remaining transfer candidates if duplicates exist
-        if (transferCandidates.length < 2) {
-            for (const c of byTransfer) {
-                if (transferCandidates.length >= 2) break;
-                transferCandidates.push(mapToCandidateRoute(c, 'transfer', transferCandidates.length + 1));
-            }
-        }
-
-        return [...distCandidates, ...transferCandidates];
-    };
-
-    // 3. Process leg-by-leg candidates
     const legs: LegSearchResult[] = [];
     let totalCandidatesCount = 0;
+    let hasTooManyCandidates = false;
 
     for (let i = 0; i < waypoints.length - 1; i++) {
-        const startSt = waypoints[i];
-        const endSt = waypoints[i + 1];
+        const startStation = waypoints[i];
+        const endStation = waypoints[i + 1];
+        const candidates = searchLeg(graph, railData, startStation, endStation, i);
 
-        const cands = searchLegCandidates(startSt, endSt, i);
-        if (cands.length === 0) {
+        if (candidates.length === 0) {
             return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
         }
 
-        totalCandidatesCount += cands.length;
-        legs.push({
-            legIndex: i,
-            startStation: startSt,
-            endStation: endSt,
-            candidates: cands
-        });
+        totalCandidatesCount += candidates.length;
+        if (candidates.length >= MAX_CANDIDATES_PER_LEG) hasTooManyCandidates = true;
+
+        legs.push({ legIndex: i, startStation, endStation, candidates });
     }
 
-    return {
-        legs,
-        totalCandidatesCount,
-        hasTooManyCandidates: totalCandidatesCount >= 5
-    };
+    return { legs, totalCandidatesCount, hasTooManyCandidates };
 }
