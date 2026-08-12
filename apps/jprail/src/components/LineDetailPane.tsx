@@ -77,6 +77,16 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
 
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges, railData);
 
+    const stationStats = useMemo(() => {
+        const stationNodes = topology.nodes.filter(n => !n.isJoint);
+        const total = stationNodes.length;
+        const visited = stationNodes.filter(n => n.isVisited).length;
+        return {
+            total: total || stats.visitedStations.size,
+            visited: visited
+        };
+    }, [topology.nodes, stats.visitedStations]);
+
     const routeGraph = useMemo(() => (railData ? buildRouteGraph(railData) : null), [railData]);
 
     /**
@@ -173,15 +183,18 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                             </span>
                         </button>
                         <div className="flex flex-col min-w-0">
-                            <div className="flex items-baseline gap-1.5 sm:gap-2 m-0 overflow-hidden">
-                                <span className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
-                                    {lineData ? getLocalizedName(lineData, language) : lineName}
-                                </span>
-                                {language !== 'ja' && lineData?.name && (
-                                    <span className="text-[9px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">{lineData.name}</span>
-                                )}
+                            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                                <div className="w-1.5 sm:w-2 h-4 sm:h-5 rounded-full shrink-0" style={{ backgroundColor: lineColor }}></div>
+                                <div className="flex items-baseline gap-1.5 sm:gap-2 m-0 overflow-hidden">
+                                    <span className="text-base sm:text-2xl font-black text-slate-900 dark:text-white leading-tight tracking-tight truncate">
+                                        {lineData ? getLocalizedName(lineData, language) : lineName}
+                                    </span>
+                                    {language !== 'ja' && lineData?.name && (
+                                        <span className="text-[9px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 italic truncate">{lineData.name}</span>
+                                    )}
+                                </div>
                             </div>
-                            <div className="flex items-baseline gap-1.5 sm:gap-2 mt-0 overflow-hidden">
+                            <div className="flex items-baseline gap-1.5 sm:gap-2 mt-0.5 overflow-hidden">
                                 <span className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest truncate">
                                     {companyData ? getLocalizedName(companyData, language) : company}
                                 </span>
@@ -196,11 +209,23 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     </button>
                 </div>
                 <div className="flex items-center justify-between gap-2 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-5 shrink-0">
+                        {/* Distance Completion */}
                         <div className="flex flex-col gap-0">
                             <div className="text-[8px] sm:text-[9px] text-slate-400 font-black uppercase tracking-widest">{t.completion}</div>
-                            <div className="text-sm sm:text-lg text-slate-900 dark:text-white font-black leading-none">
-                                {stats.visited} <span className="text-[7px] text-slate-400">/ {stats.total} km</span>
+                            <div className="flex items-baseline text-sm sm:text-lg font-black leading-none">
+                                <span className="text-slate-900 dark:text-white">{stats.visited}km</span>
+                                <span className="text-slate-400 dark:text-slate-500">&nbsp;/ {stats.total}km</span>
+                            </div>
+                        </div>
+                        {/* Station Count */}
+                        <div className="flex flex-col gap-0 pl-3 sm:pl-4 border-l border-slate-200 dark:border-slate-800">
+                            <div className="text-[8px] sm:text-[9px] text-slate-400 font-black uppercase tracking-widest">
+                                {language === 'ja' ? '駅数' : (language === 'en' ? 'Stations' : '방문 역')}
+                            </div>
+                            <div className="flex items-baseline text-sm sm:text-lg font-black leading-none">
+                                <span className="text-slate-900 dark:text-white">{stationStats.visited}</span>
+                                <span className="text-slate-400 dark:text-slate-500">&nbsp;/ {stationStats.total}{language === 'ja' ? '駅' : (language === 'en' ? ' stations' : '개 역')}</span>
                             </div>
                         </div>
                     </div>

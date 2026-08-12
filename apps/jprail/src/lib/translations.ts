@@ -485,18 +485,27 @@ export const STATION_DETAIL_TRANSLATIONS = {
         cancel: '취소',
         start: '시작',
         platform: '번 승강장',
+        lineName: '노선명',
+        platformInfo: '플랫폼 정보',
+        terminal: 'terminal',
     },
     en: {
         arr: 'Arr',
         cancel: 'Cancel',
         start: 'Start',
         platform: ' Platform',
+        lineName: 'Line Name',
+        platformInfo: 'Platform Info',
+        terminal: 'terminal',
     },
     ja: {
         arr: '到着',
         cancel: 'キャンセル',
         start: '開始',
         platform: '番線',
+        lineName: '路線名',
+        platformInfo: 'プラットフォーム情報',
+        terminal: 'terminal',
     }
 };
 

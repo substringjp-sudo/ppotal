@@ -470,8 +470,9 @@ const Stations: React.FC<StationsProps> = ({
             const color = getColor(l);
 
             return `
-                <div style="display: flex; flex-direction: column; gap: 1px; background: #f8f9fa; border-left: 4px solid ${color}; padding: 6px 10px; margin-bottom: 6px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-                    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 8px; padding: 4px 2px; margin-bottom: 4px;">
+                    <div style="width: 4px; height: 16px; background-color: ${color}; border-radius: 9999px; flex-shrink: 0;"></div>
+                    <div style="display: flex; flex-direction: column; line-height: 1.2; min-width: 0;">
                         <span style="font-size: 11px; color: #1a1a1a; font-weight: 800;">${lineName}</span>
                         ${lineSub ? `<span style="font-size: 9px; color: #718096; font-weight: 500; opacity: 0.9;">${lineSub}</span>` : ''}
                     </div>
