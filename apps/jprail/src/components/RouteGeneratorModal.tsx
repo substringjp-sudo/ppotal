@@ -318,6 +318,14 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
     t,
     stationLabel
 }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isHovered && cardRef.current) {
+            cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, [isHovered]);
+
     const badges = [
         candidate.isRecommended && { label: t.badgeRecommended, className: 'bg-primary text-white' },
         candidate.isShortest && {
@@ -344,14 +352,15 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
 
     return (
         <div
+            ref={cardRef}
             onClick={onSelect}
             onMouseEnter={() => onHover(true)}
             onMouseLeave={() => onHover(false)}
             className={`p-2.5 rounded-xl border cursor-pointer transition-all space-y-1.5 ${
                 isSelected
-                    ? 'bg-white dark:bg-slate-900 border-primary ring-2 ring-primary/20 shadow-md'
+                    ? 'bg-white dark:bg-slate-900 border-emerald-500 ring-2 ring-emerald-500/30 shadow-md'
                     : isHovered
-                      ? 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 shadow-sm'
+                      ? 'bg-emerald-50/60 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-600 ring-2 ring-emerald-400/50 shadow-md scale-[1.01]'
                       : 'bg-white/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800'
             }`}
         >
@@ -371,7 +380,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
                             : t.transferTimes(candidate.transferCount)}
                     </span>
                 </div>
-                <span className="text-xs font-black text-primary shrink-0">{candidate.distance} km</span>
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 shrink-0">{candidate.distance} km</span>
             </div>
 
             <RouteStrip segments={candidate.segments} language={language} />
@@ -379,7 +388,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
             <div className="flex items-center justify-between gap-2">
                 <p className="text-[10px] text-slate-400 truncate min-w-0">{chain.join(' · ')}</p>
                 {isSelected && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-primary shrink-0">
+                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
                         <span className="material-symbols-outlined text-[13px]">check_circle</span>
                         {t.selected}
                     </span>
@@ -708,26 +717,69 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                             )}
 
                             {legs.length > 1 && (
-                                <div className="flex gap-1 overflow-x-auto pb-0.5">
-                                    {legs.map(leg => {
-                                        const isActive = leg.legIndex === activeLeg;
-                                        return (
-                                            <button
-                                                key={leg.legIndex}
-                                                type="button"
-                                                onClick={() => setActiveLeg(leg.legIndex)}
-                                                className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-colors ${
-                                                    isActive
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
-                                                }`}
-                                            >
-                                                {t.legLabel} {leg.legIndex + 1} ·{' '}
-                                                {getLocalizedName(leg.startStation, language)} →{' '}
-                                                {getLocalizedName(leg.endStation, language)}
-                                            </button>
-                                        );
-                                    })}
+                                <div className="space-y-1.5 mb-2">
+                                    <div className="flex items-center justify-between px-0.5">
+                                        <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[13px] text-primary">alt_route</span>
+                                            {t.selectLegHeader}
+                                        </span>
+                                        <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                            chosenCandidates.length === legs.length
+                                                ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400'
+                                                : 'bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400'
+                                        }`}>
+                                            {chosenCandidates.length}/{legs.length} {t.selected}
+                                        </span>
+                                    </div>
+                                    <div className="p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-inner flex gap-1.5 overflow-x-auto custom-scrollbar">
+                                        {legs.map(leg => {
+                                            const isActive = leg.legIndex === activeLeg;
+                                            const isLegSelected = Boolean(selectedByLeg[leg.legIndex]);
+                                            return (
+                                                <button
+                                                    key={leg.legIndex}
+                                                    type="button"
+                                                    onClick={() => setActiveLeg(leg.legIndex)}
+                                                    className={`flex-1 min-w-[140px] px-2.5 py-2 rounded-xl text-left transition-all flex flex-col gap-0.5 cursor-pointer ${
+                                                        isActive
+                                                            ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-emerald-500 ring-4 ring-emerald-500/15 shadow-md font-bold'
+                                                            : isLegSelected
+                                                              ? 'bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-400 font-bold'
+                                                              : 'bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 shadow-sm font-bold animate-pulse'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-1 w-full">
+                                                        <span className={`text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1 ${
+                                                            isActive
+                                                                ? 'text-emerald-600 dark:text-emerald-400'
+                                                                : isLegSelected
+                                                                  ? 'text-slate-600 dark:text-slate-400'
+                                                                  : 'text-amber-600 dark:text-amber-400'
+                                                        }`}>
+                                                            <span className="material-symbols-outlined text-[13px]">
+                                                                {isLegSelected ? 'check_circle' : 'pending'}
+                                                            </span>
+                                                            {t.legLabel} {leg.legIndex + 1}
+                                                        </span>
+                                                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${
+                                                            isActive
+                                                                ? 'bg-emerald-500 text-white font-extrabold'
+                                                                : isLegSelected
+                                                                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                                                                  : 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300'
+                                                        }`}>
+                                                            {isLegSelected ? t.selected : t.needSelect}
+                                                        </span>
+                                                    </div>
+                                                    <div className={`text-[11px] font-extrabold truncate ${
+                                                        isActive ? 'text-emerald-950 dark:text-emerald-100 font-black' : 'text-slate-700 dark:text-slate-300'
+                                                    }`}>
+                                                        {getLocalizedName(leg.startStation, language)} → {getLocalizedName(leg.endStation, language)}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             )}
 

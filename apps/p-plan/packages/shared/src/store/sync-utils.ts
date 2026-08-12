@@ -216,11 +216,14 @@ function syncTripLocations(trip: Trip) {
             finalRegions.push(newR);
         }
     });
-    trip.locations.regions = finalRegions;
-
     const finalNames = new Set(trip.locations.regionNames || []);
     collectedNames.forEach(name => {
         if (name && name.length < 50) finalNames.add(name);
     });
-    trip.locations.regionNames = Array.from(finalNames);
+
+    trip.locations = {
+        ...trip.locations,
+        regions: finalRegions,
+        regionNames: Array.from(finalNames)
+    };
 }

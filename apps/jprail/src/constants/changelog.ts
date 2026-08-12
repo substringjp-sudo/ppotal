@@ -12,6 +12,33 @@ export interface VersionUpdate {
 
 export const CHANGELOG: VersionUpdate[] = [
     {
+        version: "2.1.0",
+        date: "2026-08-12",
+        imageUrl: "/assets/updates/route-generator-preview.png",
+        title: {
+            ko: "지능형 노선 생성기 & 역 상세정보 비주얼 업데이트",
+            en: "Intelligent Route Generator & Station Detail Visual Update",
+            ja: "インテリジェント路線生成器＆駅詳細ビジュアルアップデート"
+        },
+        changes: {
+            ko: [
+                "**지능형 노선 생성기 (Route Generator)**: 시작역과 도착역을 선택하면 최단 경로 및 추천 완승 루트를 자동으로 계산해 주는 스마트 경로 생성 도구가 추가되었습니다.",
+                "**역 상세정보 비주얼 개편**: 데스크탑 및 태블릿 화면에서 역의 노선별 이웃 역 정보를 좌우 레이아웃으로 변경하여 노선명과 노선 구조의 가독성을 크게 향상시켰습니다.",
+                "**반응형 UX 반응성 최적화**: 모바일과 대형 화면 각각에 최적화된 카드 인터페이스로 더욱 쾌적한 일본 철도 탐색 경험을 제공합니다."
+            ],
+            en: [
+                "**Intelligent Route Generator**: Added a smart route creation tool that automatically calculates optimal pathfinding and completion routes between selected stations.",
+                "**Station Detail Visual Overhaul**: Redesigned the station detail pane with a responsive side-by-side layout on tablet and desktop screens, displaying line names on the left and route structures on the right.",
+                "**Responsive UX Optimization**: Tailored card layouts for mobile and desktop screens for a smoother railway exploration experience."
+            ],
+            ja: [
+                "**インテリジェント路線生成器 (Route Generator)**: 出発駅と到着駅を選択するだけで、最適経路や完乗ルートを自動計算・生成するスマートツールを追加しました。",
+                "**駅詳細ビジュアル刷新**: タブレットおよびデスクトップ画面で路線別隣接駅情報を左右レイアウトに変更し、路線名と路線構造の視認性を大幅に向上させました。",
+                "**レスポンシブUX最適化**: モバイルとデスクトップそれぞれの画面サイズに最適化されたカードUIで、より快適な鉄道探索体験を提供します。"
+            ]
+        }
+    },
+    {
         version: "2.0.0",
         date: "2026-04-19",
         isMajor: true,

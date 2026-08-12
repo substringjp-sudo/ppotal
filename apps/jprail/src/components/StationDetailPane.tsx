@@ -55,11 +55,11 @@ const NeighbourRow: React.FC<{
             className={`max-w-full flex items-center gap-1.5 ${side === 'left' ? 'flex-row' : 'flex-row-reverse'}`}
           >
             <div className={`min-w-0 flex flex-col ${side === 'left' ? 'items-end' : 'items-start'}`}>
-              <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 truncate max-w-[110px] sm:max-w-[150px]">
+              <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 truncate max-w-[100px] sm:max-w-[160px] md:max-w-[200px]">
                 {getLocalizedName(entry.station, language)}
               </span>
               {language !== 'ja' && (
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate max-w-[110px] sm:max-w-[150px]">
+                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate max-w-[100px] sm:max-w-[160px] md:max-w-[200px]">
                   {entry.station.name}
                 </span>
               )}
@@ -318,19 +318,19 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
             };
 
             return (
-              <div key={p.pid} className="group/row relative w-full rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 p-2 sm:p-3 transition-all hover:shadow-lg">
-                <div className="flex items-center justify-between mb-1 pb-1.5 border-b border-slate-50 dark:border-slate-800/50">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black w-4 h-4 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
+              <div key={p.pid} className="group/row relative w-full rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/50 p-2 sm:p-3 transition-all hover:shadow-lg flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                <div className="flex items-center justify-between mb-1 pb-1.5 border-b border-slate-50 dark:border-slate-800/50 sm:mb-0 sm:pb-0 sm:border-b-0 sm:border-r sm:border-slate-100 sm:dark:border-slate-800/50 sm:pr-4 sm:w-44 md:w-56 sm:shrink-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[9px] font-black w-4 h-4 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 shrink-0">
                       {getOrdinal(index + 1)}
                     </span>
-                    <div className="w-1 h-3 rounded-full" style={{ backgroundColor: finalColor }}></div>
-                    <div className="flex flex-col">
-                      <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-white tracking-tight leading-none">
+                    <div className="w-1 h-3 rounded-full shrink-0" style={{ backgroundColor: finalColor }}></div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs sm:text-sm font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
                         {language === 'ja' ? line.name : (isKorean ? (line.name_kr || line.name_en) : line.name_en)}
                       </span>
                       {language !== 'ja' && (
-                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic mt-0.5">
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 italic mt-0.5 truncate">
                           {line.name}
                         </span>
                       )}
@@ -339,7 +339,9 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
                 </div>
 
                 {/* Neighbouring stations, laid out along the line rather than stacked */}
-                <NeighbourRow left={left} right={right} color={finalColor} language={language} />
+                <div className="flex-1 min-w-0">
+                  <NeighbourRow left={left} right={right} color={finalColor} language={language} />
+                </div>
               </div>
             );
           })}
