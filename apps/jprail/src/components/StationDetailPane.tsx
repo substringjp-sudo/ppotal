@@ -3,7 +3,8 @@ import styles from './StationDetailPane.module.css';
 import { Station, RailData, Platform } from '../types/railData';
 import { getLineColor } from '../lib/lineColors';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName, getLocalizedAddress, RegionNames, Language } from '../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress, Language } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 
 import { STATION_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { buildRouteGraph, groupOf } from '../lib/routeSearch';
@@ -116,14 +117,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 }) => {
   const { isKorean, language } = useI18n();
   const t = getTranslations(STATION_DETAIL_TRANSLATIONS, language);
-  const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
-
-  useEffect(() => {
-    fetch('/data/region_names.json')
-      .then(res => res.json())
-      .then(data => setRegionNames(data))
-      .catch(err => console.error("Failed to load region names:", err));
-  }, []);
+  const regionNames = useRegionNames();
 
   const localizedAddress = getLocalizedAddress(station.prefecture_id, station.city_id, regionNames, language);
 

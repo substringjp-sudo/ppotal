@@ -14,7 +14,8 @@ import { trackEvent } from '../lib/gtag';
 import { convexHull } from '../lib/geoUtils';
 import { Line } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
+import { getLocalizedName, getLocalizedAddress } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 
 interface StationFeatureProperties {
     type: 'node' | 'platform' | 'hull';
@@ -81,14 +82,7 @@ const Stations: React.FC<StationsProps> = ({
     const { language, isKorean } = useI18n();
     const map = useMap();
     const [panesReady, setPanesReady] = useState(false);
-    const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
-
-    useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(data => setRegionNames(data))
-            .catch(err => console.error("Failed to load region names:", err));
-    }, []);
+    const regionNames = useRegionNames();
 
     useEffect(() => {
         let isMounted = true;

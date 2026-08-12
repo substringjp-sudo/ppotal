@@ -5,6 +5,7 @@ import { RailData, Station } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { findCandidateRoutes, CandidateRoute, RouteSearchResult, RouteSegment } from '../lib/routeSearch';
 import RouteMiniMap, { RouteMiniMapWaypoint } from './RouteMiniMap';
@@ -420,7 +421,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
 
-    const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
+    const regionNames = useRegionNames();
 
     const [startStation, setStartStation] = useState<Station | null>(null);
     const [endStation, setEndStation] = useState<Station | null>(null);
@@ -432,13 +433,6 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
-
-    useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(setRegionNames)
-            .catch(err => console.error('Failed to load region names:', err));
-    }, []);
 
     useEffect(() => {
         if (isOpen) return;

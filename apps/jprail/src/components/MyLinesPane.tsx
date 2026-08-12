@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { RailData, Station, Line, Section, Company } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedRegion } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 import { Trip } from '../types/trip';
 
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
@@ -22,10 +23,7 @@ export interface MyLinesPaneProps {
     onOpenRouteGenerator?: () => void;
 }
 
-interface RegionNames {
-    adm1: Record<string, { name: string; name_en?: string; name_kr?: string }>;
-    adm2: Record<string, { name: string; name_en?: string; name_kr?: string }>;
-}
+
 
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     recordedTrips = [],
@@ -41,22 +39,14 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
-    const [regionNames, setRegionNames] = React.useState<RegionNames | null>(null);
+    const regionNames = useRegionNames();
     const [isResetConfirming, setIsResetConfirming] = React.useState(false);
 
     React.useEffect(() => {
-        // Reset confirming state if recorded trips become zero
         if (recordedTrips.length === 0) {
             setIsResetConfirming(false);
         }
     }, [recordedTrips.length]);
-
-    React.useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(data => setRegionNames(data))
-            .catch(err => console.error("Failed to load region names:", err));
-    }, []);
 
     const displayTrips = useMemo(() => {
         return [...(recordedTrips || [])].reverse();

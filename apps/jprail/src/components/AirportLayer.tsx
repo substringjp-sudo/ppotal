@@ -4,7 +4,8 @@ import L from 'leaflet';
 import { FeatureCollection, Feature } from 'geojson';
 import { airportCanvas } from './Map';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
+import { getLocalizedAddress } from '../lib/i18n-utils';
+import { useRegionNames } from '../hooks/useRegionNames';
 
 interface AirportLayerProps {
     data: FeatureCollection;
@@ -25,17 +26,14 @@ interface AirportMetadata {
 
 const AirportLayer: React.FC<AirportLayerProps> = ({ data, zoom, pane, onTooltipUpdate }) => {
     const { language } = useI18n();
-    const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
+    const regionNames = useRegionNames();
     const [airportsMeta, setAirportsMeta] = useState<AirportMetadata[]>([]);
 
     useEffect(() => {
-        Promise.all([
-            fetch('/data/region_names.json').then(res => res.json()),
-            fetch('/data/airports.json').then(res => res.json())
-        ]).then(([regions, airports]) => {
-            setRegionNames(regions);
-            setAirportsMeta(airports);
-        }).catch(err => console.error("Failed to load airport metadata:", err));
+        fetch('/data/airports.json')
+            .then(res => res.json())
+            .then(airports => setAirportsMeta(airports))
+            .catch(err => console.error("Failed to load airport metadata:", err));
     }, []);
 
     const style = useCallback(() => {
