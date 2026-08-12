@@ -8,6 +8,7 @@ import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { findCandidateRoutes, CandidateRoute, RouteSearchResult, RouteSegment } from '../lib/routeSearch';
 import RouteMiniMap, { RouteMiniMapWaypoint } from './RouteMiniMap';
+import { rankByRelevance } from '../lib/searchRanking';
 
 export interface RouteGeneratorModalProps {
     isOpen: boolean;
@@ -90,37 +91,18 @@ const StationPickerRow: React.FC<StationPickerRowProps> = ({
         const q = query.toLowerCase().trim();
         if (!q) return [];
 
-        /** Lower is better: an exact hit beats a prefix, which beats a substring. */
-        const rank = (station: Station) => {
-            const names = [station.name, station.name_en, station.name_kr]
-                .filter(Boolean)
-                .map(name => name!.toLowerCase());
-
-            let best = Infinity;
-            names.forEach(name => {
-                if (name === q) best = Math.min(best, 0);
-                else if (name.startsWith(q)) best = Math.min(best, 1);
-                else if (name.includes(q)) best = Math.min(best, 2);
-            });
-            return best;
-        };
-
-        const scored: { station: Station; rank: number }[] = [];
+        const scored: Station[] = [];
         const seen = new Set<string>();
 
-        for (const station of Object.values(railData.stations)) {
+        for (const station of rankByRelevance(Object.values(railData.stations), q)) {
             const key = `${station.name}-${station.prefecture_id}`;
             if (seen.has(key)) continue;
-            const score = rank(station);
-            if (score === Infinity) continue;
             seen.add(key);
-            scored.push({ station, rank: score });
+            scored.push(station);
+            if (scored.length >= 8) break;
         }
 
-        return scored
-            .sort((a, b) => a.rank - b.rank || a.station.name.length - b.station.name.length)
-            .slice(0, 8)
-            .map(entry => entry.station);
+        return scored;
     }, [railData, query]);
 
     const styles = ROLE_STYLES[role];

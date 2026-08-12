@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
@@ -11,6 +11,8 @@ import { RailData } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 import { LINE_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { buildRouteGraph } from '../lib/routeSearch';
+import { findConnectingPath, findEdge, geometriesForSections } from '../lib/dragRouting';
 
 export interface LineDetailPaneProps {
     lineId: string;
@@ -75,6 +77,83 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
 
     const topology = useLineTopology(lineId, segments, nodes, stats.visitedStations, visitedEdges, railData);
 
+    const routeGraph = useMemo(() => (railData ? buildRouteGraph(railData) : null), [railData]);
+
+    /**
+     * Turns a dragged sequence of diagram stations into a trip.
+     *
+     * Each hop is resolved against the local graph instead of one call to the
+     * pathfinding function per hop. A skip-stop line is a single edge between
+     * stations that are not consecutive on the local service, so asking a
+     * remote shortest-path for it and dropping the answer when it came back
+     * empty is why express lines recorded nothing at all.
+     */
+    const handlePathCreate = useCallback((path: string[]) => {
+        if (!routeGraph || !onRecordTrip || path.length < 2) return;
+
+        const lineNumericId = Number(lineName);
+        const allowedLines = Number.isFinite(lineNumericId) ? new Set([lineNumericId]) : undefined;
+
+        const combinedPath: string[] = [path[0]];
+        const combinedGeometries: [number, number][][] = [];
+        const combinedSectionIds: number[] = [];
+        const seenSections = new Set<number>();
+        let combinedDistance = 0;
+
+        const addSections = (sectionIds: number[]) => {
+            sectionIds.forEach(sid => {
+                if (seenSections.has(sid)) return;
+                seenSections.add(sid);
+                combinedSectionIds.push(sid);
+                combinedDistance += (routeGraph.sections.get(sid)?.length || 0) / 1000;
+            });
+        };
+
+        for (let i = 0; i < path.length - 1; i++) {
+            const from = path[i];
+            const to = path[i + 1];
+
+            // A single edge covers both the local case and the express skip.
+            const edge = findEdge(routeGraph, from, to);
+            if (edge) {
+                addSections(edge.sectionIds);
+                combinedPath.push(to);
+                continue;
+            }
+
+            // Otherwise walk the line itself. Better than half of the hops in a
+            // line diagram are not single graph edges, because the diagram
+            // follows the line's station sequence while the graph follows
+            // physical sections.
+            const viaLine = findConnectingPath(routeGraph, from, to, { maxHops: 30, allowedLines });
+
+            // Only leave the line to bridge a small gap, so a quirk in the data
+            // never quietly records a long stretch of some other line.
+            const bridge = viaLine || findConnectingPath(routeGraph, from, to, { maxHops: 4 });
+            if (!bridge) continue;
+
+            addSections(bridge.sectionIds);
+            combinedPath.push(...bridge.stationIds.slice(1));
+        }
+
+        if (combinedSectionIds.length === 0) return;
+
+        combinedGeometries.push(...geometriesForSections(routeGraph, combinedSectionIds));
+
+        onRecordTrip({
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            start: path[0],
+            end: path[path.length - 1],
+            startId: path[0],
+            endId: path[path.length - 1],
+            path: combinedPath,
+            distance: Math.round(combinedDistance * 10) / 10,
+            geometries: combinedGeometries,
+            sectionIds: combinedSectionIds,
+            waypoints: path
+        });
+    }, [routeGraph, onRecordTrip, lineName]);
+
     return (
         <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] sm:max-h-[60vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col p-3 sm:p-6 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] rounded-t-[24px] sm:rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out">
             <div className="flex flex-col gap-2 sm:gap-4 mb-2 sm:mb-6 flex-shrink-0">
@@ -135,38 +214,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                     visitedStations={stats.visitedStations} visitedEdges={visitedEdges}
                     lineColor={lineColor} onStationClick={onStationClick}
                     scrollContainerRef={scrollContainerRef} loops={topology.loops}
-                    onPathCreate={async (path) => {
-                        if (getShortestPath && onRecordTrip && path.length > 1) {
-                            const start = path[0];
-                            const end = path[path.length - 1];
-                            const combinedPath: string[] = [path[0]];
-                            let combinedDistance = 0;
-                            const combinedGeometries: [number, number][][] = [];
-                            const combinedSectionIds: number[] = [];
-
-                            try {
-                                for (let i = 0; i < path.length - 1; i++) {
-                                    const segmentData = await getShortestPath(path[i], path[i + 1], [lineId]);
-                                    if (segmentData) {
-                                        combinedPath.push(...segmentData.path.slice(1));
-                                        combinedDistance += segmentData.distance;
-                                        combinedGeometries.push(...segmentData.geometries);
-                                        combinedSectionIds.push(...segmentData.sectionIds);
-                                    }
-                                }
-                                if (combinedSectionIds.length > 0) {
-                                    onRecordTrip({
-                                        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                                        start, end, startId: start, endId: end,
-                                        path: combinedPath, distance: combinedDistance,
-                                        geometries: combinedGeometries, sectionIds: combinedSectionIds, waypoints: path
-                                    });
-                                }
-                            } catch (err) {
-                                console.error("LineDetail remote search failed:", err);
-                            }
-                        }
-                    }}
+                    onPathCreate={handlePathCreate}
                 />
             </div>
         </div>
