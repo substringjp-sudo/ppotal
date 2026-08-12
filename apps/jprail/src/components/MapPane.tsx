@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
-import { useMap, useMapEvents, Polyline } from 'react-leaflet';
+import { useMap, useMapEvents, Polyline, CircleMarker } from 'react-leaflet';
 import L, { LatLngBounds, LatLngExpression } from 'leaflet';
 
 import JapanMap from './JapanMap';
@@ -278,7 +278,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragStartStation,
         dragPath,
         handleStationMouseDown: rawHandleStationMouseDown,
-        handleStationMouseUp
+        handleStationMouseUp,
+        snapCandidate
     } = useTripRecorder({
         railData,
         visibleStations,
@@ -717,6 +718,28 @@ const MapPane: React.FC<MapPaneProps> = ({
                         />
                     ))}
                 </>
+            )}
+
+            {/* The station the drawing is about to reach, so the pull is visible. */}
+            {dragStartStation && snapCandidate && railData?.stations?.[snapCandidate] && (
+                <CircleMarker
+                    key="drag-snap-hint"
+                    center={[
+                        railData.stations[snapCandidate].lat,
+                        railData.stations[snapCandidate].lon
+                    ]}
+                    radius={11}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 2.5,
+                        opacity: 0.9,
+                        fillColor: '#007AFF',
+                        fillOpacity: 0.15,
+                        className: 'drag-snap-hint',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
             )}
 
             {/* 클릭 프리뷰 경로 표시 (드래그 중이 아닐 때만) */}

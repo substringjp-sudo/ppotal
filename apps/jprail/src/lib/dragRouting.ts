@@ -222,6 +222,124 @@ export function geometriesForSections(
 }
 
 /* ------------------------------------------------------------------ *
+ * Track shape
+ * ------------------------------------------------------------------ */
+
+/** Points along an edge's real track, running from one station to the other. */
+const polylineCache = new WeakMap<SnapIndex, Map<string, [number, number][]>>();
+
+/** Keeps the matching cheap without losing the shape of a curve. */
+const MAX_POLYLINE_POINTS = 24;
+
+export function edgePolyline(index: SnapIndex, from: string, edge: RouteEdge): [number, number][] {
+    let cache = polylineCache.get(index);
+    if (!cache) {
+        cache = new Map();
+        polylineCache.set(index, cache);
+    }
+
+    const key = `${from}|${edge.to}`;
+    const cached = cache.get(key);
+    if (cached) return cached;
+
+    const start = index.byId.get(from);
+    const end = index.byId.get(edge.to);
+    const points: [number, number][] = [];
+
+    if (start) points.push([start.lon, start.lat]);
+
+    // Sections are stored without a consistent direction, so each one is turned
+    // to continue from wherever the chain has reached.
+    let head: [number, number] | undefined = start ? [start.lon, start.lat] : undefined;
+    edge.sectionIds.forEach(id => {
+        const geometry = index.graph.sections.get(id)?.geometry;
+        if (!geometry || geometry.length < 2) return;
+
+        let run = geometry;
+        if (head) {
+            const toFirst = Math.hypot(geometry[0][0] - head[0], geometry[0][1] - head[1]);
+            const toLast = Math.hypot(
+                geometry[geometry.length - 1][0] - head[0],
+                geometry[geometry.length - 1][1] - head[1]
+            );
+            if (toLast < toFirst) run = [...geometry].reverse();
+        }
+        run.forEach(point => points.push(point));
+        head = run[run.length - 1];
+    });
+
+    if (end) points.push([end.lon, end.lat]);
+
+    // Thin it out evenly; a hundred points per edge buys nothing here.
+    let simplified = points;
+    if (points.length > MAX_POLYLINE_POINTS) {
+        simplified = [];
+        for (let i = 0; i < MAX_POLYLINE_POINTS; i++) {
+            simplified.push(points[Math.round((i / (MAX_POLYLINE_POINTS - 1)) * (points.length - 1))]);
+        }
+    }
+    if (simplified.length < 2 && start && end) {
+        simplified = [[start.lon, start.lat], [end.lon, end.lat]];
+    }
+
+    cache.set(key, simplified);
+    return simplified;
+}
+
+export interface TrackMatch {
+    /** How far along the edge the cursor has reached, 0 at one end, 1 at the other. */
+    progress: number;
+    /** How far the cursor sits off the track, in pixels. */
+    offset: number;
+    /** The point on the track the cursor is beside. */
+    anchor: Vec;
+    /** Direction the track runs at that point. */
+    tangent: Vec;
+}
+
+/** Where the cursor sits relative to one edge's track. */
+export function matchToTrack(
+    screenPoints: Vec[],
+    cursor: Vec
+): TrackMatch | null {
+    if (screenPoints.length < 2) return null;
+
+    const lengths: number[] = [0];
+    for (let i = 1; i < screenPoints.length; i++) {
+        lengths.push(lengths[i - 1] + distance(screenPoints[i - 1], screenPoints[i]));
+    }
+    const total = lengths[lengths.length - 1];
+    if (total <= 0) return null;
+
+    let best: TrackMatch | null = null;
+    for (let i = 1; i < screenPoints.length; i++) {
+        const a = screenPoints[i - 1];
+        const b = screenPoints[i];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const lengthSquared = dx * dx + dy * dy;
+        if (lengthSquared === 0) continue;
+
+        let t = ((cursor.x - a.x) * dx + (cursor.y - a.y) * dy) / lengthSquared;
+        t = Math.max(0, Math.min(1, t));
+        const anchor = { x: a.x + t * dx, y: a.y + t * dy };
+        const offset = distance(cursor, anchor);
+
+        if (!best || offset < best.offset) {
+            const along = lengths[i - 1] + t * Math.sqrt(lengthSquared);
+            const length = Math.sqrt(lengthSquared);
+            best = {
+                progress: along / total,
+                offset,
+                anchor,
+                tangent: { x: dx / length, y: dy / length }
+            };
+        }
+    }
+    return best;
+}
+
+/* ------------------------------------------------------------------ *
  * The trail the user draws
  * ------------------------------------------------------------------ */
 
@@ -251,8 +369,16 @@ export interface DragTrail {
     usedSections: Set<number>;
 }
 
-/** How far off the swept stroke a station may sit and still be picked up. */
-export const CORRIDOR_PX = 45;
+/** How far off the track the cursor may stray and still be following it. */
+export const CORRIDOR_PX = 55;
+/** How far along an edge the cursor must get before that station is taken. */
+const LATCH_PROGRESS = 0.42;
+/** Coming back below this on the edge just travelled gives the station back. */
+const UNLATCH_PROGRESS = 0.3;
+/** Hovering this close to a station already drawn rewinds to it. */
+const UNDO_RADIUS_PX = 22;
+/** How much agreeing with the direction of travel is worth, in pixels of slack. */
+const HEADING_BONUS_PX = 34;
 /** How close the cursor must be to jump to a station that is not adjacent. */
 export const JUMP_SNAP_PX = 26;
 /** Safety valve for a single mouse event; a normal sweep uses a handful. */
@@ -321,13 +447,23 @@ export interface AdvanceOptions {
     /** Screen position of a station, or null if it cannot be placed. */
     project: (stationId: string) => Vec | null;
     projectLatLon: (lat: number, lon: number) => Vec;
-    /** Where the cursor is now, and where it was on the previous event. */
+    /** Where the cursor is now. */
     cursor: Vec;
-    strokeStart: Vec;
+    /** Which way the hand is moving, smoothed over the last few samples. */
+    heading: Vec | null;
     cursorLat: number;
     cursorLon: number;
     /** Restricts which lines may be ridden, when the user has filtered the map. */
     isEdgeAllowed?: (lineIds: number[]) => boolean;
+}
+
+export interface AdvanceResult {
+    /** Whether the recorded route changed. */
+    changed: boolean;
+    /** Station the cursor is currently pulling towards, for the snap preview. */
+    candidate: string | null;
+    /** Point on the track beside the cursor — where the guide line should end. */
+    anchor: Vec | null;
 }
 
 /**
@@ -343,33 +479,39 @@ export function advanceTrail(
     index: SnapIndex,
     trail: DragTrail,
     options: AdvanceOptions
-): boolean {
-    const { project, projectLatLon, cursor, strokeStart, isEdgeAllowed } = options;
+): AdvanceResult {
+    const { project, projectLatLon, cursor, heading, isEdgeAllowed } = options;
     const allowed = isEdgeAllowed ?? (() => true);
     let changed = false;
 
+    /** Screen shape of the track between two stations. */
+    const trackOf = (from: string, edge: RouteEdge) =>
+        edgePolyline(index, from, edge).map(([lon, lat]) => projectLatLon(lat, lon));
+
+    // Hovering a station already on the route takes the drawing back to it.
+    // This has to look at the whole route, not just the station next door —
+    // reaching back three stops used to do nothing at all.
+    for (let i = 0; i < trail.waypoints.length - 1; i++) {
+        const point = project(trail.waypoints[i]);
+        if (!point || distance(point, cursor) > UNDO_RADIUS_PX) continue;
+        while (trail.waypoints.length - 1 > i) popSegment(trail);
+        changed = true;
+        break;
+    }
+
+    let candidate: string | null = null;
+    let anchor: Vec | null = null;
+
     for (let step = 0; step < MAX_HOPS_PER_EVENT; step++) {
         const current = trail.waypoints[trail.waypoints.length - 1];
-        const currentPoint = project(current);
-        if (!currentPoint) break;
-
-        const cursorToCurrent = distance(currentPoint, cursor);
         const previous = trail.waypoints[trail.waypoints.length - 2];
 
-        /**
-         * A station is picked up when it sits close to the stroke the user just
-         * drew, and the cursor has moved past the halfway mark towards it.
-         */
-        const qualifies = (point: Vec) =>
-            pointToSegmentDistance(point, strokeStart, cursor) <= CORRIDOR_PX &&
-            distance(point, cursor) < cursorToCurrent;
-
-        // Retracing always undoes. Checking the previous waypoint before any
-        // other neighbour is what stops a drag back along the line from
-        // forking onto a parallel one and laying a second track over the first.
+        // Backing up along the edge just travelled hands the station back,
+        // with a gap between the two thresholds so it cannot flutter.
         if (previous) {
-            const previousPoint = project(previous);
-            if (previousPoint && qualifies(previousPoint)) {
+            const back = findEdge(index.graph, previous, current);
+            const match = back && matchToTrack(trackOf(previous, back), cursor);
+            if (match && match.offset <= CORRIDOR_PX && match.progress < UNLATCH_PROGRESS) {
                 popSegment(trail);
                 changed = true;
                 continue;
@@ -377,25 +519,41 @@ export function advanceTrail(
         }
 
         let bestId: string | null = null;
-        let bestDistance = Infinity;
+        let bestScore = Infinity;
+        let bestMatch: TrackMatch | null = null;
 
         for (const edge of railNeighbours(index.graph, current)) {
             if (!allowed(edge.lineIds)) continue;
+            if (edge.to === previous) continue; // handled by the step back above
 
-            const neighbourPoint = project(edge.to);
-            if (!neighbourPoint || !qualifies(neighbourPoint)) continue;
+            const match = matchToTrack(trackOf(current, edge), cursor);
+            if (!match || match.offset > CORRIDOR_PX) continue;
 
-            const cursorToNeighbour = distance(neighbourPoint, cursor);
-            if (cursorToNeighbour < bestDistance) {
-                bestDistance = cursorToNeighbour;
+            // Judge by the shape actually drawn: how closely the cursor hugs
+            // this track, and whether the hand is moving the way it runs.
+            // Picking whichever station happened to be nearest is what sent
+            // dense areas off down a neighbouring line.
+            const agreement = heading
+                ? Math.max(0, heading.x * match.tangent.x + heading.y * match.tangent.y)
+                : 0;
+            const score = match.offset - agreement * HEADING_BONUS_PX;
+
+            if (score < bestScore) {
+                bestScore = score;
                 bestId = edge.to;
+                bestMatch = match;
             }
         }
 
-        if (!bestId) break;
+        if (!bestId || !bestMatch) break;
 
-        // Returning to any earlier point rewinds to it rather than drawing the
-        // same rails a second time.
+        // Not far enough along yet: show where it is heading and stop there.
+        if (bestMatch.progress < LATCH_PROGRESS) {
+            candidate = bestId;
+            anchor = bestMatch.anchor;
+            break;
+        }
+
         const existingIndex = trail.waypoints.indexOf(bestId);
         if (existingIndex !== -1) {
             while (trail.waypoints.length - 1 > existingIndex) popSegment(trail);
@@ -408,16 +566,18 @@ export function advanceTrail(
 
         pushSegment(index.graph, trail, { path: [current, bestId], sectionIds: edge.sectionIds });
         changed = true;
+        candidate = null;
+        anchor = null;
     }
 
     // The cursor is sitting on a station the walk could not reach — either it
     // left the rails, or one event covered so much ground that the stroke no
     // longer hugs the track. Bridge it, but only over a short, plausible gap.
-    // This runs even after a successful walk so a flick still lands where the
-    // cursor actually is.
     const current = trail.waypoints[trail.waypoints.length - 1];
     const currentPoint = project(current);
-    if (!currentPoint || distance(currentPoint, cursor) <= JUMP_SNAP_PX) return changed;
+    if (!currentPoint || distance(currentPoint, cursor) <= JUMP_SNAP_PX) {
+        return { changed, candidate, anchor };
+    }
 
     const nearby = querySnapBox(
         index,
@@ -430,18 +590,18 @@ export function advanceTrail(
     let target: string | null = null;
     let targetDistance = JUMP_SNAP_PX;
 
-    for (const candidate of nearby) {
-        if (candidate.id === current) continue;
-        if (trail.waypoints.includes(candidate.id)) continue;
+    for (const station of nearby) {
+        if (station.id === current) continue;
+        if (trail.waypoints.includes(station.id)) continue;
 
-        const point = projectLatLon(candidate.lat, candidate.lon);
+        const point = projectLatLon(station.lat, station.lon);
         const toCursor = distance(point, cursor);
         if (toCursor < targetDistance) {
             targetDistance = toCursor;
-            target = candidate.id;
+            target = station.id;
         }
     }
-    if (!target) return changed;
+    if (!target) return { changed, candidate, anchor };
 
     const from = index.byId.get(current)!;
     const to = index.byId.get(target)!;
@@ -451,10 +611,10 @@ export function advanceTrail(
         maxHops: JUMP_MAX_HOPS,
         maxDistanceKm: gapKm * 3 + 5
     });
-    if (!bridge) return changed;
+    if (!bridge) return { changed, candidate, anchor };
 
     pushSegment(index.graph, trail, { path: bridge.stationIds, sectionIds: bridge.sectionIds });
-    return true;
+    return { changed: true, candidate: null, anchor: null };
 }
 
 /**

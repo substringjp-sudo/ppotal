@@ -47,6 +47,11 @@ export const useTripRecorder = ({
     const mapInstanceRef = useRef<L.Map | null>(null);
 
     const dragState = useRef<DragTrail>(createTrail(''));
+    const headingRef = useRef<{ x: number; y: number } | null>(null);
+    /** Where the guide line should point, and where it is drawn right now. */
+    const guideTargetRef = useRef<[number, number] | null>(null);
+    const guideShownRef = useRef<[number, number] | null>(null);
+    const [snapCandidate, setSnapCandidate] = useState<string | null>(null);
 
     useEffect(() => {
         visibleStationsRef.current = visibleStations;
@@ -97,6 +102,21 @@ export const useTripRecorder = ({
         return lineIds.some(id => allowed.has(id));
     }, []);
 
+    /** Repaints the route plus the eased guide line. */
+    const redraw = useCallback(() => {
+        const index = snapIndexRef.current;
+        const trail = dragState.current;
+        if (!index || !dragStartStationRef.current) return;
+
+        const head = index.byId.get(trail.waypoints[trail.waypoints.length - 1]);
+        const shown = guideShownRef.current;
+        const guide: [number, number][][] = head && shown ? [[[head.lon, head.lat], shown]] : [];
+        setDragPath([...trail.drawn, ...guide]);
+    }, []);
+
+    const redrawRef = useRef(redraw);
+    useEffect(() => { redrawRef.current = redraw; }, [redraw]);
+
     const pointOf = useCallback((mapInstance: L.Map, stationId: string): L.Point | null => {
         const station = snapIndexRef.current?.byId.get(stationId);
         if (!station) return null;
@@ -128,6 +148,10 @@ export const useTripRecorder = ({
             setDragStartCoords(coords);
             setDragPath([]);
             dragState.current = createTrail(id);
+            headingRef.current = null;
+            guideTargetRef.current = [coords[1], coords[0]];
+            guideShownRef.current = [coords[1], coords[0]];
+            setSnapCandidate(null);
 
             onDragUpdate?.([id]);
             if (map) {
@@ -143,27 +167,50 @@ export const useTripRecorder = ({
             const index = snapIndexRef.current;
             if (!dragStartStationRef.current || !index) return;
 
+            // Direction of travel, smoothed so a shaky hand does not flip it.
+            const previousPoint = lastLayerPointRef.current;
+            if (previousPoint) {
+                const dx = currentLayerPoint.x - previousPoint.x;
+                const dy = currentLayerPoint.y - previousPoint.y;
+                const length = Math.hypot(dx, dy);
+                if (length > 1.5) {
+                    const smoothing = 0.35;
+                    const previousHeading = headingRef.current;
+                    const blended = previousHeading
+                        ? {
+                              x: previousHeading.x * (1 - smoothing) + (dx / length) * smoothing,
+                              y: previousHeading.y * (1 - smoothing) + (dy / length) * smoothing
+                          }
+                        : { x: dx / length, y: dy / length };
+                    const size = Math.hypot(blended.x, blended.y) || 1;
+                    headingRef.current = { x: blended.x / size, y: blended.y / size };
+                }
+            }
+
             const trail = dragState.current;
-            const changed = advanceTrail(index, trail, {
+            const result = advanceTrail(index, trail, {
                 project: id => pointOf(mapInstance, id),
                 projectLatLon: (lat, lon) => mapInstance.latLngToLayerPoint(L.latLng(lat, lon)),
                 cursor: currentLayerPoint,
-                strokeStart: lastLayerPointRef.current ?? currentLayerPoint,
+                heading: headingRef.current,
                 cursorLat: currentLatLng.lat,
                 cursorLon: currentLatLng.lng,
                 isEdgeAllowed
             });
 
-            // Rubber band from the trail's head to the cursor.
-            const head = index.byId.get(trail.waypoints[trail.waypoints.length - 1]);
-            const indicator: [number, number][][] = head
-                ? [[[head.lon, head.lat], [currentLatLng.lng, currentLatLng.lat]]]
-                : [];
+            // The guide line ends on the track beside the cursor rather than at
+            // the cursor itself, so the route reads as being drawn along the
+            // rails instead of trailing a straight tether behind the pointer.
+            const snapped = result.anchor
+                ? mapInstance.layerPointToLatLng(L.point(result.anchor.x, result.anchor.y))
+                : currentLatLng;
+            guideTargetRef.current = [snapped.lng, snapped.lat];
 
-            setDragPath([...trail.drawn, ...indicator]);
-            if (changed) onDragUpdate?.([...trail.waypoints]);
+            setSnapCandidate(previous => (previous === result.candidate ? previous : result.candidate));
+            if (result.changed) onDragUpdate?.([...trail.waypoints]);
 
             lastLayerPointRef.current = currentLayerPoint;
+            redrawRef.current();
         },
         [isEdgeAllowed, onDragUpdate, pointOf]
     );
@@ -175,6 +222,7 @@ export const useTripRecorder = ({
 
     useEffect(() => {
         if (!dragStartStation || !map) return;
+
         const loop = () => {
             const velocity = scrollVelocityRef.current;
             if ((velocity.x !== 0 || velocity.y !== 0) && lastContainerPointRef.current) {
@@ -182,6 +230,27 @@ export const useTripRecorder = ({
                 const latlng = map.containerPointToLatLng(lastContainerPointRef.current);
                 updateDragPathRef.current(map, map.latLngToLayerPoint(latlng), latlng);
             }
+
+            // Ease the guide line towards where it should point instead of
+            // teleporting it, which is what made the magnet feel like a snap
+            // rather than a pull.
+            const target = guideTargetRef.current;
+            if (target) {
+                const shown = guideShownRef.current;
+                if (!shown) {
+                    guideShownRef.current = [...target] as [number, number];
+                    redrawRef.current();
+                } else {
+                    const ease = 0.28;
+                    const nextLon = shown[0] + (target[0] - shown[0]) * ease;
+                    const nextLat = shown[1] + (target[1] - shown[1]) * ease;
+                    const settled =
+                        Math.abs(target[0] - nextLon) < 1e-7 && Math.abs(target[1] - nextLat) < 1e-7;
+                    guideShownRef.current = settled ? ([...target] as [number, number]) : [nextLon, nextLat];
+                    redrawRef.current();
+                }
+            }
+
             animationFrameRef.current = requestAnimationFrame(loop);
         };
         animationFrameRef.current = requestAnimationFrame(loop);
@@ -230,6 +299,10 @@ export const useTripRecorder = ({
         setDragStartCoords(null);
         setDragPath([]);
         dragState.current = createTrail('');
+        headingRef.current = null;
+        guideTargetRef.current = null;
+        guideShownRef.current = null;
+        setSnapCandidate(null);
         lastLayerPointRef.current = null;
         scrollVelocityRef.current = { x: 0, y: 0 };
         if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
@@ -305,6 +378,8 @@ export const useTripRecorder = ({
         dragStartCoords,
         dragPath,
         handleStationMouseDown,
-        handleStationMouseUp: handleEnd
+        handleStationMouseUp: handleEnd,
+        /** Station the drawing is currently pulling towards, for the snap hint. */
+        snapCandidate
     };
 };
