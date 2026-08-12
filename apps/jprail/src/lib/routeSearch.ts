@@ -68,7 +68,7 @@ const UNBOARDED = -1; // state line id meaning "not on a train yet"
 /** Walking transfers are only created between same-named stations closer than this. */
 const MAX_WALK_TRANSFER_KM = 1.5;
 
-interface RouteEdge {
+export interface RouteEdge {
     to: string;
     distance: number; // km
     /** Real line ids serving this edge, ordered by how much of the edge they cover. */
@@ -77,7 +77,7 @@ interface RouteEdge {
     isWalk: boolean;
 }
 
-interface RouteGraph {
+export interface RouteGraph {
     adj: Map<string, RouteEdge[]>;
     sections: Map<number, Section>;
     stationsByName: Map<string, string[]>;
@@ -224,7 +224,7 @@ function addContractedJointEdges(
  * merely *touches* the endpoint stations, so trusting it invents through
  * services that do not exist (and therefore fake "0 transfer" routes).
  */
-function buildRouteGraph(railData: RailData): RouteGraph {
+export function buildRouteGraph(railData: RailData): RouteGraph {
     const cached = graphCache.get(railData);
     if (cached) return cached;
 

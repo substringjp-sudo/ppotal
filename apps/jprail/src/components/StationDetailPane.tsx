@@ -93,13 +93,25 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
       // But we still prefer neighbors that actually have a platform on this line for better UI.
       const isNeighborOnThisLine = neighborPlatforms.some(pm => pm && String(pm.line) === String(currentLineId));
 
+      // The remote station info hydrates neighbours as { connections: [...] },
+      // but the local station_graph fallback stores { available_lines, section_ids }.
+      // Normalise so opening a station never depends on that request having landed.
+      const raw = data as any;
+      const connections: any[] = Array.isArray(raw?.connections)
+        ? raw.connections
+        : (raw?.available_lines || []).map((lineId: number | string) => ({
+            line_id: lineId,
+            via_joints: [],
+            section_ids: raw?.section_ids || []
+          }));
+
       // 2. Find connections that explicitly match the current line ID.
-      let validConnections = data.connections.filter((c: any) => String(c.line_id) === String(currentLineId));
+      let validConnections = connections.filter((c: any) => String(c.line_id) === String(currentLineId));
 
       // 3. Fallback: If no connections found for this specific line_id, 
       // but the stations are physically connected, show all connections.
       if (validConnections.length === 0) {
-        validConnections = data.connections;
+        validConnections = connections;
       }
 
       if (validConnections.length === 0) return;

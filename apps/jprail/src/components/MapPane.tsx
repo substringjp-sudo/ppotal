@@ -139,6 +139,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     const [isZooming, setIsZooming] = useState(false);
     const [isPending, startTransition] = React.useTransition();
     const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const boundsSettleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const dragStartStationRef = useRef<string | null>(null);
     const zoomEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -276,10 +278,9 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragStartStation,
         dragPath,
         handleStationMouseDown: rawHandleStationMouseDown,
-        handleStationMouseUp,
-        isCalculating
+        handleStationMouseUp
     } = useTripRecorder({
-        graph: graph,
+        railData,
         visibleStations,
         onRecordTrip,
 
@@ -288,6 +289,14 @@ const MapPane: React.FC<MapPaneProps> = ({
         selectedLines,
         activeLine
     });
+
+    useEffect(() => {
+        dragStartStationRef.current = dragStartStation;
+    }, [dragStartStation]);
+
+    useEffect(() => () => {
+        if (boundsSettleTimeoutRef.current) clearTimeout(boundsSettleTimeoutRef.current);
+    }, []);
 
     const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
         if (onSetActiveLine) onSetActiveLine(null);
@@ -469,9 +478,22 @@ const MapPane: React.FC<MapPaneProps> = ({
         move: () => { },
         moveend: (e) => {
             const newBounds = e.target.getBounds();
-            startTransition(() => {
-                setMapBounds(newBounds);
-            });
+
+            // Recording auto-pans the map every animation frame; recomputing the
+            // visible station set that often is what made long drags stutter.
+            // Snapping reads the full graph, so coalescing here costs nothing.
+            if (dragStartStationRef.current) {
+                if (boundsSettleTimeoutRef.current) clearTimeout(boundsSettleTimeoutRef.current);
+                boundsSettleTimeoutRef.current = setTimeout(() => {
+                    startTransition(() => {
+                        setMapBounds(map.getBounds());
+                    });
+                }, 250);
+            } else {
+                startTransition(() => {
+                    setMapBounds(newBounds);
+                });
+            }
 
             if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
             moveEndTimeoutRef.current = setTimeout(() => {
@@ -731,7 +753,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             <FloatingTooltip {...floatingTooltip} leftBound={leftBound} rightBound={rightBound} />
 
             {/* 실시간 경로 연산 중 로딩 표시 (호버 / 드래그) */}
-            {(isCalculating || isHoverLoading) && (
+            {isHoverLoading && (
                 <div 
                     style={{
                         position: 'absolute',
@@ -754,7 +776,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                 >
                     <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                        {isHoverLoading ? "경로 조회 중..." : "경로 연산 중..."}
+                        {"경로 조회 중..."}
                     </span>
                 </div>
             )}
