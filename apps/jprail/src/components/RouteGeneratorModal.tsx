@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { RailData, Station } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
-import { findCandidateRoutes, CandidateRoute, RouteSearchResult, LegSearchResult, RouteLineInfo } from '../lib/routeSearch';
+import { findCandidateRoutes, CandidateRoute, RouteSearchResult, RouteSegment } from '../lib/routeSearch';
+import RouteMiniMap, { RouteMiniMapWaypoint } from './RouteMiniMap';
 
 export interface RouteGeneratorModalProps {
     isOpen: boolean;
@@ -15,55 +16,64 @@ export interface RouteGeneratorModalProps {
     onAddTrip: (trip: Trip) => void;
 }
 
-interface StationInputProps {
-    label: string;
+type Translations = ReturnType<typeof getTranslations<typeof MY_LINES_TRANSLATIONS.ko>>;
+
+/** Picks legible text for a coloured line badge. */
+const textOn = (hex?: string) => {
+    if (!hex) return '#ffffff';
+    const value = hex.replace('#', '');
+    if (value.length !== 6) return '#ffffff';
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.62 ? '#0f172a' : '#ffffff';
+};
+
+const getStationLineColors = (station: Station, railData: RailData | null): string[] => {
+    if (!railData) return [];
+    const colors = new Set<string>();
+    station.platform_ids?.forEach(pid => {
+        const line = railData.lines[railData.platforms[pid]?.line];
+        if (line) colors.add(line.color || '#94a3b8');
+    });
+    return Array.from(colors).slice(0, 6);
+};
+
+/* ------------------------------------------------------------------ *
+ * Compact station picker
+ * ------------------------------------------------------------------ */
+
+interface StationPickerRowProps {
+    role: 'start' | 'via' | 'end';
     placeholder: string;
     selectedStation: Station | null;
     onSelectStation: (station: Station | null) => void;
     railData: RailData | null;
     regionNames: RegionNames | null;
     onRemove?: () => void;
-    isRemovable?: boolean;
-    icon: string;
-    iconColor?: string;
 }
 
-const getStationLines = (station: Station, railData: RailData | null) => {
-    if (!railData) return [];
-    const linesMap = new Map<string, { name: string; name_en?: string; name_kr?: string; color: string }>();
-    station.platform_ids?.forEach(pid => {
-        const platform = railData.platforms[pid];
-        if (platform) {
-            const line = railData.lines[platform.line];
-            if (line) {
-                linesMap.set(line.id.toString(), {
-                    name: line.name,
-                    name_en: line.name_en,
-                    name_kr: line.name_kr,
-                    color: line.color || '#3b82f6'
-                });
-            }
-        }
-    });
-    return Array.from(linesMap.values());
+const ROLE_STYLES: Record<StationPickerRowProps['role'], { dot: string; ring: string }> = {
+    start: { dot: 'bg-emerald-500', ring: 'ring-emerald-500/30' },
+    via: { dot: 'bg-amber-500', ring: 'ring-amber-500/30' },
+    end: { dot: 'bg-rose-500', ring: 'ring-rose-500/30' }
 };
 
-const StationPickerInput: React.FC<StationInputProps> = ({
-    label,
+const StationPickerRow: React.FC<StationPickerRowProps> = ({
+    role,
     placeholder,
     selectedStation,
     onSelectStation,
     railData,
     regionNames,
-    onRemove,
-    isRemovable = false,
-    icon,
-    iconColor = 'text-primary'
+    onRemove
 }) => {
     const { language } = useI18n();
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -75,187 +85,340 @@ const StationPickerInput: React.FC<StationInputProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const POPULAR_NAMES = ['東京', '新大阪', '新宿', '京都', '名古屋', '博多'];
-
     const results = useMemo(() => {
         if (!railData) return [];
         const q = query.toLowerCase().trim();
+        if (!q) return [];
 
-        const stationsMap = new Map<string, Station>();
+        /** Lower is better: an exact hit beats a prefix, which beats a substring. */
+        const rank = (station: Station) => {
+            const names = [station.name, station.name_en, station.name_kr]
+                .filter(Boolean)
+                .map(name => name!.toLowerCase());
 
-        if (!q) {
-            Object.values(railData.stations).forEach(s => {
-                if (POPULAR_NAMES.includes(s.name) && !stationsMap.has(s.name)) {
-                    stationsMap.set(s.name, s);
-                }
+            let best = Infinity;
+            names.forEach(name => {
+                if (name === q) best = Math.min(best, 0);
+                else if (name.startsWith(q)) best = Math.min(best, 1);
+                else if (name.includes(q)) best = Math.min(best, 2);
             });
-            return Array.from(stationsMap.values());
+            return best;
+        };
+
+        const scored: { station: Station; rank: number }[] = [];
+        const seen = new Set<string>();
+
+        for (const station of Object.values(railData.stations)) {
+            const key = `${station.name}-${station.prefecture_id}`;
+            if (seen.has(key)) continue;
+            const score = rank(station);
+            if (score === Infinity) continue;
+            seen.add(key);
+            scored.push({ station, rank: score });
         }
 
-        Object.values(railData.stations).forEach(s => {
-            const key = `${s.name}-${s.prefecture_id}`;
-            if (!stationsMap.has(key)) {
-                if (
-                    s.name.toLowerCase().includes(q) ||
-                    (s.name_en && s.name_en.toLowerCase().includes(q)) ||
-                    (s.name_kr && s.name_kr.toLowerCase().includes(q))
-                ) {
-                    stationsMap.set(key, s);
-                }
-            }
-        });
-
-        return Array.from(stationsMap.values()).slice(0, 10);
+        return scored
+            .sort((a, b) => a.rank - b.rank || a.station.name.length - b.station.name.length)
+            .slice(0, 8)
+            .map(entry => entry.station);
     }, [railData, query]);
 
-    const selectedAddress = selectedStation
-        ? getLocalizedAddress(selectedStation.prefecture_id, selectedStation.city_id, regionNames, language)
-        : '';
-    const selectedLines = selectedStation ? getStationLines(selectedStation, railData) : [];
+    const styles = ROLE_STYLES[role];
 
     return (
-        <div className="relative flex flex-col gap-1" ref={containerRef}>
-            <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span className={`material-symbols-outlined text-sm ${iconColor}`}>{icon}</span>
-                {label}
-            </label>
+        <div className="relative" ref={containerRef}>
+            <div
+                className={`flex items-center gap-2 h-9 px-2 rounded-xl border bg-white dark:bg-slate-900 transition-shadow ${
+                    isOpen
+                        ? `border-primary ring-2 ${styles.ring}`
+                        : 'border-slate-200 dark:border-slate-700'
+                }`}
+            >
+                <span className={`size-2 rounded-full shrink-0 ${styles.dot}`} />
 
-            {selectedStation ? (
-                <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in duration-150">
-                    <div className="flex items-start gap-2.5 overflow-hidden flex-1 min-w-0">
-                        <span className="material-symbols-outlined text-base text-primary shrink-0 mt-0.5">location_on</span>
-                        <div className="flex flex-col min-w-0 space-y-1">
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
-                                    {getLocalizedName(selectedStation, language)}
-                                </span>
-                                {language !== 'ja' && selectedStation.name && (
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                                        {selectedStation.name}
-                                    </span>
-                                )}
-                            </div>
-
-                            {selectedAddress && (
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-[11px] shrink-0">map</span>
-                                    {selectedAddress}
-                                </span>
+                {selectedStation ? (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            onSelectStation(null);
+                            setQuery('');
+                            setIsOpen(true);
+                            requestAnimationFrame(() => inputRef.current?.focus());
+                        }}
+                        className="flex-1 min-w-0 flex items-baseline gap-1.5 text-left group"
+                    >
+                        <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 truncate">
+                            {getLocalizedName(selectedStation, language)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 truncate">
+                            {getLocalizedAddress(
+                                selectedStation.prefecture_id,
+                                selectedStation.city_id,
+                                regionNames,
+                                language
                             )}
-
-                            {selectedLines.length > 0 && (
-                                <div className="flex flex-wrap gap-1 pt-0.5">
-                                    {selectedLines.map((l, lIdx) => (
-                                        <div
-                                            key={lIdx}
-                                            className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs"
-                                        >
-                                            <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: l.color }}></span>
-                                            <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[120px]">
-                                                {getLocalizedName(l, language)}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-1 shrink-0 ml-2">
-                        <button
-                            type="button"
-                            onClick={() => onSelectStation(null)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                            title="변경"
-                        >
-                            <span className="material-symbols-outlined text-sm">edit</span>
-                        </button>
-                        {isRemovable && onRemove && (
-                            <button
-                                type="button"
-                                onClick={onRemove}
-                                className="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                                title="삭제"
-                            >
-                                <span className="material-symbols-outlined text-sm">delete</span>
-                            </button>
-                        )}
-                    </div>
-                </div>
-            ) : (
-                <div className="relative">
+                        </span>
+                        <span className="material-symbols-outlined text-[13px] text-slate-300 group-hover:text-primary shrink-0 ml-auto">
+                            edit
+                        </span>
+                    </button>
+                ) : (
                     <input
+                        ref={inputRef}
                         type="text"
                         value={query}
-                        onChange={(e) => {
+                        onChange={e => {
                             setQuery(e.target.value);
                             setIsOpen(true);
                         }}
                         onFocus={() => setIsOpen(true)}
                         placeholder={placeholder}
-                        className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                        className="flex-1 min-w-0 bg-transparent text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none"
                     />
+                )}
 
-                    {isOpen && results.length > 0 && (
-                        <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[1100] max-h-64 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 custom-scrollbar">
-                            {results.map(st => {
-                                const address = getLocalizedAddress(st.prefecture_id, st.city_id, regionNames, language);
-                                const lines = getStationLines(st, railData);
+                {onRemove && (
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        className="p-0.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
+                    >
+                        <span className="material-symbols-outlined text-[15px]">close</span>
+                    </button>
+                )}
+            </div>
 
-                                return (
-                                    <button
-                                        key={st.id}
-                                        type="button"
-                                        onClick={() => {
-                                            onSelectStation(st);
-                                            setQuery('');
-                                            setIsOpen(false);
-                                        }}
-                                        className="w-full p-3 text-left hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors flex flex-col gap-1.5"
-                                    >
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
-                                                {getLocalizedName(st, language)}
-                                            </span>
-                                            {language !== 'ja' && st.name && (
-                                                <span className="text-[10px] text-slate-400 font-medium shrink-0">
-                                                    {st.name}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {address && (
-                                            <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
-                                                <span className="material-symbols-outlined text-[12px] text-slate-400">location_on</span>
-                                                <span className="truncate">{address}</span>
-                                            </div>
-                                        )}
-
-                                        {lines.length > 0 && (
-                                            <div className="flex flex-wrap gap-1 mt-0.5">
-                                                {lines.map((l, lIdx) => (
-                                                    <div
-                                                        key={lIdx}
-                                                        className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60"
-                                                    >
-                                                        <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: l.color }}></span>
-                                                        <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[140px]">
-                                                            {getLocalizedName(l, language)}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
+            {isOpen && !selectedStation && results.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-[1100] max-h-56 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    {results.map(station => (
+                        <button
+                            key={station.id}
+                            type="button"
+                            onClick={() => {
+                                onSelectStation(station);
+                                setQuery('');
+                                setIsOpen(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-left hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors flex items-center gap-2"
+                        >
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                                        {getLocalizedName(station, language)}
+                                    </span>
+                                    {language !== 'ja' && (
+                                        <span className="text-[9px] text-slate-400 shrink-0">{station.name}</span>
+                                    )}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate">
+                                    {getLocalizedAddress(
+                                        station.prefecture_id,
+                                        station.city_id,
+                                        regionNames,
+                                        language
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex gap-0.5 shrink-0">
+                                {getStationLineColors(station, railData).map((color, index) => (
+                                    <span
+                                        key={index}
+                                        className="size-1.5 rounded-full"
+                                        style={{ backgroundColor: color }}
+                                    />
+                                ))}
+                            </div>
+                        </button>
+                    ))}
                 </div>
             )}
         </div>
     );
 };
+
+/* ------------------------------------------------------------------ *
+ * Route visualisation pieces
+ * ------------------------------------------------------------------ */
+
+/** Proportional bar showing which line covers which share of the ride. */
+const RouteStrip: React.FC<{ segments: RouteSegment[]; language: 'ko' | 'en' | 'ja' }> = ({
+    segments,
+    language
+}) => (
+    <div className="flex items-stretch gap-[3px] h-[22px]">
+        {segments.map((segment, index) => {
+            if (segment.kind === 'walk') {
+                return (
+                    <div
+                        key={index}
+                        className="w-5 shrink-0 flex items-center justify-center rounded-md border border-dashed border-slate-300 dark:border-slate-600"
+                    >
+                        <span className="material-symbols-outlined text-[12px] text-slate-400">
+                            directions_walk
+                        </span>
+                    </div>
+                );
+            }
+
+            const color = segment.line?.color || '#1c74e9';
+            return (
+                <div
+                    key={index}
+                    className="min-w-[28px] rounded-md px-1.5 flex items-center overflow-hidden"
+                    style={{ flexGrow: Math.max(segment.distance, 0.5), flexBasis: 0, backgroundColor: color }}
+                    title={`${getLocalizedName(segment.line, language)} · ${segment.distance}km`}
+                >
+                    <span
+                        className="text-[9px] font-extrabold truncate leading-none"
+                        style={{ color: textOn(color) }}
+                    >
+                        {getLocalizedName(segment.line, language)}
+                    </span>
+                </div>
+            );
+        })}
+    </div>
+);
+
+type StationLabeller = (stationId: string, fallback: string) => string;
+
+/** Vertical breakdown shown for the route the user has picked. */
+const RouteDetail: React.FC<{
+    candidate: CandidateRoute;
+    language: 'ko' | 'en' | 'ja';
+    t: Translations;
+    stationLabel: StationLabeller;
+}> = ({ candidate, language, t, stationLabel }) => (
+    <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+        {candidate.segments.map((segment, index) => (
+            <div key={index} className="flex items-stretch gap-2">
+                <span
+                    className={`w-[3px] rounded-full shrink-0 ${segment.kind === 'walk' ? 'bg-slate-300 dark:bg-slate-600' : ''}`}
+                    style={
+                        segment.kind === 'walk'
+                            ? undefined
+                            : { backgroundColor: segment.line?.color || '#1c74e9' }
+                    }
+                />
+                <div className="flex-1 min-w-0 py-0.5">
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                        {segment.kind === 'walk' ? t.walkTransfer : getLocalizedName(segment.line, language)}
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">
+                        {stationLabel(segment.fromStationId, segment.fromName)} →{' '}
+                        {stationLabel(segment.toStationId, segment.toName)}
+                        {segment.kind === 'rail' && ` · ${segment.distance} km`}
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
+interface CandidateCardProps {
+    candidate: CandidateRoute;
+    isSelected: boolean;
+    isHovered: boolean;
+    onSelect: () => void;
+    onHover: (hovered: boolean) => void;
+    language: 'ko' | 'en' | 'ja';
+    t: Translations;
+    stationLabel: StationLabeller;
+}
+
+const CandidateCard: React.FC<CandidateCardProps> = ({
+    candidate,
+    isSelected,
+    isHovered,
+    onSelect,
+    onHover,
+    language,
+    t,
+    stationLabel
+}) => {
+    const badges = [
+        candidate.isRecommended && { label: t.badgeRecommended, className: 'bg-primary text-white' },
+        candidate.isShortest && {
+            label: t.badgeShortest,
+            className:
+                'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+        },
+        candidate.isFewestTransfers && {
+            label: t.badgeFewestTransfers,
+            className:
+                'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25'
+        }
+    ].filter(Boolean) as { label: string; className: string }[];
+
+    const first = candidate.segments[0];
+    const last = candidate.segments[candidate.segments.length - 1];
+    const chain = [
+        first && stationLabel(first.fromStationId, first.fromName),
+        ...candidate.transferStationIds.map((id, index) =>
+            stationLabel(id, candidate.transfers[index] || id)
+        ),
+        last && stationLabel(last.toStationId, last.toName)
+    ].filter(Boolean);
+
+    return (
+        <div
+            onClick={onSelect}
+            onMouseEnter={() => onHover(true)}
+            onMouseLeave={() => onHover(false)}
+            className={`p-2.5 rounded-xl border cursor-pointer transition-all space-y-1.5 ${
+                isSelected
+                    ? 'bg-white dark:bg-slate-900 border-primary ring-2 ring-primary/20 shadow-md'
+                    : isHovered
+                      ? 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 shadow-sm'
+                      : 'bg-white/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800'
+            }`}
+        >
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 flex-wrap min-w-0">
+                    {badges.map(badge => (
+                        <span
+                            key={badge.label}
+                            className={`px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wide ${badge.className}`}
+                        >
+                            {badge.label}
+                        </span>
+                    ))}
+                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300">
+                        {candidate.transferCount === 0
+                            ? t.direct
+                            : t.transferTimes(candidate.transferCount)}
+                    </span>
+                </div>
+                <span className="text-xs font-black text-primary shrink-0">{candidate.distance} km</span>
+            </div>
+
+            <RouteStrip segments={candidate.segments} language={language} />
+
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] text-slate-400 truncate min-w-0">{chain.join(' · ')}</p>
+                {isSelected && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-primary shrink-0">
+                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                        {t.selected}
+                    </span>
+                )}
+            </div>
+
+            {isSelected && (
+                <RouteDetail
+                    candidate={candidate}
+                    language={language}
+                    t={t}
+                    stationLabel={stationLabel}
+                />
+            )}
+        </div>
+    );
+};
+
+/* ------------------------------------------------------------------ *
+ * Modal
+ * ------------------------------------------------------------------ */
 
 export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     isOpen,
@@ -268,465 +431,419 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
     const [regionNames, setRegionNames] = useState<RegionNames | null>(null);
 
-    useEffect(() => {
-        fetch('/data/region_names.json')
-            .then(res => res.json())
-            .then(data => setRegionNames(data))
-            .catch(err => console.error("Failed to load region names:", err));
-    }, []);
-
     const [startStation, setStartStation] = useState<Station | null>(null);
     const [endStation, setEndStation] = useState<Station | null>(null);
     const [viaStations, setViaStations] = useState<(Station | null)[]>([]);
 
     const [searchResult, setSearchResult] = useState<RouteSearchResult | null>(null);
-    const [selectedLegCandidates, setSelectedLegCandidates] = useState<Record<number, CandidateRoute | null>>({});
+    const [selectedByLeg, setSelectedByLeg] = useState<Record<number, string>>({});
+    const [activeLeg, setActiveLeg] = useState(0);
+    const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
-    // Reset state when modal opens/closes
     useEffect(() => {
-        if (!isOpen) {
-            setStartStation(null);
-            setEndStation(null);
-            setViaStations([]);
-            setSearchResult(null);
-            setSelectedLegCandidates({});
-            setHasSearched(false);
-            setIsSearching(false);
-        }
+        fetch('/data/region_names.json')
+            .then(res => res.json())
+            .then(setRegionNames)
+            .catch(err => console.error('Failed to load region names:', err));
+    }, []);
+
+    useEffect(() => {
+        if (isOpen) return;
+        setStartStation(null);
+        setEndStation(null);
+        setViaStations([]);
+        setSearchResult(null);
+        setSelectedByLeg({});
+        setActiveLeg(0);
+        setHoveredId(null);
+        setHasSearched(false);
+        setIsSearching(false);
     }, [isOpen]);
 
-    // Compute combined stats for summary card (Hooks MUST be above early return if (!isOpen) return null)
-    const combinedStats = useMemo(() => {
-        if (!searchResult || !searchResult.legs.length) return null;
-        let dist = 0;
-        let transfers = 0;
-        const lineList: RouteLineInfo[] = [];
+    // Editing the itinerary invalidates whatever was found for the old one.
+    useEffect(() => {
+        setSearchResult(null);
+        setSelectedByLeg({});
+        setHasSearched(false);
+        setActiveLeg(0);
+    }, [startStation, endStation, viaStations]);
 
-        searchResult.legs.forEach(leg => {
-            const chosen = selectedLegCandidates[leg.legIndex];
-            if (chosen) {
-                dist += chosen.distance;
-                transfers += chosen.transferCount;
-                chosen.lines.forEach(l => {
-                    if (lineList.length === 0 || lineList[lineList.length - 1].id !== l.id) {
-                        lineList.push(l);
-                    }
-                });
-            }
+    const stationLabel = useCallback<StationLabeller>(
+        (stationId, fallback) => {
+            const station = railData?.stations?.[stationId];
+            return station ? getLocalizedName(station, language) : fallback;
+        },
+        [railData, language]
+    );
+
+    const legs = searchResult?.legs ?? [];
+
+    const chosenCandidates = useMemo(
+        () =>
+            legs
+                .map(leg => leg.candidates.find(c => c.id === selectedByLeg[leg.legIndex]))
+                .filter((c): c is CandidateRoute => Boolean(c)),
+        [legs, selectedByLeg]
+    );
+
+    const allLegsSelected = legs.length > 0 && chosenCandidates.length === legs.length;
+
+    const summary = useMemo(() => {
+        if (!allLegsSelected) return null;
+        const distance = chosenCandidates.reduce((sum, c) => sum + c.distance, 0);
+        const transfers = chosenCandidates.reduce((sum, c) => sum + c.transferCount, 0);
+        return { distance: Math.round(distance * 10) / 10, transfers };
+    }, [allLegsSelected, chosenCandidates]);
+
+    const waypoints = useMemo<RouteMiniMapWaypoint[]>(() => {
+        const list: RouteMiniMapWaypoint[] = [];
+        if (startStation) list.push({ station: startStation, role: 'start' });
+        viaStations.forEach(via => {
+            if (via) list.push({ station: via, role: 'via' });
         });
+        if (endStation) list.push({ station: endStation, role: 'end' });
+        return list;
+    }, [startStation, viaStations, endStation]);
 
+    /** Everything on the map: settled legs plus the options for the leg being compared. */
+    const { settled, alternatives } = useMemo(() => {
+        const settledRoutes: CandidateRoute[] = [];
+        legs.forEach(leg => {
+            if (leg.legIndex === activeLeg) return;
+            const chosen = leg.candidates.find(c => c.id === selectedByLeg[leg.legIndex]);
+            if (chosen) settledRoutes.push(chosen);
+        });
         return {
-            totalDistance: Math.round(dist * 10) / 10,
-            totalTransfers: transfers,
-            lines: lineList
+            settled: settledRoutes,
+            alternatives: legs.find(leg => leg.legIndex === activeLeg)?.candidates ?? []
         };
-    }, [searchResult, selectedLegCandidates]);
+    }, [legs, activeLeg, selectedByLeg]);
 
-    if (!isOpen) return null;
+    const activeId = hoveredId ?? selectedByLeg[activeLeg] ?? null;
 
-    const handleAddVia = () => {
-        setViaStations(prev => [...prev, null]);
-    };
+    // The summary card floats over the map; measure it so the route is never hidden behind it.
+    const summaryRef = useRef<HTMLDivElement>(null);
+    const [summaryHeight, setSummaryHeight] = useState(0);
 
-    const handleRemoveVia = (index: number) => {
-        setViaStations(prev => prev.filter((_, idx) => idx !== index));
-    };
-
-    const handleSetVia = (index: number, station: Station | null) => {
-        setViaStations(prev => {
-            const next = [...prev];
-            next[index] = station;
-            return next;
+    useEffect(() => {
+        const element = summaryRef.current;
+        if (!element || typeof ResizeObserver === 'undefined') {
+            setSummaryHeight(0);
+            return;
+        }
+        const observer = new ResizeObserver(entries => {
+            const height = entries[0]?.contentRect.height ?? 0;
+            setSummaryHeight(Math.round(height) + 20);
         });
-    };
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [summary]);
 
-    const handleSearchRoutes = () => {
+    const handleSearchRoutes = useCallback(() => {
         if (!startStation || !endStation || !railData) return;
 
         setIsSearching(true);
         setHasSearched(false);
 
-        const validVias = viaStations.filter((v): v is Station => v !== null);
-        const waypoints = [startStation, ...validVias, endStation];
+        const stops = [startStation, ...viaStations.filter((v): v is Station => v !== null), endStation];
 
+        // Yield a frame so the spinner paints before the search blocks the thread.
         setTimeout(() => {
-            const result = findCandidateRoutes(waypoints, railData);
-            setSearchResult(result);
+            const result = findCandidateRoutes(stops, railData);
 
-            // Pre-select top candidate for each leg
-            const initialSelected: Record<number, CandidateRoute | null> = {};
+            const initial: Record<number, string> = {};
             result.legs.forEach(leg => {
-                initialSelected[leg.legIndex] = leg.candidates.length > 0 ? leg.candidates[0] : null;
+                if (leg.candidates.length > 0) initial[leg.legIndex] = leg.candidates[0].id;
             });
-            setSelectedLegCandidates(initialSelected);
 
+            setSearchResult(result);
+            setSelectedByLeg(initial);
+            setActiveLeg(0);
             setIsSearching(false);
             setHasSearched(true);
-        }, 150);
-    };
+        }, 50);
+    }, [startStation, endStation, viaStations, railData]);
 
-    const handleSelectCandidateForLeg = (legIndex: number, candidate: CandidateRoute) => {
-        setSelectedLegCandidates(prev => ({
-            ...prev,
-            [legIndex]: candidate
-        }));
-    };
+    const handleCreateTrip = () => {
+        if (!startStation || !endStation || !allLegsSelected) return;
 
-    const handleCreateCombinedTrip = () => {
-        if (!startStation || !endStation || !searchResult || searchResult.legs.length === 0) return;
-
-        const validVias = viaStations.filter((v): v is Station => v !== null);
-        const waypoints = [startStation, ...validVias, endStation];
-
+        const stops = [startStation, ...viaStations.filter((v): v is Station => v !== null), endStation];
         const startName = getLocalizedName(startStation, language);
         const endName = getLocalizedName(endStation, language);
 
-        let totalDist = 0;
-        const combinedStationIds: string[] = [];
-        const combinedSectionIds: number[] = [];
-        const combinedGeometries: [number, number][][] = [];
+        const path: string[] = [];
+        const sectionIds: number[] = [];
+        const geometries: [number, number][][] = [];
+        let distance = 0;
 
-        searchResult.legs.forEach(leg => {
-            const chosen = selectedLegCandidates[leg.legIndex];
-            if (chosen) {
-                totalDist += chosen.distance;
-                chosen.sectionIds.forEach(s => combinedSectionIds.push(s));
-                chosen.geometries.forEach(g => combinedGeometries.push(g));
+        chosenCandidates.forEach(candidate => {
+            distance += candidate.distance;
+            sectionIds.push(...candidate.sectionIds);
+            geometries.push(...candidate.geometries);
 
-                if (combinedStationIds.length === 0) {
-                    combinedStationIds.push(...chosen.stationIds);
-                } else {
-                    if (combinedStationIds[combinedStationIds.length - 1] === chosen.stationIds[0]) {
-                        combinedStationIds.push(...chosen.stationIds.slice(1));
-                    } else {
-                        combinedStationIds.push(...chosen.stationIds);
-                    }
-                }
+            if (path.length > 0 && path[path.length - 1] === candidate.stationIds[0]) {
+                path.push(...candidate.stationIds.slice(1));
+            } else {
+                path.push(...candidate.stationIds);
             }
         });
 
-        const newTrip: Trip = {
+        onAddTrip({
             id: `trip_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             name: `${startName} ~ ${endName}`,
             start: startName,
             end: endName,
             startId: startStation.id,
             endId: endStation.id,
-            distance: Math.round(totalDist * 10) / 10,
-            path: combinedStationIds,
-            waypoints: waypoints.map(w => w.id),
-            geometries: combinedGeometries,
-            sectionIds: combinedSectionIds,
+            distance: Math.round(distance * 10) / 10,
+            path,
+            waypoints: stops.map(s => s.id),
+            geometries,
+            sectionIds,
             createdAt: new Date().toISOString()
-        };
-
-        onAddTrip(newTrip);
+        });
         onClose();
     };
 
-    const isSearchDisabled = !startStation || !endStation;
+    if (!isOpen) return null;
 
-    const allLegsSelected = searchResult && searchResult.legs.length > 0 &&
-        searchResult.legs.every(leg => Boolean(selectedLegCandidates[leg.legIndex]));
+    const activeLegResult = legs.find(leg => leg.legIndex === activeLeg);
 
     return (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh] overflow-hidden">
-                {/* Modal Header */}
-                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-                    <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                            <span className="material-symbols-outlined text-xl">alt_route</span>
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                                {t.createRouteTitle || '경로 자동 생성'}
+        // Above the map's side panels (z-5000) and the app header (z-10001).
+        <div className="fixed inset-0 z-[11500] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="relative w-full max-w-5xl h-[94vh] sm:h-[88vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-900/60 shrink-0">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-lg text-primary">alt_route</span>
+                        <div className="leading-tight">
+                            <h3 className="font-bold text-slate-800 dark:text-white text-sm">
+                                {t.createRouteTitle}
                             </h3>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                                시작역과 도착역 사이의 세부 경로를 한눈에 비교하고 선택합니다.
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                                {t.routeSubtitle}
                             </p>
                         </div>
                     </div>
-
                     <button
                         onClick={onClose}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                        <span className="material-symbols-outlined text-xl">close</span>
+                        <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                 </div>
 
-                {/* Modal Body */}
-                <div className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar">
-                    {/* Station Inputs */}
-                    <div className="space-y-3 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80">
-                        {/* Start Station */}
-                        <StationPickerInput
-                            label={t.startStation || '시작역'}
-                            placeholder="시작역 이름을 검색하세요 (예: 東京, Tokyo, 도쿄)"
-                            selectedStation={startStation}
-                            onSelectStation={setStartStation}
-                            railData={railData}
-                            regionNames={regionNames}
-                            icon="trip_origin"
-                            iconColor="text-emerald-500"
-                        />
-
-                        {/* Via Stations */}
-                        {viaStations.map((via, idx) => (
-                            <StationPickerInput
-                                key={idx}
-                                label={`${t.viaStation || '경유역'} ${idx + 1}`}
-                                placeholder="경유역 이름을 검색하세요"
-                                selectedStation={via}
-                                onSelectStation={(st) => handleSetVia(idx, st)}
+                {/* Body: list on the left, map on the right (map on top when narrow) */}
+                <div className="flex-1 min-h-0 flex flex-col-reverse md:flex-row">
+                    <aside className="flex-1 md:flex-none md:w-[340px] lg:w-[366px] min-h-0 flex flex-col border-t md:border-t-0 md:border-r border-slate-100 dark:border-slate-800">
+                        {/* Planner — stays put while results scroll underneath it */}
+                        <div className="p-2.5 shrink-0 space-y-1.5 bg-slate-50/70 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
+                            <StationPickerRow
+                                role="start"
+                                placeholder={t.searchStartPlaceholder}
+                                selectedStation={startStation}
+                                onSelectStation={setStartStation}
                                 railData={railData}
                                 regionNames={regionNames}
-                                isRemovable={true}
-                                onRemove={() => handleRemoveVia(idx)}
-                                icon="adjust"
-                                iconColor="text-amber-500"
                             />
-                        ))}
 
-                        {/* Add Via Button */}
-                        <div className="flex justify-start">
-                            <button
-                                type="button"
-                                onClick={handleAddVia}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-primary hover:bg-primary/10 transition-colors border border-primary/20"
-                            >
-                                <span className="material-symbols-outlined text-sm">add</span>
-                                {t.addVia || '경유역 추가'}
-                            </button>
+                            {viaStations.map((via, index) => (
+                                <StationPickerRow
+                                    key={index}
+                                    role="via"
+                                    placeholder={t.searchViaPlaceholder}
+                                    selectedStation={via}
+                                    onSelectStation={station =>
+                                        setViaStations(prev =>
+                                            prev.map((item, i) => (i === index ? station : item))
+                                        )
+                                    }
+                                    onRemove={() =>
+                                        setViaStations(prev => prev.filter((_, i) => i !== index))
+                                    }
+                                    railData={railData}
+                                    regionNames={regionNames}
+                                />
+                            ))}
+
+                            <StationPickerRow
+                                role="end"
+                                placeholder={t.searchEndPlaceholder}
+                                selectedStation={endStation}
+                                onSelectStation={setEndStation}
+                                railData={railData}
+                                regionNames={regionNames}
+                            />
+
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setViaStations(prev => [...prev, null])}
+                                    className="h-9 px-2.5 rounded-xl text-[11px] font-bold text-primary hover:bg-primary/10 border border-primary/25 transition-colors flex items-center gap-1 shrink-0"
+                                >
+                                    <span className="material-symbols-outlined text-[15px]">add</span>
+                                    {t.addVia}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSearchRoutes}
+                                    disabled={!startStation || !endStation || isSearching}
+                                    className={`flex-1 h-9 rounded-xl text-[11px] font-bold uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all ${
+                                        !startStation || !endStation || isSearching
+                                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                                            : 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20 active:scale-[0.99]'
+                                    }`}
+                                >
+                                    <span
+                                        className={`material-symbols-outlined text-[15px] ${isSearching ? 'animate-spin' : ''}`}
+                                    >
+                                        {isSearching ? 'progress_activity' : 'search'}
+                                    </span>
+                                    {isSearching ? t.searching : t.searchRoute}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* End Station */}
-                        <StationPickerInput
-                            label={t.endStation || '도착역'}
-                            placeholder="도착역 이름을 검색하세요 (예: 新大阪, Shin-Osaka, 신오사카)"
-                            selectedStation={endStation}
-                            onSelectStation={setEndStation}
-                            railData={railData}
-                            regionNames={regionNames}
-                            icon="location_on"
-                            iconColor="text-rose-500"
-                        />
-                    </div>
+                        {/* Results */}
+                        <div className="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-2 custom-scrollbar">
+                            {!hasSearched && !isSearching && (
+                                <p className="text-[11px] text-slate-400 text-center py-6 px-4 leading-relaxed">
+                                    {t.beforeSearchHint}
+                                </p>
+                            )}
 
-                    {/* Search Button */}
-                    <button
-                        type="button"
-                        onClick={handleSearchRoutes}
-                        disabled={isSearchDisabled || isSearching}
-                        className={`w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg ${
-                            isSearchDisabled || isSearching
-                                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
-                                : 'bg-primary text-white hover:bg-primary/90 shadow-primary/20 active:scale-[0.99]'
-                        }`}
-                    >
-                        {isSearching ? (
-                            <>
-                                <span className="animate-spin material-symbols-outlined text-base">progress_activity</span>
-                                경로 탐색 중...
-                            </>
-                        ) : (
-                            <>
-                                <span className="material-symbols-outlined text-base">search</span>
-                                {t.searchRoute || '경로 탐색'}
-                            </>
-                        )}
-                    </button>
-
-                    {/* Search Results */}
-                    {hasSearched && searchResult && (
-                        <div className="space-y-5 pt-2 animate-in fade-in duration-200">
-                            {/* Warning Banner if >= 5 Candidates */}
-                            {searchResult.hasTooManyCandidates && (
-                                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
-                                    <span className="material-symbols-outlined text-lg text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">warning</span>
-                                    <div className="text-xs font-semibold leading-relaxed">
-                                        <p className="font-bold mb-0.5">
-                                            경우의 수가 5개 이상 발견되었습니다.
-                                        </p>
-                                        <p className="text-[11px] opacity-90">
-                                            {t.tooManyCandidatesWarning || '경유역을 추가하면 더 정확한 경로를 지정할 수 있습니다.'}
-                                        </p>
-                                    </div>
+                            {hasSearched && legs.length === 0 && (
+                                <div className="p-5 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <span className="material-symbols-outlined text-2xl text-slate-400 block mb-1">
+                                        search_off
+                                    </span>
+                                    <p className="text-[11px] font-bold text-slate-500">{t.noRouteFound}</p>
+                                    <p className="text-[10px] text-slate-400 mt-1">{t.noRouteHint}</p>
                                 </div>
                             )}
 
-                            {searchResult.legs.length > 0 ? (
-                                <div className="space-y-6">
-                                    {/* All Legs Stacked Vertically for At-a-Glance Selection */}
-                                    {searchResult.legs.map((leg, legIdx) => {
-                                        const sName = getLocalizedName(leg.startStation, language);
-                                        const eName = getLocalizedName(leg.endStation, language);
-                                        const currentSelected = selectedLegCandidates[legIdx];
-
+                            {legs.length > 1 && (
+                                <div className="flex gap-1 overflow-x-auto pb-0.5">
+                                    {legs.map(leg => {
+                                        const isActive = leg.legIndex === activeLeg;
                                         return (
-                                            <div
-                                                key={legIdx}
-                                                className="space-y-3 p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800"
+                                            <button
+                                                key={leg.legIndex}
+                                                type="button"
+                                                onClick={() => setActiveLeg(leg.legIndex)}
+                                                className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap transition-colors ${
+                                                    isActive
+                                                        ? 'bg-primary text-white'
+                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
+                                                }`}
                                             >
-                                                {/* Leg Section Title Banner */}
-                                                <div className="flex items-center justify-between px-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="size-6 rounded-xl bg-primary text-white flex items-center justify-center text-xs font-black shadow-xs">
-                                                            {legIdx + 1}
-                                                        </span>
-                                                        <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                                                            <span>{sName}</span>
-                                                            <span className="text-primary font-black">➔</span>
-                                                            <span>{eName}</span>
-                                                        </h4>
-                                                    </div>
-
-                                                    <span className="text-[10px] font-bold text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                        경우의 수 {leg.candidates.length}개
-                                                    </span>
-                                                </div>
-
-                                                {/* Candidate Cards Stack */}
-                                                <div className="grid grid-cols-1 gap-2.5">
-                                                    {leg.candidates.map((candidate) => {
-                                                        const isSelected = currentSelected?.id === candidate.id;
-
-                                                        return (
-                                                            <div
-                                                                key={candidate.id}
-                                                                onClick={() => handleSelectCandidateForLeg(legIdx, candidate)}
-                                                                className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
-                                                                    isSelected
-                                                                        ? 'bg-white dark:bg-slate-900 border-primary shadow-md ring-2 ring-primary/20'
-                                                                        : 'bg-white dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 shadow-2xs'
-                                                                }`}
-                                                            >
-                                                                {/* Category Badges & Stats */}
-                                                                <div className="flex items-center justify-between">
-                                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                                        {candidate.category === 'distance' ? (
-                                                                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                                                                                <span className="material-symbols-outlined text-[12px]">bolt</span>
-                                                                                거리순 {candidate.rank}위
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="px-2 py-0.5 rounded-lg text-[10px] font-black uppercase bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
-                                                                                <span className="material-symbols-outlined text-[12px]">sync_alt</span>
-                                                                                최소환승 {candidate.rank}위
-                                                                            </span>
-                                                                        )}
-
-                                                                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                                                            {candidate.transferCount === 0 ? '직통 (환승 없음)' : `환승 ${candidate.transferCount}회`}
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <div className="text-xs font-black text-primary">
-                                                                        {candidate.distance} KM
-                                                                    </div>
-                                                                </div>
-
-                                                                {/* Lines Badges */}
-                                                                <div className="flex flex-wrap items-center gap-1.5 py-0.5">
-                                                                    {candidate.lines.map((line, lIdx) => (
-                                                                        <React.Fragment key={line.id}>
-                                                                            {lIdx > 0 && (
-                                                                                <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">➔</span>
-                                                                            )}
-                                                                            <span
-                                                                                className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs"
-                                                                                style={{ backgroundColor: line.color || '#3b82f6' }}
-                                                                            >
-                                                                                {getLocalizedName(line, language)}
-                                                                            </span>
-                                                                        </React.Fragment>
-                                                                    ))}
-                                                                </div>
-
-                                                                {/* Choice Indicator */}
-                                                                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
-                                                                    <span className="text-[10px] text-slate-400">
-                                                                        {candidate.stationNames.slice(0, 5).join(' ➔ ')}
-                                                                        {candidate.stationNames.length > 5 && ' ...'}
-                                                                    </span>
-
-                                                                    <div className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
-                                                                        isSelected
-                                                                            ? 'bg-primary text-white shadow-2xs'
-                                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                                                                    }`}>
-                                                                        <span className="material-symbols-outlined text-xs">
-                                                                            {isSelected ? 'check_circle' : 'radio_button_unchecked'}
-                                                                        </span>
-                                                                        {isSelected ? '선택됨' : '선택'}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
+                                                {t.legLabel} {leg.legIndex + 1} ·{' '}
+                                                {getLocalizedName(leg.startStation, language)} →{' '}
+                                                {getLocalizedName(leg.endStation, language)}
+                                            </button>
                                         );
                                     })}
-
-                                    {/* Combined Route Summary & Action Card */}
-                                    {allLegsSelected && combinedStats && (
-                                        <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/30 shadow-xl space-y-3 mt-4 animate-in fade-in duration-200">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="material-symbols-outlined text-xl text-primary">route</span>
-                                                    <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                                                        최종 조합 경로 요약
-                                                    </h4>
-                                                </div>
-                                                <div className="text-xs font-black text-primary">
-                                                    총 {combinedStats.totalDistance} KM
-                                                </div>
-                                            </div>
-
-                                            {/* Combined line badges */}
-                                            <div className="flex flex-wrap items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800">
-                                                {combinedStats.lines.map((line, lIdx) => (
-                                                    <React.Fragment key={line.id}>
-                                                        {lIdx > 0 && (
-                                                            <span className="text-slate-300 dark:text-slate-600 text-xs font-bold">➔</span>
-                                                        )}
-                                                        <span
-                                                            className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white shadow-2xs"
-                                                            style={{ backgroundColor: line.color || '#3b82f6' }}
-                                                        >
-                                                            {getLocalizedName(line, language)}
-                                                        </span>
-                                                    </React.Fragment>
-                                                ))}
-                                            </div>
-
-                                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400 px-1">
-                                                <span>총 환승 횟수: {combinedStats.totalTransfers === 0 ? '직통 (환승 없음)' : `${combinedStats.totalTransfers}회`}</span>
-                                            </div>
-
-                                            <button
-                                                type="button"
-                                                onClick={handleCreateCombinedTrip}
-                                                className="w-full py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider bg-primary text-white hover:bg-primary/90 active:scale-[0.99] transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-                                            >
-                                                <span className="material-symbols-outlined text-base">check_circle</span>
-                                                이 최종 경로로 여행 기록 생성
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="p-6 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs">
-                                    <span className="material-symbols-outlined text-3xl mb-2 text-slate-400 block">search_off</span>
-                                    {t.noRouteFound || '경로를 찾을 수 없습니다.'}
                                 </div>
                             )}
+
+                            {activeLegResult && (
+                                <>
+                                    <div className="flex items-center justify-between px-0.5">
+                                        <h4 className="text-[11px] font-extrabold text-slate-700 dark:text-slate-200 truncate">
+                                            {getLocalizedName(activeLegResult.startStation, language)} →{' '}
+                                            {getLocalizedName(activeLegResult.endStation, language)}
+                                        </h4>
+                                        <span className="text-[10px] font-bold text-slate-400 shrink-0">
+                                            {t.candidateCount(activeLegResult.candidates.length)}
+                                        </span>
+                                    </div>
+
+                                    {activeLegResult.candidates.map(candidate => (
+                                        <CandidateCard
+                                            key={candidate.id}
+                                            candidate={candidate}
+                                            isSelected={selectedByLeg[activeLeg] === candidate.id}
+                                            isHovered={hoveredId === candidate.id}
+                                            onSelect={() =>
+                                                setSelectedByLeg(prev => ({
+                                                    ...prev,
+                                                    [activeLeg]: candidate.id
+                                                }))
+                                            }
+                                            onHover={hovered => setHoveredId(hovered ? candidate.id : null)}
+                                            language={language}
+                                            t={t}
+                                            stationLabel={stationLabel}
+                                        />
+                                    ))}
+
+                                    {searchResult?.hasTooManyCandidates && (
+                                        <p className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50 rounded-lg p-2 leading-relaxed">
+                                            {t.tooManyCandidatesWarning}
+                                        </p>
+                                    )}
+                                </>
+                            )}
                         </div>
-                    )}
+                    </aside>
+
+                    {/* Map */}
+                    <main className="relative h-[38vh] md:h-auto md:flex-1 min-h-0 bg-[#e6edf3] dark:bg-[#0b1220]">
+                        <RouteMiniMap
+                            railData={railData}
+                            settled={settled}
+                            alternatives={alternatives}
+                            activeId={activeId}
+                            waypoints={waypoints}
+                            onHoverCandidate={setHoveredId}
+                            onSelectCandidate={id => {
+                                // Routes from already-decided legs are also on the map;
+                                // clicking one must not overwrite the leg being edited.
+                                if (!alternatives.some(candidate => candidate.id === id)) return;
+                                setSelectedByLeg(prev => ({ ...prev, [activeLeg]: id }));
+                            }}
+                            emptyMessage={t.emptyMapHint}
+                            bottomInset={summary ? summaryHeight : 0}
+                        />
+
+                        {summary && (
+                            <div className="absolute inset-x-0 bottom-0 p-2.5 pointer-events-none">
+                                <div ref={summaryRef} className="pointer-events-auto rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-700 shadow-xl p-2.5 flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        <div className="whitespace-nowrap">
+                                            <div className="text-[9px] font-bold uppercase tracking-wide text-slate-400">
+                                                {t.totalDistanceLabel}
+                                            </div>
+                                            <div className="text-sm font-black text-primary leading-tight">
+                                                {summary.distance} km
+                                            </div>
+                                        </div>
+                                        <div className="whitespace-nowrap">
+                                            <div className="text-[9px] font-bold uppercase tracking-wide text-slate-400">
+                                                {t.totalTransfersLabel}
+                                            </div>
+                                            <div className="text-sm font-black text-slate-700 dark:text-slate-200 leading-tight">
+                                                {summary.transfers === 0
+                                                    ? t.direct
+                                                    : t.transferTimes(summary.transfers)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleCreateTrip}
+                                        className="ml-auto h-9 px-3 rounded-xl bg-primary text-white text-[11px] font-extrabold uppercase tracking-wide hover:bg-primary/90 active:scale-[0.99] transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 shrink-0 grow sm:grow-0"
+                                    >
+                                        <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                                        {t.createTrip}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </main>
                 </div>
             </div>
         </div>
