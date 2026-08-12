@@ -239,7 +239,10 @@ export function useLineTopology(
             const count = ring.members.length;
             const spanX = (columnX[Math.min(ring.startColumn + ring.columnSpan, columnX.length - 1)] ?? 400)
                 - (columnX[ring.startColumn] ?? BASE_X);
-            const a = Math.max(120, spanX / 2, (count * 70) / (2 * Math.PI));
+            // Wide enough for the labels to sit apart around the rim, but not
+            // stretched to whatever width the columns happened to take — a
+            // circle that grows with the label columns runs off the pane.
+            const a = Math.max(120, Math.min(spanX / 2, (count * 90) / (2 * Math.PI)));
             const b = a * 0.6;
             const cx = (columnX[ring.startColumn] ?? BASE_X) + a;
             const cy = BASE_Y + ring.row * ROW_HEIGHT;
