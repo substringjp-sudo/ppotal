@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { LanguageSelector } from './LanguageSelector';
 import { trackEvent } from '../lib/gtag';
+import type { MapShapeMode } from '../lib/lineShapes';
 
 
 import { useRailData } from '../hooks/useRailData';
@@ -86,6 +87,10 @@ export interface MapStyleSettings {
     };
     showLabels: boolean;
     showAirports: boolean;
+    /** How the rail geometry itself is drawn — see lib/lineShapes.ts. */
+    shapeMode: MapShapeMode;
+    /** Light running along the lines you have ridden. */
+    flow: boolean;
 }
 
 export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
@@ -104,7 +109,9 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
         stationSize: 1.2,
     },
     showLabels: false,
-    showAirports: false
+    showAirports: false,
+    shapeMode: 'geographic',
+    flow: true
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
@@ -135,6 +142,22 @@ const MainPageClient = () => {
         getShortestPath: (start: string, end: string, lines?: string[]) => Promise<{ path: string[], distance: number, geometries: [number, number][][], sectionIds: number[] } | null>
     } | null>(null);
     const [styleSettings, setStyleSettings] = React.useState<MapStyleSettings>(DEFAULT_STYLE_SETTINGS);
+
+    // The map look is a deliberate choice, so it should survive a reload.
+    // Merged over the defaults so settings added later still get a value.
+    React.useEffect(() => {
+        try {
+            const saved = localStorage.getItem('jprail_map_style');
+            if (saved) setStyleSettings({ ...DEFAULT_STYLE_SETTINGS, ...JSON.parse(saved) });
+        } catch (e) { /* a corrupt entry just means defaults */ }
+    }, []);
+
+    const updateStyleSettings = React.useCallback((next: MapStyleSettings) => {
+        setStyleSettings(next);
+        try {
+            localStorage.setItem('jprail_map_style', JSON.stringify(next));
+        } catch (e) { /* private mode; the setting simply will not persist */ }
+    }, []);
     const [selectedStation, setSelectedStation] = React.useState<Station | null>(null);
     // Trip Recording States
     const [tripStartStation, setTripStartStation] = React.useState<Station | null>(null);
@@ -994,7 +1017,7 @@ const MainPageClient = () => {
                                 selectedStation={selectedStation?.id}
                                 onMapClick={handleMapClick}
                                 showLabels={styleSettings.showLabels}
-                                onToggleLabels={() => setStyleSettings(prev => ({ ...prev, showLabels: !prev.showLabels }))}
+                                onToggleLabels={() => updateStyleSettings({ ...styleSettings, showLabels: !styleSettings.showLabels })}
                                 draftTrip={draftTrip}
                                 onDraftComplete={handleDraftComplete}
                                 onDragUpdate={handleDragUpdate}
@@ -1068,7 +1091,7 @@ const MainPageClient = () => {
                             <div className="flex-1 overflow-hidden pointer-events-none relative">
                                 <MapStylePanel
                                     settings={styleSettings}
-                                    onSettingsChange={setStyleSettings}
+                                    onSettingsChange={updateStyleSettings}
                                     isOpen={isMapStyleOpen}
                                     onOpenChange={setIsMapStyleOpen}
                                 />

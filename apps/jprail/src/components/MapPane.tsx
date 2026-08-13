@@ -29,6 +29,7 @@ import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
 import { useZoomBounce } from '../hooks/useZoomBounce';
 import { useViewportSections } from '../hooks/useViewportSections';
+import FlowLayer from './FlowLayer';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -633,6 +634,16 @@ const MapPane: React.FC<MapPaneProps> = ({
                     dataRevision={sectionWindow.revision}
                 />
 
+            )}
+
+            {railData && (
+                <FlowLayer
+                    sections={sectionWindow.sections}
+                    railData={railData}
+                    usedSectionIds={visitedSectionIds}
+                    shapeMode={styleSettings.shapeMode}
+                    enabled={!!styleSettings.flow && !dragStartStation}
+                />
             )}
 
             {visibleStations && railData &&

@@ -3,6 +3,7 @@
 import React from 'react';
 import { MapStyleSettings, DEFAULT_STYLE_SETTINGS } from './MainPageClient';
 import { useI18n } from '../lib/i18n-context';
+import { MAP_SHAPE_MODES, MapShapeMode } from '../lib/lineShapes';
 
 interface MapStylePanelProps {
     settings: MapStyleSettings;
@@ -11,12 +12,48 @@ interface MapStylePanelProps {
     onOpenChange: (isOpen: boolean) => void;
 }
 
+
+/**
+ * A three-station stub of a line drawn the way the mode would draw it, so the
+ * choice is legible without reading the label. Same endpoints in all three.
+ */
+const ShapeGlyph: React.FC<{ mode: MapShapeMode; active: boolean }> = ({ mode, active }) => {
+    const d = mode === 'geographic'
+        ? 'M 4 17 C 9 17 9 9 14 9 C 19 9 20 5 28 5'
+        : mode === 'smooth'
+            ? 'M 4 17 Q 12 17 16 11 T 28 5'
+            : 'M 4 17 L 10 17 L 18 9 L 24 9 L 28 5';
+    return (
+        <svg width="32" height="22" viewBox="0 0 32 22" fill="none" aria-hidden>
+            <path
+                d={d}
+                stroke="currentColor"
+                strokeWidth={active ? 2.6 : 2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={active ? 1 : 0.65}
+            />
+            {[[4, 17], [28, 5]].map(([cx, cy]) => (
+                <circle key={`${cx}`} cx={cx} cy={cy} r={2.4} fill="currentColor" opacity={active ? 1 : 0.65} />
+            ))}
+        </svg>
+    );
+};
+
 const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChange, isOpen, onOpenChange }) => {
     const { language } = useI18n();
 
     const translations = {
         ko: {
             mapStyle: "지도 스타일",
+            shape: "노선 표현",
+            shapeGeographic: "지리",
+            shapeSmooth: "곡선",
+            shapeSchematic: "도식",
+            shapeGeographicDesc: "실제 선로 그대로",
+            shapeSmoothDesc: "부드럽게 다듬은 곡선",
+            shapeSchematicDesc: "45도로 정리한 노선도",
+            flow: "이동한 노선에 흐름 효과",
             mapStyles: "지도 스타일 설정",
             hiddenLines: "비활성 노선 (선택 안 됨)",
             opacity: "투명도",
@@ -32,6 +69,14 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
         },
         en: {
             mapStyle: "Map Style",
+            shape: "Line Shape",
+            shapeGeographic: "Real",
+            shapeSmooth: "Smooth",
+            shapeSchematic: "Schematic",
+            shapeGeographicDesc: "The track as surveyed",
+            shapeSmoothDesc: "Rounded, flowing curves",
+            shapeSchematicDesc: "Squared off to 45 degrees",
+            flow: "Flowing light on ridden lines",
             mapStyles: "Map Styles",
             hiddenLines: "Hidden Lines (Deselected)",
             opacity: "OPACITY",
@@ -47,6 +92,14 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
         },
         ja: {
             mapStyle: "マップスタイル",
+            shape: "路線の表現",
+            shapeGeographic: "地理",
+            shapeSmooth: "曲線",
+            shapeSchematic: "図式",
+            shapeGeographicDesc: "実際の線路のまま",
+            shapeSmoothDesc: "滑らかに整えた曲線",
+            shapeSchematicDesc: "45度に整理した路線図",
+            flow: "乗車した路線に流れる光",
             mapStyles: "マップスタイル設定",
             hiddenLines: "非表示の路線 (未選択)",
             opacity: "不透明도",
@@ -91,6 +144,18 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
 
     const stopPropagation = (e: React.MouseEvent | React.TouchEvent | React.WheelEvent) => {
         e.stopPropagation();
+    };
+
+    const shapeMode: MapShapeMode = settings.shapeMode ?? 'geographic';
+    const shapeLabel: Record<MapShapeMode, string> = {
+        geographic: t.shapeGeographic,
+        smooth: t.shapeSmooth,
+        schematic: t.shapeSchematic
+    };
+    const shapeDescription: Record<MapShapeMode, string> = {
+        geographic: t.shapeGeographicDesc,
+        smooth: t.shapeSmoothDesc,
+        schematic: t.shapeSchematicDesc
     };
 
     if (!isOpen) {
@@ -141,6 +206,57 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
 
             {/* Content: Scrollable */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 custom-scrollbar">
+                {/* Section: How the lines themselves are drawn */}
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-primary text-sm">route</span>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.shape}</h4>
+                    </div>
+
+                    <div className="relative grid grid-cols-3 gap-1 p-1 bg-slate-900/5 dark:bg-white/5 rounded-2xl">
+                        {/* The moving highlight: one element that slides, so switching reads as motion */}
+                        <div
+                            className="absolute top-1 bottom-1 rounded-xl bg-white dark:bg-slate-700 shadow-md transition-transform duration-500 ease-[cubic-bezier(0.34,1.3,0.64,1)]"
+                            style={{
+                                width: 'calc((100% - 0.5rem) / 3)',
+                                left: '0.25rem',
+                                transform: `translateX(calc(${MAP_SHAPE_MODES.indexOf(shapeMode)} * (100% + 0.25rem)))`
+                            }}
+                        />
+                        {MAP_SHAPE_MODES.map(mode => {
+                            const isActive = shapeMode === mode;
+                            return (
+                                <button
+                                    key={mode}
+                                    onClick={() => onSettingsChange({ ...settings, shapeMode: mode })}
+                                    className={`relative z-10 flex flex-col items-center gap-1.5 py-2.5 rounded-xl transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                >
+                                    <ShapeGlyph mode={mode} active={isActive} />
+                                    <span className="text-[10px] font-black tracking-tight">{shapeLabel[mode]}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <p className="px-1 text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-snug min-h-[2.2em]">
+                        {shapeDescription[shapeMode]}
+                    </p>
+
+                    <label className="flex items-center justify-between px-1 cursor-pointer group">
+                        <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{t.flow}</span>
+                        <span className={`relative w-9 h-5 rounded-full transition-colors duration-300 ${settings.flow ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                            <input
+                                type="checkbox"
+                                className="sr-only"
+                                checked={settings.flow}
+                                onChange={(e) => onSettingsChange({ ...settings, flow: e.target.checked })}
+                            />
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${settings.flow ? 'translate-x-4' : ''}`} />
+                        </span>
+                    </label>
+                </div>
+
+                <div className="h-px bg-slate-900/5 dark:bg-white/5" />
+
                 {/* Section: Unselected */}
                 <div className="flex flex-col gap-3 sm:gap-4">
                     <div className="flex items-center gap-2 px-1">
