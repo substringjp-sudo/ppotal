@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { GeoJSON } from 'react-leaflet';
 import { backgroundCanvas } from './Map';
+import { MapTheme } from '../lib/mapThemes';
 import { getRegionevelShapeId, padId } from '@ppotal/firebase';
 
 interface MunicipalMapProps {
@@ -10,6 +11,8 @@ interface MunicipalMapProps {
     zoom: number;
     pane?: string;
     regionevelVisits?: any[];
+    theme: MapTheme;
+    hidden?: boolean;
 }
 
 // Regionevel Scoring Constants (Local Backup to avoid dependency overhead)
@@ -21,12 +24,12 @@ const VISIT_CONFIG: Record<string, { maxCount: number; pointsPerCount: number }>
     residence: { maxCount: 1, pointsPerCount: 40 },
 };
 
-const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom, pane, regionevelVisits }) => {
+const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom, pane, regionevelVisits , theme, hidden = false}) => {
     const style = useCallback((feature?: any) => {
         let weight = 1;
         if (zoom <= 9) weight = 0.5;
 
-        let fillColor = '#ffffff';
+        let fillColor = theme.land;
         let fillOpacity = 1.0;
 
         // Extract city ID (c1, c2, etc.) from feature properties
@@ -67,7 +70,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom, pane,
             fillOpacity: fillOpacity,
             weight: weight,
             opacity: 0.6,
-            color: '#f5f5f5',
+            color: theme.municipalEdge,
             smoothFactor: 1.0,
         };
     }, [zoom, regionevelVisits]);
@@ -81,7 +84,7 @@ const MunicipalMap: React.FC<MunicipalMapProps> = ({ municipalities, zoom, pane,
         return `geojson-muni-${visitsHash}`;
     }, [regionevelVisits]);
 
-    if (!municipalities) {
+    if (!municipalities || hidden) {
         return null;
     }
 

@@ -10,6 +10,7 @@ import { RailData, Section } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 import { glowCanvas, casingCanvas, railroadCanvas, sharedSvgRenderer } from './Map';
+import { shapeGeometry } from '../lib/lineShapes';
 
 interface RailroadLayerProps {
     railroadNetwork: RailData | null;
@@ -181,7 +182,9 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     const isDraft = draftSectionIds?.has(s.id) || false;
                     const key = `${s.line_id}_${isUsed}_${isDraft}`;
                     if (!groupedSections.has(key)) groupedSections.set(key, []);
-                    groupedSections.get(key)!.push(s.geometry);
+                    // Reshaping is cached against the geometry array, so this is
+                    // a map lookup for every section after the first sighting.
+                    groupedSections.get(key)!.push(shapeGeometry(s.geometry, settings.shapeMode));
                 });
             }
 
@@ -249,7 +252,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         }
 
         return { type: 'FeatureCollection', features };
-    }, [railroadNetwork, usedSectionIds, draftSectionIds]);
+    }, [railroadNetwork, usedSectionIds, draftSectionIds, settings.shapeMode]);
 
 
     // Unified Style Function: Decides all visuals in one pass
@@ -500,8 +503,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라
         // 데이터의 특징적인 값(해시 대용)을 포함합니다.
         const usedIdsHash = Array.from(usedSectionIds).slice(-10).join(',');
-        return `${dataRevision}_${usedSectionIds.size}_${usedIdsHash}_${draftKey}_${language}`;
-    }, [dataRevision, usedSectionIds, draftSectionIds, language]);
+        return `${dataRevision}_${settings.shapeMode}_${usedSectionIds.size}_${usedIdsHash}_${draftKey}_${language}`;
+    }, [dataRevision, settings.shapeMode, usedSectionIds, draftSectionIds, language]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 

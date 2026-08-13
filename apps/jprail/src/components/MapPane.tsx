@@ -29,6 +29,9 @@ import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
 import { useZoomBounce } from '../hooks/useZoomBounce';
 import { useViewportSections } from '../hooks/useViewportSections';
+import FlowLayer from './FlowLayer';
+import LandTileLayer from './LandTileLayer';
+import { themeOf, isLattice } from '../lib/mapThemes';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -277,6 +280,24 @@ const MapPane: React.FC<MapPaneProps> = ({
         () => `${regionevelVisits?.length || 0}-${JSON.stringify(regionevelVisits || []).slice(-50)}`,
         [regionevelVisits]
     );
+
+    const theme = useMemo(() => themeOf(styleSettings.theme), [styleSettings.theme]);
+    const landIsLattice = isLattice(styleSettings.landForm);
+
+    // The tiles are sampled from the rail canvas, so anything that changes how
+    // the rails look has to trigger a resample — not just which rails are
+    // loaded, but their shape, their weight at this zoom, and which of them are
+    // selected, active or already ridden.
+    const railRevision = useMemo(
+        () => `${sectionWindow.revision}|${styleSettings.shapeMode}|${zoomLevel}|${selectedLines.length}|${activeLine ?? ''}|${visitedSectionIds.size}`,
+        [sectionWindow.revision, styleSettings.shapeMode, zoomLevel, selectedLines.length, activeLine, visitedSectionIds]
+    );
+
+    // The sea is the map container's own background, so it is set directly.
+    useEffect(() => {
+        const container = map?.getContainer();
+        if (container) container.style.background = theme.sea;
+    }, [map, theme]);
 
     const passengerGrid = usePassengerGrid();
 
@@ -584,6 +605,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     onPrefectureClick={onPrefectureClick}
                     zoom={zoomLevel}
                     pane="background"
+                    theme={theme}
+                    shapeMode={styleSettings.shapeMode}
+                    hidden={landIsLattice}
                 />
             )}
             {zoomLevel > 8 && activeMunicipalities && (
@@ -593,6 +617,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                     zoom={zoomLevel}
                     pane="background"
                     regionevelVisits={regionevelVisits}
+                    theme={theme}
+                    hidden={landIsLattice}
                 />
             )}
             {styleSettings.showAirports && airports && (
@@ -611,6 +637,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     interactive={false}
                     zoom={zoomLevel}
                     pane="background"
+                    theme={theme}
+                    shapeMode={styleSettings.shapeMode}
+                    hidden={landIsLattice}
                 />
             )}
 
@@ -635,6 +664,25 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             )}
 
+            {landIsLattice && (
+                <LandTileLayer
+                    prefectures={activePrefectures}
+                    form={styleSettings.landForm}
+                    theme={theme}
+                    railRevision={railRevision}
+                />
+            )}
+
+            {railData && (
+                <FlowLayer
+                    sections={sectionWindow.sections}
+                    railData={railData}
+                    usedSectionIds={visitedSectionIds}
+                    shapeMode={styleSettings.shapeMode}
+                    enabled={!!styleSettings.flow && !dragStartStation}
+                />
+            )}
+
             {visibleStations && railData &&
                 <Stations
                     processedStations={visibleStations}
@@ -651,6 +699,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     isMoving={isMoving}
                     railData={railData}
                     mapBounds={mapBounds}
+                    theme={theme}
                     handleStationClick={handleStationClick}
                     handleStationMouseDown={handleStationMouseDown}
                     handleStationMouseUp={handleStationMouseUp}
