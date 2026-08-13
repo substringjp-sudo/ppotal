@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { LanguageSelector } from './LanguageSelector';
 import { trackEvent } from '../lib/gtag';
 import type { MapShapeMode } from '../lib/lineShapes';
+import type { MapThemeId, LandForm } from '../lib/mapThemes';
 
 
 import { useRailData } from '../hooks/useRailData';
@@ -91,6 +92,10 @@ export interface MapStyleSettings {
     shapeMode: MapShapeMode;
     /** Light running along the lines you have ridden. */
     flow: boolean;
+    /** Palette the ground is painted with — see lib/mapThemes.ts. */
+    theme: MapThemeId;
+    /** Outline, or the landmass as a lattice of tiles. */
+    landForm: LandForm;
 }
 
 export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
@@ -111,7 +116,9 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
     showLabels: false,
     showAirports: false,
     shapeMode: 'geographic',
-    flow: true
+    flow: true,
+    theme: 'day',
+    landForm: 'outline'
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });

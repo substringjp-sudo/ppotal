@@ -4,6 +4,7 @@ import React from 'react';
 import { MapStyleSettings, DEFAULT_STYLE_SETTINGS } from './MainPageClient';
 import { useI18n } from '../lib/i18n-context';
 import { MAP_SHAPE_MODES, MapShapeMode } from '../lib/lineShapes';
+import { MAP_THEME_IDS, MAP_THEMES, LAND_FORMS, LandForm, themeOf } from '../lib/mapThemes';
 
 interface MapStylePanelProps {
     settings: MapStyleSettings;
@@ -40,12 +41,49 @@ const ShapeGlyph: React.FC<{ mode: MapShapeMode; active: boolean }> = ({ mode, a
     );
 };
 
+
+/** A four-tile sample of what each land form looks like. */
+const LandGlyph: React.FC<{ form: LandForm }> = ({ form }) => {
+    if (form === 'outline') {
+        return (
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
+                <path d="M4 14 C 6 7 12 5 16 8 C 19 10 18 16 13 17 C 8 18 5 17 4 14 Z"
+                    fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+        );
+    }
+    const spots = [[7, 7], [14, 7], [7, 14], [14, 14]];
+    return (
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden>
+            {spots.map(([cx, cy], i) => {
+                const shift = form === 'hexes' && i >= 2 ? 2.4 : 0;
+                if (form === 'dots') return <circle key={i} cx={cx} cy={cy} r={3} fill="currentColor" />;
+                if (form === 'squares') return <rect key={i} x={cx - 3} y={cy - 3} width={6} height={6} rx={1} fill="currentColor" />;
+                const r = 3.4;
+                const points = Array.from({ length: 6 }, (_, k) => {
+                    const a = (Math.PI / 3) * k;
+                    return `${cx + shift + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+                }).join(' ');
+                return <polygon key={i} points={points} fill="currentColor" />;
+            })}
+        </svg>
+    );
+};
+
 const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChange, isOpen, onOpenChange }) => {
     const { language } = useI18n();
 
     const translations = {
         ko: {
             mapStyle: "지도 스타일",
+            theme: "지도 테마",
+            land: "땅 표현",
+            landOutline: "윤곽",
+            landDots: "도트",
+            landSquares: "사각",
+            landHexes: "육각",
+            landOutlineDesc: "노선 모양을 그대로 따라갑니다",
+            landTileDesc: "땅을 타일로 채웁니다",
             shape: "노선 표현",
             shapeGeographic: "지리",
             shapeSmooth: "곡선",
@@ -69,6 +107,14 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
         },
         en: {
             mapStyle: "Map Style",
+            theme: "Map Theme",
+            land: "Land",
+            landOutline: "Outline",
+            landDots: "Dots",
+            landSquares: "Squares",
+            landHexes: "Hexes",
+            landOutlineDesc: "Follows whatever shape the lines use",
+            landTileDesc: "The landmass drawn as tiles",
             shape: "Line Shape",
             shapeGeographic: "Real",
             shapeSmooth: "Smooth",
@@ -92,6 +138,14 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
         },
         ja: {
             mapStyle: "マップスタイル",
+            theme: "マップテーマ",
+            land: "陸地の表現",
+            landOutline: "輪郭",
+            landDots: "ドット",
+            landSquares: "四角",
+            landHexes: "六角",
+            landOutlineDesc: "路線の形状にそのまま合わせます",
+            landTileDesc: "陸地をタイルで敷き詰めます",
             shape: "路線の表現",
             shapeGeographic: "地理",
             shapeSmooth: "曲線",
@@ -147,6 +201,11 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
     };
 
     const shapeMode: MapShapeMode = settings.shapeMode ?? 'geographic';
+    const landForm: LandForm = settings.landForm ?? 'outline';
+    const activeTheme = themeOf(settings.theme);
+    const landLabel: Record<LandForm, string> = {
+        outline: t.landOutline, dots: t.landDots, squares: t.landSquares, hexes: t.landHexes
+    };
     const shapeLabel: Record<MapShapeMode, string> = {
         geographic: t.shapeGeographic,
         smooth: t.shapeSmooth,
@@ -206,6 +265,71 @@ const MapStylePanel: React.FC<MapStylePanelProps> = ({ settings, onSettingsChang
 
             {/* Content: Scrollable */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 custom-scrollbar">
+                {/* Section: the palette the ground is painted with */}
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-primary text-sm">contrast</span>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.theme}</h4>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                        {MAP_THEME_IDS.map(id => {
+                            const swatch = MAP_THEMES[id];
+                            const isActive = (settings.theme ?? 'day') === id;
+                            return (
+                                <button
+                                    key={id}
+                                    onClick={() => onSettingsChange({ ...settings, theme: id })}
+                                    className={`group flex flex-col items-center gap-1.5 transition-transform duration-300 ${isActive ? 'scale-105' : 'hover:scale-105'}`}
+                                    title={swatch.label[language as 'ko' | 'en' | 'ja'] ?? swatch.label.en}
+                                >
+                                    {/* A miniature of the map itself: sea, land, and a line across it */}
+                                    <span
+                                        className={`relative w-full aspect-square rounded-xl overflow-hidden transition-all duration-300 ${isActive ? 'ring-2 ring-primary ring-offset-2 ring-offset-transparent shadow-lg' : 'ring-1 ring-black/10 dark:ring-white/10'}`}
+                                        style={{ background: swatch.sea }}
+                                    >
+                                        <span className="absolute inset-x-0 bottom-0 h-2/3" style={{ background: swatch.land }} />
+                                        <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rotate-[-20deg]" style={{ background: '#e8543f' }} />
+                                        <span className="absolute left-1/2 top-1/2 w-1.5 h-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: swatch.stationFill, boxShadow: `0 0 0 1px ${swatch.stationInk}` }} />
+                                    </span>
+                                    <span className={`text-[9px] font-black tracking-tight ${isActive ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        {swatch.label[language as 'ko' | 'en' | 'ja'] ?? swatch.label.en}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="h-px bg-slate-900/5 dark:bg-white/5" />
+
+                {/* Section: how the landmass itself is drawn */}
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <span className="material-symbols-outlined text-primary text-sm">grid_view</span>
+                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{t.land}</h4>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1 p-1 bg-slate-900/5 dark:bg-white/5 rounded-2xl">
+                        {LAND_FORMS.map(form => {
+                            const isActive = landForm === form;
+                            return (
+                                <button
+                                    key={form}
+                                    onClick={() => onSettingsChange({ ...settings, landForm: form })}
+                                    className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all duration-300 ${isActive ? 'bg-white dark:bg-slate-700 shadow-md text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                >
+                                    <LandGlyph form={form} />
+                                    <span className="text-[9px] font-black tracking-tight">{landLabel[form]}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <p className="px-1 text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-snug">
+                        {landForm === 'outline' ? t.landOutlineDesc : t.landTileDesc}
+                    </p>
+                </div>
+
+                <div className="h-px bg-slate-900/5 dark:bg-white/5" />
+
                 {/* Section: How the lines themselves are drawn */}
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 px-1">

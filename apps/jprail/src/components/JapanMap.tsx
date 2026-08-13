@@ -4,6 +4,8 @@ import React, { useCallback, useMemo } from 'react';
 import L from 'leaflet';
 import { GeoJSON } from 'react-leaflet';
 import { backgroundCanvas } from './Map';
+import { shapeGeometry, MapShapeMode } from '../lib/lineShapes';
+import { MapTheme } from '../lib/mapThemes';
 
 interface JapanMapProps {
     prefectures: GeoJSON.FeatureCollection | GeoJSON.Feature;
@@ -12,9 +14,14 @@ interface JapanMapProps {
     interactive?: boolean;
     zoom: number;
     pane?: string;
+    theme: MapTheme;
+    /** The coastline follows whatever shape the network is drawn in. */
+    shapeMode: MapShapeMode;
+    /** Hidden when the land is being drawn as a lattice of tiles instead. */
+    hidden?: boolean;
 }
 
-const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, outlineOnly = false, interactive = true, zoom, pane }) => {
+const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, outlineOnly = false, interactive = true, zoom, pane, theme, shapeMode, hidden = false }) => {
     const handleClick = useCallback((feature: GeoJSON.Feature) => {
         if (onPrefectureClick && feature.properties) {
             onPrefectureClick(feature.properties.shapeName);
@@ -30,8 +37,8 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
 
             return {
                 weight: weight,
-                color: '#dddddd',
-                opacity: 0.4,
+                color: theme.landEdge,
+                opacity: 0.55,
                 fillOpacity: 0,
                 smoothFactor: 1.0,
             };
@@ -41,14 +48,14 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
         if (Math.round(zoom) <= 7) weight = 1;
 
         return {
-            fillColor: '#ffffff',
+            fillColor: theme.land,
             fillOpacity: 1.0,
             weight: weight,
             opacity: 0.8,
-            color: '#eeeeee',
+            color: theme.landEdge,
             smoothFactor: 1.0,
         };
-    }, [outlineOnly, zoom]);
+    }, [outlineOnly, zoom, theme]);
 
     const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
         if (interactive && onPrefectureClick) {
@@ -62,13 +69,42 @@ const JapanMap: React.FC<JapanMapProps> = ({ prefectures, onPrefectureClick, out
         renderer: backgroundCanvas || undefined
     }), []);
 
-    if (!prefectures) {
+    // The coastline is put through the same transform as the rails, so a
+    // schematic network sits on a schematic country rather than a photo of one.
+    const shaped = useMemo(() => {
+        if (shapeMode === 'geographic' || !prefectures) return prefectures;
+        const reshapeRings = (rings: number[][][]) =>
+            rings.map(ring => shapeGeometry(ring as [number, number][], shapeMode));
+        const reshape = (feature: GeoJSON.Feature): GeoJSON.Feature => {
+            const geometry = feature.geometry;
+            if (!geometry) return feature;
+            if (geometry.type === 'Polygon') {
+                return { ...feature, geometry: { ...geometry, coordinates: reshapeRings(geometry.coordinates as number[][][]) } } as GeoJSON.Feature;
+            }
+            if (geometry.type === 'MultiPolygon') {
+                return {
+                    ...feature,
+                    geometry: {
+                        ...geometry,
+                        coordinates: (geometry.coordinates as number[][][][]).map(reshapeRings)
+                    }
+                } as GeoJSON.Feature;
+            }
+            return feature;
+        };
+        if ('features' in prefectures) {
+            return { ...prefectures, features: prefectures.features.map(reshape) } as GeoJSON.FeatureCollection;
+        }
+        return reshape(prefectures as GeoJSON.Feature);
+    }, [prefectures, shapeMode]);
+
+    if (!prefectures || hidden) {
         return null;
     }
 
     return (
         <GeoJSON
-            data={prefectures}
+            data={shaped as GeoJSON.FeatureCollection}
             style={style}
             onEachFeature={onEachFeature}
             interactive={interactive}

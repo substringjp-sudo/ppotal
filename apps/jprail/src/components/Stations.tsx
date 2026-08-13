@@ -16,6 +16,7 @@ import { Line } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress } from '../lib/i18n-utils';
 import { useRegionNames } from '../hooks/useRegionNames';
+import { MapTheme } from '../lib/mapThemes';
 
 interface StationFeatureProperties {
     type: 'node' | 'platform' | 'hull';
@@ -52,6 +53,7 @@ interface StationsProps {
     showLabels?: boolean;
     selectedStation?: string | null;
     onTooltipUpdate?: (content: string | null, x: number, y: number, priority?: 'low' | 'high') => void;
+    theme: MapTheme;
 }
 
 
@@ -76,7 +78,8 @@ const Stations: React.FC<StationsProps> = ({
     draftStationIds = new Set(),
     showLabels = false,
     selectedStation = null,
-    onTooltipUpdate
+    onTooltipUpdate,
+    theme
 }) => {
 
     const { language, isKorean } = useI18n();
@@ -259,7 +262,7 @@ const Stations: React.FC<StationsProps> = ({
         // Only show nodes when zoomed in enough or if it's a transfer/draft
         // Base styling
         let weight = 1.0;
-        let color = '#000';
+        let color = theme.stationInk;
         if (realZoom >= 11) {
             weight = isTransfer ? 1.7 : 1.0;
         }
@@ -278,7 +281,7 @@ const Stations: React.FC<StationsProps> = ({
 
         return {
             radius: radius,
-            fillColor: '#ffffff',
+            fillColor: theme.stationFill,
             stroke: true,
             color: color,
             weight: weight,
@@ -286,7 +289,7 @@ const Stations: React.FC<StationsProps> = ({
             opacity: isVisible ? 1.0 : 0,
             pane: 'station-labels'
         };
-    }, [realZoom, localHoveredStation, selectedStation, settings]);
+    }, [realZoom, localHoveredStation, selectedStation, settings, theme]);
 
     const hullStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };

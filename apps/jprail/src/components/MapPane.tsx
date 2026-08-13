@@ -30,6 +30,8 @@ import { useMapData } from '../hooks/useMapData';
 import { useZoomBounce } from '../hooks/useZoomBounce';
 import { useViewportSections } from '../hooks/useViewportSections';
 import FlowLayer from './FlowLayer';
+import LandTileLayer from './LandTileLayer';
+import { themeOf, isLattice } from '../lib/mapThemes';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -278,6 +280,15 @@ const MapPane: React.FC<MapPaneProps> = ({
         () => `${regionevelVisits?.length || 0}-${JSON.stringify(regionevelVisits || []).slice(-50)}`,
         [regionevelVisits]
     );
+
+    const theme = useMemo(() => themeOf(styleSettings.theme), [styleSettings.theme]);
+    const landIsLattice = isLattice(styleSettings.landForm);
+
+    // The sea is the map container's own background, so it is set directly.
+    useEffect(() => {
+        const container = map?.getContainer();
+        if (container) container.style.background = theme.sea;
+    }, [map, theme]);
 
     const passengerGrid = usePassengerGrid();
 
@@ -585,6 +596,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     onPrefectureClick={onPrefectureClick}
                     zoom={zoomLevel}
                     pane="background"
+                    theme={theme}
+                    shapeMode={styleSettings.shapeMode}
+                    hidden={landIsLattice}
                 />
             )}
             {zoomLevel > 8 && activeMunicipalities && (
@@ -594,6 +608,8 @@ const MapPane: React.FC<MapPaneProps> = ({
                     zoom={zoomLevel}
                     pane="background"
                     regionevelVisits={regionevelVisits}
+                    theme={theme}
+                    hidden={landIsLattice}
                 />
             )}
             {styleSettings.showAirports && airports && (
@@ -612,6 +628,9 @@ const MapPane: React.FC<MapPaneProps> = ({
                     interactive={false}
                     zoom={zoomLevel}
                     pane="background"
+                    theme={theme}
+                    shapeMode={styleSettings.shapeMode}
+                    hidden={landIsLattice}
                 />
             )}
 
@@ -634,6 +653,14 @@ const MapPane: React.FC<MapPaneProps> = ({
                     dataRevision={sectionWindow.revision}
                 />
 
+            )}
+
+            {landIsLattice && (
+                <LandTileLayer
+                    prefectures={activePrefectures}
+                    form={styleSettings.landForm}
+                    theme={theme}
+                />
             )}
 
             {railData && (
@@ -662,6 +689,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     isMoving={isMoving}
                     railData={railData}
                     mapBounds={mapBounds}
+                    theme={theme}
                     handleStationClick={handleStationClick}
                     handleStationMouseDown={handleStationMouseDown}
                     handleStationMouseUp={handleStationMouseUp}
