@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { LatLngBounds } from 'leaflet';
 import { ProcessedStation, StaticNode } from '../types/mapTypes';
 import { RailData, Station, Joint } from '../types/railData';
@@ -61,6 +61,24 @@ export const useVisibleStations = ({
         return 8;
     }, [zoomLevel]);
 
+    // A pan that ends up showing exactly the same stations should not force the
+    // map layers to be torn down and rebuilt, so hand back the previous object
+    // when nothing actually changed.
+    const previousRef = useRef<Record<string, ProcessedStation> | null>(null);
+    const previousSignatureRef = useRef<string>('');
+
+
+    /** Same stations, same object — see previousRef above. */
+    const stabilise = (data: Record<string, ProcessedStation>, usedCount: number) => {
+        const signature = `${usedCount}|${Object.keys(data).sort().join(',')}`;
+        if (previousRef.current && previousSignatureRef.current === signature) {
+            return previousRef.current;
+        }
+        previousRef.current = data;
+        previousSignatureRef.current = signature;
+        return data;
+    };
+
     const visibleStations = useMemo(() => {
         if (!railroadNetwork || !spatialIndex) return null;
 
@@ -105,15 +123,39 @@ export const useVisibleStations = ({
             const threshold = Math.pow(2, 9 - zoomLevel) * 0.025;
             const isVeryFarZoom = zoomLevel < 8;
 
+            // Collision used to be a scan of everything accepted so far — the
+            // square of the candidate count, on every pan. Accepted stations go
+            // into buckets the size of the threshold instead, so a candidate
+            // only ever looks at the nine buckets that could hold a conflict.
+            const lonThreshold = threshold * 1.2;
+            const buckets = new Map<string, [number, number][]>();
+            const collides = (lat: number, lon: number) => {
+                const bLat = Math.floor(lat / threshold);
+                const bLon = Math.floor(lon / lonThreshold);
+                for (let dLatCell = -1; dLatCell <= 1; dLatCell++) {
+                    for (let dLonCell = -1; dLonCell <= 1; dLonCell++) {
+                        const cell = buckets.get(`${bLat + dLatCell}_${bLon + dLonCell}`);
+                        if (!cell) continue;
+                        for (const [aLat, aLon] of cell) {
+                            if (Math.abs(aLat - lat) < threshold && Math.abs(aLon - lon) < lonThreshold) return true;
+                        }
+                    }
+                }
+                return false;
+            };
+            const remember = (lat: number, lon: number) => {
+                const key = `${Math.floor(lat / threshold)}_${Math.floor(lon / lonThreshold)}`;
+                const cell = buckets.get(key);
+                if (cell) cell.push([lat, lon]);
+                else buckets.set(key, [[lat, lon]]);
+            };
+
             sortedCandidates.forEach(c => {
                 const isExplicitlyUsed = c.nodes.some(n => usedStationIds.has(n.id));
                 const isTransfer = c.lines.length > 1;
 
-                const hasCollision = accepted.some(acc => {
-                    const dLat = Math.abs(acc.c[0] - c.c[0]);
-                    const dLon = Math.abs(acc.c[1] - c.c[1]);
-                    return dLat < threshold && dLon < threshold * 1.2;
-                });
+                // At zoom 12+ everything is shown, so the answer is never read.
+                const hasCollision = zoomLevel >= 12 ? false : collides(c.c[0], c.c[1]);
 
                 let isVisible = false;
                 if (zoomLevel >= 12) {
@@ -137,6 +179,7 @@ export const useVisibleStations = ({
 
                 if (isVisible) {
                     accepted.push(c);
+                    if (zoomLevel < 12) remember(c.c[0], c.c[1]);
                     data[c.id] = {
                         id: c.id,
                         name: c.name,
@@ -181,7 +224,7 @@ export const useVisibleStations = ({
                     };
                 });
             }
-            return data;
+            return stabilise(data, usedStationIds.size);
         }
 
         // --- Path B: Fallback Dynamic Grouping (if stationsLod not present) ---
@@ -276,7 +319,7 @@ export const useVisibleStations = ({
                 });
             }
         });
-        return data;
+        return stabilise(data, usedStationIds.size);
     }, [railroadNetwork, spatialIndex, usedStationIds, mapBounds, zoomLevel, effectiveZoom, passengerGrid]);
 
     return { visibleStations, effectiveZoom };

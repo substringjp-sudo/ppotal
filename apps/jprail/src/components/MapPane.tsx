@@ -28,6 +28,7 @@ import { usePassengerGrid } from '../hooks/usePassengerGrid';
 import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
 import { useZoomBounce } from '../hooks/useZoomBounce';
+import { useViewportSections } from '../hooks/useViewportSections';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -77,7 +78,6 @@ interface MapPaneProps {
 const PANE_STYLES = {
     topTooltips: { zIndex: 1000, pointerEvents: 'none' as const, overflow: 'visible' },
     masterInteractions: { zIndex: 950, pointerEvents: 'none' as const, overflow: 'visible' },
-    globalInteraction: { zIndex: 940, pointerEvents: 'none' as const, overflow: 'visible' },
     stationLabels: { zIndex: 880, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadLines: { zIndex: 820, pointerEvents: 'none' as const, overflow: 'visible' },
     railroadCasing: { zIndex: 815, pointerEvents: 'none' as const, overflow: 'visible' },
@@ -236,21 +236,25 @@ const MapPane: React.FC<MapPaneProps> = ({
         return 'high';
     }, [zoomLevel]);
 
+    const lodSections = useMemo(() => {
+        if (!railData) return null;
+        if (!('lod' in railData.sections) || !railData.sections.lod) return railData.sections.sections;
+        return railData.sections.lod[lodLevel];
+    }, [railData, lodLevel]);
+
+    // Only the sections that can be on screen reach Leaflet — see the hook.
+    const sectionWindow = useViewportSections(lodSections, mapBounds);
+
     const railDataForMap = useMemo(() => {
         if (!railData) return null;
-        if (!('lod' in railData.sections) || !railData.sections.lod) return railData;
-
-        const lod = railData.sections.lod;
-        const activeSections = lod[lodLevel];
-
         return {
             ...railData,
             sections: {
                 ...railData.sections,
-                sections: activeSections
+                sections: sectionWindow.sections
             }
         };
-    }, [railData, lodLevel]);
+    }, [railData, sectionWindow]);
 
     const activePrefectures = useMemo(() => {
         if (!prefectures) return null;
@@ -265,6 +269,14 @@ const MapPane: React.FC<MapPaneProps> = ({
         if (zoomLevel <= 13) return municipalities.mid;
         return municipalities.high;
     }, [municipalities, zoomLevel]);
+
+    // Was stringified inline in the key, so it re-ran on every render — which,
+    // now that renders track the map instead of being deferred, is every frame
+    // of a pan.
+    const municipalVisitKey = useMemo(
+        () => `${regionevelVisits?.length || 0}-${JSON.stringify(regionevelVisits || []).slice(-50)}`,
+        [regionevelVisits]
+    );
 
     const passengerGrid = usePassengerGrid();
 
@@ -299,6 +311,8 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     useEffect(() => () => {
         if (boundsSettleTimeoutRef.current) clearTimeout(boundsSettleTimeoutRef.current);
+        if (moveEndTimeoutRef.current) clearTimeout(moveEndTimeoutRef.current);
+        if (zoomEndTimeoutRef.current) clearTimeout(zoomEndTimeoutRef.current);
     }, []);
 
     const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
@@ -344,71 +358,19 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [lineIdMap, onLineMappingCreated]);
 
 
-    // Transition State: Just React's pending state now
-    const isInteractionHidden = isPending;
-
-    // Internal state to manage the visual "reveal" of the map after transformations
-    const [isSettled, setIsSettled] = useState(true);
-
+    // The map used to blank its own markers for ~half a second after every
+    // zoom, and hand-clear the canvases, to hide how long the relayout took.
+    // The relayout is now bounded by the viewport, so nothing needs hiding —
+    // only the tooltips, which have no meaningful position mid-movement.
     useEffect(() => {
-        if (isPending) {
-            setIsSettled(false);
-        } else {
-            // Force a Canvas clear to prevent ghosting from previous frames
-            const panesToClear = ['station-labels', 'railroad-lines', 'railroad-casing', 'railroad-glow'];
-            panesToClear.forEach(p => {
-                const pane = map.getPane(p);
-                const canvas = pane?.querySelector('canvas');
-                if (canvas instanceof HTMLCanvasElement) {
-                    const ctx = canvas.getContext('2d');
-                    ctx?.clearRect(0, 0, canvas.width, canvas.height);
-                }
-            });
-
-            // Wait until React transitions and Canvas redraw have likely stabilized
-            const timer = setTimeout(() => {
-                setIsSettled(true);
-            }, 120); // Settle time (roughly 2-3 frames + buffer)
-            return () => clearTimeout(timer);
-        }
-    }, [isInteractionHidden, map]);
-
-    const isVisibleToUser = !isInteractionHidden && isSettled;
-
-    useEffect(() => {
-        if (map) {
-            const panes = ['station-labels', 'railroad-lines', 'railroad-casing', 'railroad-glow', 'top-tooltips'];
-            panes.forEach(p => {
-                const pane = map.getPane(p);
-                if (pane) {
-                    if (p === 'station-labels' || p === 'top-tooltips') {
-                        // Strictly hide station dots, labels, and tooltips during any movement
-                        // But keep them visible if we are currently dragging to draw a route
-                        if (!isVisibleToUser && !dragStartStation) {
-                            pane.style.transition = 'none';
-                            pane.style.opacity = '0';
-                            pane.style.visibility = 'hidden';
-                        } else {
-                            pane.style.transition = 'opacity 0.2s ease-out';
-                            pane.style.opacity = '1';
-                            pane.style.visibility = 'visible';
-                        }
-                    } else {
-                        // Keep railroad lines/casing/glow visible but dimmed during transformations
-                        // This provides moving context as the user requested
-                        if (isInteractionHidden) {
-                            pane.style.transition = 'opacity 0.1s ease-out';
-                            pane.style.opacity = '0.4';
-                        } else {
-                            pane.style.transition = 'opacity 0.3s ease-out';
-                            pane.style.opacity = '1';
-                        }
-                        pane.style.visibility = 'visible';
-                    }
-                }
-            });
-        }
-    }, [map, isVisibleToUser, isInteractionHidden]);
+        if (!map) return;
+        const pane = map.getPane('top-tooltips');
+        if (!pane) return;
+        const hide = isMoving && !dragStartStation;
+        pane.style.transition = hide ? 'none' : 'opacity 0.15s ease-out';
+        pane.style.opacity = hide ? '0' : '1';
+        pane.style.visibility = hide ? 'hidden' : 'visible';
+    }, [map, isMoving, dragStartStation]);
 
     useEffect(() => {
         if (map) {
@@ -432,7 +394,6 @@ const MapPane: React.FC<MapPaneProps> = ({
             ensurePane('ui-elements', PANE_STYLES.uiElements);
             ensurePane('station-labels', PANE_STYLES.stationLabels);
             ensurePane('master-interactions', PANE_STYLES.masterInteractions);
-            ensurePane('globalInteraction', PANE_STYLES.globalInteraction);
 
             const timer = setTimeout(() => {
                 setMapReady(true);
@@ -461,16 +422,17 @@ const MapPane: React.FC<MapPaneProps> = ({
             } catch (err) { /* ignore */ }
         },
         zoomend: (e) => {
-            const newZoom = e.target.getZoom();
-            startTransition(() => {
-                setZoomLevel(newZoom);
-            });
+            // Zoom and bounds are applied together and without a transition:
+            // the layers only hold what is on screen now, so this is cheap, and
+            // deferring it is what used to leave the map a step behind the hand.
+            setZoomLevel(e.target.getZoom());
+            setMapBounds(e.target.getBounds());
 
             if (zoomEndTimeoutRef.current) clearTimeout(zoomEndTimeoutRef.current);
             zoomEndTimeoutRef.current = setTimeout(() => {
                 setIsMoving(false);
                 setIsZooming(false);
-            }, 400); // Further increased grace period for stable redraw
+            }, 60);
         },
         movestart: () => {
             setIsMoving(true);
@@ -626,7 +588,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             )}
             {zoomLevel > 8 && activeMunicipalities && (
                 <MunicipalMap
-                    key={`muni-${zoomLevel <= 9 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}-${regionevelVisits?.length || 0}-${JSON.stringify(regionevelVisits || []).slice(-50)}`}
+                    key={`muni-${zoomLevel <= 9 ? 'low' : zoomLevel <= 13 ? 'mid' : 'high'}-${municipalVisitKey}`}
                     municipalities={activeMunicipalities}
                     zoom={zoomLevel}
                     pane="background"
@@ -668,6 +630,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     draftSectionIds={draftSectionIds}
                     settings={styleSettings}
                     onTooltipUpdate={handleTooltipUpdate}
+                    dataRevision={sectionWindow.revision}
                 />
 
             )}
@@ -685,7 +648,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     settings={styleSettings}
                     isMobile={isMobile}
                     showLabels={showLabels}
-                    isMoving={isInteractionHidden}
+                    isMoving={isMoving}
                     railData={railData}
                     mapBounds={mapBounds}
                     handleStationClick={handleStationClick}

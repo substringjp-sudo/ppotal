@@ -26,6 +26,8 @@ interface RailroadLayerProps {
     draftSectionIds?: Set<number>;
     settings: import('./MainPageClient').MapStyleSettings;
     onTooltipUpdate?: (content: string | null, x: number, y: number, priority?: 'low' | 'high') => void;
+    /** Bumps whenever the set of sections handed in actually changes. */
+    dataRevision: number;
 }
 
 
@@ -43,7 +45,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     isDragging = false,
     draftSectionIds = new Set(),
     settings,
-    onTooltipUpdate
+    onTooltipUpdate,
+    dataRevision
 }) => {
 
     const { language } = useI18n();
@@ -143,9 +146,12 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             casingWeight,
             highlightWeight,
             zoomWeight,
-            smoothFactor: 1.0
+            // Douglas-Peucker tolerance in screen pixels, applied every time
+            // Leaflet projects a line. At 1.0 the map was paying to draw detail
+            // finer than a pixel; zoomed out that is most of the vertices.
+            smoothFactor: zoomGroup === 3 ? 1.0 : zoomGroup === 2 ? 2.0 : 3.0
         };
-    }, [zoomGroup, zoomLevel, isMoving]);
+    }, [zoomGroup, zoomLevel]);
 
     const mergedGeoJsonData = useMemo<GeoJSON.FeatureCollection | null>(() => {
         if (!railroadNetwork) return null;
@@ -339,7 +345,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             smoothFactor: styleConfig.smoothFactor,
             interactive: false,
         } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging, isMobile, settings, isMoving]);
+    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging, isMobile, settings]);
 
     // 상호작용 전용 스타일 (투명하지만 클릭 영역 확보)
     const interactionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
@@ -354,6 +360,11 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             interactive: true,
             lineCap: 'round' as const,
             lineJoin: 'round' as const,
+            // This layer is never seen — it only has to be hit-testable within
+            // its own 14px stroke, so it can be simplified far harder than the
+            // visible lines. Every vertex dropped here is one less to project
+            // and one less to write into an SVG path on each zoom.
+            smoothFactor: 6.0,
             renderer: sharedSvgRenderer || undefined
         } as L.PathOptions;
     }, [isMobile]);
@@ -450,13 +461,21 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const glowLayerRef = useRef<L.GeoJSON>(null);
     const interactionLayerRef = useRef<L.GeoJSON>(null);
 
-    // Dynamic Style Update without unmounting the layer
+    // Restyling walks every feature, so it must only happen when a style
+    // function has genuinely changed. It used to also run on isMoving, which
+    // no style reads — so starting and finishing any pan restyled the whole
+    // network twice to produce exactly the same pixels.
     useEffect(() => {
         if (mainLayerRef.current) mainLayerRef.current.setStyle(unifiedStyle);
-        if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
-        if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+    }, [unifiedStyle]);
 
-    }, [activeLine, hoveredLine, isMoving, isDragging, unifiedStyle, glowStyle, interactionStyle]);
+    useEffect(() => {
+        if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
+    }, [glowStyle]);
+
+    useEffect(() => {
+        if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+    }, [interactionStyle]);
 
     // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
     useEffect(() => {
@@ -471,16 +490,18 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         };
     }, []);
 
-    // Stable key: re-render on data, major zoom changes, or when the set of used sections actually changes
+    // react-leaflet only picks up new GeoJSON through a remount, so the key
+    // tracks exactly what changes the *data*. Zoom is deliberately not in here:
+    // zoom only changes styling, and styling goes through setStyle above.
     const layerKey = useMemo(() => {
         const draftIdsArray = Array.from(draftSectionIds || []);
         const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
-        
-        // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라 
+
+        // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라
         // 데이터의 특징적인 값(해시 대용)을 포함합니다.
         const usedIdsHash = Array.from(usedSectionIds).slice(-10).join(',');
-        return `${zoomGroup}_${usedSectionIds.size}_${usedIdsHash}_${selectionSet.size}_${draftKey}_${language}`;
-    }, [zoomGroup, usedSectionIds, selectionSet.size, draftSectionIds, language]);
+        return `${dataRevision}_${usedSectionIds.size}_${usedIdsHash}_${draftKey}_${language}`;
+    }, [dataRevision, usedSectionIds, draftSectionIds, language]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 
