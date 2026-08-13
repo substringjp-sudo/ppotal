@@ -284,6 +284,15 @@ const MapPane: React.FC<MapPaneProps> = ({
     const theme = useMemo(() => themeOf(styleSettings.theme), [styleSettings.theme]);
     const landIsLattice = isLattice(styleSettings.landForm);
 
+    // The tiles are sampled from the rail canvas, so anything that changes how
+    // the rails look has to trigger a resample — not just which rails are
+    // loaded, but their shape, their weight at this zoom, and which of them are
+    // selected, active or already ridden.
+    const railRevision = useMemo(
+        () => `${sectionWindow.revision}|${styleSettings.shapeMode}|${zoomLevel}|${selectedLines.length}|${activeLine ?? ''}|${visitedSectionIds.size}`,
+        [sectionWindow.revision, styleSettings.shapeMode, zoomLevel, selectedLines.length, activeLine, visitedSectionIds]
+    );
+
     // The sea is the map container's own background, so it is set directly.
     useEffect(() => {
         const container = map?.getContainer();
@@ -660,6 +669,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                     prefectures={activePrefectures}
                     form={styleSettings.landForm}
                     theme={theme}
+                    railRevision={railRevision}
                 />
             )}
 

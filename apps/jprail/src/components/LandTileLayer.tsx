@@ -10,28 +10,41 @@ interface LandTileLayerProps {
     prefectures: FeatureCollection | null;
     form: LandForm;
     theme: MapTheme;
+    /** Changes whenever the rails underneath would look different. */
+    railRevision: string;
 }
 
 const PANE = 'land-tiles';
-/** Below everything else the map draws — this replaces the ground. */
-const PANE_Z = 110;
+/** Above the ground, below the stations: in this mode it *is* the map. */
+const PANE_Z = 700;
 /** Centre-to-centre spacing of the lattice, in screen pixels. */
 const SPACING = 13;
-/** The mask is only ever sampled at lattice centres, so it can be coarse. */
+/** The mask is only ever read a cell at a time, so it can be coarse. */
 const MASK_SCALE = 0.5;
+/** Panes whose content is re-rendered as tiles instead of drawn directly. */
+export const TILED_PANES = ['railroad-glow', 'railroad-casing', 'railroad-lines'];
 
 /**
- * Draws the landmass as a field of tiles rather than a filled outline.
+ * Draws the map as a field of tiles — land and rails both.
  *
- * Testing every lattice point against 47 prefecture polygons would be tens of
- * millions of point-in-polygon tests. Instead the polygons are filled once into
- * a small offscreen mask — which is what canvas rasterisation is for — and each
- * lattice point becomes a single array lookup into that mask.
+ * Tiling only the land was the wrong half of the idea: the country turned to
+ * pixels while the lines stayed smooth on top of it, and the two never looked
+ * like the same picture. So the rails go through the same lattice. Rather than
+ * re-projecting them, this samples the canvas Leaflet has already drawn them
+ * into, which means tiles inherit every line's real colour and weight for free
+ * and stay correct whatever line shape or theme is selected.
+ *
+ * Sampling is by cell, not by point: a rail line is a couple of pixels wide and
+ * a lattice point would miss it far more often than not, leaving the network as
+ * disconnected specks. Each cell takes the strongest rail pixel within it, and
+ * falls back to land.
  */
-const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme }) => {
+const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme, railRevision }) => {
     const map = useMap();
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const maskRef = useRef<HTMLCanvasElement | null>(null);
+    const landMaskRef = useRef<HTMLCanvasElement | null>(null);
+    const railMaskRef = useRef<HTMLCanvasElement | null>(null);
+    const pendingRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (!map.getPane(PANE)) {
@@ -46,19 +59,39 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme 
         canvas.style.pointerEvents = 'none';
         pane.appendChild(canvas);
         canvasRef.current = canvas;
-        maskRef.current = document.createElement('canvas');
+        landMaskRef.current = document.createElement('canvas');
+        railMaskRef.current = document.createElement('canvas');
 
         return () => {
             canvas.remove();
             canvasRef.current = null;
-            maskRef.current = null;
+            landMaskRef.current = null;
+            railMaskRef.current = null;
         };
     }, [map]);
 
+    // While the lattice is on, the real rail layers are the source for the
+    // tiles rather than something to look at, so they are hidden — but left
+    // rendering, because that canvas is exactly what gets sampled.
+    useEffect(() => {
+        const active = form !== 'outline';
+        TILED_PANES.forEach(name => {
+            const pane = map.getPane(name);
+            if (pane) pane.style.opacity = active ? '0' : '1';
+        });
+        return () => {
+            TILED_PANES.forEach(name => {
+                const pane = map.getPane(name);
+                if (pane) pane.style.opacity = '1';
+            });
+        };
+    }, [map, form]);
+
     useEffect(() => {
         const canvas = canvasRef.current;
-        const mask = maskRef.current;
-        if (!canvas || !mask) return;
+        const landMask = landMaskRef.current;
+        const railMask = railMaskRef.current;
+        if (!canvas || !landMask || !railMask) return;
 
         if (!prefectures || form === 'outline') {
             canvas.style.display = 'none';
@@ -70,38 +103,40 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme 
             const size = map.getSize();
             const origin = map.containerPointToLayerPoint([0, 0]);
 
-            canvas.width = size.x;
-            canvas.height = size.y;
-            canvas.style.width = `${size.x}px`;
-            canvas.style.height = `${size.y}px`;
+            if (canvas.width !== size.x || canvas.height !== size.y) {
+                canvas.width = size.x;
+                canvas.height = size.y;
+                canvas.style.width = `${size.x}px`;
+                canvas.style.height = `${size.y}px`;
+            }
             L.DomUtil.setPosition(canvas, origin);
 
             const context = canvas.getContext('2d');
             if (!context) return;
             context.clearRect(0, 0, size.x, size.y);
 
-            // 1. Rasterise the coastline into a coarse mask.
             const maskWidth = Math.max(1, Math.ceil(size.x * MASK_SCALE));
             const maskHeight = Math.max(1, Math.ceil(size.y * MASK_SCALE));
-            mask.width = maskWidth;
-            mask.height = maskHeight;
-            const maskContext = mask.getContext('2d', { willReadFrequently: true });
-            if (!maskContext) return;
-            maskContext.clearRect(0, 0, maskWidth, maskHeight);
-            maskContext.fillStyle = '#fff';
+
+            // --- Mask 1: the coastline, rasterised rather than point-tested.
+            landMask.width = maskWidth;
+            landMask.height = maskHeight;
+            const landContext = landMask.getContext('2d', { willReadFrequently: true });
+            if (!landContext) return;
+            landContext.clearRect(0, 0, maskWidth, maskHeight);
+            landContext.fillStyle = '#fff';
 
             const tracePolygon = (rings: number[][][]) => {
-                maskContext.beginPath();
+                landContext.beginPath();
                 for (const ring of rings) {
                     for (let i = 0; i < ring.length; i++) {
                         const p = map.latLngToContainerPoint([ring[i][1], ring[i][0]]);
-                        const x = p.x * MASK_SCALE;
-                        const y = p.y * MASK_SCALE;
-                        if (i === 0) maskContext.moveTo(x, y); else maskContext.lineTo(x, y);
+                        if (i === 0) landContext.moveTo(p.x * MASK_SCALE, p.y * MASK_SCALE);
+                        else landContext.lineTo(p.x * MASK_SCALE, p.y * MASK_SCALE);
                     }
-                    maskContext.closePath();
+                    landContext.closePath();
                 }
-                maskContext.fill('evenodd');
+                landContext.fill('evenodd');
             };
 
             for (const feature of prefectures.features as Feature[]) {
@@ -112,60 +147,121 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme 
                     for (const polygon of geometry.coordinates as number[][][][]) tracePolygon(polygon);
                 }
             }
+            const landPixels = landContext.getImageData(0, 0, maskWidth, maskHeight).data;
 
-            const pixels = maskContext.getImageData(0, 0, maskWidth, maskHeight).data;
-            const isLand = (x: number, y: number) => {
-                const mx = Math.min(maskWidth - 1, Math.max(0, Math.round(x * MASK_SCALE)));
-                const my = Math.min(maskHeight - 1, Math.max(0, Math.round(y * MASK_SCALE)));
-                return pixels[(my * maskWidth + mx) * 4 + 3] > 96;
-            };
+            // --- Mask 2: whatever Leaflet has already drawn the rails into.
+            railMask.width = maskWidth;
+            railMask.height = maskHeight;
+            const railContext = railMask.getContext('2d', { willReadFrequently: true });
+            if (!railContext) return;
+            railContext.clearRect(0, 0, maskWidth, maskHeight);
 
-            // 2. Walk the lattice and stamp a tile wherever the mask says land.
-            context.fillStyle = theme.tileInk;
+            for (const name of TILED_PANES) {
+                const pane = map.getPane(name);
+                const source = pane?.querySelector('canvas') as HTMLCanvasElement | null;
+                if (!source || !source.width || !source.height) continue;
+                // Each renderer positions its own canvas in layer space; bring
+                // that back to where it sits on screen.
+                const position = L.DomUtil.getPosition(source) || new L.Point(0, 0);
+                const offsetX = (position.x - origin.x) * MASK_SCALE;
+                const offsetY = (position.y - origin.y) * MASK_SCALE;
+                const cssWidth = parseFloat(source.style.width) || source.width;
+                const cssHeight = parseFloat(source.style.height) || source.height;
+                railContext.drawImage(
+                    source,
+                    offsetX, offsetY,
+                    cssWidth * MASK_SCALE, cssHeight * MASK_SCALE
+                );
+            }
+            const railPixels = railContext.getImageData(0, 0, maskWidth, maskHeight).data;
+
+            // --- Stamp one tile per cell.
             const rowStep = form === 'hexes' ? SPACING * 0.866 : SPACING;
             const radius = SPACING * 0.42;
+            const half = Math.max(1, Math.round((SPACING * MASK_SCALE) / 2));
+
+            const stamp = (x: number, y: number) => {
+                if (form === 'dots') {
+                    context.beginPath();
+                    context.arc(x, y, radius, 0, Math.PI * 2);
+                    context.fill();
+                } else if (form === 'squares') {
+                    const side = SPACING * 0.78;
+                    context.fillRect(x - side / 2, y - side / 2, side, side);
+                } else {
+                    context.beginPath();
+                    for (let corner = 0; corner < 6; corner++) {
+                        const angle = (Math.PI / 3) * corner;
+                        context.lineTo(x + radius * 1.15 * Math.cos(angle), y + radius * 1.15 * Math.sin(angle));
+                    }
+                    context.closePath();
+                    context.fill();
+                }
+            };
 
             for (let row = 0, y = 0; y < size.y + SPACING; row++, y = row * rowStep) {
                 const shift = form === 'hexes' && row % 2 === 1 ? SPACING / 2 : 0;
                 for (let x = shift; x < size.x + SPACING; x += SPACING) {
-                    if (!isLand(x, y)) continue;
+                    const cx = Math.round(x * MASK_SCALE);
+                    const cy = Math.round(y * MASK_SCALE);
 
-                    if (form === 'dots') {
-                        context.beginPath();
-                        context.arc(x, y, radius, 0, Math.PI * 2);
-                        context.fill();
-                    } else if (form === 'squares') {
-                        const side = SPACING * 0.78;
-                        context.fillRect(x - side / 2, y - side / 2, side, side);
-                    } else {
-                        context.beginPath();
-                        for (let corner = 0; corner < 6; corner++) {
-                            // Flat-top hexagons tile with the offset rows above.
-                            const angle = (Math.PI / 3) * corner;
-                            const hx = x + radius * 1.15 * Math.cos(angle);
-                            const hy = y + radius * 1.15 * Math.sin(angle);
-                            if (corner === 0) context.moveTo(hx, hy); else context.lineTo(hx, hy);
+                    // Strongest rail pixel anywhere in this cell wins the tile.
+                    let bestAlpha = 0, bestR = 0, bestG = 0, bestB = 0;
+                    for (let sy = cy - half; sy <= cy + half; sy++) {
+                        if (sy < 0 || sy >= maskHeight) continue;
+                        for (let sx = cx - half; sx <= cx + half; sx++) {
+                            if (sx < 0 || sx >= maskWidth) continue;
+                            const i = (sy * maskWidth + sx) * 4;
+                            const alpha = railPixels[i + 3];
+                            if (alpha > bestAlpha) {
+                                bestAlpha = alpha;
+                                bestR = railPixels[i];
+                                bestG = railPixels[i + 1];
+                                bestB = railPixels[i + 2];
+                            }
                         }
-                        context.closePath();
-                        context.fill();
+                    }
+
+                    if (bestAlpha > 70) {
+                        context.fillStyle = `rgb(${bestR},${bestG},${bestB})`;
+                        stamp(x, y);
+                        continue;
+                    }
+
+                    const landIndex = (Math.min(maskHeight - 1, Math.max(0, cy)) * maskWidth
+                        + Math.min(maskWidth - 1, Math.max(0, cx))) * 4 + 3;
+                    if (landPixels[landIndex] > 96) {
+                        context.fillStyle = theme.tileInk;
+                        stamp(x, y);
                     }
                 }
             }
         };
 
-        // A lattice is defined in screen space, so it has to be rebuilt whenever
-        // the screen moves under it. Only on settle: mid-pan the pane transform
-        // carries it along, which is what makes the movement feel attached.
-        render();
-        map.on('moveend', render);
-        map.on('zoomend', render);
-        map.on('resize', render);
-        return () => {
-            map.off('moveend', render);
-            map.off('zoomend', render);
-            map.off('resize', render);
+        // Give Leaflet's own renderers the frame they need to repaint before
+        // sampling them, or the tiles show the previous view's rails.
+        const schedule = () => {
+            if (pendingRef.current !== null) cancelAnimationFrame(pendingRef.current);
+            pendingRef.current = requestAnimationFrame(() => {
+                pendingRef.current = requestAnimationFrame(() => {
+                    pendingRef.current = null;
+                    render();
+                });
+            });
         };
-    }, [map, prefectures, form, theme]);
+
+        schedule();
+        map.on('moveend', schedule);
+        map.on('zoomend', schedule);
+        map.on('resize', schedule);
+        return () => {
+            if (pendingRef.current !== null) cancelAnimationFrame(pendingRef.current);
+            pendingRef.current = null;
+            map.off('moveend', schedule);
+            map.off('zoomend', schedule);
+            map.off('resize', schedule);
+        };
+    }, [map, prefectures, form, theme, railRevision]);
 
     return null;
 };
