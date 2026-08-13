@@ -151,7 +151,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             // finer than a pixel; zoomed out that is most of the vertices.
             smoothFactor: zoomGroup === 3 ? 1.0 : zoomGroup === 2 ? 2.0 : 3.0
         };
-    }, [zoomGroup, zoomLevel, isMoving]);
+    }, [zoomGroup, zoomLevel]);
 
     const mergedGeoJsonData = useMemo<GeoJSON.FeatureCollection | null>(() => {
         if (!railroadNetwork) return null;
@@ -345,7 +345,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             smoothFactor: styleConfig.smoothFactor,
             interactive: false,
         } as L.PathOptions;
-    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging, isMobile, settings, isMoving]);
+    }, [isFilterActive, selectionSet, activeLine, styleConfig, hoveredLine, zoomLevel, isDragging, isMobile, settings]);
 
     // 상호작용 전용 스타일 (투명하지만 클릭 영역 확보)
     const interactionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
@@ -461,13 +461,21 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     const glowLayerRef = useRef<L.GeoJSON>(null);
     const interactionLayerRef = useRef<L.GeoJSON>(null);
 
-    // Dynamic Style Update without unmounting the layer
+    // Restyling walks every feature, so it must only happen when a style
+    // function has genuinely changed. It used to also run on isMoving, which
+    // no style reads — so starting and finishing any pan restyled the whole
+    // network twice to produce exactly the same pixels.
     useEffect(() => {
         if (mainLayerRef.current) mainLayerRef.current.setStyle(unifiedStyle);
-        if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
-        if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+    }, [unifiedStyle]);
 
-    }, [activeLine, hoveredLine, isMoving, isDragging, unifiedStyle, glowStyle, interactionStyle]);
+    useEffect(() => {
+        if (glowLayerRef.current) glowLayerRef.current.setStyle(glowStyle);
+    }, [glowStyle]);
+
+    useEffect(() => {
+        if (interactionLayerRef.current) interactionLayerRef.current.setStyle(interactionStyle);
+    }, [interactionStyle]);
 
     // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
     useEffect(() => {

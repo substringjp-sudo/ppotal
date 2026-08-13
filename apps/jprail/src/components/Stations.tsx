@@ -286,7 +286,7 @@ const Stations: React.FC<StationsProps> = ({
             opacity: isVisible ? 1.0 : 0,
             pane: 'station-labels'
         };
-    }, [realZoom, localHoveredStation, selectedStation, settings, isMoving]);
+    }, [realZoom, localHoveredStation, selectedStation, settings]);
 
     const hullStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature || !feature.properties) return { opacity: 0, interactive: false };
@@ -320,7 +320,7 @@ const Stations: React.FC<StationsProps> = ({
             stroke: false,
             interactive: false
         };
-    }, [hoveredLine, activeLine, localHoveredStation, isMoving]);
+    }, [hoveredLine, activeLine, localHoveredStation]);
 
     const platformStyle = useCallback((feature?: GeoJSON.Feature) => {
         if (!feature) return { opacity: 0, interactive: false };
@@ -408,7 +408,7 @@ const Stations: React.FC<StationsProps> = ({
             lineCap: 'butt' as const,
             lineJoin: 'miter' as const,
         };
-    }, [hoveredLine, activeLine, dragStartStation, localHoveredStation, selectedStation, effectiveZoom, isMoving]);
+    }, [hoveredLine, activeLine, dragStartStation, localHoveredStation, selectedStation, effectiveZoom, settings]);
 
     const platformInteractionStyle = useCallback((feature?: GeoJSON.Feature): L.PathOptions => {
         if (!feature) return { opacity: 0, interactive: false };
@@ -556,14 +556,14 @@ const Stations: React.FC<StationsProps> = ({
     const platformCasingRef = useRef<L.GeoJSON>(null);
     const interactionRef = useRef<L.GeoJSON>(null);
 
-    useEffect(() => {
-        if (hullRef.current) hullRef.current.setStyle(hullStyle);
-        if (platformRef.current) platformRef.current.setStyle(platformStyle as L.PathOptions);
-        if (nodeRef.current) nodeRef.current.setStyle(nodeStyle as L.PathOptions);
-        if (platformCasingRef.current) platformCasingRef.current.setStyle(platformCasingStyle as L.PathOptions);
-        if (interactionRef.current) interactionRef.current.setStyle(stationInteractionStyle);
-
-    }, [activeLine, hoveredLine, selectedLines, hullStyle, platformStyle, nodeStyle, platformCasingStyle, stationInteractionStyle, localHoveredStation, selectedStation, effectiveZoom]);
+    // One effect per layer, keyed only on that layer's own style function:
+    // restyling walks every feature, and the combined version re-ran all five
+    // whenever any single input changed.
+    useEffect(() => { hullRef.current?.setStyle(hullStyle); }, [hullStyle]);
+    useEffect(() => { platformRef.current?.setStyle(platformStyle as L.PathOptions); }, [platformStyle]);
+    useEffect(() => { nodeRef.current?.setStyle(nodeStyle as L.PathOptions); }, [nodeStyle]);
+    useEffect(() => { platformCasingRef.current?.setStyle(platformCasingStyle as L.PathOptions); }, [platformCasingStyle]);
+    useEffect(() => { interactionRef.current?.setStyle(stationInteractionStyle); }, [stationInteractionStyle]);
 
     // Safety cleanup: Ensure no tooltips linger when component remounts (due to key change)
     useEffect(() => {
