@@ -91,7 +91,7 @@ export interface MapStyleSettings {
     /** How the rail geometry itself is drawn — see lib/lineShapes.ts. */
     shapeMode: MapShapeMode;
     /** Light running along the lines you have ridden. */
-    flow: boolean;
+    flow?: boolean;
     /** Palette the ground is painted with — see lib/mapThemes.ts. */
     theme: MapThemeId;
     /** Outline, or the landmass as a lattice of tiles. */
@@ -116,7 +116,7 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
     showLabels: false,
     showAirports: false,
     shapeMode: 'geographic',
-    flow: true,
+    flow: false,
     theme: 'day',
     landForm: 'outline'
 };
@@ -1018,7 +1018,7 @@ const MainPageClient = () => {
                         )}
 
                         {!isMobile && (
-                            <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
+                            <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                                     <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
                                 </div>
@@ -1074,7 +1074,7 @@ const MainPageClient = () => {
                         </div>
 
                         {!isMobile && (
-                            <aside className="w-[320px] h-full border-l border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl z-[1000] shadow-2xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col pointer-events-auto">
+                            <aside className="w-[320px] h-full border-l border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] shadow-2xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col pointer-events-auto">
                                 <MyLinesPane
                                     recordedTrips={recordedTrips}
                                     onDeleteTrip={handleDeleteTrip}
@@ -1085,6 +1085,7 @@ const MainPageClient = () => {
                                     onSyncWithRegionevel={undefined}
                                     isSyncLoading={isRecordingLoading}
                                     onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
+                                    isReadOnly={styleSettings.landForm !== 'outline'}
                                 />
                             </aside>
                         )}

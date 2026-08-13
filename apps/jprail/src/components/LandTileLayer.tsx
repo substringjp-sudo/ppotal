@@ -22,22 +22,10 @@ const SPACING = 13;
 /** The mask is only ever read a cell at a time, so it can be coarse. */
 const MASK_SCALE = 0.5;
 /** Panes whose content is re-rendered as tiles instead of drawn directly. */
-export const TILED_PANES = ['railroad-glow', 'railroad-casing', 'railroad-lines'];
+export const TILED_PANES = ['railroad-casing', 'railroad-lines', 'railroad-glow', 'station-labels'];
 
 /**
  * Draws the map as a field of tiles — land and rails both.
- *
- * Tiling only the land was the wrong half of the idea: the country turned to
- * pixels while the lines stayed smooth on top of it, and the two never looked
- * like the same picture. So the rails go through the same lattice. Rather than
- * re-projecting them, this samples the canvas Leaflet has already drawn them
- * into, which means tiles inherit every line's real colour and weight for free
- * and stay correct whatever line shape or theme is selected.
- *
- * Sampling is by cell, not by point: a rail line is a couple of pixels wide and
- * a lattice point would miss it far more often than not, leaving the network as
- * disconnected specks. Each cell takes the strongest rail pixel within it, and
- * falls back to land.
  */
 const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme, railRevision }) => {
     const map = useMap();
@@ -70,9 +58,6 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
         };
     }, [map]);
 
-    // While the lattice is on, the real rail layers are the source for the
-    // tiles rather than something to look at, so they are hidden — but left
-    // rendering, because that canvas is exactly what gets sampled.
     useEffect(() => {
         const active = form !== 'outline';
         TILED_PANES.forEach(name => {
@@ -118,7 +103,7 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
             const maskWidth = Math.max(1, Math.ceil(size.x * MASK_SCALE));
             const maskHeight = Math.max(1, Math.ceil(size.y * MASK_SCALE));
 
-            // --- Mask 1: the coastline, rasterised rather than point-tested.
+            // --- Mask 1: Coastline rasterisation
             landMask.width = maskWidth;
             landMask.height = maskHeight;
             const landContext = landMask.getContext('2d', { willReadFrequently: true });
@@ -149,19 +134,18 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
             }
             const landPixels = landContext.getImageData(0, 0, maskWidth, maskHeight).data;
 
-            // --- Mask 2: whatever Leaflet has already drawn the rails into.
+            // --- Mask 2: Railroad layer canvas sampling
             railMask.width = maskWidth;
             railMask.height = maskHeight;
             const railContext = railMask.getContext('2d', { willReadFrequently: true });
             if (!railContext) return;
             railContext.clearRect(0, 0, maskWidth, maskHeight);
 
-            for (const name of TILED_PANES) {
+            const samplePanes = ['railroad-lines'];
+            for (const name of samplePanes) {
                 const pane = map.getPane(name);
                 const source = pane?.querySelector('canvas') as HTMLCanvasElement | null;
                 if (!source || !source.width || !source.height) continue;
-                // Each renderer positions its own canvas in layer space; bring
-                // that back to where it sits on screen.
                 const position = L.DomUtil.getPosition(source) || new L.Point(0, 0);
                 const offsetX = (position.x - origin.x) * MASK_SCALE;
                 const offsetY = (position.y - origin.y) * MASK_SCALE;
@@ -175,7 +159,7 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
             }
             const railPixels = railContext.getImageData(0, 0, maskWidth, maskHeight).data;
 
-            // --- Stamp one tile per cell.
+            // --- Stamp one tile per cell
             const rowStep = form === 'hexes' ? SPACING * 0.866 : SPACING;
             const radius = SPACING * 0.42;
             const half = Math.max(1, Math.round((SPACING * MASK_SCALE) / 2));
@@ -205,7 +189,7 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
                     const cx = Math.round(x * MASK_SCALE);
                     const cy = Math.round(y * MASK_SCALE);
 
-                    // Strongest rail pixel anywhere in this cell wins the tile.
+                    // Strongest rail pixel in cell
                     let bestAlpha = 0, bestR = 0, bestG = 0, bestB = 0;
                     for (let sy = cy - half; sy <= cy + half; sy++) {
                         if (sy < 0 || sy >= maskHeight) continue;
@@ -222,7 +206,7 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
                         }
                     }
 
-                    if (bestAlpha > 70) {
+                    if (bestAlpha > 15) {
                         context.fillStyle = `rgb(${bestR},${bestG},${bestB})`;
                         stamp(x, y);
                         continue;
@@ -238,8 +222,6 @@ const LandTileLayer: React.FC<LandTileLayerProps> = ({ prefectures, form, theme,
             }
         };
 
-        // Give Leaflet's own renderers the frame they need to repaint before
-        // sampling them, or the tiles show the previous view's rails.
         const schedule = () => {
             if (pendingRef.current !== null) cancelAnimationFrame(pendingRef.current);
             pendingRef.current = requestAnimationFrame(() => {

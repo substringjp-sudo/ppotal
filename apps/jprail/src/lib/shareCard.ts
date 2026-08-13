@@ -3,20 +3,9 @@ import { RailData, Section, Station, Line } from '../types/railData';
 
 /**
  * What a share card is about, and what it can say.
- *
- * The map on screen is wherever the user happened to leave it. A card should
- * instead be about something — everything they have ridden, or one prefecture,
- * one operator, one line — and frame itself to that. Everything here is derived
- * from data the app already holds; nothing new is fetched.
  */
 
 export type ShareScopeKind = 'all' | 'prefecture' | 'company' | 'line';
-
-/**
- * Prefecture ids in this dataset look like `p10` and are an internal
- * numbering, not JIS codes — `p10` is Tokyo, `p46` is Hokkaido. They are kept
- * as strings here so nothing is tempted to read them as a number.
- */
 
 export interface ShareScope {
     kind: ShareScopeKind;
@@ -26,9 +15,9 @@ export interface ShareScope {
 }
 
 /** Blocks the user can put on the card. */
-export type ShareBlockId = 'map' | 'totals' | 'lines' | 'prefectures' | 'badges' | 'period';
+export type ShareBlockId = 'map' | 'totals' | 'lines' | 'prefectures' | 'badges';
 
-export const SHARE_BLOCKS: ShareBlockId[] = ['map', 'totals', 'lines', 'prefectures', 'badges', 'period'];
+export const SHARE_BLOCKS: ShareBlockId[] = ['map', 'totals', 'lines', 'prefectures', 'badges'];
 
 export interface LineProgress {
     id: string;
@@ -37,15 +26,21 @@ export interface LineProgress {
     ridden: number;
     total: number;
     percent: number;
+    stationsRidden: number;
+    stationsTotal: number;
 }
 
 export interface ShareStats {
     distance: number;
+    totalDistance: number;
     stations: number;
+    totalStations: number;
     lines: number;
+    totalLines: number;
     companies: number;
+    totalCompanies: number;
     trips: number;
-    /** Internal prefecture ids, of the form `p10`. Not JIS codes — see below. */
+    /** Internal prefecture ids, of the form `p10`. Not JIS codes. */
     prefectures: Set<string>;
     /** Ridden lines, most complete first. */
     lineProgress: LineProgress[];
@@ -56,7 +51,7 @@ export interface ShareStats {
 }
 
 const emptyStats = (): ShareStats => ({
-    distance: 0, stations: 0, lines: 0, companies: 0, trips: 0,
+    distance: 0, totalDistance: 0, stations: 0, totalStations: 0, lines: 0, totalLines: 0, companies: 0, totalCompanies: 0, trips: 0,
     prefectures: new Set(), lineProgress: [], firstTrip: null, lastTrip: null, bounds: null
 });
 
@@ -67,8 +62,6 @@ function sectionIndex(railData: RailData): Map<number, Section> {
     const cached = sectionIndexCache.get(railData as unknown as object);
     if (cached) return cached;
     const index = new Map<number, Section>();
-    // The full-detail list is the one with every section in it; the LOD copies
-    // are the same sections with coarser geometry.
     const all = railData.sections?.lod?.high ?? railData.sections?.sections ?? [];
     for (const section of all) index.set(section.id, section);
     sectionIndexCache.set(railData as unknown as object, index);
@@ -99,9 +92,6 @@ function sectionInScope(section: Section, scope: ShareScope, railData: RailData)
 
 /**
  * Everything a card can show, for one scope.
- *
- * `lineLengths` is the published length of each line, so completion is ridden
- * against the whole line even when the scope is narrower.
  */
 export function computeShareStats(
     trips: Trip[],
@@ -118,7 +108,6 @@ export function computeShareStats(
     const stationIds = new Set<string>();
     const companies = new Set<string>();
     const prefectures = new Set<string>();
-    // A section ridden twice is one section of track, not two.
     const riddenSections = new Set<number>();
     let trips_ = 0;
     let firstTrip: Date | null = null;
@@ -142,7 +131,6 @@ export function computeShareStats(
         for (const stationId of trip.path || []) {
             const station = stations[stationId];
             if (!station) continue;
-            // For a narrow scope, only count stations that are actually in it.
             if (scope.kind === 'prefecture' && String(station.prefecture_id) !== scope.id) continue;
             stationIds.add(stationId);
             if (station.prefecture_id) prefectures.add(String(station.prefecture_id));
@@ -159,44 +147,71 @@ export function computeShareStats(
         }
     }
 
-    // Ridden distance per line, counting each stretch of track once.
+    // Ridden distance per line & station counts per line
     const riddenPerLine = new Map<string, number>();
+    const lineStationMap = new Map<string, Set<string>>();
+    const lineRiddenStationMap = new Map<string, Set<string>>();
+
     let distance = 0;
-    for (const sectionId of riddenSections) {
-        const section = index.get(sectionId);
-        if (!section) continue;
-        const km = (section.length || 0) / 1000;
-        distance += km;
+    const allSections = railData.sections?.lod?.high ?? railData.sections?.sections ?? [];
+    for (const section of allSections) {
         const id = fullLineId(section);
-        riddenPerLine.set(id, (riddenPerLine.get(id) || 0) + km);
+        if (!lineStationMap.has(id)) lineStationMap.set(id, new Set());
+        if (section.start) lineStationMap.get(id)!.add(section.start);
+        if (section.end) lineStationMap.get(id)!.add(section.end);
+
+        if (riddenSections.has(section.id)) {
+            const km = (section.length || 0) / 1000;
+            distance += km;
+            riddenPerLine.set(id, (riddenPerLine.get(id) || 0) + km);
+
+            if (!lineRiddenStationMap.has(id)) lineRiddenStationMap.set(id, new Set());
+            if (section.start) lineRiddenStationMap.get(id)!.add(section.start);
+            if (section.end) lineRiddenStationMap.get(id)!.add(section.end);
+        }
     }
+
+    // Calculate nationwide totals
+    let totalDistance = 0;
+    for (const len of Object.values(lineLengths)) {
+        totalDistance += len;
+    }
+    totalDistance = Math.round(totalDistance * 10) / 10;
+    const totalStations = Object.keys(stations).length;
+    const totalLines = Object.keys(lineLengths).length || Object.keys(lines).length;
+    const totalCompanies = Object.keys(railData.companies || {}).length;
 
     const lineProgress: LineProgress[] = [];
     for (const [id, ridden] of riddenPerLine) {
         const total = lineLengths[id] || 0;
         const lineId = id.split('::')[1];
         const line = lines[lineId];
+        const totalSt = lineStationMap.get(id)?.size || 0;
+        const riddenSt = lineRiddenStationMap.get(id)?.size || 0;
+
         lineProgress.push({
             id,
             name: line?.name || id,
             color: line?.color ? `#${String(line.color).replace('#', '')}` : '#64748b',
             ridden: Math.round(ridden * 10) / 10,
             total: Math.round(total * 10) / 10,
-            percent: total > 0 ? Math.min(100, Math.round((ridden / total) * 100)) : 0
+            percent: total > 0 ? Math.min(100, Math.round((ridden / total) * 100)) : 0,
+            stationsRidden: riddenSt,
+            stationsTotal: totalSt
         });
     }
-    // Ranking by completion alone puts a 300m shuttle line ahead of the
-    // Yamanote loop, because anything short is trivially 100%. Weighting by the
-    // square root of the line's length balances how complete against how much
-    // there was to complete, which is what makes a card worth showing.
-    const notability = (line: LineProgress) => line.percent * Math.sqrt(Math.max(0.5, line.total));
-    lineProgress.sort((a, b) => notability(b) - notability(a) || b.ridden - a.ridden);
+
+    lineProgress.sort((a, b) => b.ridden - a.ridden || b.total - a.total);
 
     return {
         distance: Math.round(distance * 10) / 10,
+        totalDistance,
         stations: stationIds.size,
+        totalStations,
         lines: riddenPerLine.size,
+        totalLines,
         companies: companies.size,
+        totalCompanies,
         trips: trips_,
         prefectures,
         lineProgress,
