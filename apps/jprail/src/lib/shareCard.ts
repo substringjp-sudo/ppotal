@@ -185,7 +185,12 @@ export function computeShareStats(
             percent: total > 0 ? Math.min(100, Math.round((ridden / total) * 100)) : 0
         });
     }
-    lineProgress.sort((a, b) => b.percent - a.percent || b.ridden - a.ridden);
+    // Ranking by completion alone puts a 300m shuttle line ahead of the
+    // Yamanote loop, because anything short is trivially 100%. Weighting by the
+    // square root of the line's length balances how complete against how much
+    // there was to complete, which is what makes a card worth showing.
+    const notability = (line: LineProgress) => line.percent * Math.sqrt(Math.max(0.5, line.total));
+    lineProgress.sort((a, b) => notability(b) - notability(a) || b.ridden - a.ridden);
 
     return {
         distance: Math.round(distance * 10) / 10,

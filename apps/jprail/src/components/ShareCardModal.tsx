@@ -14,7 +14,7 @@ import {
     ShareBlockId, ShareScope, ShareScopeKind, SHARE_BLOCKS,
     availableScopes, computeShareStats
 } from '../lib/shareCard';
-import { drawShareCard, CARD_SIZE } from '../lib/shareCardRender';
+import { drawShareCard, CARD_SIZE, DEFAULT_CARD_STYLE, ShareCardStyle } from '../lib/shareCardRender';
 
 export interface ShareCardModalProps {
     isOpen: boolean;
@@ -26,12 +26,17 @@ export interface ShareCardModalProps {
     regionNames: { adm1?: Record<string, { name?: string; name_en?: string; name_kr?: string }> } | null;
     themeId: MapThemeId;
     shapeMode: MapShapeMode;
+    /** The map's own line weights, which the card follows by default. */
+    mapWeights: { visited: number; unvisited: number };
 }
 
 type Delivery = 'share' | 'copy' | 'download';
 
 const TEXT = {
     ko: {
+        advanced: '고급', followMap: '지도 설정 따르기', showContext: '미방문 노선 표시',
+        showBorders: '도도부현 경계선', riddenWeight: '탄 노선 두께', contextWeight: '미방문 노선 두께',
+        moreLines: (n: number, avg: number) => `외 ${n}개 노선 · 평균 ${avg}%`,
         title: '공유 카드', scope: '무엇에 대한 카드인가요', include: '담을 내용',
         all: '전체', prefecture: '도도부현', company: '회사', line: '노선',
         map: '지도', totals: '총계', lines: '노선 완주율', prefectures: '도도부현 정복', badges: '업적', period: '기간',
@@ -42,6 +47,9 @@ const TEXT = {
         reached: '도도부현 방문', tip: '휴대폰에서는 공유 버튼이 앱을 바로 열어 줍니다.'
     },
     en: {
+        advanced: 'Advanced', followMap: 'Follow map settings', showContext: 'Show unridden track',
+        showBorders: 'Prefecture borders', riddenWeight: 'Ridden line weight', contextWeight: 'Unridden line weight',
+        moreLines: (n: number, avg: number) => `and ${n} more lines · ${avg}% on average`,
         title: 'Share card', scope: 'What is this card about', include: 'What to include',
         all: 'Everything', prefecture: 'Prefecture', company: 'Operator', line: 'Line',
         map: 'Map', totals: 'Totals', lines: 'Line progress', prefectures: 'Prefectures', badges: 'Badges', period: 'Period',
@@ -52,6 +60,9 @@ const TEXT = {
         reached: 'prefectures reached', tip: 'On a phone, Share opens the app directly.'
     },
     ja: {
+        advanced: '詳細', followMap: 'マップ設定に従う', showContext: '未乗車路線を表示',
+        showBorders: '都道府県の境界線', riddenWeight: '乗車路線の太さ', contextWeight: '未乗車路線の太さ',
+        moreLines: (n: number, avg: number) => `他 ${n} 路線 · 平均 ${avg}%`,
         title: '共有カード', scope: '何についてのカードですか', include: '含める内容',
         all: '全体', prefecture: '都道府県', company: '会社', line: '路線',
         map: '地図', totals: '合計', lines: '路線の走破率', prefectures: '都道府県制覇', badges: '実績', period: '期間',
@@ -64,7 +75,7 @@ const TEXT = {
 };
 
 const ShareCardModal: React.FC<ShareCardModalProps> = ({
-    isOpen, onClose, trips, railData, lineLengths, prefectures, regionNames, themeId, shapeMode
+    isOpen, onClose, trips, railData, lineLengths, prefectures, regionNames, themeId, shapeMode, mapWeights
 }) => {
     const { language } = useI18n();
     const t = TEXT[language as keyof typeof TEXT] || TEXT.en;
@@ -77,6 +88,8 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     );
     const [notice, setNotice] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
+    const [style, setStyle] = useState<ShareCardStyle>(DEFAULT_CARD_STYLE);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     const choices = useMemo(
         () => availableScopes(trips, railData, regionNames?.adm1 ?? null, language),
@@ -119,7 +132,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
             try { await document.fonts.ready; } catch { /* older browsers */ }
             if (cancelled || !canvasRef.current) return;
             drawShareCard(canvasRef.current, {
-                stats, scope, blocks, theme: themeOf(themeId), shapeMode, railData,
+                stats, scope, blocks, theme: themeOf(themeId), shapeMode, railData, style, mapWeights,
                 sections: railData.sections?.lod?.high ?? railData.sections?.sections ?? [],
                 riddenSectionIds: new Set(trips.flatMap(trip => (trip.sectionIds || []).map(Number))),
                 prefectures, badges, isoToPrefecture,
@@ -129,13 +142,14 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                     km: t.km, stations: t.stations, lines: t.lineCount, companies: t.companies,
                     prefecturesOf: () => t.reached,
                     period: (from, to) => `${from} – ${to}`,
-                    footer: 'japanrailnote.com'
+                    footer: 'japanrailnote.com',
+                    moreLines: t.moreLines
                 }
             });
         };
         draw();
         return () => { cancelled = true; };
-    }, [isOpen, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t]);
+    }, [isOpen, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights]);
 
     const toBlob = useCallback(async (): Promise<Blob | null> => {
         const canvas = canvasRef.current;
@@ -321,6 +335,61 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                         );
                                     })}
                                 </div>
+                            </div>
+
+
+                            <div className="flex flex-col gap-2">
+                                <button
+                                    onClick={() => setShowAdvanced(v => !v)}
+                                    className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                >
+                                    {t.advanced}
+                                    <span className={`material-symbols-outlined !text-[16px] transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
+                                        expand_more
+                                    </span>
+                                </button>
+
+                                {showAdvanced && (
+                                    <div className="flex flex-col gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        {([
+                                            ['followMap', t.followMap],
+                                            ['showContext', t.showContext],
+                                            ['showBorders', t.showBorders]
+                                        ] as const).map(([key, label]) => (
+                                            <label key={key} className="flex items-center justify-between cursor-pointer group">
+                                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{label}</span>
+                                                <span className={`relative w-8 h-4.5 rounded-full transition-colors duration-300 ${style[key] ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`} style={{ height: '18px', width: '32px' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only"
+                                                        checked={style[key]}
+                                                        onChange={(e) => setStyle(prev => ({ ...prev, [key]: e.target.checked }))}
+                                                    />
+                                                    <span className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform duration-300 ${style[key] ? 'translate-x-3.5' : ''}`} />
+                                                </span>
+                                            </label>
+                                        ))}
+
+                                        {/* Weights are only the card's business once it stops following the map. */}
+                                        {!style.followMap && ([
+                                            ['riddenWeight', t.riddenWeight],
+                                            ['contextWeight', t.contextWeight]
+                                        ] as const).map(([key, label]) => (
+                                            <div key={key} className="flex flex-col gap-1">
+                                                <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                                    <span>{label}</span>
+                                                    <span className="bg-white dark:bg-slate-700 px-1.5 rounded">{style[key].toFixed(1)}x</span>
+                                                </div>
+                                                <input
+                                                    type="range" min="0.4" max="3" step="0.1"
+                                                    value={style[key]}
+                                                    onChange={(e) => setStyle(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
+                                                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mt-auto flex flex-col gap-2">

@@ -13,7 +13,40 @@ import { ShareBlockId, ShareScope, ShareStats } from './shareCard';
  * the picture they share is the picture they were looking at.
  */
 
+/**
+ * How the card draws, as opposed to what it says.
+ *
+ * The default is to inherit the map's own weights, so a card looks like the
+ * map the user was just looking at. `followMap: false` lets the card be tuned
+ * on its own — a card is viewed at a different size from the map, and a line
+ * weight that reads well on screen can vanish in a thumbnail.
+ */
+export interface ShareCardStyle {
+    followMap: boolean;
+    /** Draw track that has not been ridden, as context under the route. */
+    showContext: boolean;
+    /** Prefecture outlines on the card's map. */
+    showBorders: boolean;
+    /** Multipliers, 0.4 to 3. Ignored while followMap is on. */
+    riddenWeight: number;
+    contextWeight: number;
+}
+
+export const DEFAULT_CARD_STYLE: ShareCardStyle = {
+    followMap: true,
+    showContext: true,
+    showBorders: false,
+    riddenWeight: 1,
+    contextWeight: 1
+};
+
+/** How many lines the card lists before it summarises the rest. */
+export const MAX_LINE_ROWS = 5;
+
 export interface ShareCardInput {
+    style: ShareCardStyle;
+    /** The map's own weights, used when style.followMap is on. */
+    mapWeights: { visited: number; unvisited: number };
     stats: ShareStats;
     scope: ShareScope;
     blocks: Set<ShareBlockId>;
@@ -35,6 +68,8 @@ export interface ShareCardInput {
         prefecturesOf: (visited: number, total: number) => string;
         period: (from: string, to: string) => string;
         footer: string;
+        /** "and 42 more lines, 18% on average" */
+        moreLines: (count: number, averagePercent: number) => string;
     };
 }
 
@@ -88,17 +123,34 @@ function roundRect(context: CanvasRenderingContext2D, x: number, y: number, w: n
 const FONT = "'Pretendard', 'Noto Sans JP', system-ui, -apple-system, sans-serif";
 const font = (weight: number, size: number) => `${weight} ${size}px ${FONT}`;
 
-/** How tall each optional block wants to be. */
-const BLOCK_HEIGHT: Record<Exclude<ShareBlockId, 'map'>, number> = {
-    totals: 132,
-    lines: 150,
-    prefectures: 150,
-    badges: 92,
-    period: 54
-};
+const LINE_ROW = 40;
+
+/**
+ * How tall each optional block wants to be. Only the line list varies: it
+ * grows with however many lines there are to show, up to a cap, and the map
+ * takes whatever is left.
+ */
+function blockHeight(id: Exclude<ShareBlockId, 'map'>, stats: ShareStats): number {
+    switch (id) {
+        case 'totals': return 132;
+        case 'prefectures': return 150;
+        case 'badges': return 92;
+        case 'period': return 54;
+        case 'lines': {
+            const rows = Math.min(MAX_LINE_ROWS, stats.lineProgress.length);
+            const overflow = stats.lineProgress.length > MAX_LINE_ROWS ? 34 : 0;
+            return rows === 0 ? 0 : 22 + rows * LINE_ROW + overflow + 14;
+        }
+    }
+}
 
 export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, scale = 2): void {
-    const { stats, blocks, theme, shapeMode, railData, sections, riddenSectionIds, prefectures, badges, labels, isoToPrefecture } = input;
+    const { stats, blocks, theme, shapeMode, railData, sections, riddenSectionIds, prefectures, badges, labels, isoToPrefecture, style, mapWeights } = input;
+
+    // A card is looked at much smaller than the map, so the inherited weights
+    // are scaled up a little to survive being seen as a thumbnail.
+    const riddenScale = style.followMap ? Math.max(0.4, mapWeights.visited / 3.5) : style.riddenWeight;
+    const contextScale = style.followMap ? Math.max(0.4, mapWeights.unvisited) : style.contextWeight;
 
     canvas.width = CARD_SIZE * scale;
     canvas.height = CARD_SIZE * scale;
@@ -130,7 +182,7 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
     // --- Work out how much room the map gets ----------------------------
     const optional = (['totals', 'lines', 'prefectures', 'badges', 'period'] as const)
         .filter(id => blocks.has(id));
-    const stackHeight = optional.reduce((sum, id) => sum + BLOCK_HEIGHT[id], 0);
+    const stackHeight = optional.reduce((sum, id) => sum + blockHeight(id, stats), 0);
     const mapHeight = blocks.has('map')
         ? Math.max(180, CARD_SIZE - PAD - y - stackHeight - 46)
         : 0;
@@ -174,6 +226,11 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
                         context.closePath();
                     }
                     context.fill('evenodd');
+                    if (style.showBorders) {
+                        context.strokeStyle = theme.landEdge;
+                        context.lineWidth = 1;
+                        context.stroke();
+                    }
                 }
             }
         }
@@ -214,15 +271,17 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
             return raw ? (String(raw).startsWith('#') ? String(raw) : `#${raw}`) : '#94a3b8';
         };
 
-        for (const section of visible) {
-            if (riddenSectionIds.has(section.id)) continue;
-            strokeSection(section, 1.6, theme.dark ? '#3b4a6b' : '#c9d3e0', 0.75);
+        if (style.showContext) {
+            for (const section of visible) {
+                if (riddenSectionIds.has(section.id)) continue;
+                strokeSection(section, 1.6 * contextScale, theme.dark ? '#3b4a6b' : '#c9d3e0', 0.75);
+            }
         }
         for (const section of visible) {
             if (!riddenSectionIds.has(section.id)) continue;
             // A soft halo, then the line's own colour, so ridden track reads first.
-            strokeSection(section, 9, colourOf(section), 0.22);
-            strokeSection(section, 3.6, colourOf(section), 1);
+            strokeSection(section, 9 * riddenScale, colourOf(section), 0.22);
+            strokeSection(section, 3.6 * riddenScale, colourOf(section), 1);
         }
 
         context.globalAlpha = 1;
@@ -266,15 +325,15 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
             context.fillText(caption.toUpperCase(), cx, y + 112);
         });
         context.textAlign = 'left';
-        y += BLOCK_HEIGHT.totals;
+        y += blockHeight('totals', stats);
     }
 
     // --- Line completion ------------------------------------------------
-    if (blocks.has('lines')) {
+    if (blocks.has('lines') && stats.lineProgress.length > 0) {
         rule();
-        const rows = stats.lineProgress.slice(0, 3);
+        const rows = stats.lineProgress.slice(0, MAX_LINE_ROWS);
         rows.forEach((line, i) => {
-            const rowY = y + 30 + i * 40;
+            const rowY = y + 30 + i * LINE_ROW;
             context.fillStyle = ink;
             context.font = font(800, 23);
             context.fillText(line.name, PAD, rowY + 8);
@@ -294,7 +353,18 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
             context.fillText(`${line.percent}%`, CARD_SIZE - PAD, rowY + 8);
             context.textAlign = 'left';
         });
-        y += BLOCK_HEIGHT.lines;
+
+        // Someone who has ridden two hundred lines should still be told so,
+        // rather than shown an arbitrary five and left to wonder.
+        const remaining = stats.lineProgress.length - rows.length;
+        if (remaining > 0) {
+            const rest = stats.lineProgress.slice(MAX_LINE_ROWS);
+            const average = Math.round(rest.reduce((sum, l) => sum + l.percent, 0) / rest.length);
+            context.fillStyle = faint;
+            context.font = font(700, 20);
+            context.fillText(labels.moreLines(remaining, average), PAD, y + 30 + rows.length * LINE_ROW + 4);
+        }
+        y += blockHeight('lines', stats);
     }
 
     // --- Prefecture coverage --------------------------------------------
@@ -343,7 +413,7 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
         context.font = font(800, 19);
         context.fillText(labels.prefecturesOf(stats.prefectures.size, 47).toUpperCase(), textX, boxY + 94);
 
-        y += BLOCK_HEIGHT.prefectures;
+        y += blockHeight('prefectures', stats);
     }
 
     // --- Badges ---------------------------------------------------------
@@ -366,7 +436,7 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
             context.fillText(badge, chipX + 20, chipY + 29);
             chipX += width + 12;
         }
-        y += BLOCK_HEIGHT.badges;
+        y += blockHeight('badges', stats);
     } else if (blocks.has('badges')) {
         y += 0;
     }
@@ -377,7 +447,7 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
         context.fillStyle = faint;
         context.font = font(700, 20);
         context.fillText(labels.period(asDate(stats.firstTrip), asDate(stats.lastTrip)), PAD, y + 30);
-        y += BLOCK_HEIGHT.period;
+        y += blockHeight('period', stats);
     }
 
     // --- Footer ---------------------------------------------------------

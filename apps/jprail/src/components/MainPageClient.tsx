@@ -1215,6 +1215,7 @@ const MainPageClient = () => {
                 regionNames={regionNames}
                 themeId={styleSettings.theme}
                 shapeMode={styleSettings.shapeMode}
+                mapWeights={{ visited: styleSettings.visited.weight, unvisited: styleSettings.unvisited.weight }}
             />
 
             <UpdateNoticeModal />
