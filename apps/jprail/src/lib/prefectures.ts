@@ -81,3 +81,36 @@ export const REGIONS = {
     hokkaido: ['北海道'],
     kyushu: ['福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県']
 } as const;
+
+/**
+ * English names as they appear in the boundary file, which writes some
+ * prefectures as "Osaka Prefecture" and others as plain "Oita". Normalising
+ * that suffix away matches all 47 against the names the app already ships.
+ */
+const normalise = (name: string) => name.trim().toLowerCase().replace(/\s+prefectures?$/, '');
+
+/**
+ * Boundary features identify themselves by ISO code (`JP-13`, a JIS number),
+ * which is *not* the internal id (`p10`). Resolve one to the other through the
+ * English names both files carry, so the coverage map colours the right shape.
+ */
+export function buildIsoToInternal(
+    regionNames: Record<string, { name_en?: string }> | null | undefined,
+    features: { properties?: { shapeName?: string; shapeISO?: string } | null }[]
+): Map<string, PrefectureId> {
+    const result = new Map<string, PrefectureId>();
+    if (!regionNames) return result;
+
+    const byEnglish = new Map<string, PrefectureId>();
+    for (const [id, entry] of Object.entries(regionNames)) {
+        if (entry?.name_en) byEnglish.set(normalise(entry.name_en), id);
+    }
+    for (const feature of features) {
+        const iso = feature.properties?.shapeISO;
+        const name = feature.properties?.shapeName;
+        if (!iso || !name) continue;
+        const id = byEnglish.get(normalise(name));
+        if (id) result.set(iso, id);
+    }
+    return result;
+}
