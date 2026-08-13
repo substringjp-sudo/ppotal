@@ -1,5 +1,6 @@
 import { Trip } from '../types/trip';
 import { RailData, Station } from '../types/railData';
+import { PrefectureId, prefectureIds, REGIONS } from './prefectures';
 
 export interface Achievement {
   id: string;
@@ -25,17 +26,17 @@ export interface Achievement {
 }
 
 // Helper: check prefecture coverage from trips
-const getVisitedPrefectures = (trips: Trip[], railData: RailData | null): Set<number> => {
-  const prefs = new Set<number>();
+// Prefecture ids are strings like `p10`, so parsing them as numbers yielded
+// NaN and this returned an empty set for everyone — which is why every region
+// award sat at zero. See lib/prefectures.ts for the numbering.
+const getVisitedPrefectures = (trips: Trip[], railData: RailData | null): Set<PrefectureId> => {
+  const prefs = new Set<PrefectureId>();
   if (!railData?.stations) return prefs;
   trips.forEach((t) => {
     t.path?.forEach((stId) => {
       const station = (railData.stations as Record<string, Station>)[stId];
-      if (station && station.prefecture_id) {
-        const prefId = typeof station.prefecture_id === 'number' ? station.prefecture_id : parseInt(String(station.prefecture_id), 10);
-        if (!isNaN(prefId)) {
-          prefs.add(prefId);
-        }
+      if (station?.prefecture_id) {
+        prefs.add(String(station.prefecture_id));
       }
     });
   });
@@ -231,7 +232,7 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     },
     maxProgress: 7,
     calcProgress: (trips, railData) => {
-      const kantoIds = [11, 12, 13, 14, 8, 9, 10]; // Saitama, Chiba, Tokyo, Kanagawa, Ibaraki, Tochigi, Gunma
+      const kantoIds = prefectureIds(REGIONS.kanto);
       const visited = getVisitedPrefectures(trips, railData);
       const count = kantoIds.filter((id) => visited.has(id)).length;
       return { current: count, percent: Math.min(100, (count / 7) * 100), isUnlocked: count === 7 };
@@ -254,7 +255,7 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     },
     maxProgress: 6,
     calcProgress: (trips, railData) => {
-      const kansaiIds = [25, 26, 27, 28, 29, 30]; // Shiga, Kyoto, Osaka, Hyogo, Nara, Wakayama
+      const kansaiIds = prefectureIds(REGIONS.kansai);
       const visited = getVisitedPrefectures(trips, railData);
       const count = kansaiIds.filter((id) => visited.has(id)).length;
       return { current: count, percent: Math.min(100, (count / 6) * 100), isUnlocked: count === 6 };
@@ -272,13 +273,13 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     },
     description: {
       ko: '홋카이도(1번 도현) 철도 탑승 및 역 경험',
-      en: 'Log rail trips within Hokkaido prefecture (Prefecture #1)',
-      ja: '北海道（1番）内で鉄道旅を記録',
+      en: 'Log rail trips within Hokkaido by train',
+      ja: '北海道内で鉄道旅を記録',
     },
     maxProgress: 1,
     calcProgress: (trips, railData) => {
       const visited = getVisitedPrefectures(trips, railData);
-      const isUnlocked = visited.has(1);
+      const isUnlocked = prefectureIds(REGIONS.hokkaido).every((id) => visited.has(id));
       return { current: isUnlocked ? 1 : 0, percent: isUnlocked ? 100 : 0, isUnlocked };
     },
   },
@@ -299,10 +300,11 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     },
     maxProgress: 4,
     calcProgress: (trips, railData) => {
-      const kyushuIds = [40, 41, 42, 43, 44, 45, 46]; // Fukuoka, Saga, Nagasaki, Kumamoto, Oita, Miyazaki, Kagoshima
+      const kyushuIds = prefectureIds(REGIONS.kyushu);
       const visited = getVisitedPrefectures(trips, railData);
       const count = kyushuIds.filter((id) => visited.has(id)).length;
-      return { current: count, percent: Math.min(100, (count / 4) * 100), isUnlocked: count >= 4 };
+      // This one asks for 4 of the 7, so a full sweep must still read 4/4.
+      return { current: Math.min(4, count), percent: Math.min(100, (count / 4) * 100), isUnlocked: count >= 4 };
     },
   },
 
