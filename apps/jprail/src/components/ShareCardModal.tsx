@@ -14,7 +14,7 @@ import {
     ShareBlockId, ShareScope, ShareScopeKind, SHARE_BLOCKS,
     availableScopes, computeShareStats
 } from '../lib/shareCard';
-import { drawShareCard, CARD_SIZE, DEFAULT_CARD_STYLE, ShareCardStyle } from '../lib/shareCardRender';
+import { drawShareCard, CARD_SIZE, DEFAULT_CARD_STYLE, ShareCardStyle, CardAspectRatio } from '../lib/shareCardRender';
 
 export interface ShareCardModalProps {
     isOpen: boolean;
@@ -36,13 +36,18 @@ type Delivery = 'share' | 'copy' | 'download';
 
 const TEXT = {
     ko: {
+        aspectRatio: '카드 비율',
+        ratio11: '1:1 (지도만)',
+        ratio169: '16:9 (가로)',
+        ratio916: '9:16 (세로)',
+        mapOnlyNote: '1:1 비율에서는 지도 중심의 꽉 찬 뷰로 생성됩니다.',
         showUnselected: '선택 해제된 노선 표시',
         advanced: '고급', followMap: '지도 설정 따르기', showContext: '미방문 노선 표시',
         showBorders: '도도부현 경계선', riddenWeight: '탄 노선 두께', contextWeight: '미방문 노선 두께',
         moreLines: (n: number, avg: number) => `외 ${n}개 노선 · 평균 ${avg}%`,
         title: '공유 카드', scope: '무엇에 대한 카드인가요', include: '담을 내용',
         all: '전체', prefecture: '도도부현', company: '회사', line: '노선',
-        map: '지도', totals: '총계', lines: '노선 완주율', prefectures: '도도부현 정복', badges: '업적', period: '기간',
+        map: '지도', totals: '총계', lines: '노선 완주율 TOP 5', prefectures: '도도부현 정복', badges: '업적',
         download: '이미지 저장', copy: '이미지 복사', share: 'SNS에 공유',
         copied: '복사했어요. 붙여넣기 하세요', preparing: '만드는 중…',
         nothing: '아직 기록한 여행이 없어요. 지도에서 역과 역 사이를 드래그해 기록해 보세요.',
@@ -50,13 +55,18 @@ const TEXT = {
         reached: '도도부현 방문', tip: '휴대폰에서는 공유 버튼이 앱을 바로 열어 줍니다.'
     },
     en: {
+        aspectRatio: 'Card Ratio',
+        ratio11: '1:1 (Map only)',
+        ratio169: '16:9 (Landscape)',
+        ratio916: '9:16 (Portrait)',
+        mapOnlyNote: '1:1 ratio presents a pure map view.',
         showUnselected: 'Show filtered-out lines',
         advanced: 'Advanced', followMap: 'Follow map settings', showContext: 'Show unridden track',
         showBorders: 'Prefecture borders', riddenWeight: 'Ridden line weight', contextWeight: 'Unridden line weight',
         moreLines: (n: number, avg: number) => `and ${n} more lines · ${avg}% on average`,
         title: 'Share card', scope: 'What is this card about', include: 'What to include',
         all: 'Everything', prefecture: 'Prefecture', company: 'Operator', line: 'Line',
-        map: 'Map', totals: 'Totals', lines: 'Line progress', prefectures: 'Prefectures', badges: 'Badges', period: 'Period',
+        map: 'Map', totals: 'Totals', lines: 'Line progress TOP 5', prefectures: 'Prefectures', badges: 'Badges',
         download: 'Save image', copy: 'Copy image', share: 'Share',
         copied: 'Copied — paste it in', preparing: 'Drawing…',
         nothing: 'No trips recorded yet. Drag between two stations on the map to record one.',
@@ -64,13 +74,18 @@ const TEXT = {
         reached: 'prefectures reached', tip: 'On a phone, Share opens the app directly.'
     },
     ja: {
+        aspectRatio: 'カード比率',
+        ratio11: '1:1 (地図のみ)',
+        ratio169: '16:9 (横長)',
+        ratio916: '9:16 (縦長)',
+        mapOnlyNote: '1:1比率では地図メインで表示されます。',
         showUnselected: '選択解除された路線を表示',
         advanced: '詳細', followMap: 'マップ設定に従う', showContext: '未乗車路線を表示',
         showBorders: '都道府県の境界線', riddenWeight: '乗車路線の太さ', contextWeight: '未乗車路線の太さ',
         moreLines: (n: number, avg: number) => `他 ${n} 路線 · 平均 ${avg}%`,
         title: '共有カード', scope: '何についてのカードですか', include: '含める内容',
         all: '全体', prefecture: '都道府県', company: '会社', line: '路線',
-        map: '地図', totals: '合計', lines: '路線の走破率', prefectures: '都道府県制覇', badges: '実績', period: '期間',
+        map: '地図', totals: '合計', lines: '路線の走破率 TOP 5', prefectures: '都道府県制覇', badges: '実績',
         download: '画像を保存', copy: '画像をコピー', share: '共有',
         copied: 'コピーしました。貼り付けてください', preparing: '作成中…',
         nothing: 'まだ記録がありません。地図で駅から駅へドラッグして記録してみてください。',
@@ -86,10 +101,11 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const t = TEXT[language as keyof typeof TEXT] || TEXT.en;
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [aspectRatio, setAspectRatio] = useState<CardAspectRatio>('1:1');
     const [scopeKind, setScopeKind] = useState<ShareScopeKind>('all');
     const [scopeId, setScopeId] = useState<string>('');
     const [blocks, setBlocks] = useState<Set<ShareBlockId>>(
-        () => new Set<ShareBlockId>(['map', 'totals', 'lines', 'prefectures', 'period'])
+        () => new Set<ShareBlockId>(['map', 'totals', 'lines', 'prefectures', 'badges'])
     );
     const [notice, setNotice] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
@@ -137,12 +153,10 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
         if (!isOpen || !railData || !canvasRef.current) return;
         let cancelled = false;
         const draw = async () => {
-            // Canvas text falls back to a system font if the webfont has not
-            // arrived yet, so wait for it rather than shipping a card in the
-            // wrong typeface.
             try { await document.fonts.ready; } catch { /* older browsers */ }
             if (cancelled || !canvasRef.current) return;
             drawShareCard(canvasRef.current, {
+                aspectRatio,
                 stats, scope, blocks, theme: themeOf(themeId), shapeMode, railData, style, mapWeights,
                 selectedLineIds,
                 sections: railData.sections?.lod?.high ?? railData.sections?.sections ?? [],
@@ -152,16 +166,20 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                     title: 'JapanRailNote',
                     scopeLabel: (scope.label ?? t.all).toUpperCase(),
                     km: t.km, stations: t.stations, lines: t.lineCount, companies: t.companies,
+                    distTitle: language === 'ko' ? '거리' : language === 'ja' ? '距離' : 'DISTANCE',
+                    stationTitle: language === 'ko' ? '역' : language === 'ja' ? '駅' : 'STATIONS',
+                    lineTitle: language === 'ko' ? '노선' : language === 'ja' ? '路線' : 'LINES',
+                    companyTitle: language === 'ko' ? '회사' : language === 'ja' ? '会社' : 'COMPANIES',
                     prefecturesOf: () => t.reached,
                     period: (from, to) => `${from} – ${to}`,
-                    footer: 'japanrailnote.com',
+                    footer: 'jprail.pplaner.com',
                     moreLines: t.moreLines
                 }
             });
         };
         draw();
         return () => { cancelled = true; };
-    }, [isOpen, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights, selectedLineIds]);
+    }, [isOpen, aspectRatio, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights, selectedLineIds, language]);
 
     const toBlob = useCallback(async (): Promise<Blob | null> => {
         const canvas = canvasRef.current;
@@ -170,25 +188,15 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     }, []);
 
     const filename = useMemo(
-        () => `jprail-${scope.kind}-${new Date().toISOString().slice(0, 10)}.png`,
-        [scope.kind]
+        () => `jprail-${scope.kind}-${aspectRatio.replace(':', 'x')}-${new Date().toISOString().slice(0, 10)}.png`,
+        [scope.kind, aspectRatio]
     );
 
     const message = useMemo(() => {
         const where = scope.kind === 'all' ? '' : ` — ${scope.label}`;
-        return `${stats.distance.toLocaleString()}km · ${stats.stations} ${t.stations} · ${stats.lines} ${t.lineCount}${where}\nhttps://japanrailnote.com`;
+        return `${stats.distance.toLocaleString()}km · ${stats.stations} ${t.stations} · ${stats.lines} ${t.lineCount}${where}\nhttps://jprail.pplaner.com`;
     }, [stats, scope, t]);
 
-    /**
-     * There is no way to hand an image to a tweet through a URL, so the button
-     * takes the best route the browser actually offers:
-     *
-     *  1. the native share sheet with the file attached — on a phone this drops
-     *     straight into X, Instagram or a messenger,
-     *  2. failing that, the image on the clipboard plus the composer opened, so
-     *     it is one paste away,
-     *  3. failing that, a plain download.
-     */
     const deliver = useCallback(async (preferred: Delivery) => {
         setBusy(true);
         setNotice(null);
@@ -227,7 +235,6 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
             URL.revokeObjectURL(url);
             trackEvent('share_card', 'engagement', `download_${scope.kind}`);
         } catch (error) {
-            // A share sheet the user dismisses rejects; that is not a failure.
             if ((error as { name?: string })?.name !== 'AbortError') {
                 console.error('[Share] delivery failed', error);
             }
@@ -249,14 +256,19 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
             : scopeKind === 'line' ? choices.lines : [];
 
     const blockLabel: Record<ShareBlockId, string> = {
-        map: t.map, totals: t.totals, lines: t.lines, prefectures: t.prefectures, badges: t.badges, period: t.period
+        map: t.map, totals: t.totals, lines: t.lines, prefectures: t.prefectures, badges: t.badges
     };
+
+    const targetW = aspectRatio === '16:9' ? 1920 : 1080;
+    const targetH = aspectRatio === '9:16' ? 1920 : 1080;
+
+    const modalMaxWidth = aspectRatio === '16:9' ? 'max-w-[1360px]' : aspectRatio === '1:1' ? 'max-w-[1120px]' : 'max-w-[900px]';
 
     return (
         <div className="fixed inset-0 z-[20000] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-[#0f172acc] backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
 
-            <div className="relative w-full max-w-5xl max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-6 duration-400 flex flex-col">
+            <div className={`relative w-full ${modalMaxWidth} max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-6 duration-400 flex flex-col transition-all duration-300`}>
                 <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
                     <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">ios_share</span>
@@ -270,21 +282,42 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                 {trips.length === 0 ? (
                     <div className="p-12 text-center text-sm font-bold text-slate-400">{t.nothing}</div>
                 ) : (
-                    <div className="flex-1 overflow-y-auto grid md:grid-cols-[1fr_300px] gap-6 p-6">
+                    <div className="flex-1 overflow-y-auto grid md:grid-cols-[1fr_340px] gap-6 p-6">
                         {/* Preview */}
-                        <div className="min-w-0">
-                            <div className="rounded-2xl overflow-hidden shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                        <div className="min-w-0 flex items-center justify-center p-2">
+                            <div className={`rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 dark:ring-white/10 w-full max-h-[78vh] flex items-center justify-center bg-slate-950/5 dark:bg-slate-900/50 transition-all duration-300 ${
+                                aspectRatio === '1:1' ? 'aspect-square max-w-[640px]' : aspectRatio === '16:9' ? 'aspect-[16/9] max-w-[860px]' : 'aspect-[9/16] max-w-[400px]'
+                            }`}>
                                 <canvas
                                     ref={canvasRef}
-                                    width={CARD_SIZE}
-                                    height={CARD_SIZE}
-                                    className="w-full h-auto block"
+                                    width={targetW}
+                                    height={targetH}
+                                    className="w-full h-full object-contain block"
                                 />
                             </div>
                         </div>
 
                         {/* Controls */}
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-5">
+                            {/* Aspect Ratio Selector */}
+                            <div className="flex flex-col gap-2">
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.aspectRatio}</h3>
+                                <div className="grid grid-cols-3 gap-1.5">
+                                    {(['1:1', '16:9', '9:16'] as CardAspectRatio[]).map(ratio => (
+                                        <button
+                                            key={ratio}
+                                            onClick={() => setAspectRatio(ratio)}
+                                            className={`py-2 px-1 rounded-xl text-[11px] font-black transition-all ${aspectRatio === ratio
+                                                ? 'bg-primary text-white shadow-md'
+                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                        >
+                                            {ratio === '1:1' ? t.ratio11 : ratio === '16:9' ? t.ratio169 : t.ratio916}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Scope Selector */}
                             <div className="flex flex-col gap-2">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.scope}</h3>
                                 <div className="grid grid-cols-2 gap-1.5">
@@ -322,34 +355,41 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                 )}
                             </div>
 
+                            {/* Block Toggle Options */}
                             <div className="flex flex-col gap-2">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.include}</h3>
-                                <div className="flex flex-col gap-1">
-                                    {SHARE_BLOCKS.map(id => {
-                                        const on = blocks.has(id);
-                                        return (
-                                            <button
-                                                key={id}
-                                                onClick={() => setBlocks(prev => {
-                                                    const next = new Set(prev);
-                                                    if (next.has(id)) next.delete(id); else next.add(id);
-                                                    return next;
-                                                })}
-                                                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${on
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                                            >
-                                                {blockLabel[id]}
-                                                <span className={`material-symbols-outlined !text-[18px] transition-transform ${on ? 'scale-100' : 'scale-0'}`}>
-                                                    check_circle
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                                {aspectRatio === '1:1' ? (
+                                    <p className="text-[11px] font-bold text-primary/90 bg-primary/10 p-2.5 rounded-xl leading-snug">
+                                        {t.mapOnlyNote}
+                                    </p>
+                                ) : (
+                                    <div className="flex flex-col gap-1">
+                                        {SHARE_BLOCKS.map(id => {
+                                            const on = blocks.has(id);
+                                            return (
+                                                <button
+                                                    key={id}
+                                                    onClick={() => setBlocks(prev => {
+                                                        const next = new Set(prev);
+                                                        if (next.has(id)) next.delete(id); else next.add(id);
+                                                        return next;
+                                                    })}
+                                                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${on
+                                                        ? 'bg-primary/10 text-primary'
+                                                        : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                                >
+                                                    {blockLabel[id]}
+                                                    <span className={`material-symbols-outlined !text-[18px] transition-transform ${on ? 'scale-100' : 'scale-0'}`}>
+                                                        check_circle
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
-
+                            {/* Advanced Settings */}
                             <div className="flex flex-col gap-2">
                                 <button
                                     onClick={() => setShowAdvanced(v => !v)}
@@ -383,7 +423,6 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                             </label>
                                         ))}
 
-                                        {/* Weights are only the card's business once it stops following the map. */}
                                         {!style.followMap && ([
                                             ['riddenWeight', t.riddenWeight],
                                             ['contextWeight', t.contextWeight]
@@ -405,6 +444,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                 )}
                             </div>
 
+                            {/* Action Buttons */}
                             <div className="mt-auto flex flex-col gap-2">
                                 <button
                                     onClick={() => deliver('share')}

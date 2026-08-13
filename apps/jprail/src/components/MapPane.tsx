@@ -29,7 +29,6 @@ import { Trip } from '../types/trip';
 import { useMapData } from '../hooks/useMapData';
 import { useZoomBounce } from '../hooks/useZoomBounce';
 import { useViewportSections } from '../hooks/useViewportSections';
-import FlowLayer from './FlowLayer';
 import LandTileLayer from './LandTileLayer';
 import { themeOf, isLattice } from '../lib/mapThemes';
 
@@ -345,6 +344,10 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [rawHandleStationMouseDown, onSetActiveLine]);
 
     const handleTooltipUpdate = useCallback((content: string | null, x: number, y: number, priority: 'low' | 'high' = 'high') => {
+        if (styleSettings.landForm !== 'outline') {
+            setFloatingTooltip(prev => prev.visible ? { ...prev, content: null, visible: false, priority: 'low' } : prev);
+            return;
+        }
         setFloatingTooltip(prev => {
             if (!content) {
                 if (prev.visible && prev.priority === 'high' && priority === 'low') {
@@ -357,7 +360,7 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
             return { content, x, y, visible: true, priority };
         });
-    }, []);
+    }, [styleSettings.landForm]);
 
 
     useEffect(() => {
@@ -677,15 +680,6 @@ const MapPane: React.FC<MapPaneProps> = ({
                 />
             )}
 
-            {railData && (
-                <FlowLayer
-                    sections={sectionWindow.sections}
-                    railData={railData}
-                    usedSectionIds={visitedSectionIds}
-                    shapeMode={styleSettings.shapeMode}
-                    enabled={!!styleSettings.flow && !dragStartStation}
-                />
-            )}
 
             {visibleStations && railData &&
                 <Stations
