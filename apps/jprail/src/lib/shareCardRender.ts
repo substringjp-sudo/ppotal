@@ -25,6 +25,12 @@ export interface ShareCardStyle {
     followMap: boolean;
     /** Draw track that has not been ridden, as context under the route. */
     showContext: boolean;
+    /**
+     * Draw lines the map's own filter has switched off. The map keeps them as
+     * a faint third tier rather than removing them, and a card that inherits
+     * the filter should be able to do either.
+     */
+    showUnselected: boolean;
     /** Prefecture outlines on the card's map. */
     showBorders: boolean;
     /** Multipliers, 0.4 to 3. Ignored while followMap is on. */
@@ -35,6 +41,7 @@ export interface ShareCardStyle {
 export const DEFAULT_CARD_STYLE: ShareCardStyle = {
     followMap: true,
     showContext: true,
+    showUnselected: true,
     showBorders: false,
     riddenWeight: 1,
     contextWeight: 1
@@ -46,7 +53,12 @@ export const MAX_LINE_ROWS = 5;
 export interface ShareCardInput {
     style: ShareCardStyle;
     /** The map's own weights, used when style.followMap is on. */
-    mapWeights: { visited: number; unvisited: number };
+    mapWeights: { visited: number; unvisited: number; unselected: number; unselectedOpacity: number };
+    /**
+     * Lines the map is currently filtered to. Empty means no filter, so
+     * everything counts as selected — the same rule the map itself uses.
+     */
+    selectedLineIds: Set<string>;
     stats: ShareStats;
     scope: ShareScope;
     blocks: Set<ShareBlockId>;
@@ -145,7 +157,7 @@ function blockHeight(id: Exclude<ShareBlockId, 'map'>, stats: ShareStats): numbe
 }
 
 export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, scale = 2): void {
-    const { stats, blocks, theme, shapeMode, railData, sections, riddenSectionIds, prefectures, badges, labels, isoToPrefecture, style, mapWeights } = input;
+    const { stats, blocks, theme, shapeMode, railData, sections, riddenSectionIds, prefectures, badges, labels, isoToPrefecture, style, mapWeights, selectedLineIds } = input;
 
     // A card is looked at much smaller than the map, so the inherited weights
     // are scaled up a little to survive being seen as a thumbnail.
@@ -271,9 +283,25 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
             return raw ? (String(raw).startsWith('#') ? String(raw) : `#${raw}`) : '#94a3b8';
         };
 
+        // The map draws three tiers — filtered out, shown but not ridden, and
+        // ridden — and a card that claims to follow the map has to keep all
+        // three or it stops being the same picture.
+        const filterActive = selectedLineIds.size > 0;
+        const isSelected = (section: Section) =>
+            !filterActive || selectedLineIds.has(`${section.company_id}::${section.line_id}`);
+
+        if (style.showUnselected && filterActive) {
+            const unselectedScale = style.followMap ? Math.max(0.4, mapWeights.unselected) : style.contextWeight * 0.7;
+            const unselectedAlpha = style.followMap ? mapWeights.unselectedOpacity : 0.3;
+            for (const section of visible) {
+                if (riddenSectionIds.has(section.id) || isSelected(section)) continue;
+                strokeSection(section, 1.4 * unselectedScale, theme.dark ? '#2b3852' : '#dde3ea', unselectedAlpha);
+            }
+        }
+
         if (style.showContext) {
             for (const section of visible) {
-                if (riddenSectionIds.has(section.id)) continue;
+                if (riddenSectionIds.has(section.id) || !isSelected(section)) continue;
                 strokeSection(section, 1.6 * contextScale, theme.dark ? '#3b4a6b' : '#c9d3e0', 0.75);
             }
         }

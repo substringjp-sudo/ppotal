@@ -27,13 +27,16 @@ export interface ShareCardModalProps {
     themeId: MapThemeId;
     shapeMode: MapShapeMode;
     /** The map's own line weights, which the card follows by default. */
-    mapWeights: { visited: number; unvisited: number };
+    mapWeights: { visited: number; unvisited: number; unselected: number; unselectedOpacity: number };
+    /** Lines the map is filtered to; empty means no filter. */
+    selectedLines: string[];
 }
 
 type Delivery = 'share' | 'copy' | 'download';
 
 const TEXT = {
     ko: {
+        showUnselected: '선택 해제된 노선 표시',
         advanced: '고급', followMap: '지도 설정 따르기', showContext: '미방문 노선 표시',
         showBorders: '도도부현 경계선', riddenWeight: '탄 노선 두께', contextWeight: '미방문 노선 두께',
         moreLines: (n: number, avg: number) => `외 ${n}개 노선 · 평균 ${avg}%`,
@@ -47,6 +50,7 @@ const TEXT = {
         reached: '도도부현 방문', tip: '휴대폰에서는 공유 버튼이 앱을 바로 열어 줍니다.'
     },
     en: {
+        showUnselected: 'Show filtered-out lines',
         advanced: 'Advanced', followMap: 'Follow map settings', showContext: 'Show unridden track',
         showBorders: 'Prefecture borders', riddenWeight: 'Ridden line weight', contextWeight: 'Unridden line weight',
         moreLines: (n: number, avg: number) => `and ${n} more lines · ${avg}% on average`,
@@ -60,6 +64,7 @@ const TEXT = {
         reached: 'prefectures reached', tip: 'On a phone, Share opens the app directly.'
     },
     ja: {
+        showUnselected: '選択解除された路線を表示',
         advanced: '詳細', followMap: 'マップ設定に従う', showContext: '未乗車路線を表示',
         showBorders: '都道府県の境界線', riddenWeight: '乗車路線の太さ', contextWeight: '未乗車路線の太さ',
         moreLines: (n: number, avg: number) => `他 ${n} 路線 · 平均 ${avg}%`,
@@ -75,7 +80,7 @@ const TEXT = {
 };
 
 const ShareCardModal: React.FC<ShareCardModalProps> = ({
-    isOpen, onClose, trips, railData, lineLengths, prefectures, regionNames, themeId, shapeMode, mapWeights
+    isOpen, onClose, trips, railData, lineLengths, prefectures, regionNames, themeId, shapeMode, mapWeights, selectedLines
 }) => {
     const { language } = useI18n();
     const t = TEXT[language as keyof typeof TEXT] || TEXT.en;
@@ -90,6 +95,12 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const [busy, setBusy] = useState(false);
     const [style, setStyle] = useState<ShareCardStyle>(DEFAULT_CARD_STYLE);
     const [showAdvanced, setShowAdvanced] = useState(false);
+
+    // "__NONE__" is the map's way of saying the filter is on but empty.
+    const selectedLineIds = useMemo(
+        () => new Set(selectedLines.filter(id => id && id !== '__NONE__')),
+        [selectedLines]
+    );
 
     const choices = useMemo(
         () => availableScopes(trips, railData, regionNames?.adm1 ?? null, language),
@@ -133,6 +144,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
             if (cancelled || !canvasRef.current) return;
             drawShareCard(canvasRef.current, {
                 stats, scope, blocks, theme: themeOf(themeId), shapeMode, railData, style, mapWeights,
+                selectedLineIds,
                 sections: railData.sections?.lod?.high ?? railData.sections?.sections ?? [],
                 riddenSectionIds: new Set(trips.flatMap(trip => (trip.sectionIds || []).map(Number))),
                 prefectures, badges, isoToPrefecture,
@@ -149,7 +161,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
         };
         draw();
         return () => { cancelled = true; };
-    }, [isOpen, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights]);
+    }, [isOpen, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights, selectedLineIds]);
 
     const toBlob = useCallback(async (): Promise<Blob | null> => {
         const canvas = canvasRef.current;
@@ -354,6 +366,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                         {([
                                             ['followMap', t.followMap],
                                             ['showContext', t.showContext],
+                                            ['showUnselected', t.showUnselected],
                                             ['showBorders', t.showBorders]
                                         ] as const).map(([key, label]) => (
                                             <label key={key} className="flex items-center justify-between cursor-pointer group">
