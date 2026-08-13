@@ -673,6 +673,10 @@ const MapPane: React.FC<MapPaneProps> = ({
                     form={styleSettings.landForm}
                     theme={theme}
                     railRevision={railRevision}
+                    sections={sectionWindow.sections}
+                    railData={railData}
+                    usedSectionIds={visitedSectionIds}
+                    shapeMode={styleSettings.shapeMode}
                 />
             )}
 
