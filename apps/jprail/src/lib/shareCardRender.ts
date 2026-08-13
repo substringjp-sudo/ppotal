@@ -277,11 +277,98 @@ export function drawShareCard(canvas: HTMLCanvasElement, input: ShareCardInput, 
                 strokeSection(section, 1.6 * contextScale, theme.dark ? '#3b4a6b' : '#c9d3e0', 0.75);
             }
         }
-        for (const section of visible) {
-            if (!riddenSectionIds.has(section.id)) continue;
-            // A soft halo, then the line's own colour, so ridden track reads first.
-            strokeSection(section, 9 * riddenScale, colourOf(section), 0.22);
-            strokeSection(section, 3.6 * riddenScale, colourOf(section), 1);
+        context.globalAlpha = 1;
+
+        // The ridden route is built on its own surface and composited once.
+        //
+        // Drawing a wide translucent stroke per section straight onto the card
+        // is what made the old "glow" look cheap: wherever two sections met,
+        // their alpha stacked, so the halo came out as a chain of dark lumps
+        // rather than an even light. Composited once, overlaps cannot stack,
+        // and the layer can be blurred properly instead of faked with width.
+        const ridden = visible.filter(section => riddenSectionIds.has(section.id));
+        if (ridden.length > 0) {
+            const layer = document.createElement('canvas');
+            layer.width = Math.ceil(rect.w);
+            layer.height = Math.ceil(rect.h);
+            const layerContext = layer.getContext('2d');
+
+            if (layerContext) {
+                layerContext.translate(-rect.x, -rect.y);
+                layerContext.lineCap = 'round';
+                layerContext.lineJoin = 'round';
+
+                const traceOn = (target: CanvasRenderingContext2D, section: Section, width: number, colour: string) => {
+                    const geometry = shapeGeometry(section.geometry, shapeMode);
+                    if (!geometry || geometry.length < 2) return;
+                    target.strokeStyle = colour;
+                    target.lineWidth = width;
+                    target.beginPath();
+                    for (let i = 0; i < geometry.length; i++) {
+                        const p = project(geometry[i][0], geometry[i][1]);
+                        if (i === 0) target.moveTo(p.x, p.y); else target.lineTo(p.x, p.y);
+                    }
+                    target.stroke();
+                };
+
+                const core = 3.6 * riddenScale;
+
+                // A casing in the ground colour under every line, so that where
+                // two routes cross you can see which one passes over — the trick
+                // every printed transit map uses, and the reason they read at a
+                // glance where a pile of coloured strokes does not.
+                for (const section of ridden) {
+                    traceOn(layerContext, section, core + 3.4 * riddenScale, theme.land);
+                }
+                for (const section of ridden) {
+                    traceOn(layerContext, section, core, colourOf(section));
+                }
+
+                // Stations along the route, thinned so they never crowd: at the
+                // national scale these are a texture, close in they are a
+                // diagram. This is most of what makes a route look drawn rather
+                // than traced.
+                // Dots mark the line, they are not the line. Tied straight to
+                // the stroke width they overwhelm it at heavy weights, so the
+                // size is capped and the thinning is generous — at the national
+                // scale a couple of hundred stations have to read as texture.
+                const dotRadius = Math.min(4.2, Math.max(1.5, 1.2 + core * 0.34));
+                const spacing = Math.max(15, dotRadius * 5.2);
+                const placed: { x: number; y: number }[] = [];
+                const stationsById = railData.stations as Record<string, { lat: number; lon: number }>;
+                for (const section of ridden) {
+                    for (const id of [section.start, section.end]) {
+                        const station = stationsById[id];
+                        if (!station) continue;
+                        const p = project(station.lon, station.lat);
+                        if (p.x < rect.x || p.x > rect.x + rect.w || p.y < rect.y || p.y > rect.y + rect.h) continue;
+                        if (placed.some(q => Math.hypot(q.x - p.x, q.y - p.y) < spacing)) continue;
+                        placed.push(p);
+                        layerContext.beginPath();
+                        layerContext.arc(p.x, p.y, dotRadius, 0, Math.PI * 2);
+                        layerContext.fillStyle = theme.land;
+                        layerContext.fill();
+                        layerContext.lineWidth = Math.max(1, dotRadius * 0.5);
+                        layerContext.strokeStyle = colourOf(section);
+                        layerContext.stroke();
+                    }
+                }
+
+                // One composite. On a dark map a real blurred copy underneath
+                // reads as light coming off the line; on a light one the same
+                // pass reads better as a soft shadow beneath it.
+                const canBlur = typeof layerContext.filter === 'string';
+                context.save();
+                if (canBlur) {
+                    context.globalAlpha = theme.dark ? 0.5 : 0.22;
+                    context.filter = `blur(${Math.max(4, core * 1.8)}px)`;
+                    context.drawImage(layer, rect.x, rect.y);
+                    context.filter = 'none';
+                }
+                context.globalAlpha = 1;
+                context.drawImage(layer, rect.x, rect.y);
+                context.restore();
+            }
         }
 
         context.globalAlpha = 1;
