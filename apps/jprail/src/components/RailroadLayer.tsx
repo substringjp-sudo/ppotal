@@ -26,6 +26,8 @@ interface RailroadLayerProps {
     draftSectionIds?: Set<number>;
     settings: import('./MainPageClient').MapStyleSettings;
     onTooltipUpdate?: (content: string | null, x: number, y: number, priority?: 'low' | 'high') => void;
+    /** Bumps whenever the set of sections handed in actually changes. */
+    dataRevision: number;
 }
 
 
@@ -43,7 +45,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     isDragging = false,
     draftSectionIds = new Set(),
     settings,
-    onTooltipUpdate
+    onTooltipUpdate,
+    dataRevision
 }) => {
 
     const { language } = useI18n();
@@ -143,7 +146,10 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             casingWeight,
             highlightWeight,
             zoomWeight,
-            smoothFactor: 1.0
+            // Douglas-Peucker tolerance in screen pixels, applied every time
+            // Leaflet projects a line. At 1.0 the map was paying to draw detail
+            // finer than a pixel; zoomed out that is most of the vertices.
+            smoothFactor: zoomGroup === 3 ? 1.0 : zoomGroup === 2 ? 2.0 : 3.0
         };
     }, [zoomGroup, zoomLevel, isMoving]);
 
@@ -354,6 +360,11 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             interactive: true,
             lineCap: 'round' as const,
             lineJoin: 'round' as const,
+            // This layer is never seen — it only has to be hit-testable within
+            // its own 14px stroke, so it can be simplified far harder than the
+            // visible lines. Every vertex dropped here is one less to project
+            // and one less to write into an SVG path on each zoom.
+            smoothFactor: 6.0,
             renderer: sharedSvgRenderer || undefined
         } as L.PathOptions;
     }, [isMobile]);
@@ -471,16 +482,18 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         };
     }, []);
 
-    // Stable key: re-render on data, major zoom changes, or when the set of used sections actually changes
+    // react-leaflet only picks up new GeoJSON through a remount, so the key
+    // tracks exactly what changes the *data*. Zoom is deliberately not in here:
+    // zoom only changes styling, and styling goes through setStyle above.
     const layerKey = useMemo(() => {
         const draftIdsArray = Array.from(draftSectionIds || []);
         const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
-        
-        // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라 
+
+        // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라
         // 데이터의 특징적인 값(해시 대용)을 포함합니다.
         const usedIdsHash = Array.from(usedSectionIds).slice(-10).join(',');
-        return `${zoomGroup}_${usedSectionIds.size}_${usedIdsHash}_${selectionSet.size}_${draftKey}_${language}`;
-    }, [zoomGroup, usedSectionIds, selectionSet.size, draftSectionIds, language]);
+        return `${dataRevision}_${usedSectionIds.size}_${usedIdsHash}_${draftKey}_${language}`;
+    }, [dataRevision, usedSectionIds, draftSectionIds, language]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 

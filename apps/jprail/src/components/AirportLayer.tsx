@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { GeoJSON, Marker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { FeatureCollection, Feature } from 'geojson';
-import { airportCanvas } from './Map';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedAddress } from '../lib/i18n-utils';
 import { useRegionNames } from '../hooks/useRegionNames';

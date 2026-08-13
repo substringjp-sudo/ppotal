@@ -578,12 +578,21 @@ const Stations: React.FC<StationsProps> = ({
         };
     }, []);
 
+    // react-leaflet only adopts new GeoJSON on remount, so this key has to
+    // change whenever the features do. It used to be built from the station
+    // *count*, which meant panning from one area to another with the same
+    // number of stations left the previous markers on the canvas — the
+    // afterimages. Counting the rebuilds instead is exact by construction.
+    const dataRevisionRef = useRef(0);
+    const lastDataRef = useRef<unknown>(null);
+    if (lastDataRef.current !== visualsGeoJson) {
+        lastDataRef.current = visualsGeoJson;
+        dataRevisionRef.current++;
+    }
     const bakedKey = useMemo(() => {
-        const draftIdsArray = Array.from(draftStationIds || []);
-        const draftKey = draftIdsArray.length > 0 ? `${draftIdsArray.length}_${draftIdsArray[draftIdsArray.length - 1]}` : 'none';
         const regionKey = regionNames ? 'loaded' : 'loading';
-        return `${effectiveZoom}_${allEntries.length}_${draftKey}_${regionKey}_${language}`;
-    }, [effectiveZoom, allEntries.length, draftStationIds, regionNames, language]);
+        return `${dataRevisionRef.current}_${regionKey}_${language}`;
+    }, [visualsGeoJson, regionNames, language]);
 
     const visibleLabels = useMemo(() => {
         if (!mapBounds) return [];

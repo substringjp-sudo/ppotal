@@ -24,21 +24,24 @@ const MapControls: React.FC<MapControlsProps> = ({
         map.flyTo([35.6895, 139.6917], 5, { duration: 1.5 });
     };
 
-    const handleZoomIn = () => {
-        if (zoom >= maxZoom) {
-            onBounce?.('in');
-        } else {
-            map.setZoom(Math.min(maxZoom, zoom + 1));
+    // Step from the map's own zoom, not the `zoom` prop: that prop is React
+    // state set on zoomend, so a second click arriving before it commits used
+    // to re-issue the step the map had already taken and be swallowed.
+    const step = (direction: 1 | -1) => {
+        const current = map.getZoom();
+        const limit = direction === 1 ? maxZoom : minZoom;
+        if (direction === 1 ? current >= maxZoom : current <= minZoom) {
+            onBounce?.(direction === 1 ? 'in' : 'out');
+            return;
         }
+        const next = direction === 1
+            ? Math.min(limit, Math.floor(current) + 1)
+            : Math.max(limit, Math.ceil(current) - 1);
+        map.setZoom(next);
     };
 
-    const handleZoomOut = () => {
-        if (zoom <= minZoom) {
-            onBounce?.('out');
-        } else {
-            map.setZoom(Math.max(minZoom, zoom - 1));
-        }
-    };
+    const handleZoomIn = () => step(1);
+    const handleZoomOut = () => step(-1);
 
     return (
         <>
