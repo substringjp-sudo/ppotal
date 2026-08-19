@@ -7,6 +7,8 @@ interface HowToModalProps {
 }
 
 import { HOW_TO_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
+import { isPhoneWidth } from '../lib/mobile';
 
 const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
     const { language } = useI18n();
@@ -15,8 +17,12 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
 
     React.useEffect(() => {
         if (isOpen) {
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            setActiveTab(isMobileDevice ? 'mobile' : 'desktop');
+            // Which guide to show follows the same rule as the layout itself:
+            // a narrow window gets the phone UI, so it should get the phone
+            // instructions. A touch UA on a wide screen still gets both right.
+            const isPhone = isPhoneWidth(window.innerWidth)
+                || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            setActiveTab(isPhone ? 'mobile' : 'desktop');
 
             const handleEscape = (e: KeyboardEvent) => {
                 if (e.key === 'Escape') onClose();
@@ -36,7 +42,7 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
             style={{
                 position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', zIndex: 10000, backdropFilter: 'blur(4px)'
+                justifyContent: 'center', zIndex: Z.modal, backdropFilter: 'blur(4px)'
             }}
             onClick={onClose}
         >

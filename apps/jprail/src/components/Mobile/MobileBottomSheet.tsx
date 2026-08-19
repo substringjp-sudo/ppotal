@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useI18n } from '../../lib/i18n-context';
 import { MOBILE_BOTTOM_SHEET_TRANSLATIONS, getTranslations } from '../../lib/translations';
+import { Z } from '../../lib/layers';
 import {
     SHEET_DETENTS, DETENT_ORDER, SHEET_DRAG_THRESHOLD, SHEET_FLING_VELOCITY,
     SHEET_PEEK_MIN, type SheetDetent
@@ -243,8 +244,14 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
             ref={sheetRef}
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
-            className="fixed z-[1050] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/40 dark:border-slate-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.14)] rounded-t-[32px] flex flex-col overflow-hidden"
+            // A stable hook for tests: they used to select the sheet by its
+            // z-index class, which made renumbering the layers look like the
+            // sheet had vanished.
+            data-sheet="bottom"
+            data-detent={detent}
+            className="fixed bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/40 dark:border-slate-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.14)] rounded-t-[32px] flex flex-col overflow-hidden"
             style={{
+                zIndex: Z.sheet,
                 left: SIDE_MARGIN, right: SIDE_MARGIN, bottom: 0,
                 height,
                 paddingBottom: 'var(--safe-bottom)',

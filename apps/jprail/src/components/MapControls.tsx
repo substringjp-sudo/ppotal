@@ -3,6 +3,7 @@
 import React from 'react';
 import { useMap } from 'react-leaflet';
 import { useI18n } from '../lib/i18n-context';
+import { Z } from '../lib/layers';
 
 interface MapControlsProps {
     zoom: number;
@@ -52,9 +53,11 @@ const MapControls: React.FC<MapControlsProps> = ({
                 phone screen belongs to the bar and the reach is worse up there.
                 Buttons go to 44px so a thumb can actually land on them. */}
             <div className={isMobile
-                ? "absolute left-3 z-[1000] flex flex-col items-start gap-2"
-                : "absolute top-4 left-4 md:left-[366px] z-[1000] flex flex-row items-center gap-2"}
-                style={isMobile ? { bottom: 'calc(var(--sheet-h, 120px) + 12px)', transition: 'bottom 260ms cubic-bezier(0.32, 0.72, 0, 1)' } : undefined}
+                ? "absolute left-3 flex flex-col items-start gap-2"
+                : "absolute top-4 left-4 md:left-[366px] flex flex-row items-center gap-2"}
+                style={isMobile
+                    ? { zIndex: Z.mapOverlay, bottom: 'calc(var(--sheet-h, 120px) + 12px)', transition: 'bottom 260ms cubic-bezier(0.32, 0.72, 0, 1)' }
+                    : { zIndex: Z.mapOverlay }}
             >
                 {/* Horizontal Zoom Pill */}
                 <div className="flex flex-row items-center bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl h-[44px] rounded-2xl shadow-lg border border-white/60 dark:border-slate-700/60 px-1 transition-all duration-300 overflow-hidden group">

@@ -11,6 +11,7 @@ interface FeedbackModalProps {
 }
 
 import { FEEDBACK_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
 
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
@@ -83,7 +84,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 10000,
+                zIndex: Z.modal,
                 backdropFilter: 'blur(4px)',
             }} onClick={onClose}>
             <div style={{

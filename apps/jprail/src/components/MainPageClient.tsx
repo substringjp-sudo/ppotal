@@ -133,6 +133,7 @@ import type { MobileMenuSheetProps } from './Mobile/MobileMenuSheet';
 const MobileMenuSheet = dynamic<MobileMenuSheetProps>(() => import('./Mobile/MobileMenuSheet'), { ssr: false });
 
 import { MAIN_PAGE_TRANSLATIONS, RAIL_SEARCH_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
 
 const getDocsWithTimeout = (q: any, timeoutMs: number = 3000): Promise<any> => {
     return Promise.race([
@@ -855,7 +856,7 @@ const MainPageClient = () => {
             <div className="h-screen flex flex-col overflow-hidden relative max-w-[1920px] mx-auto w-full shadow-2xl shadow-slate-900/10">
                 <a
                     href="#main-content"
-                    className="absolute -left-[9999px] top-auto w-px h-px overflow-hidden z-[-1] bg-primary text-white p-2.5 rounded-b-lg no-underline font-bold focus:left-1/2 focus:-translate-x-1/2 focus:w-auto focus:h-auto focus:z-[10001]"
+                    className="absolute -left-[9999px] top-auto w-px h-px overflow-hidden z-[-1] bg-primary text-white p-2.5 rounded-b-lg no-underline font-bold focus:left-1/2 focus:-translate-x-1/2 focus:w-auto focus:h-auto"
                 >
                     Skip to main content
                 </a>
@@ -873,7 +874,7 @@ const MainPageClient = () => {
                         searchPlaceholder={getTranslations(RAIL_SEARCH_TRANSLATIONS, language).placeholder}
                     />
                 ) : (
-                <header className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative">
+                <header style={{ zIndex: Z.header }} className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 shadow-sm relative">
                     {/* Left: Logo & Title */}
                     <div className="flex items-center gap-3 shrink-0 mr-4">
                         <JrnLogo size={32} />
@@ -1066,7 +1067,7 @@ const MainPageClient = () => {
                     </div>
 
                     {/* Foreground Layer: UI & Side Panels */}
-                    <div className="absolute inset-0 z-[5000] flex pointer-events-none h-full overflow-hidden">
+                    <div style={{ zIndex: Z.mapOverlay }} className="absolute inset-0 flex pointer-events-none h-full overflow-hidden">
                         {!isMobile && (
                             <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -1089,7 +1090,7 @@ const MainPageClient = () => {
                             </div>
 
                             {!isMobile && lineDetailData && activeLine && railData && (
-                                <div className="relative z-[1100] pointer-events-auto">
+                                <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
                                     <LineDetailPaneWithNoSSR
                                         lineId={activeLine}
                                         segments={lineDetailData.segments}
@@ -1106,7 +1107,7 @@ const MainPageClient = () => {
                                 </div>
                             )}
                             {!isMobile && selectedStation && railData && (
-                                <div className="relative z-[1100] pointer-events-auto">
+                                <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
                                     <StationDetailPaneWithNoSSR
                                         station={selectedStation}
                                         railData={railData}
@@ -1320,7 +1321,7 @@ const MainPageClient = () => {
             {/* Info Modal for Mobile */}
 
             {isInfoOpen && (
-                <div className="fixed inset-0 z-[11000] bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
+                <div style={{ zIndex: Z.modal }} className="fixed inset-0 bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-white text-xl font-black uppercase tracking-widest">{t.information}</h2>
                         <button
@@ -1399,7 +1400,7 @@ const MainPageClient = () => {
             />
 
             {!isMobile && (
-                <div className="fixed bottom-0 right-0 z-[10002] p-2 sm:p-4 pointer-events-none">
+                <div style={{ zIndex: Z.toast }} className="fixed bottom-0 right-0 p-2 sm:p-4 pointer-events-none">
                     <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />
                 </div>
             )}
@@ -1420,7 +1421,7 @@ interface SyncSummaryModalProps {
 const SyncSummaryModal: React.FC<SyncSummaryModalProps> = ({ isOpen, onClose, importedCount, cities, language }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div style={{ zIndex: Z.modalNested }} className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 max-w-sm w-full flex flex-col gap-4 animate-in zoom-in-95 duration-200">
                 <div className="flex items-center gap-3">
                     <div className="size-10 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-inner">

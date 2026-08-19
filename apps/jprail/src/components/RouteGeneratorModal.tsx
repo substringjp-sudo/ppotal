@@ -10,6 +10,7 @@ import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { findCandidateRoutes, CandidateRoute, RouteSearchResult, RouteSegment } from '../lib/routeSearch';
 import RouteMiniMap, { RouteMiniMapWaypoint } from './RouteMiniMap';
 import { rankByRelevance } from '../lib/searchRanking';
+import { Z } from '../lib/layers';
 
 export interface RouteGeneratorModalProps {
     isOpen: boolean;
@@ -598,7 +599,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
     return (
         // Above the map's side panels (z-5000) and the app header (z-10001).
-        <div className="fixed inset-0 z-[11500] flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div style={{ zIndex: Z.modal }} className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
             <div className="relative w-full max-w-5xl h-[94vh] sm:h-[88vh] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-900/60 shrink-0">

@@ -4,6 +4,7 @@ import React from 'react';
 import { MAP_THEMES, MAP_THEME_IDS, LandForm, MapThemeId } from '../lib/mapThemes';
 import { MAP_SHAPE_MODES, MapShapeMode } from '../lib/lineShapes';
 import { useI18n } from '../lib/i18n-context';
+import { Z } from '../lib/layers';
 
 export interface MapStyleSettings {
     theme: MapThemeId;
@@ -306,7 +307,8 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
             onDoubleClick={stopPropagation}
             onWheel={stopPropagation}
             onTouchStart={stopPropagation}
-            className="absolute top-3 right-3 z-[1000] flex items-center gap-2 pointer-events-auto"
+            style={{ zIndex: Z.mapOverlay }}
+            className="absolute top-3 right-3 flex items-center gap-2 pointer-events-auto"
         >
             {!isMobile && landFormSelector(true)}
 
@@ -337,7 +339,8 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
             {isMobile && (
                 <div
                     onClick={() => onOpenChange(false)}
-                    className="fixed inset-0 z-[1000] bg-black/30 pointer-events-auto animate-in fade-in duration-200"
+                    style={{ zIndex: Z.mapOverlay }}
+                    className="fixed inset-0 bg-black/30 pointer-events-auto animate-in fade-in duration-200"
                 />
             )}
 
@@ -351,9 +354,11 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
                 onTouchMove={stopPropagation}
                 onTouchEnd={stopPropagation}
                 className={isMobile
-                    ? "fixed inset-x-0 bottom-0 bg-white/95 dark:bg-slate-900/97 backdrop-blur-3xl border-t border-white/60 dark:border-slate-700/70 rounded-t-[28px] shadow-2xl flex flex-col max-h-[85dvh] animate-in slide-in-from-bottom duration-300 overflow-hidden pointer-events-auto z-[1001]"
-                    : "absolute top-16 right-4 w-64 sm:w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/60 dark:border-slate-700/70 rounded-3xl shadow-2xl flex flex-col max-h-[80dvh] animate-in slide-in-from-right-8 fade-in duration-300 overflow-hidden pointer-events-auto z-[1000]"}
-                style={isMobile ? { paddingBottom: 'var(--safe-bottom)' } : undefined}
+                    ? "fixed inset-x-0 bottom-0 bg-white/95 dark:bg-slate-900/97 backdrop-blur-3xl border-t border-white/60 dark:border-slate-700/70 rounded-t-[28px] shadow-2xl flex flex-col max-h-[85dvh] animate-in slide-in-from-bottom duration-300 overflow-hidden pointer-events-auto"
+                    : "absolute top-16 right-4 w-64 sm:w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/60 dark:border-slate-700/70 rounded-3xl shadow-2xl flex flex-col max-h-[80dvh] animate-in slide-in-from-right-8 fade-in duration-300 overflow-hidden pointer-events-auto"}
+                style={isMobile
+                    ? { zIndex: Z.mapOverlay + 1, paddingBottom: 'var(--safe-bottom)' }
+                    : { zIndex: Z.mapOverlay }}
             >
                 {/* Header */}
                 <div className="p-5 pb-3 flex justify-between items-center bg-white/85 dark:bg-slate-900/95 backdrop-blur-md z-10 border-b border-slate-200/50 dark:border-slate-800">

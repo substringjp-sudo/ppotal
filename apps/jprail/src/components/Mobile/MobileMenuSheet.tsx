@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { LanguageSelector } from '../LanguageSelector';
 import { useI18n } from '../../lib/i18n-context';
+import { Z } from '../../lib/layers';
 
 export interface MobileMenuSheetProps {
     isOpen: boolean;
@@ -72,7 +73,7 @@ const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({
     const act = (fn: () => void) => () => { onClose(); fn(); };
 
     return (
-        <div className="fixed inset-0 z-[12000]">
+        <div style={{ zIndex: Z.modal }} className="fixed inset-0">
             <div onClick={onClose} className="absolute inset-0 bg-black/40 animate-in fade-in duration-200" />
 
             <div

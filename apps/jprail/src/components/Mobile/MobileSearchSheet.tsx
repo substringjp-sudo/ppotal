@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import RailSearch from '../RailSearch';
 import { RailData } from '../../types/railData';
 import { useI18n } from '../../lib/i18n-context';
+import { Z } from '../../lib/layers';
 
 export interface MobileSearchSheetProps {
     isOpen: boolean;
@@ -51,7 +52,7 @@ const MobileSearchSheet: React.FC<MobileSearchSheetProps> = ({
     const back = language === 'ko' ? '닫기' : language === 'ja' ? '閉じる' : 'Close';
 
     return (
-        <div className="fixed inset-0 z-[12000] bg-white dark:bg-slate-950 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div data-search-sheet="true" style={{ zIndex: Z.modal }} className="fixed inset-0 bg-white dark:bg-slate-950 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200">
             <div className="mobile-safe-top mobile-safe-x shrink-0 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 h-14 px-2">
                     <button

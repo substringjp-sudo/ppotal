@@ -18,6 +18,7 @@ import {
 } from '../lib/rankings';
 import { JrnLogo } from './JrnLogo';
 import { useI18n } from '../lib/i18n-context';
+import { Z } from '../lib/layers';
 
 interface RankingsModalProps {
   isOpen: boolean;
@@ -166,7 +167,8 @@ export const RankingsModal: React.FC<RankingsModalProps> = ({ isOpen, onClose })
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[10000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 animate-in fade-in duration-200"
+      style={{ zIndex: Z.modal }}
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div

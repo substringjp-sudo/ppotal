@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CURRENT_VERSION, CHANGELOG } from '../constants/changelog';
 import { useI18n } from '../lib/i18n-context';
 import { UPDATE_NOTICE_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
 
 export const UpdateNoticeModal: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +33,7 @@ export const UpdateNoticeModal: React.FC = () => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[20000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div style={{ zIndex: Z.modal }} className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white dark:bg-[#1a232e] w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="p-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">

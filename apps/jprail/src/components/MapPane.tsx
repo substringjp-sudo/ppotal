@@ -31,6 +31,7 @@ import { useZoomBounce } from '../hooks/useZoomBounce';
 import { useViewportSections } from '../hooks/useViewportSections';
 import LandTileLayer from './LandTileLayer';
 import { themeOf, isLattice } from '../lib/mapThemes';
+import { Z } from '../lib/layers';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -803,7 +804,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         top: '20px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        zIndex: 11000,
+                        zIndex: Z.mapOverlay,
                         display: 'flex',
                         alignItems: 'center',
                         gap: '10px',
@@ -833,7 +834,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        zIndex: 12000,
+                        zIndex: Z.mapOverlay,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',

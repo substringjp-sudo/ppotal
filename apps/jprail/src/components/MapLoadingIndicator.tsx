@@ -8,6 +8,7 @@ interface MapLoadingIndicatorProps {
 }
 
 import { MAP_LOADING_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
 
 
 const MapLoadingIndicator: React.FC<MapLoadingIndicatorProps> = ({ isLoading, isTransitioning }) => {
@@ -31,7 +32,7 @@ const MapLoadingIndicator: React.FC<MapLoadingIndicatorProps> = ({ isLoading, is
     return (
         <div style={{
             position: 'absolute',
-            zIndex: 5000,
+            zIndex: Z.mapOverlay,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',

@@ -3,6 +3,7 @@
 import React from 'react';
 import JrnLogo from '../JrnLogo';
 import { useI18n } from '../../lib/i18n-context';
+import { Z } from '../../lib/layers';
 
 export interface MobileTopBarProps {
     onOpenSearch: () => void;
@@ -29,7 +30,8 @@ const MobileTopBar: React.FC<MobileTopBarProps> = ({
 
     return (
         <header
-            className="mobile-safe-top mobile-safe-x shrink-0 z-[10001] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800"
+            style={{ zIndex: Z.header }}
+            className="mobile-safe-top mobile-safe-x shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800"
         >
             <div className="flex items-center gap-2 h-14 px-3">
                 <JrnLogo size={30} />

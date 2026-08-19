@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
+import { Z } from '../lib/layers';
 
 interface FloatingTooltipProps {
     content: string | null;
@@ -19,7 +20,7 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
         left: 0,
         top: 0,
         pointerEvents: 'none',
-        zIndex: 99999,
+        zIndex: Z.tooltip,
         opacity: 0,
         transition: 'opacity 0.1s ease-out',
     });
@@ -68,7 +69,7 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
                 left: `${finalX}px`,
                 top: `${finalY}px`,
                 pointerEvents: 'none',
-                zIndex: 99999,
+                zIndex: Z.tooltip,
                 opacity: 1,
                 transform: 'translate3d(0, 0, 0)',
                 transition: 'opacity 0.1s ease-out',
