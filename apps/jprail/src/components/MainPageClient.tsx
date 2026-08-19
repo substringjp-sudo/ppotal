@@ -67,6 +67,8 @@ import { getLineColor } from '../lib/lineColors';
 import type { MobileSheetDetail } from './Mobile/MobileBottomSheet';
 import type { RouteGeneratorModalProps } from './RouteGeneratorModal';
 const RouteGeneratorModal = dynamic<RouteGeneratorModalProps>(() => import('./RouteGeneratorModal').then(m => m.RouteGeneratorModal), { ssr: false });
+import type { TimelineImportModalProps } from './TimelineImportModal';
+const TimelineImportModal = dynamic<TimelineImportModalProps>(() => import('./TimelineImportModal').then(m => m.TimelineImportModal), { ssr: false });
 
 
 import type { StationDetailPaneProps } from './StationDetailPane';
@@ -202,6 +204,7 @@ const MainPageClient = () => {
     const [syncSummaryData, setSyncSummaryData] = React.useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
     const regionNames = useRegionNames();
     const [isRouteGeneratorOpen, setIsRouteGeneratorOpen] = React.useState(false);
+    const [isTimelineImportOpen, setIsTimelineImportOpen] = React.useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -1141,6 +1144,7 @@ const MainPageClient = () => {
                                     onSyncWithRegionevel={undefined}
                                     isSyncLoading={isRecordingLoading}
                                     onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
+                                    onOpenTimelineImport={() => setIsTimelineImportOpen(true)}
                                     isReadOnly={styleSettings.landForm !== 'outline'}
                                 />
                             </aside>
@@ -1237,6 +1241,7 @@ const MainPageClient = () => {
                                             onSyncWithRegionevel={syncWithRegionevel}
                                             isSyncLoading={isRecordingLoading}
                                             onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
+                                            onOpenTimelineImport={() => setIsTimelineImportOpen(true)}
                                         />
                                     )
                                 }
@@ -1401,6 +1406,14 @@ const MainPageClient = () => {
                 onClose={() => setIsRouteGeneratorOpen(false)}
                 railData={railData}
                 onAddTrip={handleRecordTrip}
+            />
+
+            <TimelineImportModal
+                isOpen={isTimelineImportOpen}
+                onClose={() => setIsTimelineImportOpen(false)}
+                railData={railData}
+                getShortestPath={lineDetailData?.getShortestPath ?? null}
+                onImportTrips={trips => trips.forEach(handleRecordTrip)}
             />
 
             {!isMobile && (
