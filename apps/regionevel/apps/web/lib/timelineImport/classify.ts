@@ -246,5 +246,10 @@ export async function buildTimelineImportPreview(parsed: ParsedTimeline): Promis
     }
   }
 
-  return { regions, skipped, applyList };
+  const resolution = {
+    pointsTried: combinedResolutions.length,
+    pointsResolved: combinedResolutions.filter(Boolean).length,
+  };
+
+  return { regions, skipped, applyList, resolution };
 }
