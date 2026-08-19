@@ -209,6 +209,7 @@ interface MapStylePanelProps {
     onOpenChange: (open: boolean) => void;
     settings: MapStyleSettings;
     onSettingsChange: (newSettings: MapStyleSettings) => void;
+    isMobile?: boolean;
 }
 
 export const MapStylePanel: React.FC<MapStylePanelProps> = ({
@@ -216,6 +217,7 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
     onOpenChange,
     settings,
     onSettingsChange,
+    isMobile = false,
 }) => {
     const { language } = useI18n();
     const t = TEXT[language as keyof typeof TEXT] || TEXT.en;
@@ -270,7 +272,32 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
         schematic: t.shapeOctilinearDesc
     };
 
-    // Render External Floating Toolbar (Landform selector + Map Style Button)
+    const landFormSelector = (compact: boolean) => (
+        <div className={`flex items-center p-1 ${compact ? '' : 'w-full'} bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 dark:border-slate-700/60 rounded-2xl shadow-lg`}>
+            {LAND_FORMS.map(form => {
+                const isActive = landForm === form;
+                return (
+                    <button
+                        key={form}
+                        onClick={() => onSettingsChange({ ...settings, landForm: form })}
+                        className={`flex items-center justify-center gap-1.5 px-3 rounded-xl transition-colors duration-200 ${compact ? 'py-1.5' : 'flex-1 h-11'} ${isActive
+                            ? 'bg-primary text-white font-black shadow-md'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        title={landLabel[form]}
+                        aria-label={landLabel[form]}
+                    >
+                        <LandGlyph form={form} />
+                        <span className="text-[11px] font-bold hidden sm:inline">{landLabel[form]}</span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+
+    // Render External Floating Toolbar (Landform selector + Map Style Button).
+    // A phone has no room for a four-way segmented control plus a labelled
+    // button in the map's top-right corner, so it gets one icon and the
+    // landform choice moves inside the sheet.
     const renderTopBar = () => (
         <div
             onMouseDown={stopPropagation}
@@ -279,36 +306,18 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
             onDoubleClick={stopPropagation}
             onWheel={stopPropagation}
             onTouchStart={stopPropagation}
-            className="absolute top-4 right-4 z-[1000] flex items-center gap-2 pointer-events-auto"
+            className="absolute top-3 right-3 z-[1000] flex items-center gap-2 pointer-events-auto"
         >
-            {/* Landform Segmented Selector */}
-            <div className="flex items-center p-1 bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 dark:border-slate-700/60 rounded-2xl shadow-lg">
-                {LAND_FORMS.map(form => {
-                    const isActive = landForm === form;
-                    return (
-                        <button
-                            key={form}
-                            onClick={() => onSettingsChange({ ...settings, landForm: form })}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-300 ${isActive
-                                ? 'bg-primary text-white font-black shadow-md scale-105'
-                                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                            title={landLabel[form]}
-                        >
-                            <LandGlyph form={form} />
-                            <span className="text-[11px] font-bold hidden sm:inline">{landLabel[form]}</span>
-                        </button>
-                    );
-                })}
-            </div>
+            {!isMobile && landFormSelector(true)}
 
-            {/* Map Style Open Button */}
             {!isOpen && (
                 <button
                     onClick={() => onOpenChange(true)}
-                    className="flex items-center gap-2 px-4 h-[42px] bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 dark:border-slate-700/60 rounded-2xl shadow-lg hover:scale-105 transition-all duration-300 group"
+                    className={`flex items-center justify-center gap-2 bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 dark:border-slate-700/60 rounded-2xl shadow-lg transition-all duration-300 group ${isMobile ? 'w-11 h-11' : 'px-4 h-[44px] hover:scale-105'}`}
+                    aria-label={t.mapStyle}
                 >
                     <span className="material-symbols-outlined text-primary group-hover:rotate-45 transition-transform duration-700">palette</span>
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-widest uppercase">{t.mapStyle}</span>
+                    {!isMobile && <span className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-widest uppercase">{t.mapStyle}</span>}
                 </button>
             )}
         </div>
@@ -322,6 +331,16 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
         <>
             {renderTopBar()}
 
+            {/* On a phone the sheet takes the width and a tap outside closes it;
+                a 256px card floating over a 344px screen leaves neither room to
+                read nor room to dismiss. */}
+            {isMobile && (
+                <div
+                    onClick={() => onOpenChange(false)}
+                    className="fixed inset-0 z-[1000] bg-black/30 pointer-events-auto animate-in fade-in duration-200"
+                />
+            )}
+
             <div
                 onMouseDown={stopPropagation}
                 onMouseUp={stopPropagation}
@@ -331,7 +350,10 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
                 onTouchStart={stopPropagation}
                 onTouchMove={stopPropagation}
                 onTouchEnd={stopPropagation}
-                className="absolute top-16 right-4 w-64 sm:w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/60 dark:border-slate-700/70 rounded-3xl shadow-2xl flex flex-col max-h-[60vh] sm:max-h-[80vh] animate-in slide-in-from-right-8 fade-in duration-300 overflow-hidden pointer-events-auto z-[1000]"
+                className={isMobile
+                    ? "fixed inset-x-0 bottom-0 bg-white/95 dark:bg-slate-900/97 backdrop-blur-3xl border-t border-white/60 dark:border-slate-700/70 rounded-t-[28px] shadow-2xl flex flex-col max-h-[85dvh] animate-in slide-in-from-bottom duration-300 overflow-hidden pointer-events-auto z-[1001]"
+                    : "absolute top-16 right-4 w-64 sm:w-72 bg-white/90 dark:bg-slate-900/95 backdrop-blur-3xl border border-white/60 dark:border-slate-700/70 rounded-3xl shadow-2xl flex flex-col max-h-[80dvh] animate-in slide-in-from-right-8 fade-in duration-300 overflow-hidden pointer-events-auto z-[1000]"}
+                style={isMobile ? { paddingBottom: 'var(--safe-bottom)' } : undefined}
             >
                 {/* Header */}
                 <div className="p-5 pb-3 flex justify-between items-center bg-white/85 dark:bg-slate-900/95 backdrop-blur-md z-10 border-b border-slate-200/50 dark:border-slate-800">
@@ -341,14 +363,17 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
                     </div>
                     <button
                         onClick={() => onOpenChange(false)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-300 hover:text-slate-600 transition-colors"
+                        className={`${isMobile ? 'w-11 h-11' : 'w-7 h-7'} flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-300 hover:text-slate-600 transition-colors`}
+                        aria-label="Close"
                     >
                         <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                 </div>
 
                 {/* Content: Scrollable */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto sheet-scroll p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 custom-scrollbar">
+                    {isMobile && landFormSelector(false)}
+
                     {/* Notice in Tile Mode */}
                     {isTileMode && (
                         <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">

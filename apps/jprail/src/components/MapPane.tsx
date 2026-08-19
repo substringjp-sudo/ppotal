@@ -593,12 +593,17 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     return (
         <>
-            {!isMobile && <MapControls
+            {/* Zoom was desktop-only, which left a phone with pinch as the only
+                way to change scale — and no way at all to tell what scale it was
+                at. The controls are the same component; only where they sit and
+                how big they are differ. */}
+            <MapControls
                 zoom={zoomLevel}
                 minZoom={4}
                 maxZoom={18}
                 onBounce={triggerBounce}
-            />}
+                isMobile={isMobile}
+            />
 
             {activePrefectures && (
                 <JapanMap

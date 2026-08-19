@@ -20,7 +20,7 @@ export const LanguageSelector: React.FC<{ className?: string, variant?: 'default
             <div className={`relative ${className || ''}`}>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700"
+                    className="flex items-center gap-2 px-3 h-11 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-200 transition-colors hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                     <span className="material-symbols-outlined text-lg">language</span>
                     <span className="text-xs font-bold uppercase tracking-wider">{currentLang.code}</span>

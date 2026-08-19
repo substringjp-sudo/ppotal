@@ -122,8 +122,14 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
+import type { MobileTopBarProps } from './Mobile/MobileTopBar';
+const MobileTopBar = dynamic<MobileTopBarProps>(() => import('./Mobile/MobileTopBar'), { ssr: false });
+import type { MobileSearchSheetProps } from './Mobile/MobileSearchSheet';
+const MobileSearchSheet = dynamic<MobileSearchSheetProps>(() => import('./Mobile/MobileSearchSheet'), { ssr: false });
+import type { MobileMenuSheetProps } from './Mobile/MobileMenuSheet';
+const MobileMenuSheet = dynamic<MobileMenuSheetProps>(() => import('./Mobile/MobileMenuSheet'), { ssr: false });
 
-import { MAIN_PAGE_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { MAIN_PAGE_TRANSLATIONS, RAIL_SEARCH_TRANSLATIONS, getTranslations } from '../lib/translations';
 
 const getDocsWithTimeout = (q: any, timeoutMs: number = 3000): Promise<any> => {
     return Promise.race([
@@ -191,6 +197,8 @@ const MainPageClient = () => {
     const [syncSummaryData, setSyncSummaryData] = React.useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
     const regionNames = useRegionNames();
     const [isRouteGeneratorOpen, setIsRouteGeneratorOpen] = React.useState(false);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
@@ -779,6 +787,19 @@ const MainPageClient = () => {
                     Skip to main content
                 </a>
 
+                {/* A phone bar and a desktop bar are different objects, not one
+                    bar with breakpoints: the desktop row measured 565px wide on
+                    a 390px screen, which put the account button off the display
+                    entirely. */}
+                {isMobile ? (
+                    <MobileTopBar
+                        onOpenSearch={() => setIsMobileSearchOpen(true)}
+                        onOpenMenu={() => setIsMobileMenuOpen(true)}
+                        onOpenProfile={() => user ? setIsMobileSheetOpen(true) : setIsAuthModalOpen(true)}
+                        userInitial={user ? (user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase() : null}
+                        searchPlaceholder={getTranslations(RAIL_SEARCH_TRANSLATIONS, language).placeholder}
+                    />
+                ) : (
                 <header className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative">
                     {/* Left: Logo & Title */}
                     <div className="flex items-center gap-3 shrink-0 mr-4">
@@ -928,6 +949,7 @@ const MainPageClient = () => {
                         </div>
                     </div>
                 </header>
+                )}
 
                 <main id="main-content" className="flex-1 relative overflow-hidden focus:outline-none" tabIndex={-1}>
                     {/* Background Layer: The Map - Now spans full background */}
@@ -1033,6 +1055,7 @@ const MainPageClient = () => {
                                     onSettingsChange={updateStyleSettings}
                                     isOpen={isMapStyleOpen}
                                     onOpenChange={setIsMapStyleOpen}
+                                    isMobile={isMobile}
                                 />
                                 <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
                             </div>
@@ -1205,6 +1228,36 @@ const MainPageClient = () => {
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
             />
+
+            {isMobile && (
+                <MobileSearchSheet
+                    isOpen={isMobileSearchOpen}
+                    onClose={() => setIsMobileSearchOpen(false)}
+                    railData={railData}
+                    onSelectStation={handleSearchSelectStation}
+                    onSelectLine={handleSearchSelectLine}
+                />
+            )}
+
+            {isMobile && (
+                <MobileMenuSheet
+                    isOpen={isMobileMenuOpen}
+                    onClose={() => setIsMobileMenuOpen(false)}
+                    onHowTo={() => setIsHowToOpen(true)}
+                    onFeedback={() => setIsFeedbackOpen(true)}
+                    onInfo={() => setIsInfoOpen(true)}
+                    onExport={exportMap}
+                    onLogin={() => setIsAuthModalOpen(true)}
+                    onSync={() => syncWithRegionevel()}
+                    onLogout={async () => {
+                        const { auth } = await import('../lib/firebase');
+                        const { signOut } = await import('firebase/auth');
+                        await signOut(auth);
+                    }}
+                    userEmail={user?.email ?? null}
+                    isSyncing={isRecordingLoading}
+                />
+            )}
 
             <ShareCardModal
                 isOpen={isExportModalOpen}

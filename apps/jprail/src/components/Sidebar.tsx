@@ -191,13 +191,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                     setSortMode(opt.id as 'ja' | 'usage');
                                     trackEvent('sort_mode_change', 'filter', opt.id);
                                 }}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-bold rounded-md transition-all ${sortMode === opt.id
+                                className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 h-11 px-2 text-[11px] font-bold rounded-md transition-all ${sortMode === opt.id
                                     ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                     }`}
                             >
-                                <span className="material-symbols-outlined text-sm">{opt.icon}</span>
-                                {opt.label}
+                                <span className="material-symbols-outlined text-sm shrink-0">{opt.icon}</span>
+                                <span className="truncate">{opt.label}</span>
                             </button>
                         ))}
                     </div>
