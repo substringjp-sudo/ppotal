@@ -31,6 +31,7 @@ interface VisitStore {
   removeVisit: (regionId: string, category: VisitCategory) => void;
   quickIncrement: (regionId: string) => void;
   addDrawPathVisits: (startRegionId: string, endRegionId: string, pathRegionIds: string[]) => void;
+  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory }>) => void;
   getScore: (regionId: string) => RegionScore | undefined;
   setRegions: (regions: Region[]) => void;
   recalculateScores: (regions?: Region[]) => void;
@@ -280,6 +281,46 @@ export const useVisitStore = create<VisitStore>()(
             upsertVisit(padded, "pass", currPass + 1);
           }
         });
+      },
+
+      applyTimelineImport(entries) {
+        const { upsertVisit } = get();
+
+        // Read live each time (not a closed-over snapshot): a region can be
+        // touched at more than one category in this loop, and each call
+        // below can cascade-update lower categories via upsertVisit.
+        const getCount = (rid: string, cat: VisitCategory) => {
+          const found = get().visits.find(v => padId(v.regionId) === padId(rid) && v.category === cat);
+          return found ? found.count : 0;
+        };
+
+        // Each entry is one occasion resolved from the timeline (a stop, or a
+        // day spent merely passing through). Applying them low-tier-first
+        // keeps a region's counts monotonic even when several categories
+        // were reached across the imported trip.
+        const order: VisitCategory[] = ["pass", "transit", "visit", "stay"];
+        const grouped = new Map<string, number>(); // `${regionId}__${category}` -> count
+        for (const { regionId, category } of entries) {
+          const key = `${padId(regionId)}__${category}`;
+          grouped.set(key, (grouped.get(key) ?? 0) + 1);
+        }
+
+        const byRegion = new Map<string, Set<VisitCategory>>();
+        for (const key of grouped.keys()) {
+          const [regionId, category] = key.split("__") as [string, VisitCategory];
+          const set = byRegion.get(regionId) ?? new Set<VisitCategory>();
+          set.add(category);
+          byRegion.set(regionId, set);
+        }
+
+        for (const [regionId, categories] of byRegion) {
+          for (const category of order) {
+            if (!categories.has(category)) continue;
+            const added = grouped.get(`${regionId}__${category}`) ?? 0;
+            if (added <= 0) continue;
+            upsertVisit(regionId, category, getCount(regionId, category) + added);
+          }
+        }
       },
 
       getScore(regionId: string) {

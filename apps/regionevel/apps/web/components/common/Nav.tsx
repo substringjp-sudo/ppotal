@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth, AuthModal } from "@ppotal/ui";
-import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info, Pencil } from "lucide-react";
+import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info, Pencil, MapPinned } from "lucide-react";
 import { ExportMapButton } from "@/components/map/ExportMapButton";
 import { RegionSearch } from "@/components/common/RegionSearch";
+import { TimelineImportModal } from "@/components/common/TimelineImportModal";
 import { usePathname } from "next/navigation";
 import { useVisitStore } from "@/store/visitStore";
 import { useMapStore } from "@/store/mapStore";
@@ -20,6 +21,7 @@ export function Nav() {
   const [isMobile, setIsMobile] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncSummaryOpen, setIsSyncSummaryOpen] = useState(false);
+  const [isTimelineImportOpen, setIsTimelineImportOpen] = useState(false);
   const [syncSummaryData, setSyncSummaryData] = useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -147,6 +149,14 @@ export function Nav() {
             <span>Draw</span>
           </button>
           <ExportMapButton />
+          <button
+            onClick={() => setIsTimelineImportOpen(true)}
+            className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"
+            title="구글 타임라인 JSON으로 방문 기록 가져오기"
+          >
+            <MapPinned className="w-4 h-4" />
+            <span>Timeline</span>
+          </button>
         </nav>
 
         {/* Divider line for desktop */}
@@ -214,6 +224,7 @@ export function Nav() {
         </div>
       </div>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <TimelineImportModal isOpen={isTimelineImportOpen} onClose={() => setIsTimelineImportOpen(false)} />
       <SyncSummaryModal
         isOpen={isSyncSummaryOpen}
         onClose={() => setIsSyncSummaryOpen(false)}

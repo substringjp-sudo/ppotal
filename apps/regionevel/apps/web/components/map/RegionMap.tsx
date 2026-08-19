@@ -9,6 +9,7 @@ import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, 
 import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
 import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } from "@/lib/regions";
+import { findRegionForPoint } from "@/lib/geo";
 import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
@@ -16,49 +17,6 @@ import { ExportModal, type ExportModalStats } from "./ExportModal";
 import { Pencil, CheckCircle2, X } from "lucide-react";
 import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
-
-
-// Ray-casting algorithm for GeoJSON Polygon & MultiPolygon feature point lookup
-function isPointInPolygonCoords(point: [number, number], vs: any[]) {
-  const x = point[0], y = point[1];
-  let inside = false;
-  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-    const p1 = vs[i];
-    const p2 = vs[j];
-    if (!p1 || !p2) continue;
-    const xi = p1[0], yi = p1[1];
-    const xj = p2[0], yj = p2[1];
-    if (xi === undefined || yi === undefined || xj === undefined || yj === undefined) continue;
-    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-function isPointInFeature(lng: number, lat: number, feature: Feature): boolean {
-  if (!feature.geometry) return false;
-  const geom = feature.geometry;
-  if (geom.type === "Polygon" && geom.coordinates && geom.coordinates[0]) {
-    return isPointInPolygonCoords([lng, lat], geom.coordinates[0]);
-  } else if (geom.type === "MultiPolygon" && geom.coordinates) {
-    for (const poly of geom.coordinates) {
-      if (poly && poly[0] && isPointInPolygonCoords([lng, lat], poly[0])) return true;
-    }
-  }
-  return false;
-}
-
-function findRegionForPoint(lat: number, lng: number, features: Feature[]): { id: string; name: string } | null {
-  for (const feature of features) {
-    if (isPointInFeature(lng, lat, feature)) {
-      const rawId = feature.properties?.id || feature.properties?.shapeID;
-      const id = padId(rawId);
-      const name = String(feature.properties?.name || feature.properties?.shapeName || "Unknown");
-      if (id) return { id, name };
-    }
-  }
-  return null;
-}
 
 interface MapDrawControllerProps {
   isDrawMode: boolean;
