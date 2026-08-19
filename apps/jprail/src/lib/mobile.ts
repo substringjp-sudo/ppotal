@@ -103,3 +103,45 @@ export function mapVisibleInsets(viewportHeight: number, detent: SheetDetent) {
 
 /** True when the viewport is a phone rather than a desktop window. */
 export const isPhoneWidth = (width: number) => width <= MOBILE_BREAKPOINT;
+
+/**
+ * A phone on its side is still a phone.
+ *
+ * Width alone gets this wrong: an iPhone 14 in landscape is 844px across, past
+ * the breakpoint, so it was being handed the desktop layout — a 350px sidebar
+ * and a 320px pane on a viewport 390px tall. Height alone gets it wrong the
+ * other way, since a short desktop window is not a phone. Both native platforms
+ * answer this with size classes; this is the same idea in two numbers.
+ */
+export const PHONE_LANDSCAPE_MAX_HEIGHT = 450;
+
+export function isPhoneViewport(width: number, height: number) {
+    if (isPhoneWidth(width)) return true;
+    return height <= PHONE_LANDSCAPE_MAX_HEIGHT && width <= TABLET_BREAKPOINT;
+}
+
+/** Which way the sheet grows. Landscape has no vertical room to give it. */
+export type SheetAxis = 'vertical' | 'horizontal';
+
+export const sheetAxisFor = (width: number, height: number): SheetAxis =>
+    (height <= PHONE_LANDSCAPE_MAX_HEIGHT && width > height) ? 'horizontal' : 'vertical';
+
+/**
+ * Landscape detents, as fractions of the viewport *width*.
+ *
+ * Reusing the vertical fractions sideways would not work: at 390px tall,
+ * `peek` at 14% is 55px and `half` at 52% is 203px, so two of the three
+ * detents land within 30px of the 176px floor and the sheet has nowhere to
+ * travel. On its side there is width to spare, and the map keeps full height.
+ */
+export const SHEET_DETENTS_H = {
+    /** A grab rail at the edge; the map has the screen. */
+    peek: 0.08,
+    /** The working width: list beside a still-usable map. */
+    half: 0.42,
+    /** Reading. The map is a column on the right. */
+    full: 0.72
+} as const;
+
+/** Below this the landscape panel cannot show a row of content. */
+export const SHEET_PEEK_MIN_H = 64;

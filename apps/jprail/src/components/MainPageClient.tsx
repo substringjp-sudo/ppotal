@@ -134,6 +134,7 @@ const MobileMenuSheet = dynamic<MobileMenuSheetProps>(() => import('./Mobile/Mob
 
 import { MAIN_PAGE_TRANSLATIONS, RAIL_SEARCH_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { Z } from '../lib/layers';
+import { isPhoneViewport } from '../lib/mobile';
 
 const getDocsWithTimeout = (q: any, timeoutMs: number = 3000): Promise<any> => {
     return Promise.race([
@@ -235,7 +236,10 @@ const MainPageClient = () => {
         const handleResize = () => {
             const width = window.innerWidth;
             setWindowWidth(width);
-            setIsMobile(width <= 768);
+            // Not `width <= 768`: that hands a phone in landscape the desktop
+            // layout, which needs 670px of horizontal chrome on a screen with
+            // 390px of vertical room. See `isPhoneViewport`.
+            setIsMobile(isPhoneViewport(width, window.innerHeight));
         };
         handleResize();
         window.addEventListener('resize', handleResize);

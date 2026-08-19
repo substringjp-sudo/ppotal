@@ -53,10 +53,18 @@ const MapControls: React.FC<MapControlsProps> = ({
                 phone screen belongs to the bar and the reach is worse up there.
                 Buttons go to 44px so a thumb can actually land on them. */}
             <div className={isMobile
-                ? "absolute left-3 flex flex-col items-start gap-2"
+                ? "absolute flex flex-col items-start gap-2"
                 : "absolute top-4 left-4 md:left-[366px] flex flex-row items-center gap-2"}
                 style={isMobile
-                    ? { zIndex: Z.mapOverlay, bottom: 'calc(var(--sheet-h, 120px) + 12px)', transition: 'bottom 260ms cubic-bezier(0.32, 0.72, 0, 1)' }
+                    ? {
+                        zIndex: Z.mapOverlay,
+                        // Both offsets read the sheet's own vars, so the same
+                        // rule works whether it is docked to the bottom or,
+                        // in landscape, to the left.
+                        bottom: 'calc(var(--sheet-h, 120px) + 12px)',
+                        left: 'calc(var(--sheet-w, 0px) + 12px)',
+                        transition: 'bottom 260ms cubic-bezier(0.32, 0.72, 0, 1), left 260ms cubic-bezier(0.32, 0.72, 0, 1)'
+                    }
                     : { zIndex: Z.mapOverlay }}
             >
                 {/* Horizontal Zoom Pill */}

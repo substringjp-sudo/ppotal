@@ -5,8 +5,9 @@ import { useI18n } from '../../lib/i18n-context';
 import { MOBILE_BOTTOM_SHEET_TRANSLATIONS, getTranslations } from '../../lib/translations';
 import { Z } from '../../lib/layers';
 import {
-    SHEET_DETENTS, DETENT_ORDER, SHEET_DRAG_THRESHOLD, SHEET_FLING_VELOCITY,
-    SHEET_PEEK_MIN, type SheetDetent
+    SHEET_DETENTS, SHEET_DETENTS_H, DETENT_ORDER, SHEET_DRAG_THRESHOLD,
+    SHEET_FLING_VELOCITY, SHEET_PEEK_MIN, SHEET_PEEK_MIN_H, sheetAxisFor,
+    type SheetDetent, type SheetAxis
 } from '../../lib/mobile';
 
 export interface MobileSheetTab {
@@ -76,6 +77,8 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     const [detent, setDetent] = useState<SheetDetent>(defaultExpanded ? 'half' : 'peek');
     const [activeTabIdx, setActiveTabIdx] = useState(0);
     const [viewportH, setViewportH] = useState(800);
+    const [viewportW, setViewportW] = useState(390);
+    const [axis, setAxis] = useState<SheetAxis>('vertical');
     /** Non-null only while a finger is down: the live height, in pixels. */
     const [dragHeight, setDragHeight] = useState<number | null>(null);
 
@@ -85,7 +88,16 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     // `visualViewport` is the only height that accounts for the on-screen
     // keyboard; innerHeight keeps reporting the full screen while it is up.
     useEffect(() => {
-        const read = () => setViewportH(window.visualViewport?.height ?? window.innerHeight);
+        const read = () => {
+            const h = window.visualViewport?.height ?? window.innerHeight;
+            const w = window.visualViewport?.width ?? window.innerWidth;
+            setViewportH(h);
+            setViewportW(w);
+            // The axis follows the device, not the keyboard, so it reads
+            // innerHeight — the keyboard shortens visualViewport and would
+            // otherwise flip a portrait phone into landscape mode mid-typing.
+            setAxis(sheetAxisFor(window.innerWidth, window.innerHeight));
+        };
         read();
         window.addEventListener('resize', read);
         window.visualViewport?.addEventListener('resize', read);
@@ -134,7 +146,14 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
         if (opened && detent === 'peek' && !detail) onExpand?.();
     }, [detent, onToggle, onExpand, detail]);
 
+    // `heightFor` is really "size along the growing axis": vertical sheets
+    // grow in height, the landscape panel grows in width.
+    const horizontal = axis === 'horizontal';
     const heightFor = (d: SheetDetent) => {
+        if (horizontal) {
+            const w = Math.round(viewportW * SHEET_DETENTS_H[d]);
+            return d === 'peek' ? Math.max(w, SHEET_PEEK_MIN_H) : w;
+        }
         const h = Math.round(viewportH * SHEET_DETENTS[d]);
         return d === 'peek' ? Math.max(h, SHEET_PEEK_MIN) : h;
     };
@@ -149,17 +168,24 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     const floatFloor = Math.min(restHeight, heightFor('peek'));
     useEffect(() => {
         const root = document.documentElement;
-        root.style.setProperty('--sheet-h', `${floatFloor}px`);
-        return () => { root.style.removeProperty('--sheet-h'); };
-    }, [floatFloor]);
+        // Both are always defined so a control can position against either
+        // edge without knowing the orientation; the idle one reads 0.
+        root.style.setProperty('--sheet-h', horizontal ? '0px' : `${floatFloor}px`);
+        root.style.setProperty('--sheet-w', horizontal ? `${restHeight}px` : '0px');
+        return () => {
+            root.style.removeProperty('--sheet-h');
+            root.style.removeProperty('--sheet-w');
+        };
+    }, [floatFloor, restHeight, horizontal]);
 
     const onPointerDown = (e: React.PointerEvent) => {
         // Ignore the second finger of a pinch and anything with a mouse button
         // other than the primary one.
         if (e.button !== 0) return;
         drag.current = {
-            startY: e.clientY, startH: restHeight,
-            lastY: e.clientY, lastT: performance.now(), velocity: 0, active: false
+            startY: horizontal ? e.clientX : e.clientY, startH: restHeight,
+            lastY: horizontal ? e.clientX : e.clientY,
+            lastT: performance.now(), velocity: 0, active: false
         };
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     };
@@ -167,14 +193,18 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     const onPointerMove = (e: React.PointerEvent) => {
         const d = drag.current;
         if (!d) return;
-        const dy = d.startY - e.clientY;
+        // Growing means dragging up in portrait and right in landscape, so the
+        // panel opens away from the edge it is docked to either way.
+        const pos = horizontal ? e.clientX : e.clientY;
+        const dy = horizontal ? pos - d.startY : d.startY - pos;
         if (!d.active && Math.abs(dy) < SHEET_DRAG_THRESHOLD) return;
         d.active = true;
 
         const now = performance.now();
         const dt = now - d.lastT;
-        if (dt > 0) d.velocity = (d.lastY - e.clientY) / dt; // px/ms, up is positive
-        d.lastY = e.clientY;
+        // px/ms, positive means "toward more sheet"
+        if (dt > 0) d.velocity = (horizontal ? pos - d.lastY : d.lastY - pos) / dt;
+        d.lastY = pos;
         d.lastT = now;
 
         const min = heightFor('peek');
@@ -249,8 +279,25 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
             // sheet had vanished.
             data-sheet="bottom"
             data-detent={detent}
-            className="fixed bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/40 dark:border-slate-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.14)] rounded-t-[32px] flex flex-col overflow-hidden"
-            style={{
+            data-axis={axis}
+            className={`fixed bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/40 dark:border-slate-800/50 flex overflow-hidden ${horizontal
+                ? 'flex-row shadow-[8px_0_32px_rgba(0,0,0,0.14)] rounded-r-[28px]'
+                : 'flex-col shadow-[0_-8px_32px_rgba(0,0,0,0.14)] rounded-t-[32px]'}`}
+            style={horizontal ? {
+                // Docked to the left edge, full height. A bottom sheet in
+                // landscape would leave the map a 100px strip; a side panel
+                // costs width, which is the dimension there is room in.
+                zIndex: Z.sheet,
+                // Starts below the bar rather than at 0: the bar is in normal
+                // flow, so a fixed panel at the top of the viewport slides
+                // under it and loses its own tab row.
+                top: 'calc(var(--safe-top) + var(--top-bar-h))',
+                bottom: 0, left: 0,
+                width: height,
+                paddingLeft: 'var(--safe-left)',
+                transition: dragging ? 'none' : 'width 260ms cubic-bezier(0.32, 0.72, 0, 1)',
+                touchAction: 'none'
+            } : {
                 zIndex: Z.sheet,
                 left: SIDE_MARGIN, right: SIDE_MARGIN, bottom: 0,
                 height,
@@ -260,9 +307,31 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                 touchAction: 'none'
             }}
         >
-            <div className="flex flex-col items-center shrink-0">
+            {/* In landscape the grab rail is the panel's right edge, so it is
+                still the thing between the sheet and the map. */}
+            {horizontal && (
+                <div
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={endDrag}
+                    onPointerCancel={endDrag}
+                    className="order-2 shrink-0 w-14 h-full flex items-center justify-center cursor-grab active:cursor-grabbing"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t.swipe}
+                    aria-expanded={expanded}
+                >
+                    <div className="h-10 w-1.5 bg-black/15 dark:bg-white/20 rounded-full" />
+                </div>
+            )}
+
+            <div className={horizontal
+                ? 'order-1 flex-1 min-w-0 flex flex-col overflow-hidden'
+                : 'flex-1 min-h-0 flex flex-col'}>
+            <div className={`flex flex-col shrink-0 ${horizontal ? 'pt-3' : 'items-center'}`}>
                 {/* The grab area, not just the pill: MIN_DRAG_TARGET tall so the
                     sheet can be caught without aiming at a 4px bar. */}
+                {!horizontal && (
                 <div
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
@@ -276,6 +345,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                 >
                     <div className="w-10 h-1.5 bg-black/15 dark:bg-white/20 rounded-full" />
                 </div>
+                )}
 
                 {detail ? (
                     <div className="flex w-full items-center gap-2 px-3 mb-2">
@@ -342,7 +412,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
             </div>
 
             <div
-                className={`flex-1 min-h-0 overflow-hidden mx-2 mb-2 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-white/5 transition-opacity duration-200 ${expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`flex-1 min-h-0 overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 transition-opacity duration-200 ${horizontal ? 'mx-2 mb-2 rounded-[20px]' : 'mx-2 mb-2 rounded-[24px]'} ${expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             >
                 <div className="h-full overflow-y-auto sheet-scroll p-4 pt-2">
                     {detail ? (
@@ -355,6 +425,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                         </div>
                     ) : children}
                 </div>
+            </div>
             </div>
         </div>
     );

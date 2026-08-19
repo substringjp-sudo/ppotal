@@ -210,7 +210,10 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 </div>
 
                 {/* Bulk Actions */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Two blocks of two side by side is 32px per button once the
+                    pane is a landscape side panel; stacked, each button gets
+                    half the pane instead of a quarter. */}
+                <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                     <div className="space-y-1">
                         <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.selection}</div>
                         <div className="grid grid-cols-2 gap-1">
