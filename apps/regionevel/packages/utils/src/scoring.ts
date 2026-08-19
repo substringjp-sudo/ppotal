@@ -89,6 +89,52 @@ export function getEffectiveCounts(
   return counts;
 }
 
+/**
+ * How many level-2 regions sit under this one, counted from the region tree
+ * alone.
+ *
+ * This is the denominator behind "visited N / M cities", so it has to be a
+ * property of the tree and nothing else. Deriving it from child *scores*
+ * instead — which is what the accumulating version did — makes it collapse to
+ * only the cities under branches that happen to have a visit, and shift again
+ * as more regions load in.
+ *
+ * Memoised against the parent index it was computed from, so a given tree is
+ * walked once.
+ */
+const cityCountCache = new WeakMap<Map<string | null, Region[]>, Map<string, number>>();
+
+export function countDescendantCities(
+  regionId: string,
+  regionMap: Map<string, Region>,
+  parentIdMap: Map<string | null, Region[]>,
+): number {
+  const normalizedId = padId(regionId);
+  let memo = cityCountCache.get(parentIdMap);
+  if (!memo) {
+    memo = new Map<string, number>();
+    cityCountCache.set(parentIdMap, memo);
+  }
+  const cached = memo.get(normalizedId);
+  if (cached !== undefined) return cached;
+
+  const admLevel = regionMap.get(normalizedId)?.admLevel ?? 2;
+  let total = 0;
+  if (admLevel < 2) {
+    const children = parentIdMap.get(normalizedId) || [];
+    if (admLevel === 1) {
+      total = children.length;
+    } else {
+      for (const child of children) {
+        total += countDescendantCities(padId(child.id), regionMap, parentIdMap);
+      }
+    }
+  }
+
+  memo.set(normalizedId, total);
+  return total;
+}
+
 export function getRegionScore(
   regionId: string,
   allVisits: RegionVisit[] | Map<string, RegionVisit[]>,
@@ -122,16 +168,23 @@ export function getRegionScore(
   const isCountry = admLevel === 0;
   const isPrefecture = admLevel === 1;
 
-  // If we know this region and its descendants have no visits, return empty score early
+  // If we know this region and its descendants have no visits, return early.
+  //
+  // This has to be indistinguishable from running the full computation on a
+  // subtree with no visits, or the same region renders differently depending
+  // on whether anything nearby happened to be recomputed. Two fields used to
+  // diverge: childMax ignored the children actually present, and scoreType
+  // said "orange" where the full path says "blue" for a zero rateScore.
   if (affectedIds && !affectedIds.has(normalizedId)) {
+    const childCount = region?.childrenCount ?? (parentIdMap.get(normalizedId) || []).length;
     const emptyResult: RegionScore = {
       regionId: normalizedId,
       directScore: 0,
       rateScore: 0,
       childSum: 0,
-      childMax: (region?.childrenCount ?? 0) * POINTS_PER_REGION,
+      childMax: childCount * POINTS_PER_REGION,
       totalScore: 0,
-      scoreType: admLevel < 2 ? "orange" : "blue",
+      scoreType: "blue",
       hasVisit: false,
       breakdown: Object.fromEntries(
         VISIT_CATEGORY_ORDER.map((cat) => [
@@ -140,6 +193,18 @@ export function getRegionScore(
         ]),
       ) as RegionScore["breakdown"],
     };
+
+    // Nothing here was visited, but the totals still have to be reported —
+    // they are the denominators the UI shows, and a region skipped here is
+    // still one its parent has to count.
+    if (includeStats && (isCountry || isPrefecture)) {
+      emptyResult.subRegionStats = { visitedCount: 0, totalCount: childCount };
+      emptyResult.cityStats = {
+        visitedCount: 0,
+        totalCount: countDescendantCities(normalizedId, regionMap, parentIdMap),
+      };
+    }
+
     scoreMemo.set(normalizedId, emptyResult);
     return emptyResult;
   }
@@ -182,13 +247,12 @@ export function getRegionScore(
   let hasChildVisit = false;
   let visitedChildrenCount = 0;
   let cityVisited = 0;
-  let cityTotal = 0;
 
   for (const child of children) {
     const childId = padId(child.id);
     const childScore = getRegionScore(childId, visitsMap, regionMap, parentIdMap, memo, scoreMemo, affectedIds, includeStats);
     childSum += childScore.totalScore;
-    
+
     if (childScore.hasVisit) {
       hasChildVisit = true;
       visitedChildrenCount++;
@@ -196,14 +260,18 @@ export function getRegionScore(
 
     if (includeStats) {
       if (isPrefecture) {
-        cityTotal++;
         if (childScore.hasVisit) cityVisited++;
       } else if (isCountry && childScore.cityStats) {
         cityVisited += childScore.cityStats.visitedCount;
-        cityTotal += childScore.cityStats.totalCount;
       }
     }
   }
+
+  // Totals come from the tree, never from the children's scores — see
+  // countDescendantCities.
+  const cityTotal = includeStats && (isCountry || isPrefecture)
+    ? countDescendantCities(normalizedId, regionMap, parentIdMap)
+    : 0;
 
   const actualChildrenCount = region?.childrenCount ?? children.length;
   const childMax = actualChildrenCount * POINTS_PER_REGION;

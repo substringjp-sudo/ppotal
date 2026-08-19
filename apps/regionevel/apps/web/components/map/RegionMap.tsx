@@ -3,13 +3,15 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { MapContainer, GeoJSON, useMap, useMapEvents, Polyline } from "react-leaflet";
 import type { FeatureCollection, Feature } from "geojson";
-import type { GeoJSON as LeafletGeoJSON, Layer, PathOptions } from "leaflet";
+import type { GeoJSON as LeafletGeoJSON, Layer, LatLngBounds, PathOptions } from "leaflet";
 import L from "leaflet";
 import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, type VisitCategory } from "@regionevel/types";
 import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
 import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } from "@/lib/regions";
 import { findRegionForPoint } from "@/lib/geo";
+import { useViewportFeatures } from "@/lib/viewportFeatures";
+import { regionCanvas } from "./mapRenderer";
 import { useMapStore } from "@/store/mapStore";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
@@ -169,7 +171,6 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
   useEffect(() => {
     // 1. World level: Always reset to global view immediately
     if (level === "world") {
-      console.log("[FitBounds] Level is world, resetting view to [20, 0]");
       map.setView([20, 0], 2, { animate: true });
       
       // Delay-based fallback for problematic renders
@@ -188,10 +189,8 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
         const bounds = geoJsonLayer.getBounds();
         
         if (bounds.isValid()) {
-          console.log(`[FitBounds] Level: ${level}, Features: ${data.features.length}, Bounds:`, bounds.toBBoxString());
           // Use a small timeout to ensure map container is ready
           const timer = setTimeout(() => {
-            console.log(`[FitBounds] Executing fitBounds for ${level}`);
             map.fitBounds(bounds, { padding: [40, 40], animate: true });
             map.invalidateSize();
           }, 300);
@@ -208,13 +207,28 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
   return null;
 }
 
-// Map events component to handle background clicks
-function MapEvents({ onMapClick }: { onMapClick: () => void }) {
-  useMapEvents({
+// Map events component to handle background clicks and report the viewport
+function MapEvents({
+  onMapClick,
+  onBoundsChange,
+}: {
+  onMapClick: () => void;
+  onBoundsChange: (bounds: LatLngBounds) => void;
+}) {
+  const map = useMapEvents({
     click: () => {
       onMapClick();
     },
+    moveend: () => onBoundsChange(map.getBounds()),
+    zoomend: () => onBoundsChange(map.getBounds()),
   });
+
+  // Report the initial viewport too — without this the first paint has no
+  // window and falls back to mounting every feature.
+  useEffect(() => {
+    onBoundsChange(map.getBounds());
+  }, [map, onBoundsChange]);
+
   return null;
 }
 
@@ -262,6 +276,7 @@ export function RegionMap() {
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
+  const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -328,23 +343,17 @@ export function RegionMap() {
         
         let features: any[] = [];
         
-        console.log(`[RegionMap] loadData started for level: ${level}, id: ${currentId}, viewLevel: ${viewLevel}`);
         // 1. Determine which geometries to fetch
         if (level === "world") {
-          console.log("[RegionMap] Loading world map (level=world, currentId=null)");
           features = await fetchGeometries(null);
-          console.log(`[RegionMap] World map loaded with ${features.length} features`);
         } else if (level === "country" && currentId) {
           const iso3 = currentRegion?.iso3;
           if (iso3) {
-            console.log(`[RegionMap] Fetching country geometries for iso3=${iso3} (id=${currentId}) at viewLevel ${viewLevel}`);
             features = await fetchCountryGeometries(iso3, viewLevel);
           } else {
-            console.log(`[RegionMap] No iso3 for country ${currentId}, falling back to fetchGeometries`);
             features = await fetchGeometries(currentId);
           }
         } else if (currentId) {
-          console.log(`[RegionMap] Fetching sub-region geometries for id=${currentId}`);
           features = await fetchGeometries(currentId);
         }
 
@@ -355,7 +364,6 @@ export function RegionMap() {
         }
 
         if (features && features.length > 0) {
-          console.log(`[RegionMap] Successfully loaded ${features.length} features`);
           
           // Convert features to Region objects and update store
           // This is critical so the store can calculate scores for these newly loaded regions (especially cities)
@@ -749,6 +757,27 @@ export function RegionMap() {
 
   const hoveredRegion = hoveredId ? regionsByIdMap.get(hoveredId) ?? null : null;
 
+  // Hand Leaflet only the polygons that can be on screen. `revision` changes
+  // exactly when the window's contents change, so it — not the feature count —
+  // is what the layer remounts on.
+  const { features: visibleFeatures, revision: featureRevision } = useViewportFeatures(
+    geoData?.features ?? null,
+    mapBounds,
+  );
+
+  const visibleData = useMemo<FeatureCollection | null>(
+    () => (geoData ? { type: "FeatureCollection", features: visibleFeatures } : null),
+    [geoData, visibleFeatures],
+  );
+
+  const handleBoundsChange = useCallback((b: LatLngBounds) => setMapBounds(b), []);
+  const handleMapClick = useCallback(() => setSelectedId(null), [setSelectedId]);
+
+  const geoJsonPathOptions = useMemo<PathOptions>(
+    () => (regionCanvas ? { renderer: regionCanvas } : {}),
+    [],
+  );
+
   return (
     <div ref={exportRef} className={`relative w-full h-full bg-sky-50 overflow-hidden ${isDrawMode ? "cursor-pen" : ""}`}>
       <MapContainer
@@ -776,16 +805,17 @@ export function RegionMap() {
           onDrawComplete={handleDrawComplete}
         />
 
-        {geoData && (
+        {visibleData && (
           <GeoJSON
-            key={`geojson-${level}-${currentId || "root"}-${viewLevel}-${geoData.features?.length || 0}`}
+            key={`geojson-${level}-${currentId || "root"}-${viewLevel}-r${featureRevision}`}
             ref={geoJsonRef}
-            data={geoData}
+            data={visibleData}
             style={getStyle}
             onEachFeature={onEachFeature}
+            pathOptions={geoJsonPathOptions}
           />
         )}
-        <MapEvents onMapClick={() => setSelectedId(null)} />
+        <MapEvents onMapClick={handleMapClick} onBoundsChange={handleBoundsChange} />
       </MapContainer>
 
       {/* Hover Label */}

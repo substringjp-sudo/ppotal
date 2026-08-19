@@ -5,31 +5,46 @@ import { initializeFirebase } from "./firebase";
 
 let storePromise: Promise<RegionDataStore> | null = null;
 
+/**
+ * Whether to serve regions and geometries from static files under `/data`
+ * instead of Firestore.
+ *
+ * This is a build-time flag rather than a runtime probe on purpose. The app is
+ * a static export, so a missing file cannot be detected without actually
+ * requesting it — and speculatively requesting two files that are usually not
+ * deployed cost every visitor two 404 round-trips before the real Firestore
+ * load could even start. Set `NEXT_PUBLIC_USE_LOCAL_REGION_DATA=1` in the
+ * environment once `/data/regions.json` and `/data/geometries.json` ship.
+ */
+const USE_LOCAL_REGION_DATA = process.env.NEXT_PUBLIC_USE_LOCAL_REGION_DATA === "1";
+
 async function getStore(): Promise<RegionDataStore> {
   if (storePromise) return storePromise;
 
   storePromise = (async () => {
-    try {
-      // In browser, use relative path. In server, this might fail unless full URL is provided.
-      // But since this app is mostly client-side for these functions, it should work.
-      const [regionsRes, geometriesRes] = await Promise.all([
-        fetch("/data/regions.json"),
-        fetch("/data/geometries.json"),
-      ]);
-      
-      if (!regionsRes.ok || !geometriesRes.ok) {
-        throw new Error("Failed to fetch local data files");
-      }
+    if (USE_LOCAL_REGION_DATA) {
+      try {
+        const [regionsRes, geometriesRes] = await Promise.all([
+          fetch("/data/regions.json"),
+          fetch("/data/geometries.json"),
+        ]);
 
-      const regions = await regionsRes.json();
-      const geometries = await geometriesRes.json();
-      console.log(`Loaded ${regions.length} regions and ${geometries.length} geometries from local files.`);
-      return createLocalRegionStore(regions, geometries);
-    } catch (e) {
-      console.error("Failed to load local data, falling back to Firestore", e);
-      initializeFirebase();
-      return createFirestoreRegionStore();
+        if (!regionsRes.ok || !geometriesRes.ok) {
+          throw new Error("Failed to fetch local data files");
+        }
+
+        const [regions, geometries] = await Promise.all([
+          regionsRes.json(),
+          geometriesRes.json(),
+        ]);
+        return createLocalRegionStore(regions, geometries);
+      } catch (e) {
+        console.error("Failed to load local region data, falling back to Firestore", e);
+      }
     }
+
+    initializeFirebase();
+    return createFirestoreRegionStore();
   })();
 
   return storePromise;
@@ -144,103 +159,114 @@ async function getFirestoreStore(): Promise<RegionDataStore> {
   return firestoreStore;
 }
 
-export async function fetchGeometries(parentId: string | null): Promise<any[]> {
-  try {
-    const store = await getStore();
-    let rawFeatures: any[] = [];
-    
-    // If parentId is null, empty, or 'world', we want the top-level features
-    const isRoot = !parentId || parentId === "world" || parentId === "ROOT" || parentId === "root" || parentId === "";
-    
-    if (isRoot) {
-      console.log(`[fetchGeometries] Fetching root geometries (world map)...`);
-      // Try multiple common root identifiers in parallel to ensure we get data quickly
-      const rootIdentifers = ["world", null, "ROOT", "root", ""];
-      
-      const results = await Promise.all(
-        rootIdentifers.map(id => store.getGeometriesByParent(id as any))
-      );
-      
-      for (let i = 0; i < results.length; i++) {
-        const res = results[i];
-        if (res && res.length > 0) {
-          rawFeatures = res;
-          console.log(`[fetchGeometries] Successfully found ${rawFeatures.length} root geometries using identifier: "${rootIdentifers[i]}"`);
-          break;
-        }
-      }
-      
-      if (rawFeatures.length === 0) {
-        console.warn("[fetchGeometries] All root identifier attempts failed. Map will be empty.");
-      }
-    } else {
-      rawFeatures = await store.getGeometriesByParent(parentId);
-      console.log(`[fetchGeometries] Fetched ${rawFeatures.length} geometries for parentId: ${parentId}`);
-    }
+/** True when `getStore()` already resolves to Firestore, so falling back to it is a repeat of the same query. */
+function primaryStoreIsFirestore(): boolean {
+  return !USE_LOCAL_REGION_DATA;
+}
 
-    // Fallback to Firestore if local store has no results
-    if (rawFeatures.length === 0) {
-      console.log(`[fetchGeometries] No local geometries for parent ${parentId}, falling back to Firestore...`);
-      const fsStore = await getFirestoreStore();
-      
-      if (isRoot) {
-        const rootIdentifers = ["world", null];
-        const results = await Promise.all(
-          rootIdentifers.map(id => fsStore.getGeometriesByParent(id as any))
-        );
-        for (const res of results) {
-          if (res && res.length > 0) {
-            rawFeatures = res;
-            break;
-          }
-        }
-      } else {
-        rawFeatures = await fsStore.getGeometriesByParent(parentId);
-      }
-      
-      console.log(`[fetchGeometries] Firestore features found: ${rawFeatures.length}`);
-    }
+function normalizeFeatures(rawFeatures: any[]): any[] {
+  return rawFeatures.map(f => {
+    const props = f.properties || {};
+    const id = props.id || props.shapeID || props.ID;
+    return {
+      ...f,
+      properties: { ...props, id },
+      geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
+    };
+  });
+}
 
-    return rawFeatures.map(f => {
-      const props = f.properties || {};
-      const id = props.id || props.shapeID || props.ID;
-      return {
-        ...f,
-        properties: { ...props, id },
-        geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
-      };
-    });
-  } catch (e) {
-    console.error(`Failed to fetch geometries for parent ${parentId}`, e);
-    return [];
+/**
+ * Geometry is immutable reference data and each fetch is expensive — a country
+ * at city level is thousands of documents. Drilling into a region and back out
+ * is a normal thing to do, so the second visit should not pay for it again.
+ *
+ * Keyed on the request, holding the in-flight promise so two callers racing for
+ * the same geometry share one fetch.
+ */
+const geometryCache = new Map<string, Promise<any[]>>();
+
+/** Root can be spelled several ways in the data; try the likeliest first and stop at the first hit. */
+const ROOT_IDENTIFIERS = ["world", null, "ROOT", "root", ""];
+
+function isRootId(parentId: string | null): boolean {
+  return !parentId || parentId === "world" || parentId === "ROOT" || parentId === "root";
+}
+
+async function getGeometriesByParentResolvingRoot(
+  store: RegionDataStore,
+  parentId: string | null,
+): Promise<any[]> {
+  if (!isRootId(parentId)) {
+    return store.getGeometriesByParent(parentId);
   }
+  // Sequential with early exit: the first identifier almost always hits, so
+  // this is one query where the previous parallel fan-out cost five.
+  for (const id of ROOT_IDENTIFIERS) {
+    const res = await store.getGeometriesByParent(id as any);
+    if (res && res.length > 0) return res;
+  }
+  return [];
+}
+
+export async function fetchGeometries(parentId: string | null): Promise<any[]> {
+  const cacheKey = `parent:${isRootId(parentId) ? "__root__" : parentId}`;
+  const cached = geometryCache.get(cacheKey);
+  if (cached) return cached;
+
+  const request = (async () => {
+    try {
+      const store = await getStore();
+      let rawFeatures = await getGeometriesByParentResolvingRoot(store, parentId);
+
+      // Only worth retrying against Firestore when the primary store is something else.
+      if (rawFeatures.length === 0 && !primaryStoreIsFirestore()) {
+        const fsStore = await getFirestoreStore();
+        rawFeatures = await getGeometriesByParentResolvingRoot(fsStore, parentId);
+      }
+
+      if (rawFeatures.length === 0) {
+        console.warn(`[fetchGeometries] No geometries found for parent ${parentId ?? "root"}`);
+      }
+
+      return normalizeFeatures(rawFeatures);
+    } catch (e) {
+      console.error(`Failed to fetch geometries for parent ${parentId}`, e);
+      geometryCache.delete(cacheKey); // a failure should not be cached
+      return [];
+    }
+  })();
+
+  geometryCache.set(cacheKey, request);
+  return request;
 }
 
 export async function fetchCountryGeometries(iso3: string, admLevel: number): Promise<any[]> {
-  try {
-    const store = await getStore();
-    let rawFeatures = await store.getGeometriesByCountry(iso3, admLevel);
+  const cacheKey = `country:${iso3}:${admLevel}`;
+  const cached = geometryCache.get(cacheKey);
+  if (cached) return cached;
 
-    // Fallback to Firestore if local store has no results for subdivisions
-    if (rawFeatures.length === 0 && admLevel > 0) {
-      console.log(`No local geometries for ${iso3} level ${admLevel}, falling back to Firestore`);
-      const fsStore = await getFirestoreStore();
-      rawFeatures = await fsStore.getGeometriesByCountry(iso3, admLevel);
+  const request = (async () => {
+    try {
+      const store = await getStore();
+      let rawFeatures = await store.getGeometriesByCountry(iso3, admLevel);
+
+      // Only worth retrying against Firestore when the primary store is something else.
+      if (rawFeatures.length === 0 && admLevel > 0 && !primaryStoreIsFirestore()) {
+        const fsStore = await getFirestoreStore();
+        rawFeatures = await fsStore.getGeometriesByCountry(iso3, admLevel);
+      }
+
+      return normalizeFeatures(rawFeatures);
+    } catch (e) {
+      console.error(`Failed to fetch geometries for country ${iso3} level ${admLevel}`, e);
+      geometryCache.delete(cacheKey);
+      return [];
     }
+  })();
 
-    return rawFeatures.map(f => {
-      const props = f.properties || {};
-      const id = props.id || props.shapeID || props.ID;
-      return {
-        ...f,
-        properties: { ...props, id },
-        geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
-      };
-    });
-  } catch (e) {
-    console.error(`Failed to fetch geometries for country ${iso3} level ${admLevel}`, e);
-    return [];
-  }
+  geometryCache.set(cacheKey, request);
+  return request;
 }
 
 // Keep the utility functions

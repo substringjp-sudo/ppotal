@@ -45,7 +45,13 @@ const calculateScoresAndStats = (
   visits: RegionVisit[],
   allRegions: Region[],
   currentScores: Record<string, RegionScore>,
-  forceAll: boolean = false
+  /**
+   * Regions newly added to the store since the last pass. Adding a child
+   * changes its ancestors' `childSum`, so these and their ancestors have to be
+   * recomputed — but nothing else does, which is what keeps a drill-down from
+   * rescoring every region in the world.
+   */
+  newRegionIds?: Set<string>
 ) => {
   if (allRegions.length === 0) {
     return {
@@ -92,6 +98,19 @@ const calculateScoresAndStats = (
     }
   }
 
+  // Newly loaded regions and their ancestors have to be rescored too: the
+  // ancestors' childSum is a sum over children that just grew.
+  if (newRegionIds) {
+    for (const newId of newRegionIds) {
+      let currId: string | null = padId(newId);
+      while (currId && !affectedIds.has(currId)) {
+        affectedIds.add(currId);
+        const reg = regionMap.get(currId);
+        currId = reg ? padId(reg.parentId) : null;
+      }
+    }
+  }
+
   const newScores: Record<string, RegionScore> = { ...currentScores };
   const scoreMemo = new Map<string, RegionScore>();
   for (const [id, score] of Object.entries(currentScores)) {
@@ -100,18 +119,26 @@ const calculateScoresAndStats = (
 
   const countMemo = new Map<string, Record<VisitCategory, number>>();
 
+  // Everything that can have changed has to leave the memo before any scoring
+  // starts, not as each target comes up. getRegionScore recurses into a
+  // region's children, so scoring a parent first would read its children
+  // straight out of the memo and get last pass's numbers — which is a stale
+  // score that then never corrects itself.
+  for (const id of affectedIds) {
+    scoreMemo.delete(id);
+    countMemo.delete(id);
+  }
+
   const targets = Array.from(affectedIds)
     .map((id) => regionMap.get(id))
     .filter((r): r is Region => !!r);
-  
-  const finalTargets = (Object.keys(currentScores).length === 0 || forceAll) ? allRegions : targets;
+
+  // A cold store has to score everything once; after that, `affectedIds` is a
+  // complete account of what can have changed.
+  const finalTargets = Object.keys(currentScores).length === 0 ? allRegions : targets;
 
   for (const r of finalTargets) {
     const id = padId(r.id);
-    if (affectedIds.has(id)) {
-      scoreMemo.delete(id);
-      countMemo.delete(id);
-    }
     const score = getRegionScore(id, vMap, regionMap, parentIdMap, countMemo, scoreMemo, affectedIds, true);
     newScores[id] = score;
   }
@@ -173,21 +200,28 @@ export const useVisitStore = create<VisitStore>()(
         const currentScores = get().scores;
         const regionMap = new Map<string, Region>();
         currentRegions.forEach(r => regionMap.set(padId(r.id), r));
-        let changed = false;
+        const addedIds = new Set<string>();
         regions.forEach(r => {
           const id = padId(r.id);
           if (!regionMap.has(id)) {
             regionMap.set(id, r);
-            changed = true;
+            addedIds.add(id);
           }
         });
-        
+
         const hasNoScores = Object.keys(currentScores).length === 0;
 
-        if (changed || (hasNoScores && regions.length > 0)) {
+        if (addedIds.size > 0 || (hasNoScores && regions.length > 0)) {
           const newRegions = Array.from(regionMap.values());
+          const { visits } = get();
           set({ allRegions: newRegions });
-          get().recalculateScores(newRegions);
+          const { scores, stats } = calculateScoresAndStats(
+            visits,
+            newRegions,
+            currentScores,
+            addedIds,
+          );
+          set({ scores, stats });
         }
       },
 
@@ -366,10 +400,12 @@ export const useVisitStore = create<VisitStore>()(
 
       recalculateScores(regions) {
         const allRegions = regions || get().allRegions;
-        const { visits, scores: currentScores } = get();
+        const { visits } = get();
         if (allRegions.length === 0) return;
 
-        const { scores: newScores, stats } = calculateScoresAndStats(visits, allRegions, currentScores, !!regions);
+        // An explicit recalculate means "redo everything": starting from an
+        // empty score map is what makes the pass cover every region.
+        const { scores: newScores, stats } = calculateScoresAndStats(visits, allRegions, {});
         set({ scores: newScores, stats });
       },
 
