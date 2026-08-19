@@ -1158,6 +1158,7 @@ export function RegionMap() {
         visits={visits}
         scores={allScores}
         features={geoData?.features ?? []}
+        selectedRegionId={selectedId}
         currentRegionId={currentId}
       />
     </div>

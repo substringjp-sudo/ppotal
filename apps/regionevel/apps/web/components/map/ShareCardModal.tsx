@@ -10,7 +10,7 @@ import { Z } from "@/lib/layers";
 import { SAFE_AREA, TAP_TARGET_CLASS, haptic } from "@/lib/mobile";
 import { useIsPhone } from "@/lib/useIsPhone";
 import {
-  SHARE_BLOCKS, availableScopes, computeShareStats, shareMessage,
+  SHARE_BLOCKS, availableScopes, computeShareStats, resolveShareSubject, shareMessage,
   type ShareBlockId, type ShareScope, type ShareScopeKind,
 } from "@/lib/shareCard";
 import {
@@ -25,7 +25,9 @@ export interface ShareCardModalProps {
   scores: Record<string, RegionScore>;
   /** Boundaries currently loaded for the map, reused so the card needs no extra fetch. */
   features: Feature[];
-  /** The region the map is looking at, used as the card's initial subject. */
+  /** The region the user has tapped, if any. Preferred as the card's subject. */
+  selectedRegionId: string | null;
+  /** The region the map has drilled into. Used when nothing is tapped. */
   currentRegionId: string | null;
 }
 
@@ -45,7 +47,7 @@ const BLOCK_LABEL: Record<ShareBlockId, string> = {
 };
 
 export const ShareCardModal: React.FC<ShareCardModalProps> = ({
-  isOpen, onClose, regions, visits, scores, features, currentRegionId,
+  isOpen, onClose, regions, visits, scores, features, selectedRegionId, currentRegionId,
 }) => {
   const isPhone = useIsPhone();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -67,19 +69,19 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
     return m;
   }, [regions]);
 
-  // Open on whatever the map is showing — that is almost always the thing the
-  // user wants to share, and it saves them picking it twice.
+  // Open on what the user is looking at, so the card does not have to be
+  // aimed twice. See resolveShareSubject for which of the two wins.
   useEffect(() => {
     if (!isOpen) return;
-    const current = currentRegionId ? regionsById.get(padId(currentRegionId)) : null;
-    if (current && (current.admLevel === 0 || current.admLevel === 1)) {
-      setScopeKind(current.admLevel === 0 ? "country" : "prefecture");
-      setScopeId(padId(current.id));
+    const subject = resolveShareSubject(selectedRegionId, currentRegionId, regionsById);
+    if (subject) {
+      setScopeKind(subject.admLevel === 0 ? "country" : "prefecture");
+      setScopeId(padId(subject.id));
     } else {
       setScopeKind("world");
       setScopeId("");
     }
-  }, [isOpen, currentRegionId, regionsById]);
+  }, [isOpen, selectedRegionId, currentRegionId, regionsById]);
 
   const choices = useMemo(() => availableScopes(regions, scores), [regions, scores]);
 
@@ -125,6 +127,23 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
     return matched.length > 0 ? matched : features;
   }, [features, regions, scope]);
 
+  /**
+   * Everything else the map has, drawn flat underneath.
+   *
+   * Without it a single region is a shape floating in an empty frame, with
+   * nothing to say where on earth it is. The projector frames the subject, so
+   * these only fill in around the edges.
+   */
+  const contextFeatures = useMemo(() => {
+    if (scope.kind === "world" || scopedFeatures.length === features.length) return [];
+    const inCard = new Set(
+      scopedFeatures.map((f) => padId(f.properties?.id || f.properties?.shapeID)),
+    );
+    return features.filter(
+      (f) => !inCard.has(padId(f.properties?.id || f.properties?.shapeID)),
+    );
+  }, [features, scopedFeatures, scope.kind]);
+
   const message = useMemo(() => shareMessage(scopeLabel, stats), [scopeLabel, stats]);
   const filename = useMemo(
     () => `Regionevel-${scopeLabel.replace(/[/\\?%*:|"<>]/g, "_")}-${new Date().toISOString().slice(0, 10)}.png`,
@@ -141,11 +160,12 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
       scopeLabel,
       stats,
       features: scopedFeatures,
+      contextFeatures,
       scores,
       showBorders,
       footer: "rgnevel.pplaner.com",
     });
-  }, [isOpen, aspectRatio, dark, blocks, scope, scopeLabel, stats, scopedFeatures, scores, showBorders]);
+  }, [isOpen, aspectRatio, dark, blocks, scope, scopeLabel, stats, scopedFeatures, contextFeatures, scores, showBorders]);
 
   useEffect(() => {
     if (!notice) return;

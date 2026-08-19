@@ -184,6 +184,37 @@ export function computeShareStats(
   return stats;
 }
 
+/**
+ * What the card should be about when it opens.
+ *
+ * A tapped region wins over the drilled-into one: tapping is the more
+ * deliberate act, and while a tap is open it is what "this region" means on
+ * screen. A city cannot be a scope of its own — the card is about a country or
+ * a first-level region — so a tapped city resolves to the region containing
+ * it rather than dropping all the way back to the world.
+ *
+ * Returns null when neither candidate leads anywhere, which the caller reads
+ * as "the whole world".
+ */
+export function resolveShareSubject(
+  selectedId: string | null,
+  currentId: string | null,
+  regionsById: Map<string, Region>,
+): Region | null {
+  const climb = (id: string | null): Region | null => {
+    let region = id ? regionsById.get(padId(id)) ?? null : null;
+    const seen = new Set<string>();
+    while (region && region.admLevel > 1) {
+      const parentId = padId(region.parentId);
+      if (!parentId || seen.has(parentId)) return null;
+      seen.add(parentId);
+      region = regionsById.get(parentId) ?? null;
+    }
+    return region;
+  };
+  return climb(selectedId) ?? climb(currentId);
+}
+
 /** Which scopes the user can pick, given what has been loaded and visited. */
 export function availableScopes(
   regions: Region[],
