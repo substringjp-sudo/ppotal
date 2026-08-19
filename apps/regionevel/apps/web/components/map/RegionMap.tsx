@@ -3,62 +3,25 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { MapContainer, GeoJSON, useMap, useMapEvents, Polyline } from "react-leaflet";
 import type { FeatureCollection, Feature } from "geojson";
-import type { GeoJSON as LeafletGeoJSON, Layer, PathOptions } from "leaflet";
+import type { GeoJSON as LeafletGeoJSON, Layer, LatLngBounds, PathOptions } from "leaflet";
 import L from "leaflet";
 import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, type VisitCategory } from "@regionevel/types";
 import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
 import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } from "@/lib/regions";
+import { findRegionForPoint } from "@/lib/geo";
+import { useViewportFeatures } from "@/lib/viewportFeatures";
+import { useIsPhone } from "@/lib/useIsPhone";
+import { regionCanvas } from "./mapRenderer";
 import { useMapStore } from "@/store/mapStore";
+import { Z } from "@/lib/layers";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import { ExportModal, type ExportModalStats } from "./ExportModal";
+import { ShareCardModal } from "./ShareCardModal";
 import { Pencil, CheckCircle2, X } from "lucide-react";
 import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
-
-
-// Ray-casting algorithm for GeoJSON Polygon & MultiPolygon feature point lookup
-function isPointInPolygonCoords(point: [number, number], vs: any[]) {
-  const x = point[0], y = point[1];
-  let inside = false;
-  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-    const p1 = vs[i];
-    const p2 = vs[j];
-    if (!p1 || !p2) continue;
-    const xi = p1[0], yi = p1[1];
-    const xj = p2[0], yj = p2[1];
-    if (xi === undefined || yi === undefined || xj === undefined || yj === undefined) continue;
-    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-function isPointInFeature(lng: number, lat: number, feature: Feature): boolean {
-  if (!feature.geometry) return false;
-  const geom = feature.geometry;
-  if (geom.type === "Polygon" && geom.coordinates && geom.coordinates[0]) {
-    return isPointInPolygonCoords([lng, lat], geom.coordinates[0]);
-  } else if (geom.type === "MultiPolygon" && geom.coordinates) {
-    for (const poly of geom.coordinates) {
-      if (poly && poly[0] && isPointInPolygonCoords([lng, lat], poly[0])) return true;
-    }
-  }
-  return false;
-}
-
-function findRegionForPoint(lat: number, lng: number, features: Feature[]): { id: string; name: string } | null {
-  for (const feature of features) {
-    if (isPointInFeature(lng, lat, feature)) {
-      const rawId = feature.properties?.id || feature.properties?.shapeID;
-      const id = padId(rawId);
-      const name = String(feature.properties?.name || feature.properties?.shapeName || "Unknown");
-      if (id) return { id, name };
-    }
-  }
-  return null;
-}
 
 interface MapDrawControllerProps {
   isDrawMode: boolean;
@@ -211,7 +174,6 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
   useEffect(() => {
     // 1. World level: Always reset to global view immediately
     if (level === "world") {
-      console.log("[FitBounds] Level is world, resetting view to [20, 0]");
       map.setView([20, 0], 2, { animate: true });
       
       // Delay-based fallback for problematic renders
@@ -230,10 +192,8 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
         const bounds = geoJsonLayer.getBounds();
         
         if (bounds.isValid()) {
-          console.log(`[FitBounds] Level: ${level}, Features: ${data.features.length}, Bounds:`, bounds.toBBoxString());
           // Use a small timeout to ensure map container is ready
           const timer = setTimeout(() => {
-            console.log(`[FitBounds] Executing fitBounds for ${level}`);
             map.fitBounds(bounds, { padding: [40, 40], animate: true });
             map.invalidateSize();
           }, 300);
@@ -250,13 +210,28 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
   return null;
 }
 
-// Map events component to handle background clicks
-function MapEvents({ onMapClick }: { onMapClick: () => void }) {
-  useMapEvents({
+// Map events component to handle background clicks and report the viewport
+function MapEvents({
+  onMapClick,
+  onBoundsChange,
+}: {
+  onMapClick: () => void;
+  onBoundsChange: (bounds: LatLngBounds) => void;
+}) {
+  const map = useMapEvents({
     click: () => {
       onMapClick();
     },
+    moveend: () => onBoundsChange(map.getBounds()),
+    zoomend: () => onBoundsChange(map.getBounds()),
   });
+
+  // Report the initial viewport too — without this the first paint has no
+  // window and falls back to mounting every feature.
+  useEffect(() => {
+    onBoundsChange(map.getBounds());
+  }, [map, onBoundsChange]);
+
   return null;
 }
 
@@ -296,17 +271,20 @@ export function RegionMap() {
     isDrawMode,
     setIsDrawMode,
     exportRequested,
+    shareRequested,
   } = useMapStore();
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
+  const isMobile = useIsPhone();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
+  const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [exportImageData, setExportImageData] = useState<string | null>(null);
   const [drawResult, setDrawResult] = useState<{
     startName: string;
@@ -348,15 +326,6 @@ export function RegionMap() {
     [addDrawPathVisits]
   );
 
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   // Fetch GeoJSON data
   useEffect(() => {
@@ -370,23 +339,17 @@ export function RegionMap() {
         
         let features: any[] = [];
         
-        console.log(`[RegionMap] loadData started for level: ${level}, id: ${currentId}, viewLevel: ${viewLevel}`);
         // 1. Determine which geometries to fetch
         if (level === "world") {
-          console.log("[RegionMap] Loading world map (level=world, currentId=null)");
           features = await fetchGeometries(null);
-          console.log(`[RegionMap] World map loaded with ${features.length} features`);
         } else if (level === "country" && currentId) {
           const iso3 = currentRegion?.iso3;
           if (iso3) {
-            console.log(`[RegionMap] Fetching country geometries for iso3=${iso3} (id=${currentId}) at viewLevel ${viewLevel}`);
             features = await fetchCountryGeometries(iso3, viewLevel);
           } else {
-            console.log(`[RegionMap] No iso3 for country ${currentId}, falling back to fetchGeometries`);
             features = await fetchGeometries(currentId);
           }
         } else if (currentId) {
-          console.log(`[RegionMap] Fetching sub-region geometries for id=${currentId}`);
           features = await fetchGeometries(currentId);
         }
 
@@ -397,7 +360,6 @@ export function RegionMap() {
         }
 
         if (features && features.length > 0) {
-          console.log(`[RegionMap] Successfully loaded ${features.length} features`);
           
           // Convert features to Region objects and update store
           // This is critical so the store can calculate scores for these newly loaded regions (especially cities)
@@ -696,6 +658,12 @@ export function RegionMap() {
     }
   }, [exportRequested, handleExport]);
 
+  // Same, for the share card. It lives here because this is where the loaded
+  // boundaries are, and the card draws from them rather than fetching again.
+  useEffect(() => {
+    if (shareRequested > 0) setIsShareModalOpen(true);
+  }, [shareRequested]);
+
   const onEachFeature = useCallback(
     (feature: Feature, layer: Layer) => {
       const rawId = feature.properties?.id || feature.properties?.shapeID;
@@ -791,6 +759,27 @@ export function RegionMap() {
 
   const hoveredRegion = hoveredId ? regionsByIdMap.get(hoveredId) ?? null : null;
 
+  // Hand Leaflet only the polygons that can be on screen. `revision` changes
+  // exactly when the window's contents change, so it — not the feature count —
+  // is what the layer remounts on.
+  const { features: visibleFeatures, revision: featureRevision } = useViewportFeatures(
+    geoData?.features ?? null,
+    mapBounds,
+  );
+
+  const visibleData = useMemo<FeatureCollection | null>(
+    () => (geoData ? { type: "FeatureCollection", features: visibleFeatures } : null),
+    [geoData, visibleFeatures],
+  );
+
+  const handleBoundsChange = useCallback((b: LatLngBounds) => setMapBounds(b), []);
+  const handleMapClick = useCallback(() => setSelectedId(null), [setSelectedId]);
+
+  const geoJsonPathOptions = useMemo<PathOptions>(
+    () => (regionCanvas ? { renderer: regionCanvas } : {}),
+    [],
+  );
+
   return (
     <div ref={exportRef} className={`relative w-full h-full bg-sky-50 overflow-hidden ${isDrawMode ? "cursor-pen" : ""}`}>
       <MapContainer
@@ -818,26 +807,28 @@ export function RegionMap() {
           onDrawComplete={handleDrawComplete}
         />
 
-        {geoData && (
+        {visibleData && (
           <GeoJSON
-            key={`geojson-${level}-${currentId || "root"}-${viewLevel}-${geoData.features?.length || 0}`}
+            key={`geojson-${level}-${currentId || "root"}-${viewLevel}-r${featureRevision}`}
             ref={geoJsonRef}
-            data={geoData}
+            data={visibleData}
             style={getStyle}
             onEachFeature={onEachFeature}
+            pathOptions={geoJsonPathOptions}
           />
         )}
-        <MapEvents onMapClick={() => setSelectedId(null)} />
+        <MapEvents onMapClick={handleMapClick} onBoundsChange={handleBoundsChange} />
       </MapContainer>
 
       {/* Hover Label */}
       {!isMobile && (
         <div
           ref={hoverLabelRef}
-          className={`fixed top-0 left-0 z-[5000] pointer-events-none transition-opacity duration-200 no-export ${
+          className={`fixed top-0 left-0 pointer-events-none transition-opacity duration-200 no-export ${
             hoveredFeature || hoveredRegion ? "opacity-100" : "opacity-0"
           }`}
           style={{
+            zIndex: Z.tooltip,
             pointerEvents: "none",
             transition: "opacity 0.15s ease-out",
             willChange: "transform",
@@ -884,7 +875,7 @@ export function RegionMap() {
 
       {/* Professional Top Header (Desktop) */}
       {!isMobile && (
-        <div className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 z-[1001] flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500 no-export">
+        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500 no-export">
           {/* Breadcrumbs Section */}
           <div className="flex items-center gap-2 h-full border-r border-slate-100 pr-4 shrink-0">
             <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-md p-1">
@@ -1003,7 +994,7 @@ export function RegionMap() {
 
       {/* Mobile Header */}
       {isMobile && (
-        <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200 no-export">
+        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 flex flex-col bg-white border-b border-slate-200 no-export">
           <div className="flex items-center gap-2 p-2 pointer-events-auto">
             {history.length > 0 && (
               <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600 no-export">
@@ -1064,7 +1055,7 @@ export function RegionMap() {
       )}
 
       {/* Map Controls */}
-      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
+      <div style={{ zIndex: Z.mapOverlay }} className={`absolute flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
         {loading && (
           <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -1083,7 +1074,7 @@ export function RegionMap() {
 
       {/* Draw Mode Active Banner */}
       {isDrawMode && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[5000] bg-amber-500 text-white px-4 py-2 rounded-2xl shadow-xl border border-amber-400 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 no-export">
+        <div style={{ zIndex: Z.toast }} className="absolute top-16 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-4 py-2 rounded-2xl shadow-xl border border-amber-400 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 no-export">
           <Pencil className="w-4 h-4 animate-bounce" />
           <div className="flex flex-col">
             <span className="text-xs font-black">드로잉 모드 활성화</span>
@@ -1100,7 +1091,7 @@ export function RegionMap() {
 
       {/* Draw Result Toast */}
       {drawResult && (
-        <div className="absolute top-28 left-1/2 -translate-x-1/2 z-[5000] bg-slate-900/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 flex items-center gap-4 max-w-md animate-in zoom-in-95 duration-200 no-export">
+        <div style={{ zIndex: Z.toast }} className="absolute top-28 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 flex items-center gap-4 max-w-md animate-in zoom-in-95 duration-200 no-export">
           <div className="size-8 bg-amber-500 text-white rounded-xl flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
@@ -1148,7 +1139,7 @@ export function RegionMap() {
         </div>
       )}
       {/* Watermark/Credits overlay visible in exported images */}
-      <div className="absolute bottom-2 left-2 z-[1002] pointer-events-none bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-200/60 text-[10px] font-black text-slate-500 flex items-center gap-1.5 shadow-sm tracking-tight">
+      <div style={{ zIndex: Z.mapOverlay }} className="absolute bottom-2 left-2 pointer-events-none bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-200/60 text-[10px] font-black text-slate-500 flex items-center gap-1.5 shadow-sm tracking-tight">
         <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
         <span>rgnevel.pplaner.com</span>
       </div>
@@ -1158,6 +1149,17 @@ export function RegionMap() {
         onClose={() => setIsExportModalOpen(false)}
         imageData={exportImageData}
         stats={exportStats}
+      />
+
+      <ShareCardModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        regions={allRegions}
+        visits={visits}
+        scores={allScores}
+        features={geoData?.features ?? []}
+        selectedRegionId={selectedId}
+        currentRegionId={currentId}
       />
     </div>
   );

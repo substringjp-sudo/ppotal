@@ -3,23 +3,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth, AuthModal } from "@ppotal/ui";
-import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info, Pencil } from "lucide-react";
+import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info, Pencil, MapPinned, Search, Menu, Share2 } from "lucide-react";
 import { ExportMapButton } from "@/components/map/ExportMapButton";
 import { RegionSearch } from "@/components/common/RegionSearch";
+import { TimelineImportModal } from "@/components/common/TimelineImportModal";
+import { MobileSearchSheet } from "@/components/mobile/MobileSearchSheet";
+import { MobileMenuSheet } from "@/components/mobile/MobileMenuSheet";
 import { usePathname } from "next/navigation";
 import { useVisitStore } from "@/store/visitStore";
 import { useMapStore } from "@/store/mapStore";
+import { useIsPhone } from "@/lib/useIsPhone";
+import { Z } from "@/lib/layers";
+import { SAFE_AREA, TAP_TARGET_CLASS } from "@/lib/mobile";
 import { padId } from "@regionevel/utils";
 
 export function Nav() {
   const { user, profile, loading, logout } = useAuth();
   const { importTripsFromJprail, allRegions } = useVisitStore();
-  const { isDrawMode, toggleDrawMode } = useMapStore();
+  const { isDrawMode, toggleDrawMode, requestShare } = useMapStore();
+  const isMobile = useIsPhone();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isSearchSheetOpen, setIsSearchSheetOpen] = useState(false);
+  const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncSummaryOpen, setIsSyncSummaryOpen] = useState(false);
+  const [isTimelineImportOpen, setIsTimelineImportOpen] = useState(false);
   const [syncSummaryData, setSyncSummaryData] = useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -59,16 +68,6 @@ export function Nav() {
     }
   };
 
-  // Detect mobile viewport
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -83,8 +82,102 @@ export function Nav() {
   const displayName = profile?.displayName || user?.email?.split('@')[0] || "User";
   const userInitial = (displayName[0] || "U").toUpperCase();
 
+  const handleSignIn = () => setIsAuthModalOpen(true);
+
+  // ---- Phone: its own bar, not a breakpoint on the desktop one ----
+  //
+  // The desktop header's contents do not fit a phone: the nav was
+  // `hidden md:flex`, so search, the list, export, draw mode and the timeline
+  // import simply did not exist below 768px. A button opening a full-screen
+  // sheet is the only shape that fits 56px.
+  if (isMobile) {
+    return (
+      <>
+        <header
+          className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2 shrink-0 sticky top-0 shadow-sm"
+          style={{
+            zIndex: Z.header,
+            height: 56,
+            paddingTop: SAFE_AREA.top,
+            paddingLeft: `calc(0.5rem + ${SAFE_AREA.left})`,
+            paddingRight: `calc(0.5rem + ${SAFE_AREA.right})`,
+            boxSizing: "content-box",
+          }}
+        >
+          <Link
+            href="/"
+            className="flex items-center gap-2 min-w-0 mr-auto pl-1 min-h-[44px]"
+            aria-label="Regionevel 홈"
+          >
+            <div className="size-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-sm overflow-hidden shrink-0">
+              <img src="/icon.png" alt="" className="size-full object-cover" />
+            </div>
+            <span className="text-base font-black tracking-tight text-slate-800 dark:text-white truncate">
+              <span className="text-blue-600">Region</span>evel
+            </span>
+          </Link>
+
+          <button
+            onClick={() => setIsSearchSheetOpen(true)}
+            className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-xl text-slate-500 active:bg-slate-100 dark:active:bg-slate-800`}
+            aria-label="지역 검색"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => requestShare()}
+            className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-xl text-slate-500 active:bg-slate-100 dark:active:bg-slate-800`}
+            aria-label="공유 카드 만들기"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setIsMenuSheetOpen(true)}
+            className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-xl text-slate-500 active:bg-slate-100 dark:active:bg-slate-800`}
+            aria-label="메뉴 열기"
+          >
+            {user ? (
+              <span className="size-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                {userInitial}
+              </span>
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
+        </header>
+
+        <MobileSearchSheet isOpen={isSearchSheetOpen} onClose={() => setIsSearchSheetOpen(false)} />
+        <MobileMenuSheet
+          isOpen={isMenuSheetOpen}
+          onClose={() => setIsMenuSheetOpen(false)}
+          isDrawMode={isDrawMode}
+          onToggleDraw={toggleDrawMode}
+          onShare={requestShare}
+          onTimelineImport={() => setIsTimelineImportOpen(true)}
+          onSyncJprail={handleSyncWithJprail}
+          isSyncing={isSyncing}
+          onSignIn={handleSignIn}
+          onSignOut={logout}
+          userEmail={user?.email ?? null}
+        />
+        <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+        <TimelineImportModal isOpen={isTimelineImportOpen} onClose={() => setIsTimelineImportOpen(false)} />
+        <SyncSummaryModal
+          isOpen={isSyncSummaryOpen}
+          onClose={() => setIsSyncSummaryOpen(false)}
+          importedCount={syncSummaryData.count}
+          cities={syncSummaryData.cities}
+        />
+      </>
+    );
+  }
+
   return (
-    <header className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 sticky top-0 z-[2000] shadow-sm relative justify-between">
+    <>
+      <header
+        className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 sticky top-0 shadow-sm relative justify-between"
+        style={{ zIndex: Z.header }}
+      >
       {/* Left: Logo & Title */}
       <div className="flex items-center gap-3 shrink-0 mr-4">
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
@@ -97,12 +190,10 @@ export function Nav() {
         </Link>
       </div>
 
-      {/* Middle: Search (Only in Desktop) */}
-      {!isMobile && (
-        <div className="flex-1 flex justify-center px-4">
-          <RegionSearch />
-        </div>
-      )}
+      {/* Middle: Search */}
+      <div className="flex-1 flex justify-center px-4">
+        <RegionSearch />
+      </div>
 
       {/* Right: Menu Navigation & User Profile */}
       <div className="flex items-center gap-4 ml-auto">
@@ -146,7 +237,23 @@ export function Nav() {
             <Pencil className="w-4 h-4" />
             <span>Draw</span>
           </button>
+          <button
+            onClick={() => requestShare()}
+            className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"
+            title="공유 카드 만들기"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Share</span>
+          </button>
           <ExportMapButton />
+          <button
+            onClick={() => setIsTimelineImportOpen(true)}
+            className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"
+            title="구글 타임라인 JSON으로 방문 기록 가져오기"
+          >
+            <MapPinned className="w-4 h-4" />
+            <span>Timeline</span>
+          </button>
         </nav>
 
         {/* Divider line for desktop */}
@@ -213,14 +320,23 @@ export function Nav() {
           )}
         </div>
       </div>
+      </header>
+
+      {/*
+        Outside the header on purpose. The header is sticky with a z-index, so
+        it forms a stacking context — a dialog rendered inside it can never
+        rise above anything the header itself sits under, however large its own
+        z-index is.
+      */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <TimelineImportModal isOpen={isTimelineImportOpen} onClose={() => setIsTimelineImportOpen(false)} />
       <SyncSummaryModal
         isOpen={isSyncSummaryOpen}
         onClose={() => setIsSyncSummaryOpen(false)}
         importedCount={syncSummaryData.count}
         cities={syncSummaryData.cities}
       />
-    </header>
+    </>
   );
 }
 
@@ -234,7 +350,7 @@ interface SyncSummaryModalProps {
 const SyncSummaryModal: React.FC<SyncSummaryModalProps> = ({ isOpen, onClose, importedCount, cities }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div style={{ zIndex: Z.modalNested }} className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl p-6 max-w-sm w-full flex flex-col gap-4 animate-in zoom-in-95 duration-200">
         <div className="flex items-center gap-3">
           <div className="size-10 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner shrink-0">

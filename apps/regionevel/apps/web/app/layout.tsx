@@ -1,5 +1,5 @@
 import { constructMetadata, Analytics, AuthProvider } from "@ppotal/ui";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import React from "react";
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import Script from "next/script";
@@ -48,6 +48,25 @@ export const metadata: Metadata = constructMetadata({
     "interactive country visit logger", "world travel map", "visit history tracker", "Keikenchi"
   ]
 });
+
+/**
+ * `viewportFit: "cover"` is what makes `env(safe-area-inset-*)` return
+ * anything at all. Without it every safe-area expression in the app resolves
+ * to zero and the layout runs under the notch and the home indicator.
+ *
+ * `maximumScale` is deliberately absent: capping it blocks pinch-zoom, which
+ * is an accessibility failure, and iOS only stops auto-zooming on focused
+ * inputs when those inputs are at least 16px — which the CSS handles instead.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+};
 
 export default function RootLayout({
   children,

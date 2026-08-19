@@ -2,6 +2,8 @@ import { memo, useMemo, useState, useEffect } from "react";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import type { Region, RegionScore, VisitCategory } from "@regionevel/types";
 import { padId } from "@regionevel/utils";
+import { Z } from "@/lib/layers";
+import { SAFE_AREA } from "@/lib/mobile";
 
 interface RegionTooltipProps {
   region: Region;
@@ -98,7 +100,7 @@ export const RegionTooltip = memo(function RegionTooltip({
           top,
           height: region.admLevel === 2 ? "auto" : actualHeight,
           maxHeight: actualHeight,
-          zIndex: 2000,
+          zIndex: Z.detailPane,
         };
       })()
     : {
@@ -107,7 +109,7 @@ export const RegionTooltip = memo(function RegionTooltip({
         left: "50%",
         transform: "translateX(-50%)",
         height: 580,
-        zIndex: 2000,
+        zIndex: Z.detailPane,
       };
 
   const mobileStyle: React.CSSProperties = {
@@ -115,7 +117,9 @@ export const RegionTooltip = memo(function RegionTooltip({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 3000,
+    zIndex: Z.modal,
+    // Without this the footer's actions sit under the home indicator.
+    paddingBottom: SAFE_AREA.bottom,
   };
 
   return (
@@ -123,7 +127,8 @@ export const RegionTooltip = memo(function RegionTooltip({
       {/* Backdrop for mobile */}
       {isMobile && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[2999] animate-in fade-in duration-300"
+          className="fixed inset-0 bg-black/20 backdrop-blur-[2px] animate-in fade-in duration-300"
+          style={{ zIndex: Z.modal - 1 }}
           onClick={onClose}
         />
       )}
