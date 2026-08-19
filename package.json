@@ -13,6 +13,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "clean": "bash clean.sh",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "portal:dev": "pnpm dev --filter portal",
     "jprail:dev": "pnpm dev --filter japanrailnote",
