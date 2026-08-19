@@ -6,7 +6,7 @@ import { MOBILE_BOTTOM_SHEET_TRANSLATIONS, getTranslations } from '../../lib/tra
 import { Z } from '../../lib/layers';
 import {
     SHEET_DETENTS, SHEET_DETENTS_H, DETENT_ORDER, SHEET_DRAG_THRESHOLD,
-    SHEET_FLING_VELOCITY, SHEET_PEEK_MIN, SHEET_PEEK_MIN_H, sheetAxisFor,
+    SHEET_FLING_VELOCITY, SHEET_PEEK_MIN, SHEET_PEEK_MIN_H, sheetAxisFor, haptic,
     type SheetDetent, type SheetAxis
 } from '../../lib/mobile';
 
@@ -83,7 +83,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     const [dragHeight, setDragHeight] = useState<number | null>(null);
 
     const sheetRef = useRef<HTMLDivElement>(null);
-    const drag = useRef<{ startY: number; startH: number; lastY: number; lastT: number; velocity: number; active: boolean } | null>(null);
+    const drag = useRef<{ startY: number; startH: number; lastY: number; lastT: number; velocity: number; active: boolean; pastLimit: boolean } | null>(null);
 
     // `visualViewport` is the only height that accounts for the on-screen
     // keyboard; innerHeight keeps reporting the full screen while it is up.
@@ -123,6 +123,9 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     const hadDetail = useRef(false);
     useEffect(() => {
         if (detail) {
+            // The sheet moving is the confirmation that the tap landed on
+            // something, so it gets a tick the way picking a pin does natively.
+            if (!hadDetail.current) haptic('select');
             hadDetail.current = true;
             setDetent(prev => (prev === 'peek' ? 'half' : prev));
             // Tell the owner too, or its `isOpen` stays false and the sync
@@ -137,6 +140,9 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     }, [detail?.id, !detail]);
 
     const applyDetent = useCallback((next: SheetDetent) => {
+        // Only on a real change: a drag that returns to where it started
+        // should feel like nothing happened, because nothing did.
+        if (next !== detent) haptic('detent');
         setDetent(next);
         const opened = next !== 'peek';
         onToggle?.(opened);
@@ -185,7 +191,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
         drag.current = {
             startY: horizontal ? e.clientX : e.clientY, startH: restHeight,
             lastY: horizontal ? e.clientX : e.clientY,
-            lastT: performance.now(), velocity: 0, active: false
+            lastT: performance.now(), velocity: 0, active: false, pastLimit: false
         };
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     };
@@ -212,8 +218,12 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
         // Past the ends the sheet still moves, but a third as far, so the limit
         // is felt rather than hit.
         let next = d.startH + dy;
+        const beyond = next > max || next < min;
         if (next > max) next = max + (next - max) / 3;
         if (next < min) next = min - (min - next) / 3;
+        // One tick on crossing the limit, not one per pointermove.
+        if (beyond && !d.pastLimit) haptic('limit');
+        d.pastLimit = beyond;
         setDragHeight(next);
     };
 

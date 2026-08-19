@@ -145,3 +145,37 @@ export const SHEET_DETENTS_H = {
 
 /** Below this the landscape panel cannot show a row of content. */
 export const SHEET_PEEK_MIN_H = 64;
+
+/**
+ * A short tick when the sheet catches a detent.
+ *
+ * The web gives us one blunt instrument — `navigator.vibrate` — where the
+ * native platforms give a vocabulary (`UIImpactFeedbackGenerator`,
+ * `HapticFeedbackType`). So the intent is named here rather than the duration:
+ * a port swaps the body of this function for the platform's own generator and
+ * every call site keeps meaning the same thing.
+ *
+ * iOS Safari does not implement `vibrate` at all, which is why this is a
+ * silent no-op rather than a feature check the caller has to make.
+ */
+export type HapticIntent = 'detent' | 'select' | 'limit';
+
+const HAPTIC_MS: Record<HapticIntent, number | number[]> = {
+    /** The sheet settled on a detent. */
+    detent: 8,
+    /** Something was chosen. */
+    select: 12,
+    /** A drag hit the end of its travel. */
+    limit: [6, 24, 6]
+};
+
+export function haptic(intent: HapticIntent) {
+    if (typeof navigator === 'undefined') return;
+    const nav = navigator as Navigator & { vibrate?: (pattern: number | number[]) => boolean };
+    if (typeof nav.vibrate !== 'function') return;
+    try {
+        nav.vibrate(HAPTIC_MS[intent]);
+    } catch {
+        // Some browsers throw when the page has never been interacted with.
+    }
+}
