@@ -19,6 +19,7 @@ export interface MyLinesPaneProps {
     onSyncWithRegionevel?: () => Promise<void>;
     isSyncLoading?: boolean;
     onOpenRouteGenerator?: () => void;
+    onOpenTimelineImport?: () => void;
     isReadOnly?: boolean;
     /** Phone density — the same pane renders in the desktop rail and the sheet. */
     isMobile?: boolean;
@@ -59,7 +60,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     isSyncLoading,
     onOpenRouteGenerator,
     isReadOnly = false,
-    isMobile = false
+    isMobile = false,
+    onOpenTimelineImport
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
@@ -87,19 +89,33 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
                 </div>
-                {onOpenRouteGenerator && (
-                    <button
-                        onClick={onOpenRouteGenerator}
-                        disabled={isReadOnly}
-                        className={`flex items-center gap-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${isMobile ? 'h-11' : 'py-1.5'} ${isReadOnly
-                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-                            : 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95'}`}
-                        title={isReadOnly ? (language === 'ko' ? '도트/스퀘어/허니콤 모드에서는 경로 생성이 비활성화됩니다.' : 'Route generator disabled in tile mode') : undefined}
-                    >
-                        <span className="material-symbols-outlined text-base">alt_route</span>
-                        {t.generateRoute || '경로 생성'}
-                    </button>
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                    {onOpenRouteGenerator && (
+                        <button
+                            onClick={onOpenRouteGenerator}
+                            disabled={isReadOnly}
+                            className={`flex items-center gap-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${isMobile ? 'h-11' : 'py-1.5'} ${isReadOnly
+                                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+                                : 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95'}`}
+                            title={isReadOnly ? (language === 'ko' ? '도트/스퀘어/허니콤 모드에서는 경로 생성이 비활성화됩니다.' : 'Route generator disabled in tile mode') : undefined}
+                        >
+                            <span className="material-symbols-outlined text-base">alt_route</span>
+                            {t.generateRoute || '경로 생성'}
+                        </button>
+                    )}
+                    {onOpenTimelineImport && (
+                        <button
+                            onClick={onOpenTimelineImport}
+                            disabled={isReadOnly}
+                            className={`flex items-center justify-center rounded-xl border transition-all shrink-0 ${isMobile ? 'size-11' : 'size-8'} ${isReadOnly
+                                ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                                : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary active:scale-95'}`}
+                            title={language === 'ko' ? 'Google Timeline에서 가져오기' : language === 'ja' ? 'Google Timelineから読み込む' : 'Import from Google Timeline'}
+                        >
+                            <span className="material-symbols-outlined text-base">map</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Read-only banner in tile mode */}
