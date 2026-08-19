@@ -22,16 +22,16 @@ export function getFirebaseApp(): FirebaseApp {
 export function getFirestoreDb(): Firestore {
   if (_db) return _db;
   const app = getFirebaseApp();
-  if (typeof window !== "undefined") {
-    _db = initializeFirestore(app, {
-      localCache: persistentLocalCache({})
-    });
-  } else {
-    try {
+  try {
+    if (typeof window !== "undefined") {
+      _db = initializeFirestore(app, {
+        localCache: persistentLocalCache({})
+      });
+    } else {
       _db = getFirestore(app);
-    } catch (e) {
-      _db = initializeFirestore(app, {});
     }
+  } catch (e) {
+    _db = getFirestore(app);
   }
   return _db;
 }

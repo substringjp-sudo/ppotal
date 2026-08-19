@@ -17,10 +17,8 @@ import { useMapStore } from "@/store/mapStore";
 import { Z } from "@/lib/layers";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
-import { ExportModal, type ExportModalStats } from "./ExportModal";
 import { ShareCardModal } from "./ShareCardModal";
 import { Pencil, CheckCircle2, X } from "lucide-react";
-import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
 
 interface MapDrawControllerProps {
@@ -172,17 +170,26 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
   const map = useMap();
   
   useEffect(() => {
-    // 1. World level: Always reset to global view immediately
-    if (level === "world") {
-      map.setView([20, 0], 2, { animate: true });
-      
-      // Delay-based fallback for problematic renders
-      const timer = setTimeout(() => {
-        if (map.getZoom() < 2 || map.getCenter().lat !== 20) {
-          map.setView([20, 0], 2, { animate: true });
+    if (!map) return;
+
+    const safeSetWorldView = () => {
+      try {
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        if (zoom !== 2 || Math.round(center.lat) !== 20 || Math.round(center.lng) !== 0) {
+          map.setView([20, 0], 2, { animate: false });
         }
-      }, 300);
-      return () => clearTimeout(timer);
+      } catch (err) {
+        console.warn("[FitBounds] setView failed:", err);
+      }
+    };
+
+    // 1. World level: Reset to global view safely
+    if (level === "world") {
+      map.whenReady(() => {
+        safeSetWorldView();
+      });
+      return;
     }
     
     // 2. Other levels: Fit bounds to data if available
@@ -192,11 +199,16 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
         const bounds = geoJsonLayer.getBounds();
         
         if (bounds.isValid()) {
-          // Use a small timeout to ensure map container is ready
           const timer = setTimeout(() => {
-            map.fitBounds(bounds, { padding: [40, 40], animate: true });
-            map.invalidateSize();
-          }, 300);
+            map.whenReady(() => {
+              try {
+                map.fitBounds(bounds, { padding: [40, 40], animate: true });
+                map.invalidateSize();
+              } catch (err) {
+                console.warn("[FitBounds] fitBounds failed:", err);
+              }
+            });
+          }, 100);
           return () => clearTimeout(timer);
         } else {
           console.warn("[FitBounds] Invalid bounds for data", data);
@@ -222,14 +234,31 @@ function MapEvents({
     click: () => {
       onMapClick();
     },
-    moveend: () => onBoundsChange(map.getBounds()),
-    zoomend: () => onBoundsChange(map.getBounds()),
+    moveend: () => {
+      try {
+        onBoundsChange(map.getBounds());
+      } catch (e) {
+        // ignore
+      }
+    },
+    zoomend: () => {
+      try {
+        onBoundsChange(map.getBounds());
+      } catch (e) {
+        // ignore
+      }
+    },
   });
 
-  // Report the initial viewport too — without this the first paint has no
-  // window and falls back to mounting every feature.
+  // Report the initial viewport safely when map is ready
   useEffect(() => {
-    onBoundsChange(map.getBounds());
+    map.whenReady(() => {
+      try {
+        onBoundsChange(map.getBounds());
+      } catch (e) {
+        // ignore
+      }
+    });
   }, [map, onBoundsChange]);
 
   return null;
@@ -270,7 +299,6 @@ export function RegionMap() {
     setSelectedId,
     isDrawMode,
     setIsDrawMode,
-    exportRequested,
     shareRequested,
   } = useMapStore();
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
@@ -282,10 +310,7 @@ export function RegionMap() {
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [exportImageData, setExportImageData] = useState<string | null>(null);
   const [drawResult, setDrawResult] = useState<{
     startName: string;
     endName: string;
@@ -294,7 +319,6 @@ export function RegionMap() {
   } | null>(null);
 
   const geoJsonRef = useRef<LeafletGeoJSON | null>(null);
-  const exportRef = useRef<HTMLDivElement>(null);
   const hoverLabelRef = useRef<HTMLDivElement>(null);
 
 
@@ -582,83 +606,7 @@ export function RegionMap() {
     setSelectedId(null);
   }, [drillUp]);
 
-  const handleExport = useCallback(async () => {
-    if (!exportRef.current) return;
-    
-    setExporting(true);
-    try {
-      // Ensure any SVG elements have explicit xmlns attribute for clean rendering
-      const svgs = exportRef.current.querySelectorAll("svg");
-      svgs.forEach((svg) => {
-        if (!svg.getAttribute("xmlns")) {
-          svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        }
-      });
-
-      // Small delay to ensure any pending canvas / UI updates are flushed
-      await new Promise(resolve => setTimeout(resolve, 150));
-
-      const dataUrl = await toPng(exportRef.current, {
-        cacheBust: false,
-        pixelRatio: 2,
-        backgroundColor: "#f0f9ff", // bg-sky-50 equivalent
-        filter: (node: HTMLElement) => {
-          if (!node || !node.classList) return true;
-          const isExcluded = 
-            node.classList.contains("no-export") || 
-            node.classList.contains("leaflet-control-zoom") || 
-            node.classList.contains("leaflet-control-attribution") ||
-            node.classList.contains("leaflet-control");
-          return !isExcluded;
-        },
-      });
-
-      setExportImageData(dataUrl);
-      setIsExportModalOpen(true);
-    } catch (err) {
-      console.error("Failed to export map:", err);
-      alert("지도 이미지를 생성하는 중 오류가 발생했습니다.");
-    } finally {
-      setExporting(false);
-    }
-  }, []);
-
-  const exportStats: ExportModalStats = useMemo(() => {
-    const regionName = currentRegion
-      ? currentRegion.nameKo || currentRegion.name
-      : "전 세계";
-
-    let visitedSubRegions = 0;
-    if (!currentId) {
-      visitedSubRegions = contextStats.visitedCountries;
-    } else if (currentRegion?.admLevel === 0) {
-      visitedSubRegions = contextStats.visitedPrefectures;
-    } else {
-      visitedSubRegions = contextStats.visitedCities;
-    }
-
-    return {
-      regionName,
-      pass: contextStats.pass,
-      transit: contextStats.transit,
-      visit: contextStats.visit,
-      stay: contextStats.stay,
-      residence: contextStats.residence,
-      rate: Math.ceil(contextStats.currentRateScore),
-      exp: Math.round(contextStats.currentDirectScore || contextStats.currentTotalScore || 0),
-      visitedSubRegions,
-      totalSubRegions: contextStats.totalChildrenCount || 0,
-    };
-  }, [currentRegion, currentId, contextStats]);
-
-  // Listen for export requests from the global navigation
-  useEffect(() => {
-    if (exportRequested > 0) {
-      handleExport();
-    }
-  }, [exportRequested, handleExport]);
-
-  // Same, for the share card. It lives here because this is where the loaded
+  // Open the share card. It lives here because this is where the loaded
   // boundaries are, and the card draws from them rather than fetching again.
   useEffect(() => {
     if (shareRequested > 0) setIsShareModalOpen(true);
@@ -781,7 +729,7 @@ export function RegionMap() {
   );
 
   return (
-    <div ref={exportRef} className={`relative w-full h-full bg-sky-50 overflow-hidden ${isDrawMode ? "cursor-pen" : ""}`}>
+    <div className={`relative w-full h-full bg-sky-50 overflow-hidden ${isDrawMode ? "cursor-pen" : ""}`}>
       <MapContainer
         preferCanvas={true}
         center={[20, 0]}
@@ -1143,13 +1091,6 @@ export function RegionMap() {
         <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
         <span>rgnevel.pplaner.com</span>
       </div>
-
-      <ExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        imageData={exportImageData}
-        stats={exportStats}
-      />
 
       <ShareCardModal
         isOpen={isShareModalOpen}

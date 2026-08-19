@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth, AuthModal } from "@ppotal/ui";
 import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Compass, Info, Pencil, MapPinned, Search, Menu, Share2 } from "lucide-react";
-import { ExportMapButton } from "@/components/map/ExportMapButton";
 import { RegionSearch } from "@/components/common/RegionSearch";
 import { TimelineImportModal } from "@/components/common/TimelineImportModal";
 import { MobileSearchSheet } from "@/components/mobile/MobileSearchSheet";
@@ -245,7 +244,6 @@ export function Nav() {
             <Share2 className="w-4 h-4" />
             <span>Share</span>
           </button>
-          <ExportMapButton />
           <button
             onClick={() => setIsTimelineImportOpen(true)}
             className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"

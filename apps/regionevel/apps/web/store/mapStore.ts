@@ -9,7 +9,6 @@ interface MapState {
   level: MapLevel;
   currentId: string | null;
   history: Array<{ level: MapLevel; currentId: string | null }>;
-  exportRequested: number;
   /** Bumped to ask the map to open the share card, which owns the boundary data. */
   shareRequested: number;
   viewLevel: 1 | 2;
@@ -28,7 +27,6 @@ interface MapActions {
   drillDown: (level: MapLevel, id: string) => void;
   drillUp: () => void;
   reset: () => void;
-  requestExport: () => void;
   requestShare: () => void;
   jumpToRegion: (id: string, allRegions: any[]) => void;
 }
@@ -39,7 +37,6 @@ export const useMapStore = create<MapState & MapActions>()(
       level: "world",
       currentId: null,
       history: [],
-      exportRequested: 0,
       shareRequested: 0,
       viewLevel: 1,
       selectedId: null,
@@ -77,7 +74,6 @@ export const useMapStore = create<MapState & MapActions>()(
       },
 
       reset: () => set({ level: "world", currentId: null, history: [], viewLevel: 1, selectedId: null }),
-      requestExport: () => set((state) => ({ exportRequested: state.exportRequested + 1 })),
       requestShare: () => set((state) => ({ shareRequested: state.shareRequested + 1 })),
 
       jumpToRegion: (id, allRegions) => {
@@ -131,11 +127,7 @@ export const useMapStore = create<MapState & MapActions>()(
       name: "regionevel-map-state",
       /**
        * Where the user was, but not what they were in the middle of doing.
-       *
-       * `exportRequested` is a counter the map watches to know it should open
-       * the export; persisting it meant a reload restored a non-zero count and
-       * the modal opened by itself on load. Draw mode had the same problem —
-       * it came back armed with no way to tell why the map was not panning.
+       * Transient counters or active modes are omitted so reloads start fresh.
        */
       partialize: (state) => ({
         level: state.level,

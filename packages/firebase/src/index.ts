@@ -24,16 +24,16 @@ if (!getApps().length) {
 }
 
 let dbInstance: Firestore;
-if (typeof window !== "undefined") {
-  dbInstance = initializeFirestore(app, {
-    localCache: persistentLocalCache({})
-  });
-} else {
-  try {
+try {
+  if (typeof window !== "undefined") {
+    dbInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache({})
+    });
+  } else {
     dbInstance = getFirestore(app);
-  } catch (e) {
-    dbInstance = initializeFirestore(app, {});
   }
+} catch (e) {
+  dbInstance = getFirestore(app);
 }
 
 export const firebaseApp = app;

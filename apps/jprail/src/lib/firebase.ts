@@ -8,16 +8,16 @@ import { firebaseConfig } from "@ppotal/ui";
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 let dbInstance: Firestore;
-if (typeof window !== "undefined") {
-  dbInstance = initializeFirestore(app, {
-    localCache: persistentLocalCache({})
-  });
-} else {
-  try {
+try {
+  if (typeof window !== "undefined") {
+    dbInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache({})
+    });
+  } else {
     dbInstance = getFirestore(app);
-  } catch (e) {
-    dbInstance = initializeFirestore(app, {});
   }
+} catch (e) {
+  dbInstance = getFirestore(app);
 }
 
 const db = dbInstance;

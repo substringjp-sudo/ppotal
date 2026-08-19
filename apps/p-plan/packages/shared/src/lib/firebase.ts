@@ -33,21 +33,20 @@ app = (isConfigured || getApps().length > 0)
 
 auth = getAuth(app);
 
-if (typeof window !== 'undefined') {
-    // Browser: use persistent multi-tab cache for offline support
-    db = initializeFirestore(app, {
-        localCache: persistentLocalCache({
-            tabManager: persistentMultipleTabManager()
-        })
-    }, DB_NAME);
-} else {
-    // Server (SSR): no IndexedDB — use default in-memory cache
-    // Reuse existing instance if possible to avoid "settings can no longer be changed"
-    try {
+try {
+    if (typeof window !== 'undefined') {
+        // Browser: use persistent multi-tab cache for offline support
+        db = initializeFirestore(app, {
+            localCache: persistentLocalCache({
+                tabManager: persistentMultipleTabManager()
+            })
+        }, DB_NAME);
+    } else {
+        // Server (SSR): no IndexedDB — use default in-memory cache
         db = getFirestore(app, DB_NAME);
-    } catch (e) {
-        db = initializeFirestore(app, {}, DB_NAME);
     }
+} catch (e) {
+    db = getFirestore(app, DB_NAME);
 }
 
 storage = getStorage(app);

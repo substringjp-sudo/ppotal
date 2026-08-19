@@ -70,47 +70,71 @@ export const RegionTooltip = memo(function RegionTooltip({
   const isReadOnly = (region.admLevel === 0 || region.admLevel === 1) && childRegions.length > 0;
 
 
-  // Calculate position to stay within viewport (Desktop)
-  const tooltipWidth = 320;
+  // Calculate position to stay safely within visible map area (Desktop)
+  const tooltipWidth = 340;
   
-  const desktopStyle: React.CSSProperties = mousePos
-    ? (() => {
-        const winW = typeof window !== "undefined" ? window.innerWidth : 0;
-        const winH = typeof window !== "undefined" ? window.innerHeight : 0;
-        
-        // Dynamic height based on content
-        const idealHeight = region.admLevel === 2 ? 520 : 580;
-        const actualHeight = Math.min(idealHeight, winH - 60);
-        
-        let left = mousePos.x + 20;
-        if (left + tooltipWidth > winW - 20) {
-          left = mousePos.x - tooltipWidth - 20;
-        }
-        left = Math.max(20, Math.min(left, winW - tooltipWidth - 20));
+  const desktopStyle: React.CSSProperties = useMemo(() => {
+    const winW = typeof window !== "undefined" ? window.innerWidth : 1200;
+    const winH = typeof window !== "undefined" ? window.innerHeight : 800;
+    
+    // Top Nav height is 56px + 16px safety margin => minTop = 72px
+    const minTop = 72;
+    const minBottom = 20;
+    const minLeft = 20;
+    const minRight = 20;
+    
+    // Max available height within map area
+    const availableHeight = Math.max(300, winH - minTop - minBottom);
+    const idealHeight = region.admLevel === 2 ? 500 : 580;
+    const actualHeight = Math.min(idealHeight, availableHeight);
+    
+    if (mousePos) {
+      // Horizontal positioning:
+      // Prefer right side of click point (+20px)
+      let left = mousePos.x + 20;
+      // If overflowing right edge, flip to left side of click point
+      if (left + tooltipWidth > winW - minRight) {
+        left = mousePos.x - tooltipWidth - 20;
+      }
+      // Clamp within safe horizontal viewport boundaries
+      left = Math.max(minLeft, Math.min(left, winW - tooltipWidth - minRight));
 
-        let top = mousePos.y + 20;
-        if (top + actualHeight > winH - 20) {
-          top = mousePos.y - actualHeight - 20;
-        }
-        top = Math.max(20, Math.min(top, winH - actualHeight - 20));
+      // Vertical positioning:
+      // Start slightly above click point (-60px) for natural eye level
+      let top = mousePos.y - 60;
+      // If overflowing bottom edge, push upwards
+      if (top + actualHeight > winH - minBottom) {
+        top = winH - actualHeight - minBottom;
+      }
+      // If overflowing top nav boundary, clamp to minTop
+      if (top < minTop) {
+        top = minTop;
+      }
+      // Ensure strict clamping between minTop and bottom bound
+      top = Math.max(minTop, Math.min(top, winH - actualHeight - minBottom));
 
-        return {
-          position: "fixed",
-          left,
-          top,
-          height: region.admLevel === 2 ? "auto" : actualHeight,
-          maxHeight: actualHeight,
-          zIndex: Z.detailPane,
-        };
-      })()
-    : {
+      return {
         position: "fixed",
-        bottom: "1.5rem",
-        left: "50%",
-        transform: "translateX(-50%)",
-        height: 580,
+        left: `${left}px`,
+        top: `${top}px`,
+        width: `${tooltipWidth}px`,
+        maxHeight: `${actualHeight}px`,
+        height: region.admLevel === 2 ? "auto" : `${actualHeight}px`,
         zIndex: Z.detailPane,
       };
+    }
+
+    // Default fallback when mousePos is null (e.g. selected via search)
+    return {
+      position: "fixed",
+      top: `${minTop + 16}px`,
+      right: `${minRight + 16}px`,
+      width: `${tooltipWidth}px`,
+      maxHeight: `${availableHeight}px`,
+      height: region.admLevel === 2 ? "auto" : `${actualHeight}px`,
+      zIndex: Z.detailPane,
+    };
+  }, [mousePos, region.admLevel]);
 
   const mobileStyle: React.CSSProperties = {
     position: "fixed",
@@ -138,8 +162,8 @@ export const RegionTooltip = memo(function RegionTooltip({
         className={`
           bg-white/95 backdrop-blur-md shadow-2xl overflow-hidden flex flex-col border border-slate-200/80
           ${isMobile 
-            ? "animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[90vh] rounded-t-[32px]" 
-            : "w-80 animate-in fade-in zoom-in duration-200 rounded-2xl"
+            ? "animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[85vh] rounded-t-[32px]" 
+            : "animate-in fade-in zoom-in duration-200 rounded-2xl"
           }
         `}
       >
