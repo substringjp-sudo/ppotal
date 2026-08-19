@@ -4,6 +4,7 @@ import {
   getNextIncrement,
   getRegionScore,
   getScoreColor,
+  getMapColor,
 } from "../scoring";
 
 const REGION_ID = "KOR-ADM1-001";
@@ -154,28 +155,45 @@ describe("Hierarchy Scoring", () => {
   });
 });
 
+/**
+ * Bands are 8 / 18 / 31 / 51, matching getMapColor and getCumulativeColor in
+ * the same module — the three ramps have to agree or the same score renders
+ * as two different colours depending on which one drew it.
+ *
+ * These expectations previously read 10 / 30 / 50 / 70, which no ramp in the
+ * codebase has ever used, and had been failing since they were written.
+ */
 describe("getScoreColor", () => {
   it("returns base color for 0 score", () => {
     expect(getScoreColor(0)).toBe("#f8fafc");
   });
-  it("returns light blue for score < 10", () => {
-    expect(getScoreColor(5)).toBe("#93c5fd");
-    expect(getScoreColor(9)).toBe("#93c5fd");
+  it("returns light blue below 8", () => {
+    expect(getScoreColor(1)).toBe("#93c5fd");
+    expect(getScoreColor(7)).toBe("#93c5fd");
   });
-  it("returns medium blue for 10-29 score", () => {
-    expect(getScoreColor(10)).toBe("#60a5fa");
-    expect(getScoreColor(29)).toBe("#60a5fa");
+  it("returns medium blue for 8-17", () => {
+    expect(getScoreColor(8)).toBe("#60a5fa");
+    expect(getScoreColor(17)).toBe("#60a5fa");
   });
-  it("returns deep blue for 30-49 score", () => {
+  it("returns deep blue for 18-30", () => {
+    expect(getScoreColor(18)).toBe("#3b82f6");
     expect(getScoreColor(30)).toBe("#3b82f6");
-    expect(getScoreColor(49)).toBe("#3b82f6");
   });
-  it("returns very deep blue for 50-69 score", () => {
+  it("returns very deep blue for 31-50", () => {
+    expect(getScoreColor(31)).toBe("#2563eb");
     expect(getScoreColor(50)).toBe("#2563eb");
-    expect(getScoreColor(69)).toBe("#2563eb");
   });
-  it("returns darkest blue for 70+ score", () => {
-    expect(getScoreColor(70)).toBe("#1e3a8a");
+  it("returns darkest blue from 51", () => {
+    expect(getScoreColor(51)).toBe("#1e3a8a");
     expect(getScoreColor(100)).toBe("#1e3a8a");
+  });
+
+  it("agrees with the map ramp it shares bands with", () => {
+    // Same score, same colour, whichever function drew it.
+    for (const score of [0, 1, 7, 8, 17, 18, 30, 31, 50, 51, 100]) {
+      expect(getScoreColor(score)).toBe(
+        getMapColor({ totalScore: score, scoreType: "blue", directScore: score } as never),
+      );
+    }
   });
 });

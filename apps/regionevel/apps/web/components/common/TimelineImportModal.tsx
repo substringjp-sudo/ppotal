@@ -7,7 +7,7 @@ import { X, UploadCloud, MapPinned, Loader2, CheckCircle2, AlertTriangle, Footpr
 import type { VisitCategory } from "@regionevel/types";
 import { VISIT_CONFIG } from "@regionevel/types";
 import { useVisitStore } from "@/store/visitStore";
-import { parseGoogleTimeline } from "@/lib/timelineImport/parseGoogleTimeline";
+import { describeParseFailure, parseGoogleTimeline } from "@/lib/timelineImport/parseGoogleTimeline";
 import { buildTimelineImportPreview } from "@/lib/timelineImport/classify";
 import type { TimelineImportPreview } from "@/lib/timelineImport/types";
 
@@ -56,13 +56,22 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
     try {
       const parsed = parseGoogleTimeline(roots.length === 1 ? roots[0] : roots);
       if (parsed.stays.length === 0 && parsed.moves.length === 0) {
-        setError("타임라인 데이터에서 인식 가능한 이동/방문 기록을 찾지 못했어요. 내보낸 JSON 파일이 맞는지 확인해주세요.");
+        // Say what was actually seen. "No records found" on its own gives the
+        // user nothing to act on and tells us nothing about their file.
+        console.warn("[Timeline] parsed nothing:", parsed.diagnostics, parsed.skipped);
+        setError(describeParseFailure(parsed.diagnostics));
         setPhase("error");
         return;
       }
       const built = await buildTimelineImportPreview(parsed);
       if (built.regions.length === 0) {
-        setError("경로는 읽었지만 어떤 지역과도 매칭되지 않았어요. (경계 데이터가 없는 지역일 수 있어요)");
+        console.warn("[Timeline] no regions matched:", built.resolution, parsed.diagnostics);
+        const { pointsTried, pointsResolved } = built.resolution;
+        setError(
+          pointsResolved === 0
+            ? `방문 ${parsed.stays.length}건, 이동 ${parsed.moves.length}건을 읽었지만 ${pointsTried}개 지점이 모두 지역 경계 밖으로 나왔어요. 경계 데이터를 불러오지 못했을 수 있어요.`
+            : `지점 ${pointsResolved}/${pointsTried}개는 찾았지만 반영할 지역이 없었어요.`,
+        );
         setPhase("error");
         return;
       }
@@ -70,7 +79,16 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
       setPhase("review");
     } catch (e: any) {
       console.error("Timeline import failed:", e);
-      setError(e?.message?.includes("JSON") ? "JSON 형식을 읽을 수 없어요. 올바른 Timeline.json 파일인지 확인해주세요." : "가져오는 중 오류가 발생했어요.");
+      const raw = String(e?.message ?? e ?? "");
+      // Carry the real reason through. A bare "something went wrong" leaves
+      // the user with nothing to try and us with nothing to go on.
+      setError(
+        raw.includes("JSON")
+          ? "JSON 형식을 읽을 수 없어요. 올바른 Timeline.json 파일인지 확인해주세요."
+          : /firestore|firebase|network|fetch/i.test(raw)
+            ? "지역 경계 데이터를 불러오지 못했어요. 네트워크 상태를 확인하고 다시 시도해주세요."
+            : `가져오는 중 오류가 발생했어요: ${raw.slice(0, 160)}`,
+      );
       setPhase("error");
     }
   }, []);

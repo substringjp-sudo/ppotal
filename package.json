@@ -19,7 +19,8 @@
     "jprail:dev": "pnpm dev --filter japanrailnote",
     "pplan:dev": "pnpm dev --filter @pplaner/web",
     "pplan:mobile": "pnpm dev --filter @pplaner/mobile",
-    "regionevel:dev": "pnpm dev --filter @regionevel/web"
+    "regionevel:dev": "pnpm dev --filter @regionevel/web",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "latest"
