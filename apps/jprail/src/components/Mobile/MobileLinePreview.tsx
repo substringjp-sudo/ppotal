@@ -17,6 +17,8 @@ export interface MobileLinePreviewProps {
     selectedLines: string[];
     onToggleLine: (lineId: string) => void;
     railData: RailData | null;
+    /** Rendered inside the bottom sheet rather than as a floating card. */
+    inSheet?: boolean;
 }
 
 const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
@@ -27,7 +29,8 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     visitedStations,
     selectedLines,
     onToggleLine,
-    railData
+    railData,
+    inSheet = false
 }) => {
     const { language } = useI18n();
     const isSelected = selectedLines.includes(lineId);
@@ -68,9 +71,12 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
     const lNameSecondary = language === 'ja' ? lineData?.name_en : lineData?.name;
 
     return (
-        <div className="mx-2 my-1 p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300">
-            {/* Header: Line & Stats */}
-            <div className="flex justify-between items-start gap-3 mb-2">
+        <div className={inSheet
+            ? ""
+            : "mx-2 my-1 p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300"}>
+            {/* Header: Line & Stats. The sheet's own header already carries the
+                line and company names, so in the sheet only the figures stay. */}
+            <div className={`flex justify-between items-start gap-3 mb-2 ${inSheet ? 'hidden' : ''}`}>
                 <div className="flex flex-col min-w-0 flex-1">
                     {/* Line Name Section */}
                     <div className="flex items-baseline gap-2 overflow-hidden">
@@ -108,10 +114,33 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                 </div>
             </div>
 
+            {inSheet && (
+                <div className="flex items-stretch gap-2 mb-3">
+                    <div className="flex-1 flex flex-col justify-center px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/40">
+                        <span className="text-3xl font-black text-primary leading-none">{stats.percent}%</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                            {stats.visited} / {stats.total} km
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => onToggleLine(lineId)}
+                        className="shrink-0 w-24 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-colors"
+                        style={isSelected
+                            ? { background: lineColor, borderColor: lineColor, color: '#fff' }
+                            : { borderColor: 'currentColor', color: lineColor }}
+                        aria-pressed={isSelected}
+                    >
+                        {isSelected ? 'ON' : 'OFF'}
+                    </button>
+                </div>
+            )}
+
             {/* Route Map Area */}
             <div
-                className="relative mt-2 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/60 dark:border-slate-700/40 overflow-hidden shadow-inner"
-                style={{ height: '240px', display: 'flex', flexDirection: 'column' }}
+                className={`relative mt-2 rounded-2xl border overflow-hidden shadow-inner ${inSheet
+                    ? 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700/40'
+                    : 'bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border-white/60 dark:border-slate-700/40'}`}
+                style={{ height: inSheet ? '340px' : '240px', display: 'flex', flexDirection: 'column' }}
             >
                 <div className="flex-1 min-h-0 overflow-hidden relative">
                     <TubeMap
@@ -125,10 +154,15 @@ const MobileLinePreview: React.FC<MobileLinePreviewProps> = ({
                 </div>
             </div>
 
-            {/* Bottom Indicator for interactivity */}
-            <div className="mt-2 flex justify-center">
-                <div className="w-8 h-1 rounded-full bg-slate-200 dark:bg-slate-700/50" />
-            </div>
+            {inSheet ? (
+                <div className="mt-2 flex justify-center">
+                    <div id="tube-minimap-portal" className="empty:hidden bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-1.5 border border-slate-100 dark:border-slate-700/40" />
+                </div>
+            ) : (
+                <div className="mt-2 flex justify-center">
+                    <div className="w-8 h-1 rounded-full bg-slate-200 dark:bg-slate-700/50" />
+                </div>
+            )}
         </div>
     );
 };

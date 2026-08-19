@@ -24,6 +24,7 @@ interface SidebarGroupProps {
     registerLineRef: (key: string, el: HTMLDivElement | null) => void;
     companyNames: Record<string, { name: string; name_en?: string; name_kr?: string }>;
     lineNames: Record<string, { name: string; name_en?: string; name_kr?: string }>;
+    isMobile?: boolean;
 }
 
 const SidebarLineItem: React.FC<{
@@ -37,7 +38,8 @@ const SidebarLineItem: React.FC<{
     activeLine?: string | null;
     lineLengths: Record<string, number>;
     visitedLineLengths: Record<string, number>;
-}> = memo(({ lineId, companyId, lineData, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths }) => {
+    isMobile?: boolean;
+}> = memo(({ lineId, companyId, lineData, registerLineRef, onLineClick, onToggleLine, selectedLines, activeLine, lineLengths, visitedLineLengths, isMobile = false }) => {
     const { language } = useI18n();
     const lName = getLocalizedName(lineData, language);
     const lNameSub = language !== 'ja' ? lineData.name : '';
@@ -51,24 +53,41 @@ const SidebarLineItem: React.FC<{
         <div
             ref={el => registerLineRef(key, el)}
             onClick={() => onLineClick?.(key)}
-            className={`flex flex-col p-2 rounded-lg cursor-pointer transition-all border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 group/line ${isActive ? 'bg-primary/5 border-primary/20 shadow-sm ring-1 ring-primary/10' : ''
+            className={`flex flex-col rounded-lg cursor-pointer transition-all border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 group/line ${isMobile ? 'p-2 min-h-[56px] justify-center' : 'p-2'
+                } ${isActive ? 'bg-primary/5 border-primary/20 shadow-sm ring-1 ring-primary/10' : ''
                 }`}
             role="button"
             tabIndex={0}
         >
-            <div className="flex items-center gap-2 mb-1.5">
-                <div className="relative size-4 flex items-center justify-center">
+            <div className={`flex items-center gap-2 ${isMobile ? 'mb-1' : 'mb-1.5'}`}>
+                {/* The hit area is the wrapper, not the 16px box. Growing the
+                    input with a pseudo-element gave a target nothing could
+                    measure and that overlapped the row's own click. */}
+                <div
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    aria-label={`${lName} ${language === 'ko' ? '노선 선택' : language === 'ja' ? '路線選択' : 'line selection'}`}
+                    tabIndex={0}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLine(key);
+                        trackEvent('line_toggle', 'interaction', key);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key !== ' ' && e.key !== 'Enter') return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onToggleLine(key);
+                    }}
+                    className={`relative flex items-center justify-center shrink-0 cursor-pointer rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isMobile ? 'size-11 -my-2 -ml-1' : 'size-4 after:content-[\'\'] after:absolute after:inset-[-14px]'}`}
+                >
                     <input
                         type="checkbox"
                         checked={isSelected}
                         readOnly
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleLine(key);
-                            trackEvent('line_toggle', 'interaction', key);
-                        }}
-                        aria-label={`${lName} ${language === 'ko' ? '노선 선택' : language === 'ja' ? '路線選択' : 'line selection'}`}
-                        className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 pointer-events-auto relative after:content-[''] after:absolute after:inset-[-16px] after:cursor-pointer"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary shrink-0 transition-all pointer-events-none"
                     />
                     <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
                         check
@@ -125,7 +144,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
         title, groupKey, companies, expanded, onToggleExpanded, onToggleSelection,
         selectedLines, onToggleLine, onToggleCompany, expandedCompanies, toggleCompany,
         lineLengths, visitedLineLengths, sortMode, activeLine, onLineClick,
-        registerLineRef, companyNames, lineNames
+        registerLineRef, companyNames, lineNames, isMobile = false
     } = props;
 
     const { language } = useI18n();
@@ -173,30 +192,44 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
     return (
         <details className="group/details border-b border-slate-50 dark:border-slate-800/50" open={expanded}>
             <summary
-                className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer list-none transition-colors"
+                className={`flex items-center justify-between rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer list-none transition-colors ${isMobile ? 'px-2.5 min-h-[52px]' : 'p-2.5'}`}
                 onClick={(e) => {
                     e.preventDefault();
                     onToggleExpanded(groupKey);
                 }}
             >
                 <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="relative size-4 flex items-center justify-center">
+                    <div
+                        role="checkbox"
+                        aria-checked={isAllGroupSelected ? true : isSomeGroupSelected ? 'mixed' : false}
+                        aria-label={`${title} ${language === 'ko' ? '카테고리 전체 선택' : language === 'ja' ? 'カテゴリ一括選択' : 'category selection'}`}
+                        tabIndex={0}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            onToggleSelection(groupKey);
+                            trackEvent('category_toggle', 'interaction', groupKey);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key !== ' ' && e.key !== 'Enter') return;
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onToggleSelection(groupKey);
+                        }}
+                        className={`relative flex items-center justify-center shrink-0 cursor-pointer rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isMobile ? 'size-11 -my-2 -ml-1' : 'size-4 after:content-[\'\'] after:absolute after:inset-[-14px]'}`}
+                    >
                         <input
                             type="checkbox"
                             checked={isAllGroupSelected}
+                            readOnly
+                            tabIndex={-1}
+                            aria-hidden="true"
                             ref={input => {
                                 if (input) {
                                     input.indeterminate = isSomeGroupSelected && !isAllGroupSelected;
                                 }
                             }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onToggleSelection(groupKey);
-                                trackEvent('category_toggle', 'interaction', groupKey);
-                            }}
-                            onChange={() => { }} // Controlled component needs onChange
-                            aria-label={`${title} ${language === 'ko' ? '카테고리 전체 선택' : language === 'ja' ? 'カテゴリ一括選択' : 'category selection'}`}
-                            className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 relative after:content-[''] after:absolute after:inset-[-16px] after:cursor-pointer"
+                            className="peer appearance-none size-4 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary shrink-0 transition-all pointer-events-none"
                         />
                         <span className="material-symbols-outlined absolute pointer-events-none text-[12px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
                             check
@@ -222,7 +255,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                 </span>
             </summary>
 
-            <div className="pl-6 pr-1 py-1 space-y-3">
+            <div className={`pr-1 py-1 space-y-3 ${isMobile ? 'pl-2' : 'pl-6'}`}>
                 {sortedCompanies.map(([companyId, lines]) => {
                     const isExpanded = expandedCompanies[companyId];
                     const companyData = companyNames[companyId];
@@ -247,25 +280,38 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                     });
 
                     return (
-                        <div key={companyId} className="border-l-2 border-slate-100 dark:border-slate-800 pl-3 py-1 ml-2">
-                            <div className="flex items-center gap-2 mb-2 group/company">
-                                <div className="relative size-3.5 flex items-center justify-center">
+                        <div key={companyId} className={`border-l-2 border-slate-100 dark:border-slate-800 py-1 ${isMobile ? 'pl-2 ml-1' : 'pl-3 ml-2'}`}>
+                            <div className={`flex items-center gap-2 group/company ${isMobile ? 'min-h-[52px] mb-1' : 'mb-2'}`}>
+                                <div
+                                    role="checkbox"
+                                    aria-checked={allLinesSelected ? true : someLinesSelected ? 'mixed' : false}
+                                    aria-label={`${cName} ${language === 'ko' ? '회사 노선 전체 선택' : language === 'ja' ? '会社路線一括選択' : 'company lines selection'}`}
+                                    tabIndex={0}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onToggleCompany(companyId, lines);
+                                        trackEvent('company_toggle_selection', 'interaction', companyId);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key !== ' ' && e.key !== 'Enter') return;
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onToggleCompany(companyId, lines);
+                                    }}
+                                    className={`relative flex items-center justify-center shrink-0 cursor-pointer rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isMobile ? 'size-11 -my-2 -ml-1' : 'size-3.5 after:content-[\'\'] after:absolute after:inset-[-16px]'}`}
+                                >
                                     <input
                                         type="checkbox"
                                         checked={allLinesSelected}
+                                        readOnly
+                                        tabIndex={-1}
+                                        aria-hidden="true"
                                         ref={input => {
                                             if (input) {
                                                 input.indeterminate = someLinesSelected && !allLinesSelected;
                                             }
                                         }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onToggleCompany(companyId, lines);
-                                            trackEvent('company_toggle_selection', 'interaction', companyId);
-                                        }}
-                                        onChange={() => { }} // Controlled component needs onChange
-                                        aria-label={`${cName} ${language === 'ko' ? '회사 노선 전체 선택' : language === 'ja' ? '会社路線一括選択' : 'company lines selection'}`}
-                                        className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary cursor-pointer shrink-0 transition-all focus:ring-2 focus:ring-primary/20 relative after:content-[''] after:absolute after:inset-[-18px] after:cursor-pointer"
+                                        className="peer appearance-none size-3.5 rounded border border-slate-300 dark:border-slate-600 checked:bg-primary checked:border-primary indeterminate:bg-primary indeterminate:border-primary shrink-0 transition-all pointer-events-none"
                                     />
                                     <span className="material-symbols-outlined absolute pointer-events-none text-[10px] text-white scale-0 peer-checked:scale-100 transition-transform font-black">
                                         check
@@ -275,7 +321,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                     </div>
                                 </div>
                                 <div
-                                    className="flex-1 min-w-0 cursor-pointer flex justify-between items-center pr-2"
+                                    className={`flex-1 min-w-0 cursor-pointer flex justify-between items-center pr-2 ${isMobile ? 'min-h-[44px]' : ''}`}
                                     onClick={() => toggleCompany(companyId)}
                                     role="button"
                                     tabIndex={0}
@@ -316,6 +362,7 @@ const SidebarGroup: React.FC<SidebarGroupProps> = (props) => {
                                             activeLine={activeLine}
                                             lineLengths={lineLengths}
                                             visitedLineLengths={visitedLineLengths}
+                                            isMobile={isMobile}
                                         />
                                     ))}
                                 </div>

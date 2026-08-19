@@ -15,6 +15,7 @@ import {
     availableScopes, computeShareStats
 } from '../lib/shareCard';
 import { drawShareCard, CARD_SIZE, DEFAULT_CARD_STYLE, ShareCardStyle, CardAspectRatio } from '../lib/shareCardRender';
+import { Z } from '../lib/layers';
 
 export interface ShareCardModalProps {
     isOpen: boolean;
@@ -265,7 +266,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const modalMaxWidth = aspectRatio === '16:9' ? 'max-w-[1360px]' : aspectRatio === '1:1' ? 'max-w-[1120px]' : 'max-w-[900px]';
 
     return (
-        <div className="fixed inset-0 z-[20000] flex items-center justify-center p-4">
+        <div style={{ zIndex: Z.modal }} className="fixed inset-0 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-[#0f172acc] backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
 
             <div className={`relative w-full ${modalMaxWidth} max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-6 duration-400 flex flex-col transition-all duration-300`}>

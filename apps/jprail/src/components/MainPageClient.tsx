@@ -62,6 +62,9 @@ const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: fa
 const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
 
 import { useRegionNames } from '../hooks/useRegionNames';
+import { getLocalizedName, getLocalizedAddress } from '../lib/i18n-utils';
+import { getLineColor } from '../lib/lineColors';
+import type { MobileSheetDetail } from './Mobile/MobileBottomSheet';
 import type { RouteGeneratorModalProps } from './RouteGeneratorModal';
 const RouteGeneratorModal = dynamic<RouteGeneratorModalProps>(() => import('./RouteGeneratorModal').then(m => m.RouteGeneratorModal), { ssr: false });
 
@@ -122,8 +125,16 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
+import type { MobileTopBarProps } from './Mobile/MobileTopBar';
+const MobileTopBar = dynamic<MobileTopBarProps>(() => import('./Mobile/MobileTopBar'), { ssr: false });
+import type { MobileSearchSheetProps } from './Mobile/MobileSearchSheet';
+const MobileSearchSheet = dynamic<MobileSearchSheetProps>(() => import('./Mobile/MobileSearchSheet'), { ssr: false });
+import type { MobileMenuSheetProps } from './Mobile/MobileMenuSheet';
+const MobileMenuSheet = dynamic<MobileMenuSheetProps>(() => import('./Mobile/MobileMenuSheet'), { ssr: false });
 
-import { MAIN_PAGE_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { MAIN_PAGE_TRANSLATIONS, RAIL_SEARCH_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
+import { isPhoneViewport } from '../lib/mobile';
 
 const getDocsWithTimeout = (q: any, timeoutMs: number = 3000): Promise<any> => {
     return Promise.race([
@@ -191,6 +202,8 @@ const MainPageClient = () => {
     const [syncSummaryData, setSyncSummaryData] = React.useState<{ count: number; cities: string[] }>({ count: 0, cities: [] });
     const regionNames = useRegionNames();
     const [isRouteGeneratorOpen, setIsRouteGeneratorOpen] = React.useState(false);
+    const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     const { language, isKorean } = useI18n();
     const t = getTranslations(MAIN_PAGE_TRANSLATIONS, language);
@@ -223,7 +236,10 @@ const MainPageClient = () => {
         const handleResize = () => {
             const width = window.innerWidth;
             setWindowWidth(width);
-            setIsMobile(width <= 768);
+            // Not `width <= 768`: that hands a phone in landscape the desktop
+            // layout, which needs 670px of horizontal chrome on a screen with
+            // 390px of vertical room. See `isPhoneViewport`.
+            setIsMobile(isPhoneViewport(width, window.innerHeight));
         };
         handleResize();
         window.addEventListener('resize', handleResize);
@@ -506,10 +522,6 @@ const MainPageClient = () => {
         setActiveLine(line);
         setSelectedStation(null);
 
-        if (isMobile) {
-            setIsMobileSheetOpen(false);
-        }
-
         setSelectedLines(prev => {
             if (prev.includes(line)) return prev;
             let next = [...prev, line];
@@ -524,10 +536,6 @@ const MainPageClient = () => {
         setActiveLine(line);
         setSelectedStation(null);
         setZoomTarget({ type: 'line', id: line });
-
-        if (isMobile) {
-            setIsMobileSheetOpen(false);
-        }
 
         setSelectedLines(prev => {
             let next = prev.includes(line) ? prev : [...prev, line];
@@ -544,9 +552,6 @@ const MainPageClient = () => {
         if (station) {
             setSelectedStation(station);
             setActiveLine(null);
-            if (isMobile) {
-                setIsMobileSheetOpen(false);
-            }
             trackEvent('station_click', 'interaction', station.name);
 
             // Fetch extra station info (like neighbors) from remote
@@ -767,6 +772,87 @@ const MainPageClient = () => {
         }).filter((id): id is string => !!id);
     }, [selectedStation, railData]);
 
+    /**
+     * What the bottom sheet shows instead of its tabs.
+     *
+     * Station and line detail used to be a card floating over the top of the
+     * map, which covered the thing it was describing and gave the phone two
+     * competing surfaces. It is the same content, moved into the one sheet the
+     * screen already has.
+     */
+    const mobileSheetDetail = React.useMemo<MobileSheetDetail | null>(() => {
+        if (!isMobile || !railData) return null;
+
+        if (selectedStation) {
+            return {
+                id: `station:${selectedStation.id}`,
+                title: getLocalizedName(selectedStation, language) || selectedStation.name,
+                subtitle: getLocalizedAddress(
+                    selectedStation.prefecture_id, selectedStation.city_id, regionNames, language
+                ) || undefined,
+                summary: (
+                    <div className="flex items-center gap-2 w-full px-3 py-3 bg-slate-50 dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5">
+                        <span className="material-symbols-outlined text-primary text-xl">location_on</span>
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest truncate">
+                            {t.linesAtStation(mobilePreviewLines.length)}
+                        </span>
+                    </div>
+                ),
+                content: (
+                    <MobileStationPreviewWithNoSSR
+                        station={selectedStation}
+                        lines={mobilePreviewLines}
+                        onLineClick={(lineId: string) => handleRailroadClick(lineId)}
+                        railData={railData}
+                        isTripInProgress={isTripInProgress}
+                        tripStartStationId={tripStartStation?.id || null}
+                        onStartTrip={handleStartTrip}
+                        onEndTrip={handleEndTrip}
+                        onCancel={() => { setTripStartStation(null); setDraftTrip(null); }}
+                        inSheet
+                    />
+                ),
+                onClose: () => setSelectedStation(null)
+            };
+        }
+
+        if (activeLine && lineDetailData) {
+            const [company, lineName] = activeLine.split('::');
+            return {
+                id: `line:${activeLine}`,
+                title: getLocalizedName(railData.lines[lineName], language) || lineName,
+                subtitle: getLocalizedName(railData.companies[company], language) || company,
+                accent: getLineColor(activeLine, railData) || undefined,
+                summary: (
+                    <div className="flex items-center gap-2 w-full px-3 py-3 bg-slate-50 dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5">
+                        <span className="material-symbols-outlined text-primary text-xl">directions_railway</span>
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest truncate">
+                            {t.viewRoute}
+                        </span>
+                    </div>
+                ),
+                content: (
+                    <MobileLinePreviewWithNoSSR
+                        lineId={activeLine}
+                        visitedEdges={lineDetailData.visitedEdges}
+                        segments={lineDetailData.segments}
+                        nodes={lineDetailData.nodes}
+                        visitedStations={lineDetailData.visitedStations}
+                        selectedLines={selectedLines}
+                        onToggleLine={toggleLine}
+                        railData={railData}
+                        inSheet
+                    />
+                ),
+                onClose: () => setActiveLine(null)
+            };
+        }
+
+        return null;
+    }, [isMobile, railData, selectedStation, activeLine, lineDetailData, mobilePreviewLines,
+        language, regionNames, isTripInProgress, tripStartStation, selectedLines, t,
+        handleRailroadClick, handleStartTrip, handleEndTrip, toggleLine]);
+
     const setLineIdMapping = React.useCallback(() => { }, []);
 
     return (
@@ -774,12 +860,25 @@ const MainPageClient = () => {
             <div className="h-screen flex flex-col overflow-hidden relative max-w-[1920px] mx-auto w-full shadow-2xl shadow-slate-900/10">
                 <a
                     href="#main-content"
-                    className="absolute -left-[9999px] top-auto w-px h-px overflow-hidden z-[-1] bg-primary text-white p-2.5 rounded-b-lg no-underline font-bold focus:left-1/2 focus:-translate-x-1/2 focus:w-auto focus:h-auto focus:z-[10001]"
+                    className="absolute -left-[9999px] top-auto w-px h-px overflow-hidden z-[-1] bg-primary text-white p-2.5 rounded-b-lg no-underline font-bold focus:left-1/2 focus:-translate-x-1/2 focus:w-auto focus:h-auto"
                 >
                     Skip to main content
                 </a>
 
-                <header className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 z-[10001] shadow-sm relative">
+                {/* A phone bar and a desktop bar are different objects, not one
+                    bar with breakpoints: the desktop row measured 565px wide on
+                    a 390px screen, which put the account button off the display
+                    entirely. */}
+                {isMobile ? (
+                    <MobileTopBar
+                        onOpenSearch={() => setIsMobileSearchOpen(true)}
+                        onOpenMenu={() => setIsMobileMenuOpen(true)}
+                        onOpenProfile={() => user ? setIsMobileSheetOpen(true) : setIsAuthModalOpen(true)}
+                        userInitial={user ? (user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase() : null}
+                        searchPlaceholder={getTranslations(RAIL_SEARCH_TRANSLATIONS, language).placeholder}
+                    />
+                ) : (
+                <header style={{ zIndex: Z.header }} className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 shadow-sm relative">
                     {/* Left: Logo & Title */}
                     <div className="flex items-center gap-3 shrink-0 mr-4">
                         <JrnLogo size={32} />
@@ -928,6 +1027,7 @@ const MainPageClient = () => {
                         </div>
                     </div>
                 </header>
+                )}
 
                 <main id="main-content" className="flex-1 relative overflow-hidden focus:outline-none" tabIndex={-1}>
                     {/* Background Layer: The Map - Now spans full background */}
@@ -971,56 +1071,11 @@ const MainPageClient = () => {
                     </div>
 
                     {/* Foreground Layer: UI & Side Panels */}
-                    <div className="absolute inset-0 z-[5000] flex pointer-events-none h-full overflow-hidden">
-                        {isMobile && (
-                            <div className="absolute top-0 left-0 right-0 z-[1100] pointer-events-none p-0 bg-transparent w-full">
-                                {selectedStation && railData ? (
-                                    <div className="p-2.5 pointer-events-auto">
-                                        <MobileStationPreviewWithNoSSR
-                                            station={selectedStation}
-                                            lines={mobilePreviewLines}
-                                            onLineClick={(lineId: string) => {
-                                                handleRailroadClick(lineId);
-                                            }}
-                                            railData={railData}
-                                            isTripInProgress={isTripInProgress}
-                                            tripStartStationId={tripStartStation?.id || null}
-                                            onStartTrip={handleStartTrip}
-                                            onEndTrip={handleEndTrip}
-                                            onCancel={() => {
-                                                setTripStartStation(null);
-                                                setDraftTrip(null);
-                                            }}
-                                        />
-                                    </div>
-                                ) : activeLine && lineDetailData && railData ? (
-                                    <div className="p-0 max-h-[70vh] overflow-y-auto pointer-events-auto custom-scrollbar">
-                                        <MobileLinePreviewWithNoSSR
-                                            lineId={activeLine}
-                                            visitedEdges={lineDetailData.visitedEdges}
-                                            segments={lineDetailData.segments}
-                                            nodes={lineDetailData.nodes}
-                                            visitedStations={lineDetailData.visitedStations}
-                                            selectedLines={selectedLines}
-                                            onToggleLine={toggleLine}
-                                            railData={railData}
-                                        />
-                                    </div>
-                                ) : null}
-
-                                {/* Floating portal for TubeMap minimap on mobile - Placed directly below the panel */}
-                                {isMobile && activeLine && (
-                                    <div className="mt-2.5 flex justify-center pointer-events-auto animate-in fade-in zoom-in duration-500 delay-150">
-                                        <div id="tube-minimap-portal" className="bg-white/40 dark:bg-slate-950/40 backdrop-blur-md rounded-2xl p-1.5 shadow-xl border border-white/20 dark:border-slate-800/30 min-h-[44px]" />
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
+                    <div style={{ zIndex: Z.mapOverlay }} className="absolute inset-0 flex pointer-events-none h-full overflow-hidden">
                         {!isMobile && (
                             <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                    <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
+                                    <SidebarWithNoSSR isMobile={false} selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
                                 </div>
                             </aside>
                         )}
@@ -1033,12 +1088,13 @@ const MainPageClient = () => {
                                     onSettingsChange={updateStyleSettings}
                                     isOpen={isMapStyleOpen}
                                     onOpenChange={setIsMapStyleOpen}
+                                    isMobile={isMobile}
                                 />
                                 <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
                             </div>
 
                             {!isMobile && lineDetailData && activeLine && railData && (
-                                <div className="relative z-[1100] pointer-events-auto">
+                                <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
                                     <LineDetailPaneWithNoSSR
                                         lineId={activeLine}
                                         segments={lineDetailData.segments}
@@ -1055,7 +1111,7 @@ const MainPageClient = () => {
                                 </div>
                             )}
                             {!isMobile && selectedStation && railData && (
-                                <div className="relative z-[1100] pointer-events-auto">
+                                <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
                                     <StationDetailPaneWithNoSSR
                                         station={selectedStation}
                                         railData={railData}
@@ -1095,6 +1151,7 @@ const MainPageClient = () => {
                         <MobileBottomSheet
                             isOpen={isMobileSheetOpen}
                             onToggle={setIsMobileSheetOpen}
+                            detail={mobileSheetDetail}
                             onExpand={() => {
                                 setSelectedStation(null);
                                 setActiveLine(null);
@@ -1118,16 +1175,14 @@ const MainPageClient = () => {
                                     ),
                                     content: (
                                         <SidebarWithNoSSR
+                                            isMobile
                                             selectedLines={selectedLines}
                                             onToggleLine={toggleLine}
                                             onSetSelectedLines={setSelectedLinesList}
                                             lineLengths={lineLengths}
                                             visitedLineLengths={visitedLineLengths}
                                             activeLine={activeLine}
-                                            onLineClick={(line: string) => {
-                                                handleLineClick(line);
-                                                if (isMobile) setIsMobileSheetOpen(false);
-                                            }}
+                                            onLineClick={handleLineClick}
                                             className="bg-transparent border-none shadow-none"
                                         />
                                     )
@@ -1171,6 +1226,7 @@ const MainPageClient = () => {
                                     ),
                                     content: (
                                         <MyLinesPane
+                                            isMobile
                                             recordedTrips={recordedTrips}
                                             onDeleteTrip={handleDeleteTrip}
                                             onResetTrips={handleResetTrips}
@@ -1206,6 +1262,36 @@ const MainPageClient = () => {
                 onClose={() => setIsAuthModalOpen(false)}
             />
 
+            {isMobile && (
+                <MobileSearchSheet
+                    isOpen={isMobileSearchOpen}
+                    onClose={() => setIsMobileSearchOpen(false)}
+                    railData={railData}
+                    onSelectStation={handleSearchSelectStation}
+                    onSelectLine={handleSearchSelectLine}
+                />
+            )}
+
+            {isMobile && (
+                <MobileMenuSheet
+                    isOpen={isMobileMenuOpen}
+                    onClose={() => setIsMobileMenuOpen(false)}
+                    onHowTo={() => setIsHowToOpen(true)}
+                    onFeedback={() => setIsFeedbackOpen(true)}
+                    onInfo={() => setIsInfoOpen(true)}
+                    onExport={exportMap}
+                    onLogin={() => setIsAuthModalOpen(true)}
+                    onSync={() => syncWithRegionevel()}
+                    onLogout={async () => {
+                        const { auth } = await import('../lib/firebase');
+                        const { signOut } = await import('firebase/auth');
+                        await signOut(auth);
+                    }}
+                    userEmail={user?.email ?? null}
+                    isSyncing={isRecordingLoading}
+                />
+            )}
+
             <ShareCardModal
                 isOpen={isExportModalOpen}
                 onClose={() => setIsExportModalOpen(false)}
@@ -1239,7 +1325,7 @@ const MainPageClient = () => {
             {/* Info Modal for Mobile */}
 
             {isInfoOpen && (
-                <div className="fixed inset-0 z-[11000] bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
+                <div style={{ zIndex: Z.modal }} className="fixed inset-0 bg-slate-900/90 backdrop-blur-lg flex flex-col p-6 overflow-hidden animate-in fade-in duration-300">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-white text-xl font-black uppercase tracking-widest">{t.information}</h2>
                         <button
@@ -1318,7 +1404,7 @@ const MainPageClient = () => {
             />
 
             {!isMobile && (
-                <div className="fixed bottom-0 right-0 z-[10002] p-2 sm:p-4 pointer-events-none">
+                <div style={{ zIndex: Z.toast }} className="fixed bottom-0 right-0 p-2 sm:p-4 pointer-events-none">
                     <LanguageSelector className="pointer-events-auto rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90" />
                 </div>
             )}
@@ -1339,7 +1425,7 @@ interface SyncSummaryModalProps {
 const SyncSummaryModal: React.FC<SyncSummaryModalProps> = ({ isOpen, onClose, importedCount, cities, language }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div style={{ zIndex: Z.modalNested }} className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 max-w-sm w-full flex flex-col gap-4 animate-in zoom-in-95 duration-200">
                 <div className="flex items-center gap-3">
                     <div className="size-10 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-inner">

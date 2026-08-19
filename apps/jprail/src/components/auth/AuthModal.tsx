@@ -16,6 +16,7 @@ interface AuthModalProps {
 }
 
 import { AUTH_TRANSLATIONS, getTranslations } from '../../lib/translations';
+import { Z } from '../../lib/layers';
 
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
@@ -112,7 +113,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 3000, padding: '20px'
+            zIndex: Z.modal, padding: '20px'
         }} onClick={onClose}>
             <div style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.85)',

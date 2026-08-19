@@ -20,9 +20,15 @@ export interface SidebarProps {
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
     className?: string;
+    /**
+     * Phone density. The same list renders in the desktop rail and in the
+     * bottom sheet, so this is a prop rather than a media query — the component
+     * cannot tell from its own width which one it is in.
+     */
+    isMobile?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, className }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, className, isMobile = false }) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
     const { language } = useI18n();
@@ -191,33 +197,36 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                     setSortMode(opt.id as 'ja' | 'usage');
                                     trackEvent('sort_mode_change', 'filter', opt.id);
                                 }}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 text-[11px] font-bold rounded-md transition-all ${sortMode === opt.id
+                                className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-all ${isMobile ? 'h-11' : 'py-1.5'} ${sortMode === opt.id
                                     ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                     }`}
                             >
-                                <span className="material-symbols-outlined text-sm">{opt.icon}</span>
-                                {opt.label}
+                                <span className="material-symbols-outlined text-sm shrink-0">{opt.icon}</span>
+                                <span className="truncate">{opt.label}</span>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Bulk Actions */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* Two blocks of two side by side is 32px per button once the
+                    pane is a landscape side panel; stacked, each button gets
+                    half the pane instead of a quarter. */}
+                <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                     <div className="space-y-1">
                         <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.selection}</div>
                         <div className="grid grid-cols-2 gap-1">
                             <button
                                 onClick={handleSelectAll}
-                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm"
+                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm`}
                                 title={t.all}
                             >
                                 {t.all}
                             </button>
                             <button
                                 onClick={handleDeselectAll}
-                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm"
+                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm`}
                                 title={t.none}
                             >
                                 {t.none}
@@ -229,14 +238,14 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         <div className="grid grid-cols-2 gap-1">
                             <button
                                 onClick={() => handleToggleAllGroups(true)}
-                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group"
+                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
                                 title={t.expandAll}
                             >
                                 <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 -translate-y-[1px] -translate-x-[1px]">expand_all</span>
                             </button>
                             <button
                                 onClick={() => handleToggleAllGroups(false)}
-                                className="h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group"
+                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
                                 title={t.collapseAll}
                             >
                                 <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 translate-y-[1px] translate-x-[1px]">collapse_all</span>
@@ -256,6 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         return (
                             <SidebarGroup
                                 key={categoryId}
+                                isMobile={isMobile}
                                 title={title}
                                 groupKey={categoryId}
                                 companies={groupedHierarchy[categoryId]}

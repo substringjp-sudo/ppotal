@@ -1,6 +1,7 @@
 import React from 'react';
 import L from 'leaflet';
 import { ProcessedStation } from '../types/mapTypes';
+import { Z } from '../lib/layers';
 
 interface OffScreenIndicatorProps {
     map: L.Map | null;
@@ -43,7 +44,7 @@ const OffScreenIndicator: React.FC<OffScreenIndicatorProps> = ({ map, mapBounds,
             left: clampedX,
             top: clampedY,
             transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-            zIndex: 1000,
+            zIndex: Z.mapOverlay,
             color: '#FF00FF',
             fontSize: '24px',
             pointerEvents: 'none',

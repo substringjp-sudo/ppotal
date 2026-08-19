@@ -20,6 +20,8 @@ export interface MyLinesPaneProps {
     isSyncLoading?: boolean;
     onOpenRouteGenerator?: () => void;
     isReadOnly?: boolean;
+    /** Phone density — the same pane renders in the desktop rail and the sheet. */
+    isMobile?: boolean;
 }
 
 const getStationDisplayName = (
@@ -56,7 +58,8 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     onSyncWithRegionevel,
     isSyncLoading,
     onOpenRouteGenerator,
-    isReadOnly = false
+    isReadOnly = false,
+    isMobile = false
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
@@ -88,7 +91,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     <button
                         onClick={onOpenRouteGenerator}
                         disabled={isReadOnly}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${isReadOnly
+                        className={`flex items-center gap-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${isMobile ? 'h-11' : 'py-1.5'} ${isReadOnly
                             ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
                             : 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95'}`}
                         title={isReadOnly ? (language === 'ko' ? '도트/스퀘어/허니콤 모드에서는 경로 생성이 비활성화됩니다.' : 'Route generator disabled in tile mode') : undefined}
@@ -157,7 +160,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                             <button
                                 onClick={() => setIsResetConfirming(true)}
                                 disabled={isReadOnly}
-                                className={`w-full py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${isReadOnly
+                                className={`w-full px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${isMobile ? 'h-11' : 'py-2'} ${isReadOnly
                                     ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'
                                     : 'border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-98'}`}
                             >
@@ -175,13 +178,13 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                             onResetTrips();
                                             setIsResetConfirming(false);
                                         }}
-                                        className="py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition-all active:scale-95"
+                                        className={`rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition-all active:scale-95 ${isMobile ? 'h-11' : 'py-1.5'}`}
                                     >
                                         {(t as any).yesDelete || '예, 초기화'}
                                     </button>
                                     <button
                                         onClick={() => setIsResetConfirming(false)}
-                                        className="py-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all"
+                                        className={`rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all ${isMobile ? 'h-11' : 'py-1.5'}`}
                                     >
                                         {t.cancel || '취소'}
                                     </button>
@@ -234,7 +237,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                             <button
                                                 onClick={() => !isReadOnly && onDeleteTrip(trip.id)}
                                                 disabled={isReadOnly}
-                                                className={`p-1 transition-colors rounded-lg ${isReadOnly
+                                                className={`transition-colors rounded-lg flex items-center justify-center ${isMobile ? 'size-11 -mr-2' : 'p-1'} ${isReadOnly
                                                     ? 'text-slate-200 dark:text-slate-700 cursor-not-allowed'
                                                     : 'text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30'}`}
                                                 title={t.deleteTrip || '여행 삭제'}

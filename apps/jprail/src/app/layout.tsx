@@ -1,5 +1,5 @@
 import { constructMetadata, Analytics } from '@ppotal/ui';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@ppotal/ui";
@@ -25,6 +25,24 @@ const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
 });
+
+/**
+ * `viewportFit: 'cover'` is what makes `env(safe-area-inset-*)` return anything
+ * at all. Without it the insets are zero and the layout sits under the notch
+ * and the home indicator — see lib/mobile.ts.
+ *
+ * Zooming is left enabled: this is a map of a rail network with small station
+ * names on it, and pinch-zooming the page is a legitimate way to read them.
+ */
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#e0f2fe' },
+        { media: '(prefers-color-scheme: dark)', color: '#04070f' }
+    ]
+};
 
 export const metadata: Metadata = constructMetadata({
   title: "JapanRailNote | 일본 철도 지도 & 노선도 여행 기록 | Japan Railway Map & Tracker",

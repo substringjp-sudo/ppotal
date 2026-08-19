@@ -31,6 +31,7 @@ import { useZoomBounce } from '../hooks/useZoomBounce';
 import { useViewportSections } from '../hooks/useViewportSections';
 import LandTileLayer from './LandTileLayer';
 import { themeOf, isLattice } from '../lib/mapThemes';
+import { Z } from '../lib/layers';
 
 interface MapPaneProps {
     selectedLines: string[];
@@ -593,12 +594,17 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     return (
         <>
-            {!isMobile && <MapControls
+            {/* Zoom was desktop-only, which left a phone with pinch as the only
+                way to change scale — and no way at all to tell what scale it was
+                at. The controls are the same component; only where they sit and
+                how big they are differ. */}
+            <MapControls
                 zoom={zoomLevel}
                 minZoom={4}
                 maxZoom={18}
                 onBounce={triggerBounce}
-            />}
+                isMobile={isMobile}
+            />
 
             {activePrefectures && (
                 <JapanMap
@@ -798,7 +804,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         top: '20px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        zIndex: 11000,
+                        zIndex: Z.mapOverlay,
                         display: 'flex',
                         alignItems: 'center',
                         gap: '10px',
@@ -828,7 +834,7 @@ const MapPane: React.FC<MapPaneProps> = ({
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        zIndex: 12000,
+                        zIndex: Z.mapOverlay,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',

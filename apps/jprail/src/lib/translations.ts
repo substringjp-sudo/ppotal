@@ -31,6 +31,8 @@ export const MAIN_PAGE_TRANSLATIONS = {
     ko: {
         railList: '노선 목록',
         networkSelection: '네트워크 선택',
+        linesAtStation: (count: number) => `${count}개 노선 경유`,
+        viewRoute: '노선도 보기',
         linesSelected: (count: number) => `${count}개 노선 선택됨`,
         myTrip: '내 여정',
         trips: '여정',
@@ -82,6 +84,8 @@ export const MAIN_PAGE_TRANSLATIONS = {
     en: {
         railList: 'Rail Networks',
         networkSelection: 'Network Selection',
+        linesAtStation: (count: number) => `${count} lines here`,
+        viewRoute: 'View route map',
         linesSelected: (count: number) => `${count} Lines Selected`,
         myTrip: 'My Trips',
         trips: 'Trips',
@@ -133,6 +137,8 @@ export const MAIN_PAGE_TRANSLATIONS = {
     ja: {
         railList: '路線リスト',
         networkSelection: 'ネットワーク選択',
+        linesAtStation: (count: number) => `${count}路線が乗り入れ`,
+        viewRoute: '路線図を見る',
         linesSelected: (count: number) => `${count}個の路線を選択`,
         myTrip: 'マイ履歴',
         trips: '履歴',
@@ -727,15 +733,18 @@ export const MOBILE_STATION_PREVIEW_TRANSLATIONS = {
 export const MOBILE_BOTTOM_SHEET_TRANSLATIONS = {
     ko: {
         dragHandle: '드래그하여 조절',
-        swipe: '스와이프 ↔'
+        swipe: '스와이프 ↔',
+        close: '닫기'
     },
     en: {
         dragHandle: 'Drag to adjust',
-        swipe: 'Swipe ↔'
+        swipe: 'Swipe ↔',
+        close: 'Close'
     },
     ja: {
         dragHandle: 'ドラッグして調整',
-        swipe: 'スワイプ ↔'
+        swipe: 'スワイプ ↔',
+        close: '閉じる'
     }
 };
 

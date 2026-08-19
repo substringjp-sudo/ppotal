@@ -9,6 +9,7 @@ import { useRegionNames } from '../hooks/useRegionNames';
 import { STATION_DETAIL_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { buildRouteGraph, groupOf } from '../lib/routeSearch';
 import { countSkippedStations, railNeighbours } from '../lib/dragRouting';
+import { Z } from '../lib/layers';
 
 
 export interface StationDetailPaneProps {
@@ -213,7 +214,7 @@ const StationDetailPane: React.FC<StationDetailPaneProps> = ({
 
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 max-h-[60vh] sm:max-h-[500px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800 z-[1100] flex flex-col shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.15)] rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out font-display">
+    <div style={{ zIndex: Z.detailPane }} className="absolute bottom-0 left-0 right-0 max-h-[60vh] sm:max-h-[500px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-t border-slate-200 dark:border-slate-800  flex flex-col shadow-[0_-20px_60px_-10px_rgba(0,0,0,0.15)] rounded-t-[32px] animate-in slide-in-from-bottom duration-500 ease-out font-display">
       {/* Premium Compact Header Section */}
       <div className="flex-shrink-0 px-4 sm:px-6 py-2 sm:py-3 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/50 rounded-t-[32px] flex flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
