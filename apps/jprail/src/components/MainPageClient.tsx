@@ -1070,7 +1070,7 @@ const MainPageClient = () => {
                         {!isMobile && (
                             <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                    <SidebarWithNoSSR selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
+                                    <SidebarWithNoSSR isMobile={false} selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
                                 </div>
                             </aside>
                         )}
@@ -1170,6 +1170,7 @@ const MainPageClient = () => {
                                     ),
                                     content: (
                                         <SidebarWithNoSSR
+                                            isMobile
                                             selectedLines={selectedLines}
                                             onToggleLine={toggleLine}
                                             onSetSelectedLines={setSelectedLinesList}
@@ -1220,6 +1221,7 @@ const MainPageClient = () => {
                                     ),
                                     content: (
                                         <MyLinesPane
+                                            isMobile
                                             recordedTrips={recordedTrips}
                                             onDeleteTrip={handleDeleteTrip}
                                             onResetTrips={handleResetTrips}
