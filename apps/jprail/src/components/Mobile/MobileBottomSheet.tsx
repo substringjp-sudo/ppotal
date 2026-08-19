@@ -15,8 +15,29 @@ export interface MobileSheetTab {
     summary: React.ReactNode;
 }
 
+/**
+ * A subject the sheet shows *instead of* its tabs: a station, a line.
+ *
+ * Detail is not a fourth tab. It is a different mode — it arrives because the
+ * user tapped something on the map, it has a back affordance rather than a
+ * peer to switch to, and it goes away. Modelling it as a tab would leave a
+ * dead tab sitting there with nothing selected.
+ */
+export interface MobileSheetDetail {
+    /** Changes when the subject changes, so the sheet knows to re-present. */
+    id: string;
+    title: string;
+    subtitle?: string;
+    /** Accent for the title rule — a line's colour, when there is one. */
+    accent?: string;
+    summary: React.ReactNode;
+    content: React.ReactNode;
+    onClose: () => void;
+}
+
 interface MobileBottomSheetProps {
     tabs?: MobileSheetTab[];
+    detail?: MobileSheetDetail | null;
     children?: React.ReactNode;
     summaryContent?: React.ReactNode;
     defaultExpanded?: boolean;
@@ -40,6 +61,7 @@ const SIDE_MARGIN = 12;
  */
 const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     tabs,
+    detail,
     children,
     summaryContent,
     defaultExpanded = false,
@@ -82,12 +104,34 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
         });
     }, [isOpen]);
 
+    // A tap on the map is a request to see the thing, so the sheet comes up to
+    // meet it. Dismissing the subject puts the sheet back where it was resting
+    // rather than leaving a half-open sheet showing the tab it was on before.
+    const hadDetail = useRef(false);
+    useEffect(() => {
+        if (detail) {
+            hadDetail.current = true;
+            setDetent(prev => (prev === 'peek' ? 'half' : prev));
+            // Tell the owner too, or its `isOpen` stays false and the sync
+            // effect above pulls the sheet straight back down.
+            onToggle?.(true);
+        } else if (hadDetail.current) {
+            hadDetail.current = false;
+            setDetent('peek');
+            onToggle?.(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [detail?.id, !detail]);
+
     const applyDetent = useCallback((next: SheetDetent) => {
         setDetent(next);
         const opened = next !== 'peek';
         onToggle?.(opened);
-        if (opened && detent === 'peek') onExpand?.();
-    }, [detent, onToggle, onExpand]);
+        // `onExpand` clears the current selection: that is right when the user
+        // pulls the tab sheet open, and wrong when the sheet came up because
+        // they selected something.
+        if (opened && detent === 'peek' && !detail) onExpand?.();
+    }, [detent, onToggle, onExpand, detail]);
 
     const heightFor = (d: SheetDetent) => {
         const h = Math.round(viewportH * SHEET_DETENTS[d]);
@@ -183,7 +227,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     const onTouchEnd = (e: React.TouchEvent) => {
         const s = swipeStart.current;
         swipeStart.current = null;
-        if (!s || !tabs || tabs.length <= 1) return;
+        if (!s || detail || !tabs || tabs.length <= 1) return;
         const dx = e.changedTouches[0].clientX - s.x;
         const dy = e.changedTouches[0].clientY - s.y;
         if (Math.abs(dx) <= 50 || Math.abs(dx) <= Math.abs(dy)) return;
@@ -226,7 +270,34 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                     <div className="w-10 h-1.5 bg-black/15 dark:bg-white/20 rounded-full" />
                 </div>
 
-                {tabs && tabs.length > 1 && (
+                {detail ? (
+                    <div className="flex w-full items-center gap-2 px-3 mb-2">
+                        <button
+                            onClick={detail.onClose}
+                            className="shrink-0 size-11 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
+                            aria-label={t.close}
+                        >
+                            <span className="material-symbols-outlined !text-[22px]">arrow_back</span>
+                        </button>
+                        <div className="min-w-0 flex-1 flex flex-col justify-center">
+                            <span className="text-base font-black text-slate-900 dark:text-white truncate leading-tight">
+                                {detail.title}
+                            </span>
+                            {detail.subtitle && (
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">
+                                    {detail.subtitle}
+                                </span>
+                            )}
+                        </div>
+                        {detail.accent && (
+                            <span
+                                className="shrink-0 w-1.5 h-8 rounded-full"
+                                style={{ background: detail.accent }}
+                                aria-hidden="true"
+                            />
+                        )}
+                    </div>
+                ) : tabs && tabs.length > 1 && (
                     <div className="flex w-full px-4 mb-2">
                         <div className="flex-1 flex p-1 gap-1 bg-slate-200/50 dark:bg-black/20 backdrop-blur-md rounded-2xl border border-white/20 dark:border-white/5">
                             {tabs.map((tab, idx) => (
@@ -258,7 +329,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                         onClick={() => applyDetent('half')}
                         className="w-full px-4 pb-2 overflow-hidden cursor-pointer"
                     >
-                        {activeTab ? activeTab.summary : summaryContent}
+                        {detail ? detail.summary : activeTab ? activeTab.summary : summaryContent}
                     </div>
                 )}
             </div>
@@ -267,7 +338,11 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                 className={`flex-1 min-h-0 overflow-hidden mx-2 mb-2 bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-white/5 transition-opacity duration-200 ${expanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             >
                 <div className="h-full overflow-y-auto sheet-scroll p-4 pt-2">
-                    {activeTab ? (
+                    {detail ? (
+                        <div key={detail.id} className="animate-fade-in">
+                            {detail.content}
+                        </div>
+                    ) : activeTab ? (
                         <div key={activeTab.id} className="animate-fade-in">
                             {activeTab.content}
                         </div>

@@ -19,6 +19,12 @@ export interface MobileStationPreviewProps {
     onStartTrip?: (station: Station) => void;
     onEndTrip?: (station: Station) => void;
     onCancel?: () => void;
+    /**
+     * Rendered inside the bottom sheet rather than as a floating card. The
+     * sheet already provides the surface, the title and the scroll, so the
+     * card's own chrome and height cap would only fight it.
+     */
+    inSheet?: boolean;
 }
 
 const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
@@ -30,7 +36,8 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     tripStartStationId = null,
     onStartTrip,
     onEndTrip,
-    onCancel
+    onCancel,
+    inSheet = false
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MOBILE_STATION_PREVIEW_TRANSLATIONS, language);
@@ -41,10 +48,15 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
     const stationNameSecondary = language === 'ja' ? station.name_en : station.name;
 
     return (
-        <div className="mx-2 my-1 px-4 py-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300 flex flex-col gap-3">
-            {/* Header: Name and Trip Control */}
+        <div className={inSheet
+            ? "flex flex-col gap-3"
+            : "mx-2 my-1 px-4 py-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white/40 dark:border-slate-800/50 shadow-lg animate-in slide-in-from-top duration-300 flex flex-col gap-3"}>
+            {/* Header: Name and Trip Control. In the sheet the name is already
+                in the sheet's own header, so only the trip control repeats. */}
             <div className="flex items-center justify-between gap-2">
+                {!inSheet && (
                 <div className="flex flex-col min-w-0 flex-1">
+                    {true && (
                     <div className="flex items-center gap-1.5 overflow-hidden">
                         <span className="text-lg font-black text-slate-900 dark:text-white truncate">
                             {stationName}
@@ -53,6 +65,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                             {stationNameSecondary}
                         </span>
                     </div>
+                    )}
 
                     {address && (
                         <div className="flex items-center gap-1 mt-0.5 text-[8px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">
@@ -61,23 +74,24 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                         </div>
                     )}
                 </div>
+                )}
 
                 {/* Trip Toggle Section: Top Right */}
-                <div className="flex-shrink-0">
+                <div className={inSheet ? 'flex-1' : 'flex-shrink-0'}>
                     {!isTripInProgress ? (
                         <button
                             onClick={() => onStartTrip && onStartTrip(station)}
-                            className="px-3 py-1.5 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-1"
+                            className={`px-4 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-1 ${inSheet ? 'h-12 w-full justify-center' : 'py-1.5'}`}
                         >
                             <span className="material-symbols-outlined text-xs">play_arrow</span>
                             {t.start}
                         </button>
                     ) : (
-                        <div className="flex items-center gap-1.5">
+                        <div className={`flex items-center gap-1.5 ${inSheet ? 'w-full' : ''}`}>
                             {tripStartStationId !== station.id && (
                                 <button
                                     onClick={() => onEndTrip && onEndTrip(station)}
-                                    className="px-3 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1"
+                                    className={`px-4 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-1 ${inSheet ? 'h-12 flex-1 justify-center' : 'py-1.5'}`}
                                 >
                                     <span className="material-symbols-outlined text-xs">flag</span>
                                     {t.arr}
@@ -85,7 +99,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                             )}
                             <button
                                 onClick={() => onCancel && onCancel()}
-                                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center active:scale-95 transition-all"
+                                className={`rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center active:scale-95 transition-all ${inSheet ? 'w-11 h-11' : 'w-7 h-7'}`}
                             >
                                 <span className="material-symbols-outlined text-sm">close</span>
                             </button>
@@ -95,7 +109,9 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
             </div>
 
             {/* Lines List: Vertical List */}
-            <div className="flex flex-col gap-1.5 px-0.5 max-h-[160px] overflow-y-auto no-scrollbar">
+            <div className={inSheet
+                ? "flex flex-col gap-1.5 px-0.5"
+                : "flex flex-col gap-1.5 px-0.5 max-h-[160px] overflow-y-auto no-scrollbar"}>
                 {lines.map(lineId => {
                     const [company, line] = lineId.split('::');
                     const companyInfo = railData?.companies[company];
@@ -106,7 +122,7 @@ const MobileStationPreview: React.FC<MobileStationPreviewProps> = ({
                         <div
                             key={lineId}
                             onClick={() => onLineClick && onLineClick(lineId)}
-                            className="flex items-center gap-3 bg-slate-50/50 dark:bg-slate-800/40 p-2 rounded-xl border border-slate-100 dark:border-slate-800/50 active:scale-[0.98] transition-all"
+                            className={`flex items-center gap-3 bg-slate-50/50 dark:bg-slate-800/40 px-2 rounded-xl border border-slate-100 dark:border-slate-800/50 active:scale-[0.98] transition-all cursor-pointer ${inSheet ? 'min-h-[56px] py-2' : 'p-2'}`}
                             style={{ borderLeft: `3px solid ${color}` }}
                         >
                             <div className="flex flex-col min-w-0 flex-1">

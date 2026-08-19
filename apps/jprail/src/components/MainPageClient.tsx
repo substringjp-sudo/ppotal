@@ -62,6 +62,9 @@ const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: fa
 const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
 
 import { useRegionNames } from '../hooks/useRegionNames';
+import { getLocalizedName, getLocalizedAddress } from '../lib/i18n-utils';
+import { getLineColor } from '../lib/lineColors';
+import type { MobileSheetDetail } from './Mobile/MobileBottomSheet';
 import type { RouteGeneratorModalProps } from './RouteGeneratorModal';
 const RouteGeneratorModal = dynamic<RouteGeneratorModalProps>(() => import('./RouteGeneratorModal').then(m => m.RouteGeneratorModal), { ssr: false });
 
@@ -514,10 +517,6 @@ const MainPageClient = () => {
         setActiveLine(line);
         setSelectedStation(null);
 
-        if (isMobile) {
-            setIsMobileSheetOpen(false);
-        }
-
         setSelectedLines(prev => {
             if (prev.includes(line)) return prev;
             let next = [...prev, line];
@@ -532,10 +531,6 @@ const MainPageClient = () => {
         setActiveLine(line);
         setSelectedStation(null);
         setZoomTarget({ type: 'line', id: line });
-
-        if (isMobile) {
-            setIsMobileSheetOpen(false);
-        }
 
         setSelectedLines(prev => {
             let next = prev.includes(line) ? prev : [...prev, line];
@@ -552,9 +547,6 @@ const MainPageClient = () => {
         if (station) {
             setSelectedStation(station);
             setActiveLine(null);
-            if (isMobile) {
-                setIsMobileSheetOpen(false);
-            }
             trackEvent('station_click', 'interaction', station.name);
 
             // Fetch extra station info (like neighbors) from remote
@@ -775,6 +767,87 @@ const MainPageClient = () => {
         }).filter((id): id is string => !!id);
     }, [selectedStation, railData]);
 
+    /**
+     * What the bottom sheet shows instead of its tabs.
+     *
+     * Station and line detail used to be a card floating over the top of the
+     * map, which covered the thing it was describing and gave the phone two
+     * competing surfaces. It is the same content, moved into the one sheet the
+     * screen already has.
+     */
+    const mobileSheetDetail = React.useMemo<MobileSheetDetail | null>(() => {
+        if (!isMobile || !railData) return null;
+
+        if (selectedStation) {
+            return {
+                id: `station:${selectedStation.id}`,
+                title: getLocalizedName(selectedStation, language) || selectedStation.name,
+                subtitle: getLocalizedAddress(
+                    selectedStation.prefecture_id, selectedStation.city_id, regionNames, language
+                ) || undefined,
+                summary: (
+                    <div className="flex items-center gap-2 w-full px-3 py-3 bg-slate-50 dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5">
+                        <span className="material-symbols-outlined text-primary text-xl">location_on</span>
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest truncate">
+                            {t.linesAtStation(mobilePreviewLines.length)}
+                        </span>
+                    </div>
+                ),
+                content: (
+                    <MobileStationPreviewWithNoSSR
+                        station={selectedStation}
+                        lines={mobilePreviewLines}
+                        onLineClick={(lineId: string) => handleRailroadClick(lineId)}
+                        railData={railData}
+                        isTripInProgress={isTripInProgress}
+                        tripStartStationId={tripStartStation?.id || null}
+                        onStartTrip={handleStartTrip}
+                        onEndTrip={handleEndTrip}
+                        onCancel={() => { setTripStartStation(null); setDraftTrip(null); }}
+                        inSheet
+                    />
+                ),
+                onClose: () => setSelectedStation(null)
+            };
+        }
+
+        if (activeLine && lineDetailData) {
+            const [company, lineName] = activeLine.split('::');
+            return {
+                id: `line:${activeLine}`,
+                title: getLocalizedName(railData.lines[lineName], language) || lineName,
+                subtitle: getLocalizedName(railData.companies[company], language) || company,
+                accent: getLineColor(activeLine, railData) || undefined,
+                summary: (
+                    <div className="flex items-center gap-2 w-full px-3 py-3 bg-slate-50 dark:bg-black/20 rounded-2xl border border-slate-100 dark:border-white/5">
+                        <span className="material-symbols-outlined text-primary text-xl">directions_railway</span>
+                        <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest truncate">
+                            {t.viewRoute}
+                        </span>
+                    </div>
+                ),
+                content: (
+                    <MobileLinePreviewWithNoSSR
+                        lineId={activeLine}
+                        visitedEdges={lineDetailData.visitedEdges}
+                        segments={lineDetailData.segments}
+                        nodes={lineDetailData.nodes}
+                        visitedStations={lineDetailData.visitedStations}
+                        selectedLines={selectedLines}
+                        onToggleLine={toggleLine}
+                        railData={railData}
+                        inSheet
+                    />
+                ),
+                onClose: () => setActiveLine(null)
+            };
+        }
+
+        return null;
+    }, [isMobile, railData, selectedStation, activeLine, lineDetailData, mobilePreviewLines,
+        language, regionNames, isTripInProgress, tripStartStation, selectedLines, t,
+        handleRailroadClick, handleStartTrip, handleEndTrip, toggleLine]);
+
     const setLineIdMapping = React.useCallback(() => { }, []);
 
     return (
@@ -994,51 +1067,6 @@ const MainPageClient = () => {
 
                     {/* Foreground Layer: UI & Side Panels */}
                     <div className="absolute inset-0 z-[5000] flex pointer-events-none h-full overflow-hidden">
-                        {isMobile && (
-                            <div className="absolute top-0 left-0 right-0 z-[1100] pointer-events-none p-0 bg-transparent w-full">
-                                {selectedStation && railData ? (
-                                    <div className="p-2.5 pointer-events-auto">
-                                        <MobileStationPreviewWithNoSSR
-                                            station={selectedStation}
-                                            lines={mobilePreviewLines}
-                                            onLineClick={(lineId: string) => {
-                                                handleRailroadClick(lineId);
-                                            }}
-                                            railData={railData}
-                                            isTripInProgress={isTripInProgress}
-                                            tripStartStationId={tripStartStation?.id || null}
-                                            onStartTrip={handleStartTrip}
-                                            onEndTrip={handleEndTrip}
-                                            onCancel={() => {
-                                                setTripStartStation(null);
-                                                setDraftTrip(null);
-                                            }}
-                                        />
-                                    </div>
-                                ) : activeLine && lineDetailData && railData ? (
-                                    <div className="p-0 max-h-[70vh] overflow-y-auto pointer-events-auto custom-scrollbar">
-                                        <MobileLinePreviewWithNoSSR
-                                            lineId={activeLine}
-                                            visitedEdges={lineDetailData.visitedEdges}
-                                            segments={lineDetailData.segments}
-                                            nodes={lineDetailData.nodes}
-                                            visitedStations={lineDetailData.visitedStations}
-                                            selectedLines={selectedLines}
-                                            onToggleLine={toggleLine}
-                                            railData={railData}
-                                        />
-                                    </div>
-                                ) : null}
-
-                                {/* Floating portal for TubeMap minimap on mobile - Placed directly below the panel */}
-                                {isMobile && activeLine && (
-                                    <div className="mt-2.5 flex justify-center pointer-events-auto animate-in fade-in zoom-in duration-500 delay-150">
-                                        <div id="tube-minimap-portal" className="bg-white/40 dark:bg-slate-950/40 backdrop-blur-md rounded-2xl p-1.5 shadow-xl border border-white/20 dark:border-slate-800/30 min-h-[44px]" />
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
                         {!isMobile && (
                             <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -1118,6 +1146,7 @@ const MainPageClient = () => {
                         <MobileBottomSheet
                             isOpen={isMobileSheetOpen}
                             onToggle={setIsMobileSheetOpen}
+                            detail={mobileSheetDetail}
                             onExpand={() => {
                                 setSelectedStation(null);
                                 setActiveLine(null);
@@ -1147,10 +1176,7 @@ const MainPageClient = () => {
                                             lineLengths={lineLengths}
                                             visitedLineLengths={visitedLineLengths}
                                             activeLine={activeLine}
-                                            onLineClick={(line: string) => {
-                                                handleLineClick(line);
-                                                if (isMobile) setIsMobileSheetOpen(false);
-                                            }}
+                                            onLineClick={handleLineClick}
                                             className="bg-transparent border-none shadow-none"
                                         />
                                     )
