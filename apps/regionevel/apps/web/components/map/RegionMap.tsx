@@ -11,11 +11,14 @@ import { useVisitStore } from "@/store/visitStore";
 import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } from "@/lib/regions";
 import { findRegionForPoint } from "@/lib/geo";
 import { useViewportFeatures } from "@/lib/viewportFeatures";
+import { useIsPhone } from "@/lib/useIsPhone";
 import { regionCanvas } from "./mapRenderer";
 import { useMapStore } from "@/store/mapStore";
+import { Z } from "@/lib/layers";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import { ExportModal, type ExportModalStats } from "./ExportModal";
+import { ShareCardModal } from "./ShareCardModal";
 import { Pencil, CheckCircle2, X } from "lucide-react";
 import { toPng } from "html-to-image";
 import "leaflet/dist/leaflet.css";
@@ -268,18 +271,20 @@ export function RegionMap() {
     isDrawMode,
     setIsDrawMode,
     exportRequested,
+    shareRequested,
   } = useMapStore();
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
 
+  const isMobile = useIsPhone();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<Feature | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
   const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [exportImageData, setExportImageData] = useState<string | null>(null);
   const [drawResult, setDrawResult] = useState<{
     startName: string;
@@ -321,15 +326,6 @@ export function RegionMap() {
     [addDrawPathVisits]
   );
 
-  // Mobile detection
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   // Fetch GeoJSON data
   useEffect(() => {
@@ -662,6 +658,12 @@ export function RegionMap() {
     }
   }, [exportRequested, handleExport]);
 
+  // Same, for the share card. It lives here because this is where the loaded
+  // boundaries are, and the card draws from them rather than fetching again.
+  useEffect(() => {
+    if (shareRequested > 0) setIsShareModalOpen(true);
+  }, [shareRequested]);
+
   const onEachFeature = useCallback(
     (feature: Feature, layer: Layer) => {
       const rawId = feature.properties?.id || feature.properties?.shapeID;
@@ -822,10 +824,11 @@ export function RegionMap() {
       {!isMobile && (
         <div
           ref={hoverLabelRef}
-          className={`fixed top-0 left-0 z-[5000] pointer-events-none transition-opacity duration-200 no-export ${
+          className={`fixed top-0 left-0 pointer-events-none transition-opacity duration-200 no-export ${
             hoveredFeature || hoveredRegion ? "opacity-100" : "opacity-0"
           }`}
           style={{
+            zIndex: Z.tooltip,
             pointerEvents: "none",
             transition: "opacity 0.15s ease-out",
             willChange: "transform",
@@ -872,7 +875,7 @@ export function RegionMap() {
 
       {/* Professional Top Header (Desktop) */}
       {!isMobile && (
-        <div className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 z-[1001] flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500 no-export">
+        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500 no-export">
           {/* Breadcrumbs Section */}
           <div className="flex items-center gap-2 h-full border-r border-slate-100 pr-4 shrink-0">
             <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-md p-1">
@@ -991,7 +994,7 @@ export function RegionMap() {
 
       {/* Mobile Header */}
       {isMobile && (
-        <div className="absolute top-0 left-0 right-0 z-[1001] flex flex-col bg-white border-b border-slate-200 no-export">
+        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 flex flex-col bg-white border-b border-slate-200 no-export">
           <div className="flex items-center gap-2 p-2 pointer-events-auto">
             {history.length > 0 && (
               <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600 no-export">
@@ -1052,7 +1055,7 @@ export function RegionMap() {
       )}
 
       {/* Map Controls */}
-      <div className={`absolute z-[1001] flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
+      <div style={{ zIndex: Z.mapOverlay }} className={`absolute flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
         {loading && (
           <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -1071,7 +1074,7 @@ export function RegionMap() {
 
       {/* Draw Mode Active Banner */}
       {isDrawMode && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[5000] bg-amber-500 text-white px-4 py-2 rounded-2xl shadow-xl border border-amber-400 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 no-export">
+        <div style={{ zIndex: Z.toast }} className="absolute top-16 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-4 py-2 rounded-2xl shadow-xl border border-amber-400 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 no-export">
           <Pencil className="w-4 h-4 animate-bounce" />
           <div className="flex flex-col">
             <span className="text-xs font-black">드로잉 모드 활성화</span>
@@ -1088,7 +1091,7 @@ export function RegionMap() {
 
       {/* Draw Result Toast */}
       {drawResult && (
-        <div className="absolute top-28 left-1/2 -translate-x-1/2 z-[5000] bg-slate-900/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 flex items-center gap-4 max-w-md animate-in zoom-in-95 duration-200 no-export">
+        <div style={{ zIndex: Z.toast }} className="absolute top-28 left-1/2 -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 flex items-center gap-4 max-w-md animate-in zoom-in-95 duration-200 no-export">
           <div className="size-8 bg-amber-500 text-white rounded-xl flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
@@ -1136,7 +1139,7 @@ export function RegionMap() {
         </div>
       )}
       {/* Watermark/Credits overlay visible in exported images */}
-      <div className="absolute bottom-2 left-2 z-[1002] pointer-events-none bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-200/60 text-[10px] font-black text-slate-500 flex items-center gap-1.5 shadow-sm tracking-tight">
+      <div style={{ zIndex: Z.mapOverlay }} className="absolute bottom-2 left-2 pointer-events-none bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-200/60 text-[10px] font-black text-slate-500 flex items-center gap-1.5 shadow-sm tracking-tight">
         <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
         <span>rgnevel.pplaner.com</span>
       </div>
@@ -1146,6 +1149,16 @@ export function RegionMap() {
         onClose={() => setIsExportModalOpen(false)}
         imageData={exportImageData}
         stats={exportStats}
+      />
+
+      <ShareCardModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        regions={allRegions}
+        visits={visits}
+        scores={allScores}
+        features={geoData?.features ?? []}
+        currentRegionId={currentId}
       />
     </div>
   );

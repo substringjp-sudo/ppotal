@@ -2,6 +2,7 @@
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Z } from "@/lib/layers";
 import { X, UploadCloud, MapPinned, Loader2, CheckCircle2, AlertTriangle, Footprints, TrainFront, Camera, BedDouble } from "lucide-react";
 import type { VisitCategory } from "@regionevel/types";
 import { VISIT_CONFIG } from "@regionevel/types";
@@ -103,7 +104,8 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+      style={{ zIndex: Z.modal }}>
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleClose} />
 
       <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200/80 dark:border-slate-800 animate-in zoom-in-95 duration-200">

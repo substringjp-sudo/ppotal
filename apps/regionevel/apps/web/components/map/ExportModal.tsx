@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Z } from "@/lib/layers";
 import { Download, X, Copy, Check, MapPin, Sparkles } from "lucide-react";
 
 export interface ExportModalStats {
@@ -180,7 +181,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+      style={{ zIndex: Z.modal }}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
