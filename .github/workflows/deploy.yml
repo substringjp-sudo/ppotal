@@ -1,67 +1,51 @@
-name: Deploy Affected Apps
+name: Deploy Hosting (Main)
 
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    name: Build and Deploy
+    name: Build and Deploy to Firebase
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          fetch-depth: 0
+          version: 11.1.2
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Install pnpm
-        run: npm install -g pnpm
+          cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Build Affected Apps
-        id: turbo
-        run: |
-          # Use turbo to build only changed apps
-          pnpm exec turbo build --filter=[HEAD^1]
+      - name: Build Monorepo Apps
+        run: pnpm build
 
-      - name: Deploy Portal
-        if: success()
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          if [ -d "apps/portal/out" ]; then
-            npx firebase-tools deploy --only hosting:portal --token "${{ secrets.FIREBASE_TOKEN }}"
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "::warning title=Firebase Deploy Skipped::FIREBASE_TOKEN secret is not set in GitHub repository settings. To enable auto-deployment, add FIREBASE_TOKEN to Repository Secrets."
+            echo "Skipping Firebase deployment step."
+            exit 0
           fi
 
-      - name: Deploy jpRail
-        if: success()
-        run: |
-          if [ -d "apps/jprail/out" ]; then
-            npx firebase-tools deploy --only hosting:jprail --token "${{ secrets.FIREBASE_TOKEN }}"
-          fi
-
-      - name: Deploy Regionevel
-        if: success()
-        run: |
-          if [ -d "apps/regionevel/apps/web/out" ]; then
-            npx firebase-tools deploy --only hosting:regionevel --token "${{ secrets.FIREBASE_TOKEN }}"
-          fi
-
-      - name: Deploy P-Plan
-        if: success()
-        run: |
-          if [ -d "apps/p-plan/apps/web/out" ]; then
-            npx firebase-tools deploy --only hosting:p-plan --token "${{ secrets.FIREBASE_TOKEN }}"
-          fi
-
-      - name: Deploy Functions and Security Rules
-        if: success()
-        run: |
-          # Always deploy rules if they might have changed
-          npx firebase-tools deploy --only firestore,storage --token "${{ secrets.FIREBASE_TOKEN }}"
+          echo "🚀 Deploying hosting targets to Firebase..."
+          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
