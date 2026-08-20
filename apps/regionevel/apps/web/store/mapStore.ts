@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { padId } from "@regionevel/utils";
 
 type MapLevel = "world" | "country" | "prefecture";
 
@@ -77,10 +78,9 @@ export const useMapStore = create<MapState & MapActions>()(
       requestShare: () => set((state) => ({ shareRequested: state.shareRequested + 1 })),
 
       jumpToRegion: (id, allRegions) => {
-        const padId = (val: any) => {
-          if (!val) return "";
-          return String(val).padStart(6, '0');
-        };
+        // padId from @regionevel/utils, not a local one. This used to pad to
+        // 6 digits while the rest of the app pads to 3/7/12, so the key it
+        // built for a region did not match the key anything else used.
         const targetId = padId(id);
         const region = allRegions.find(r => padId(r.id) === targetId);
         if (!region) return;
