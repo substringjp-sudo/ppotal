@@ -178,9 +178,16 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
         // edge without knowing the orientation; the idle one reads 0.
         root.style.setProperty('--sheet-h', horizontal ? '0px' : `${floatFloor}px`);
         root.style.setProperty('--sheet-w', horizontal ? `${restHeight}px` : '0px');
+        // `--sheet-h` is deliberately clamped to `peek` so floating controls
+        // settle instead of climbing with the sheet. Anything that needs to
+        // know how much map is *actually* covered — centring a selected
+        // station in what is left of it — needs the unclamped height, so both
+        // are published rather than overloading one.
+        root.style.setProperty('--sheet-rest-h', horizontal ? '0px' : `${restHeight}px`);
         return () => {
             root.style.removeProperty('--sheet-h');
             root.style.removeProperty('--sheet-w');
+            root.style.removeProperty('--sheet-rest-h');
         };
     }, [floatFloor, restHeight, horizontal]);
 
@@ -347,7 +354,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                     onPointerMove={onPointerMove}
                     onPointerUp={endDrag}
                     onPointerCancel={endDrag}
-                    className="w-full flex items-center justify-center h-14 cursor-grab active:cursor-grabbing"
+                    className="w-full flex items-center justify-center h-9 cursor-grab active:cursor-grabbing"
                     role="button"
                     tabIndex={0}
                     aria-label={t.swipe}
@@ -414,7 +421,11 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
                 {!expanded && (
                     <div
                         onClick={() => applyDetent('half')}
-                        className="w-full px-4 pb-2 overflow-hidden cursor-pointer"
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={endDrag}
+                        onPointerCancel={endDrag}
+                        className="w-full px-3 pb-2 overflow-hidden cursor-pointer"
                     >
                         {detail ? detail.summary : activeTab ? activeTab.summary : summaryContent}
                     </div>

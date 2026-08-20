@@ -32,7 +32,7 @@ export const MIN_DRAG_TARGET = 56;
  */
 export const SHEET_DETENTS = {
     /** Just the grabber and one line of summary. */
-    peek: 0.14,
+    peek: 0.11,
     /** The working height: list visible, map still readable above it. */
     half: 0.52,
     /** Reading a long list. The map is a strip at the top. */
@@ -43,11 +43,15 @@ export type SheetDetent = keyof typeof SHEET_DETENTS;
 
 /**
  * `peek` still has to fit its contents: the grab area, the tab row and one line
- * of summary. On a short phone 14% of the viewport is less than that, and a
- * peek state that clips its own summary is just a bar. Fractions scale, this
- * stops them scaling below useful.
+ * of summary. Fractions scale, this stops them scaling below useful.
+ *
+ * 176 was too generous — on a tall phone `peek` ate a third of the map, which
+ * is the opposite of what a peek state is for. The floor is now what the
+ * contents actually measure rather than a round number with slack in it:
+ * grab 36 + tab row 54 + summary row 44 + its 8px of padding = 142, measured
+ * in a browser rather than added up on paper, then rounded up to clear it.
  */
-export const SHEET_PEEK_MIN = 176;
+export const SHEET_PEEK_MIN = 148;
 
 export const DETENT_ORDER: SheetDetent[] = ['peek', 'half', 'full'];
 

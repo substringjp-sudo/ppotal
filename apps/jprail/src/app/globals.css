@@ -267,6 +267,58 @@ canvas.leaflet-canvas {
   transition: d 120ms ease-out;
 }
 
+/* The station currently selected.
+ *
+ * A selected station used to be a couple of extra pixels of stroke weight on an
+ * already-busy map, which is invisible among neighbours. A solid dot says which
+ * station it is; a ring expanding out of it carries the eye there. Built as a
+ * divIcon rather than a Leaflet path because the map prefers the canvas
+ * renderer, and a canvas path has no element for these rules to apply to. */
+.selected-station-marker {
+  pointer-events: none;
+}
+
+.selected-station-dot,
+.selected-station-ring {
+  position: absolute;
+  border-radius: 50%;
+  /* The icon anchors at 0,0, so each mark centres itself on the station. */
+  transform: translate(-50%, -50%);
+}
+
+.selected-station-dot {
+  width: 14px;
+  height: 14px;
+  background: #007AFF;
+  border: 2.5px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.selected-station-ring {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #007AFF;
+  animation: selected-station-pulse 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+@keyframes selected-station-pulse {
+  0%   { opacity: 0.9; width: 22px; height: 22px; border-width: 3px; }
+  70%  { opacity: 0;   width: 54px; height: 54px; border-width: 1px; }
+  100% { opacity: 0;   width: 54px; height: 54px; border-width: 1px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-snap-hint { animation: none; }
+  /* Still has to be findable with the motion switched off, so the ring stays
+     put at its resting size rather than disappearing with the animation. */
+  .selected-station-ring {
+    animation: none;
+    opacity: 0.9;
+    width: 26px;
+    height: 26px;
+  }
+}
+
 
 /* ==========================================================================
    Mobile shell

@@ -172,21 +172,31 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
     return (
         <div className={`flex flex-col h-full bg-transparent overflow-hidden font-display ${className || ""}`}>
-            {/* Sidebar Header & Progress Card */}
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
-                    {t.title}
-                </h2>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
-            </div>
+            {/* Sidebar Header & Progress Card. Hidden on a phone: the sheet's
+                own tab already reads "Rail Networks" directly above this, so
+                repeating it cost ~90px of a 476px sheet to say nothing new. */}
+            {!isMobile && (
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+                    <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
+                        {t.title}
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
+                </div>
+            )}
 
             {/* Sidebar Controls */}
-            <div className="p-3 border-b border-slate-50 dark:border-slate-800 space-y-3 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
-                {/* Sort Mode */}
-                <div>
-                    <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">{t.sortTitle}</div>
-                    <div className="flex p-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
+            {isMobile ? (
+                /* One toolbar instead of three labelled sub-blocks. On a phone
+                   those blocks cost ~260px of a 476px sheet before a single
+                   line of the actual list appeared. The section captions are
+                   dropped rather than shrunk — "Selection" above a button that
+                   already says "All" was never carrying its own height — and
+                   the four actions share one row, which also removes the
+                   landscape special case: four equal buttons fit a 280px side
+                   panel as readily as a 390px phone. */
+                <div className="p-2 border-b border-slate-50 dark:border-slate-800 space-y-1.5 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
+                    <div className="flex p-0.5 gap-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
                         {[
                             { id: 'ja', label: t.alphabetical, icon: 'sort_by_alpha' },
                             { id: 'usage', label: t.byUsage, icon: 'trending_up' },
@@ -197,63 +207,109 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                     setSortMode(opt.id as 'ja' | 'usage');
                                     trackEvent('sort_mode_change', 'filter', opt.id);
                                 }}
-                                className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-all ${isMobile ? 'h-11' : 'py-1.5'} ${sortMode === opt.id
-                                    ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
-                                    }`}
+                                className={`flex-1 min-w-0 h-10 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-colors ${sortMode === opt.id
+                                    ? 'bg-white/70 dark:bg-slate-600/60 text-primary shadow-sm'
+                                    : 'text-slate-500'}`}
                             >
                                 <span className="material-symbols-outlined text-sm shrink-0">{opt.icon}</span>
                                 <span className="truncate">{opt.label}</span>
                             </button>
                         ))}
                     </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                        {[
+                            { onClick: handleSelectAll, label: t.all, icon: null, danger: false },
+                            { onClick: handleDeselectAll, label: t.none, icon: null, danger: true },
+                            { onClick: () => handleToggleAllGroups(true), label: t.expandAll, icon: 'expand_all', danger: false },
+                            { onClick: () => handleToggleAllGroups(false), label: t.collapseAll, icon: 'collapse_all', danger: false },
+                        ].map((action, i) => (
+                            <button
+                                key={i}
+                                onClick={action.onClick}
+                                title={action.label}
+                                aria-label={action.label}
+                                className={`h-10 min-w-0 flex items-center justify-center px-1 text-[10px] font-bold bg-white/60 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors active:scale-95 ${action.danger
+                                    ? 'text-slate-600 dark:text-slate-400 active:border-red-400 active:text-red-500'
+                                    : 'text-slate-600 dark:text-slate-400 active:border-primary active:text-primary'}`}
+                            >
+                                {action.icon
+                                    ? <span className="material-symbols-outlined text-[18px]">{action.icon}</span>
+                                    : <span className="truncate">{action.label}</span>}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+            ) : (
+                <div className="p-3 border-b border-slate-50 dark:border-slate-800 space-y-3 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
+                    {/* Sort Mode */}
+                    <div>
+                        <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">{t.sortTitle}</div>
+                        <div className="flex p-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
+                            {[
+                                { id: 'ja', label: t.alphabetical, icon: 'sort_by_alpha' },
+                                { id: 'usage', label: t.byUsage, icon: 'trending_up' },
+                            ].map(opt => (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => {
+                                        setSortMode(opt.id as 'ja' | 'usage');
+                                        trackEvent('sort_mode_change', 'filter', opt.id);
+                                    }}
+                                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-all py-1.5 ${sortMode === opt.id
+                                        ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
+                                        }`}
+                                >
+                                    <span className="material-symbols-outlined text-sm shrink-0">{opt.icon}</span>
+                                    <span className="truncate">{opt.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-                {/* Bulk Actions */}
-                {/* Two blocks of two side by side is 32px per button once the
-                    pane is a landscape side panel; stacked, each button gets
-                    half the pane instead of a quarter. */}
-                <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                    <div className="space-y-1">
-                        <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.selection}</div>
-                        <div className="grid grid-cols-2 gap-1">
-                            <button
-                                onClick={handleSelectAll}
-                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm`}
-                                title={t.all}
-                            >
-                                {t.all}
-                            </button>
-                            <button
-                                onClick={handleDeselectAll}
-                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm`}
-                                title={t.none}
-                            >
-                                {t.none}
-                            </button>
+                    {/* Bulk Actions */}
+                    <div className={'grid gap-3 grid-cols-2'}>
+                        <div className="space-y-1">
+                            <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.selection}</div>
+                            <div className="grid grid-cols-2 gap-1">
+                                <button
+                                    onClick={handleSelectAll}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm`}
+                                    title={t.all}
+                                >
+                                    {t.all}
+                                </button>
+                                <button
+                                    onClick={handleDeselectAll}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm`}
+                                    title={t.none}
+                                >
+                                    {t.none}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div className="space-y-1">
-                        <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.viewGroups}</div>
-                        <div className="grid grid-cols-2 gap-1">
-                            <button
-                                onClick={() => handleToggleAllGroups(true)}
-                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
-                                title={t.expandAll}
-                            >
-                                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 -translate-y-[1px] -translate-x-[1px]">expand_all</span>
-                            </button>
-                            <button
-                                onClick={() => handleToggleAllGroups(false)}
-                                className={`${isMobile ? "h-11" : "h-7.5"} flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
-                                title={t.collapseAll}
-                            >
-                                <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 translate-y-[1px] translate-x-[1px]">collapse_all</span>
-                            </button>
+                        <div className="space-y-1">
+                            <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.viewGroups}</div>
+                            <div className="grid grid-cols-2 gap-1">
+                                <button
+                                    onClick={() => handleToggleAllGroups(true)}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
+                                    title={t.expandAll}
+                                >
+                                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 -translate-y-[1px] -translate-x-[1px]">expand_all</span>
+                                </button>
+                                <button
+                                    onClick={() => handleToggleAllGroups(false)}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
+                                    title={t.collapseAll}
+                                >
+                                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 translate-y-[1px] translate-x-[1px]">collapse_all</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Scrollable Groups List */}
             <div className="flex-1 overflow-y-auto p-2 pb-10 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">

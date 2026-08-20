@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
-import { useMap, useMapEvents, Polyline, CircleMarker } from 'react-leaflet';
+import { useMap, useMapEvents, Polyline, CircleMarker, Marker } from 'react-leaflet';
 import L, { LatLngBounds, LatLngExpression } from 'leaflet';
 
 import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
 import AirportLayer from './AirportLayer';
 import Stations from './Stations';
+import { sharedSvgRenderer } from './Map';
 import RailroadLayer from './RailroadLayer';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { getLineColor } from '../lib/lineColors';
@@ -23,6 +24,7 @@ import { RoutingGraph } from '../lib/RoutingGraph';
 import { RailData, Section } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
+import { MOBILE_CHROME } from '../lib/mobile';
 import { usePassengerGrid } from '../hooks/usePassengerGrid';
 
 import { Trip } from '../types/trip';
@@ -563,6 +565,35 @@ const MapPane: React.FC<MapPaneProps> = ({
     }, [onStationClick, visibleStations, onSetSelectedLines, selectedLines, isMobile]);
 
 
+    /**
+     * The vertical centre of the map a person can actually see.
+     *
+     * On a phone the bottom sheet covers the lower part of the map, so the
+     * geometric centre of the viewport is often *behind* the sheet. Focusing a
+     * station there is what made selecting one hide it under its own detail
+     * pane. The offset is positive when the sheet covers more than the top
+     * chrome does, meaning "put the map centre below the station".
+     */
+    const visibleCentreOffsetY = useCallback(() => {
+        if (!isMobile || typeof window === 'undefined') return 0;
+        const raw = getComputedStyle(document.documentElement)
+            .getPropertyValue('--sheet-rest-h').trim();
+        const sheet = parseFloat(raw);
+        if (!Number.isFinite(sheet) || sheet <= 0) return 0;
+        const topChrome = MOBILE_CHROME.topBar + MOBILE_CHROME.mapControls;
+        return (sheet - topChrome) / 2;
+    }, [isMobile]);
+
+    /** `latlng` shifted so that focusing it leaves it in the uncovered strip. */
+    const focusPoint = useCallback((lat: number, lon: number, zoom?: number) => {
+        if (!map) return L.latLng(lat, lon);
+        const offset = visibleCentreOffsetY();
+        if (offset === 0) return L.latLng(lat, lon);
+        const z = zoom ?? map.getZoom();
+        const projected = map.project(L.latLng(lat, lon), z);
+        return map.unproject(L.point(projected.x, projected.y + offset), z);
+    }, [map, visibleCentreOffsetY]);
+
     useEffect(() => {
         if (!zoomTarget || !mapReady || !map || !graph || !railData) return;
 
@@ -578,7 +609,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         } else if (type === 'station') {
             const node = graph.getNode(id);
             if (node) {
-                map.flyTo([node.coords[1], node.coords[0]], 15, { duration: 1.5 });
+                map.flyTo(focusPoint(node.coords[1], node.coords[0], 15), 15, { duration: 1.5 });
             }
         }
 
@@ -586,7 +617,57 @@ const MapPane: React.FC<MapPaneProps> = ({
             map.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
         }
         onZoomComplete?.();
-    }, [zoomTarget, mapReady, map, graph, onZoomComplete, railData]);
+    }, [zoomTarget, mapReady, map, graph, onZoomComplete, railData, focusPoint]);
+
+    /**
+     * Keep a selected station out from under the sheet.
+     *
+     * Selecting a station raises the detail sheet, which on a phone can cover
+     * the very thing that was tapped. Rather than always recentring — which
+     * yanks the map for a station that was already perfectly visible — this
+     * only moves when the station has ended up outside the comfortable strip,
+     * and pans rather than flies so the map does not appear to jump.
+     */
+    useEffect(() => {
+        if (!isMobile || !selectedStation || !mapReady || !map || !graph) return;
+        const node = graph.getNode(selectedStation);
+        if (!node) return;
+
+        // Let the sheet finish its detent animation, or the height read below
+        // is the one it is moving away from.
+        const timer = setTimeout(() => {
+            const sheetRaw = getComputedStyle(document.documentElement)
+                .getPropertyValue('--sheet-rest-h').trim();
+            const sheet = parseFloat(sheetRaw);
+            if (!Number.isFinite(sheet) || sheet <= 0) return;
+
+            const size = map.getSize();
+            const point = map.latLngToContainerPoint(L.latLng(node.coords[1], node.coords[0]));
+            const topLimit = MOBILE_CHROME.topBar + MOBILE_CHROME.mapControls;
+            const bottomLimit = size.y - sheet;
+            // A margin so a station sitting right on the sheet's edge, where it
+            // is technically visible but half-hidden by the shadow, still moves.
+            const margin = 48;
+
+            const comfortable =
+                point.y >= topLimit + margin &&
+                point.y <= bottomLimit - margin &&
+                point.x >= margin &&
+                point.x <= size.x - margin;
+            if (comfortable) return;
+
+            map.panTo(focusPoint(node.coords[1], node.coords[0]), { animate: true, duration: 0.45 });
+        }, 320);
+
+        return () => clearTimeout(timer);
+    }, [isMobile, selectedStation, mapReady, map, graph, focusPoint]);
+
+    const selectedStationIcon = useMemo(() => L.divIcon({
+        className: 'selected-station-marker',
+        html: '<span class="selected-station-ring"></span><span class="selected-station-dot"></span>',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+    }), []);
 
     const isTransforming = isMoving || isZooming || isPending || !!dragStartStation;
 
@@ -739,6 +820,27 @@ const MapPane: React.FC<MapPaneProps> = ({
                         />
                     ))}
                 </>
+            )}
+
+            {/* The selected station.
+                A DOM marker rather than a CircleMarker: the map runs with
+                `preferCanvas`, and a canvas-drawn path has no element for a
+                CSS class to land on, so the pulse never ran — the ring drew,
+                but frozen. A divIcon is a real node, always above the canvas,
+                and costs one element because only one station is ever
+                selected. */}
+            {selectedStation && railData?.stations?.[selectedStation] && !dragStartStation && (
+                <Marker
+                    key="selected-station"
+                    position={[
+                        railData.stations[selectedStation].lat,
+                        railData.stations[selectedStation].lon
+                    ]}
+                    icon={selectedStationIcon}
+                    interactive={false}
+                    keyboard={false}
+                    zIndexOffset={1000}
+                />
             )}
 
             {/* The station the drawing is about to reach, so the pull is visible. */}
