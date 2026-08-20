@@ -68,11 +68,11 @@ export function RegionSearch() {
     const paths: string[] = [];
     let current = region;
     
-    const pad = (val: any) => String(val).padStart(6, '0');
-    
-    // We can traverse using allRegions in memory to find parents
+    // padId from @regionevel/utils, not a local one. A second padding rule
+    // (this used to pad to 6) produces a different key for the same region,
+    // so a lookup written against it silently misses.
     while (current && current.parentId) {
-      const parent = allRegions.find(r => pad(r.id) === pad(current.parentId));
+      const parent = allRegions.find(r => padId(r.id) === padId(current.parentId));
       if (parent) {
         paths.push(parent.name);
         current = parent;
