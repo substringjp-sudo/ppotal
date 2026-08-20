@@ -147,6 +147,29 @@ export const SHEET_DETENTS_H = {
     full: 0.72
 } as const;
 
+/**
+ * Drawing a route by holding a station and dragging along the line.
+ *
+ * A plain touch-drag cannot start the gesture, because that is how the map
+ * pans — the two would be indistinguishable from the first frame. A hold
+ * disambiguates them, and the gauge exists so the hold is not a guess: it
+ * tells you the gesture was recognised, roughly how long is left, and which
+ * station it latched onto.
+ */
+export const LONG_PRESS_MS = 380;
+
+/**
+ * Movement that cancels the hold, in pixels.
+ *
+ * Deliberately small. A finger resting on glass wanders a few pixels, but
+ * anything past that is someone panning the map, and stealing that gesture to
+ * start drawing is far more annoying than making them hold still a moment.
+ */
+export const LONG_PRESS_CANCEL_PX = 12;
+
+/** How near a touch must land to a station to arm the hold, in pixels. */
+export const TOUCH_HIT_RADIUS_PX = 30;
+
 /** Below this the landscape panel cannot show a row of content. */
 export const SHEET_PEEK_MIN_H = 64;
 

@@ -267,6 +267,36 @@ canvas.leaflet-canvas {
   transition: d 120ms ease-out;
 }
 
+/* Holding a station to start drawing a route.
+ *
+ * The gauge is the only thing telling you the gesture was recognised before it
+ * fires, so it appears on contact rather than part-way through the hold — a
+ * ring that starts empty and fills is legible; one that appears half-full
+ * looks like a glitch. Its duration is written by the component from the same
+ * constant the timer uses, so the two cannot drift apart. */
+.press-gauge-marker {
+  pointer-events: none;
+}
+
+.press-gauge-arc {
+  /* 2 * PI * 18, the circumference of the arc being drawn. */
+  stroke-dasharray: 113.1;
+  stroke-dashoffset: 113.1;
+  animation-name: press-gauge-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes press-gauge-fill {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The fill *is* the information here, so it keeps running; only the
+     decorative pulse elsewhere is dropped. */
+  .press-gauge-arc { animation-name: press-gauge-fill; }
+}
+
 /* The station currently selected.
  *
  * A selected station used to be a couple of extra pixels of stroke weight on an

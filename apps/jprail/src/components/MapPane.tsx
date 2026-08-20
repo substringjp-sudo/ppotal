@@ -24,7 +24,7 @@ import { RoutingGraph } from '../lib/RoutingGraph';
 import { RailData, Section } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
-import { MOBILE_CHROME } from '../lib/mobile';
+import { MOBILE_CHROME, LONG_PRESS_MS } from '../lib/mobile';
 import { usePassengerGrid } from '../hooks/usePassengerGrid';
 
 import { Trip } from '../types/trip';
@@ -316,7 +316,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragPath,
         handleStationMouseDown: rawHandleStationMouseDown,
         handleStationMouseUp,
-        snapCandidate
+        snapCandidate,
+        pressCandidate
     } = useTripRecorder({
         railData,
         visibleStations,
@@ -325,7 +326,8 @@ const MapPane: React.FC<MapPaneProps> = ({
         onDraftComplete,
         onDragUpdate,
         selectedLines,
-        activeLine
+        activeLine,
+        isMobile
     });
 
     useEffect(() => {
@@ -662,6 +664,27 @@ const MapPane: React.FC<MapPaneProps> = ({
         return () => clearTimeout(timer);
     }, [isMobile, selectedStation, mapReady, map, graph, focusPoint]);
 
+    /**
+     * The filling ring shown while a station is being held.
+     *
+     * An SVG arc rather than a conic gradient: animating a gradient stop needs
+     * a registered custom property, and `stroke-dashoffset` is animatable
+     * everywhere. The duration comes from the same constant the timer uses, so
+     * the gauge cannot drift out of step with the gesture it is reporting.
+     */
+    const pressGaugeIcon = useMemo(() => L.divIcon({
+        className: 'press-gauge-marker',
+        html: `<svg width="52" height="52" viewBox="0 0 52 52" class="press-gauge">
+            <circle cx="26" cy="26" r="18" fill="rgba(0,122,255,0.10)" stroke="rgba(0,122,255,0.25)" stroke-width="3"/>
+            <circle class="press-gauge-arc" cx="26" cy="26" r="18" fill="none"
+                stroke="#007AFF" stroke-width="4" stroke-linecap="round"
+                transform="rotate(-90 26 26)"
+                style="animation-duration:${LONG_PRESS_MS}ms"/>
+        </svg>`,
+        iconSize: [52, 52],
+        iconAnchor: [26, 26]
+    }), []);
+
     const selectedStationIcon = useMemo(() => L.divIcon({
         className: 'selected-station-marker',
         html: '<span class="selected-station-ring"></span><span class="selected-station-dot"></span>',
@@ -840,6 +863,18 @@ const MapPane: React.FC<MapPaneProps> = ({
                     interactive={false}
                     keyboard={false}
                     zIndexOffset={1000}
+                />
+            )}
+
+            {/* The hold that starts a drawing, while it is filling. */}
+            {pressCandidate && !dragStartStation && (
+                <Marker
+                    key="press-gauge"
+                    position={[pressCandidate.lat, pressCandidate.lon]}
+                    icon={pressGaugeIcon}
+                    interactive={false}
+                    keyboard={false}
+                    zIndexOffset={1100}
                 />
             )}
 

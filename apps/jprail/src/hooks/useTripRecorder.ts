@@ -8,9 +8,16 @@ import {
     advanceTrail,
     buildSnapIndex,
     createTrail,
+    querySnapBox,
     DragTrail,
     SnapIndex
 } from '../lib/dragRouting';
+import {
+    LONG_PRESS_MS,
+    LONG_PRESS_CANCEL_PX,
+    TOUCH_HIT_RADIUS_PX,
+    haptic
+} from '../lib/mobile';
 
 interface UseTripRecorderProps {
     railData: RailData | null;
@@ -20,6 +27,8 @@ interface UseTripRecorderProps {
     onDraftComplete?: (trip: Trip) => void;
     selectedLines?: string[];
     activeLine?: string | null;
+    /** Touch gets the hold-then-drag entry point; a mouse starts on mousedown. */
+    isMobile?: boolean;
 }
 
 export const useTripRecorder = ({
@@ -29,7 +38,8 @@ export const useTripRecorder = ({
     onDragUpdate,
     onDraftComplete,
     selectedLines = [],
-    activeLine = null
+    activeLine = null,
+    isMobile = false
 }: UseTripRecorderProps) => {
     const map = useMap();
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
@@ -52,6 +62,14 @@ export const useTripRecorder = ({
     const guideTargetRef = useRef<[number, number] | null>(null);
     const guideShownRef = useRef<[number, number] | null>(null);
     const [snapCandidate, setSnapCandidate] = useState<string | null>(null);
+
+    /**
+     * The station a finger is currently holding, before the hold completes.
+     * Drives the gauge; cleared the moment the gesture is cancelled or armed.
+     */
+    const [pressCandidate, setPressCandidate] = useState<{ id: string; lat: number; lon: number } | null>(null);
+    const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pressOriginRef = useRef<{ x: number; y: number } | null>(null);
 
     useEffect(() => {
         visibleStationsRef.current = visibleStations;
@@ -161,6 +179,52 @@ export const useTripRecorder = ({
         },
         [map, onDragUpdate]
     );
+
+    /** Nearest routable station to a screen point, or null if none is close. */
+    const stationAtPoint = useCallback((containerPoint: L.Point): { id: string; lat: number; lon: number } | null => {
+        const index = snapIndexRef.current;
+        const mapInstance = mapInstanceRef.current;
+        if (!index || !mapInstance) return null;
+
+        const centre = mapInstance.containerPointToLatLng(containerPoint);
+        // A degree box wide enough to cover the hit radius at this zoom. Derived
+        // from the map rather than assumed, so it stays correct as you zoom.
+        const edge = mapInstance.containerPointToLatLng(
+            L.point(containerPoint.x + TOUCH_HIT_RADIUS_PX, containerPoint.y + TOUCH_HIT_RADIUS_PX)
+        );
+        const dLat = Math.abs(edge.lat - centre.lat);
+        const dLon = Math.abs(edge.lng - centre.lng);
+
+        const candidates = querySnapBox(
+            index,
+            centre.lat - dLat, centre.lat + dLat,
+            centre.lng - dLon, centre.lng + dLon
+        );
+        if (candidates.length === 0) return null;
+
+        // The box is square in degrees; the real test is distance in pixels,
+        // so the hit area is round and does not stretch near the poles.
+        let best: { id: string; lat: number; lon: number } | null = null;
+        let bestDist = TOUCH_HIT_RADIUS_PX;
+        for (const station of candidates) {
+            const point = mapInstance.latLngToContainerPoint(L.latLng(station.lat, station.lon));
+            const dist = Math.hypot(point.x - containerPoint.x, point.y - containerPoint.y);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = { id: station.id, lat: station.lat, lon: station.lon };
+            }
+        }
+        return best;
+    }, []);
+
+    const cancelPress = useCallback(() => {
+        if (pressTimerRef.current) {
+            clearTimeout(pressTimerRef.current);
+            pressTimerRef.current = null;
+        }
+        pressOriginRef.current = null;
+        setPressCandidate(prev => (prev ? null : prev));
+    }, []);
 
     const updateDragPath = useCallback(
         (mapInstance: L.Map, currentLayerPoint: L.Point, currentLatLng: L.LatLng) => {
@@ -313,6 +377,22 @@ export const useTripRecorder = ({
         handleEndRef.current = handleEnd;
     }, [handleEnd]);
 
+    // The touch listeners below are bound once per map, so they reach the
+    // current callbacks through refs rather than re-binding on every render.
+    const stationAtPointRef = useRef(stationAtPoint);
+    useEffect(() => { stationAtPointRef.current = stationAtPoint; }, [stationAtPoint]);
+
+    const cancelPressRef = useRef(cancelPress);
+    useEffect(() => { cancelPressRef.current = cancelPress; }, [cancelPress]);
+
+    const startDragRef = useRef(handleStationMouseDown);
+    useEffect(() => { startDragRef.current = handleStationMouseDown; }, [handleStationMouseDown]);
+
+    // A hold left armed when the component goes away would fire into nothing.
+    useEffect(() => () => {
+        if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+    }, []);
+
     useEffect(() => {
         if (!map) return;
 
@@ -346,6 +426,10 @@ export const useTripRecorder = ({
         const onMouseMove = (e: L.LeafletMouseEvent) =>
             handleMove(e.containerPoint, e.layerPoint, e.latlng);
         const onMouseUp = () => handleEndRef.current();
+        const onTouchEndAll = () => {
+            cancelPressRef.current();
+            handleEndRef.current();
+        };
         const onTouchMove = (e: TouchEvent) => {
             if (!dragStartStationRef.current) return;
             e.preventDefault();
@@ -356,22 +440,76 @@ export const useTripRecorder = ({
             handleMove(point, map.latLngToLayerPoint(latlng), latlng);
         };
 
+        /**
+         * Hold a station to start drawing.
+         *
+         * On a phone the drag gesture cannot begin on contact, because that is
+         * how the map pans. So contact only *arms* it: if the finger stays
+         * within a few pixels for `LONG_PRESS_MS`, the same drag the desktop
+         * starts on mousedown takes over, and everything below this — the
+         * trail, the snapping, the edge scrolling — is already shared.
+         *
+         * Nothing is preventDefault-ed while waiting. A hold that turns into a
+         * pan has to stay a pan.
+         */
+        const onTouchStart = (e: TouchEvent) => {
+            if (!isMobile) return;
+            if (dragStartStationRef.current) return;
+            // A second finger means a pinch, which is a zoom, not a draw.
+            if (e.touches.length !== 1) { cancelPressRef.current(); return; }
+
+            const touch = e.touches[0];
+            const rect = map.getContainer().getBoundingClientRect();
+            const point = L.point(touch.clientX - rect.left, touch.clientY - rect.top);
+
+            const station = stationAtPointRef.current(point);
+            if (!station) return;
+
+            pressOriginRef.current = { x: touch.clientX, y: touch.clientY };
+            setPressCandidate(station);
+
+            pressTimerRef.current = setTimeout(() => {
+                pressTimerRef.current = null;
+                pressOriginRef.current = null;
+                setPressCandidate(null);
+                // The buzz is the confirmation that the hold took, so it fires
+                // with the state change rather than after the first movement.
+                haptic('select');
+                startDragRef.current(station.id, [station.lat, station.lon]);
+            }, LONG_PRESS_MS);
+        };
+
+        const onTouchMoveArmed = (e: TouchEvent) => {
+            const origin = pressOriginRef.current;
+            if (!origin || !e.touches.length) return;
+            const touch = e.touches[0];
+            if (Math.hypot(touch.clientX - origin.x, touch.clientY - origin.y) > LONG_PRESS_CANCEL_PX) {
+                cancelPressRef.current();
+            }
+        };
+
         map.on('mousemove', onMouseMove);
         map.on('mouseup', onMouseUp);
         const container = map.getContainer();
+        container.addEventListener('touchstart', onTouchStart, { passive: true });
+        container.addEventListener('touchmove', onTouchMoveArmed, { passive: true });
         container.addEventListener('touchmove', onTouchMove, { passive: false });
-        container.addEventListener('touchend', onMouseUp);
+        container.addEventListener('touchend', onTouchEndAll);
+        container.addEventListener('touchcancel', onTouchEndAll);
         // A drag that ends outside the map must still settle.
         window.addEventListener('mouseup', onMouseUp);
 
         return () => {
             map.off('mousemove', onMouseMove);
             map.off('mouseup', onMouseUp);
+            container.removeEventListener('touchstart', onTouchStart);
+            container.removeEventListener('touchmove', onTouchMoveArmed);
             container.removeEventListener('touchmove', onTouchMove);
-            container.removeEventListener('touchend', onMouseUp);
+            container.removeEventListener('touchend', onTouchEndAll);
+            container.removeEventListener('touchcancel', onTouchEndAll);
             window.removeEventListener('mouseup', onMouseUp);
         };
-    }, [map]);
+    }, [map, isMobile]);
 
     return {
         dragStartStation,
@@ -380,6 +518,8 @@ export const useTripRecorder = ({
         handleStationMouseDown,
         handleStationMouseUp: handleEnd,
         /** Station the drawing is currently pulling towards, for the snap hint. */
-        snapCandidate
+        snapCandidate,
+        /** Station being held, while the hold is still filling. */
+        pressCandidate
     };
 };
