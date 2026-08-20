@@ -310,7 +310,8 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
             style={{ zIndex: Z.mapOverlay }}
             className="absolute top-3 right-3 flex items-center gap-2 pointer-events-auto"
         >
-            {!isMobile && landFormSelector(true)}
+            {/* Landform selector (boundary/dots/squares/hexes) is temporarily hidden */}
+            {/* {!isMobile && landFormSelector(true)} */}
 
             {!isOpen && (
                 <button
@@ -377,7 +378,8 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
 
                 {/* Content: Scrollable */}
                 <div className="flex-1 overflow-y-auto sheet-scroll p-4 sm:p-5 flex flex-col gap-4 sm:gap-6 custom-scrollbar">
-                    {isMobile && landFormSelector(false)}
+                    {/* Landform selector (boundary/dots/squares/hexes) is temporarily hidden */}
+                    {/* {isMobile && landFormSelector(false)} */}
 
                     {/* Notice in Tile Mode */}
                     {isTileMode && (

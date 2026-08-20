@@ -1,4 +1,4 @@
-name: CI (PR Check)
+name: CI & PR Preview Deploy
 
 on:
   pull_request:
@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Lint & Build Validation
+  build-and-preview:
+    name: Build & Deploy PR Preview
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,12 +34,17 @@ jobs:
       - name: Build & Typecheck All Apps & Packages
         run: pnpm build
 
-      # NOTE: `pnpm test` is wired up and passing except for one case —
-      # "handles mixed parent direct and child aggregated visits" — where the
-      # test and the RegionScore type doc both say totalScore should be the
-      # rateScore, while getRegionScore returns max(rateScore, directScore).
-      # That is a product decision about what a parent region's colour means,
-      # so it is left open rather than settled here. Add the step below once
-      # it is:
-      #   - name: Test
-      #     run: pnpm exec turbo run test --continue
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting Preview Channel
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "::warning title=Preview Deploy Skipped::FIREBASE_TOKEN secret is missing in GitHub repository settings. Skipping preview deploy."
+            exit 0
+          fi
+
+          echo "🚀 Deploying PR Preview Channel (pr-${{ github.event.pull_request.number }})..."
+          firebase hosting:channel:deploy "pr-${{ github.event.pull_request.number }}" --expires 7d --token "$FIREBASE_TOKEN"

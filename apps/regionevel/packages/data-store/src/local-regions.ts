@@ -23,7 +23,10 @@ export function createLocalRegionStore(
 
   for (const g of geometries) {
     const props = g.properties || {};
-    const id = props.id || props.shapeID || g.id;
+    const id = String(props.id || props.shapeID || g.id || "");
+    if (id.startsWith("osm_") || props.source === "osm" || props.osmRelationId != null) {
+      continue;
+    }
     if (id) {
       if (!geometryMap.has(id)) geometryMap.set(id, []);
       geometryMap.get(id)!.push(g);

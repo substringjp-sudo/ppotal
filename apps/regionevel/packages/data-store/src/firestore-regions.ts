@@ -91,17 +91,23 @@ export function createFirestoreRegionStore(): RegionDataStore {
       // Use root-level parentId for better performance
       const q = query(geometriesRef, where("parentId", "==", parentId));
       const snap = await getDocs(q);
-      return snap.docs.map(d => {
-        const data = d.data();
-        if (typeof data.geometry === 'string') {
-          try {
-            data.geometry = JSON.parse(data.geometry);
-          } catch (e) {
-            console.error("Failed to parse geometry for doc", d.id, e);
+      return snap.docs
+        .filter(d => !d.id.startsWith("osm_"))
+        .map(d => {
+          const data = d.data();
+          if (data.properties?.source === "osm" || data.properties?.osmRelationId != null) {
+            return null;
           }
-        }
-        return data;
-      });
+          if (typeof data.geometry === 'string') {
+            try {
+              data.geometry = JSON.parse(data.geometry);
+            } catch (e) {
+              console.error("Failed to parse geometry for doc", d.id, e);
+            }
+          }
+          return data;
+        })
+        .filter((d): d is any => d !== null);
     },
     
     async getGeometriesByCountry(iso3, admLevel) {
@@ -123,7 +129,10 @@ export function createFirestoreRegionStore(): RegionDataStore {
           const firstKey = Object.keys(topoData.objects)[0];
           if (firstKey) {
             const geojson = feature(topoData, topoData.objects[firstKey] as any) as any;
-            bundleFeatures = geojson.features;
+            bundleFeatures = geojson.features.filter((f: any) => {
+              const id = String(f?.properties?.id || f?.properties?.shapeID || "");
+              return !id.startsWith("osm_") && f?.properties?.source !== "osm";
+            });
           }
         } catch (e) {
           console.error(`Failed to parse bundle for ${iso3}_ADM${admLevel}`, e);
@@ -162,23 +171,30 @@ export function createFirestoreRegionStore(): RegionDataStore {
       
       const snap = await getDocs(q);
       console.log(`[FirestoreRegionStore] Fetched ${snap.docs.length} geometries`);
-      const dbFeatures = snap.docs.map(d => {
-        const data = d.data();
-        if (typeof data.geometry === 'string') {
-          try {
-            data.geometry = JSON.parse(data.geometry);
-          } catch (e) {
-            console.error("Failed to parse geometry for doc", d.id, e);
+      const dbFeatures = snap.docs
+        .filter(d => !d.id.startsWith("osm_"))
+        .map(d => {
+          const data = d.data();
+          if (data.properties?.source === "osm" || data.properties?.osmRelationId != null) {
+            return null;
           }
-        }
-        return data;
-      });
+          if (typeof data.geometry === 'string') {
+            try {
+              data.geometry = JSON.parse(data.geometry);
+            } catch (e) {
+              console.error("Failed to parse geometry for doc", d.id, e);
+            }
+          }
+          return data;
+        })
+        .filter((d): d is any => d !== null);
 
       if (bundleFeatures.length > 0) {
-        // Merge them, preventing duplicates by region/shape ID
+        // Merge them, preventing duplicates by region/shape ID and excluding OSM patch items
         const seenIds = new Set(bundleFeatures.map(f => f.properties?.id || f.properties?.shapeID));
         const newDbFeatures = dbFeatures.filter(f => {
           const id = f.properties?.id || f.properties?.shapeID;
+          if (!id || String(id).startsWith("osm_")) return false;
           return !seenIds.has(id);
         });
         return [...bundleFeatures, ...newDbFeatures];

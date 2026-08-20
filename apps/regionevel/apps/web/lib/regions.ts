@@ -164,16 +164,29 @@ function primaryStoreIsFirestore(): boolean {
   return !USE_LOCAL_REGION_DATA;
 }
 
-function normalizeFeatures(rawFeatures: any[]): any[] {
-  return rawFeatures.map(f => {
-    const props = f.properties || {};
-    const id = props.id || props.shapeID || props.ID;
-    return {
-      ...f,
-      properties: { ...props, id },
-      geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
-    };
-  });
+export function isStandardBoundaryFeature(f: any): boolean {
+  if (!f) return false;
+  const props = f.properties || {};
+  const id = String(props.id || props.shapeID || props.ID || f.id || "");
+  // Filter out OpenStreetMap patch features that include territorial waters / sea areas
+  if (id.startsWith("osm_") || props.source === "osm" || props.osmRelationId != null) {
+    return false;
+  }
+  return true;
+}
+
+export function normalizeFeatures(rawFeatures: any[]): any[] {
+  return rawFeatures
+    .filter(isStandardBoundaryFeature)
+    .map(f => {
+      const props = f.properties || {};
+      const id = props.id || props.shapeID || props.ID || f.id;
+      return {
+        ...f,
+        properties: { ...props, id },
+        geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry
+      };
+    });
 }
 
 /**
