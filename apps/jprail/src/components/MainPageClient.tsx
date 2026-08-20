@@ -1165,16 +1165,15 @@ const MainPageClient = () => {
                                     id: 'sidebar',
                                     label: t.railList,
                                     summary: (
-                                        <div className="flex items-center justify-between w-full px-2 py-1 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/40 dark:border-white/5 py-3">
-                                            <div className="flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
-                                                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">{t.networkSelection}</span>
-                                            </div>
-                                            <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
-                                                <span className="text-[10px] font-black text-primary uppercase">
-                                                    {t.linesSelected(selectedLines.filter(l => l !== "__NONE__").length)}
-                                                </span>
-                                            </div>
+                                        <div className="flex items-center gap-2 w-full px-3 h-11 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/40 dark:border-white/5">
+                                            <span className="material-symbols-outlined text-primary text-xl shrink-0">account_tree</span>
+                                            {/* No "Network Selection" label: the tab directly above this
+                                                already says it, and at phone width the two together forced
+                                                the count onto a second line. The count is the part that
+                                                changes, so it is the part that stays. */}
+                                            <span className="whitespace-nowrap text-xs font-black text-primary uppercase tracking-wide">
+                                                {t.linesSelected(selectedLines.filter(l => l !== "__NONE__").length)}
+                                            </span>
                                         </div>
                                     ),
                                     content: (

@@ -19,16 +19,62 @@ import type { ActivityHint, ParseResult, TimelineSegment, TracePoint } from './t
 
 const E7 = 1e-7;
 
-/** `"geo:35.6812,139.7671"` → `[lon, lat]`. Returns null on anything else. */
-function parseGeoString(s: unknown): [number, number] | null {
-    if (typeof s !== 'string') return null;
-    const body = s.startsWith('geo:') ? s.slice(4) : s;
-    const comma = body.indexOf(',');
-    if (comma < 0) return null;
-    const lat = Number(body.slice(0, comma));
-    const lon = Number(body.slice(comma + 1));
+function finiteCoord(lon: number, lat: number): [number, number] | null {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+    // Two numbers that were never a coordinate is a more likely explanation
+    // than a real fix out here, and a wrong point plotted mid-ocean is worse
+    // than a silently missing one.
+    if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
     return [lon, lat];
+}
+
+/**
+ * Extracts a `[lon, lat]` pair from whatever shape a coordinate arrives in.
+ *
+ * This used to match one exact shape — `"geo:35.6812,139.7671"` — with
+ * `Number()` on each half after a plain `indexOf(',')` split. Real exports
+ * are not that uniform: a field seen from an actual Android export carried a
+ * trailing `°` on each number (`"35.681236°,139.767125°"`), and
+ * `Number("35.681236°")` is `NaN`. Every point in an affected file failed
+ * silently, `trace.length` never reached 2, and the segment vanished — with
+ * enough affected files, that reads as "no movement found" for an export
+ * that was full of movement.
+ *
+ * Rather than special-case degree signs on top of the exact-match parser,
+ * this pulls the first two decimal numbers out of a string via regex — it
+ * does not care what surrounds the digits — and separately accepts the
+ * object shapes seen in the wild: `{latitude, longitude}`, `{lat, lng}` /
+ * `{lat, lon}`, and one level of nesting under `latLng` or `placeLocation`
+ * (Google Maps sometimes ships the coordinate one key deeper than the
+ * activity endpoint itself). The `geo:` string case still parses exactly as
+ * before; it is a strict subset of what this now accepts.
+ */
+function parseCoordinate(value: unknown): [number, number] | null {
+    if (value == null) return null;
+
+    if (typeof value === 'string') {
+        const body = value.startsWith('geo:') ? value.slice(4) : value;
+        const nums = body.match(/-?\d+(?:\.\d+)?/g);
+        if (!nums || nums.length < 2) return null;
+        // `geo:` URIs are latitude-then-longitude (RFC 5870); a bare pair
+        // without the prefix is assumed to follow the same order, matching
+        // what this parser already assumed before this fix.
+        return finiteCoord(Number(nums[1]), Number(nums[0]));
+    }
+
+    if (typeof value === 'object' && !Array.isArray(value)) {
+        const o = value as Record<string, unknown>;
+        const lat = o.latitude ?? o.lat;
+        const lon = o.longitude ?? o.lng ?? o.lon;
+        if (typeof lat === 'number' && typeof lon === 'number') {
+            return finiteCoord(lon, lat);
+        }
+        if (o.latLng !== undefined) return parseCoordinate(o.latLng);
+        if (o.placeLocation !== undefined) return parseCoordinate(o.placeLocation);
+        return null;
+    }
+
+    return null;
 }
 
 function parseE7(o: any): [number, number] | null {
@@ -104,7 +150,7 @@ function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Recor
         // per minute, which at 80km/h is 1.3km apart — sparse enough that the
         // corridor test has to know how little evidence it is working from.
         for (const p of seg.timelinePath ?? []) {
-            const c = parseGeoString(p.point);
+            const c = parseCoordinate(p.point);
             if (!c) continue;
             // Newer exports give an absolute `time`; older ones an offset.
             let t = parseTime(p.time);
@@ -118,8 +164,8 @@ function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Recor
         // The endpoints are worth more than the middle here: a ride must begin
         // and end at a station, so we never want to lose them to sampling.
         if (act) {
-            const s = parseGeoString(act.start?.latLng ?? act.start);
-            const e = parseGeoString(act.end?.latLng ?? act.end);
+            const s = parseCoordinate(act.start?.latLng ?? act.start);
+            const e = parseCoordinate(act.end?.latLng ?? act.end);
             if (s) trace.unshift({ lon: s[0], lat: s[1], t: startTime });
             if (e) trace.push({ lon: e[0], lat: e[1], t: endTime });
         }
