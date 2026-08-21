@@ -9,6 +9,7 @@ import { resolveRegionIdsFromLocation, geocode, checkIsOverseas } from '../../li
 import { validateTrip as validateTripFn } from '../../lib/trip-validator';
 import { type GeoJSONGeometry } from '../../lib/geometry-service';
 import { saveTrip } from '../../lib/tripService';
+import { seedEssentialPrepCards } from '../../lib/prep-cards';
 import { updateTripState } from '../utils';
 import { inferCurrencyFromRegions, DEFAULT_EXCHANGE_RATES, CURRENCY_SYMBOLS } from '../../lib/currency-utils';
 import { useExchangeRateStore } from '../exchangeRateStore';
@@ -29,8 +30,20 @@ export interface TripInfoSlice {
     createTrip: (wizardData: WizardState, userId?: string, userProfile?: import('../../types/user').UserProfile | null) => Promise<string | void>;
     updateTrip: (idOrUpdates: string | Partial<Trip>, updates?: Partial<Trip>) => Promise<void>;
     updateChecklistItem: (id: string, updates: Partial<import('../../types/trip').ChecklistItem>) => void;
-    addChecklistItem: (item: { title: string, tags?: string[] }) => void;
+    addChecklistItem: (item: {
+        title: string;
+        tags?: string[];
+        cardId?: string;
+        prepId?: string;
+        priority?: 'essential' | 'recommended' | 'optional';
+    }) => void;
     removeChecklistItem: (id: string) => void;
+    addPrepCard: (
+        cardId: string,
+        items: { title: string; prepId?: string; priority?: 'essential' | 'recommended' | 'optional' }[],
+    ) => void;
+    removePrepCard: (cardId: string) => void;
+    dismissPrepCard: (cardId: string) => void;
     addBucketListItem: (item: Omit<import('../../types/trip').BucketListItem, 'id'>) => void;
     updateBucketListItem: (id: string, updates: Partial<import('../../types/trip').BucketListItem>) => void;
     removeBucketListItem: (id: string) => void;
@@ -262,12 +275,10 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             driving: [],
             publicTransport: [],
             accommodation: [],
-            checklist: [
-                { id: '1', title: '여권 유효기간 확인', isDone: false, tags: ['필수'] },
-                { id: '2', title: '여행자 보험 가입', isDone: false, tags: ['필수'] },
-                { id: '3', title: '포켓 와이파이/eSIM 예약', isDone: false, tags: ['필수'] },
-                ...(isOverseas ? [{ id: '4', title: '현지 통화 환전', isDone: false, tags: ['금융'] }] : []),
-            ],
+            // 아래에서 여행 조건에 맞는 필수 카드로 채운다. 예전에는 여기서 네 항목을
+            // 고정으로 넣었는데, 제주 주말 여행에도 "여권 유효기간 확인"이 필수로 붙어
+            // 목록이 곧장 남의 숙제처럼 보였다.
+            checklist: [],
             reservations: [],
             bucketList: [],
             dailyTimeline: [],
@@ -280,6 +291,15 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             planningStatus: 'ideation',
         };
 
+        // 여행지·시기·테마로 정해지는 '꼭 필요한' 카드만 미리 담아 둔다.
+        // 권장·선택까지 미리 담으면 결국 남이 준 목록이 되므로, 나머지는 편집기에서
+        // 제안으로 만난다. 마법사 시점엔 일정이 비어 있어 항공·쇼핑처럼 일정에서
+        // 나오는 준비물은 아직 잡히지 않는다 — 계획이 구체화되면 그때 제안된다.
+        const seeded = seedEssentialPrepCards(newTrip, {
+            homeCountryName: userProfile?.residence?.country,
+        });
+        newTrip.checklist = seeded.checklist;
+        newTrip.activePrepCards = seeded.activePrepCards;
 
         // Seamless: Set initial currency based on locations
         if (!wizardData.isLocationUndecided && regions.length > 0) {
@@ -420,21 +440,70 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
     }),
 
     addChecklistItem: (item) => updateTripState(set, get, (trip) => {
-        const existingItem = trip.checklist.find((i) => i.title === item.title);
+        // 추천 항목은 생성기 id로, 직접 적은 항목은 제목으로 중복을 판단한다.
+        const existingItem = trip.checklist.find((i) =>
+            (item.prepId && i.prepId === item.prepId) || i.title === item.title
+        );
 
         if (existingItem) {
             if (item.tags) {
                 const newTags = Array.from(new Set([...(existingItem.tags || []), ...item.tags]));
                 existingItem.tags = newTags;
             }
+            // 카드 도입 이전에 담긴 항목이라면 이 기회에 카드·중요도를 채워 준다.
+            if (item.cardId && !existingItem.cardId) existingItem.cardId = item.cardId;
+            if (item.prepId && !existingItem.prepId) existingItem.prepId = item.prepId;
+            if (item.priority && !existingItem.priority) existingItem.priority = item.priority;
         } else {
             trip.checklist.push({
                 id: generateId(),
                 title: item.title,
                 isDone: false,
-                tags: item.tags || []
+                tags: item.tags || [],
+                ...(item.cardId ? { cardId: item.cardId } : {}),
+                ...(item.prepId ? { prepId: item.prepId } : {}),
+                ...(item.priority ? { priority: item.priority } : {}),
             });
         }
+    }),
+
+    /** 카드 하나를 담는다. items가 비어 있으면 주제만 잡아 둔 빈 카드가 된다. */
+    addPrepCard: (cardId, items) => updateTripState(set, get, (trip) => {
+        const held = trip.activePrepCards || [];
+        if (!held.includes(cardId)) trip.activePrepCards = [...held, cardId];
+        for (const item of items) {
+            if (trip.checklist.some((i) => i.prepId === item.prepId || i.title === item.title)) continue;
+            trip.checklist.push({
+                id: generateId(),
+                title: item.title,
+                isDone: false,
+                tags: [],
+                cardId,
+                ...(item.prepId ? { prepId: item.prepId } : {}),
+                ...(item.priority ? { priority: item.priority } : {}),
+            });
+        }
+        // 접어 뒀던 카드를 다시 담는 경우가 있으므로 거절 기록에서 뺀다.
+        if (trip.dismissedPrepCards?.length) {
+            trip.dismissedPrepCards = trip.dismissedPrepCards.filter((id) => id !== cardId);
+        }
+    }),
+
+    /** 카드를 통째로 비운다. 담긴 항목도 함께 사라진다. */
+    removePrepCard: (cardId) => updateTripState(set, get, (trip) => {
+        trip.checklist = trip.checklist.filter((i) => (i.cardId || 'custom') !== cardId);
+        if (trip.activePrepCards?.length) {
+            trip.activePrepCards = trip.activePrepCards.filter((id) => id !== cardId);
+        }
+    }),
+
+    /**
+     * 카드 제안을 거절한다. 여행 조건이 그대로면 추천 엔진은 같은 카드를 계속 내놓으므로,
+     * 거절을 기억하지 않으면 지운 카드가 매번 되살아난다.
+     */
+    dismissPrepCard: (cardId) => updateTripState(set, get, (trip) => {
+        const list = trip.dismissedPrepCards || [];
+        if (!list.includes(cardId)) trip.dismissedPrepCards = [...list, cardId];
     }),
 
     removeChecklistItem: (id) => updateTripState(set, get, (trip) => {

@@ -1,336 +1,63 @@
 'use client';
-import { useState } from 'react';
-import { useTripStore, useUserStore, useSettingsStore, generatePreparationItems, resolveCountryProfile, SUPPORTED_HOME_COUNTRIES } from '@pplaner/shared';
+import { useMemo, useState } from 'react';
+import {
+    useTripStore, useUserStore, useSettingsStore,
+    buildPrepCards, PREP_CARD_DEFS, CUSTOM_CARD_ID,
+    resolveCountryProfile, SUPPORTED_HOME_COUNTRIES, cn,
+    type ActivePrepCard, type SuggestedPrepCard, type PrepItem,
+} from '@pplaner/shared';
 import { CustomCheckbox } from '@/components/common/FormComponents';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@pplaner/shared';
-import { Trip } from '@pplaner/shared';
 
-const PREP_PRIORITY_RANK: Record<string, number> = { essential: 0, recommended: 1, optional: 2 };
+/**
+ * 여행 준비 — 주제 카드 편집기.
+ *
+ * 준비물을 하나의 긴 목록으로 주면 "다 해내야 하는 숙제"로 읽힌다. 여행마다 필요한
+ * 준비가 다른데 목록은 그 차이를 표현하지 못한다. 그래서 여기서는 항목이 아니라
+ * 카드를 다룬다 — 필요한 카드만 담고, 담은 카드 안에서 체크한다.
+ *
+ * 화면 순서도 그 태도를 따른다: 내가 담은 것이 먼저고, 제안은 그 아래에 있다.
+ * 제안을 거절하는 버튼("필요 없어요")을 담기 버튼과 나란히 두는 것도 같은 이유다 —
+ * 거절이 정상적인 선택지로 보여야 목록이 숙제로 읽히지 않는다.
+ */
 
-const PREP_CATEGORY_LABELS: Record<string, string> = {
-    documents: '서류', money: '금융', connectivity: '통신', transport: '교통',
-    power: '전자기기', health: '건강', shopping: '쇼핑', activity: '액티비티', general: '일반',
-};
-const PREP_PRIORITY_LABELS: Record<string, string> = {
-    essential: '필수', recommended: '권장', optional: '선택',
-};
-
-const PRESETS = [
-    {
-        id: 'domestic',
-        name: '국내여행',
-        icon: 'map',
-        items: [
-            { title: '보조배터리', tag: '필수' },
-            { title: '신분증', tag: '필수' },
-            { title: '상비약', tag: '건강' },
-            { title: '세면도구', tag: '개인' },
-            { title: '편한 신발', tag: '의류' }
-        ]
-    },
-    {
-        id: 'international',
-        name: '해외여행',
-        icon: 'public',
-        items: [
-            { title: '여권 (만료일 확인)', tag: '필수' },
-            { title: '유심/포켓와이파이', tag: '통신' },
-            { title: '환전(현지통화)', tag: '금융' },
-            { title: '트래블로그/월렛 카드', tag: '금융' },
-            { title: '여행자보험 가입', tag: '필수' },
-            { title: '어댑터(돼지코)', tag: '전자기기' }
-        ]
-    },
-    {
-        id: 'rental',
-        name: '렌터카이용',
-        icon: 'directions_car',
-        items: [
-            { title: '운전면허증', tag: '렌터카' },
-            { title: '국제면허증', tag: '렌터카' },
-            { title: '차량용 충전기', tag: '전자기기' },
-            { title: '블랙박스 확인용 케이블', tag: '렌터카' }
-        ]
-    },
-    {
-        id: 'package',
-        name: '패키지여행',
-        icon: 'groups',
-        items: [
-            { title: '가이드 연락처 저장', tag: '확인' },
-            { title: '집결 장소/시간 확인', tag: '확인' },
-            { title: '일정표 출력/저장', tag: '확인' }
-        ]
-    },
-    {
-        id: 'concert',
-        name: '콘서트',
-        icon: 'confirmation_number',
-        items: [
-            { title: '티켓 (모바일/지류)', tag: '필수' },
-            { title: '응원봉', tag: '팬심' },
-            { title: '보조배터리', tag: '필수' },
-            { title: '작은 가방', tag: '소지품' }
-        ]
-    },
-    {
-        id: 'family',
-        name: '가족여행',
-        icon: 'family_restroom',
-        items: [
-            { title: '비상 상비약 세트', tag: '가족' },
-            { title: '물티슈 대용량', tag: '가족' },
-            { title: '가족 여벌 옷', tag: '의류' },
-            { title: '아이들을 위한 간식', tag: '식품' }
-        ]
-    }
-];
-
-interface ChecklistFormProps {
-    initialTitle?: string;
-    initialTags?: string;
-    onSubmit: (title: string, tags: string) => void;
-    onCancel?: () => void;
-    submitLabel: string;
-    autoFocus?: boolean;
-}
-
-// ─── 추천 엔진 로직 ──────────────────────────────────────────────
-
-interface RecommendationItem {
-    title: string;
-    tags: string[];
-    reason: string;
-    priority?: 'essential' | 'recommended' | 'optional';
-    isVisa?: boolean;
-}
-
-function getRecommendations(trip: Trip): RecommendationItem[] {
-    const recs: RecommendationItem[] = [];
-    const regions = trip.locations?.regions || [];
-    const isOverseas = trip.isOverseas;
-    const theme = trip.theme || '';
-    const startDate = trip.dates?.startDate;
-
-    // 1. 해외 여행 필수품
-    if (isOverseas) {
-        recs.push(
-            { title: '여권 (만료일 6개월 확인)', tags: ['필수', '해외'], reason: '해외 여행시 가장 중요한 필수품' },
-            { title: '유심 / 포켓와이파이 예약', tags: ['통신', '해외', '예약'], reason: '현지 인터넷 사용을 위해 필요' },
-            { title: '여행자 보험 가입', tags: ['필수', '보험'], reason: '만일의 상황을 대비한 안전장치' },
-            { title: '출입국 신고서 작성(비자 포함)', tags: ['확인', '해외'], reason: '빠른 입국 수속을 위해 미리 확인' }
-        );
-    }
-
-    // 2. 국가/지역별 특화 (ID 기반)
-    const hasJapan = regions.some(r => r.countryId === '101' || (r.type === 'country' && r.id === '101'));
-    const hasSEAsia = regions.some(r => ['171', '181', '136', '085'].includes(r.countryId || (r.type === 'country' ? r.id : ''))); // 태국, 베트남, 필리핀, 인도네시아
-    const hasEurope = regions.some(r => ['028', '099', '001', '157'].includes(r.countryId || (r.type === 'country' ? r.id : ''))); // 프랑스, 이탈리아, 영국, 스페인
-
-    if (hasJapan) {
-        recs.push(
-            { title: '110V 어댑터 (돼지코)', tags: ['전자기기', '일본'], reason: '일본은 110V 전압을 사용합니다' },
-            { title: 'Visit Japan Web 등록', tags: ['확인', '일본'], reason: '일본 입국 수속 간소화 서비스' },
-            { title: '동전 지갑', tags: ['개인', '일본'], reason: '현금 사용이 많은 일본 여행의 필수템' },
-            { title: '교통카드 (스이카/파스모)', tags: ['교통', '일본'], reason: '지하철, 편의점 결제에 유용' }
-        );
-    } 
-    
-    if (hasSEAsia) {
-        recs.push(
-            { title: '모기 기피제', tags: ['건강', '동남아'], reason: '열대 지역 해충 방지' },
-            { title: '샤워기 필터', tags: ['청결', '동남아'], reason: '수질에 민감한 분들을 위한 필수템' },
-            { title: '우산 / 우비', tags: ['생활', '동남아'], reason: '갑작스러운 스콜(비) 대비' },
-            { title: '그랩(Grab) 앱 설치', tags: ['교통', '동남아'], reason: '현지 택시 호출 및 배달 서비스' }
-        );
-    } 
-    
-    if (hasEurope) {
-        recs.push(
-            { title: '도난 방지 스프링', tags: ['보안', '유럽'], reason: '휴대폰, 지갑 등을 가방에 연결' },
-            { title: '개인용 자물쇠', tags: ['보안', '유럽'], reason: '호스텔이나 기차 보관함용' },
-            { title: '유로화 환전', tags: ['금융', '유럽'], reason: '현지 결제를 위한 준비' },
-            { title: '구글 맵 오프라인 다운로드', tags: ['지도', '유럽'], reason: '인터넷이 불안정한 지역 대비' }
-        );
-    }
-
-    // 3. 계절별 (월 기준)
-    if (startDate) {
-        const month = new Date(startDate).getMonth() + 1; // 1~12
-        if (month >= 6 && month <= 8) { // 여름
-            recs.push(
-                { title: '선크림', tags: ['뷰티', '여름'], reason: '강한 자외선 차단' },
-                { title: '선글라스', tags: ['의류', '여름'], reason: '눈 보호 및 패션 아이템' },
-                { title: '휴대용 선풍기', tags: ['생활', '여름'], reason: '무더위 대비' }
-            );
-        } else if (month === 12 || month <= 2) { // 겨울
-            recs.push(
-                { title: '핫팩', tags: ['생활', '겨울'], reason: '추운 날씨 보온 유지' },
-                { title: '목도리 / 장갑', tags: ['의류', '겨울'], reason: '체온 유지를 위한 방한 용품' },
-                { title: '보습 크림', tags: ['뷰티', '겨울'], reason: '건조한 대기 대비 피용 보호' }
-            );
-        }
-    }
-
-    // 4. 테마별
-    if (theme.includes('캠핑')) {
-        recs.push(
-            { title: '랜턴', tags: ['장비', '캠핑'], reason: '밤길 및 텐트 안 조명' },
-            { title: '멀티탭', tags: ['전자기기', '캠핑'], reason: '여러 기기 동시 충전' },
-            { title: '물티슈 대용량', tags: ['위생', '캠핑'], reason: '캠핑장 필수 청결 도구' }
-        );
-    } else if (theme.includes('수영') || theme.includes('해변') || theme.includes('휴양')) {
-        recs.push(
-            { title: '수영복', tags: ['의류', '물놀이'], reason: '즐거운 물놀이를 위한 필수템' },
-            { title: '방수팩', tags: ['전자기기', '물놀이'], reason: '스마트폰 침수 방지' },
-            { title: '아쿠아 슈즈', tags: ['의류', '물놀이'], reason: '해변이나 워터파크 발 보호' }
-        );
-    }
-
-    return recs;
-}
-
-function ChecklistForm({ initialTitle = '', initialTags = '', onSubmit, onCancel, submitLabel, autoFocus }: ChecklistFormProps) {
-    const [title, setTitle] = useState(initialTitle);
-    const [description, setDescription] = useState(initialTags.includes('|') ? initialTags.split('|')[1].trim() : '');
-    const [tags, setTags] = useState(initialTags.includes('|') ? initialTags.split('|')[0].trim() : initialTags);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!title.trim()) return;
-        const combinedTags = description ? `${tags} | ${description}` : tags;
-        onSubmit(title, combinedTags);
-    };
-
-    return (
-        <form
-            onSubmit={handleSubmit}
-            className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4"
-        >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">준비물 이름</label>
-                    <input
-                        autoFocus={autoFocus}
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="어댑터, 비상약 등..."
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-bold text-sm"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">태그 (쉼표 구분)</label>
-                    <input
-                        value={tags}
-                        onChange={(e) => setTags(e.target.value)}
-                        placeholder="필수, 전자기기 등..."
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-bold text-sm"
-                    />
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-1">메모 / 상세 설명 (선택)</label>
-                    <input
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="만료일 확인, 예약 번호 등..."
-                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none font-bold text-sm"
-                    />
-                </div>
-            </div>
-            <div className="flex justify-end gap-3">
-                {onCancel && (
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="px-4 py-2 text-slate-500 hover:text-slate-700 font-bold text-xs"
-                    >
-                        취소
-                    </button>
-                )}
-                <button
-                    type="submit"
-                    className="px-6 py-2 bg-primary text-white rounded-xl font-bold text-xs shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                >
-                    {submitLabel}
-                </button>
-            </div>
-        </form>
-    );
-}
+const PRIORITY_LABEL = { essential: '꼭 필요', recommended: '권장', optional: '선택' } as const;
 
 export default function ChecklistEditor() {
     const trip = useTripStore((state) => state.currentTrip);
     const updateChecklistItem = useTripStore((state) => state.updateChecklistItem);
     const addChecklistItem = useTripStore((state) => state.addChecklistItem);
     const removeChecklistItem = useTripStore((state) => state.removeChecklistItem);
+    const addPrepCard = useTripStore((state) => state.addPrepCard);
+    const removePrepCard = useTripStore((state) => state.removePrepCard);
+    const dismissPrepCard = useTripStore((state) => state.dismissPrepCard);
+
     const profileHomeCountry = useUserStore((state) => state.profile?.residence?.country);
     const homeCountryOverride = useSettingsStore((state) => state.homeCountryOverride);
     const updateHomeCountryOverride = useSettingsStore((state) => state.updateHomeCountryOverride);
 
-    const [isAdding, setIsAdding] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
+    const [showCardPicker, setShowCardPicker] = useState(false);
 
-    if (!trip) return null;
-
-    // 로그인 프로필에 거주국이 설정돼 있으면 그것을 우선하고, 없으면(비로그인 게스트 등)
-    // 기기에 저장된 로컬 선택값을 대신 쓴다. 준비물/비자 요건의 기준국이 정확해야 하므로.
+    // 로그인 프로필에 거주국이 있으면 그것을 우선하고, 없으면 기기에 저장된 선택값을 쓴다.
+    // 비자·어댑터·전압은 기준국이 정확해야 의미가 있다.
     const homeCountry = profileHomeCountry || homeCountryOverride;
     const homeProfile = resolveCountryProfile(homeCountry);
 
-    // 국가 차이(플러그·전압·통화·국제면허·비자 등) 기반 준비물을 기존 추천과 병합
-    const prepRecommendations: RecommendationItem[] = generatePreparationItems(trip, { homeCountryName: homeCountry }).map((p) => ({
-        title: p.title,
-        reason: p.reason || '',
-        tags: [PREP_CATEGORY_LABELS[p.category] || p.category, PREP_PRIORITY_LABELS[p.priority] || p.priority],
-        priority: p.priority,
-        isVisa: p.id.startsWith('prep-visa-'),
-    }));
+    const { active, suggested } = useMemo(
+        () => (trip ? buildPrepCards(trip, { homeCountryName: homeCountry }) : { active: [], suggested: [] }),
+        [trip, homeCountry],
+    );
 
-    const seenTitles = new Set<string>();
-    const recommendations = [...prepRecommendations, ...getRecommendations(trip)]
-        .filter(rec => {
-            if (seenTitles.has(rec.title)) return false;
-            seenTitles.add(rec.title);
-            return !trip.checklist.some(item => item.title === rec.title);
-        })
-        // 필수(특히 비자) 항목이 묻히지 않도록 우선순위 순으로 정렬
-        .sort((a, b) => (PREP_PRIORITY_RANK[a.priority || 'recommended'] ?? 1) - (PREP_PRIORITY_RANK[b.priority || 'recommended'] ?? 1));
+    if (!trip) return null;
 
-    const applyPreset = (preset: typeof PRESETS[0]) => {
-        preset.items.forEach(item => {
-            if (!trip.checklist.some(c => c.title === item.title)) {
-                const tags = item.tag ? [item.tag, preset.name] : [preset.name];
-                addChecklistItem({ title: item.title, tags });
-            }
-        });
-    };
-
-    const addRecommended = (item: RecommendationItem) => {
-        addChecklistItem({ title: item.title, tags: item.tags });
-    };
-
-    const addAllRecommended = () => {
-        recommendations.forEach(addRecommended);
-    };
-
-    const handleAdd = (title: string, tagsStr: string) => {
-        const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
-        addChecklistItem({ title, tags });
-        setIsAdding(false);
-    };
-
-    const handleUpdate = (id: string, title: string, tagsStr: string) => {
-        const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
-        updateChecklistItem(id, { title, tags });
-        setEditingId(null);
-    };
+    const activeIds = new Set(active.map((c) => c.id));
+    const pickableCards = PREP_CARD_DEFS.filter((d) => !activeIds.has(d.id));
 
     return (
-        <div className="space-y-12">
-            {/* 거주국(내 국적) 선택 — 로그인 프로필에 이미 설정돼 있으면 숨김 */}
+        <div className="space-y-10">
+            {/* 거주국 — 로그인 프로필에 이미 있으면 숨긴다 */}
             {!profileHomeCountry && (
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-wrap items-center gap-3">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-[20px] flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-1.5 shrink-0">
                         <span className="material-symbols-rounded text-base text-slate-400">badge</span>
                         <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">내 국적(거주국)</span>
@@ -343,10 +70,10 @@ export default function ChecklistEditor() {
                                     key={c.key}
                                     onClick={() => updateHomeCountryOverride(c.key === 'KR' ? undefined : c.key)}
                                     className={cn(
-                                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                                        'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
                                         isActive
-                                            ? "bg-primary text-white border-primary shadow-sm"
-                                            : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-primary/40"
+                                            ? 'bg-primary text-white border-primary shadow-sm'
+                                            : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-primary/40',
                                     )}
                                 >
                                     {c.name}
@@ -355,248 +82,304 @@ export default function ChecklistEditor() {
                         })}
                     </div>
                     <p className="w-full text-xs font-medium text-slate-400">
-                        비자·어댑터·전압 등 준비물은 이 국적을 기준으로 계산돼요. 로그인하면 프로필 설정값이 자동으로 대신 쓰여요.
+                        비자·어댑터·전압은 이 국적을 기준으로 계산돼요. 로그인하면 프로필 설정값이 자동으로 쓰여요.
                     </p>
                 </div>
             )}
 
-            {/* Recommendations Section */}
-            {recommendations.length > 0 && (
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-sm font-semibold text-primary uppercase tracking-widest mb-1 flex items-center gap-2">
-                                <span className="material-symbols-rounded text-[16px]">magic_button</span>
-                                사용자님을 위한 추천 준비물
-                            </h3>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-tighter">여행지, 기간, 테마를 분석하여 꼭 필요한 아이템을 골랐어요.</p>
-                            <p className="text-xs font-medium text-slate-400 mt-0.5 normal-case">
-                                거주국/여권: <b>{homeProfile?.aliases[0] || '대한민국'}</b> 기준 · 비자·입국 요건은 참고용이며 출발 전 대사관·공식 사이트에서 꼭 재확인하세요.
-                            </p>
-                        </div>
-                        <button
-                            onClick={addAllRecommended}
-                            className="text-xs font-semibold text-primary px-3 py-1 bg-primary/5 rounded-full border border-primary/10 hover:bg-primary/10 transition-all uppercase"
-                        >
-                            전체 추가하기
-                        </button>
+            {/* 담은 카드 */}
+            <section className="space-y-4">
+                <div className="flex items-end justify-between gap-4">
+                    <div>
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">내 준비 카드</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            이번 여행에 필요한 것만 담으세요. 담지 않은 카드는 준비도에 영향을 주지 않아요.
+                        </p>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {recommendations.map((rec, i) => {
-                            const isEssential = rec.priority === 'essential';
-                            return (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: i * 0.05 }}
-                                    className={cn(
-                                        "group p-4 border rounded-2xl flex flex-col justify-between gap-3 transition-all hover:shadow-md",
-                                        rec.isVisa
-                                            ? "bg-red-50/60 dark:bg-red-900/10 border-red-200 dark:border-red-900/40 hover:border-red-300"
-                                            : isEssential
-                                                ? "bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/40 hover:border-amber-300"
-                                                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary/30"
-                                    )}
-                                >
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-tight flex items-center gap-1.5">
-                                                {rec.isVisa && (
-                                                    <span className="material-symbols-rounded text-[16px] text-red-500 shrink-0">warning</span>
-                                                )}
-                                                {rec.title}
-                                            </h4>
-                                            <button
-                                                onClick={() => addRecommended(rec)}
-                                                className={cn(
-                                                    "w-8 h-8 rounded-full flex items-center justify-center text-slate-400 transition-all shadow-sm shrink-0",
-                                                    rec.isVisa
-                                                        ? "bg-red-100 dark:bg-red-900/30 group-hover:bg-red-500 group-hover:text-white"
-                                                        : "bg-slate-50 dark:bg-slate-800 group-hover:bg-primary group-hover:text-white"
-                                                )}
-                                            >
-                                                <span className="material-symbols-rounded text-[18px]">add</span>
-                                            </button>
-                                        </div>
-                                        <p className={cn(
-                                            "text-xs font-bold text-slate-500 dark:text-slate-400",
-                                            isEssential ? "" : "line-clamp-2"
-                                        )}>
-                                            {rec.reason}
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-wrap gap-1">
-                                        {rec.tags.map((tag, j) => {
-                                            const isPriorityTag = j === 1 && !!rec.priority;
-                                            const priorityColorCls = rec.priority === 'essential'
-                                                ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40'
-                                                : rec.priority === 'recommended'
-                                                    ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40'
-                                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700';
-                                            return (
-                                                <span
-                                                    key={j}
-                                                    className={cn(
-                                                        "px-1.5 py-0.5 text-xs font-semibold rounded-md uppercase tracking-widest border",
-                                                        isPriorityTag ? priorityColorCls : "bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700"
-                                                    )}
-                                                >
-                                                    {tag}
-                                                </span>
-                                            );
-                                        })}
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {/* Presets Section */}
-            <div className="space-y-6">
-                <div>
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-1">기본 태그별 프리셋</h3>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-tighter">카테고리별 필수 짐들을 한 번에 추가해보세요.</p>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                    {PRESETS.map((preset) => (
+                    {pickableCards.length > 0 && (
                         <button
-                            key={preset.id}
-                            onClick={() => applyPreset(preset)}
-                            className="flex flex-col items-center gap-2 p-4 bg-slate-50/50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800 rounded-3xl hover:border-primary hover:bg-white dark:hover:bg-slate-900 transition-all group"
+                            onClick={() => setShowCardPicker((v) => !v)}
+                            className="shrink-0 text-xs font-semibold text-primary px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-all flex items-center gap-1"
                         >
-                            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20 transition-all shadow-sm">
-                                <span className="material-symbols-rounded text-2xl">{preset.icon}</span>
-                            </div>
-                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">{preset.name}</span>
+                            <span className="material-symbols-rounded text-sm">{showCardPicker ? 'close' : 'add'}</span>
+                            {showCardPicker ? '닫기' : '카드 담기'}
                         </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Main Checklist */}
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-widest">체크리스트 ({trip.checklist.length})</h3>
-                    <button
-                        onClick={() => {
-                            setIsAdding(!isAdding);
-                            setEditingId(null);
-                        }}
-                        className="text-xs font-semibold text-primary px-3 py-1.5 bg-primary/5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-all flex items-center gap-1"
-                    >
-                        <span className="material-symbols-rounded text-[14px]">{isAdding ? 'close' : 'add'}</span>
-                        {isAdding ? '취소' : '항목 추가'}
-                    </button>
+                    )}
                 </div>
 
                 <AnimatePresence>
-                    {isAdding && (
+                    {showCardPicker && (
                         <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="mb-6"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
                         >
-                            <ChecklistForm
-                                onSubmit={handleAdd}
-                                submitLabel="추가하기"
-                                autoFocus
-                            />
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 p-3 bg-slate-50 dark:bg-slate-800/30 rounded-[20px] border border-slate-200 dark:border-slate-800">
+                                {pickableCards.map((def) => (
+                                    <button
+                                        key={def.id}
+                                        onClick={() => {
+                                            // 주제만 잡아 두는 빈 카드. 이 주제의 추천 항목이 있으면
+                                            // 카드 안에서 "이것도 있어요"로 제안된다.
+                                            addPrepCard(def.id, []);
+                                            setShowCardPicker(false);
+                                        }}
+                                        className="flex items-center gap-2 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[14px] hover:border-primary/40 transition-all text-left"
+                                    >
+                                        <span className="material-symbols-rounded text-lg text-slate-400 shrink-0">{def.icon}</span>
+                                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{def.title}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                <div className="space-y-3">
-                    {trip.checklist.length === 0 ? (
-                        <div className="py-12 text-center text-slate-400">
-                            <span className="material-symbols-rounded text-4xl mb-4 block opacity-20">fact_check</span>
-                            <p className="text-sm font-bold uppercase tracking-widest">등록된 항목이 없습니다.</p>
-                        </div>
-                    ) : (
-                        trip.checklist.map((item) => (
-                            <div key={item.id} className="relative">
-                                <AnimatePresence mode="wait">
-                                    {editingId === item.id ? (
-                                        <motion.div
-                                            key="edit-form"
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: 'auto' }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            className="mb-3 overflow-hidden"
-                                        >
-                                            <ChecklistForm
-                                                initialTitle={item.title}
-                                                initialTags={item.tags?.join(', ') || ''}
-                                                onSubmit={(title, tags) => handleUpdate(item.id, title, tags)}
-                                                onCancel={() => setEditingId(null)}
-                                                submitLabel="수정 완료"
-                                                autoFocus
-                                            />
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key="item-view"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            className="group p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-primary/20 transition-all shadow-sm flex items-center gap-4"
-                                        >
-                                            <CustomCheckbox
-                                                checked={!!item.isDone}
-                                                onChange={(checked: boolean) => updateChecklistItem(item.id, { isDone: checked })}
-                                                className="flex-shrink-0"
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className={`text-sm font-bold truncate ${item.isDone ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                    {item.title}
-                                                </h4>
-                                                {item.tags && item.tags.length > 0 && (
-                                                    <div className="flex flex-col gap-1.5 mt-2">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {item.tags.filter(t => !t.startsWith('|')).map((t, i) => (
-                                                                <span key={i} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md px-1.5 py-0.5 font-semibold uppercase tracking-widest inline-block">
-                                                                    {t}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                        {item.tags.some(t => t.startsWith('|')) && (
-                                                            <p className="text-xs font-bold text-slate-400 italic">
-                                                                {item.tags.find(t => t.startsWith('|'))?.replace('|', '').trim()}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingId(item.id);
-                                                        setIsAdding(false);
-                                                    }}
-                                                    className="material-symbols-rounded text-slate-300 hover:text-primary transition-all text-xl p-1"
-                                                >
-                                                    edit
-                                                </button>
-                                                <button
-                                                    onClick={() => removeChecklistItem(item.id)}
-                                                    className="material-symbols-rounded text-slate-300 hover:text-red-500 transition-all text-xl p-1"
-                                                >
-                                                    delete
-                                                </button>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
+                {active.length === 0 ? (
+                    <div className="py-12 px-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-[20px]">
+                        <span className="material-symbols-rounded text-3xl text-slate-300 dark:text-slate-700 mb-3 block">
+                            playlist_add_check
+                        </span>
+                        <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">아직 담은 카드가 없어요</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                            아래 제안 중 필요한 것만 담아도 충분해요. 전부 담을 필요는 없습니다.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {active.map((card) => (
+                            <ActiveCard
+                                key={card.id}
+                                card={card}
+                                onToggle={(id, done) => updateChecklistItem(id, { isDone: done })}
+                                onRemoveItem={removeChecklistItem}
+                                onAddItem={(title) => addChecklistItem({ title, cardId: card.id })}
+                                onAddSuggested={(p) => addPrepCard(card.id, [{ title: p.title, prepId: p.id, priority: p.priority }])}
+                                onRemoveCard={() => removePrepCard(card.id)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* 제안 */}
+            {suggested.length > 0 && (
+                <section className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <span className="material-symbols-rounded text-base text-primary">lightbulb</span>
+                            이런 것도 챙기시나요?
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            여행지·시기·테마를 보고 골랐어요. 필요 없으면 접어 두면 다시 묻지 않아요.
+                            {homeProfile && <> · 기준 국적 <b>{homeProfile.aliases[0]}</b></>}
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {suggested.map((card) => (
+                            <SuggestedCard
+                                key={card.id}
+                                card={card}
+                                onAccept={() =>
+                                    addPrepCard(card.id, card.items.map((p) => ({ title: p.title, prepId: p.id, priority: p.priority })))
+                                }
+                                onDismiss={() => dismissPrepCard(card.id)}
+                            />
+                        ))}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                        비자·입국 요건은 참고용이에요. 출발 전 대사관·공식 사이트에서 꼭 다시 확인하세요.
+                    </p>
+                </section>
+            )}
         </div>
     );
 }
 
+// ─── 담은 카드 ──────────────────────────────────────────────────
 
+function ActiveCard({
+    card, onToggle, onRemoveItem, onAddItem, onAddSuggested, onRemoveCard,
+}: {
+    card: ActivePrepCard;
+    onToggle: (id: string, done: boolean) => void;
+    onRemoveItem: (id: string) => void;
+    onAddItem: (title: string) => void;
+    onAddSuggested: (item: PrepItem) => void;
+    onRemoveCard: () => void;
+}) {
+    const [draft, setDraft] = useState('');
+    const allDone = card.items.length > 0 && card.doneCount === card.items.length;
+
+    return (
+        <div className="rounded-[20px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_1px_2px_rgba(15,23,42,.05)] overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2.5">
+                <span className={cn(
+                    'material-symbols-rounded text-lg shrink-0',
+                    allDone ? 'text-emerald-500' : 'text-primary',
+                )}>
+                    {allDone ? 'task_alt' : card.icon}
+                </span>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex-1 min-w-0 truncate">{card.title}</h4>
+                {card.pendingEssentialCount > 0 && (
+                    <span className="text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/40 rounded-md px-1.5 py-0.5 shrink-0">
+                        꼭 필요 {card.pendingEssentialCount}
+                    </span>
+                )}
+                <span className="text-xs font-semibold text-slate-400 tabular-nums shrink-0">
+                    {card.doneCount}/{card.items.length}
+                </span>
+                <button
+                    onClick={onRemoveCard}
+                    title="이 카드 비우기"
+                    className="material-symbols-rounded text-slate-300 hover:text-red-500 transition-colors text-lg shrink-0"
+                >
+                    close
+                </button>
+            </div>
+
+            <div className="p-2 flex-1">
+                {card.items.length === 0 && card.unaddedItems.length === 0 && (
+                    <p className="px-2 py-4 text-xs text-slate-400">
+                        아직 비어 있어요. 아래에 직접 적어 채우면 돼요.
+                    </p>
+                )}
+                {card.items.map((item) => (
+                    <div key={item.id} className="group flex items-center gap-3 px-2 py-2 rounded-[10px] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <CustomCheckbox
+                            checked={!!item.isDone}
+                            onChange={(checked: boolean) => onToggle(item.id, checked)}
+                            className="flex-shrink-0"
+                        />
+                        <span className={cn(
+                            'text-sm flex-1 min-w-0',
+                            item.isDone ? 'text-slate-400 line-through' : 'text-slate-700 dark:text-slate-300',
+                        )}>
+                            {item.title}
+                        </span>
+                        {item.priority === 'essential' && !item.isDone && (
+                            <span className="text-xs font-semibold text-red-500 shrink-0">필수</span>
+                        )}
+                        <button
+                            onClick={() => onRemoveItem(item.id)}
+                            className="material-symbols-rounded text-slate-300 hover:text-red-500 transition-all text-base opacity-0 group-hover:opacity-100 shrink-0"
+                        >
+                            delete
+                        </button>
+                    </div>
+                ))}
+
+                {/* 카드를 담은 뒤에 계획이 바뀌어 새로 생긴 준비물 */}
+                {card.unaddedItems.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-dashed border-slate-200 dark:border-slate-800">
+                        <p className="px-2 text-xs text-slate-400 mb-1.5">이것도 있어요</p>
+                        <div className="flex flex-wrap gap-1.5 px-2 pb-1">
+                            {card.unaddedItems.map((p) => (
+                                <button
+                                    key={p.id}
+                                    onClick={() => onAddSuggested(p)}
+                                    title={p.reason}
+                                    className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-2.5 py-1 hover:border-primary hover:text-primary transition-all flex items-center gap-1"
+                                >
+                                    <span className="material-symbols-rounded text-xs">add</span>
+                                    {p.title}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!draft.trim()) return;
+                    onAddItem(draft.trim());
+                    setDraft('');
+                }}
+                className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20"
+            >
+                <input
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder="이 카드에 직접 추가…"
+                    className="w-full bg-transparent text-xs text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none py-1"
+                />
+            </form>
+        </div>
+    );
+}
+
+// ─── 제안 카드 ──────────────────────────────────────────────────
+
+function SuggestedCard({
+    card, onAccept, onDismiss,
+}: {
+    card: SuggestedPrepCard;
+    onAccept: () => void;
+    onDismiss: () => void;
+}) {
+    const isEssential = card.priority === 'essential';
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+                'rounded-[20px] border p-4 flex flex-col gap-3 transition-all',
+                isEssential
+                    ? 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/40'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-primary/30',
+            )}
+        >
+            <div className="flex items-start gap-2.5">
+                <span className={cn('material-symbols-rounded text-lg shrink-0', isEssential ? 'text-amber-600' : 'text-slate-400')}>
+                    {card.icon}
+                </span>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{card.title}</h4>
+                        {isEssential && (
+                            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 shrink-0">
+                                {PRIORITY_LABEL.essential}
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{card.blurb}</p>
+                </div>
+            </div>
+
+            {card.reason && (
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">{card.reason}</p>
+            )}
+
+            <ul className="space-y-1">
+                {card.items.slice(0, 4).map((p) => (
+                    <li key={p.id} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-1.5">
+                        <span className="text-slate-300 dark:text-slate-600 shrink-0">·</span>
+                        <span className="min-w-0">{p.title}</span>
+                    </li>
+                ))}
+                {card.items.length > 4 && (
+                    <li className="text-xs text-slate-400 pl-3">외 {card.items.length - 4}개</li>
+                )}
+            </ul>
+
+            <div className="flex items-center gap-2 mt-auto pt-1">
+                <button
+                    onClick={onAccept}
+                    className="flex-1 text-xs font-semibold text-white bg-primary rounded-lg py-2 hover:bg-primary/90 transition-all"
+                >
+                    담기
+                </button>
+                <button
+                    onClick={onDismiss}
+                    className="text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 px-2 py-2 transition-colors"
+                >
+                    필요 없어요
+                </button>
+            </div>
+        </motion.div>
+    );
+}
