@@ -13,6 +13,7 @@
  * 순수 함수 — 네트워크·저장소를 건드리지 않는다.
  */
 import type { ChecklistItem, Trip } from '../types/trip';
+import { generateId } from '../types/common';
 import {
     generatePreparationItems,
     type GeneratePrepOptions,
@@ -123,6 +124,10 @@ export function buildPrepCards(trip: Trip, options?: GeneratePrepOptions): PrepC
 
     // ── 담아 둔 카드 ──────────────────────────────────────
     const byCard = new Map<string, ChecklistItem[]>();
+    // 주제만 먼저 잡아 둔 빈 카드도 담은 것이다 — 항목이 생길 때까지 사라지면 안 된다.
+    for (const cardId of trip.activePrepCards || []) {
+        if (!byCard.has(cardId)) byCard.set(cardId, []);
+    }
     for (const item of checklist) {
         // cardId가 없는 항목(카드 도입 이전 데이터, 사용자가 직접 적은 것)은 '직접 추가'로 모은다.
         const cardId = item.cardId || CUSTOM_CARD_ID;
@@ -167,6 +172,31 @@ export function buildPrepCards(trip: Trip, options?: GeneratePrepOptions): PrepC
     });
 
     return { active, suggested };
+}
+
+/**
+ * 여행을 막 만들었을 때 담아 둘 카드를 고른다(마법사용).
+ *
+ * 필수 항목이 있는 카드만 담는다. 권장·선택까지 미리 담아 버리면 결국 남이 준 목록이
+ * 되고, 카드로 바꾼 의미가 없어진다 — 나머지는 편집기에서 제안으로 만나면 된다.
+ *
+ * 마법사 시점에는 일정이 비어 있어 여행지·시기·테마에서 나오는 것만 잡힌다.
+ * 계획이 구체화되면(항공편·일정 추가) 나머지가 그때 제안된다.
+ */
+export function seedEssentialPrepCards(
+    trip: Trip,
+    options?: GeneratePrepOptions,
+): Pick<Trip, 'checklist' | 'activePrepCards'> {
+    const essentials = generatePreparationItems(trip, options).filter(p => p.priority === 'essential');
+    const cardIds = [...new Set(essentials.map(p => p.category))];
+    return {
+        checklist: essentials.map(p => ({
+            id: generateId(),
+            isDone: false,
+            ...checklistItemFromPrepItem(p),
+        })),
+        activePrepCards: cardIds,
+    };
 }
 
 function sortByPriority<T extends { priority: PrepPriority }>(items: T[]): T[] {

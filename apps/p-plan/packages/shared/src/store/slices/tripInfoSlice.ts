@@ -9,6 +9,7 @@ import { resolveRegionIdsFromLocation, geocode, checkIsOverseas } from '../../li
 import { validateTrip as validateTripFn } from '../../lib/trip-validator';
 import { type GeoJSONGeometry } from '../../lib/geometry-service';
 import { saveTrip } from '../../lib/tripService';
+import { seedEssentialPrepCards } from '../../lib/prep-cards';
 import { updateTripState } from '../utils';
 import { inferCurrencyFromRegions, DEFAULT_EXCHANGE_RATES, CURRENCY_SYMBOLS } from '../../lib/currency-utils';
 import { useExchangeRateStore } from '../exchangeRateStore';
@@ -274,12 +275,10 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             driving: [],
             publicTransport: [],
             accommodation: [],
-            checklist: [
-                { id: '1', title: '여권 유효기간 확인', isDone: false, tags: ['필수'] },
-                { id: '2', title: '여행자 보험 가입', isDone: false, tags: ['필수'] },
-                { id: '3', title: '포켓 와이파이/eSIM 예약', isDone: false, tags: ['필수'] },
-                ...(isOverseas ? [{ id: '4', title: '현지 통화 환전', isDone: false, tags: ['금융'] }] : []),
-            ],
+            // 아래에서 여행 조건에 맞는 필수 카드로 채운다. 예전에는 여기서 네 항목을
+            // 고정으로 넣었는데, 제주 주말 여행에도 "여권 유효기간 확인"이 필수로 붙어
+            // 목록이 곧장 남의 숙제처럼 보였다.
+            checklist: [],
             reservations: [],
             bucketList: [],
             dailyTimeline: [],
@@ -292,6 +291,15 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             planningStatus: 'ideation',
         };
 
+        // 여행지·시기·테마로 정해지는 '꼭 필요한' 카드만 미리 담아 둔다.
+        // 권장·선택까지 미리 담으면 결국 남이 준 목록이 되므로, 나머지는 편집기에서
+        // 제안으로 만난다. 마법사 시점엔 일정이 비어 있어 항공·쇼핑처럼 일정에서
+        // 나오는 준비물은 아직 잡히지 않는다 — 계획이 구체화되면 그때 제안된다.
+        const seeded = seedEssentialPrepCards(newTrip, {
+            homeCountryName: userProfile?.residence?.country,
+        });
+        newTrip.checklist = seeded.checklist;
+        newTrip.activePrepCards = seeded.activePrepCards;
 
         // Seamless: Set initial currency based on locations
         if (!wizardData.isLocationUndecided && regions.length > 0) {
@@ -459,8 +467,10 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
         }
     }),
 
-    /** 카드 하나를 통째로 담는다(추천 카드 수락). */
+    /** 카드 하나를 담는다. items가 비어 있으면 주제만 잡아 둔 빈 카드가 된다. */
     addPrepCard: (cardId, items) => updateTripState(set, get, (trip) => {
+        const held = trip.activePrepCards || [];
+        if (!held.includes(cardId)) trip.activePrepCards = [...held, cardId];
         for (const item of items) {
             if (trip.checklist.some((i) => i.prepId === item.prepId || i.title === item.title)) continue;
             trip.checklist.push({
@@ -482,6 +492,9 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
     /** 카드를 통째로 비운다. 담긴 항목도 함께 사라진다. */
     removePrepCard: (cardId) => updateTripState(set, get, (trip) => {
         trip.checklist = trip.checklist.filter((i) => (i.cardId || 'custom') !== cardId);
+        if (trip.activePrepCards?.length) {
+            trip.activePrepCards = trip.activePrepCards.filter((id) => id !== cardId);
+        }
     }),
 
     /**

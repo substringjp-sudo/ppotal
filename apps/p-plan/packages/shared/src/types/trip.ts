@@ -718,6 +718,12 @@ export interface Trip extends FirestoreMetadata {
     accommodation: AccommodationSegment[];
     checklist: ChecklistItem[];
     /**
+     * 담아 둔 준비 카드. 카드를 체크리스트 항목에서 파생시키기만 하면 항목이 하나도 없는
+     * 카드가 존재할 수 없다 — 주제만 먼저 잡아 두고 내용을 나중에 채우는 걸 막게 된다.
+     * 그래서 보유 여부를 따로 기록한다.
+     */
+    activePrepCards?: string[];
+    /**
      * 사용자가 "이 여행엔 필요 없다"고 접어 둔 준비 카드(PrepCategory). 추천 엔진은
      * 여행 조건이 맞으면 계속 같은 카드를 제안하므로, 거절한 기억이 없으면 지운 카드가
      * 매번 되살아난다. 제안을 거절하는 것도 준비의 일부다 — 그 판단을 보존한다.
