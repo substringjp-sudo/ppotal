@@ -168,7 +168,7 @@ function LocationDetailView({
                             {trips.map((trip: TripDocument | TripSummary, idx: number) => (
                                 <a 
                                     key={trip.id + idx}
-                                    href={`/dashboard/${trip.id}`}
+                                    href={`/edit-trip/${trip.id}`}
                                     className="block p-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-2xl border border-slate-200 dark:border-slate-800 group"
                                 >
                                     <div className="flex items-center justify-between">

@@ -214,7 +214,7 @@ export default function WizardModal() {
                                     if (targetId) {
                                         // 애니메이션 종료 후 전환
                                         const path = mode === 'PLAN' 
-                                            ? `/dashboard/${targetId}`
+                                            ? `/edit-trip/${targetId}`
                                             : `/travelogs/${targetId}`;
                                         
                                         router.push(path);

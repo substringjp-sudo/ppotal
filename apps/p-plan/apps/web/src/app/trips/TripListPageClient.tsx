@@ -74,7 +74,7 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
         initial="hidden"
         animate="visible"
         whileHover="hover"
-        onClick={() => router.push(`/dashboard/${trip.id}`)}
+        onClick={() => router.push(`/edit-trip/${trip.id}`)}
         className="group relative bg-white dark:bg-slate-900 rounded-[20px] p-3 flex items-center gap-4 border border-slate-200 dark:border-slate-800 hover:border-primary/30 shadow-sm hover:shadow-lg transition-all cursor-pointer"
       >
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-[20px] overflow-hidden flex-shrink-0">
@@ -134,7 +134,7 @@ function TripCard({ trip, router, handleDelete, viewMode = 'grid' }: {
     <motion.div
       variants={cardVariants}
       whileHover="hover"
-      onClick={() => router.push(`/dashboard/${trip.id}`)}
+      onClick={() => router.push(`/edit-trip/${trip.id}`)}
       className="group relative bg-white dark:bg-slate-900 rounded-[20px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col"
     >
       <div className="relative aspect-[21/9] overflow-hidden">

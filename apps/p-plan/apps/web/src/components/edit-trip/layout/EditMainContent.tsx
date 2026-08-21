@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { SECTIONS, SectionId } from '@pplaner/shared';
 import TimelineControlBar from '@/components/edit-trip/timeline/TimelineControlBar';
+import TripOverview from '@/components/edit-trip/sections/TripOverview';
 import BasicInfoEditor from '@/components/edit-trip/BasicInfoEditor';
 import TimelineEditor from '@/components/edit-trip/TimelineEditor';
 import TransportAndTicketsEditor from '@/components/edit-trip/TransportAndTicketsEditor';
@@ -83,7 +84,8 @@ export default function EditMainContent({ activeSection, setActiveSection, onAdd
                     >
                         <div className={`mx-auto ${activeSection === 'timeline' ? 'w-full h-full' : 'max-w-[1200px] space-y-6'}`}>
 
-                            {activeSection === 'basics' && (
+                            {activeSection === 'overview' && <TripOverview />}
+            {activeSection === 'basics' && (
                                 <BasicInfoEditor />
                             )}
                             {activeSection === 'timeline' && (

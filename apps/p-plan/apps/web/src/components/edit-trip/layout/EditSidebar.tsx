@@ -48,7 +48,7 @@ export default function EditSidebar({
                 <div className="flex items-center gap-2 mb-1.5">
                     <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                       <Link 
-                          href={`/dashboard/${tripId}`}
+                          href="/trips"
                           className="w-7 h-7 flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-primary hover:text-white rounded-lg transition-all shadow-sm border border-slate-200 dark:border-slate-700 shrink-0 group/back"
                       >
                           <span className="material-symbols-rounded text-base text-slate-500 group-hover:text-white transition-colors">arrow_back</span>

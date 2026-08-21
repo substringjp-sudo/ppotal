@@ -12,9 +12,16 @@ export const SOURCE_TO_SECTION_MAP: Record<string, SectionId> = {
     general: 'basics'
 };
 
-export type SectionId = 'basics' | 'timeline' | 'transport' | 'accommodation' | 'reservations' | 'budget' | 'checklist';
+export type SectionId = 'overview' | 'basics' | 'timeline' | 'transport' | 'accommodation' | 'reservations' | 'budget' | 'checklist';
 
+/**
+ * 'overview'는 다른 섹션과 성격이 다르다 — 편집 대상이 아니라 전체를 훑어보는 자리다.
+ * 예전에는 /dashboard라는 별도 페이지였는데, 위젯 대부분이 편집기 섹션과 같은 데이터를
+ * 보여주면서 결국 "여기서 보고 저기로 편집하러 가는" 왕복만 만들었다. 같은 화면 안의
+ * 첫 섹션으로 들어오면 보기와 고치기 사이에 페이지 전환이 없어진다.
+ */
 export const SECTIONS: { id: SectionId; label: string; icon: string; description: string }[] = [
+    { id: 'overview', label: '한눈에', icon: 'dashboard', description: '준비 현황 요약' },
     { id: 'basics', label: '기본', icon: 'settings', description: '여행 제목, 날짜, 지역' },
     { id: 'transport', label: '교통', icon: 'directions_car', description: '항공, 렌터카, 대중교통' },
     { id: 'accommodation', label: '숙소', icon: 'hotel', description: '호텔, 에어비앤비 등' },
