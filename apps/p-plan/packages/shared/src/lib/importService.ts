@@ -33,7 +33,6 @@ export function parseTripFromJSON(jsonData: any): TripDocument {
         if (newTrip.accommodation) newTrip.accommodation = resetListIds(newTrip.accommodation);
         if (newTrip.driving) newTrip.driving = resetListIds(newTrip.driving);
         if (newTrip.publicTransport) newTrip.publicTransport = resetListIds(newTrip.publicTransport);
-        if (newTrip.prepTimeline) newTrip.prepTimeline = resetListIds(newTrip.prepTimeline);
         if (newTrip.reservations) newTrip.reservations = resetListIds(newTrip.reservations);
         
         if (newTrip.dailyTimeline && Array.isArray(newTrip.dailyTimeline)) {
@@ -48,7 +47,7 @@ export function parseTripFromJSON(jsonData: any): TripDocument {
         newTrip._loadedSubCollections = [
             'dailyPlans', 'checklist', 'bucketList',
             'flights', 'accommodation', 'driving',
-            'publicTransport', 'prepTimeline', 'reservations', 'comments'
+            'publicTransport', 'reservations', 'comments'
         ];
         
         return newTrip as TripDocument;

@@ -33,7 +33,6 @@ const SECTION_LABELS: Record<PrintSectionId, string> = {
   cover: '제목 및 요약',
   schedule: '전체 일정표',
   budget: '예산 및 지출 내역',
-  prep: '준비 사항',
   packing: '짐 챙기기 (체크리스트)',
 };
 
@@ -81,9 +80,9 @@ export function ExportPreviewModal({ onClose }: ExportPreviewModalProps) {
   const currentTrip = useTripStore((state) => state.currentTrip);
   
   const [activeTab, setActiveTab] = useState<TabId>('templates');
-  const [sections, setSections] = useState<PrintSectionId[]>(['cover', 'schedule', 'budget', 'prep', 'packing']);
+  const [sections, setSections] = useState<PrintSectionId[]>(['cover', 'schedule', 'budget', 'packing']);
   const [activeSections, setActiveSections] = useState<Record<PrintSectionId, boolean>>({
-    cover: true, schedule: true, budget: true, prep: true, packing: true,
+    cover: true, schedule: true, budget: true, packing: true,
   });
   
   const [themeId, setThemeId] = useState<string>('modern');

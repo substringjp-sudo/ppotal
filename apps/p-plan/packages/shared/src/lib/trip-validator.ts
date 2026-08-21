@@ -6,7 +6,7 @@ import { validateAccommodationOverlap, validateAccommodationGaps, validateAccomm
 import { validateFlightCompleteness, validateFlightTimeRange, validateFlightSpeed, validateRentalCarPeriod, validatePublicTransportFeasibility, validateDrivingFeasibility, validateFlightLayovers, validatePublicTransportConflicts, validateDrivingConflicts, validateSelfTransferAirportChange } from './validators/transport-validators';
 import { validateItineraryConflicts, validateInterEventTravel, validateDailyIntensity, validateEventDates, validateOperatingHours, validateDuplicateEvents, validateLastDayPressure, validateMealTimeGaps, validateConsecutiveTravelDays, validateSunsetOutdoor, validateFirstDayJetlag, validateFamilyPacing, validateSamePlaceMultipleDays } from './validators/itinerary-validators';
 import { validateBudget, validateBudgetRealism, validateExpenseAnomalies, validateCurrencyMismatch, validateBudgetCategoryGaps, validateSettlementBalance } from './validators/budget-validators';
-import { validateChecklistProgress, validatePrepTaskProgress } from './validators/progress-validators';
+import { validateChecklistProgress } from './validators/progress-validators';
 import { validateDateConsistency, validateVisaRequirements, validateSeasonalCaution, validateCrowdPreference, checkPreparationReadiness, checkPassportRules, checkLateArrivalAccommodation, checkPowerAdapterRequirement, checkEmptyTimelineDays, checkTravelInsurance, validateUrgentBookings, validateEntryAuthorization } from './validators/other-validators';
 import { validateInternationalLicense, validateHealthPreparation, validateCommunicationPrep, validateAirportTransfer, validateLateNightReturn } from './validators/logistics-validators';
 import { validateHolidayCongestion } from './validators/holiday-validators';
@@ -93,7 +93,6 @@ export function validateTrip(trip: Trip, geometries?: Record<string, GeoJSONGeom
 
     // 6. 준비 상태 관련 검증
     if (isLoaded('checklist')) validateChecklistProgress(trip, warnings, style);
-    if (isLoaded('prepTimeline')) validatePrepTaskProgress(trip, warnings, style);
     
     // 여행 전체 준비도 체크 (날짜 기반)
     checkPreparationReadiness(trip, warnings);

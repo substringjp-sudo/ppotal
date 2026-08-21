@@ -135,7 +135,6 @@ export interface Budget {
     excludeFlights?: boolean;
     excludeAccommodations?: boolean;
     excludePublicTransport?: boolean;
-    excludePrepCosts?: boolean;
 }
 
 // ─── 기획 성숙도 (Planning Maturity) ───────────────────────────
@@ -463,22 +462,6 @@ export interface Reservation {
     memo?: string;
 }
 
-export interface PrepTask {
-    id: string;
-    title: string;
-    date?: ISODateString;
-    status: 'upcoming' | 'active' | 'done';
-    memo?: string;
-    cost?: number;
-    currency?: string;
-    isExcluded?: boolean;
-    paymentMethod?: PaymentMethod;
-    paymentDate?: ISODateString;
-    paymentStatus?: PaymentStatus;
-}
-
-
-
 // ─── 일정 이벤트 ────────────────────────────────────────────────
 
 import { MainCategory, SubCategory } from './wishlist';
@@ -729,7 +712,6 @@ export interface Trip extends FirestoreMetadata {
      * 매번 되살아난다. 제안을 거절하는 것도 준비의 일부다 — 그 판단을 보존한다.
      */
     dismissedPrepCards?: string[];
-    prepTimeline: PrepTask[];
     reservations: Reservation[];
     bucketList: BucketListItem[];
     dailyTimeline: DailyPlan[];

@@ -462,7 +462,6 @@ export function buildScenarioTrip(combo: ScenarioCombo): Trip {
         publicTransport: [],
         accommodation,
         checklist: [],
-        prepTimeline: [],
         reservations: [],
         bucketList: [],
         dailyTimeline,

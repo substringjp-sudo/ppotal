@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
-import { Trip, FlightSegment, AccommodationSegment, DailyPlan, TripEvent, BudgetExpense, PrepTask, ChecklistItem, cn } from '@pplaner/shared';
+import { Trip, FlightSegment, AccommodationSegment, DailyPlan, TripEvent, BudgetExpense, ChecklistItem, cn } from '@pplaner/shared';
 
-export type PrintSectionId = 'cover' | 'schedule' | 'budget' | 'prep' | 'packing';
+export type PrintSectionId = 'cover' | 'schedule' | 'budget' | 'packing';
 
 export interface PrintTheme {
   id: string;
@@ -354,35 +354,6 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
     );
   };
 
-  const renderPrep = () => {
-     const prepList = trip.prepTimeline ?? [];
-     if (prepList.length === 0) return null;
-     
-     return (
-       <div className="mb-16 page-break-inside-avoid">
-         <h2 className={cn("text-2xl font-bold mb-8 flex items-center gap-3 italic tracking-tight uppercase", theme.primary)}>
-            <span className={cn("w-2 h-8", theme.accent.replace('text-', 'bg-'))} />
-            준비 사항
-         </h2>
-         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {prepList.map((p: PrepTask, i: number) => (
-               <div key={i} className={cn("flex gap-4 items-center p-4 rounded-2xl border bg-white dark:bg-slate-800/20", theme.border)}>
-                  <div className={cn(
-                      "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border-2",
-                      p.status === 'done' ? "bg-emerald-500 border-emerald-500 text-white" : cn("border-slate-200 opacity-30", theme.border)
-                  )}>
-                     {p.status === 'done' && <span className="material-symbols-rounded text-sm">check</span>}
-                  </div>
-                  <div className="flex-1 truncate">
-                     <div className={cn("text-sm font-semibold italic", p.status === 'done' ? "opacity-40" : theme.primary)}>{p.title}</div>
-                     {p.date && <div className={cn("text-xs mt-1 font-bold uppercase tracking-wider", theme.secondary)}>마감일: {p.date.slice(0, 10)}</div>}
-                  </div>
-               </div>
-            ))}
-         </div>
-       </div>
-     );
-  };
 
   const renderPacking = () => {
      const packing = trip.checklist ?? [];
@@ -433,7 +404,6 @@ const PrintTemplate = forwardRef<HTMLDivElement, PrintTemplateProps>(({ trip, se
                     case 'cover': return <React.Fragment key={sec}>{renderCover()}</React.Fragment>;
                     case 'schedule': return <React.Fragment key={sec}>{renderSchedule()}</React.Fragment>;
                     case 'budget': return <React.Fragment key={sec}>{renderBudget()}</React.Fragment>;
-                    case 'prep': return <React.Fragment key={sec}>{renderPrep()}</React.Fragment>;
                     case 'packing': return <React.Fragment key={sec}>{renderPacking()}</React.Fragment>;
                     default: return null;
                 }

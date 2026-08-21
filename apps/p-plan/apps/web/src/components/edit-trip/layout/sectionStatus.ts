@@ -47,7 +47,7 @@ export function getSectionStatus(
             isRequired = false;
             break;
         case 'checklist':
-            hasData = (currentTrip.checklist?.some((item) => item.isDone)) || (currentTrip.prepTimeline?.length > 0);
+            hasData = currentTrip.checklist?.some((item) => item.isDone) || false;
             isRequired = false;
             break;
         default:

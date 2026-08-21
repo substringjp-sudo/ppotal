@@ -30,26 +30,3 @@ export function validateChecklistProgress(trip: Trip, warnings: TripWarning[], s
     }
 }
 
-export function validatePrepTaskProgress(trip: Trip, warnings: TripWarning[], style?: TravelStyle) {
-    if (!trip.prepTimeline || trip.prepTimeline.length === 0) return;
-
-    const activeTasks = trip.prepTimeline.filter(task => task.status === 'active');
-    if (activeTasks.length > 0) {
-        const missedCount = 0; // 'missed' status no longer exists in current schema
-        let severity: TripWarning['severity'] = missedCount > 0 ? 'warning' : 'info';
-        
-        if (style?.meticulousness === 'forgetful') {
-            severity = 'warning';
-        }
-
-        warnings.push({
-            id: 'prep-active',
-            type: 'not_booked',
-            severity,
-            message: missedCount > 0 
-                ? `기한이 지난 준비 항목이 ${missedCount}개 있습니다. 잊으신 게 없는지 확인해 보세요!`
-                : `진행 중인 준비 항목이 ${activeTasks.length}개 있습니다.`,
-            sourceType: 'prep'
-        });
-    }
-}

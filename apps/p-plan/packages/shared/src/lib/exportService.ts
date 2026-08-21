@@ -192,19 +192,6 @@ export function exportToICS(trip: Trip | TripDocument): void {
         L('END:VEVENT');
     });
 
-    (trip.prepTimeline ?? []).forEach((p) => {
-        const deadline = typeof p.date === 'string' && p.date.match(/^\d{4}-\d{2}-\d{2}/)
-            ? p.date.slice(0, 10) : null;
-        if (!deadline) return;
-        L('BEGIN:VEVENT');
-        L(`UID:${uid(p.id)}`);
-        L(`DTSTART;VALUE=DATE:${icsDate(deadline)}`);
-        L(`DTEND;VALUE=DATE:${icsDate(addDays(deadline, 1))}`);
-        L(`SUMMARY:${esc(`📋 ${p.title}`)}`);
-        if (p.memo) L(`DESCRIPTION:${esc(p.memo)}`);
-        L('END:VEVENT');
-    });
-
     L('END:VCALENDAR');
 
     downloadFile(lines.join('\r\n'), `${safeFilename(title)}.ics`, 'text/calendar');
@@ -330,20 +317,6 @@ export function exportToCSV(trip: Trip | TripDocument): void {
                 ev.memo ?? '',
             ]));
         });
-    });
-
-    (trip.prepTimeline ?? []).forEach((p) => {
-        const deadline = typeof p.date === 'string' && p.date.match(/^\d{4}-\d{2}-\d{2}/)
-            ? p.date.slice(0, 10) : '';
-        scheduleRows.push(csvRow([
-            deadline, deadline ? getDayOfWeek(deadline) : '',
-            '',
-            '준비항목',
-            p.title,
-            '',
-            p.status === 'done' ? '완료' : p.status === 'active' ? '진행중' : p.status === 'upcoming' ? '예정' : '미완료',
-            p.memo ?? '',
-        ]));
     });
 
     downloadFile(scheduleRows.join('\n'), `${safeFilename(title)}-일정표.csv`, 'text/csv');
