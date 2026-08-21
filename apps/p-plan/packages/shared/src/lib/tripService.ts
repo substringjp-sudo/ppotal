@@ -15,7 +15,6 @@ export const FLIGHTS_SUB = 'flights';
 export const ACCOMMODATION_SUB = 'accommodation';
 export const DRIVING_SUB = 'driving';
 export const PUBLIC_TRANSPORT_SUB = 'publicTransport';
-export const PREP_TIMELINE_SUB = 'prepTimeline';
 export const RESERVATIONS_SUB = 'reservations';
 export const COMMENTS_SUB = 'comments';
 export const LOCATION_HISTORY_SUB = 'locationHistory';
@@ -69,7 +68,7 @@ export const createDefaultGuestTrip = (id: string = 'guest'): Trip => {
         budget: { baseCurrency: 'KRW', currency: 'KRW', expenses: [], activeCurrencies: [], exchanges: [], commonAllocated: 0, individualAllocated: 0, participantBudgets: [] },
         transportSettings: { useFlight: false, useDriving: false },
         flights: [], accommodation: [], driving: [], publicTransport: [],
-        checklist: [], prepTimeline: [], reservations: [], bucketList: [],
+        checklist: [], reservations: [], bucketList: [],
         dailyTimeline: [
             { day: 1, date: today, events: [] },
             { day: 2, date: d2, events: [] },
@@ -133,7 +132,6 @@ export const getTripMain = async (tripId: string): Promise<TripDocument | null> 
             accommodation: data.accommodation || [],
             driving: data.driving || [],
             publicTransport: data.publicTransport || [],
-            prepTimeline: data.prepTimeline || [],
             reservations: data.reservations || [],
             warnings: data.warnings || [],
             comments: data.comments || [],
@@ -187,14 +185,14 @@ export const getTrip = async (tripId: string): Promise<TripDocument | null> => {
         const subCollections = [
             DAILY_PLANS_SUB, CHECKLIST_SUB, BUCKET_LIST_SUB,
             FLIGHTS_SUB, ACCOMMODATION_SUB, DRIVING_SUB,
-            PUBLIC_TRANSPORT_SUB, PREP_TIMELINE_SUB, RESERVATIONS_SUB,
+            PUBLIC_TRANSPORT_SUB, RESERVATIONS_SUB,
             COMMENTS_SUB
         ];
 
         const [
             dailyTimeline, checklist, bucketList,
             flights, accommodation, driving,
-            publicTransport, prepTimeline, reservations, comments
+            publicTransport, reservations, comments
         ] = await Promise.all(
             subCollections.map(sub => getTripSubCollection(tripId, sub))
         );
@@ -209,7 +207,6 @@ export const getTrip = async (tripId: string): Promise<TripDocument | null> => {
             accommodation: accommodation.length > 0 ? accommodation : (mainData.accommodation || []),
             driving: driving.length > 0 ? driving : (mainData.driving || []),
             publicTransport: publicTransport.length > 0 ? publicTransport : (mainData.publicTransport || []),
-            prepTimeline: prepTimeline.length > 0 ? prepTimeline : (mainData.prepTimeline || []),
             reservations: reservations.length > 0 ? reservations : (mainData.reservations || []),
             comments: comments.length > 0 ? (comments as TripComment[]) : (mainData.comments || []),
             _loadedSubCollections: subCollections
@@ -370,7 +367,7 @@ export const updateTripInDb = async (tripId: string, updates: Partial<Trip>, use
         const { 
             dailyTimeline, checklist, bucketList, 
             flights, accommodation, driving, publicTransport,
-            prepTimeline, reservations, 
+            reservations, 
             ...mainFields 
         } = updates;
 
@@ -412,7 +409,6 @@ export const updateTripInDb = async (tripId: string, updates: Partial<Trip>, use
         updateSubCollection(accommodation, ACCOMMODATION_SUB);
         updateSubCollection(driving, DRIVING_SUB);
         updateSubCollection(publicTransport, PUBLIC_TRANSPORT_SUB);
-        updateSubCollection(prepTimeline, PREP_TIMELINE_SUB);
         updateSubCollection(reservations, RESERVATIONS_SUB);
 
         await batch.commit();
@@ -440,7 +436,7 @@ export const deleteTrip = async (tripId: string) => {
         const subCollections = [
             DAILY_PLANS_SUB, CHECKLIST_SUB, BUCKET_LIST_SUB,
             FLIGHTS_SUB, ACCOMMODATION_SUB, DRIVING_SUB,
-            PUBLIC_TRANSPORT_SUB, PREP_TIMELINE_SUB, RESERVATIONS_SUB
+            PUBLIC_TRANSPORT_SUB, RESERVATIONS_SUB
         ];
 
         // 1. 모든 하위 컬렉션의 문서들을 찾아 삭제 배치에 추가
@@ -538,7 +534,7 @@ export const saveTrip = async (trip: Trip, user?: { uid: string, name: string, p
         const { 
             dailyTimeline, checklist, bucketList, 
             flights, accommodation, driving, publicTransport,
-            prepTimeline, reservations, 
+            reservations, 
             comments,
             ...mainData 
         } = trip;
@@ -564,7 +560,6 @@ export const saveTrip = async (trip: Trip, user?: { uid: string, name: string, p
             accommodation: [],
             driving: [],
             publicTransport: [],
-            prepTimeline: [],
             reservations: [],
             warnings: [],
             comments: [],
@@ -575,7 +570,7 @@ export const saveTrip = async (trip: Trip, user?: { uid: string, name: string, p
         const loadedSubCols = trip._loadedSubCollections || [
             DAILY_PLANS_SUB, CHECKLIST_SUB, BUCKET_LIST_SUB, 
             FLIGHTS_SUB, ACCOMMODATION_SUB, DRIVING_SUB, 
-            PUBLIC_TRANSPORT_SUB, PREP_TIMELINE_SUB, RESERVATIONS_SUB, COMMENTS_SUB
+            PUBLIC_TRANSPORT_SUB, RESERVATIONS_SUB, COMMENTS_SUB
         ];
         
         const addToBatch = (items: any[] | undefined, subCollection: string) => {
@@ -596,7 +591,6 @@ export const saveTrip = async (trip: Trip, user?: { uid: string, name: string, p
         addToBatch(accommodation, ACCOMMODATION_SUB);
         addToBatch(driving, DRIVING_SUB);
         addToBatch(publicTransport, PUBLIC_TRANSPORT_SUB);
-        addToBatch(prepTimeline, PREP_TIMELINE_SUB);
         addToBatch(reservations, RESERVATIONS_SUB);
         addToBatch(comments, COMMENTS_SUB);
 
@@ -681,8 +675,7 @@ export const createFastTrip = async (
         theme: 'nature',
         planningStatus: 'confirmed',
         status: 'active',
-        isOverseas: false,
-        prepTimeline: []
+        isOverseas: false
     };
 
     // 로그인 정보가 없어도 호출 가능하도록 처리

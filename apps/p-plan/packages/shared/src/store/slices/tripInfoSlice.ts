@@ -287,7 +287,6 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             memo: '',
             theme: wizardData.theme,
             isOverseas,
-            prepTimeline: [],
             planningStatus: 'ideation',
         };
 

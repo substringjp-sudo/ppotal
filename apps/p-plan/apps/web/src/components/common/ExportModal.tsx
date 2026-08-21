@@ -34,7 +34,6 @@ export function ExportModal({ onClose }: ExportModalProps) {
         (acc, day) => acc + (day.events?.length ?? 0), 0
     ) ?? 0;
     const reservationCount = currentTrip.reservations?.length ?? 0;
-    const prepCount = currentTrip.prepTimeline?.length ?? 0;
     const expenseCount = currentTrip.budget?.expenses?.length ?? 0;
 
     const handle = async (format: ExportFormat) => {
@@ -93,7 +92,6 @@ export function ExportModal({ onClose }: ExportModalProps) {
         accomCount > 0 && `숙소 ${accomCount}건`,
         eventCount > 0 && `일정 ${eventCount}건`,
         reservationCount > 0 && `예약 ${reservationCount}건`,
-        prepCount > 0 && `준비항목 ${prepCount}건`,
         expenseCount > 0 && `예산 ${expenseCount}건`,
     ].filter(Boolean) as string[];
 

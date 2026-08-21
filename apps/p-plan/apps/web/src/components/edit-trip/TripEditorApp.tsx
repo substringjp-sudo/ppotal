@@ -13,7 +13,7 @@ import {
     saveTrip,
     DAILY_PLANS_SUB, CHECKLIST_SUB, BUCKET_LIST_SUB,
     FLIGHTS_SUB, ACCOMMODATION_SUB, DRIVING_SUB,
-    PUBLIC_TRANSPORT_SUB, PREP_TIMELINE_SUB, RESERVATIONS_SUB
+    PUBLIC_TRANSPORT_SUB, RESERVATIONS_SUB
 } from '@pplaner/shared';
 
 // Extracted UI Components
@@ -86,7 +86,7 @@ export default function TripEditorApp({ id }: { id: string }) {
                     budget: { baseCurrency: 'KRW', currency: 'KRW', expenses: [], activeCurrencies: [], exchanges: [], commonAllocated: 0, individualAllocated: 0, participantBudgets: [] },
                     transportSettings: { useFlight: false, useDriving: false },
                     flights: [], accommodation: [], driving: [], publicTransport: [],
-                    checklist: [], prepTimeline: [], reservations: [], bucketList: [],
+                    checklist: [], reservations: [], bucketList: [],
                     dailyTimeline: [
                         { day: 1, date: today, events: [] },
                         { day: 2, date: d2, events: [] },

@@ -17,10 +17,6 @@ export interface TimelineSlice {
     reorderEvents: (dayIndex: number, events: import('../../types/trip').TripEvent[]) => void;
     moveEvent: (fromDayIdx: number, toDayIdx: number, eventId: string, newPosition?: number) => void;
     updateEventTransport: (dayIndex: number, eventId: string, transport: import('../../types/trip').TransportToNext) => void;
-    addPrepTask: (task: import('../../types/trip').PrepTask) => void;
-    updatePrepTask: (id: string, updates: Partial<import('../../types/trip').PrepTask>) => void;
-    removePrepTask: (id: string) => void;
-    togglePrepTask: (id: string) => void;
 }
 
 export const createTimelineSlice: StateCreator<TripState, [], [], TimelineSlice> = (set, get) => ({
@@ -224,26 +220,4 @@ export const createTimelineSlice: StateCreator<TripState, [], [], TimelineSlice>
             nextEvent.startTime = newStart;
         }
     }),
-
-    addPrepTask: (task) => updateTripState(set, get, (trip) => {
-        trip.prepTimeline.push(task);
-    }),
-
-    updatePrepTask: (id, updates) => updateTripState(set, get, (trip) => {
-        const task = trip.prepTimeline.find(t => t.id === id);
-        if (task) {
-            Object.assign(task, updates);
-        }
-    }),
-
-    removePrepTask: (id) => updateTripState(set, get, (trip) => {
-        trip.prepTimeline = trip.prepTimeline.filter(t => t.id !== id);
-    }),
-
-    togglePrepTask: (id) => updateTripState(set, get, (trip) => {
-        const task = trip.prepTimeline.find(t => t.id === id);
-        if (task) {
-            task.status = task.status === 'active' ? 'upcoming' : 'active';
-        }
-    })
 });

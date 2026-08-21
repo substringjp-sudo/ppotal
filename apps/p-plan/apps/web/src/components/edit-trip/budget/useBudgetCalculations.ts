@@ -113,27 +113,6 @@ export const useBudgetCalculations = (trip: Trip | null, getRate: (code: string)
             });
         });
 
-        // Prep Tasks (준비 작업)
-        (trip.prepTimeline || []).forEach((task) => {
-            if (task.cost) {
-                items.push({
-                    id: `prep-${task.id}`,
-                    title: `준비: ${task.title}`,
-                    amount: task.cost,
-                    category: 'other',
-                    sourceType: 'manual',
-                    sourceId: task.id,
-                    isAuto: true,
-                    status: 'confirmed',
-                    isExcluded: task.isExcluded || trip.budget?.excludePrepCosts,
-                    currency: task.currency,
-                    paymentMethod: task.paymentMethod,
-                    paymentDate: task.paymentDate,
-                    paymentStatus: task.paymentStatus,
-                    exchangeRate: task.currency === 'KRW' ? 1 : getRate(task.currency || '')
-                });
-            }
-        });
 
         // Reservations
         (trip.reservations || []).forEach(res => {
@@ -187,7 +166,6 @@ export const useBudgetCalculations = (trip: Trip | null, getRate: (code: string)
     const flightTotal = (trip?.flights || []).reduce((sum, f) => sum + (f.cost || 0), 0);
     const accommodationTotal = (trip?.accommodation || []).reduce((sum, a) => sum + (a.price || 0), 0);
     const ptTotal = (trip?.publicTransport || []).reduce((sum, p) => sum + (p.cost || 0), 0);
-    const prepTotal = (trip?.prepTimeline || []).reduce((sum: number, t) => sum + (t.cost || 0), 0);
     
     const grandTotalProjected = totalConfirmed + totalPlanned;
 
@@ -225,7 +203,6 @@ export const useBudgetCalculations = (trip: Trip | null, getRate: (code: string)
         flightTotal,
         accommodationTotal,
         ptTotal,
-        prepTotal,
         grandTotalProjected,
         categoryTotals,
         totalConfirmedInBase,
