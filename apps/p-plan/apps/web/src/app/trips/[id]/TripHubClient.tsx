@@ -112,7 +112,7 @@ export default function TripHubClient() {
             : phase.isPast
                 ? { label: '여행기 시작하기', action: startTravelog, icon: 'auto_stories' }
                 : crit > 0
-                    ? { label: '점검에서 문제 해결하기', href: `/dashboard/${id}`, icon: 'error' }
+                    ? { label: '점검에서 문제 해결하기', href: `/edit-trip/${id}`, icon: 'error' }
                     : { label: '계획 다듬기', href: `/edit-trip/${id}`, icon: 'edit_calendar' };
 
     const stages = [
@@ -124,7 +124,7 @@ export default function TripHubClient() {
         {
             key: 'check', icon: 'verified', title: '점검',
             desc: warn > 0 ? `확인할 점 ${warn}건${crit ? ` (꼭 확인 ${crit})` : ''}` : '문제 없이 깔끔해요',
-            cta: '점검 열기', href: `/dashboard/${id}`, done: warn === 0, warn: crit > 0,
+            cta: '점검 열기', href: `/edit-trip/${id}`, done: warn === 0, warn: crit > 0,
         },
         {
             key: 'journal', icon: 'auto_stories', title: '여행기',

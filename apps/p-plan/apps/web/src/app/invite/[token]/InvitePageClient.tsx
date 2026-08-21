@@ -60,7 +60,7 @@ export default function InvitePageClient() {
         setStatus('joining');
         const tripId = await joinTripByToken(token, user.uid);
         if (tripId) {
-            router.push(`/dashboard/${tripId}`);
+            router.push(`/edit-trip/${tripId}`);
         } else {
             alert("여행 참여에 실패했습니다. 다시 시도해주세요.");
             setStatus('valid');

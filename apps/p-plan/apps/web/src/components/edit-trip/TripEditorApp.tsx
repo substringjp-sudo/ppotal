@@ -38,7 +38,7 @@ export default function TripEditorApp({ id }: { id: string }) {
     const { user, loginWithGoogle } = useAuth();
 
     // UI State
-    const [activeSection, setActiveSection] = useState<SectionId>('basics');
+    const [activeSection, setActiveSection] = useState<SectionId>('overview');
     const [showSuccess, setShowSuccess] = useState(false);
     const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
     const [addingCommentToEvent, setAddingCommentToEvent] = useState<string | null>(null);
@@ -55,12 +55,15 @@ export default function TripEditorApp({ id }: { id: string }) {
     const isSaving = isSavingStore || isSavingMutation;
 
     // Sub-collection Loading
-    const { data: flightsData } = useTripSubData(id, FLIGHTS_SUB, activeSection === 'transport');
-    const { data: drivingData } = useTripSubData(id, DRIVING_SUB, activeSection === 'transport');
-    const { data: publicTransportData } = useTripSubData(id, PUBLIC_TRANSPORT_SUB, activeSection === 'transport');
-    const { data: accommodationData } = useTripSubData(id, ACCOMMODATION_SUB, activeSection === 'accommodation');
-    const { data: dailyPlansData } = useTripSubData(id, DAILY_PLANS_SUB, activeSection === 'timeline');
-    const { data: reservationsData } = useTripSubData(id, RESERVATIONS_SUB, activeSection === 'reservations');
+    // '한눈에'는 숙소·교통·예약 위젯을 한자리에 띄우므로, 해당 섹션에 들어가지 않아도
+    // 그 하위 컬렉션이 필요하다. 빼먹으면 위젯이 빈 채로 그려진다.
+    const isOverview = activeSection === 'overview';
+    const { data: flightsData } = useTripSubData(id, FLIGHTS_SUB, activeSection === 'transport' || isOverview);
+    const { data: drivingData } = useTripSubData(id, DRIVING_SUB, activeSection === 'transport' || isOverview);
+    const { data: publicTransportData } = useTripSubData(id, PUBLIC_TRANSPORT_SUB, activeSection === 'transport' || isOverview);
+    const { data: accommodationData } = useTripSubData(id, ACCOMMODATION_SUB, activeSection === 'accommodation' || isOverview);
+    const { data: dailyPlansData } = useTripSubData(id, DAILY_PLANS_SUB, activeSection === 'timeline' || isOverview);
+    const { data: reservationsData } = useTripSubData(id, RESERVATIONS_SUB, activeSection === 'reservations' || isOverview);
 
     // Sync Query Params
     useEffect(() => {

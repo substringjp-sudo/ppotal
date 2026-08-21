@@ -35,7 +35,7 @@ export default function DashboardHeader({ user, progress, itemVariants }: Dashbo
               await saveTrip(newTrip, { uid: user.uid, name: user.displayName || '여행자', photoURL: user.photoURL });
               
               toast.success('여행을 성공적으로 불러왔습니다!');
-              router.push(`/dashboard/${newTrip.id}`);
+              router.push(`/edit-trip/${newTrip.id}`);
           } catch (error) {
               console.error(error);
               toast.error('파일을 불러오는데 실패했습니다.');

@@ -40,7 +40,7 @@ export default function TripCollection({ trips, itemVariants }: TripCollectionPr
                       key={trip.id} 
                       variants={itemVariants} 
                       whileHover={{ y: -8 }}
-                      onClick={() => router.push(`/dashboard/${trip.id}`)}
+                      onClick={() => router.push(`/edit-trip/${trip.id}`)}
                       className="group bg-white dark:bg-slate-900 rounded-[20px] border border-slate-200 dark:border-slate-800 p-1.5 cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 h-full flex flex-col"
                   >
                       <div className="aspect-[4/5] rounded-[16px] overflow-hidden mb-2 relative">

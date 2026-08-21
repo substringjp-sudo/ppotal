@@ -21,6 +21,12 @@ export function getSectionStatus(
     let hasData = false;
     let isRequired = false;
 
+    // '한눈에'는 채워 넣는 자리가 아니라 나머지를 비추는 자리라, 채움 상태 자체가 없다.
+    // 다른 섹션과 같은 규칙을 적용하면 영원히 "입력 선택" 점이 붙어 있게 된다.
+    if (sectionId === 'overview') {
+        return { status: 'complete', tooltip: '준비 현황 요약' };
+    }
+
     switch (sectionId) {
         case 'basics':
             hasData = !!currentTrip.title && !!currentTrip.dates?.startDate;

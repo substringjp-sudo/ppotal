@@ -150,7 +150,7 @@ export default function TripHighlightCard({ ongoingTrip, nextTrip, user, nextMil
                               </div>
                           ) : (
                               <button
-                                 onClick={() => router.push(`/dashboard/${targetTrip.id}`)}
+                                 onClick={() => router.push(`/edit-trip/${targetTrip.id}`)}
                                  className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center gap-3 hover:bg-white/10 transition-all group/empty"
                               >
                                  <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary group-hover/empty:scale-110 transition-transform">
@@ -165,7 +165,7 @@ export default function TripHighlightCard({ ongoingTrip, nextTrip, user, nextMil
                       </div>
 
                       <button
-                          onClick={() => router.push(`/dashboard/${targetTrip.id}`)}
+                          onClick={() => router.push(`/edit-trip/${targetTrip.id}`)}
                           className="w-full py-3.5 bg-primary text-white font-semibold rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all text-xs border border-white/10"
                       >
                           {ongoingTrip ? `${targetTrip.title} 대시보드로 이동` : `${targetTrip.title} 일정 완성하기`}
