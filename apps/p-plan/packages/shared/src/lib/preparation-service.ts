@@ -21,6 +21,7 @@ export type PrepCategory =
     | 'transport'
     | 'power'
     | 'health'
+    | 'season'
     | 'shopping'
     | 'activity'
     | 'general';
@@ -169,5 +170,74 @@ export function generatePreparationItems(trip: Trip, options?: GeneratePrepOptio
         add({ id: 'prep-activity-insurance', title: '여행자 보험 액티비티/스포츠 특약 확인', category: 'activity', priority: 'recommended', reason: '익스트림 스포츠는 일반 여행자 보험에서 제외될 수 있어요.' });
     }
 
+    // ── 지역 특성 ────────────────────────────────────────
+    // 국가 프로필로 이미 뽑히는 것(어댑터·전압·전자여행허가·환전)은 여기서 다시 넣지 않는다.
+    // 프로필 데이터로는 표현되지 않는, 그 지역을 다녀본 사람이 아는 것들만 남긴다.
+    destProfiles.forEach(d => {
+        if (d.key === 'JP') {
+            add({ id: 'prep-jp-coin-purse', title: '동전 지갑', category: 'money', priority: 'optional', reason: '현금 결제가 많아 동전이 빠르게 쌓여요.' });
+            add({ id: 'prep-jp-transit-card', title: '교통카드 (스이카/파스모)', category: 'transport', priority: 'recommended', reason: '지하철은 물론 편의점 결제에도 쓰여요.' });
+        }
+        if (d.climateZone === 'tropical') {
+            add({ id: `prep-repellent-${d.key}`, title: '모기 기피제', category: 'health', priority: 'recommended', reason: '열대 지역은 모기 매개 감염병 위험이 있어요.' });
+            add({ id: `prep-rain-${d.key}`, title: '우산 / 우비', category: 'season', priority: 'recommended', reason: '갑작스러운 스콜에 대비하세요.' });
+        }
+        if (['TH', 'VN', 'PH', 'ID', 'MY', 'SG'].includes(d.key)) {
+            add({ id: `prep-rideapp-${d.key}`, title: '차량 호출 앱(Grab 등) 설치', category: 'transport', priority: 'recommended', reason: '현지 택시보다 요금이 투명하고 목적지 전달이 쉬워요.' });
+        }
+        if (['FR', 'IT', 'ES', 'GB', 'DE', 'CH'].includes(d.key)) {
+            add({ id: `prep-antitheft-${d.key}`, title: '도난 방지 가방·자물쇠', category: 'general', priority: 'recommended', reason: '관광지 소매치기가 잦은 지역이에요.' });
+        }
+    });
+    if (isOverseas) {
+        add({ id: 'prep-offline-map', title: '지도 오프라인 저장 / 번역 앱', category: 'connectivity', priority: 'optional', reason: '데이터가 끊기는 구간에 대비해 미리 받아두면 좋아요.' });
+    }
+
+    // ── 계절 ─────────────────────────────────────────────
+    // 목적지 기후대를 먼저 본다. 달만 보고 정하면 호주 7월에 선크림을 권하게 된다.
+    const season = resolveSeason(trip.dates?.startDate, destProfiles);
+    if (season === 'summer') {
+        add({ id: 'prep-season-sun', title: '선크림 / 선글라스', category: 'season', priority: 'recommended', reason: '한여름 자외선이 강한 시기예요.' });
+        add({ id: 'prep-season-heat', title: '휴대용 선풍기 / 쿨링 타월', category: 'season', priority: 'optional', reason: '더위에 지치면 일정 소화가 어려워져요.' });
+    } else if (season === 'winter') {
+        add({ id: 'prep-season-warm', title: '핫팩 / 목도리 · 장갑', category: 'season', priority: 'recommended', reason: '체온 유지가 안 되면 야외 일정이 힘들어져요.' });
+        add({ id: 'prep-season-dry', title: '보습 크림 / 립밤', category: 'season', priority: 'optional', reason: '겨울철 건조한 공기에 대비하세요.' });
+    }
+
+    // ── 테마 ─────────────────────────────────────────────
+    const theme = trip.theme || '';
+    if (theme.includes('캠핑')) {
+        add({ id: 'prep-theme-lantern', title: '랜턴 / 헤드랜턴', category: 'activity', priority: 'recommended', reason: '캠핑장은 밤에 조명이 거의 없어요.' });
+        add({ id: 'prep-theme-powerstrip', title: '멀티탭', category: 'power', priority: 'optional', reason: '사이트당 콘센트가 하나뿐인 경우가 많아요.' });
+    }
+    if (['수영', '해변', '휴양', '물놀이'].some(k => theme.includes(k))) {
+        add({ id: 'prep-theme-swimwear', title: '수영복 / 아쿠아 슈즈', category: 'activity', priority: 'recommended', reason: '현지 구매는 선택지가 적고 비쌀 수 있어요.' });
+        add({ id: 'prep-theme-waterproof', title: '방수팩', category: 'activity', priority: 'recommended', reason: '물놀이 중 휴대폰 침수가 가장 흔한 사고예요.' });
+    }
+
     return items;
+}
+
+type Season = 'summer' | 'winter' | 'mild';
+
+/**
+ * 여행 시기의 계절. 목적지 기후대를 반영한다 —
+ * 남반구는 달을 반 바퀴 돌리고, 열대는 여름/겨울 구분 자체가 의미 없어 'mild'로 둔다
+ * (열대의 준비물은 계절이 아니라 우기·모기처럼 지역 특성으로 이미 뽑힌다).
+ * 목적지가 여러 곳이면 기후대가 엇갈릴 수 있으므로, 하나로 못 정할 땐 계절 항목을 내지 않는다.
+ */
+function resolveSeason(startDate: string | undefined, destProfiles: CountryProfile[]): Season {
+    if (!startDate) return 'mild';
+    const month = new Date(startDate).getMonth() + 1;
+    if (Number.isNaN(month)) return 'mild';
+
+    const zones = new Set(destProfiles.map(d => d.climateZone || 'north'));
+    // 목적지가 없으면(국내 여행) 거주지 기준 = 북반구 기본값으로 본다.
+    const zone = zones.size === 0 ? 'north' : (zones.size === 1 ? [...zones][0] : undefined);
+    if (zone === undefined || zone === 'tropical') return 'mild';
+
+    const northSummer = month >= 6 && month <= 8;
+    const northWinter = month === 12 || month <= 2;
+    if (zone === 'south') return northSummer ? 'winter' : (northWinter ? 'summer' : 'mild');
+    return northSummer ? 'summer' : (northWinter ? 'winter' : 'mild');
 }

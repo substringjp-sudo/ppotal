@@ -1,5 +1,6 @@
 import { Trip } from '../types/trip';
 import { getTripDurationDays } from './utils';
+import { generatePreparationItems } from './preparation-service';
 
 export interface ReadinessBreakdown {
     label: string;
@@ -100,29 +101,54 @@ export function calculateReadinessScore(trip: Trip): ReadinessResult {
         message: hasBudget ? '예산 설정이 완료되었습니다.' : '여행 예산을 설정해보세요.'
     });
 
-    // 6. 체크리스트 (15%)
-    const checklistCount = trip.checklist?.length || 0;
-    let checklistScore = 0;
-    if (checklistCount > 0) {
-        const doneCount = trip.checklist?.filter(c => c.isDone).length || 0;
-        const doneRatio = doneCount / checklistCount;
-        checklistScore = Math.round(doneRatio * 15);
+    // 6. 준비물 (15%)
+    //
+    // 담은 항목 전체의 완료 비율로 매기면 항목을 담을수록 점수가 내려간다 —
+    // 챙길 거리를 적어 두는 행동을 처벌하는 셈이라, 결국 아무것도 안 담는 게 유리해진다.
+    // 그래서 '필수'로 분류된 항목만 본다. 선택 항목은 담아도 점수를 깎지 않고,
+    // 체크하면 그건 그것대로 남는다.
+    //
+    // 필수 항목이 하나도 없으면(국내 단기 여행 등) 감점하지 않는다. 준비할 게 없는
+    // 여행에 "준비가 덜 됐다"고 말하는 건 사실이 아니다.
+    // 분모는 '담은 것'이 아니라 '이 여행에 꼭 필요한 것'이다. 담은 것을 분모로 삼으면
+    // 아무것도 담지 않은 사람이 만점을 받고, 챙길 거리를 적어 둔 사람만 점수가 깎인다.
+    const checklist = trip.checklist || [];
+    const requiredKeys = new Map<string, string>();   // 열쇠 → 표시용 제목
+    for (const p of generatePreparationItems(trip)) {
+        if (p.priority === 'essential') requiredKeys.set(p.id, p.title);
     }
-    
+    // 사용자가 직접 필수로 담은 항목도 함께 센다(추천에 없던 개인 사정).
+    for (const c of checklist) {
+        if (c.priority === 'essential' && !requiredKeys.has(c.prepId || '')) {
+            requiredKeys.set(c.prepId || c.title, c.title);
+        }
+    }
+
+    const doneKeys = new Set<string>();
+    for (const c of checklist) {
+        if (!c.isDone) continue;
+        if (c.prepId) doneKeys.add(c.prepId);
+        doneKeys.add(c.title.trim());
+    }
+    const requiredTotal = requiredKeys.size;
+    const requiredDone = [...requiredKeys.entries()]
+        .filter(([key, title]) => doneKeys.has(key) || doneKeys.has(title.trim())).length;
+
+    const checklistScore = requiredTotal === 0
+        ? 15
+        : Math.round((requiredDone / requiredTotal) * 15);
+
+    const checklistMsg = requiredTotal > 0
+        ? `꼭 챙길 것 ${requiredTotal}개 중 ${requiredDone}개 완료`
+        : '이 여행에 꼭 필요한 준비물은 없어요.';
+
     breakdown.push({
         label: '체크리스트',
         score: checklistScore,
         maxScore: 15,
         status: checklistScore === 15 ? 'completed' : (checklistScore > 0 ? 'in-progress' : 'pending'),
-        message: checklistCount > 0 
-            ? `준비물 ${checklistCount}개 중 ${breakdown.find(b => b.label === '체크리스트')?.score === 15 ? '모두' : '일부'} 완료`
-            : '체크리스트를 작성해보세요.'
+        message: checklistMsg,
     });
-    // 재계산 로직 수정 (위에서 참조 에러 방지)
-    const checklistMsg = checklistCount > 0 
-        ? `준비물 ${checklistCount}개 중 ${Math.round((checklistScore/15)*100)}% 완료`
-        : '체크리스트를 작성해보세요.';
-    breakdown[5].message = checklistMsg;
 
     const totalScore = breakdown.reduce((sum, item) => sum + item.score, 0);
     

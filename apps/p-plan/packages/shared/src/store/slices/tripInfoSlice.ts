@@ -29,8 +29,20 @@ export interface TripInfoSlice {
     createTrip: (wizardData: WizardState, userId?: string, userProfile?: import('../../types/user').UserProfile | null) => Promise<string | void>;
     updateTrip: (idOrUpdates: string | Partial<Trip>, updates?: Partial<Trip>) => Promise<void>;
     updateChecklistItem: (id: string, updates: Partial<import('../../types/trip').ChecklistItem>) => void;
-    addChecklistItem: (item: { title: string, tags?: string[] }) => void;
+    addChecklistItem: (item: {
+        title: string;
+        tags?: string[];
+        cardId?: string;
+        prepId?: string;
+        priority?: 'essential' | 'recommended' | 'optional';
+    }) => void;
     removeChecklistItem: (id: string) => void;
+    addPrepCard: (
+        cardId: string,
+        items: { title: string; prepId?: string; priority?: 'essential' | 'recommended' | 'optional' }[],
+    ) => void;
+    removePrepCard: (cardId: string) => void;
+    dismissPrepCard: (cardId: string) => void;
     addBucketListItem: (item: Omit<import('../../types/trip').BucketListItem, 'id'>) => void;
     updateBucketListItem: (id: string, updates: Partial<import('../../types/trip').BucketListItem>) => void;
     removeBucketListItem: (id: string) => void;
@@ -420,21 +432,65 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
     }),
 
     addChecklistItem: (item) => updateTripState(set, get, (trip) => {
-        const existingItem = trip.checklist.find((i) => i.title === item.title);
+        // 추천 항목은 생성기 id로, 직접 적은 항목은 제목으로 중복을 판단한다.
+        const existingItem = trip.checklist.find((i) =>
+            (item.prepId && i.prepId === item.prepId) || i.title === item.title
+        );
 
         if (existingItem) {
             if (item.tags) {
                 const newTags = Array.from(new Set([...(existingItem.tags || []), ...item.tags]));
                 existingItem.tags = newTags;
             }
+            // 카드 도입 이전에 담긴 항목이라면 이 기회에 카드·중요도를 채워 준다.
+            if (item.cardId && !existingItem.cardId) existingItem.cardId = item.cardId;
+            if (item.prepId && !existingItem.prepId) existingItem.prepId = item.prepId;
+            if (item.priority && !existingItem.priority) existingItem.priority = item.priority;
         } else {
             trip.checklist.push({
                 id: generateId(),
                 title: item.title,
                 isDone: false,
-                tags: item.tags || []
+                tags: item.tags || [],
+                ...(item.cardId ? { cardId: item.cardId } : {}),
+                ...(item.prepId ? { prepId: item.prepId } : {}),
+                ...(item.priority ? { priority: item.priority } : {}),
             });
         }
+    }),
+
+    /** 카드 하나를 통째로 담는다(추천 카드 수락). */
+    addPrepCard: (cardId, items) => updateTripState(set, get, (trip) => {
+        for (const item of items) {
+            if (trip.checklist.some((i) => i.prepId === item.prepId || i.title === item.title)) continue;
+            trip.checklist.push({
+                id: generateId(),
+                title: item.title,
+                isDone: false,
+                tags: [],
+                cardId,
+                ...(item.prepId ? { prepId: item.prepId } : {}),
+                ...(item.priority ? { priority: item.priority } : {}),
+            });
+        }
+        // 접어 뒀던 카드를 다시 담는 경우가 있으므로 거절 기록에서 뺀다.
+        if (trip.dismissedPrepCards?.length) {
+            trip.dismissedPrepCards = trip.dismissedPrepCards.filter((id) => id !== cardId);
+        }
+    }),
+
+    /** 카드를 통째로 비운다. 담긴 항목도 함께 사라진다. */
+    removePrepCard: (cardId) => updateTripState(set, get, (trip) => {
+        trip.checklist = trip.checklist.filter((i) => (i.cardId || 'custom') !== cardId);
+    }),
+
+    /**
+     * 카드 제안을 거절한다. 여행 조건이 그대로면 추천 엔진은 같은 카드를 계속 내놓으므로,
+     * 거절을 기억하지 않으면 지운 카드가 매번 되살아난다.
+     */
+    dismissPrepCard: (cardId) => updateTripState(set, get, (trip) => {
+        const list = trip.dismissedPrepCards || [];
+        if (!list.includes(cardId)) trip.dismissedPrepCards = [...list, cardId];
     }),
 
     removeChecklistItem: (id) => updateTripState(set, get, (trip) => {

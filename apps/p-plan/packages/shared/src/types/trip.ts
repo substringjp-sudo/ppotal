@@ -387,6 +387,28 @@ export interface ChecklistItem {
     title: string;
     isDone: boolean;
     tags?: string[];
+    /**
+     * 이 항목이 속한 준비 카드(= PrepCategory). 카드는 "여권·입국", "돈·결제"처럼
+     * 주제 하나에 체크 항목 몇 개가 들어 있는 묶음이다 — 사용자는 필요한 카드만 골라
+     * 담고 그 안에서 체크한다. 목록 하나에 30개를 늘어놓으면 "다 해야 하는 것"으로
+     * 읽히지만, 스스로 고른 카드 5장은 그렇지 않다.
+     *
+     * 카드 도입 이전에 만들어진 항목과 사용자가 직접 적은 항목은 이 값이 없다 —
+     * 그런 항목은 "직접 추가" 카드로 모인다.
+     */
+    cardId?: string;
+    /**
+     * 이 항목을 만들어 낸 추천 항목의 id(예: 'prep-passport'). 직접 적은 항목엔 없다.
+     * 이미 담은 항목을 다시 추천하지 않으려면 안정적인 열쇠가 필요하다 — 제목으로 맞추면
+     * 같은 준비물을 표현만 달리한 두 항목이 서로를 못 알아본다.
+     */
+    prepId?: string;
+    /**
+     * 추천 엔진이 매긴 중요도. 사용자가 직접 적은 항목에는 없다.
+     * 준비도 점수는 이 값이 'essential'인 항목만 본다 — 그래야 선택 항목을 담았다는
+     * 이유로 점수가 깎이지 않는다(담는 걸 처벌하면 아무도 안 담는다).
+     */
+    priority?: 'essential' | 'recommended' | 'optional';
 }
 
 export interface BucketListItem {
@@ -695,6 +717,12 @@ export interface Trip extends FirestoreMetadata {
     publicTransport: PublicTransportSegment[];
     accommodation: AccommodationSegment[];
     checklist: ChecklistItem[];
+    /**
+     * 사용자가 "이 여행엔 필요 없다"고 접어 둔 준비 카드(PrepCategory). 추천 엔진은
+     * 여행 조건이 맞으면 계속 같은 카드를 제안하므로, 거절한 기억이 없으면 지운 카드가
+     * 매번 되살아난다. 제안을 거절하는 것도 준비의 일부다 — 그 판단을 보존한다.
+     */
+    dismissedPrepCards?: string[];
     prepTimeline: PrepTask[];
     reservations: Reservation[];
     bucketList: BucketListItem[];

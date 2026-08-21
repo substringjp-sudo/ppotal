@@ -16,6 +16,12 @@ export type IdpPolicy =
     | 'recommended'   // 자국 면허로도 단기 가능하나 IDP 권장
     | 'not-accepted'; // IDP 불인정 — 현지 임시면허 등 별도 절차 필요(예: 중국)
 
+/**
+ * 계절 준비물을 뽑을 때 쓰는 기후대. 생략하면 북반구로 본다.
+ * 달만 보고 계절을 정하면 호주 7월 여행에 선크림·휴대용 선풍기를 권하게 된다.
+ */
+export type ClimateZone = 'north' | 'south' | 'tropical';
+
 export interface CountryProfile {
     key: string;
     aliases: string[];
@@ -26,6 +32,7 @@ export interface CountryProfile {
     idp: IdpPolicy;
     entryAuth?: string;      // 전자여행허가/제도 (준비물 안내용)
     esimSupported?: boolean; // eSIM 보편적으로 사용 가능
+    climateZone?: ClimateZone; // 생략 시 'north'
 }
 
 export const COUNTRY_PROFILES: CountryProfile[] = [
@@ -42,14 +49,14 @@ export const COUNTRY_PROFILES: CountryProfile[] = [
     { key: 'IT', aliases: ['이탈리아', 'italy', '로마', '밀라노'], currency: 'EUR', plugTypes: ['C', 'F', 'L'], voltage: 230, drivingSide: 'right', idp: 'required', entryAuth: 'ETIAS', esimSupported: true },
     { key: 'ES', aliases: ['스페인', 'spain', '바르셀로나', '마드리드'], currency: 'EUR', plugTypes: ['C', 'F'], voltage: 230, drivingSide: 'right', idp: 'required', entryAuth: 'ETIAS', esimSupported: true },
     { key: 'CH', aliases: ['스위스', 'switzerland'], currency: 'CHF', plugTypes: ['C', 'J'], voltage: 230, drivingSide: 'right', idp: 'required', esimSupported: true },
-    { key: 'AU', aliases: ['호주', '오스트레일리아', 'australia', '시드니', '멜버른'], currency: 'AUD', plugTypes: ['I'], voltage: 230, drivingSide: 'left', idp: 'required', entryAuth: 'ETA/eVisitor', esimSupported: true },
-    { key: 'NZ', aliases: ['뉴질랜드', 'new zealand'], currency: 'NZD', plugTypes: ['I'], voltage: 230, drivingSide: 'left', idp: 'required', entryAuth: 'NZeTA', esimSupported: true },
-    { key: 'TH', aliases: ['태국', 'thailand', '방콕', '푸켓', '치앙마이'], currency: 'THB', plugTypes: ['A', 'B', 'C', 'O'], voltage: 220, drivingSide: 'left', idp: 'required', esimSupported: true },
-    { key: 'VN', aliases: ['베트남', 'vietnam', '하노이', '호치민', '다낭'], currency: 'VND', plugTypes: ['A', 'C', 'F'], voltage: 220, drivingSide: 'right', idp: 'required', esimSupported: true },
-    { key: 'SG', aliases: ['싱가포르', 'singapore'], currency: 'SGD', plugTypes: ['G'], voltage: 230, drivingSide: 'left', idp: 'required', esimSupported: true },
-    { key: 'MY', aliases: ['말레이시아', 'malaysia', '쿠알라룸푸르'], currency: 'MYR', plugTypes: ['G'], voltage: 240, drivingSide: 'left', idp: 'required', esimSupported: true },
-    { key: 'ID', aliases: ['인도네시아', 'indonesia', '발리', '자카르타'], currency: 'IDR', plugTypes: ['C', 'F'], voltage: 230, drivingSide: 'left', idp: 'required', esimSupported: true },
-    { key: 'PH', aliases: ['필리핀', 'philippines', '세부', '마닐라', '보라카이'], currency: 'PHP', plugTypes: ['A', 'B', 'C'], voltage: 220, drivingSide: 'right', idp: 'required', esimSupported: true },
+    { key: 'AU', aliases: ['호주', '오스트레일리아', 'australia', '시드니', '멜버른'], currency: 'AUD', plugTypes: ['I'], voltage: 230, drivingSide: 'left', idp: 'required', entryAuth: 'ETA/eVisitor', esimSupported: true , climateZone: 'south' },
+    { key: 'NZ', aliases: ['뉴질랜드', 'new zealand'], currency: 'NZD', plugTypes: ['I'], voltage: 230, drivingSide: 'left', idp: 'required', entryAuth: 'NZeTA', esimSupported: true , climateZone: 'south' },
+    { key: 'TH', aliases: ['태국', 'thailand', '방콕', '푸켓', '치앙마이'], currency: 'THB', plugTypes: ['A', 'B', 'C', 'O'], voltage: 220, drivingSide: 'left', idp: 'required', esimSupported: true , climateZone: 'tropical' },
+    { key: 'VN', aliases: ['베트남', 'vietnam', '하노이', '호치민', '다낭'], currency: 'VND', plugTypes: ['A', 'C', 'F'], voltage: 220, drivingSide: 'right', idp: 'required', esimSupported: true , climateZone: 'tropical' },
+    { key: 'SG', aliases: ['싱가포르', 'singapore'], currency: 'SGD', plugTypes: ['G'], voltage: 230, drivingSide: 'left', idp: 'required', esimSupported: true , climateZone: 'tropical' },
+    { key: 'MY', aliases: ['말레이시아', 'malaysia', '쿠알라룸푸르'], currency: 'MYR', plugTypes: ['G'], voltage: 240, drivingSide: 'left', idp: 'required', esimSupported: true , climateZone: 'tropical' },
+    { key: 'ID', aliases: ['인도네시아', 'indonesia', '발리', '자카르타'], currency: 'IDR', plugTypes: ['C', 'F'], voltage: 230, drivingSide: 'left', idp: 'required', esimSupported: true , climateZone: 'tropical' },
+    { key: 'PH', aliases: ['필리핀', 'philippines', '세부', '마닐라', '보라카이'], currency: 'PHP', plugTypes: ['A', 'B', 'C'], voltage: 220, drivingSide: 'right', idp: 'required', esimSupported: true , climateZone: 'tropical' },
 ];
 
 /** 국가 이름(별칭 포함)으로 프로필을 찾는다. */
