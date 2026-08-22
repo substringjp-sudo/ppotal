@@ -12,5 +12,6 @@ export * from './components/AdSense';
 export * from './components/GoogleMapsScript';
 export * from './lib/seo';
 export * from './config';
+export * from './components/icons';
 export * from './styles/tokens';
 import './styles/globals.css';

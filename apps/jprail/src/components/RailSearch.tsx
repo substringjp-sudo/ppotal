@@ -2,6 +2,7 @@
 
 import { rankByRelevance } from '../lib/searchRanking';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Search, X, History, MapPin, Train, SearchX } from 'lucide-react';
 import { RailData, Station, Line } from '../types/railData';
 import { trackEvent } from '../lib/gtag';
 import { useI18n } from '../lib/i18n-context';
@@ -222,38 +223,50 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
     };
 
     return (
-        <div ref={containerRef} className="relative w-full max-w-sm lg:max-w-md group">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400 group-focus-within:text-primary transition-all duration-300 z-20">
-                <span className="material-symbols-outlined text-xl group-focus-within:scale-110">search</span>
-            </div>
-            <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => {
-                    setQuery(e.target.value);
-                    setIsOpen(true);
-                }}
-                onFocus={() => setIsOpen(true)}
-                onKeyDown={handleKeyDown}
-                placeholder={getPlaceholder()}
-                className="w-full bg-slate-100/50 dark:bg-slate-800/50 border-none outline-none pl-12 pr-12 py-3.5 text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-2xl transition-all focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-primary/20"
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden md:flex items-center gap-1 px-1.5 py-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500">
-                    {typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac') ? '⌘' : 'Ctrl'}
-                </span>
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500">K</span>
+        <div ref={containerRef} className="relative w-full max-w-xs lg:max-w-sm">
+            <div className="relative flex items-center w-full">
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        setIsOpen(true);
+                    }}
+                    onFocus={() => setIsOpen(true)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={getPlaceholder()}
+                    className="w-full h-9 pl-9 pr-8 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/50 focus:bg-white dark:focus:bg-slate-900 border border-transparent focus:border-slate-200 dark:focus:border-slate-700 rounded-full transition-all focus:outline-none placeholder-slate-400 text-slate-800 dark:text-white"
+                />
+                <Search className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                {query ? (
+                    <button
+                        onClick={() => {
+                            setQuery('');
+                            setIsOpen(false);
+                        }}
+                        className="absolute right-3 p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-all text-slate-400"
+                    >
+                        <X className="w-3.5 h-3.5" />
+                    </button>
+                ) : (
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500">
+                            {typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac') ? '⌘' : 'Ctrl'}
+                        </span>
+                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500">K</span>
+                    </div>
+                )}
             </div>
 
             {/* Results Popover */}
             {isOpen && (query.length > 0 || recentSearches.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] overflow-hidden z-[2000] max-h-[70vh] flex flex-col animate-in fade-in slide-in-from-top-3 duration-500 ease-out">
+                <div className="absolute top-10 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-[2000] max-h-[70vh] flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
                     {query.length === 0 ? (
                         <div className="p-2">
-                            <div className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-sm">history</span>
+                            <div className="px-3 py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                    <History className="w-3.5 h-3.5" />
                                     {t.recentSearches}
                                 </div>
                                 <button
@@ -281,24 +294,25 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
                                                 }
                                             }}
                                             onMouseEnter={() => setSelectedIndex(idx)}
-                                            className={`w-full text-left px-4 py-3 rounded-2xl transition-all flex items-center gap-3 border ${isSelected
+                                            className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center gap-2.5 border ${isSelected
                                                 ? 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                                                 : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-transparent'
                                                 }`}
                                         >
-                                            <span className={`material-symbols-outlined text-lg ${recent.type === 'station' ? 'text-primary' : 'text-indigo-400'
-                                                }`}>
-                                                {recent.type === 'station' ? 'location_on' : 'subway'}
-                                            </span>
+                                            {recent.type === 'station' ? (
+                                                <MapPin className="w-4 h-4 text-primary shrink-0" />
+                                            ) : (
+                                                <Train className="w-4 h-4 text-indigo-400 shrink-0" />
+                                            )}
                                             <div className="flex-1 min-w-0 flex flex-col">
-                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{language === 'ja' ? recent.name : getLocalizedName(recent, language)}</span>
+                                                <span className="text-xs font-black text-slate-700 dark:text-slate-200 truncate">{language === 'ja' ? recent.name : getLocalizedName(recent, language)}</span>
                                                 {language !== 'ja' && (
-                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate">
+                                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 truncate">
                                                         {recent.name}
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${recent.type === 'station'
+                                            <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${recent.type === 'station'
                                                 ? 'text-primary bg-primary/10 border-primary/20'
                                                 : 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20'
                                                 }`}>
@@ -310,15 +324,15 @@ const RailSearch: React.FC<RailSearchProps> = ({ railData, onSelectStation, onSe
                             </div>
                         </div>
                     ) : !hasResults ? (
-                        <div className="p-10 text-center animate-in fade-in zoom-in duration-300">
-                            <div className="size-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                <span className="material-symbols-outlined text-slate-300 dark:text-slate-600 text-4xl">search_off</span>
+                        <div className="p-8 text-center animate-in fade-in zoom-in duration-200">
+                            <div className="size-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3 text-slate-400">
+                                <SearchX className="w-6 h-6" />
                             </div>
-                            <h4 className="text-base font-black text-slate-900 dark:text-white mb-1">{t.noResults}</h4>
-                            <p className="text-sm text-slate-400 font-bold px-4">{t.noResultsDetail(query)}</p>
+                            <h4 className="text-sm font-black text-slate-900 dark:text-white mb-1">{t.noResults}</h4>
+                            <p className="text-xs text-slate-400 font-bold px-2">{t.noResultsDetail(query)}</p>
                         </div>
                     ) : (
-                        <div ref={listRef} className="overflow-y-auto custom-scrollbar">
+                        <div ref={listRef} className="overflow-y-auto custom-scrollbar max-h-[360px]">
                             {/* Stations Section */}
                             {results.stations.length > 0 && (
                                 <div className="p-2">

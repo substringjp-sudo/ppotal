@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useAuth, AuthModal, AppHeader, Button } from "@ppotal/ui";
-import { Map as MapIcon, Trophy, LogOut, RefreshCw, CheckCircle2, Info, Pencil, MapPinned, Search, Menu, Share2 } from "lucide-react";
+import {
+  useAuth, AuthModal, AppHeader, Button,
+  MapIcon, TrophyIcon, LogOutIcon, SyncIcon, CheckCircleIcon, InfoIcon, DrawIcon, TimelineIcon, SearchIcon, MenuIcon, ShareIcon
+} from "@ppotal/ui";
 import { RegionSearch } from "@/components/common/RegionSearch";
 import { TimelineImportModal } from "@/components/common/TimelineImportModal";
 import { MobileSearchSheet } from "@/components/mobile/MobileSearchSheet";
@@ -121,7 +123,7 @@ export function Nav() {
             pathname === "/list" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
           }`}
         >
-          <Trophy className="w-4 h-4" />
+          <TrophyIcon className="w-4 h-4" />
           List
         </Link>
         <Link
@@ -130,7 +132,7 @@ export function Nav() {
             pathname === "/about" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
           }`}
         >
-          <Info className="w-4 h-4" />
+          <InfoIcon className="w-4 h-4" />
           About
         </Link>
         <button
@@ -142,7 +144,7 @@ export function Nav() {
           }`}
           title="드래그로 경로 그리기 (Draw Route)"
         >
-          <Pencil className="w-4 h-4" />
+          <DrawIcon className="w-4 h-4" />
           <span>Draw</span>
         </button>
         <button
@@ -150,15 +152,15 @@ export function Nav() {
           className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"
           title="공유 카드 만들기"
         >
-          <Share2 className="w-4 h-4" />
+          <ShareIcon className="w-4 h-4" />
           <span>Share</span>
         </button>
         <button
           onClick={() => setIsTimelineImportOpen(true)}
           className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"
-          title="구글 타임라인 JSON으로 방문 기록 가져오기"
+          title="Google 타임라인 가져오기"
         >
-          <MapPinned className="w-4 h-4" />
+          <TimelineIcon className="w-4 h-4" />
           <span>Timeline</span>
         </button>
       </nav>
@@ -198,8 +200,8 @@ export function Nav() {
                     disabled={isSyncing}
                     className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
-                    <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
-                    {isSyncing ? "Syncing..." : "Import from JPRAIL"}
+                    <SyncIcon className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
+                    {isSyncing ? "동기화 중…" : "JPRAIL에서 가져오기"}
                   </button>
                 </div>
                 <div className="py-1">
@@ -210,7 +212,7 @@ export function Nav() {
                     }}
                     className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 cursor-pointer"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOutIcon className="w-4 h-4" />
                     Logout
                   </button>
                 </div>
@@ -239,14 +241,14 @@ export function Nav() {
         className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-xl text-slate-500 active:bg-slate-100 dark:active:bg-slate-800`}
         aria-label="지역 검색"
       >
-        <Search className="w-5 h-5" />
+        <SearchIcon className="w-5 h-5" />
       </button>
       <button
         onClick={() => requestShare()}
         className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-xl text-slate-500 active:bg-slate-100 dark:active:bg-slate-800`}
         aria-label="공유 카드 만들기"
       >
-        <Share2 className="w-5 h-5" />
+        <ShareIcon className="w-5 h-5" />
       </button>
       <button
         onClick={() => setIsMenuSheetOpen(true)}
@@ -258,7 +260,7 @@ export function Nav() {
             {userInitial}
           </span>
         ) : (
-          <Menu className="w-5 h-5" />
+          <MenuIcon className="w-5 h-5" />
         )}
       </button>
     </>
@@ -315,7 +317,7 @@ const SyncSummaryModal: React.FC<SyncSummaryModalProps> = ({ isOpen, onClose, im
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl p-6 max-w-sm w-full flex flex-col gap-4 animate-in zoom-in-95 duration-200">
         <div className="flex items-center gap-3">
           <div className="size-10 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-inner shrink-0">
-            <CheckCircle2 className="w-5 h-5" />
+            <CheckCircleIcon className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-base font-black text-slate-800 dark:text-slate-100">

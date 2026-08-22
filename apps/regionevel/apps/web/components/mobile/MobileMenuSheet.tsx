@@ -5,9 +5,9 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Map as MapIcon, Trophy, Info, Pencil, Share2, MapPinned,
-  RefreshCw, LogOut, X, LogIn,
-} from "lucide-react";
+  MapIcon, TrophyIcon, InfoIcon, DrawIcon, ShareIcon, TimelineIcon,
+  SyncIcon, LogOutIcon, CloseIcon, LogInIcon
+} from "@ppotal/ui";
 import { Z } from "@/lib/layers";
 import { SAFE_AREA, haptic } from "@/lib/mobile";
 
@@ -27,8 +27,8 @@ export interface MobileMenuSheetProps {
 
 const NAV_LINKS = [
   { href: "/", label: "지도", icon: MapIcon, match: (p: string) => p === "/" || p === "/map" },
-  { href: "/list", label: "목록", icon: Trophy, match: (p: string) => p === "/list" },
-  { href: "/about", label: "소개", icon: Info, match: (p: string) => p === "/about" },
+  { href: "/list", label: "목록", icon: TrophyIcon, match: (p: string) => p === "/list" },
+  { href: "/about", label: "소개", icon: InfoIcon, match: (p: string) => p === "/about" },
 ];
 
 /**
@@ -86,10 +86,10 @@ export const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">메뉴</p>
           <button
             onClick={onClose}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2 text-slate-400 rounded-full active:bg-slate-100 dark:active:bg-slate-800"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center -mr-2 text-slate-400 rounded-full active:bg-slate-100 dark:active:bg-slate-800 cursor-pointer"
             aria-label="닫기"
           >
-            <X className="w-5 h-5" />
+            <CloseIcon className="w-5 h-5" />
           </button>
         </div>
 
@@ -116,20 +116,20 @@ export const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({
 
           <div className="py-1">
             <button onClick={run(onToggleDraw)} className={rowClass}>
-              <Pencil className={`w-5 h-5 shrink-0 ${isDrawMode ? "text-amber-500" : ""}`} />
+              <DrawIcon className={`w-5 h-5 shrink-0 ${isDrawMode ? "text-amber-500" : ""}`} />
               <span>{isDrawMode ? "경로 그리기 끄기" : "경로 그리기"}</span>
             </button>
             <button onClick={run(onShare)} className={rowClass}>
-              <Share2 className="w-5 h-5 shrink-0" />
+              <ShareIcon className="w-5 h-5 shrink-0" />
               <span>공유 카드 만들기</span>
             </button>
             <button onClick={run(onTimelineImport)} className={rowClass}>
-              <MapPinned className="w-5 h-5 shrink-0" />
-              <span>구글 타임라인 가져오기</span>
+              <TimelineIcon className="w-5 h-5 shrink-0" />
+              <span>Google 타임라인 가져오기</span>
             </button>
             {userEmail && (
               <button onClick={run(onSyncJprail)} disabled={isSyncing} className={`${rowClass} disabled:opacity-50`}>
-                <RefreshCw className={`w-5 h-5 shrink-0 ${isSyncing ? "animate-spin" : ""}`} />
+                <SyncIcon className={`w-5 h-5 shrink-0 ${isSyncing ? "animate-spin" : ""}`} />
                 <span>{isSyncing ? "동기화 중…" : "JPRAIL에서 가져오기"}</span>
               </button>
             )}
@@ -144,13 +144,13 @@ export const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({
                   {userEmail}
                 </p>
                 <button onClick={run(onSignOut)} className={`${rowClass} text-red-600 dark:text-red-400`}>
-                  <LogOut className="w-5 h-5 shrink-0" />
+                  <LogOutIcon className="w-5 h-5 shrink-0" />
                   <span>로그아웃</span>
                 </button>
               </>
             ) : (
               <button onClick={run(onSignIn)} className={`${rowClass} text-blue-600 dark:text-blue-400`}>
-                <LogIn className="w-5 h-5 shrink-0" />
+                <LogInIcon className="w-5 h-5 shrink-0" />
                 <span>로그인</span>
               </button>
             )}

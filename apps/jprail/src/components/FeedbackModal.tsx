@@ -1,18 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { MessageSquare, X } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useI18n } from '../lib/i18n-context';
+import { FEEDBACK_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
 
 interface FeedbackModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
-
-import { FEEDBACK_TRANSLATIONS, getTranslations } from '../lib/translations';
-import { Z } from '../lib/layers';
-
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
     const { language } = useI18n();
@@ -22,7 +21,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (isOpen) {
             const handleEscape = (e: KeyboardEvent) => {
                 if (e.key === 'Escape') onClose();
@@ -70,74 +69,44 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
     };
 
     return (
-        <div role="dialog"
+        <div
+            role="dialog"
             aria-modal="true"
             aria-labelledby="feedback-modal-title"
             aria-describedby="feedback-modal-desc"
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: Z.modal,
-                backdropFilter: 'blur(4px)',
-            }} onClick={onClose}>
-            <div style={{
-                backgroundColor: 'white',
-                padding: '32px',
-                borderRadius: '24px',
-                width: '90%',
-                maxWidth: '500px',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                position: 'relative'
-            }} onClick={e => e.stopPropagation()}>
+            style={{ zIndex: Z.modal }}
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col p-6 sm:p-8 animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800 relative"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Close Button */}
                 <button
                     onClick={onClose}
-                    style={{
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        border: 'none',
-                        background: 'none',
-                        fontSize: '24px',
-                        cursor: 'pointer',
-                        color: '#94a3b8'
-                    }}
+                    className="absolute top-6 right-6 size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    aria-label="닫기"
                 >
-                    &times;
+                    <X className="w-5 h-5" />
                 </button>
 
-                <h2 id="feedback-modal-title" style={{
-                    marginTop: 0,
-                    marginBottom: '8px',
-                    fontSize: '24px',
-                    fontWeight: '700',
-                    color: '#1e293b'
-                }}>
-                    {t.title}
-                </h2>
-                <p id="feedback-modal-desc" style={{
-                    color: '#64748b',
-                    marginBottom: '24px',
-                    fontSize: '15px'
-                }}>
+                {/* Title & Desc */}
+                <div className="flex items-center gap-2.5 mb-2">
+                    <div className="size-9 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-primary">
+                        <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <h2 id="feedback-modal-title" className="text-xl font-black text-slate-900 dark:text-white">
+                        {t.title}
+                    </h2>
+                </div>
+                <p id="feedback-modal-desc" className="text-xs text-slate-500 dark:text-slate-400 mb-6">
                     {t.desc}
                 </p>
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label htmlFor="feedback-content" style={{
-                            display: 'block',
-                            marginBottom: '8px',
-                            fontWeight: '600',
-                            fontSize: '14px',
-                            color: '#475569'
-                        }}>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label htmlFor="feedback-content" className="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
                             {t.labelFeedback}
                         </label>
                         <textarea
@@ -147,29 +116,12 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             onChange={(e) => setContent(e.target.value)}
                             required
                             placeholder={t.placeholderFeedback}
-                            style={{
-                                width: '100%',
-                                height: '150px',
-                                padding: '12px 16px',
-                                borderRadius: '12px',
-                                border: '1px solid #e2e8f0',
-                                fontSize: '15px',
-                                outline: 'none',
-                                resize: 'none',
-                                boxSizing: 'border-box',
-                                color: '#1e293b'
-                            }}
+                            className="w-full h-32 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none transition-all"
                         />
                     </div>
 
-                    <div style={{ marginBottom: '24px' }}>
-                        <label htmlFor="feedback-author" style={{
-                            display: 'block',
-                            marginBottom: '8px',
-                            fontWeight: '600',
-                            fontSize: '14px',
-                            color: '#475569'
-                        }}>
+                    <div>
+                        <label htmlFor="feedback-author" className="block mb-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
                             {t.labelName}
                         </label>
                         <input
@@ -178,29 +130,16 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                             value={author}
                             onChange={(e) => setAuthor(e.target.value)}
                             placeholder={t.placeholderName}
-                            style={{
-                                width: '100%',
-                                padding: '12px 16px',
-                                borderRadius: '12px',
-                                border: '1px solid #e2e8f0',
-                                fontSize: '15px',
-                                outline: 'none',
-                                boxSizing: 'border-box',
-                                color: '#1e293b'
-                            }}
+                            className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                     </div>
 
                     {message && (
-                        <div style={{
-                            padding: '12px 16px',
-                            borderRadius: '12px',
-                            marginBottom: '20px',
-                            fontSize: '14px',
-                            backgroundColor: message.type === 'success' ? '#f0fdf4' : '#fef2f2',
-                            color: message.type === 'success' ? '#166534' : '#991b1b',
-                            border: `1px solid ${message.type === 'success' ? '#bcf0da' : '#fecaca'}`
-                        }}>
+                        <div className={`p-3 rounded-xl text-xs font-bold ${
+                            message.type === 'success'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                        }`}>
                             {message.text}
                         </div>
                     )}
@@ -208,20 +147,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        style={{
-                            width: '100%',
-                            padding: '14px',
-                            borderRadius: '14px',
-                            border: 'none',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                            opacity: isSubmitting ? 0.7 : 1,
-                            transition: 'all 0.2s',
-                            boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
-                        }}
+                        className="w-full py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] cursor-pointer mt-2"
                     >
                         {isSubmitting ? t.submitting : t.submitBtn}
                     </button>

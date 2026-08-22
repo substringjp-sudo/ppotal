@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { TimelineIcon, CloseIcon, ExternalLinkIcon, UploadIcon, LockIcon, WarningIcon } from '@ppotal/ui';
 import { RailData } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
@@ -232,7 +233,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                 {/* Header */}
                 <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-900/60 shrink-0">
                     <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-lg text-primary shrink-0">map</span>
+                        <TimelineIcon className="w-5 h-5 text-primary shrink-0" />
                         <div className="leading-tight min-w-0">
                             <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate">{t.title}</h3>
                             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{t.subtitle}</p>
@@ -240,10 +241,10 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                     </div>
                     <button
                         onClick={handleClose}
-                        className="shrink-0 size-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="shrink-0 size-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         aria-label={t.close}
                     >
-                        <span className="material-symbols-outlined text-lg">close</span>
+                        <CloseIcon className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -286,7 +287,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                                     href={platformTab === 'android' ? OPEN_MAPS_APP_HREF.android : OPEN_MAPS_APP_HREF.ios}
                                     className="flex items-center justify-center gap-2 h-11 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                 >
-                                    <span className="material-symbols-outlined text-base">open_in_new</span>
+                                    <ExternalLinkIcon className="w-4 h-4" />
                                     {t.openMapsApp}
                                 </a>
                                 <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 text-center">{t.openMapsHint}</p>
@@ -297,9 +298,9 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                             <section>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary hover:bg-primary/5 transition-colors"
+                                    className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-3xl text-primary">upload_file</span>
+                                    <UploadIcon className="w-8 h-8 text-primary" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{t.pickFile}</span>
                                     <span className="text-[10px] text-slate-400 dark:text-slate-500">{t.pickFileHint}</span>
                                 </button>
@@ -314,7 +315,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                             </section>
 
                             <p className="flex items-start gap-2 text-[10.5px] text-slate-400 dark:text-slate-500 leading-relaxed">
-                                <span className="material-symbols-outlined text-sm shrink-0">lock</span>
+                                <LockIcon className="w-4 h-4 shrink-0 text-slate-400" />
                                 {t.privacyNote}
                             </p>
                         </div>
@@ -342,11 +343,11 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
 
                     {phase === 'error' && (
                         <div className="h-full flex flex-col items-center justify-center gap-3 p-6 text-center">
-                            <span className="material-symbols-outlined text-3xl text-amber-500">error</span>
+                            <WarningIcon className="w-8 h-8 text-amber-500" />
                             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{error}</p>
                             <button
                                 onClick={reset}
-                                className="mt-2 px-4 h-10 rounded-xl bg-primary text-white text-xs font-bold"
+                                className="mt-2 px-4 h-10 rounded-xl bg-primary text-white text-xs font-bold cursor-pointer"
                             >
                                 {t.backToFile}
                             </button>

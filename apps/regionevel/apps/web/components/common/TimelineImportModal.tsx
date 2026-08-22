@@ -3,7 +3,10 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Z } from "@/lib/layers";
-import { X, UploadCloud, MapPinned, Loader2, CheckCircle2, AlertTriangle, Footprints, TrainFront, Camera, BedDouble } from "lucide-react";
+import {
+  TimelineIcon, CloseIcon, UploadIcon, WarningIcon
+} from "@ppotal/ui";
+import { Loader2, CheckCircle2, Footprints, TrainFront, Camera, BedDouble } from "lucide-react";
 import type { VisitCategory } from "@regionevel/types";
 import { VISIT_CONFIG } from "@regionevel/types";
 import { useVisitStore } from "@/store/visitStore";
@@ -131,10 +134,10 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
         <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
           <div className="flex items-center gap-2">
             <div className="size-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-              <MapPinned className="w-4 h-4" />
+              <TimelineIcon className="w-4 h-4" />
             </div>
             <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-              구글 타임라인으로 가져오기
+              Google 타임라인 가져오기
             </h3>
           </div>
           <button
@@ -142,7 +145,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
             className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             aria-label="닫기"
           >
-            <X className="w-5 h-5" />
+            <CloseIcon className="w-5 h-5" />
           </button>
         </div>
 
@@ -192,7 +195,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
                   dragOver ? "border-blue-400 bg-blue-50 dark:bg-blue-950/30" : "border-slate-200 dark:border-slate-700 hover:border-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/40"
                 }`}
               >
-                <UploadCloud className="w-7 h-7 text-blue-500" />
+                <UploadIcon className="w-7 h-7 text-blue-500" />
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                   Timeline.json 파일을 여기로 드래그하거나 클릭해서 선택
                 </span>
@@ -217,7 +220,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
 
           {phase === "error" && (
             <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-              <AlertTriangle className="w-7 h-7 text-amber-500" />
+              <WarningIcon className="w-7 h-7 text-amber-500" />
               <p className="text-xs font-bold text-slate-600 dark:text-slate-300 max-w-xs">{error}</p>
               <button
                 onClick={() => setPhase("intro")}

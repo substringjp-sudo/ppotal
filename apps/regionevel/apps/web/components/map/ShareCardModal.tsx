@@ -3,7 +3,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Feature } from "geojson";
-import { Share2, Download, Copy, X, Check, Loader2, Moon, Sun } from "lucide-react";
+import {
+  ShareIcon, DownloadIcon, CopyIcon, CloseIcon, CheckIcon, SunIcon, MoonIcon
+} from "@ppotal/ui";
+import { Loader2 } from "lucide-react";
 import type { Region, RegionScore, RegionVisit } from "@regionevel/types";
 import { padId } from "@regionevel/utils";
 import { Z } from "@/lib/layers";
@@ -289,7 +292,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
         style={isPhone ? { paddingBottom: SAFE_AREA.bottom } : undefined}
         role="dialog"
         aria-modal="true"
-        aria-label="공유 카드"
+        aria-label="공유 카드 만들기"
       >
         {isPhone && (
           <div className="flex justify-center pt-3 pb-1 shrink-0">
@@ -299,24 +302,24 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
 
         <div className="px-5 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
           <h3 className="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2">
-            <Share2 className="w-4 h-4 text-blue-600" />
-            공유 카드
+            <ShareIcon className="w-4 h-4 text-blue-600" />
+            공유 카드 만들기
           </h3>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setDark((d) => !d)}
-              className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-full text-slate-400 active:bg-slate-100 dark:active:bg-slate-800`}
+              className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-full text-slate-400 active:bg-slate-100 dark:active:bg-slate-800 cursor-pointer`}
               aria-label={dark ? "밝은 카드로" : "어두운 카드로"}
               title={dark ? "밝은 카드로" : "어두운 카드로"}
             >
-              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {dark ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
             </button>
             <button
               onClick={onClose}
-              className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-full text-slate-400 active:bg-slate-100 dark:active:bg-slate-800`}
+              className={`${TAP_TARGET_CLASS} flex items-center justify-center rounded-full text-slate-400 active:bg-slate-100 dark:active:bg-slate-800 cursor-pointer`}
               aria-label="닫기"
             >
-              <X className="w-5 h-5" />
+              <CloseIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -346,7 +349,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
                 <button
                   key={r.id}
                   onClick={() => { haptic("select"); setAspectRatio(r.id); }}
-                  className={`${chip(aspectRatio === r.id)} flex-col !gap-0`}
+                  className={`${chip(aspectRatio === r.id)} flex-col !gap-0 cursor-pointer`}
                 >
                   <span>{r.label}</span>
                   <span className="text-[9px] font-semibold opacity-70">{r.hint}</span>
@@ -379,7 +382,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
                         setScopeId(list[0] ? padId(list[0].id) : "");
                       }
                     }}
-                    className={`${chip(scopeKind === kind)} disabled:opacity-40`}
+                    className={`${chip(scopeKind === kind)} disabled:opacity-40 cursor-pointer`}
                   >
                     {label}
                   </button>
@@ -407,7 +410,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">담을 내용</p>
               <div className="grid grid-cols-4 gap-2">
                 {SHARE_BLOCKS.map((id) => (
-                  <button key={id} onClick={() => toggleBlock(id)} className={chip(blocks.has(id))}>
+                  <button key={id} onClick={() => toggleBlock(id)} className={`${chip(blocks.has(id))} cursor-pointer`}>
                     {BLOCK_LABEL[id]}
                   </button>
                 ))}
@@ -417,9 +420,9 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
 
           <button
             onClick={() => { haptic("select"); setShowBorders((b) => !b); }}
-            className={`${chip(showBorders)} w-full`}
+            className={`${chip(showBorders)} w-full cursor-pointer`}
           >
-            {showBorders && <Check className="w-3.5 h-3.5" />}
+            {showBorders && <CheckIcon className="w-3.5 h-3.5" />}
             경계선 표시
           </button>
         </div>
@@ -428,26 +431,26 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
           <button
             onClick={() => deliver("download")}
             disabled={busy}
-            className={`${TAP_TARGET_CLASS} flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-50 active:scale-98 transition-transform`}
+            className={`${TAP_TARGET_CLASS} flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-50 active:scale-98 transition-transform cursor-pointer`}
           >
-            <Download className="w-4 h-4" />
-            저장
+            <DownloadIcon className="w-4 h-4" />
+            이미지 저장
           </button>
           <button
             onClick={() => deliver("copy")}
             disabled={busy}
-            className={`${TAP_TARGET_CLASS} flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-50 active:scale-98 transition-transform`}
+            className={`${TAP_TARGET_CLASS} flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-50 active:scale-98 transition-transform cursor-pointer`}
           >
-            <Copy className="w-4 h-4" />
-            복사
+            <CopyIcon className="w-4 h-4" />
+            이미지 복사
           </button>
           <button
             onClick={() => deliver("share")}
             disabled={busy}
-            className={`${TAP_TARGET_CLASS} flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-md disabled:opacity-50 active:scale-98 transition-transform`}
+            className={`${TAP_TARGET_CLASS} flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-md disabled:opacity-50 active:scale-98 transition-transform cursor-pointer`}
           >
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
-            공유
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShareIcon className="w-4 h-4" />}
+            공유하기
           </button>
         </div>
       </div>

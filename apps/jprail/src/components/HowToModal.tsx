@@ -1,25 +1,24 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { HelpCircle, X } from 'lucide-react';
 import { useI18n } from '../lib/i18n-context';
+import { HOW_TO_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { Z } from '../lib/layers';
+import { isPhoneWidth } from '../lib/mobile';
 
 interface HowToModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-import { HOW_TO_TRANSLATIONS, getTranslations } from '../lib/translations';
-import { Z } from '../lib/layers';
-import { isPhoneWidth } from '../lib/mobile';
-
 const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
     const { language } = useI18n();
     const t = getTranslations(HOW_TO_TRANSLATIONS, language);
-    const [activeTab, setActiveTab] = React.useState<'desktop' | 'mobile'>('desktop');
+    const [activeTab, setActiveTab] = useState<'desktop' | 'mobile'>('desktop');
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (isOpen) {
-            // Which guide to show follows the same rule as the layout itself:
-            // a narrow window gets the phone UI, so it should get the phone
-            // instructions. A touch UA on a wide screen still gets both right.
             const isPhone = isPhoneWidth(window.innerWidth)
                 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             setActiveTab(isPhone ? 'mobile' : 'desktop');
@@ -39,58 +38,73 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="howto-modal-title"
-            style={{
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', zIndex: Z.modal, backdropFilter: 'blur(4px)'
-            }}
+            style={{ zIndex: Z.modal }}
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
             onClick={onClose}
         >
-            <div style={{
-                backgroundColor: '#fff', width: '90%', maxWidth: '500px',
-                borderRadius: '24px', padding: '30px', position: 'relative',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'modalSlideUp 0.3s ease-out'
-            }} onClick={e => e.stopPropagation()}>
-
-                <h2 id="howto-modal-title" style={{ fontSize: '24px', fontWeight: '900', marginBottom: '20px', color: '#2c3e50', textAlign: 'center' }}>
-                    {t.title}
-                </h2>
-
-                <div style={{ display: 'flex', backgroundColor: '#f5f5f5', borderRadius: '12px', padding: '4px', marginBottom: '20px' }}>
+            <div
+                className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <div className="size-9 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-primary">
+                            <HelpCircle className="w-5 h-5" />
+                        </div>
+                        <h2 id="howto-modal-title" className="text-lg font-black text-slate-900 dark:text-white">
+                            {t.title}
+                        </h2>
+                    </div>
                     <button
-                        onClick={() => setActiveTab('desktop')}
-                        style={{
-                            flex: 1, padding: '10px', border: 'none', borderRadius: '9px', cursor: 'pointer',
-                            backgroundColor: activeTab === 'desktop' ? '#fff' : 'transparent',
-                            color: activeTab === 'desktop' ? '#3498db' : '#666',
-                            fontWeight: 'bold', boxShadow: activeTab === 'desktop' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
-                        }}
+                        onClick={onClose}
+                        className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        aria-label="닫기"
                     >
-                        {t.desktop}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('mobile')}
-                        style={{
-                            flex: 1, padding: '10px', border: 'none', borderRadius: '9px', cursor: 'pointer',
-                            backgroundColor: activeTab === 'mobile' ? '#fff' : 'transparent',
-                            color: activeTab === 'mobile' ? '#3498db' : '#666',
-                            fontWeight: 'bold', boxShadow: activeTab === 'mobile' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
-                        }}
-                    >
-                        {t.mobile}
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div style={{ maxHeight: '350px', overflowY: 'auto', paddingRight: '10px' }}>
+                {/* Tab Switcher */}
+                <div className="px-6 pt-4 shrink-0">
+                    <div className="flex bg-slate-100 dark:bg-slate-800/60 rounded-xl p-1">
+                        <button
+                            onClick={() => setActiveTab('desktop')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                activeTab === 'desktop'
+                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                            }`}
+                        >
+                            {t.desktop}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('mobile')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                                activeTab === 'mobile'
+                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                            }`}
+                        >
+                            {t.mobile}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 sheet-scroll custom-scrollbar">
                     {t.guides[activeTab].map((item: any, idx: number) => (
-                        <div key={idx} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #f0f0f0' }}>
-                            <h4 style={{ margin: '0 0 6px 0', color: '#2c3e50', fontSize: '15px', fontWeight: '800' }}>
-                                {idx + 1}. {item.title}
+                        <div key={idx} className="pb-4 border-b border-slate-100 dark:border-slate-800/60 last:border-none">
+                            <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1.5 flex items-center gap-2">
+                                <span className="size-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-primary text-[11px] font-black flex items-center justify-center shrink-0">
+                                    {idx + 1}
+                                </span>
+                                {item.title}
                             </h4>
-                            <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6' }}>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-7">
                                 {item.desc.split(/(\*\*.*?\*\*)/).map((part: string, i: number) => {
                                     if (part.startsWith('**') && part.endsWith('**')) {
-                                        return <strong key={i} style={{ color: '#2c3e50', fontWeight: '900' }}>{part.slice(2, -2)}</strong>;
+                                        return <strong key={i} className="font-bold text-slate-900 dark:text-white">{part.slice(2, -2)}</strong>;
                                     }
                                     return part;
                                 })}
@@ -99,27 +113,17 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
                     ))}
                 </div>
 
-                <button
-                    autoFocus
-                    onClick={onClose}
-                    style={{
-                        width: '100%', padding: '14px', backgroundColor: '#3498db', color: '#fff',
-                        border: 'none', borderRadius: '14px', fontWeight: 'bold', fontSize: '16px',
-                        marginTop: '20px', cursor: 'pointer', transition: 'transform 0.1s'
-                    }}
-                    onMouseDown={e => e.currentTarget.style.transform = 'scale(0.98)'}
-                    onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                    {t.startBtn}
-                </button>
+                {/* Footer */}
+                <div className="p-6 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                    <button
+                        autoFocus
+                        onClick={onClose}
+                        className="w-full py-3 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                        {t.startBtn}
+                    </button>
+                </div>
             </div>
-
-            <style jsx>{`
-                @keyframes modalSlideUp {
-                    from { transform: translateY(20px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-            `}</style>
         </div>
     );
 };

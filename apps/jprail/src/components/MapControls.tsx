@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useMap } from 'react-leaflet';
+import { Plus, Minus, RotateCcw } from 'lucide-react';
 import { useI18n } from '../lib/i18n-context';
 import { Z } from '../lib/layers';
 
@@ -43,24 +44,17 @@ const MapControls: React.FC<MapControlsProps> = ({
     const handleZoomIn = () => step(1);
     const handleZoomOut = () => step(-1);
 
-    // 32px is fine for a mouse and too small for a thumb; MIN_TAP_TARGET is 44.
-    const stepBtn = `${isMobile ? 'w-11 h-11' : 'w-8 h-8'} flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-white transition-all active:scale-90`;
+    const stepBtn = `${isMobile ? 'w-11 h-11' : 'w-8 h-8'} flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-white transition-all active:scale-90 cursor-pointer`;
 
     return (
         <>
             {/* Map Interaction Controls (Top Left) - Right of Left Sidebar */}
-            {/* On a phone these sit bottom-left, above the sheet: the top of a
-                phone screen belongs to the bar and the reach is worse up there.
-                Buttons go to 44px so a thumb can actually land on them. */}
             <div className={isMobile
                 ? "absolute flex flex-col items-start gap-2"
                 : "absolute top-4 left-4 md:left-[366px] flex flex-row items-center gap-2"}
                 style={isMobile
                     ? {
                         zIndex: Z.mapOverlay,
-                        // Both offsets read the sheet's own vars, so the same
-                        // rule works whether it is docked to the bottom or,
-                        // in landscape, to the left.
                         bottom: 'calc(var(--sheet-h, 120px) + 12px)',
                         left: 'calc(var(--sheet-w, 0px) + 12px)',
                         transition: 'bottom 260ms cubic-bezier(0.32, 0.72, 0, 1), left 260ms cubic-bezier(0.32, 0.72, 0, 1)'
@@ -73,33 +67,36 @@ const MapControls: React.FC<MapControlsProps> = ({
                     <button
                         onClick={handleZoomIn}
                         className={stepBtn}
+                        aria-label="Zoom in"
                     >
-                        <span className="material-symbols-outlined !text-[20px]">add</span>
+                        <Plus className="w-4 h-4" />
                     </button>
 
                     {/* Zoom Level Indicator */}
                     <div className="flex flex-row items-center px-2 relative min-w-[32px] justify-center">
-                        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-700 mr-2"></div>
-                        <span className="text-[12px] font-black text-primary leading-none">{zoom.toFixed(0)}</span>
-                        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-700 ml-2"></div>
+                        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-700 mr-2" />
+                        <span className="text-[12px] font-black text-primary leading-none tabular-nums">{zoom.toFixed(0)}</span>
+                        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-700 ml-2" />
                     </div>
 
                     {/* Zoom Out */}
                     <button
                         onClick={handleZoomOut}
                         className={stepBtn}
+                        aria-label="Zoom out"
                     >
-                        <span className="material-symbols-outlined !text-[20px]">remove</span>
+                        <Minus className="w-4 h-4" />
                     </button>
                 </div>
 
                 {/* Reset Button */}
                 <button
                     onClick={handleReset}
-                    className="bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl w-[44px] h-[44px] flex items-center justify-center rounded-2xl shadow-lg border border-white/60 dark:border-slate-700/60 text-slate-800 dark:text-white hover:text-primary dark:hover:text-primary transition-all active:scale-90 group shrink-0"
+                    className="bg-white/85 dark:bg-slate-900/90 backdrop-blur-2xl w-[44px] h-[44px] flex items-center justify-center rounded-2xl shadow-lg border border-white/60 dark:border-slate-700/60 text-slate-800 dark:text-white hover:text-primary dark:hover:text-primary transition-all active:scale-90 group shrink-0 cursor-pointer"
                     title={language === 'ko' ? "지도 초기화" : language === 'ja' ? "マップをリセット" : "Reset View"}
+                    aria-label={language === 'ko' ? "지도 초기화" : language === 'ja' ? "マップをリセット" : "Reset View"}
                 >
-                    <span className="material-symbols-outlined !text-[20px] group-hover:rotate-180 transition-transform duration-700">restart_alt</span>
+                    <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" />
                 </button>
             </div>
         </>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { RouteIcon, CloseIcon, PlusIcon, SearchIcon, CheckCircleIcon, WarningIcon, DrawIcon } from '@ppotal/ui';
 import { RailData, Station } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
@@ -142,9 +143,7 @@ const StationPickerRow: React.FC<StationPickerRowProps> = ({
                                 language
                             )}
                         </span>
-                        <span className="material-symbols-outlined text-[13px] text-slate-300 group-hover:text-primary shrink-0 ml-auto">
-                            edit
-                        </span>
+                        <DrawIcon className="w-3.5 h-3.5 text-slate-300 group-hover:text-primary shrink-0 ml-auto" />
                     </button>
                 ) : (
                     <input
@@ -165,9 +164,9 @@ const StationPickerRow: React.FC<StationPickerRowProps> = ({
                     <button
                         type="button"
                         onClick={onRemove}
-                        className="p-0.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
+                        className="p-0.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0 cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-[15px]">close</span>
+                        <CloseIcon className="w-3.5 h-3.5" />
                     </button>
                 )}
             </div>
@@ -390,8 +389,8 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
             <div className="flex items-center justify-between gap-2">
                 <p className="text-[10px] text-slate-400 truncate min-w-0">{chain.join(' · ')}</p>
                 {isSelected && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                        <CheckCircleIcon className="w-3.5 h-3.5" />
                         {t.selected}
                     </span>
                 )}
@@ -604,7 +603,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                 {/* Header */}
                 <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-900/60 shrink-0">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-lg text-primary">alt_route</span>
+                        <RouteIcon className="w-5 h-5 text-primary" />
                         <div className="leading-tight">
                             <h3 className="font-bold text-slate-800 dark:text-white text-sm">
                                 {t.createRouteTitle}
@@ -616,9 +615,9 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-lg">close</span>
+                        <CloseIcon className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -668,26 +667,22 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setViaStations(prev => [...prev, null])}
-                                    className="h-9 px-2.5 rounded-xl text-[11px] font-bold text-primary hover:bg-primary/10 border border-primary/25 transition-colors flex items-center gap-1 shrink-0"
+                                    className="h-9 px-2.5 rounded-xl text-[11px] font-bold text-primary hover:bg-primary/10 border border-primary/25 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-[15px]">add</span>
+                                    <PlusIcon className="w-3.5 h-3.5" />
                                     {t.addVia}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleSearchRoutes}
                                     disabled={!startStation || !endStation || isSearching}
-                                    className={`flex-1 h-9 rounded-xl text-[11px] font-bold uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all ${
+                                    className={`flex-1 h-9 rounded-xl text-[11px] font-bold uppercase tracking-wide flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                         !startStation || !endStation || isSearching
                                             ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                                             : 'bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20 active:scale-[0.99]'
                                     }`}
                                 >
-                                    <span
-                                        className={`material-symbols-outlined text-[15px] ${isSearching ? 'animate-spin' : ''}`}
-                                    >
-                                        {isSearching ? 'progress_activity' : 'search'}
-                                    </span>
+                                    <SearchIcon className={`w-3.5 h-3.5 ${isSearching ? 'animate-spin' : ''}`} />
                                     {isSearching ? t.searching : t.searchRoute}
                                 </button>
                             </div>
@@ -703,9 +698,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
                             {hasSearched && legs.length === 0 && (
                                 <div className="p-5 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
-                                    <span className="material-symbols-outlined text-2xl text-slate-400 block mb-1">
-                                        search_off
-                                    </span>
+                                    <SearchIcon className="w-6 h-6 text-slate-400 mx-auto mb-1" />
                                     <p className="text-[11px] font-bold text-slate-500">{t.noRouteFound}</p>
                                     <p className="text-[10px] text-slate-400 mt-1">{t.noRouteHint}</p>
                                 </div>
@@ -715,7 +708,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 <div className="space-y-1.5 mb-2">
                                     <div className="flex items-center justify-between px-0.5">
                                         <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-[13px] text-primary">alt_route</span>
+                                            <RouteIcon className="w-3.5 h-3.5 text-primary" />
                                             {t.selectLegHeader}
                                         </span>
                                         <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
@@ -864,9 +857,9 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                     <button
                                         type="button"
                                         onClick={handleCreateTrip}
-                                        className="ml-auto h-9 px-3 rounded-xl bg-primary text-white text-[11px] font-extrabold uppercase tracking-wide hover:bg-primary/90 active:scale-[0.99] transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 shrink-0 grow sm:grow-0"
+                                        className="ml-auto h-9 px-3 rounded-xl bg-primary text-white text-[11px] font-extrabold uppercase tracking-wide hover:bg-primary/90 active:scale-[0.99] transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 shrink-0 grow sm:grow-0 cursor-pointer"
                                     >
-                                        <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                                        <CheckCircleIcon className="w-4 h-4" />
                                         {t.createTrip}
                                     </button>
                                 </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
+import { BranchIcon, ChevronDownIcon, ChevronUpIcon } from '@ppotal/ui';
 import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
@@ -175,10 +176,13 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             {/* Sidebar Header & Progress Card. Hidden on a phone: the sheet's
                 own tab already reads "Rail Networks" directly above this, so
                 repeating it cost ~90px of a 476px sheet to say nothing new. */}
+            {/* Sidebar Header & Progress Card. Hidden on a phone: the sheet's
+                own tab already reads "Rail Networks" directly above this, so
+                repeating it cost ~90px of a 476px sheet to say nothing new. */}
             {!isMobile && (
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                     <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary text-xl">account_tree</span>
+                        <BranchIcon className="w-5 h-5 text-primary" />
                         {t.title}
                     </h2>
                     <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
@@ -198,8 +202,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                 <div className="p-2 border-b border-slate-50 dark:border-slate-800 space-y-1.5 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
                     <div className="flex p-0.5 gap-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
                         {[
-                            { id: 'ja', label: t.alphabetical, icon: 'sort_by_alpha' },
-                            { id: 'usage', label: t.byUsage, icon: 'trending_up' },
+                            { id: 'ja', label: t.alphabetical },
+                            { id: 'usage', label: t.byUsage },
                         ].map(opt => (
                             <button
                                 key={opt.id}
@@ -207,11 +211,10 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                     setSortMode(opt.id as 'ja' | 'usage');
                                     trackEvent('sort_mode_change', 'filter', opt.id);
                                 }}
-                                className={`flex-1 min-w-0 h-10 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-colors ${sortMode === opt.id
+                                className={`flex-1 min-w-0 h-10 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-colors cursor-pointer ${sortMode === opt.id
                                     ? 'bg-white/70 dark:bg-slate-600/60 text-primary shadow-sm'
                                     : 'text-slate-500'}`}
                             >
-                                <span className="material-symbols-outlined text-sm shrink-0">{opt.icon}</span>
                                 <span className="truncate">{opt.label}</span>
                             </button>
                         ))}
@@ -220,21 +223,19 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         {[
                             { onClick: handleSelectAll, label: t.all, icon: null, danger: false },
                             { onClick: handleDeselectAll, label: t.none, icon: null, danger: true },
-                            { onClick: () => handleToggleAllGroups(true), label: t.expandAll, icon: 'expand_all', danger: false },
-                            { onClick: () => handleToggleAllGroups(false), label: t.collapseAll, icon: 'collapse_all', danger: false },
+                            { onClick: () => handleToggleAllGroups(true), label: t.expandAll, icon: <ChevronDownIcon className="w-4 h-4" />, danger: false },
+                            { onClick: () => handleToggleAllGroups(false), label: t.collapseAll, icon: <ChevronUpIcon className="w-4 h-4" />, danger: false },
                         ].map((action, i) => (
                             <button
                                 key={i}
                                 onClick={action.onClick}
                                 title={action.label}
                                 aria-label={action.label}
-                                className={`h-10 min-w-0 flex items-center justify-center px-1 text-[10px] font-bold bg-white/60 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors active:scale-95 ${action.danger
+                                className={`h-10 min-w-0 flex items-center justify-center px-1 text-[10px] font-bold bg-white/60 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors active:scale-95 cursor-pointer ${action.danger
                                     ? 'text-slate-600 dark:text-slate-400 active:border-red-400 active:text-red-500'
                                     : 'text-slate-600 dark:text-slate-400 active:border-primary active:text-primary'}`}
                             >
-                                {action.icon
-                                    ? <span className="material-symbols-outlined text-[18px]">{action.icon}</span>
-                                    : <span className="truncate">{action.label}</span>}
+                                {action.icon ? action.icon : <span className="truncate">{action.label}</span>}
                             </button>
                         ))}
                     </div>
@@ -246,8 +247,8 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                         <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">{t.sortTitle}</div>
                         <div className="flex p-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
                             {[
-                                { id: 'ja', label: t.alphabetical, icon: 'sort_by_alpha' },
-                                { id: 'usage', label: t.byUsage, icon: 'trending_up' },
+                                { id: 'ja', label: t.alphabetical },
+                                { id: 'usage', label: t.byUsage },
                             ].map(opt => (
                                 <button
                                     key={opt.id}
@@ -255,12 +256,11 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                                         setSortMode(opt.id as 'ja' | 'usage');
                                         trackEvent('sort_mode_change', 'filter', opt.id);
                                     }}
-                                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-all py-1.5 ${sortMode === opt.id
+                                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-all py-1.5 cursor-pointer ${sortMode === opt.id
                                         ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                         }`}
                                 >
-                                    <span className="material-symbols-outlined text-sm shrink-0">{opt.icon}</span>
                                     <span className="truncate">{opt.label}</span>
                                 </button>
                             ))}
@@ -274,14 +274,14 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             <div className="grid grid-cols-2 gap-1">
                                 <button
                                     onClick={handleSelectAll}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm`}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm cursor-pointer`}
                                     title={t.all}
                                 >
                                     {t.all}
                                 </button>
                                 <button
                                     onClick={handleDeselectAll}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm`}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm cursor-pointer`}
                                     title={t.none}
                                 >
                                     {t.none}
@@ -293,17 +293,17 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
                             <div className="grid grid-cols-2 gap-1">
                                 <button
                                     onClick={() => handleToggleAllGroups(true)}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group cursor-pointer`}
                                     title={t.expandAll}
                                 >
-                                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 -translate-y-[1px] -translate-x-[1px]">expand_all</span>
+                                    <ChevronDownIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
                                 </button>
                                 <button
                                     onClick={() => handleToggleAllGroups(false)}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group`}
+                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group cursor-pointer`}
                                     title={t.collapseAll}
                                 >
-                                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover:scale-110 translate-y-[1px] translate-x-[1px]">collapse_all</span>
+                                    <ChevronUpIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
                                 </button>
                             </div>
                         </div>

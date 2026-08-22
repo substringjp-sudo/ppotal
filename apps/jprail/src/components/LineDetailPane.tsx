@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef } from 'react';
+import { CheckIcon, PlusIcon, CloseIcon } from '@ppotal/ui';
 import { StationNode, LineSegment } from '../lib/graphUtils';
 import { trackEvent } from '../lib/gtag';
 import TubeMap from './TubeMap';
@@ -179,9 +180,11 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                                 }`}
                             title={selectedLines.includes(lineId) ? t.hideLine : t.showLine}
                         >
-                            <span className="material-symbols-outlined text-xl sm:text-2xl">
-                                {selectedLines.includes(lineId) ? 'check' : 'add'}
-                            </span>
+                            {selectedLines.includes(lineId) ? (
+                                <CheckIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                            ) : (
+                                <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                            )}
                         </button>
                         <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -206,7 +209,7 @@ const LineDetailPane: React.FC<LineDetailPaneProps> = ({
                         onClick={() => { onClose(); trackEvent('close_line_detail', 'ui_interaction', lineId); }}
                         className="w-10 h-10 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 transition-all flex items-center justify-center active:scale-90"
                     >
-                        <span className="material-symbols-outlined text-2xl">close</span>
+                        <CloseIcon className="w-5 h-5" />
                     </button>
                 </div>
                 <div className="flex items-center justify-between gap-2 pt-2 sm:pt-4 border-t border-slate-100 dark:border-slate-800">

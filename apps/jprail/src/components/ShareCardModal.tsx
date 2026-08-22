@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FeatureCollection } from 'geojson';
+import { Share2, Download, Copy, X, Check, ChevronDown } from 'lucide-react';
 import { RailData } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
@@ -46,10 +47,10 @@ const TEXT = {
         advanced: '고급', followMap: '지도 설정 따르기', showContext: '미방문 노선 표시',
         showBorders: '도도부현 경계선', riddenWeight: '탄 노선 두께', contextWeight: '미방문 노선 두께',
         moreLines: (n: number, avg: number) => `외 ${n}개 노선 · 평균 ${avg}%`,
-        title: '공유 카드', scope: '무엇에 대한 카드인가요', include: '담을 내용',
+        title: '공유 카드 만들기', scope: '무엇에 대한 카드인가요', include: '담을 내용',
         all: '전체', prefecture: '도도부현', company: '회사', line: '노선',
         map: '지도', totals: '총계', lines: '노선 완주율 TOP 5', prefectures: '도도부현 정복', badges: '업적',
-        download: '이미지 저장', copy: '이미지 복사', share: 'SNS에 공유',
+        download: '이미지 저장', copy: '이미지 복사', share: '공유하기',
         copied: '복사했어요. 붙여넣기 하세요', preparing: '만드는 중…',
         nothing: '아직 기록한 여행이 없어요. 지도에서 역과 역 사이를 드래그해 기록해 보세요.',
         km: 'km', stations: '역', lineCount: '노선', companies: '회사',
@@ -65,7 +66,7 @@ const TEXT = {
         advanced: 'Advanced', followMap: 'Follow map settings', showContext: 'Show unridden track',
         showBorders: 'Prefecture borders', riddenWeight: 'Ridden line weight', contextWeight: 'Unridden line weight',
         moreLines: (n: number, avg: number) => `and ${n} more lines · ${avg}% on average`,
-        title: 'Share card', scope: 'What is this card about', include: 'What to include',
+        title: 'Create Share Card', scope: 'What is this card about', include: 'What to include',
         all: 'Everything', prefecture: 'Prefecture', company: 'Operator', line: 'Line',
         map: 'Map', totals: 'Totals', lines: 'Line progress TOP 5', prefectures: 'Prefectures', badges: 'Badges',
         download: 'Save image', copy: 'Copy image', share: 'Share',
@@ -84,10 +85,10 @@ const TEXT = {
         advanced: '詳細', followMap: 'マップ設定に従う', showContext: '未乗車路線を表示',
         showBorders: '都道府県の境界線', riddenWeight: '乗車路線の太さ', contextWeight: '未乗車路線の太さ',
         moreLines: (n: number, avg: number) => `他 ${n} 路線 · 平均 ${avg}%`,
-        title: '共有カード', scope: '何についてのカードですか', include: '含める内容',
+        title: '共有カード作成', scope: '何についてのカードですか', include: '含める内容',
         all: '全体', prefecture: '都道府県', company: '会社', line: '路線',
         map: '地図', totals: '合計', lines: '路線の走破率 TOP 5', prefectures: '都道府県制覇', badges: '実績',
-        download: '画像を保存', copy: '画像をコピー', share: '共有',
+        download: '画像を保存', copy: '画像をコピー', share: '共有する',
         copied: 'コピーしました。貼り付けてください', preparing: '作成中…',
         nothing: 'まだ記録がありません。地図で駅から駅へドラッグして記録してみてください。',
         km: 'km', stations: '駅', lineCount: '路線', companies: '会社',
@@ -267,16 +268,16 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
 
     return (
         <div style={{ zIndex: Z.modal }} className="fixed inset-0 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-[#0f172acc] backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
 
-            <div className={`relative w-full ${modalMaxWidth} max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-6 duration-400 flex flex-col transition-all duration-300`}>
+            <div className={`relative w-full ${modalMaxWidth} max-h-[92vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-6 duration-400 flex flex-col transition-all duration-300 border border-slate-200/80 dark:border-slate-800`}>
                 <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 shrink-0">
                     <h2 className="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">ios_share</span>
+                        <Share2 className="w-5 h-5 text-primary" />
                         {t.title}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" aria-label="Close">
-                        <span className="material-symbols-outlined">close</span>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer text-slate-400" aria-label="Close">
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -301,7 +302,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                         {/* Controls Column (Settings Scrollable + Action Buttons Pinned) */}
                         <div className="flex flex-col h-full min-h-0 overflow-hidden">
                             {/* Scrollable Settings Area */}
-                            <div className="flex-1 overflow-y-auto pr-1.5 flex flex-col gap-5">
+                            <div className="flex-1 overflow-y-auto pr-1.5 flex flex-col gap-5 sheet-scroll custom-scrollbar">
                                 {/* Aspect Ratio Selector */}
                                 <div className="flex flex-col gap-2">
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.aspectRatio}</h3>
@@ -310,7 +311,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                             <button
                                                 key={ratio}
                                                 onClick={() => setAspectRatio(ratio)}
-                                                className={`py-2 px-1 rounded-xl text-[11px] font-black transition-all ${aspectRatio === ratio
+                                                className={`py-2 px-1 rounded-xl text-[11px] font-black transition-all cursor-pointer ${aspectRatio === ratio
                                                     ? 'bg-primary text-white shadow-md'
                                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                             >
@@ -334,7 +335,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                                     key={kind}
                                                     disabled={disabled}
                                                     onClick={() => { setScopeKind(kind); setScopeId(''); }}
-                                                    className={`py-2 rounded-xl text-xs font-black transition-all ${scopeKind === kind
+                                                    className={`py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${scopeKind === kind
                                                         ? 'bg-primary text-white shadow-md'
                                                         : disabled
                                                             ? 'bg-slate-50 dark:bg-slate-800/40 text-slate-300 dark:text-slate-600 cursor-not-allowed'
@@ -381,14 +382,12 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                                                 return next;
                                                             });
                                                         }}
-                                                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold border transition-all ${on
+                                                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${on
                                                             ? 'border-primary bg-primary/5 text-primary'
                                                             : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                                     >
                                                         {blockLabel[id]}
-                                                        <span className={`material-symbols-outlined !text-[18px] transition-transform ${on ? 'scale-100' : 'scale-0'}`}>
-                                                            check_circle
-                                                        </span>
+                                                        <Check className={`w-4 h-4 transition-transform ${on ? 'scale-100' : 'scale-0'}`} />
                                                     </button>
                                                 );
                                             })}
@@ -403,9 +402,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                         className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
                                     >
                                         {t.advanced}
-                                        <span className={`material-symbols-outlined !text-[16px] transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
-                                            expand_more
-                                        </span>
+                                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`} />
                                     </button>
 
                                     {showAdvanced && (
@@ -459,7 +456,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                     disabled={busy}
                                     className="flex items-center justify-center gap-2 py-3.5 px-5 bg-primary hover:brightness-110 text-white font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-60 cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined !text-[20px]">ios_share</span>
+                                    <Share2 className="w-5 h-5" />
                                     {busy ? t.preparing : t.share}
                                 </button>
                                 <div className="grid grid-cols-2 gap-2">
@@ -468,7 +465,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                         disabled={busy}
                                         className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer"
                                     >
-                                        <span className="material-symbols-outlined !text-[17px]">content_copy</span>
+                                        <Copy className="w-4 h-4" />
                                         {t.copy}
                                     </button>
                                     <button
@@ -476,7 +473,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                         disabled={busy}
                                         className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer"
                                     >
-                                        <span className="material-symbols-outlined !text-[17px]">download</span>
+                                        <Download className="w-4 h-4" />
                                         {t.download}
                                     </button>
                                 </div>

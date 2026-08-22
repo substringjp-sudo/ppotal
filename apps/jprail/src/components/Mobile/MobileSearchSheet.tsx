@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import RailSearch from '../RailSearch';
 import { RailData } from '../../types/railData';
 import { useI18n } from '../../lib/i18n-context';
@@ -16,12 +17,6 @@ export interface MobileSearchSheetProps {
 
 /**
  * Search, full screen.
- *
- * Search was previously desktop-only: on a phone there was no way to find a
- * station at all, which is most of what someone opens a rail map to do. It
- * takes the whole screen because a phone has no room for a dropdown that has to
- * coexist with a keyboard — the keyboard covers the bottom half, so the results
- * get the top half and nothing else competes for it.
  */
 const MobileSearchSheet: React.FC<MobileSearchSheetProps> = ({
     isOpen, onClose, railData, onSelectStation, onSelectLine
@@ -57,10 +52,10 @@ const MobileSearchSheet: React.FC<MobileSearchSheetProps> = ({
                 <div className="flex items-center gap-2 h-14 px-2">
                     <button
                         onClick={onClose}
-                        className="shrink-0 size-11 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 active:bg-slate-100 dark:active:bg-slate-800"
+                        className="shrink-0 size-11 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 active:bg-slate-100 dark:active:bg-slate-800 cursor-pointer"
                         aria-label={back}
                     >
-                        <span className="material-symbols-outlined !text-[24px]">arrow_back</span>
+                        <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div ref={containerRef} className="flex-1 min-w-0">
                         <RailSearch
