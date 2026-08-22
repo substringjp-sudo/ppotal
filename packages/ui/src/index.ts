@@ -1,4 +1,9 @@
 export * from './components/Navbar';
+export * from './components/AppHeader';
+export * from './components/AppShell';
+export * from './components/Button';
+export * from './components/BackgroundPattern';
+export * from './components/Modal';
 export * from './context/AuthContext';
 export * from './components/AuthModal';
 export * from './components/OnboardingModal';
@@ -7,4 +12,5 @@ export * from './components/AdSense';
 export * from './components/GoogleMapsScript';
 export * from './lib/seo';
 export * from './config';
+export * from './styles/tokens';
 import './styles/globals.css';

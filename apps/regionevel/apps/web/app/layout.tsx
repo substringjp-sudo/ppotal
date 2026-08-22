@@ -110,7 +110,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} bg-slate-50 text-gray-900 antialiased h-dvh flex flex-col overflow-hidden`}>
         <AuthProvider>
           <FirebaseProvider>
-            <div className="flex-1 flex flex-col max-w-[1920px] mx-auto w-full bg-white shadow-2xl shadow-slate-900/10 h-full overflow-hidden">
+            <div className="flex-1 flex flex-col w-full bg-white h-full overflow-hidden">
               <Nav />
               <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
                 <script

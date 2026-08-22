@@ -14,7 +14,7 @@ import { useRailData } from '../hooks/useRailData';
 import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
-import { useAuth } from '@ppotal/ui';
+import { useAuth, AppHeader, Button } from '@ppotal/ui';
 import { Train, Map as MapIcon, Share2 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { I18nProvider, useI18n } from '../lib/i18n-context';
@@ -859,8 +859,8 @@ const MainPageClient = () => {
     const setLineIdMapping = React.useCallback(() => { }, []);
 
     return (
-        <div className="flex flex-col bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]">
-            <div className="h-screen flex flex-col overflow-hidden relative max-w-[1920px] mx-auto w-full shadow-2xl shadow-slate-900/10">
+        <div className="flex flex-col w-full h-screen overflow-hidden relative bg-slate-50 dark:bg-slate-950 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]">
+            <div className="h-full flex flex-col overflow-hidden relative w-full">
                 <a
                     href="#main-content"
                     className="absolute -left-[9999px] top-auto w-px h-px overflow-hidden z-[-1] bg-primary text-white p-2.5 rounded-b-lg no-underline font-bold focus:left-1/2 focus:-translate-x-1/2 focus:w-auto focus:h-auto"
@@ -881,155 +881,159 @@ const MainPageClient = () => {
                         searchPlaceholder={getTranslations(RAIL_SEARCH_TRANSLATIONS, language).placeholder}
                     />
                 ) : (
-                <header style={{ zIndex: Z.header }} className="flex h-14 items-center border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 md:px-6 shrink-0 shadow-sm relative">
-                    {/* Left: Logo & Title */}
-                    <div className="flex items-center gap-3 shrink-0 mr-4">
-                        <JrnLogo size={32} />
-                        <h1 className="text-lg md:text-xl font-black tracking-tight text-slate-800 dark:text-white block">
-                            <span className="text-primary">Japan</span>RailNote
-                        </h1>
-                    </div>
-
-                    {/* Middle: Search (Centered) */}
-                    {!isMobile && (
-                        <div className="flex-1 flex justify-center px-4">
-                            <RailSearch
-                                railData={railData}
-                                onSelectStation={handleSearchSelectStation}
-                                onSelectLine={handleSearchSelectLine}
-                                isMobile={isMobile}
-                            />
+                <AppHeader
+                    logo={
+                        <div className="flex items-center gap-3 shrink-0">
+                            <JrnLogo size={32} />
+                            <h1 className="text-lg md:text-xl font-black tracking-tight text-slate-800 dark:text-white block">
+                                <span className="text-primary">Japan</span>RailNote
+                            </h1>
                         </div>
-                    )}
-
-                    {/* Right: Navigation & Actions */}
-                    <div className="flex items-center gap-3 md:gap-6 shrink-0 ml-auto mr-0">
-                        <nav className="hidden lg:flex items-center gap-6">
-                            <button
-                                onClick={() => setIsHowToOpen(true)}
-                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">lightbulb</span>
-                                {language === 'ko' ? "도움말" : language === 'ja' ? "ヘルプ" : "Tips"}
-                            </button>
-                            <button
-                                onClick={() => setIsFeedbackOpen(true)}
-                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">chat_bubble</span>
-                                {language === 'ko' ? "피드백" : language === 'ja' ? "フィードバック" : "Feedback"}
-                            </button>
-                            <Link
-                                href="/directory"
-                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">list_alt</span>
-                                {language === 'ko' ? "디렉토리" : language === 'ja' ? "路線一覧" : "Directory"}
-                            </Link>
-                            <a
-                                href="https://pplaner.com"
-                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">travel_explore</span>
-                                {language === 'ko' ? "PPLANER 소개" : language === 'ja' ? "PPLANER紹介" : "About PPLANER"}
-                            </a>
-                            <button
-                                onClick={exportMap}
-                                className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-lg">download</span>
-                                {language === 'ko' ? "내보내기" : language === 'ja' ? "エクスポート" : "Export"}
-                            </button>
-                        </nav>
-
-                        {!isMobile && <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>}
-
-                        <div className="flex items-center gap-2 md:gap-4">
-                            {isMobile && (
-                                <div className="flex items-center gap-2">
-                                    <LanguageSelector variant="dropdown" className="pointer-events-auto" />
-                                    <button
-                                        onClick={() => setIsInfoOpen(true)}
-                                        className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
-                                        aria-label="Info"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">info</span>
-                                    </button>
-                                </div>
-                            )}
-
-                            {!isMobile && (
+                    }
+                    center={
+                        !isMobile ? (
+                            <div className="w-full max-w-md">
+                                <RailSearch
+                                    railData={railData}
+                                    onSelectStation={handleSearchSelectStation}
+                                    onSelectLine={handleSearchSelectLine}
+                                    isMobile={isMobile}
+                                />
+                            </div>
+                        ) : null
+                    }
+                    right={
+                        <div className="flex items-center gap-3 md:gap-6 shrink-0 ml-auto mr-0">
+                            <nav className="hidden lg:flex items-center gap-6">
+                                <button
+                                    onClick={() => setIsHowToOpen(true)}
+                                    className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                    <span className="material-symbols-outlined text-lg">lightbulb</span>
+                                    {language === 'ko' ? "도움말" : language === 'ja' ? "ヘルプ" : "Tips"}
+                                </button>
+                                <button
+                                    onClick={() => setIsFeedbackOpen(true)}
+                                    className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                    <span className="material-symbols-outlined text-lg">chat_bubble</span>
+                                    {language === 'ko' ? "피드백" : language === 'ja' ? "フィードバック" : "Feedback"}
+                                </button>
+                                <Link
+                                    href="/directory"
+                                    className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
+                                >
+                                    <span className="material-symbols-outlined text-lg">list_alt</span>
+                                    {language === 'ko' ? "디렉토리" : language === 'ja' ? "路線一覧" : "Directory"}
+                                </Link>
+                                <a
+                                    href="https://pplaner.com"
+                                    className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
+                                >
+                                    <span className="material-symbols-outlined text-lg">travel_explore</span>
+                                    {language === 'ko' ? "PPLANER 소개" : language === 'ja' ? "PPLANER紹介" : "About PPLANER"}
+                                </a>
                                 <button
                                     onClick={exportMap}
-                                    className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
-                                    aria-label="Export"
+                                    className="text-sm font-bold text-slate-500 hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
                                 >
-                                    <span className="material-symbols-outlined text-xl">download</span>
+                                    <span className="material-symbols-outlined text-lg">download</span>
+                                    {language === 'ko' ? "내보내기" : language === 'ja' ? "エクスポート" : "Export"}
                                 </button>
-                            )}
+                            </nav>
 
-                            {user ? (
-                                <div ref={profileDropdownRef} className="relative">
+                            {!isMobile && <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>}
+
+                            <div className="flex items-center gap-2 md:gap-4">
+                                {isMobile && (
+                                    <div className="flex items-center gap-2">
+                                        <LanguageSelector variant="dropdown" className="pointer-events-auto" />
+                                        <button
+                                            onClick={() => setIsInfoOpen(true)}
+                                            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors"
+                                            aria-label="Info"
+                                        >
+                                            <span className="material-symbols-outlined text-xl">info</span>
+                                        </button>
+                                    </div>
+                                )}
+
+                                {!isMobile && (
                                     <button
-                                        onClick={() => isMobile ? setIsMobileSheetOpen(true) : setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                                        className="size-8 md:size-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold cursor-pointer ring-2 ring-white dark:ring-slate-800 shadow-md transition-transform hover:scale-105 focus:outline-none"
-                                        title={user.email || 'User'}
+                                        onClick={exportMap}
+                                        className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors cursor-pointer"
+                                        aria-label="Export"
                                     >
-                                        {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                                        <span className="material-symbols-outlined text-xl">download</span>
                                     </button>
-                                    
-                                    {isProfileDropdownOpen && !isMobile && (
-                                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden z-[10005] animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-auto">
-                                            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Logged in as</p>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={user.email || ""}>
-                                                    {user.email}
-                                                </p>
+                                )}
+
+                                {user ? (
+                                    <div ref={profileDropdownRef} className="relative">
+                                        <button
+                                            onClick={() => isMobile ? setIsMobileSheetOpen(true) : setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                            className="size-8 md:size-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold cursor-pointer ring-2 ring-white dark:ring-slate-800 shadow-md transition-transform hover:scale-105 focus:outline-none"
+                                            title={user.email || 'User'}
+                                        >
+                                            {(user.displayName?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                                        </button>
+                                        
+                                        {isProfileDropdownOpen && !isMobile && (
+                                            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden z-[10005] animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-auto">
+                                                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+                                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Logged in as</p>
+                                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={user.email || ""}>
+                                                        {user.email}
+                                                    </p>
+                                                </div>
+                                                <div className="py-1">
+                                                    <button
+                                                        onClick={() => {
+                                                            syncWithRegionevel();
+                                                            setIsProfileDropdownOpen(false);
+                                                        }}
+                                                        disabled={isRecordingLoading}
+                                                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                                                    >
+                                                        {isRecordingLoading ? (
+                                                            <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                        ) : (
+                                                            <span className="material-symbols-outlined text-[16px] text-primary">sync</span>
+                                                        )}
+                                                        {language === 'ko' ? "Regionevel에서 가져오기" : language === 'ja' ? "Regionevelから取得" : "Sync with Regionevel"}
+                                                    </button>
+                                                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
+                                                    <button
+                                                        onClick={async () => {
+                                                            const { auth } = await import('../lib/firebase');
+                                                            const { signOut } = await import('firebase/auth');
+                                                            await signOut(auth);
+                                                            setIsProfileDropdownOpen(false);
+                                                        }}
+                                                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[16px]">logout</span>
+                                                        Logout
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div className="py-1">
-                                                <button
-                                                    onClick={() => {
-                                                        syncWithRegionevel();
-                                                        setIsProfileDropdownOpen(false);
-                                                    }}
-                                                    disabled={isRecordingLoading}
-                                                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-                                                >
-                                                    {isRecordingLoading ? (
-                                                        <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                                    ) : (
-                                                        <span className="material-symbols-outlined text-[16px] text-primary">sync</span>
-                                                    )}
-                                                    {language === 'ko' ? "Regionevel에서 가져오기" : language === 'ja' ? "Regionevelから取得" : "Sync with Regionevel"}
-                                                </button>
-                                                <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
-                                                <button
-                                                    onClick={async () => {
-                                                        const { auth } = await import('../lib/firebase');
-                                                        const { signOut } = await import('firebase/auth');
-                                                        await signOut(auth);
-                                                        setIsProfileDropdownOpen(false);
-                                                    }}
-                                                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex items-center gap-2 cursor-pointer"
-                                                >
-                                                    <span className="material-symbols-outlined text-[16px]">logout</span>
-                                                    Logout
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => setIsAuthModalOpen(true)}
-                                    className="bg-primary hover:bg-primary/90 text-white px-4 md:px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm whitespace-nowrap"
-                                >
-                                    {language === 'ko' ? "로그인" : language === 'ja' ? "ログイン" : "Login"}
-                                </button>
-                            )}
+                                        )}
+                                    </div>
+                                ) : (
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        onClick={() => setIsAuthModalOpen(true)}
+                                        className="whitespace-nowrap shadow-sm"
+                                    >
+                                        {language === 'ko' ? "로그인" : language === 'ja' ? "ログイン" : "Login"}
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </header>
+                    }
+                    style={{ zIndex: Z.header }}
+                />
                 )}
 
                 <main id="main-content" className="flex-1 relative overflow-hidden focus:outline-none" tabIndex={-1}>
