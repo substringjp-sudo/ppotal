@@ -3,6 +3,7 @@ import { RailData, Section } from '../types/railData';
 import { MapTheme } from '../lib/mapThemes';
 import { MapShapeMode, shapeGeometry } from './lineShapes';
 import { ShareBlockId, ShareScope, ShareStats } from './shareCard';
+import { getLineColor } from './lineColors';
 
 export type CardAspectRatio = '1:1' | '16:9' | '9:16';
 
@@ -127,6 +128,204 @@ function blockHeight(id: Exclude<ShareBlockId, 'map'>, stats: ShareStats): numbe
     }
 }
 
+// Bounds for Mainland Japan (Honshu, Hokkaido, Kyushu, Shikoku) excluding outlying islands
+const MAINLAND_BOUNDS = { minLon: 129.2, maxLon: 145.8, minLat: 31.0, maxLat: 45.6 };
+// Bounds for Okinawa Main Island & Monorail
+const OKINAWA_BOUNDS = { minLon: 127.60, maxLon: 128.05, minLat: 26.10, maxLat: 26.75 };
+
+/** Draws Okinawa Inset Sub-Window at bottom-right corner */
+function drawOkinawaInset(
+    context: CanvasRenderingContext2D,
+    mainRect: { x: number; y: number; w: number; h: number },
+    input: ShareCardInput
+): void {
+    const { theme, shapeMode, railData, sections, riddenSectionIds, prefectures, isoToPrefecture, style, mapWeights, selectedLineIds, scope } = input;
+    
+    // Inset dimension & position (bottom-right of mainRect)
+    const insetW = Math.min(230, Math.round(mainRect.w * 0.28));
+    const insetH = Math.min(210, Math.round(mainRect.h * 0.26));
+    const insetX = mainRect.x + mainRect.w - insetW - 14;
+    const insetY = mainRect.y + mainRect.h - insetH - 14;
+    const insetRect = { x: insetX, y: insetY, w: insetW, h: insetH };
+
+    const riddenScale = style.followMap ? Math.max(0.4, mapWeights.visited / 3.5) : style.riddenWeight;
+    const contextScale = style.followMap ? Math.max(0.4, mapWeights.unvisited) : style.contextWeight;
+
+    const projectInset = fitProjector(OKINAWA_BOUNDS, insetRect, 10);
+
+    context.save();
+    roundRect(context, insetX, insetY, insetW, insetH, 18);
+    context.clip();
+
+    // Background (Sea)
+    context.fillStyle = theme.sea;
+    context.fillRect(insetX, insetY, insetW, insetH);
+
+    // 1. Draw Okinawa Land polygons
+    if (prefectures) {
+        for (const feature of prefectures.features as Feature[]) {
+            const geometry = feature.geometry as Polygon | MultiPolygon | undefined;
+            if (!geometry) continue;
+            const iso = String((feature.properties as { shapeISO?: string } | null)?.shapeISO || '');
+            const internalId = isoToPrefecture.get(iso);
+            // Only draw prefecture 47 (Okinawa)
+            const isOkinawa = internalId === 'p47' || iso.includes('47');
+            if (!isOkinawa) continue;
+
+            const isSelectedPrefecture = scope.kind === 'prefecture' && (
+                internalId === scope.id ||
+                (scope.id && String(scope.id).replace(/^p/, '') === String(internalId).replace(/^p/, ''))
+            );
+
+            const polygons = geometry.type === 'Polygon'
+                ? [geometry.coordinates as number[][][]]
+                : geometry.type === 'MultiPolygon' ? (geometry.coordinates as number[][][][]) : [];
+
+            for (const rings of polygons) {
+                context.beginPath();
+                for (const ring of rings) {
+                    for (let i = 0; i < ring.length; i++) {
+                        const p = projectInset(ring[i][0], ring[i][1]);
+                        if (i === 0) context.moveTo(p.x, p.y); else context.lineTo(p.x, p.y);
+                    }
+                    context.closePath();
+                }
+
+                if (isSelectedPrefecture) {
+                    context.fillStyle = theme.dark ? 'rgba(59, 130, 246, 0.14)' : 'rgba(59, 130, 246, 0.08)';
+                    context.fill('evenodd');
+                    context.strokeStyle = theme.dark ? '#60a5fa' : '#2563eb';
+                    context.lineWidth = 2.5;
+                    context.stroke();
+                } else {
+                    context.fillStyle = theme.land;
+                    context.fill('evenodd');
+                    if (style.showBorders) {
+                        context.strokeStyle = theme.landEdge;
+                        context.lineWidth = 1;
+                        context.stroke();
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Draw Okinawa rail sections (Yui Rail etc)
+    const okinawaSections = sections.filter(s => {
+        if (!s.geometry || s.geometry.length === 0) return false;
+        const [lon, lat] = s.geometry[0];
+        return lat >= OKINAWA_BOUNDS.minLat - 0.2 && lat <= OKINAWA_BOUNDS.maxLat + 0.2
+            && lon >= OKINAWA_BOUNDS.minLon - 0.2 && lon <= OKINAWA_BOUNDS.maxLon + 0.2;
+    });
+
+    const strokeInsetSection = (section: Section, width: number, colour: string, alpha: number) => {
+        const geometry = shapeGeometry(section.geometry, shapeMode);
+        if (!geometry || geometry.length < 2) return;
+        context.globalAlpha = alpha;
+        context.strokeStyle = colour;
+        context.lineWidth = width;
+        context.beginPath();
+        for (let i = 0; i < geometry.length; i++) {
+            const p = projectInset(geometry[i][0], geometry[i][1]);
+            if (i === 0) context.moveTo(p.x, p.y); else context.lineTo(p.x, p.y);
+        }
+        context.stroke();
+    };
+
+    const colourOf = (section: Section) => {
+        const key = `${section.company_id}::${section.line_id}`;
+        const color = getLineColor(key, railData);
+        if (color) return color.startsWith('#') ? color : `#${color}`;
+
+        const lineColours = railData.lines as Record<string, { color?: string }>;
+        const raw = lineColours[String(section.line_id)]?.color;
+        if (raw) return String(raw).startsWith('#') ? String(raw) : `#${raw}`;
+
+        const companies = railData.companies as Record<string, { color?: string }>;
+        const compRaw = companies[String(section.company_id)]?.color;
+        if (compRaw) return String(compRaw).startsWith('#') ? String(compRaw) : `#${compRaw}`;
+
+        return '#2563eb';
+    };
+
+    const filterActive = selectedLineIds.size > 0;
+    const isSelected = (section: Section) =>
+        !filterActive || selectedLineIds.has(`${section.company_id}::${section.line_id}`);
+
+    if (style.showUnselected && filterActive) {
+        const unselectedScale = style.followMap ? Math.max(0.4, mapWeights.unselected) : style.contextWeight * 0.7;
+        const unselectedAlpha = style.followMap ? mapWeights.unselectedOpacity : 0.3;
+        for (const section of okinawaSections) {
+            if (riddenSectionIds.has(section.id) || isSelected(section)) continue;
+            strokeInsetSection(section, 2.0 * unselectedScale, theme.dark ? '#2b3852' : '#dde3ea', unselectedAlpha);
+        }
+    }
+
+    if (style.showContext) {
+        for (const section of okinawaSections) {
+            if (riddenSectionIds.has(section.id) || !isSelected(section)) continue;
+            strokeInsetSection(section, 2.2 * contextScale, theme.dark ? '#475569' : '#cbd5e1', 0.85);
+        }
+    }
+
+    // Ridden lines in Okinawa
+    const okinawaRidden = okinawaSections.filter(s => riddenSectionIds.has(s.id));
+    if (okinawaRidden.length > 0) {
+        const core = 2.2 * riddenScale;
+        for (const section of okinawaRidden) {
+            strokeInsetSection(section, core + 2.0 * riddenScale, theme.land, 1);
+        }
+        for (const section of okinawaRidden) {
+            strokeInsetSection(section, core, colourOf(section), 1);
+        }
+
+        // Stations
+        const stationsById = railData.stations as Record<string, { lat: number; lon: number }>;
+        const placed: { x: number; y: number }[] = [];
+        for (const section of okinawaRidden) {
+            for (const id of [section.start, section.end]) {
+                const station = stationsById[id];
+                if (!station) continue;
+                const p = projectInset(station.lon, station.lat);
+                if (placed.some(q => Math.hypot(q.x - p.x, q.y - p.y) < 8)) continue;
+                placed.push(p);
+                context.beginPath();
+                context.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                context.fillStyle = theme.land;
+                context.fill();
+                context.lineWidth = 1.5;
+                context.strokeStyle = colourOf(section);
+                context.stroke();
+            }
+        }
+    }
+
+    context.restore();
+
+    // 3. Inset Frame Border & Label Badge
+    context.save();
+    context.strokeStyle = theme.dark ? 'rgba(255,255,255,0.22)' : 'rgba(15,23,42,0.22)';
+    context.lineWidth = 1.5;
+    roundRect(context, insetX + 0.5, insetY + 0.5, insetW - 1, insetH - 1, 18);
+    context.stroke();
+
+    // Label Badge
+    context.fillStyle = theme.dark ? 'rgba(15,23,42,0.88)' : 'rgba(255,255,255,0.92)';
+    roundRect(context, insetX + 10, insetY + 10, 72, 22, 7);
+    context.fill();
+    context.strokeStyle = theme.dark ? 'rgba(255,255,255,0.15)' : 'rgba(15,23,42,0.12)';
+    context.lineWidth = 1;
+    roundRect(context, insetX + 10, insetY + 10, 72, 22, 7);
+    context.stroke();
+
+    context.fillStyle = theme.dark ? '#94a3b8' : '#334155';
+    context.font = font(900, 11);
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('OKINAWA', insetX + 10 + 36, insetY + 10 + 11);
+    context.restore();
+}
+
 /** Draws the map box onto canvas inside rect */
 function drawMapRect(
     context: CanvasRenderingContext2D,
@@ -139,10 +338,16 @@ function drawMapRect(
     const contextScale = style.followMap ? Math.max(0.4, mapWeights.unvisited) : style.contextWeight;
     const hairline = 'rgba(15,23,42,0.12)';
 
-    const bounds = stats.bounds || { minLon: 128.5, maxLon: 146.2, minLat: 30.5, maxLat: 45.6 };
+    // Check if we are viewing nationwide map or a specific small scope
+    const isNationwide = scope.kind === 'all' || !stats.bounds || (stats.bounds.maxLat - stats.bounds.minLat > 6.0);
 
-    const padLon = Math.max(0.02, (bounds.maxLon - bounds.minLon) * 0.12);
-    const padLat = Math.max(0.02, (bounds.maxLat - bounds.minLat) * 0.12);
+    // Frame the mainland specifically when nationwide to maximize resolution and readability
+    const bounds = isNationwide
+        ? MAINLAND_BOUNDS
+        : (stats.bounds || MAINLAND_BOUNDS);
+
+    const padLon = Math.max(0.02, (bounds.maxLon - bounds.minLon) * 0.08);
+    const padLat = Math.max(0.02, (bounds.maxLat - bounds.minLat) * 0.08);
     const project = fitProjector({
         minLon: bounds.minLon - padLon,
         maxLon: bounds.maxLon + padLon,
@@ -164,7 +369,15 @@ function drawMapRect(
             const iso = String((feature.properties as { shapeISO?: string } | null)?.shapeISO || '');
             const internalId = isoToPrefecture.get(iso);
 
-            const isSelectedPrefecture = scope.kind === 'prefecture' && internalId === scope.id;
+            // In nationwide mode, filter out Okinawa and distant islands from mainland projection
+            if (isNationwide && (internalId === 'p47' || iso.includes('47'))) {
+                continue;
+            }
+
+            const isSelectedPrefecture = scope.kind === 'prefecture' && (
+                internalId === scope.id ||
+                (scope.id && String(scope.id).replace(/^p/, '') === String(internalId).replace(/^p/, ''))
+            );
 
             const polygons = geometry.type === 'Polygon'
                 ? [geometry.coordinates as number[][][]]
@@ -181,11 +394,11 @@ function drawMapRect(
                 }
 
                 if (isSelectedPrefecture) {
-                    context.fillStyle = theme.dark ? 'rgba(37, 99, 235, 0.45)' : 'rgba(96, 165, 250, 0.45)';
+                    context.fillStyle = theme.dark ? 'rgba(59, 130, 246, 0.14)' : 'rgba(59, 130, 246, 0.08)';
                     context.fill('evenodd');
 
-                    context.strokeStyle = theme.dark ? '#60a5fa' : '#1d4ed8';
-                    context.lineWidth = 3.5;
+                    context.strokeStyle = theme.dark ? '#60a5fa' : '#2563eb';
+                    context.lineWidth = 2.5;
                     context.stroke();
                 } else {
                     context.fillStyle = theme.land;
@@ -205,6 +418,7 @@ function drawMapRect(
         const g = section.geometry;
         if (!g || g.length === 0) return false;
         for (const [lon, lat] of g) {
+            if (isNationwide && lat < 30.5) return false; // Skip Okinawa sections in mainland frame
             if (lon >= bounds.minLon - padLon * 3 && lon <= bounds.maxLon + padLon * 3
                 && lat >= bounds.minLat - padLat * 3 && lat <= bounds.maxLat + padLat * 3) return true;
         }
@@ -229,10 +443,20 @@ function drawMapRect(
     context.lineJoin = 'round';
 
     const visible = sections.filter(inFrame);
-    const lineColours = railData.lines as Record<string, { color?: string }>;
     const colourOf = (section: Section) => {
+        const key = `${section.company_id}::${section.line_id}`;
+        const color = getLineColor(key, railData);
+        if (color) return color.startsWith('#') ? color : `#${color}`;
+
+        const lineColours = railData.lines as Record<string, { color?: string }>;
         const raw = lineColours[String(section.line_id)]?.color;
-        return raw ? (String(raw).startsWith('#') ? String(raw) : `#${raw}`) : '#94a3b8';
+        if (raw) return String(raw).startsWith('#') ? String(raw) : `#${raw}`;
+
+        const companies = railData.companies as Record<string, { color?: string }>;
+        const compRaw = companies[String(section.company_id)]?.color;
+        if (compRaw) return String(compRaw).startsWith('#') ? String(compRaw) : `#${compRaw}`;
+
+        return '#2563eb';
     };
 
     const filterActive = selectedLineIds.size > 0;
@@ -251,7 +475,7 @@ function drawMapRect(
     if (style.showContext) {
         for (const section of visible) {
             if (riddenSectionIds.has(section.id) || !isSelected(section)) continue;
-            strokeSection(section, 1.6 * contextScale, theme.dark ? '#3b4a6b' : '#c9d3e0', 0.75);
+            strokeSection(section, 1.6 * contextScale, theme.dark ? '#475569' : '#cbd5e1', 0.85);
         }
     }
     context.globalAlpha = 1;
@@ -282,10 +506,10 @@ function drawMapRect(
                 target.stroke();
             };
 
-            const core = 1.2 * riddenScale;
+            const core = 1.6 * riddenScale;
 
             for (const section of ridden) {
-                traceOn(layerContext, section, core + 1.1 * riddenScale, theme.land);
+                traceOn(layerContext, section, core + 1.4 * riddenScale, theme.dark ? '#0f172a' : '#ffffff');
             }
             for (const section of ridden) {
                 traceOn(layerContext, section, core, colourOf(section));
@@ -325,6 +549,11 @@ function drawMapRect(
             context.drawImage(layer, rect.x, rect.y);
             context.restore();
         }
+    }
+
+    // 4. Draw Okinawa Inset Sub-window if in nationwide mode
+    if (isNationwide) {
+        drawOkinawaInset(context, rect, input);
     }
 
     context.globalAlpha = 1;

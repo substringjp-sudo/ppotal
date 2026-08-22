@@ -283,10 +283,10 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                 {trips.length === 0 ? (
                     <div className="p-12 text-center text-sm font-bold text-slate-400">{t.nothing}</div>
                 ) : (
-                    <div className="flex-1 overflow-y-auto grid md:grid-cols-[1fr_340px] gap-6 p-6">
-                        {/* Preview */}
-                        <div className="min-w-0 flex items-center justify-center p-2">
-                            <div className={`rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 dark:ring-white/10 w-full max-h-[78vh] flex items-center justify-center bg-slate-950/5 dark:bg-slate-900/50 transition-all duration-300 ${
+                    <div className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden grid md:grid-cols-[1fr_360px] gap-6 p-6">
+                        {/* Preview (Fixed / Pinned) */}
+                        <div className="min-w-0 flex items-center justify-center p-2 h-full overflow-hidden">
+                            <div className={`rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 dark:ring-white/10 w-full max-h-[76vh] flex items-center justify-center bg-slate-950/5 dark:bg-slate-900/50 transition-all duration-300 ${
                                 aspectRatio === '1:1' ? 'aspect-square max-w-[640px]' : aspectRatio === '16:9' ? 'aspect-[16/9] max-w-[860px]' : 'aspect-[9/16] max-w-[400px]'
                             }`}>
                                 <canvas
@@ -298,159 +298,166 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                             </div>
                         </div>
 
-                        {/* Controls */}
-                        <div className="flex flex-col gap-5">
-                            {/* Aspect Ratio Selector */}
-                            <div className="flex flex-col gap-2">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.aspectRatio}</h3>
-                                <div className="grid grid-cols-3 gap-1.5">
-                                    {(['1:1', '16:9', '9:16'] as CardAspectRatio[]).map(ratio => (
-                                        <button
-                                            key={ratio}
-                                            onClick={() => setAspectRatio(ratio)}
-                                            className={`py-2 px-1 rounded-xl text-[11px] font-black transition-all ${aspectRatio === ratio
-                                                ? 'bg-primary text-white shadow-md'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
-                                        >
-                                            {ratio === '1:1' ? t.ratio11 : ratio === '16:9' ? t.ratio169 : t.ratio916}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Scope Selector */}
-                            <div className="flex flex-col gap-2">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.scope}</h3>
-                                <div className="grid grid-cols-2 gap-1.5">
-                                    {(['all', 'prefecture', 'company', 'line'] as ShareScopeKind[]).map(kind => {
-                                        const list = kind === 'prefecture' ? choices.prefectures
-                                            : kind === 'company' ? choices.companies
-                                                : kind === 'line' ? choices.lines : [{}];
-                                        const disabled = list.length === 0;
-                                        return (
+                        {/* Controls Column (Settings Scrollable + Action Buttons Pinned) */}
+                        <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                            {/* Scrollable Settings Area */}
+                            <div className="flex-1 overflow-y-auto pr-1.5 flex flex-col gap-5">
+                                {/* Aspect Ratio Selector */}
+                                <div className="flex flex-col gap-2">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.aspectRatio}</h3>
+                                    <div className="grid grid-cols-3 gap-1.5">
+                                        {(['1:1', '16:9', '9:16'] as CardAspectRatio[]).map(ratio => (
                                             <button
-                                                key={kind}
-                                                disabled={disabled}
-                                                onClick={() => { setScopeKind(kind); setScopeId(''); }}
-                                                className={`py-2 rounded-xl text-xs font-black transition-all ${scopeKind === kind
+                                                key={ratio}
+                                                onClick={() => setAspectRatio(ratio)}
+                                                className={`py-2 px-1 rounded-xl text-[11px] font-black transition-all ${aspectRatio === ratio
                                                     ? 'bg-primary text-white shadow-md'
-                                                    : disabled
-                                                        ? 'bg-slate-50 dark:bg-slate-800/40 text-slate-300 dark:text-slate-600 cursor-not-allowed'
-                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                             >
-                                                {t[kind]}
+                                                {ratio === '1:1' ? t.ratio11 : ratio === '16:9' ? t.ratio169 : t.ratio916}
                                             </button>
-                                        );
-                                    })}
-                                </div>
-                                {scopeKind !== 'all' && scopeList.length > 0 && (
-                                    <select
-                                        value={scopeId || scopeList[0].id}
-                                        onChange={(e) => setScopeId(e.target.value)}
-                                        className="mt-1 w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-bold text-slate-700 dark:text-slate-200 border-none outline-none focus:ring-2 focus:ring-primary"
-                                    >
-                                        {scopeList.map(option => (
-                                            <option key={option.id} value={option.id}>{option.label}</option>
                                         ))}
-                                    </select>
-                                )}
-                            </div>
+                                    </div>
+                                </div>
 
-                            {/* Block Toggle Options */}
-                            <div className="flex flex-col gap-2">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.include}</h3>
-                                {aspectRatio === '1:1' ? (
-                                    <p className="text-[11px] font-bold text-primary/90 bg-primary/10 p-2.5 rounded-xl leading-snug">
-                                        {t.mapOnlyNote}
-                                    </p>
-                                ) : (
-                                    <div className="flex flex-col gap-1">
-                                        {SHARE_BLOCKS.map(id => {
-                                            const on = blocks.has(id);
+                                {/* Scope Selector */}
+                                <div className="flex flex-col gap-2">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.scope}</h3>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                        {(['all', 'prefecture', 'company', 'line'] as ShareScopeKind[]).map(kind => {
+                                            const list = kind === 'prefecture' ? choices.prefectures
+                                                : kind === 'company' ? choices.companies
+                                                    : kind === 'line' ? choices.lines : [{}];
+                                            const disabled = list.length === 0;
                                             return (
                                                 <button
-                                                    key={id}
-                                                    onClick={() => setBlocks(prev => {
-                                                        const next = new Set(prev);
-                                                        if (next.has(id)) next.delete(id); else next.add(id);
-                                                        return next;
-                                                    })}
-                                                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${on
-                                                        ? 'bg-primary/10 text-primary'
-                                                        : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                                    key={kind}
+                                                    disabled={disabled}
+                                                    onClick={() => { setScopeKind(kind); setScopeId(''); }}
+                                                    className={`py-2 rounded-xl text-xs font-black transition-all ${scopeKind === kind
+                                                        ? 'bg-primary text-white shadow-md'
+                                                        : disabled
+                                                            ? 'bg-slate-50 dark:bg-slate-800/40 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                                                 >
-                                                    {blockLabel[id]}
-                                                    <span className={`material-symbols-outlined !text-[18px] transition-transform ${on ? 'scale-100' : 'scale-0'}`}>
-                                                        check_circle
-                                                    </span>
+                                                    {t[kind]}
                                                 </button>
                                             );
                                         })}
                                     </div>
-                                )}
-                            </div>
+                                    {scopeKind !== 'all' && scopeList.length > 0 && (
+                                        <select
+                                            value={scopeId || scopeList[0].id}
+                                            onChange={(e) => setScopeId(e.target.value)}
+                                            className="mt-1 w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-bold text-slate-700 dark:text-slate-200 border-none outline-none focus:ring-2 focus:ring-primary"
+                                        >
+                                            {scopeList.map(opt => (
+                                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
 
-                            {/* Advanced Settings */}
-                            <div className="flex flex-col gap-2">
-                                <button
-                                    onClick={() => setShowAdvanced(v => !v)}
-                                    className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                                >
-                                    {t.advanced}
-                                    <span className={`material-symbols-outlined !text-[16px] transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
-                                        expand_more
-                                    </span>
-                                </button>
-
-                                {showAdvanced && (
-                                    <div className="flex flex-col gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        {([
-                                            ['followMap', t.followMap],
-                                            ['showContext', t.showContext],
-                                            ['showUnselected', t.showUnselected],
-                                            ['showBorders', t.showBorders]
-                                        ] as const).map(([key, label]) => (
-                                            <label key={key} className="flex items-center justify-between cursor-pointer group">
-                                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{label}</span>
-                                                <span className={`relative w-8 h-4.5 rounded-full transition-colors duration-300 ${style[key] ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`} style={{ height: '18px', width: '32px' }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only"
-                                                        checked={style[key]}
-                                                        onChange={(e) => setStyle(prev => ({ ...prev, [key]: e.target.checked }))}
-                                                    />
-                                                    <span className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform duration-300 ${style[key] ? 'translate-x-3.5' : ''}`} />
-                                                </span>
-                                            </label>
-                                        ))}
-
-                                        {!style.followMap && ([
-                                            ['riddenWeight', t.riddenWeight],
-                                            ['contextWeight', t.contextWeight]
-                                        ] as const).map(([key, label]) => (
-                                            <div key={key} className="flex flex-col gap-1">
-                                                <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                                    <span>{label}</span>
-                                                    <span className="bg-white dark:bg-slate-700 px-1.5 rounded">{style[key].toFixed(1)}x</span>
-                                                </div>
-                                                <input
-                                                    type="range" min="0.4" max="3" step="0.1"
-                                                    value={style[key]}
-                                                    onChange={(e) => setStyle(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
-                                                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
-                                                />
-                                            </div>
-                                        ))}
+                                {/* Blocks Included (Hidden on 1:1 Map-Only Mode) */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.include}</h3>
+                                        {aspectRatio === '1:1' && (
+                                            <span className="text-[10px] font-bold text-primary">{t.mapOnlyNote}</span>
+                                        )}
                                     </div>
-                                )}
+
+                                    {aspectRatio !== '1:1' && (
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {(['totals', 'lines', 'prefectures', 'badges'] as Exclude<ShareBlockId, 'map'>[]).map(id => {
+                                                const on = blocks.has(id);
+                                                return (
+                                                    <button
+                                                        key={id}
+                                                        onClick={() => {
+                                                            setBlocks(prev => {
+                                                                const next = new Set(prev);
+                                                                if (next.has(id)) next.delete(id); else next.add(id);
+                                                                return next;
+                                                            });
+                                                        }}
+                                                        className={`flex items-center justify-between p-2.5 rounded-xl text-xs font-bold border transition-all ${on
+                                                            ? 'border-primary bg-primary/5 text-primary'
+                                                            : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                                    >
+                                                        {blockLabel[id]}
+                                                        <span className={`material-symbols-outlined !text-[18px] transition-transform ${on ? 'scale-100' : 'scale-0'}`}>
+                                                            check_circle
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Advanced Settings */}
+                                <div className="flex flex-col gap-2">
+                                    <button
+                                        onClick={() => setShowAdvanced(v => !v)}
+                                        className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
+                                    >
+                                        {t.advanced}
+                                        <span className={`material-symbols-outlined !text-[16px] transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`}>
+                                            expand_more
+                                        </span>
+                                    </button>
+
+                                    {showAdvanced && (
+                                        <div className="flex flex-col gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            {([
+                                                ['followMap', t.followMap],
+                                                ['showContext', t.showContext],
+                                                ['showUnselected', t.showUnselected],
+                                                ['showBorders', t.showBorders]
+                                            ] as const).map(([key, label]) => (
+                                                <label key={key} className="flex items-center justify-between cursor-pointer group">
+                                                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{label}</span>
+                                                    <span className={`relative w-8 h-4.5 rounded-full transition-colors duration-300 ${style[key] ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`} style={{ height: '18px', width: '32px' }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            className="sr-only"
+                                                            checked={style[key]}
+                                                            onChange={(e) => setStyle(prev => ({ ...prev, [key]: e.target.checked }))}
+                                                        />
+                                                        <span className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform duration-300 ${style[key] ? 'translate-x-3.5' : ''}`} />
+                                                    </span>
+                                                </label>
+                                            ))}
+
+                                            {!style.followMap && ([
+                                                ['riddenWeight', t.riddenWeight],
+                                                ['contextWeight', t.contextWeight]
+                                            ] as const).map(([key, label]) => (
+                                                <div key={key} className="flex flex-col gap-1">
+                                                    <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                                        <span>{label}</span>
+                                                        <span className="bg-white dark:bg-slate-700 px-1.5 rounded">{style[key].toFixed(1)}x</span>
+                                                    </div>
+                                                    <input
+                                                        type="range" min="0.4" max="3" step="0.1"
+                                                        value={style[key]}
+                                                        onChange={(e) => setStyle(prev => ({ ...prev, [key]: parseFloat(e.target.value) }))}
+                                                        className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="mt-auto flex flex-col gap-2">
+                            {/* Pinned Action Buttons at Bottom */}
+                            <div className="pt-3.5 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2 shrink-0 bg-white dark:bg-slate-900 mt-2">
                                 <button
                                     onClick={() => deliver('share')}
                                     disabled={busy}
-                                    className="flex items-center justify-center gap-2 py-3.5 px-5 bg-primary hover:brightness-110 text-white font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-60"
+                                    className="flex items-center justify-center gap-2 py-3.5 px-5 bg-primary hover:brightness-110 text-white font-black rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-60 cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined !text-[20px]">ios_share</span>
                                     {busy ? t.preparing : t.share}
@@ -459,7 +466,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                     <button
                                         onClick={() => deliver('copy')}
                                         disabled={busy}
-                                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all disabled:opacity-60"
+                                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer"
                                     >
                                         <span className="material-symbols-outlined !text-[17px]">content_copy</span>
                                         {t.copy}
@@ -467,7 +474,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                                     <button
                                         onClick={() => deliver('download')}
                                         disabled={busy}
-                                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all disabled:opacity-60"
+                                        className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all disabled:opacity-60 cursor-pointer"
                                     >
                                         <span className="material-symbols-outlined !text-[17px]">download</span>
                                         {t.download}
