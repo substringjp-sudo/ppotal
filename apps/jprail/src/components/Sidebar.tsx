@@ -1,16 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
-import { BranchIcon, ChevronDownIcon, ChevronUpIcon } from '@ppotal/ui';
+import { BranchIcon, ChevronDownIcon, ChevronUpIcon, SidebarFrame, SidebarSegmentTabs } from '@ppotal/ui';
 import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
 import SidebarGroup from './SidebarGroup';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
-
 import { SIDEBAR_TRANSLATIONS, getTranslations } from '../lib/translations';
-
 
 export interface SidebarProps {
     selectedLines: string[];
@@ -21,15 +19,22 @@ export interface SidebarProps {
     activeLine?: string | null;
     onLineClick?: (line: string) => void;
     className?: string;
-    /**
-     * Phone density. The same list renders in the desktop rail and in the
-     * bottom sheet, so this is a prop rather than a media query — the component
-     * cannot tell from its own width which one it is in.
-     */
     isMobile?: boolean;
+    onClose?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSelectedLines, lineLengths: propLineLengths, visitedLineLengths = {}, activeLine, onLineClick, className, isMobile = false }) => {
+const Sidebar: React.FC<SidebarProps> = ({ 
+    selectedLines, 
+    onToggleLine, 
+    onSetSelectedLines, 
+    lineLengths: propLineLengths, 
+    visitedLineLengths = {}, 
+    activeLine, 
+    onLineClick, 
+    className, 
+    isMobile = false,
+    onClose,
+}) => {
     const { railData } = useRailData();
     const { groupedHierarchy, companyNames, lineNames, lineLengths: hookLineLengths, CATEGORY_MAP } = useStationHierarchy(railData);
     const { language } = useI18n();
@@ -59,44 +64,32 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
             if (foundGroup && foundCompany) {
                 const g = foundGroup;
                 const c = foundCompany;
-                Promise.resolve().then(() => {
-                    setExpandedGroups(prev => ({ ...prev, [g]: true }));
-                    setExpandedCompanies(prev => ({ ...prev, [c]: true }));
-                });
+                setExpandedGroups(prev => ({ ...prev, [g]: true }));
+                setExpandedCompanies(prev => ({ ...prev, [c]: true }));
+
                 setTimeout(() => {
                     const el = lineRefs.current[activeLine];
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }, 100);
             }
         }
     }, [activeLine, groupedHierarchy]);
 
-    const toggleCompany = useCallback((company: string) => {
-        setExpandedCompanies(prev => {
-            const newState = !prev[company];
-            trackEvent('company_toggle', 'ui_interaction', company, newState ? 1 : 0);
-            return { ...prev, [company]: newState };
-        });
+    const toggleGroup = useCallback((group: string) => {
+        setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
+        trackEvent('toggle_group', 'filter', group);
     }, []);
 
-    const toggleGroup = useCallback((group: string) => {
-        setExpandedGroups(prev => {
-            let currentState = prev[group];
-            if (currentState === undefined && groupedHierarchy) {
-                const sortedIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
-                currentState = sortedIds.indexOf(group) < 4;
-            }
-            const newState = !currentState;
-            trackEvent('group_toggle', 'ui_interaction', group, newState ? 1 : 0);
-            return { ...prev, [group]: newState };
-        });
-    }, [groupedHierarchy]);
+    const toggleCompany = useCallback((company: string) => {
+        setExpandedCompanies(prev => ({ ...prev, [company]: !prev[company] }));
+        trackEvent('toggle_company', 'filter', company);
+    }, []);
 
-    const handleGroupToggle = useCallback((groupKey: string) => {
-        if (!groupedHierarchy) return;
-        const companies = groupedHierarchy[groupKey];
-        if (!companies) return;
-
+    const handleGroupToggle = useCallback((group: string) => {
+        if (!groupedHierarchy || !groupedHierarchy[group]) return;
+        const companies = groupedHierarchy[group];
         const allKeys: string[] = [];
         Object.entries(companies).forEach(([compId, lines]) => {
             Object.keys(lines).forEach(lineId => {
@@ -167,187 +160,105 @@ const Sidebar: React.FC<SidebarProps> = ({ selectedLines, onToggleLine, onSetSel
 
     const t = getTranslations(SIDEBAR_TRANSLATIONS, language);
 
-    if (!groupedHierarchy || !CATEGORY_MAP || !companyNames || !lineNames) return <div className="p-10 text-center text-slate-400 font-bold">{t.loading}</div>;
+    if (!groupedHierarchy || !CATEGORY_MAP || !companyNames || !lineNames) {
+        return <div className="p-10 text-center text-slate-400 font-bold">{t.loading}</div>;
+    }
 
     const sortedCategoryIds = Object.keys(groupedHierarchy).sort((a, b) => parseInt(a) - parseInt(b));
 
     return (
-        <div className={`flex flex-col h-full bg-transparent overflow-hidden font-display ${className || ""}`}>
-            {/* Sidebar Header & Progress Card. Hidden on a phone: the sheet's
-                own tab already reads "Rail Networks" directly above this, so
-                repeating it cost ~90px of a 476px sheet to say nothing new. */}
-            {/* Sidebar Header & Progress Card. Hidden on a phone: the sheet's
-                own tab already reads "Rail Networks" directly above this, so
-                repeating it cost ~90px of a 476px sheet to say nothing new. */}
-            {!isMobile && (
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                    <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <BranchIcon className="w-5 h-5 text-primary" />
-                        {t.title}
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
+        <SidebarFrame
+            className={className}
+            icon={<BranchIcon className="w-5 h-5 text-primary" />}
+            title={t.title}
+            subtitle={t.subtitle}
+            onClose={onClose}
+            headerActions={
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleSelectAll}
+                        className="text-xs font-bold text-primary hover:underline cursor-pointer"
+                    >
+                        {t.all}
+                    </button>
+                    <span className="text-slate-300 dark:text-slate-700">|</span>
+                    <button
+                        onClick={handleDeselectAll}
+                        className="text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:underline cursor-pointer"
+                    >
+                        {t.none}
+                    </button>
                 </div>
-            )}
-
-            {/* Sidebar Controls */}
-            {isMobile ? (
-                /* One toolbar instead of three labelled sub-blocks. On a phone
-                   those blocks cost ~260px of a 476px sheet before a single
-                   line of the actual list appeared. The section captions are
-                   dropped rather than shrunk — "Selection" above a button that
-                   already says "All" was never carrying its own height — and
-                   the four actions share one row, which also removes the
-                   landscape special case: four equal buttons fit a 280px side
-                   panel as readily as a 390px phone. */
-                <div className="p-2 border-b border-slate-50 dark:border-slate-800 space-y-1.5 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
-                    <div className="flex p-0.5 gap-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
-                        {[
+            }
+            tabs={
+                <div className="space-y-2">
+                    <SidebarSegmentTabs<'ja' | 'usage'>
+                        options={[
                             { id: 'ja', label: t.alphabetical },
                             { id: 'usage', label: t.byUsage },
-                        ].map(opt => (
-                            <button
-                                key={opt.id}
-                                onClick={() => {
-                                    setSortMode(opt.id as 'ja' | 'usage');
-                                    trackEvent('sort_mode_change', 'filter', opt.id);
-                                }}
-                                className={`flex-1 min-w-0 h-10 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-colors cursor-pointer ${sortMode === opt.id
-                                    ? 'bg-white/70 dark:bg-slate-600/60 text-primary shadow-sm'
-                                    : 'text-slate-500'}`}
-                            >
-                                <span className="truncate">{opt.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                    <div className="grid grid-cols-4 gap-1.5">
-                        {[
-                            { onClick: handleSelectAll, label: t.all, icon: null, danger: false },
-                            { onClick: handleDeselectAll, label: t.none, icon: null, danger: true },
-                            { onClick: () => handleToggleAllGroups(true), label: t.expandAll, icon: <ChevronDownIcon className="w-4 h-4" />, danger: false },
-                            { onClick: () => handleToggleAllGroups(false), label: t.collapseAll, icon: <ChevronUpIcon className="w-4 h-4" />, danger: false },
-                        ].map((action, i) => (
-                            <button
-                                key={i}
-                                onClick={action.onClick}
-                                title={action.label}
-                                aria-label={action.label}
-                                className={`h-10 min-w-0 flex items-center justify-center px-1 text-[10px] font-bold bg-white/60 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors active:scale-95 cursor-pointer ${action.danger
-                                    ? 'text-slate-600 dark:text-slate-400 active:border-red-400 active:text-red-500'
-                                    : 'text-slate-600 dark:text-slate-400 active:border-primary active:text-primary'}`}
-                            >
-                                {action.icon ? action.icon : <span className="truncate">{action.label}</span>}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            ) : (
-                <div className="p-3 border-b border-slate-50 dark:border-slate-800 space-y-3 shrink-0 bg-slate-50/30 dark:bg-slate-800/20">
-                    {/* Sort Mode */}
-                    <div>
-                        <div className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest pl-1">{t.sortTitle}</div>
-                        <div className="flex p-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg">
-                            {[
-                                { id: 'ja', label: t.alphabetical },
-                                { id: 'usage', label: t.byUsage },
-                            ].map(opt => (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => {
-                                        setSortMode(opt.id as 'ja' | 'usage');
-                                        trackEvent('sort_mode_change', 'filter', opt.id);
-                                    }}
-                                    className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 text-[11px] font-bold rounded-md transition-all py-1.5 cursor-pointer ${sortMode === opt.id
-                                        ? 'bg-white/60 dark:bg-slate-600/60 text-primary shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
-                                        }`}
-                                >
-                                    <span className="truncate">{opt.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                        ]}
+                        activeId={sortMode}
+                        onChange={(m) => {
+                            setSortMode(m);
+                            trackEvent('sort_mode_change', 'filter', m);
+                        }}
+                    />
 
-                    {/* Bulk Actions */}
-                    <div className={'grid gap-3 grid-cols-2'}>
-                        <div className="space-y-1">
-                            <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.selection}</div>
-                            <div className="grid grid-cols-2 gap-1">
-                                <button
-                                    onClick={handleSelectAll}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm cursor-pointer`}
-                                    title={t.all}
-                                >
-                                    {t.all}
-                                </button>
-                                <button
-                                    onClick={handleDeselectAll}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-400 hover:text-red-500 transition-all active:scale-95 shadow-sm cursor-pointer`}
-                                    title={t.none}
-                                >
-                                    {t.none}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="space-y-1">
-                            <div className="text-[9px] font-bold text-slate-400/80 uppercase px-1">{t.viewGroups}</div>
-                            <div className="grid grid-cols-2 gap-1">
-                                <button
-                                    onClick={() => handleToggleAllGroups(true)}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group cursor-pointer`}
-                                    title={t.expandAll}
-                                >
-                                    <ChevronDownIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
-                                </button>
-                                <button
-                                    onClick={() => handleToggleAllGroups(false)}
-                                    className={`h-7.5 flex items-center justify-center px-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-primary hover:text-primary transition-all active:scale-95 shadow-sm group cursor-pointer`}
-                                    title={t.collapseAll}
-                                >
-                                    <ChevronUpIcon className="w-4 h-4 transition-transform group-hover:scale-110" />
-                                </button>
-                            </div>
+                    <div className="flex items-center justify-between px-1 text-[10px] font-bold text-slate-400">
+                        <span>{t.viewGroups}</span>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => handleToggleAllGroups(true)}
+                                className="p-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary transition-all cursor-pointer"
+                                title={t.expandAll}
+                            >
+                                <ChevronDownIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                onClick={() => handleToggleAllGroups(false)}
+                                className="p-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary transition-all cursor-pointer"
+                                title={t.collapseAll}
+                            >
+                                <ChevronUpIcon className="w-3.5 h-3.5" />
+                            </button>
                         </div>
                     </div>
                 </div>
-            )}
-
-            {/* Scrollable Groups List */}
-            <div className="flex-1 overflow-y-auto p-2 pb-10 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
-                <div className="space-y-1">
-                    {sortedCategoryIds.map((categoryId, index) => {
-                        const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
-                        if (!categoryInfo) return null;
-                        const title = getLocalizedName(categoryInfo, language);
-                        return (
-                            <SidebarGroup
-                                key={categoryId}
-                                isMobile={isMobile}
-                                title={title}
-                                groupKey={categoryId}
-                                companies={groupedHierarchy[categoryId]}
-                                expanded={expandedGroups[categoryId] !== undefined ? expandedGroups[categoryId] : index < 4}
-                                onToggleExpanded={toggleGroup}
-                                onToggleSelection={handleGroupToggle}
-                                selectedLines={selectedLines}
-                                onToggleLine={onToggleLine}
-                                onToggleCompany={handleCompanyToggle}
-                                expandedCompanies={expandedCompanies}
-                                toggleCompany={toggleCompany}
-                                lineLengths={effectiveLineLengths}
-                                visitedLineLengths={visitedLineLengths}
-                                sortMode={sortMode}
-                                activeLine={activeLine}
-                                onLineClick={onLineClick}
-                                registerLineRef={registerLineRef}
-                                companyNames={companyNames}
-                                lineNames={lineNames}
-                            />
-                        );
-                    })}
-                </div>
+            }
+        >
+            <div className="space-y-1 pb-8">
+                {sortedCategoryIds.map((categoryId, index) => {
+                    const categoryInfo = CATEGORY_MAP[parseInt(categoryId)];
+                    if (!categoryInfo) return null;
+                    const title = getLocalizedName(categoryInfo, language);
+                    return (
+                        <SidebarGroup
+                            key={categoryId}
+                            isMobile={isMobile}
+                            title={title}
+                            groupKey={categoryId}
+                            companies={groupedHierarchy[categoryId]}
+                            expanded={expandedGroups[categoryId] !== undefined ? expandedGroups[categoryId] : index < 4}
+                            onToggleExpanded={toggleGroup}
+                            onToggleSelection={handleGroupToggle}
+                            selectedLines={selectedLines}
+                            onToggleLine={onToggleLine}
+                            onToggleCompany={handleCompanyToggle}
+                            expandedCompanies={expandedCompanies}
+                            toggleCompany={toggleCompany}
+                            lineLengths={effectiveLineLengths}
+                            visitedLineLengths={visitedLineLengths}
+                            sortMode={sortMode}
+                            activeLine={activeLine}
+                            onLineClick={onLineClick}
+                            registerLineRef={registerLineRef}
+                            companyNames={companyNames}
+                            lineNames={lineNames}
+                        />
+                    );
+                })}
             </div>
-
-        </div>
+        </SidebarFrame>
     );
 };
 

@@ -42,6 +42,9 @@ next-env.d.ts
 
 # large files
 *.db
+1a0291b503bff4400d61.json
+*.json.gz
+apps/jprail/scripts/timeline-harness/*.json
 
 # build output
 dist/

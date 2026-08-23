@@ -14,13 +14,14 @@ import { useRailData } from '../hooks/useRailData';
 import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
-import { useAuth, AppHeader, Button } from '@ppotal/ui';
+import { useAuth, AppHeader, Button, MapWorkspaceShell } from '@ppotal/ui';
 import { Train, Map as MapIcon, Share2, HelpCircle, MessageSquare, List, Compass, Download, Search, Menu, LogOut, RefreshCw, Info } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { I18nProvider, useI18n } from '../lib/i18n-context';
 import { collection, query, getDocs, getDoc, setDoc, deleteDoc, doc, writeBatch, onSnapshot } from 'firebase/firestore';
 import { getStationInfoRemote } from '../lib/rail-api';
 import { getRegionevelShapeId, getJprailCityId } from '@ppotal/firebase';
+import { loadLocalTrips, saveLocalTrips } from '../lib/storage/tripStorage';
 
 
 import { Station } from '../types/railData';
@@ -39,6 +40,8 @@ const MapWithNoSSR = dynamic<MapProps>(() => import('./Map'), {
 
 const MapPaneWithNoSSR = dynamic(() => import('./MapPane'), { ssr: false });
 import { SidebarProps } from './Sidebar';
+import { RailMapHeader } from './RailMapHeader';
+import { useStationHierarchy } from '../hooks/useStationHierarchy';
 
 const SidebarWithNoSSR = dynamic<SidebarProps>(() => import('./Sidebar'), { ssr: false });
 import type { MyLinesPaneProps } from './MyLinesPane';
@@ -56,7 +59,7 @@ const LineDetailPaneWithNoSSR = dynamic<LineDetailPaneProps>(() => import('./Lin
 
 const HowToModal = dynamic(() => import('./HowToModal'), { ssr: false });
 const FeedbackModal = dynamic(() => import('./FeedbackModal'), { ssr: false });
-const AuthModal = dynamic(() => import('./auth/AuthModal'), { ssr: false });
+const AuthModal = dynamic(() => import('@ppotal/ui').then(m => m.AuthModal), { ssr: false });
 const ShareCardModal = dynamic<ShareCardModalProps>(() => import('./ShareCardModal'), { ssr: false });
 const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: false });
 const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
@@ -183,6 +186,8 @@ const MainPageClient = () => {
     const [tripStartStation, setTripStartStation] = React.useState<Station | null>(null);
     const isTripInProgress = !!tripStartStation;
     const [isMobile, setIsMobile] = React.useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+    const [isMyLinesOpen, setIsMyLinesOpen] = React.useState(true);
     const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
@@ -223,11 +228,24 @@ const MainPageClient = () => {
             cityIds.push(...Array.from(uniqueCityIds));
         }
 
-        return {
-            ...trip,
-            geometries: JSON.stringify(trip.geometries),
+        const raw = {
+            id: trip.id,
+            name: trip.name || null,
+            createdAt: trip.createdAt || new Date().toISOString(),
+            start: trip.start || '',
+            end: trip.end || '',
+            startId: trip.startId || '',
+            endId: trip.endId || '',
+            distance: trip.distance || 0,
+            path: trip.path || [],
+            waypoints: trip.waypoints || [],
+            geometries: JSON.stringify(trip.geometries || []),
+            sectionIds: trip.sectionIds || [],
             cityIds
         };
+
+        // Filter out any remaining undefined properties so Firestore never throws
+        return Object.fromEntries(Object.entries(raw).filter(([_, v]) => v !== undefined));
     };
 
     const fromFirestoreTrip = (data: Record<string, unknown>): Trip => ({
@@ -269,6 +287,7 @@ const MainPageClient = () => {
     };
 
     const { railData, isLoading: isRailLoading } = useRailData();
+    const { groupedHierarchy, companyNames, lineNames } = useStationHierarchy(railData);
     const { prefectures: mapBoundaries, isLoading: isMapDataLoading } = useMapData();
     // The card draws Japan small, so the coarsest outline is the right one.
     const sharePrefectures = mapBoundaries?.low ?? null;
@@ -293,11 +312,7 @@ const MainPageClient = () => {
         const loadInitialData = async () => {
             if (authLoading) return;
             try {
-                const saved = localStorage.getItem('jprail_trips');
-                let localTrips: Trip[] = [];
-                if (saved) {
-                    localTrips = JSON.parse(saved);
-                }
+                const localTrips = await loadLocalTrips();
 
                 if (user) {
                     const tripsRef = collection(db, `users/${user.uid}/trips`);
@@ -338,11 +353,9 @@ const MainPageClient = () => {
 
     React.useEffect(() => {
         if (isLoaded && typeof window !== 'undefined') {
-            try {
-                localStorage.setItem('jprail_trips', JSON.stringify(recordedTrips));
-            } catch (e) {
-                console.error("Failed to save trips to localStorage", e);
-            }
+            saveLocalTrips(recordedTrips).catch(e => {
+                console.error("Failed to save trips to local storage", e);
+            });
         }
     }, [recordedTrips, isLoaded]);
 
@@ -419,7 +432,6 @@ const MainPageClient = () => {
     const handleEndTrip = React.useCallback(async (endStation: Station) => {
         if (!tripStartStation || !lineDetailData) return;
 
-        setIsRecordingLoading(true);
         try {
             const pathResult = await lineDetailData.getShortestPath(tripStartStation.id, endStation.id, undefined);
 
@@ -439,47 +451,95 @@ const MainPageClient = () => {
                     createdAt: new Date().toISOString()
                 };
 
+                // Immediate UI update
                 setRecordedTrips(prev => [...prev, newTrip]);
-                trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
-
-                // Sync with Firebase if user logged in
-                if (user) {
-                    await setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip));
-                }
-
-                // Reset
                 setTripStartStation(null);
                 setDraftTrip(null);
                 setSelectedStation(null);
+
+                trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
+
+                // Background sync with Firebase if user logged in
+                if (user) {
+                    setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip)).catch(err => {
+                        console.error("Cloud sync failed", err);
+                    });
+                }
             }
         } catch (err) {
-            console.error("End trip remote search failed:", err);
-        } finally {
-            setIsRecordingLoading(false);
+            console.error("End trip search failed:", err);
         }
     }, [tripStartStation, lineDetailData, user]);
 
-    const handleRecordTrip = React.useCallback(async (trip: Trip) => {
-        setIsRecordingLoading(true);
-        try {
-            setRecordedTrips(prev => {
-                if (prev.find(t => t.id === trip.id)) return prev;
-                return [...prev, trip];
+    const handleRecordTrip = React.useCallback((trip: Trip) => {
+        // Immediate optimistic UI update
+        setRecordedTrips(prev => {
+            if (prev.find(t => t.id === trip.id)) return prev;
+            return [...prev, trip];
+        });
+        setDraftTrip(null);
+        setSelectedStation(null);
+
+        trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
+
+        if (user) {
+            // Background sync with Firebase
+            setDoc(doc(db, `users/${user.uid}/trips`, trip.id), toFirestoreTrip(trip)).catch(e => {
+                console.error("Cloud sync failed", e);
             });
-            setDraftTrip(null);
-
-            trackEvent('record_trip', 'engagement', `${trip.start} to ${trip.end}`, Math.round(trip.distance));
-
-            if (user) {
-                // 1. JPRAIL Trip 저장
-                await setDoc(doc(db, `users/${user.uid}/trips`, trip.id), toFirestoreTrip(trip));
-            }
-        } catch (e) {
-            console.error("Cloud sync failed", e);
-        } finally {
-            setIsRecordingLoading(false);
         }
-    }, [user, railData]);
+    }, [user]);
+
+    const handleImportTripsBatch = React.useCallback(async (
+        newTrips: Trip[],
+        onProgress?: (done: number, total: number) => void
+    ) => {
+        if (newTrips.length === 0) return;
+
+        // 1. Filter new unique trips
+        const existingIds = new Set(recordedTrips.map(t => t.id));
+        const uniqueNewTrips = newTrips.filter(t => !existingIds.has(t.id));
+        if (uniqueNewTrips.length === 0) {
+            onProgress?.(newTrips.length, newTrips.length);
+            return;
+        }
+
+        const combined = [...recordedTrips, ...uniqueNewTrips];
+        setRecordedTrips(combined);
+        await saveLocalTrips(combined);
+
+        trackEvent('import_timeline_trips', 'engagement', 'timeline_import', uniqueNewTrips.length);
+
+        // 2. Cloud Firestore batch write if logged in
+        if (user) {
+            try {
+                const BATCH_SIZE = 400;
+                for (let i = 0; i < uniqueNewTrips.length; i += BATCH_SIZE) {
+                    const chunk = uniqueNewTrips.slice(i, i + BATCH_SIZE);
+                    const batch = writeBatch(db);
+                    chunk.forEach(trip => {
+                        const tRef = doc(db, `users/${user.uid}/trips`, trip.id);
+                        batch.set(tRef, toFirestoreTrip(trip));
+                    });
+                    await batch.commit();
+                    const currentDone = Math.min(i + chunk.length, uniqueNewTrips.length);
+                    onProgress?.(currentDone, uniqueNewTrips.length);
+                }
+            } catch (err) {
+                console.error("[handleImportTripsBatch] Firestore batch write failed:", err);
+                throw err;
+            }
+        } else {
+            // Smooth progress feedback for non-logged in users
+            const CHUNK = 50;
+            for (let i = 0; i < uniqueNewTrips.length; i += CHUNK) {
+                const currentDone = Math.min(i + CHUNK, uniqueNewTrips.length);
+                onProgress?.(currentDone, uniqueNewTrips.length);
+                await new Promise(r => setTimeout(r, 16));
+            }
+        }
+        onProgress?.(uniqueNewTrips.length, uniqueNewTrips.length);
+    }, [recordedTrips, user]);
 
     const toggleLine = React.useCallback((line: string) => {
         setSelectedLines(prev =>
@@ -979,7 +1039,7 @@ const MainPageClient = () => {
                                                         className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 cursor-pointer"
                                                     >
                                                         <LogOut className="w-4 h-4 shrink-0" />
-                                                        Logout
+                                                        {language === 'ko' ? "로그아웃" : language === 'ja' ? "ログアウト" : "Logout"}
                                                     </button>
                                                 </div>
                                             </div>
@@ -1033,220 +1093,237 @@ const MainPageClient = () => {
                 />
 
                 <main id="main-content" className="flex-1 relative overflow-hidden focus:outline-none" tabIndex={-1}>
-                    {/* Background Layer: The Map - Now spans full background */}
-                    <div className="absolute inset-0 z-0">
-                        <MapWithNoSSR>
-                            <MapPaneWithNoSSR
-                                selectedLines={selectedLines}
-                                recordedTrips={recordedTrips}
-                                onRecordTrip={handleRecordTrip}
-                                regionevelVisits={regionevelVisits}
-                                onRailroadClick={handleRailroadClick}
-                                onStationClick={handleStationClick}
-                                onSetSelectedLines={setSelectedLinesList}
-                                onSetActiveLine={setActiveLine}
-                                isHoverLoading={isHoverLoading}
-                                isRecordingLoading={isRecordingLoading}
-                                onLengthsCalculated={setLineLengths}
-                                onVisitedLengthsCalculated={setVisitedLineLengths}
-                                onLineMappingCreated={setLineIdMapping}
-                                activeLine={activeLine}
-                                onLineDetailData={setLineDetailData}
-                                zoomTarget={zoomTarget}
-                                onZoomComplete={() => setZoomTarget(null)}
-                                styleSettings={styleSettings}
-                                isMobile={isMobile}
-                                selectedStation={selectedStation?.id}
-                                onMapClick={handleMapClick}
-                                showLabels={styleSettings.showLabels}
-                                onToggleLabels={() => updateStyleSettings({ ...styleSettings, showLabels: !styleSettings.showLabels })}
-                                draftTrip={draftTrip}
-                                onDraftComplete={handleDraftComplete}
-                                onDragUpdate={handleDragUpdate}
-                                onTransitionStateChange={setIsMapTransitioning}
-                                tripStartStationId={tripStartStation?.id || null}
-                                onStationHover={handleStationHover}
-                                onPrefectureClick={handlePrefectureClick}
-                                leftBound={isMobile ? 0 : 350}
-                                rightBound={isMobile ? windowWidth : windowWidth - 320}
-                            />
-                        </MapWithNoSSR>
-                    </div>
-
-                    {/* Foreground Layer: UI & Side Panels */}
-                    <div style={{ zIndex: Z.mapOverlay }} className="absolute inset-0 flex pointer-events-none h-full overflow-hidden">
-                        {!isMobile && (
-                            <aside className="w-[350px] h-full border-r border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] flex flex-col shadow-2xl shadow-slate-200/50 dark:shadow-black/20 pointer-events-auto">
-                                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                    <SidebarWithNoSSR isMobile={false} selectedLines={selectedLines} onToggleLine={toggleLine} onSetSelectedLines={setSelectedLinesList} lineLengths={lineLengths} visitedLineLengths={visitedLineLengths} activeLine={activeLine} onLineClick={handleLineClick} />
-                                </div>
-                            </aside>
-                        )}
-
-                        {/* Center Action Area - Holds details, floating controls, etc. */}
-                        <div className="flex-1 relative flex flex-col min-w-0 pointer-events-none">
-                            <div className="flex-1 overflow-hidden pointer-events-none relative">
-                                <MapStylePanel
-                                    settings={styleSettings}
-                                    onSettingsChange={updateStyleSettings}
-                                    isOpen={isMapStyleOpen}
-                                    onOpenChange={setIsMapStyleOpen}
-                                    isMobile={isMobile}
-                                />
-                                <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
-                            </div>
-
-                            {!isMobile && lineDetailData && activeLine && railData && (
-                                <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
-                                    <LineDetailPaneWithNoSSR
-                                        lineId={activeLine}
-                                        segments={lineDetailData.segments}
-                                        nodes={lineDetailData.nodes}
-                                        visitedEdges={lineDetailData.visitedEdges}
-                                        selectedLines={selectedLines}
-                                        getShortestPath={lineDetailData.getShortestPath}
-                                        onRecordTrip={handleRecordTrip}
-                                        onStationClick={handleStationClick}
-                                        onClose={() => setActiveLine(null)}
-                                        onToggleLine={toggleLine}
-                                        railData={railData}
-                                    />
-                                </div>
-                            )}
-                            {!isMobile && selectedStation && railData && (
-                                <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
-                                    <StationDetailPaneWithNoSSR
-                                        station={selectedStation}
-                                        railData={railData}
-                                        onClose={() => setSelectedStation(null)}
-                                        isTripInProgress={isTripInProgress}
-                                        tripStartStationId={tripStartStation?.id || null}
-                                        onStartTrip={handleStartTrip}
-                                        onEndTrip={handleEndTrip}
-                                        onCancel={() => {
-                                            setTripStartStation(null);
-                                            setDraftTrip(null);
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        {!isMobile && (
-                            <aside className="w-[320px] h-full border-l border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl z-[1000] shadow-2xl shadow-slate-200/50 dark:shadow-black/20 flex flex-col pointer-events-auto">
-                                <MyLinesPane
+                    <MapWorkspaceShell
+                        isMobile={isMobile}
+                        isLeftOpen={isSidebarOpen}
+                        isRightOpen={isMyLinesOpen}
+                        leftWidth={350}
+                        rightWidth={350}
+                        map={
+                            <MapWithNoSSR>
+                                <MapPaneWithNoSSR
+                                    selectedLines={selectedLines}
                                     recordedTrips={recordedTrips}
-                                    onDeleteTrip={handleDeleteTrip}
-                                    onResetTrips={handleResetTrips}
-                                    railData={railData}
+                                    onRecordTrip={handleRecordTrip}
+                                    regionevelVisits={regionevelVisits}
+                                    onRailroadClick={handleRailroadClick}
+                                    onStationClick={handleStationClick}
+                                    onSetSelectedLines={setSelectedLinesList}
+                                    onSetActiveLine={setActiveLine}
+                                    isHoverLoading={isHoverLoading}
+                                    isRecordingLoading={isRecordingLoading}
+                                    onLengthsCalculated={setLineLengths}
+                                    onVisitedLengthsCalculated={setVisitedLineLengths}
+                                    onLineMappingCreated={setLineIdMapping}
+                                    activeLine={activeLine}
+                                    onLineDetailData={setLineDetailData}
+                                    zoomTarget={zoomTarget}
+                                    onZoomComplete={() => setZoomTarget(null)}
+                                    styleSettings={styleSettings}
+                                    isMobile={isMobile}
+                                    selectedStation={selectedStation?.id}
+                                    onMapClick={handleMapClick}
+                                    showLabels={styleSettings.showLabels}
+                                    onToggleLabels={() => updateStyleSettings({ ...styleSettings, showLabels: !styleSettings.showLabels })}
+                                    draftTrip={draftTrip}
+                                    onDraftComplete={handleDraftComplete}
+                                    onDragUpdate={handleDragUpdate}
+                                    onTransitionStateChange={setIsMapTransitioning}
+                                    tripStartStationId={tripStartStation?.id || null}
+                                    onStationHover={handleStationHover}
+                                    onPrefectureClick={handlePrefectureClick}
+                                    leftBound={isMobile ? 0 : 350}
+                                    rightBound={isMobile ? windowWidth : windowWidth - 350}
+                                />
+                            </MapWithNoSSR>
+                        }
+                        subHeader={
+                            <RailMapHeader
+                                isSidebarOpen={isSidebarOpen}
+                                onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+                                isMyLinesOpen={isMyLinesOpen}
+                                onToggleMyLines={() => setIsMyLinesOpen(prev => !prev)}
+                                stats={stats}
+                                selectedLinesCount={selectedLines.filter(l => l !== "__NONE__").length}
+                                activeLineName={activeLine ? ((lineNames as Record<string, any>)?.[activeLine.split('::')[1]]?.name || activeLine.split('::')[1]) : null}
+                                activeCompanyName={activeLine ? ((companyNames as Record<string, any>)?.[activeLine.split('::')[0]]?.name || activeLine.split('::')[0]) : null}
+                                selectedStation={selectedStation}
+                                onResetActive={() => {
+                                    setActiveLine(null);
+                                    setSelectedStation(null);
+                                }}
+                            />
+                        }
+                        leftSidebar={
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                <SidebarWithNoSSR
+                                    isMobile={false}
+                                    selectedLines={selectedLines}
+                                    onToggleLine={toggleLine}
+                                    onSetSelectedLines={setSelectedLinesList}
                                     lineLengths={lineLengths}
                                     visitedLineLengths={visitedLineLengths}
-                                    onSyncWithRegionevel={undefined}
-                                    isSyncLoading={isRecordingLoading}
-                                    onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
-                                    onOpenTimelineImport={() => setIsTimelineImportOpen(true)}
-                                    isReadOnly={styleSettings.landForm !== 'outline'}
+                                    activeLine={activeLine}
+                                    onLineClick={handleLineClick}
                                 />
-                            </aside>
-                        )}
-                    </div>
+                            </div>
+                        }
+                        rightPanel={
+                            <MyLinesPane
+                                recordedTrips={recordedTrips}
+                                onDeleteTrip={handleDeleteTrip}
+                                onResetTrips={handleResetTrips}
+                                railData={railData}
+                                lineLengths={lineLengths}
+                                visitedLineLengths={visitedLineLengths}
+                                onSyncWithRegionevel={undefined}
+                                isSyncLoading={isRecordingLoading}
+                                onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
+                                onOpenTimelineImport={() => setIsTimelineImportOpen(true)}
+                                isReadOnly={styleSettings.landForm !== 'outline'}
+                            />
+                        }
+                        centerOverlays={
+                            <>
+                                <div className="flex-1 overflow-hidden pointer-events-none relative">
+                                    <MapStylePanel
+                                        settings={styleSettings}
+                                        onSettingsChange={updateStyleSettings}
+                                        isOpen={isMapStyleOpen}
+                                        onOpenChange={setIsMapStyleOpen}
+                                        isMobile={isMobile}
+                                    />
+                                    <MapLoadingIndicator isLoading={isTotalLoading} isTransitioning={isMapTransitioning} />
+                                </div>
 
-                    {isMobile && (
-                        <MobileBottomSheet
-                            isOpen={isMobileSheetOpen}
-                            onToggle={setIsMobileSheetOpen}
-                            detail={mobileSheetDetail}
-                            onExpand={() => {
-                                setSelectedStation(null);
-                                setActiveLine(null);
-                            }}
-                            tabs={[
-                                {
-                                    id: 'sidebar',
-                                    label: t.railList,
-                                    summary: (
-                                        <div className="flex items-center gap-2 w-full px-3 h-11 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/40 dark:border-white/5">
-                                            <span className="material-symbols-outlined text-primary text-xl shrink-0">account_tree</span>
-                                            {/* No "Network Selection" label: the tab directly above this
-                                                already says it, and at phone width the two together forced
-                                                the count onto a second line. The count is the part that
-                                                changes, so it is the part that stays. */}
-                                            <span className="whitespace-nowrap text-xs font-black text-primary uppercase tracking-wide">
-                                                {t.linesSelected(selectedLines.filter(l => l !== "__NONE__").length)}
-                                            </span>
-                                        </div>
-                                    ),
-                                    content: (
-                                        <SidebarWithNoSSR
-                                            isMobile
+                                {!isMobile && lineDetailData && activeLine && railData && (
+                                    <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
+                                        <LineDetailPaneWithNoSSR
+                                            lineId={activeLine}
+                                            segments={lineDetailData.segments}
+                                            nodes={lineDetailData.nodes}
+                                            visitedEdges={lineDetailData.visitedEdges}
                                             selectedLines={selectedLines}
+                                            getShortestPath={lineDetailData.getShortestPath}
+                                            onRecordTrip={handleRecordTrip}
+                                            onStationClick={handleStationClick}
+                                            onClose={() => setActiveLine(null)}
                                             onToggleLine={toggleLine}
-                                            onSetSelectedLines={setSelectedLinesList}
-                                            lineLengths={lineLengths}
-                                            visitedLineLengths={visitedLineLengths}
-                                            activeLine={activeLine}
-                                            onLineClick={handleLineClick}
-                                            className="bg-transparent border-none shadow-none"
-                                        />
-                                    )
-                                },
-                                {
-                                    id: 'mylines',
-                                    label: t.myTrip,
-                                    summary: (
-                                        <div className="grid grid-cols-4 gap-1.5 w-full">
-                                            {[
-                                                { label: t.trips, val: recordedTrips.length, icon: 'route' },
-                                                { label: t.lines, val: stats.lines, icon: 'directions_railway' },
-                                                { label: t.km, val: stats.distance, icon: 'straighten', hideLabel: true, unit: 'km' },
-                                                { label: t.stations, val: stats.stations, icon: 'location_on' },
-                                            ].map((s, idx) => {
-                                                const fullValue = `${s.val}${s.unit || ''}`;
-                                                // Dynamic font size based on string length
-                                                const getFontSize = (len: number) => {
-                                                    if (len <= 4) return 'text-xs'; // Default (12px)
-                                                    if (len <= 6) return 'text-[10px]';
-                                                    return 'text-[8.5px]';
-                                                };
-
-                                                return (
-                                                    <div key={idx} className="flex flex-col items-center justify-center py-2 px-1 bg-white/40 dark:bg-black/20 backdrop-blur-md rounded-xl border border-white/40 dark:border-white/5 overflow-hidden">
-                                                        <span className="material-symbols-outlined text-[11px] text-slate-400 dark:text-slate-500 mb-0.5">{s.icon}</span>
-                                                        <div className="flex items-baseline gap-1 min-w-0 w-full justify-center">
-                                                            <span className={`${getFontSize(fullValue.length)} font-black text-slate-900 dark:text-white leading-none whitespace-nowrap`}>
-                                                                {fullValue}
-                                                            </span>
-                                                            {!s.hideLabel && (
-                                                                <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter shrink-0">
-                                                                    {s.label}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    ),
-                                    content: (
-                                        <MyLinesPane
-                                            isMobile
-                                            recordedTrips={recordedTrips}
-                                            onDeleteTrip={handleDeleteTrip}
-                                            onResetTrips={handleResetTrips}
                                             railData={railData}
-                                            lineLengths={lineLengths}
-                                            visitedLineLengths={visitedLineLengths}
-                                            className="bg-transparent border-none shadow-none"
-                                            onSyncWithRegionevel={syncWithRegionevel}
-                                            isSyncLoading={isRecordingLoading}
-                                            onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
-                                            onOpenTimelineImport={() => setIsTimelineImportOpen(true)}
                                         />
-                                    )
-                                }
-                            ]}
-                        />
-                    )}
+                                    </div>
+                                )}
+                                {!isMobile && selectedStation && railData && (
+                                    <div style={{ zIndex: Z.detailPane }} className="relative pointer-events-auto">
+                                        <StationDetailPaneWithNoSSR
+                                            station={selectedStation}
+                                            railData={railData}
+                                            onClose={() => setSelectedStation(null)}
+                                            isTripInProgress={isTripInProgress}
+                                            tripStartStationId={tripStartStation?.id || null}
+                                            onStartTrip={handleStartTrip}
+                                            onEndTrip={handleEndTrip}
+                                            onCancel={() => {
+                                                setTripStartStation(null);
+                                                setDraftTrip(null);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </>
+                        }
+                        mobileBottomContent={
+                            <MobileBottomSheet
+                                isOpen={isMobileSheetOpen}
+                                onToggle={setIsMobileSheetOpen}
+                                detail={mobileSheetDetail}
+                                onExpand={() => {
+                                    setSelectedStation(null);
+                                    setActiveLine(null);
+                                }}
+                                tabs={[
+                                    {
+                                        id: 'sidebar',
+                                        label: t.railList,
+                                        summary: (
+                                            <div className="flex items-center gap-2 w-full px-3 h-11 bg-white/40 dark:bg-black/20 rounded-2xl border border-white/40 dark:border-white/5">
+                                                <span className="material-symbols-outlined text-primary text-xl shrink-0">account_tree</span>
+                                                <span className="whitespace-nowrap text-xs font-black text-primary uppercase tracking-wide">
+                                                    {t.linesSelected(selectedLines.filter(l => l !== "__NONE__").length)}
+                                                </span>
+                                            </div>
+                                        ),
+                                        content: (
+                                            <SidebarWithNoSSR
+                                                isMobile
+                                                selectedLines={selectedLines}
+                                                onToggleLine={toggleLine}
+                                                onSetSelectedLines={setSelectedLinesList}
+                                                lineLengths={lineLengths}
+                                                visitedLineLengths={visitedLineLengths}
+                                                activeLine={activeLine}
+                                                onLineClick={handleLineClick}
+                                                className="bg-transparent border-none shadow-none"
+                                            />
+                                        )
+                                    },
+                                    {
+                                        id: 'mylines',
+                                        label: t.myTrip,
+                                        summary: (
+                                            <div className="grid grid-cols-4 gap-1.5 w-full">
+                                                {[
+                                                    { label: t.trips, val: recordedTrips.length, icon: 'route' },
+                                                    { label: t.lines, val: stats.lines, icon: 'directions_railway' },
+                                                    { label: t.km, val: stats.distance, icon: 'straighten', hideLabel: true, unit: 'km' },
+                                                    { label: t.stations, val: stats.stations, icon: 'location_on' },
+                                                ].map((s, idx) => {
+                                                    const fullValue = `${s.val}${s.unit || ''}`;
+                                                    const getFontSize = (len: number) => {
+                                                        if (len <= 4) return 'text-xs';
+                                                        if (len <= 6) return 'text-[10px]';
+                                                        return 'text-[8.5px]';
+                                                    };
+
+                                                    return (
+                                                        <div key={idx} className="flex flex-col items-center justify-center py-2 px-1 bg-white/40 dark:bg-black/20 backdrop-blur-md rounded-xl border border-white/40 dark:border-white/5 overflow-hidden">
+                                                            <span className="material-symbols-outlined text-[11px] text-slate-400 dark:text-slate-500 mb-0.5">{s.icon}</span>
+                                                            <div className="flex items-baseline gap-1 min-w-0 w-full justify-center">
+                                                                <span className={`${getFontSize(fullValue.length)} font-black text-slate-900 dark:text-white leading-none whitespace-nowrap`}>
+                                                                    {fullValue}
+                                                                </span>
+                                                                {!s.hideLabel && (
+                                                                    <span className="text-[7px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter shrink-0">
+                                                                        {s.label}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ),
+                                        content: (
+                                            <MyLinesPane
+                                                isMobile
+                                                recordedTrips={recordedTrips}
+                                                onDeleteTrip={handleDeleteTrip}
+                                                onResetTrips={handleResetTrips}
+                                                railData={railData}
+                                                lineLengths={lineLengths}
+                                                visitedLineLengths={visitedLineLengths}
+                                                className="bg-transparent border-none shadow-none"
+                                                onSyncWithRegionevel={syncWithRegionevel}
+                                                isSyncLoading={isRecordingLoading}
+                                                onOpenRouteGenerator={() => setIsRouteGeneratorOpen(true)}
+                                                onOpenTimelineImport={() => setIsTimelineImportOpen(true)}
+                                            />
+                                        )
+                                    }
+                                ]}
+                            />
+                        }
+                    />
 
                 </main>
             </div >
@@ -1264,6 +1341,8 @@ const MainPageClient = () => {
             <AuthModal
                 isOpen={isAuthModalOpen}
                 onClose={() => setIsAuthModalOpen(false)}
+                appName="JPRAIL"
+                language={language}
             />
 
             {isMobile && (
@@ -1412,7 +1491,7 @@ const MainPageClient = () => {
                 onClose={() => setIsTimelineImportOpen(false)}
                 railData={railData}
                 getShortestPath={lineDetailData?.getShortestPath ?? null}
-                onImportTrips={trips => trips.forEach(handleRecordTrip)}
+                onImportTrips={handleImportTripsBatch}
             />
 
             {!isMobile && (

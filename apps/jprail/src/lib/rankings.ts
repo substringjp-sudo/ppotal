@@ -1,6 +1,7 @@
 import { Trip } from '../types/trip';
 import { RailData, Station } from '../types/railData';
 import { JPRAIL_ACHIEVEMENTS } from './achievements';
+import { getSectionMap } from './graphUtils';
 
 export type RankingCriterion =
   | 'distance'
@@ -145,8 +146,9 @@ export const computeUserRankEntry = (
     });
 
     if (railData?.sections && railData.lines) {
+      const sectionMap = getSectionMap(railData);
       t.sectionIds?.forEach((sid) => {
-        const section = railData.sections.sections.find((s) => s.id === sid);
+        const section = sectionMap.get(sid);
         if (section) {
           const line = railData.lines[section.line_id];
           if (line) {

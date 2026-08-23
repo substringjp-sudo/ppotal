@@ -1,6 +1,53 @@
 import type { Feature } from "geojson";
 import { padId } from "@regionevel/utils";
 
+// Cache computed BBox for features: [minLng, minLat, maxLng, maxLat]
+const bboxCache = new WeakMap<Feature, [number, number, number, number]>();
+
+export function computeFeatureBBox(feature: Feature): [number, number, number, number] | null {
+  const cached = bboxCache.get(feature);
+  if (cached) return cached;
+  if (!feature.geometry) return null;
+
+  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  const geom = feature.geometry;
+
+  const updateRing = (coords: number[][]) => {
+    for (let i = 0; i < coords.length; i++) {
+      const pt = coords[i];
+      if (!pt) continue;
+      const x = pt[0];
+      const y = pt[1];
+      if (x === undefined || y === undefined) continue;
+      if (x < minLng) minLng = x;
+      if (x > maxLng) maxLng = x;
+      if (y < minLat) minLat = y;
+      if (y > maxLat) maxLat = y;
+    }
+  };
+
+  if (geom.type === "Polygon" && geom.coordinates) {
+    for (const ring of geom.coordinates) {
+      if (ring) updateRing(ring);
+    }
+  } else if (geom.type === "MultiPolygon" && geom.coordinates) {
+    for (const poly of geom.coordinates) {
+      if (poly) {
+        for (const ring of poly) {
+          if (ring) updateRing(ring);
+        }
+      }
+    }
+  } else {
+    return null;
+  }
+
+  if (minLng === Infinity) return null;
+  const bbox: [number, number, number, number] = [minLng, minLat, maxLng, maxLat];
+  bboxCache.set(feature, bbox);
+  return bbox;
+}
+
 /** Ray-casting algorithm for a single polygon ring. */
 export function isPointInPolygonCoords(point: [number, number], vs: any[]): boolean {
   const x = point[0], y = point[1];
@@ -18,9 +65,19 @@ export function isPointInPolygonCoords(point: [number, number], vs: any[]): bool
   return inside;
 }
 
-/** Point-in-feature test for GeoJSON Polygon & MultiPolygon geometries. */
+/** Point-in-feature test with BBox pre-check for GeoJSON Polygon & MultiPolygon geometries. */
 export function isPointInFeature(lng: number, lat: number, feature: Feature): boolean {
   if (!feature.geometry) return false;
+
+  // 1. Fast BBox reject
+  const bbox = computeFeatureBBox(feature);
+  if (bbox) {
+    if (lng < bbox[0] || lng > bbox[2] || lat < bbox[1] || lat > bbox[3]) {
+      return false;
+    }
+  }
+
+  // 2. Precise Ray-casting
   const geom = feature.geometry;
   if (geom.type === "Polygon" && geom.coordinates && geom.coordinates[0]) {
     return isPointInPolygonCoords([lng, lat], geom.coordinates[0]);

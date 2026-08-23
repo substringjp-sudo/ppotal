@@ -15,6 +15,10 @@ interface MapState {
   viewLevel: 1 | 2;
   selectedId: string | null;
   isDrawMode: boolean;
+  leftSidebarOpen: boolean;
+  rightDrawerOpen: boolean;
+  disabledRegionIds: string[];
+  flyToRegionId: string | null;
 }
 
 interface MapActions {
@@ -25,6 +29,15 @@ interface MapActions {
   setSelectedId: (id: string | null) => void;
   setIsDrawMode: (isDrawMode: boolean) => void;
   toggleDrawMode: () => void;
+  setLeftSidebarOpen: (open: boolean) => void;
+  toggleLeftSidebar: () => void;
+  setRightDrawerOpen: (open: boolean) => void;
+  toggleRightDrawer: () => void;
+  toggleRegionDisabled: (id: string) => void;
+  setRegionDisabled: (id: string, disabled: boolean) => void;
+  setAllRegionsDisabled: (ids: string[]) => void;
+  clearAllRegionsDisabled: () => void;
+  setFlyToRegionId: (id: string | null) => void;
   drillDown: (level: MapLevel, id: string) => void;
   drillUp: () => void;
   reset: () => void;
@@ -42,6 +55,10 @@ export const useMapStore = create<MapState & MapActions>()(
       viewLevel: 1,
       selectedId: null,
       isDrawMode: false,
+      leftSidebarOpen: true,
+      rightDrawerOpen: true,
+      disabledRegionIds: [],
+      flyToRegionId: null,
 
       setLevel: (level) => set({ level }),
       setCurrentId: (currentId) => set({ currentId }),
@@ -50,6 +67,40 @@ export const useMapStore = create<MapState & MapActions>()(
       setSelectedId: (selectedId) => set({ selectedId }),
       setIsDrawMode: (isDrawMode) => set({ isDrawMode }),
       toggleDrawMode: () => set((state) => ({ isDrawMode: !state.isDrawMode })),
+      setLeftSidebarOpen: (leftSidebarOpen) => set({ leftSidebarOpen }),
+      toggleLeftSidebar: () => set((state) => ({ leftSidebarOpen: !state.leftSidebarOpen })),
+      setRightDrawerOpen: (rightDrawerOpen) => set({ rightDrawerOpen }),
+      toggleRightDrawer: () => set((state) => ({ rightDrawerOpen: !state.rightDrawerOpen })),
+      setFlyToRegionId: (flyToRegionId) => set({ flyToRegionId }),
+
+      toggleRegionDisabled: (id) => {
+        const target = padId(id);
+        const { disabledRegionIds } = get();
+        if (disabledRegionIds.includes(target)) {
+          set({ disabledRegionIds: disabledRegionIds.filter((x) => x !== target) });
+        } else {
+          set({ disabledRegionIds: [...disabledRegionIds, target] });
+        }
+      },
+
+      setRegionDisabled: (id, disabled) => {
+        const target = padId(id);
+        const { disabledRegionIds } = get();
+        if (disabled) {
+          if (!disabledRegionIds.includes(target)) {
+            set({ disabledRegionIds: [...disabledRegionIds, target] });
+          }
+        } else {
+          set({ disabledRegionIds: disabledRegionIds.filter((x) => x !== target) });
+        }
+      },
+
+      setAllRegionsDisabled: (ids) => {
+        const padded = ids.map(padId);
+        set({ disabledRegionIds: Array.from(new Set([...get().disabledRegionIds, ...padded])) });
+      },
+
+      clearAllRegionsDisabled: () => set({ disabledRegionIds: [] }),
 
       drillDown: (newLevel, id) => {
         const { level, currentId, history } = get();

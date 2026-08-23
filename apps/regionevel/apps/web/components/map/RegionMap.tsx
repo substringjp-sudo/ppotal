@@ -12,14 +12,29 @@ import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } 
 import { findRegionForPoint } from "@/lib/geo";
 import { useViewportFeatures } from "@/lib/viewportFeatures";
 import { useIsPhone } from "@/lib/useIsPhone";
-import { regionCanvas } from "./mapRenderer";
 import { useMapStore } from "@/store/mapStore";
 import { Z } from "@/lib/layers";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import { ShareCardModal } from "./ShareCardModal";
-import { Pencil, CheckCircle2, X } from "lucide-react";
+import { MapSubHeader } from "@ppotal/ui";
+import { Pencil, CheckCircle2, X, Layers, Trophy } from "lucide-react";
 import "leaflet/dist/leaflet.css";
+
+// Prevent React 18/19 StrictMode / HMR container reuse cleanup crashes in Leaflet
+if (typeof window !== "undefined" && L && L.Map) {
+  const originalRemove = L.Map.prototype.remove;
+  L.Map.prototype.remove = function () {
+    try {
+      return originalRemove.call(this);
+    } catch (e: any) {
+      if (e?.message?.includes("Map container is being reused by another instance")) {
+        return this;
+      }
+      throw e;
+    }
+  };
+}
 
 interface MapDrawControllerProps {
   isDrawMode: boolean;
@@ -166,7 +181,64 @@ function MapDrawController({ isDrawMode, geoData, onDrawComplete }: MapDrawContr
   );
 }
 
-function FitBounds({ data, level }: { data: FeatureCollection | null; level: string }) {
+function shiftGeometry(geometry: any, offsetLng: number): any {
+  if (!geometry || !geometry.coordinates) return geometry;
+
+  const shiftCoords = (coords: any, depth: number): any => {
+    if (depth === 1) {
+      return [coords[0] + offsetLng, coords[1]];
+    }
+    return coords.map((c: any) => shiftCoords(c, depth - 1));
+  };
+
+  let depth = 1;
+  if (geometry.type === "Point") depth = 1;
+  else if (geometry.type === "LineString" || geometry.type === "MultiPoint") depth = 2;
+  else if (geometry.type === "Polygon" || geometry.type === "MultiLineString") depth = 3;
+  else if (geometry.type === "MultiPolygon") depth = 4;
+
+  return {
+    ...geometry,
+    coordinates: shiftCoords(geometry.coordinates, depth),
+  };
+}
+
+function getWrappedFeatures(features: Feature[] | null, isWorldLevel: boolean): Feature[] {
+  if (!features || features.length === 0) return [];
+  if (!isWorldLevel) return features;
+
+  const offsets = [-360, 0, 360];
+  const wrapped: Feature[] = [];
+
+  offsets.forEach((offset) => {
+    features.forEach((f, idx) => {
+      if (offset === 0) {
+        wrapped.push(f);
+      } else {
+        wrapped.push({
+          ...f,
+          id: f.id ? `${f.id}_wrap_${offset}` : `wrap_${offset}_${idx}`,
+          properties: {
+            ...f.properties,
+          },
+          geometry: shiftGeometry(f.geometry, offset),
+        } as Feature);
+      }
+    });
+  });
+
+  return wrapped;
+}
+
+function FitBounds({
+  data,
+  level,
+  disabledRegionIds,
+}: {
+  data: FeatureCollection | null;
+  level: string;
+  disabledRegionIds?: string[];
+}) {
   const map = useMap();
   
   useEffect(() => {
@@ -184,18 +256,40 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
       }
     };
 
-    // 1. World level: Reset to global view safely
+    // 1. World level: Reset to global view safely with unbounded horizontal scrolling
     if (level === "world") {
       map.whenReady(() => {
+        try {
+          map.setMaxBounds([
+            [-85, -Infinity],
+            [85, Infinity],
+          ] as any);
+        } catch {}
         safeSetWorldView();
       });
       return;
+    } else {
+      try {
+        map.setMaxBounds([
+          [-90, -180],
+          [90, 180],
+        ]);
+      } catch {}
     }
     
-    // 2. Other levels: Fit bounds to data if available
+    // 2. Other levels: Fit bounds to active data if available
     if (data && data.features && data.features.length > 0) {
       try {
-        const geoJsonLayer = L.geoJSON(data);
+        const disabledSet = new Set((disabledRegionIds || []).map(padId));
+        // Filter out disabled regions so they are excluded from the zoom bounding box calculation!
+        const activeFeatures = data.features.filter((f) => {
+          const rawId = f.properties?.id || f.properties?.shapeID;
+          const id = padId(rawId);
+          return !disabledSet.has(id);
+        });
+
+        const targetFeatures = activeFeatures.length > 0 ? activeFeatures : data.features;
+        const geoJsonLayer = L.geoJSON({ type: "FeatureCollection", features: targetFeatures } as any);
         const bounds = geoJsonLayer.getBounds();
         
         if (bounds.isValid()) {
@@ -217,7 +311,7 @@ function FitBounds({ data, level }: { data: FeatureCollection | null; level: str
         console.error("[FitBounds] Error fitting bounds:", e);
       }
     }
-  }, [data, map, level]);
+  }, [data, map, level, disabledRegionIds]);
   
   return null;
 }
@@ -300,8 +394,14 @@ export function RegionMap() {
     isDrawMode,
     setIsDrawMode,
     shareRequested,
+    disabledRegionIds,
+    leftSidebarOpen,
+    rightDrawerOpen,
+    toggleLeftSidebar,
+    toggleRightDrawer,
   } = useMapStore();
   const currentRegion = currentId ? regionsByIdMap.get(currentId) : null;
+  const disabledSet = useMemo(() => new Set(disabledRegionIds.map(padId)), [disabledRegionIds]);
 
   const isMobile = useIsPhone();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -384,17 +484,17 @@ export function RegionMap() {
         }
 
         if (features && features.length > 0) {
-          
-          // Convert features to Region objects and update store
-          // This is critical so the store can calculate scores for these newly loaded regions (especially cities)
-          const newRegions: Region[] = features.map(f => ({
-            id: String(f.properties?.id || f.properties?.shapeID),
-            name: String(f.properties?.name || f.properties?.shapeName || "Unknown"),
-            parentId: currentId || null,
-            admLevel: level === "world" ? 0 : (level === "country" ? viewLevel : 2),
-            iso3: f.properties?.iso3 || null
-          }));
-          setRegions(newRegions);
+          // Convert features to Region objects and update store for newly loaded sub-regions (e.g. cities)
+          if (level !== "world") {
+            const newRegions: Region[] = features.map(f => ({
+              id: String(f.properties?.id || f.properties?.shapeID),
+              name: String(f.properties?.name || f.properties?.shapeName || "Unknown"),
+              parentId: currentId || null,
+              admLevel: level === "country" ? viewLevel : 2,
+              iso3: f.properties?.iso3 || null
+            }));
+            setRegions(newRegions);
+          }
           
           const newGeoData = {
             type: "FeatureCollection" as const,
@@ -556,8 +656,19 @@ export function RegionMap() {
     (feature?: Feature): PathOptions => {
       const rawId = feature?.properties?.id || feature?.properties?.shapeID;
       const id = padId(rawId);
-      const scoreData = scoreMap[id];
+      const isDisabled = disabledSet.has(id);
 
+      if (isDisabled) {
+        return {
+          fillColor: "#e2e8f0",
+          fillOpacity: 0.08,
+          color: "#cbd5e1",
+          weight: 0.5,
+          opacity: 0.20,
+        };
+      }
+
+      const scoreData = scoreMap[id];
       const fillColor = scoreData ? getMapColor(scoreData) : "#e2e8f0";
 
       return {
@@ -568,7 +679,7 @@ export function RegionMap() {
         opacity: 0.8,
       };
     },
-    [scoreMap],
+    [scoreMap, disabledSet],
   );
 
   useEffect(() => {
@@ -617,6 +728,11 @@ export function RegionMap() {
       const rawId = feature.properties?.id || feature.properties?.shapeID;
       const id = padId(rawId);
       if (!id) return;
+
+      // If region is disabled in hierarchy filter, completely disable interaction!
+      if (disabledSet.has(id)) {
+        return;
+      }
 
       let pressTimer: ReturnType<typeof setTimeout>;
       const startPress = () => {
@@ -715,18 +831,17 @@ export function RegionMap() {
     mapBounds,
   );
 
+  const wrappedFeatures = useMemo(() => {
+    return getWrappedFeatures(visibleFeatures, level === "world");
+  }, [visibleFeatures, level]);
+
   const visibleData = useMemo<FeatureCollection | null>(
-    () => (geoData ? { type: "FeatureCollection", features: visibleFeatures } : null),
-    [geoData, visibleFeatures],
+    () => (geoData ? { type: "FeatureCollection", features: wrappedFeatures } : null),
+    [geoData, wrappedFeatures],
   );
 
   const handleBoundsChange = useCallback((b: LatLngBounds) => setMapBounds(b), []);
   const handleMapClick = useCallback(() => setSelectedId(null), [setSelectedId]);
-
-  const geoJsonPathOptions = useMemo<PathOptions>(
-    () => (regionCanvas ? { renderer: regionCanvas } : {}),
-    [],
-  );
 
   return (
     <div className={`relative w-full h-full bg-sky-50 overflow-hidden ${isDrawMode ? "cursor-pen" : ""}`}>
@@ -735,19 +850,24 @@ export function RegionMap() {
         center={[20, 0]}
         zoom={2}
         minZoom={2}
-        maxBounds={[
-          [-90, -180],
-          [90, 180],
-        ]}
-        maxBoundsViscosity={1.0}
-        style={{ width: "100%", height: "100%", background: "#e0f2fe" }}
+        worldCopyJump={true}
+        maxBounds={
+          level === "world"
+            ? undefined
+            : [
+                [-90, -180],
+                [90, 180],
+              ]
+        }
+        className="isolate z-0"
+        style={{ width: "100%", height: "100%", background: "#e0f2fe", isolation: "isolate", zIndex: 0 }}
         attributionControl={false}
         zoomControl={false}
       >
         {/* Background Layer (Ocean) */}
         <div className="absolute inset-0 bg-sky-50/30" />
 
-        <FitBounds data={geoData} level={level} />
+        <FitBounds data={geoData} level={level} disabledRegionIds={disabledRegionIds} />
 
         <MapDrawController
           isDrawMode={isDrawMode}
@@ -762,7 +882,6 @@ export function RegionMap() {
             data={visibleData}
             style={getStyle}
             onEachFeature={onEachFeature}
-            pathOptions={geoJsonPathOptions}
           />
         )}
         <MapEvents onMapClick={handleMapClick} onBoundsChange={handleBoundsChange} />
@@ -783,12 +902,12 @@ export function RegionMap() {
           }}
         >
           {(hoveredFeature || hoveredRegion) && (
-            <div className="bg-slate-900/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 min-w-fit">
-              <div className="flex flex-col pr-3 border-r border-white/10">
-                <span className="text-[12px] font-black leading-tight truncate max-w-[140px] tracking-tight">
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-900 dark:text-white px-3.5 py-2.5 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex items-center gap-4 min-w-fit animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex flex-col pr-3 border-r border-slate-200/80 dark:border-slate-800">
+                <span className="text-[12px] font-black leading-tight truncate max-w-[140px] tracking-tight text-slate-900 dark:text-white">
                   {hoveredRegion?.name || hoveredFeature?.properties?.name || hoveredFeature?.properties?.shapeName || "Unknown"}
                 </span>
-                <span className="text-[9px] text-slate-400 font-bold mt-0.5 tracking-widest uppercase">
+                <span className="text-[9px] text-slate-400 dark:text-slate-400 font-bold mt-0.5 tracking-widest uppercase">
                   {hoveredRegion?.iso3 || hoveredFeature?.properties?.iso_a3 || hoveredFeature?.properties?.iso3 || hoveredFeature?.properties?.adm0_a3 || "REGION"}
                 </span>
               </div>
@@ -796,15 +915,15 @@ export function RegionMap() {
               {hoveredScore ? (
                 <div className="flex gap-4 items-center shrink-0">
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">EXP</span>
-                    <span className="text-base font-black leading-none text-blue-400 tabular-nums">
+                    <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter mb-0.5 opacity-80">EXP</span>
+                    <span className="text-base font-black leading-none text-blue-600 dark:text-blue-400 tabular-nums">
                       {Math.round(hoveredScore.directScore)}
                     </span>
                   </div>
                   {hoveredRegion && hoveredRegion.admLevel < 2 && (
                     <div className="flex flex-col items-center">
-                      <span className="text-[9px] font-black text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Rate</span>
-                      <span className="text-base font-black leading-none text-orange-400 tabular-nums">
+                      <span className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tighter mb-0.5 opacity-80">Rate</span>
+                      <span className="text-base font-black leading-none text-orange-600 dark:text-orange-400 tabular-nums">
                         {Math.ceil(hoveredScore.rateScore)}%
                       </span>
                     </div>
@@ -812,8 +931,8 @@ export function RegionMap() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Ready</span>
-                  <div className="w-3 h-3 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                  <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest animate-pulse">Ready</span>
+                  <div className="w-3 h-3 border-2 border-slate-300 dark:border-white/20 border-t-blue-600 dark:border-t-white/80 rounded-full animate-spin" />
                 </div>
               )}
             </div>
@@ -821,141 +940,24 @@ export function RegionMap() {
         </div>
       )}
 
-      {/* Professional Top Header (Desktop) */}
-      {!isMobile && (
-        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-slate-200 flex items-center px-4 gap-0 animate-in fade-in slide-in-from-top-2 duration-500 no-export">
-          {/* Breadcrumbs Section */}
-          <div className="flex items-center gap-2 h-full border-r border-slate-100 pr-4 shrink-0">
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-md p-1">
-              {history.length > 0 && (
-                <button
-                  onClick={handleBack}
-                  className="p-1 hover:bg-white rounded transition-all text-slate-500 border border-transparent hover:border-slate-200 no-export"
-                >
-                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
-              <div className="flex items-center gap-1 px-1">
-                {currentPath.map((name, i) => (
-                  <div key={i} className="flex items-center gap-1">
-                    {i > 0 && <span className="text-slate-300 text-[10px]">/</span>}
-                    <button 
-                      onClick={() => {
-                        if (i === 0) {
-                          reset();
-                        } else {
-                          // Go back until we reach the desired ancestor
-                          const targetId = i === 1 ? currentPathIds[1] : currentPathIds[i];
-                          // This is a simple way to go back to a specific level in history
-                          const currentHistory = useMapStore.getState().history;
-                          const targetIndex = currentHistory.findIndex(h => h.currentId === targetId);
-                          if (targetIndex !== -1) {
-                            const pops = currentHistory.length - targetIndex;
-                            for (let j = 0; j < pops; j++) {
-                              useMapStore.getState().drillUp();
-                            }
-                          }
-                        }
-                      }}
-                      disabled={i === currentPath.length - 1}
-                      className={`text-[10px] font-black tracking-tight whitespace-nowrap transition-colors ${
-                        i === currentPath.length - 1 
-                          ? "text-blue-600 cursor-default" 
-                          : "text-slate-400 hover:text-blue-500 uppercase cursor-pointer"
-                      }`}
-                    >
-                      {name}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Active Region Info */}
-          <div className="flex items-center px-6 gap-6 h-full flex-1 min-w-0 overflow-hidden bg-slate-50/30">
-            <div className="flex items-center gap-6">
-              <div className="shrink-0 flex flex-col justify-center">
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
-                  {currentRegion ? "Selected Region" : "Global Overview"}
-                </span>
-                <h3 className="text-sm font-black text-slate-800 leading-none truncate max-w-[200px]">
-                  {currentRegion ? currentRegion.name : "World Map"}
-                </h3>
-              </div>
-              
-              {/* View Toggle (Only for Country level) */}
-              {level === "country" && (
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 no-export">
-                  <button
-                    onClick={() => setViewLevel(1)}
-                    className={`text-xs font-medium px-2 py-0.5 rounded-md transition-all ${
-                      viewLevel === 1 
-                        ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
-                        : "text-slate-500 hover:text-slate-700"
-                    }`}
-                  >
-                    PREFECTURE
-                  </button>
-                  <button
-                    onClick={() => setViewLevel(2)}
-                    className={`text-xs font-medium px-2 py-0.5 rounded-md transition-all ${
-                      viewLevel === 2 
-                        ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
-                        : "text-slate-500 hover:text-slate-700"
-                    }`}
-                  >
-                    CITY
-                  </button>
-                </div>
-              )}
-
-              {currentRegion && currentRegion.admLevel !== 2 && (
-                <div className="flex gap-6 border-l border-slate-200 pl-6 h-8 items-center flex-1">
-                  <div className="flex flex-col justify-center min-w-[120px]">
-                    <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-tighter leading-none mb-1">
-                      Rate
-                    </span>
-                    <div className="flex items-baseline gap-1 whitespace-nowrap">
-                      <p className="text-sm font-black text-slate-800 tabular-nums leading-none">{Math.ceil(contextStats.currentRateScore)}%</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Global Stats Summary */}
-          <div className="px-4 border-l border-slate-200 h-full flex items-center shrink-0">
-            <ScoreStatsBar
-              stats={contextStats}
-              isMobile={true}
-              hideRate={!currentRegion || currentRegion?.admLevel === 2}
-              totalChildren={currentRegion ? contextStats.totalChildrenCount : allRegions.filter(r => r.admLevel === 0).length}
-              admLevel={currentRegion?.admLevel ?? -1}
-            />
-          </div>
-        </div>
-      )}
 
       {/* Mobile Header */}
       {isMobile && (
-        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 flex flex-col bg-white border-b border-slate-200 no-export">
+        <div style={{ zIndex: Z.mapOverlay }} className="absolute top-0 left-0 right-0 flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 no-export">
           <div className="flex items-center gap-2 p-2 pointer-events-auto">
             {history.length > 0 && (
-              <button onClick={handleBack} className="p-2 bg-slate-50 border border-slate-200 rounded-md text-slate-600 no-export">
+              <button onClick={handleBack} className="p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 no-export">
                 <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
             )}
-            <div className="flex items-center px-2 py-1 gap-2 overflow-x-auto no-scrollbar whitespace-nowrap bg-slate-50 border border-slate-200 rounded-md flex-1">
+            <div className="flex items-center px-2.5 py-1.5 gap-2 overflow-x-auto no-scrollbar whitespace-nowrap bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex-1">
               {currentPath.map((name, i) => (
                 <div key={i} className="flex items-center gap-1 shrink-0">
-                  {i > 0 && <span className="text-slate-300 text-xs">/</span>}
-                  <span className={`text-[10px] font-black uppercase ${i === currentPath.length - 1 ? "text-blue-600" : "text-slate-400"}`}>
+                  {i > 0 && <span className="text-slate-300 dark:text-slate-600 text-xs">/</span>}
+                  <span className={`text-[10px] font-black uppercase ${i === currentPath.length - 1 ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}>
                     {name}
                   </span>
                 </div>
@@ -963,12 +965,12 @@ export function RegionMap() {
             </div>
 
             {level === "country" && (
-              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 no-export">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700 no-export">
                 <button
                   onClick={() => setViewLevel(1)}
-                  className={`px-2 py-1 text-[8px] font-black rounded-md transition-all ${
+                  className={`px-2 py-1 text-[8px] font-black rounded-lg transition-all ${
                     viewLevel === 1 
-                      ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
+                      ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200 dark:border-slate-600" 
                       : "text-slate-400"
                   }`}
                 >
@@ -976,9 +978,9 @@ export function RegionMap() {
                 </button>
                 <button
                   onClick={() => setViewLevel(2)}
-                  className={`px-2 py-1 text-[8px] font-black rounded-md transition-all ${
+                  className={`px-2 py-1 text-[8px] font-black rounded-lg transition-all ${
                     viewLevel === 2 
-                      ? "bg-white text-blue-600 shadow-sm border border-slate-200" 
+                      ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200 dark:border-slate-600" 
                       : "text-slate-400"
                   }`}
                 >
@@ -1005,9 +1007,9 @@ export function RegionMap() {
       {/* Map Controls */}
       <div style={{ zIndex: Z.mapOverlay }} className={`absolute flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
         {loading && (
-          <div className="bg-white border border-slate-200 rounded-md shadow-lg px-3 py-1.5 flex items-center gap-2">
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-lg px-3 py-1.5 flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Loading</span>
+            <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Loading</span>
           </div>
         )}
 
@@ -1134,23 +1136,23 @@ function ScoreLegend({
 
   if (isMobile) {
     return (
-      <div className="bg-white/90 backdrop-blur shadow-lg border border-slate-200 p-2 rounded-none flex gap-3">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-xl border border-slate-200/80 dark:border-slate-800 p-2.5 rounded-2xl flex gap-3.5">
         {!hideRate && (
           <>
-            <div className="flex gap-1 items-center">
-              <span className="text-[7px] font-black text-slate-400 uppercase">Rate</span>
+            <div className="flex gap-1.5 items-center">
+              <span className="text-[8px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tight">Rate</span>
               {rateSteps.map(s => (
-                <div key={s.label} className="w-2.5 h-2.5" style={{ background: s.color }} />
+                <div key={s.label} className="w-2.5 h-2.5 rounded-sm shadow-xs" style={{ background: s.color }} />
               ))}
             </div>
-            {!hideExp && <div className="w-[1px] bg-slate-100" />}
+            {!hideExp && <div className="w-[1px] bg-slate-200 dark:bg-slate-700" />}
           </>
         )}
         {!hideExp && (
-          <div className="flex gap-1 items-center">
-            <span className="text-[7px] font-black text-slate-400 uppercase">Exp</span>
+          <div className="flex gap-1.5 items-center">
+            <span className="text-[8px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tight">Exp</span>
             {individualSteps.map(s => (
-              <div key={s.label} className="w-2.5 h-2.5" style={{ background: s.color }} />
+              <div key={s.label} className="w-2.5 h-2.5 rounded-sm shadow-xs" style={{ background: s.color }} />
             ))}
           </div>
         )}
@@ -1159,31 +1161,31 @@ function ScoreLegend({
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-md shadow-2xl border border-slate-200 p-3 rounded-none w-32 flex flex-col gap-3">
+    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl shadow-xl border border-slate-200/80 dark:border-slate-800 p-3.5 rounded-2xl w-32 flex flex-col gap-3">
       {!hideRate && (
         <>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-black text-orange-600 uppercase tracking-widest">Rate</span>
-            <div className="flex flex-col gap-1">
+            <span className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest">Rate</span>
+            <div className="flex flex-col gap-1.5">
               {rateSteps.map((s) => (
                 <div key={s.label} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 shadow-sm" style={{ background: s.color }} />
-                  <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
+                  <div className="w-3 h-3 rounded-md shadow-xs shrink-0" style={{ background: s.color }} />
+                  <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">{s.label}</span>
                 </div>
               ))}
             </div>
           </div>
-          {!hideExp && <div className="h-[1px] bg-slate-100" /> }
+          {!hideExp && <div className="h-[1px] bg-slate-100 dark:bg-slate-800" /> }
         </>
       )}
       {!hideExp && (
         <div className="flex flex-col gap-1.5">
-          <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest">Exp</span>
-          <div className="flex flex-col gap-1">
+          <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Exp</span>
+          <div className="flex flex-col gap-1.5">
             {individualSteps.map((s) => (
               <div key={s.label} className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 shadow-sm" style={{ background: s.color }} />
-                <span className="text-[9px] font-bold text-slate-500 tabular-nums">{s.label}</span>
+                <div className="w-3 h-3 rounded-md shadow-xs shrink-0" style={{ background: s.color }} />
+                <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">{s.label}</span>
               </div>
             ))}
           </div>

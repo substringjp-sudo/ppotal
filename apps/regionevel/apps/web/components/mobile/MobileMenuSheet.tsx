@@ -27,7 +27,6 @@ export interface MobileMenuSheetProps {
 
 const NAV_LINKS = [
   { href: "/", label: "지도", icon: MapIcon, match: (p: string) => p === "/" || p === "/map" },
-  { href: "/list", label: "목록", icon: TrophyIcon, match: (p: string) => p === "/list" },
   { href: "/about", label: "소개", icon: InfoIcon, match: (p: string) => p === "/about" },
 ];
 

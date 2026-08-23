@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
-import { HistoryIcon, RouteIcon, TimelineIcon, LockIcon, TrashIcon } from '@ppotal/ui';
-import { RailData, Station, Line, Section, Company } from '../types/railData';
+import React, { useMemo } from 'react';
+import { HistoryIcon, RouteIcon, TimelineIcon, LockIcon, TrashIcon, SidebarFrame, ProgressCard } from '@ppotal/ui';
+import { RailData, Station } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
-import { getLocalizedName, getLocalizedRegion } from '../lib/i18n-utils';
+import { getLocalizedName } from '../lib/i18n-utils';
 import { useRegionNames } from '../hooks/useRegionNames';
 import { Trip } from '../types/trip';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
@@ -22,8 +22,8 @@ export interface MyLinesPaneProps {
     onOpenRouteGenerator?: () => void;
     onOpenTimelineImport?: () => void;
     isReadOnly?: boolean;
-    /** Phone density — the same pane renders in the desktop rail and the sheet. */
     isMobile?: boolean;
+    onClose?: () => void;
 }
 
 const getStationDisplayName = (
@@ -57,12 +57,11 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     lineLengths = {},
     visitedLineLengths = {},
     className,
-    onSyncWithRegionevel,
-    isSyncLoading,
     onOpenRouteGenerator,
     isReadOnly = false,
     isMobile = false,
-    onOpenTimelineImport
+    onOpenTimelineImport,
+    onClose,
 }) => {
     const { language } = useI18n();
     const t = getTranslations(MY_LINES_TRANSLATIONS, language);
@@ -79,197 +78,170 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
         return [...(recordedTrips || [])].reverse();
     }, [recordedTrips]);
 
+    const progressData = useMemo(() => {
+        let totalKm = 0;
+        let visitedKm = 0;
+        Object.values(lineLengths).forEach((len) => {
+            totalKm += len as number;
+        });
+        Object.values(visitedLineLengths).forEach((len) => {
+            visitedKm += len as number;
+        });
+        const percent = totalKm > 0 ? (visitedKm / totalKm) * 100 : 0;
+        return { totalKm, visitedKm, percent };
+    }, [lineLengths, visitedLineLengths]);
+
     return (
-        <div className={`flex flex-col h-full bg-transparent overflow-hidden font-display ${className || ""}`}>
-            {/* Header */}
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 shrink-0 flex items-center justify-between">
-                <div>
-                    <h2 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <HistoryIcon className="w-5 h-5 text-primary" />
-                        {t.title}
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-tight font-semibold">{t.subtitle}</p>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                    {onOpenRouteGenerator && (
-                        <button
-                            onClick={onOpenRouteGenerator}
-                            disabled={isReadOnly}
-                            className={`flex items-center gap-1.5 px-3 rounded-xl text-xs font-bold transition-all shrink-0 ${isMobile ? 'h-11' : 'py-1.5'} ${isReadOnly
-                                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-                                : 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95 cursor-pointer'}`}
-                            title={isReadOnly ? (language === 'ko' ? '도트/스퀘어/허니콤 모드에서는 경로 생성이 비활성화됩니다.' : 'Route generator disabled in tile mode') : undefined}
-                        >
-                            <RouteIcon className="w-4 h-4" />
-                            {t.generateRoute || '경로 생성'}
-                        </button>
-                    )}
-                    {onOpenTimelineImport && (
-                        <button
-                            onClick={onOpenTimelineImport}
-                            disabled={isReadOnly}
-                            className={`flex items-center justify-center rounded-xl border transition-all shrink-0 ${isMobile ? 'size-11' : 'size-8'} ${isReadOnly
-                                ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'
-                                : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary active:scale-95 cursor-pointer'}`}
-                            title={language === 'ko' ? 'Google 타임라인 가져오기' : language === 'ja' ? 'Google Timeline 読み込み' : 'Import Google Timeline'}
-                        >
-                            <TimelineIcon className="w-4 h-4" />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Read-only banner in tile mode */}
-            {isReadOnly && (
-                <div className="mx-4 mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
-                    <LockIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 leading-snug">
-                        {language === 'ko'
-                            ? '도트/스퀘어/허니콤 모드에서는 지도가 읽기 전용으로 전환되어 노선 편집 및 경로 생성이 비활성화됩니다.'
-                            : language === 'ja'
-                                ? 'ドット/スクエア/ハニカム表示ではマップが読み取り専用になり、路線編集・経路生成が無効化されます。'
-                                : 'Map editing and route generation are disabled in Dot/Square/Hex lattice view.'}
-                    </p>
-                </div>
-            )}
-
-            <div className="px-5 py-4">
-                {/* Progress Card */}
-                {(() => {
-                    let totalKm = 0;
-                    let visitedKm = 0;
-                    Object.values(lineLengths).forEach((len) => {
-                        totalKm += len as number;
-                    });
-                    Object.values(visitedLineLengths).forEach((len) => {
-                        visitedKm += len as number;
-                    });
-                    const percent = totalKm > 0 ? (visitedKm / totalKm) * 100 : 0;
-
-                    return (
-                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 flex flex-col gap-2.5">
-                            <div className="flex items-baseline justify-between">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t.totalProgress}</span>
-                                <span className="text-sm font-black text-primary tabular-nums">{percent.toFixed(1)}%</span>
-                            </div>
-                            <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-                                <div
-                                    className="bg-primary h-full rounded-full transition-all duration-500"
-                                    style={{ width: `${percent}%` }}
-                                />
-                            </div>
-                            <div className="flex justify-between text-[11px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">
-                                <span>{visitedKm.toFixed(1)} km</span>
-                                <span className="text-slate-400 dark:text-slate-500">/ {totalKm.toFixed(1)} km</span>
-                            </div>
-                        </div>
-                    );
-                })()}
-
-                {/* Clear All Trips button & Confirmation dialog */}
-                {recordedTrips.length > 0 && onResetTrips && (
-                    <div className="mt-3">
-                        {!isResetConfirming ? (
+        <SidebarFrame
+            className={className}
+            icon={<HistoryIcon className="w-5 h-5 text-primary" />}
+            title={t.title}
+            subtitle={t.subtitle}
+            onClose={onClose}
+            headerExtra={
+                <div className="space-y-3">
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
+                        {onOpenRouteGenerator && (
                             <button
-                                onClick={() => !isReadOnly && setIsResetConfirming(true)}
+                                onClick={onOpenRouteGenerator}
                                 disabled={isReadOnly}
-                                className={`w-full flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${isMobile ? 'h-11' : 'py-2'} ${isReadOnly
-                                    ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'
-                                    : 'border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-98 cursor-pointer'}`}
+                                className={`flex-1 flex items-center justify-center gap-1.5 px-3 rounded-xl text-xs font-bold transition-all ${isMobile ? 'h-11' : 'py-2'} ${isReadOnly
+                                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+                                    : 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95 cursor-pointer'}`}
+                                title={isReadOnly ? (language === 'ko' ? '도트/스퀘어/허니콤 모드에서는 경로 생성이 비활성화됩니다.' : 'Route generator disabled in tile mode') : undefined}
                             >
-                                <TrashIcon className="w-3.5 h-3.5" />
-                                {(t as any).clearAllTrips || '모든 여행 기록 초기화'}
+                                <RouteIcon className="w-4 h-4" />
+                                <span>{t.generateRoute || '경로 생성'}</span>
                             </button>
-                        ) : (
-                            <div className="p-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/30 flex flex-col gap-2 animate-in fade-in duration-200">
-                                <p className="text-xs font-bold text-red-700 dark:text-red-300 text-center">
-                                    {(t as any).confirmClearTrips || '모든 여행 기록을 정말 삭제하시겠습니까?'}
-                                </p>
-                                <div className="grid grid-cols-2 gap-2 mt-1">
-                                    <button
-                                        onClick={() => {
-                                            onResetTrips();
-                                            setIsResetConfirming(false);
-                                        }}
-                                        className={`rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition-all active:scale-95 cursor-pointer ${isMobile ? 'h-11' : 'py-1.5'}`}
-                                    >
-                                        {(t as any).yesDelete || '예, 초기화'}
-                                    </button>
-                                    <button
-                                        onClick={() => setIsResetConfirming(false)}
-                                        className={`rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer ${isMobile ? 'h-11' : 'py-1.5'}`}
-                                    >
-                                        {t.cancel || '취소'}
-                                    </button>
-                                </div>
-                            </div>
+                        )}
+                        {onOpenTimelineImport && (
+                            <button
+                                onClick={onOpenTimelineImport}
+                                disabled={isReadOnly}
+                                className={`flex items-center justify-center gap-1.5 px-3 rounded-xl border transition-all ${isMobile ? 'h-11' : 'py-2'} ${isReadOnly
+                                    ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:border-primary hover:text-primary active:scale-95 cursor-pointer shadow-2xs'}`}
+                                title={language === 'ko' ? 'Google 타임라인 가져오기' : language === 'ja' ? 'Google Timeline 読み込み' : 'Import Google Timeline'}
+                            >
+                                <TimelineIcon className="w-4 h-4" />
+                                <span className="text-xs font-bold">Timeline</span>
+                            </button>
                         )}
                     </div>
-                )}
-            </div>
 
-            {/* Trip List */}
-            <div className="flex-1 overflow-y-auto px-5 pb-6 custom-scrollbar">
-                {displayTrips.length === 0 ? (
-                    <div className="py-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2">
-                        <RouteIcon className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                        <p className="text-xs font-bold">{t.noTrips}</p>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        {displayTrips.map((trip) => {
-                            const dateStr = trip.createdAt ? new Date(trip.createdAt).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                            }) : '';
+                    {/* Read-only banner in tile mode */}
+                    {isReadOnly && (
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5">
+                            <LockIcon className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                            <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 leading-snug">
+                                {language === 'ko'
+                                    ? '도트/스퀘어/허니콤 모드에서는 지도가 읽기 전용으로 전환되어 노선 편집 및 경로 생성이 비활성화됩니다.'
+                                    : language === 'ja'
+                                        ? 'ドット/スクエア/ハニカム表示ではマップが読み取り専用になり、路線編集・経路生成が無効化されます。'
+                                        : 'Map editing and route generation are disabled in Dot/Square/Hex lattice view.'}
+                            </p>
+                        </div>
+                    )}
 
-                            const startId = trip.startId || (trip.path && trip.path.length > 0 ? trip.path[0] : undefined);
-                            const endId = trip.endId || (trip.path && trip.path.length > 0 ? trip.path[trip.path.length - 1] : undefined);
+                    {/* Progress Card */}
+                    <ProgressCard
+                        label={t.totalProgress}
+                        percent={progressData.percent}
+                    >
+                        <div className="flex justify-between text-[11px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">
+                            <span>{progressData.visitedKm.toFixed(1)} km</span>
+                            <span className="text-slate-400 dark:text-slate-500">/ {progressData.totalKm.toFixed(1)} km</span>
+                        </div>
+                    </ProgressCard>
 
-                            const startName = getStationDisplayName(trip.start, startId, railData, language);
-                            const endName = getStationDisplayName(trip.end, endId, railData, language);
-
-                            const titleText = startName && endName
-                                ? `${startName} → ${endName}`
-                                : (trip.name || `Trip #${trip.id.slice(-4)}`);
-
-                            return (
-                                <div
-                                    key={trip.id}
-                                    className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow transition-all group relative"
+                    {/* Clear All Trips button & Confirmation dialog */}
+                    {recordedTrips.length > 0 && onResetTrips && (
+                        <div>
+                            {!isResetConfirming ? (
+                                <button
+                                    onClick={() => !isReadOnly && setIsResetConfirming(true)}
+                                    disabled={isReadOnly}
+                                    className={`w-full flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${isMobile ? 'h-11' : 'py-2'} ${isReadOnly
+                                        ? 'border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                                        : 'border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-98 cursor-pointer'}`}
                                 >
-                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                                            <h3 className="font-bold text-xs text-slate-800 dark:text-white truncate">
-                                                {titleText}
-                                            </h3>
-                                        </div>
-                                        {onDeleteTrip && (
-                                            <button
-                                                onClick={() => !isReadOnly && onDeleteTrip(trip.id)}
-                                                disabled={isReadOnly}
-                                                className={`transition-colors rounded-lg flex items-center justify-center ${isMobile ? 'size-11 -mr-2' : 'p-1'} ${isReadOnly
-                                                    ? 'text-slate-200 dark:text-slate-700 cursor-not-allowed'
-                                                    : 'text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer'}`}
-                                                title={t.deleteTrip || '여행 삭제'}
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold">
-                                        <span>{(trip.distance || 0).toFixed(1)} km · {(trip.sectionIds || []).length} {(t as any).sections || '구간'}</span>
-                                        {dateStr && <span>{dateStr}</span>}
+                                    <TrashIcon className="w-3.5 h-3.5" />
+                                    {(t as any).clearAllTrips || '모든 여행 기록 초기화'}
+                                </button>
+                            ) : (
+                                <div className="p-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/30 flex flex-col gap-2 animate-in fade-in duration-200">
+                                    <p className="text-xs font-bold text-red-700 dark:text-red-300 text-center">
+                                        {(t as any).confirmClearTrips || '모든 여행 기록을 정말 삭제하시겠습니까?'}
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2 mt-1">
+                                        <button
+                                            onClick={() => {
+                                                onResetTrips();
+                                                setIsResetConfirming(false);
+                                            }}
+                                            className={`rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition-all active:scale-95 cursor-pointer ${isMobile ? 'h-11' : 'py-1.5'}`}
+                                        >
+                                            {(t as any).yesDelete || '예, 초기화'}
+                                        </button>
+                                        <button
+                                            onClick={() => setIsResetConfirming(false)}
+                                            className={`rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95 cursor-pointer ${isMobile ? 'h-11' : 'py-1.5'}`}
+                                        >
+                                            {(t as any).cancel || '취소'}
+                                        </button>
                                     </div>
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-        </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            }
+        >
+            {displayTrips.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                    <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mb-1">{t.noTrips}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-600">지도를 드래그하여 첫 탑승 경로를 기록해보세요!</p>
+                </div>
+            ) : (
+                <div className="space-y-2 pb-8">
+                    {displayTrips.map((trip) => {
+                        const startName = getStationDisplayName(trip.start, trip.startId, railData, language);
+                        const endName = getStationDisplayName(trip.end, trip.endId, railData, language);
+                        const isRoundTrip = trip.startId === trip.endId && trip.sectionIds && trip.sectionIds.length > 2;
+
+                        return (
+                            <div
+                                key={trip.id}
+                                className="group relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col gap-1.5"
+                            >
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                        <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                            {isRoundTrip ? `${startName} (순환)` : `${startName} → ${endName}`}
+                                        </h4>
+                                    </div>
+                                    {onDeleteTrip && (
+                                        <button
+                                            onClick={() => onDeleteTrip(trip.id)}
+                                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 rounded-md transition-all cursor-pointer"
+                                            title="삭제"
+                                        >
+                                            <TrashIcon className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-semibold px-0.5">
+                                    <span>{trip.distance ? `${trip.distance.toFixed(1)} km` : ''} · {trip.sectionIds?.length || 0}구간</span>
+                                    <span>{trip.createdAt ? new Date(trip.createdAt).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+        </SidebarFrame>
     );
 };
 

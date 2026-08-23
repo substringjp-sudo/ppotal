@@ -1,130 +1,82 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import type { Region } from "@regionevel/types";
-import { fetchChildren, fetchRegionsByIds, fetchAncestors, fetchAncestorsBulk, fetchAllRegions } from "@/lib/regions";
-import { useVisitStore } from "@/store/visitStore";
+import { RegionHierarchySidebar } from "@/components/map/RegionHierarchySidebar";
+import { MyVisitsPane } from "@/components/map/MyVisitsPane";
+import { RegionMapHeader } from "@/components/map/RegionMapHeader";
+import { MapAppLayout } from "@ppotal/ui";
 import { useMapStore } from "@/store/mapStore";
-import { useAuthStore } from "@/store/authStore";
-import { padId } from "@regionevel/utils";
-import { Train } from "lucide-react";
+import { useVisitStore } from "@/store/visitStore";
+import { useIsPhone } from "@/lib/useIsPhone";
+import { fetchAllRegions } from "@/lib/regions";
 
-// Leaflet accesses `window` at import time — load only on the client
 const RegionMap = dynamic(
-  () => import("@/components/map/RegionMap").then((m) => ({ default: m.RegionMap })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-full text-gray-400">
-        Loading map...
-      </div>
-    ),
-  },
+  () => import("@/components/map/RegionMap").then((mod) => mod.RegionMap),
+  { ssr: false }
 );
 
 export function MapView() {
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { visits, allRegions, _hasHydrated, setRegions } = useVisitStore();
-  const { level, currentId } = useMapStore();
-  const [hasLoadedCountries, setHasLoadedCountries] = useState(false);
+  const {
+    leftSidebarOpen,
+    rightDrawerOpen,
+    currentId,
+    level,
+  } = useMapStore();
+
+  const {
+    allRegions,
+    visits,
+    _hasHydrated,
+    setRegions,
+  } = useVisitStore();
+
+  const [error] = useState<string | null>(null);
+  const isMobile = useIsPhone();
 
   useEffect(() => {
-    // 1. Wait for hydration
     if (!_hasHydrated) return;
 
-    // 2. Prevent multiple concurrent loads
     let active = true;
 
     const loadInitialData = async () => {
-      // 3. Get current state
-      const { currentId } = useMapStore.getState();
-      
-      // 4. Load metadata for visited regions, current region, and their ancestors
       try {
-        const visitedIds = Array.from(new Set(visits.map(v => padId(v.regionId))));
-        const targetIds = [...visitedIds];
-        if (currentId) targetIds.push(padId(currentId));
-
-        if (targetIds.length === 0) {
-          // If we don't have visits or currentId, just load countries if not done
-          if (!hasLoadedCountries) {
-            const initialCountries = await fetchChildren(null);
-            if (active) {
-              setRegions(initialCountries);
-              setHasLoadedCountries(true);
-              setInitialLoading(false);
-            }
-          } else {
-            if (active) setInitialLoading(false);
-          }
-          return;
-        }
-
-        // Only fetch if we don't have them in allRegions yet
-        // Access current allRegions from state to avoid dependency loop
-        const currentAllRegions = useVisitStore.getState().allRegions;
-        const existingIds = new Set(currentAllRegions.map(r => padId(r.id)));
-        const missingIds = targetIds.filter(id => !existingIds.has(id));
-
-        // Even if no missing IDs, we might still need initial countries for the base map
-        if (!hasLoadedCountries) {
-          const initialCountries = await fetchChildren(null);
-          if (active) {
-            setRegions(initialCountries);
-            setHasLoadedCountries(true);
-            setInitialLoading(false);
-          }
-        } else {
-          if (active) setInitialLoading(false);
-        }
-
-        if (missingIds.length === 0) {
-          return;
-        }
-
-        // Otherwise fetch missing metadata and ancestors in bulk in the background
-        const [visitedRegions, ancestorResults] = await Promise.all([
-          fetchRegionsByIds(missingIds),
-          fetchAncestorsBulk(missingIds)
-        ]);
-
+        const fullList = await fetchAllRegions();
         if (!active) return;
-
-        const allNewRegions = [...visitedRegions, ...ancestorResults];
-        setRegions(allNewRegions);
+        if (fullList.length > 0) {
+          setRegions(fullList);
+        }
       } catch (e) {
         console.error("Failed to load map metadata", e);
-        if (active) {
-          setInitialLoading(false);
-        }
       }
     };
 
-    loadInitialData();
+    const hasFullMetadata = allRegions.length > 50 && allRegions.some((r) => !!r.nameKo);
+    if (!hasFullMetadata) {
+      loadInitialData();
+    }
     return () => { active = false; };
-  }, [visits, _hasHydrated, setRegions, hasLoadedCountries, currentId, level]);
+  }, [visits, _hasHydrated, setRegions, allRegions, currentId, level]);
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-56px)] text-red-500">
+      <div className="flex items-center justify-center h-full text-red-500">
         {error}
       </div>
     );
   }
 
-  if (initialLoading && allRegions.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-56px)] text-gray-400">
-        Preparing the map...
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full relative overflow-hidden">
-      <RegionMap />
-    </div>
+    <MapAppLayout
+      isMobile={isMobile}
+      map={<RegionMap />}
+      subHeader={<RegionMapHeader />}
+      leftSidebar={<RegionHierarchySidebar />}
+      rightPanel={<MyVisitsPane />}
+      isLeftOpen={leftSidebarOpen}
+      isRightOpen={rightDrawerOpen}
+      leftWidth={350}
+      rightWidth={350}
+    />
   );
 }

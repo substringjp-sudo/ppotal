@@ -9,8 +9,8 @@ import {
   getRegionScore,
   padId,
 } from "@regionevel/utils";
-import { db, getRegionevelShapeId } from "@ppotal/firebase";
-import { collection, getDocs, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db, getRegionevelShapeId } from "@ppotal/firebase";
+import { collection, getDocs, doc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 
 interface VisitStore {
   visits: RegionVisit[];
@@ -29,9 +29,11 @@ interface VisitStore {
   };
   upsertVisit: (regionId: string, category: VisitCategory, count: number) => void;
   removeVisit: (regionId: string, category: VisitCategory) => void;
+  clearRegionVisits: (regionId: string) => void;
+  clearAllVisits: () => void;
   quickIncrement: (regionId: string) => void;
   addDrawPathVisits: (startRegionId: string, endRegionId: string, pathRegionIds: string[]) => void;
-  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory }>) => void;
+  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory }>) => Promise<void>;
   getScore: (regionId: string) => RegionScore | undefined;
   setRegions: (regions: Region[]) => void;
   recalculateScores: (regions?: Region[]) => void;
@@ -201,11 +203,23 @@ export const useVisitStore = create<VisitStore>()(
         const regionMap = new Map<string, Region>();
         currentRegions.forEach(r => regionMap.set(padId(r.id), r));
         const addedIds = new Set<string>();
+        
         regions.forEach(r => {
           const id = padId(r.id);
-          if (!regionMap.has(id)) {
+          const existing = regionMap.get(id);
+          if (!existing) {
             regionMap.set(id, r);
             addedIds.add(id);
+          } else {
+            // If new object has richer metadata (e.g. nameKo, nameEn, parentId), merge it
+            const hasNewMeta = (r.nameKo && !existing.nameKo) || 
+                              (r.nameEn && !existing.nameEn) || 
+                              (r.parentId && !existing.parentId) ||
+                              (r.name && r.name !== "Unknown" && existing.name === "Unknown");
+            if (hasNewMeta) {
+              regionMap.set(id, { ...existing, ...r });
+              addedIds.add(id);
+            }
           }
         });
 
@@ -282,6 +296,20 @@ export const useVisitStore = create<VisitStore>()(
         set({ visits: updatedVisits, scores: newScores, stats });
       },
 
+      clearRegionVisits(regionId) {
+        const id = padId(regionId);
+        const { visits, allRegions, scores: currentScores } = get();
+        const updatedVisits = visits.filter((v) => padId(v.regionId) !== id);
+        const { scores: newScores, stats } = calculateScoresAndStats(updatedVisits, allRegions, currentScores);
+        set({ visits: updatedVisits, scores: newScores, stats });
+      },
+
+      clearAllVisits() {
+        const { allRegions } = get();
+        const { scores: newScores, stats } = calculateScoresAndStats([], allRegions, {});
+        set({ visits: [], scores: newScores, stats });
+      },
+
       quickIncrement(regionId) {
         const id = padId(regionId);
         const { visits, upsertVisit } = get();
@@ -317,21 +345,37 @@ export const useVisitStore = create<VisitStore>()(
         });
       },
 
-      applyTimelineImport(entries) {
-        const { upsertVisit } = get();
+      async applyTimelineImport(entries) {
+        if (!entries || entries.length === 0) return;
 
-        // Read live each time (not a closed-over snapshot): a region can be
-        // touched at more than one category in this loop, and each call
-        // below can cascade-update lower categories via upsertVisit.
+        const { visits: prevVisits, allRegions, scores: currentScores } = get();
+        const visitMap = new Map<string, RegionVisit>();
+        for (const v of prevVisits) {
+          visitMap.set(`${padId(v.regionId)}__${v.category}`, { ...v, regionId: padId(v.regionId) });
+        }
+
         const getCount = (rid: string, cat: VisitCategory) => {
-          const found = get().visits.find(v => padId(v.regionId) === padId(rid) && v.category === cat);
+          const found = visitMap.get(`${padId(rid)}__${cat}`);
           return found ? found.count : 0;
         };
 
-        // Each entry is one occasion resolved from the timeline (a stop, or a
-        // day spent merely passing through). Applying them low-tier-first
-        // keeps a region's counts monotonic even when several categories
-        // were reached across the imported trip.
+        const applyChange = (rid: string, cat: VisitCategory, targetCount: number) => {
+          const cfg = VISIT_CONFIG[cat];
+          if (!cfg) return;
+          const finalCount = Math.max(0, Math.min(cfg.maxCount, targetCount));
+          const key = `${padId(rid)}__${cat}`;
+          if (finalCount > 0) {
+            visitMap.set(key, {
+              regionId: padId(rid),
+              category: cat,
+              count: finalCount,
+              updatedAt: Date.now(),
+            });
+          } else {
+            visitMap.delete(key);
+          }
+        };
+
         const order: VisitCategory[] = ["pass", "transit", "visit", "stay"];
         const grouped = new Map<string, number>(); // `${regionId}__${category}` -> count
         for (const { regionId, category } of entries) {
@@ -347,12 +391,75 @@ export const useVisitStore = create<VisitStore>()(
           byRegion.set(regionId, set);
         }
 
+        const touchedKeys = new Set<string>();
+
         for (const [regionId, categories] of byRegion) {
           for (const category of order) {
             if (!categories.has(category)) continue;
             const added = grouped.get(`${regionId}__${category}`) ?? 0;
             if (added <= 0) continue;
-            upsertVisit(regionId, category, getCount(regionId, category) + added);
+
+            const prevCount = getCount(regionId, category);
+            const newTarget = prevCount + added;
+            const diff = newTarget - prevCount;
+
+            applyChange(regionId, category, newTarget);
+            touchedKeys.add(`${padId(regionId)}__${category}`);
+
+            if (diff > 0) {
+              if (category === "transit") {
+                applyChange(regionId, "pass", getCount(regionId, "pass") + diff);
+                touchedKeys.add(`${padId(regionId)}__pass`);
+              } else if (category === "visit") {
+                applyChange(regionId, "transit", getCount(regionId, "transit") + diff);
+                applyChange(regionId, "pass", getCount(regionId, "pass") + diff);
+                touchedKeys.add(`${padId(regionId)}__transit`);
+                touchedKeys.add(`${padId(regionId)}__pass`);
+              } else if (category === "stay") {
+                applyChange(regionId, "visit", getCount(regionId, "visit") + diff);
+                applyChange(regionId, "transit", getCount(regionId, "transit") + diff);
+                applyChange(regionId, "pass", getCount(regionId, "pass") + diff);
+                touchedKeys.add(`${padId(regionId)}__visit`);
+                touchedKeys.add(`${padId(regionId)}__transit`);
+                touchedKeys.add(`${padId(regionId)}__pass`);
+              }
+            }
+          }
+        }
+
+        const updatedVisits = Array.from(visitMap.values());
+        const { scores: newScores, stats } = calculateScoresAndStats(updatedVisits, allRegions, currentScores);
+        
+        // Single atomic state update
+        set({ visits: updatedVisits, scores: newScores, stats });
+
+        // Cloud persistence if user is logged in
+        const currentUser = auth.currentUser;
+        if (currentUser && touchedKeys.size > 0) {
+          try {
+            const BATCH_SIZE = 400;
+            const touchedVisits = Array.from(touchedKeys)
+              .map((k) => visitMap.get(k))
+              .filter((v): v is RegionVisit => !!v);
+
+            for (let i = 0; i < touchedVisits.length; i += BATCH_SIZE) {
+              const chunk = touchedVisits.slice(i, i + BATCH_SIZE);
+              const batch = writeBatch(db);
+              chunk.forEach((v) => {
+                const docId = `${padId(v.regionId)}__${v.category}`;
+                const docRef = doc(db, "users", currentUser.uid, "visits", docId);
+                batch.set(docRef, {
+                  regionId: padId(v.regionId),
+                  category: v.category,
+                  count: v.count,
+                  ...(v.notes !== undefined ? { notes: v.notes } : {}),
+                  updatedAt: serverTimestamp(),
+                });
+              });
+              await batch.commit();
+            }
+          } catch (err) {
+            console.error("[visitStore] Failed to commit timeline visits to Firestore:", err);
           }
         }
       },

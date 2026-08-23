@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { TimelineIcon, CloseIcon, ExternalLinkIcon, UploadIcon, LockIcon, WarningIcon } from '@ppotal/ui';
+import { TimelineIcon, CloseIcon, ExternalLinkIcon, UploadIcon, LockIcon, WarningIcon, TimelineGuideSection } from '@ppotal/ui';
 import { RailData } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
@@ -11,7 +11,8 @@ import { Z } from '../lib/layers';
 
 import { parseTimeline } from '../lib/timeline/parse';
 import { StationIndex } from '../lib/timeline/stationIndex';
-import { matchAll, mergeAdjacent, DEFAULT_MATCH_OPTIONS } from '../lib/timeline/match';
+import { matchAll, mergeAdjacent, DEFAULT_MATCH_OPTIONS, isPointInJapan } from '../lib/timeline/match';
+import { createClientRouter } from '../lib/timeline/clientRouter';
 import type { CandidateRoute, MatchResult, Router } from '../lib/timeline/types';
 
 export interface TimelineImportModalProps {
@@ -26,10 +27,10 @@ export interface TimelineImportModalProps {
      */
     getShortestPath: ((start: string, end: string, allowedLines?: string[]) =>
         Promise<{ path: string[]; distance: number; geometries: [number, number][][]; sectionIds: number[] } | null>) | null;
-    onImportTrips: (trips: Trip[]) => void;
+    onImportTrips: (trips: Trip[], onProgress?: (done: number, total: number) => void) => Promise<void> | void;
 }
 
-type Phase = 'intro' | 'analyzing' | 'review' | 'error';
+type Phase = 'intro' | 'analyzing' | 'review' | 'importing' | 'error';
 
 /**
  * Opens the real Google Maps app if it's installed. Not a deep link into a
@@ -42,28 +43,39 @@ const OPEN_MAPS_APP_HREF = {
     android: 'https://www.google.com/maps' // opens in the installed app via Android App Links, or the browser
 };
 
-/** Wraps the app's own router so the pure matching library can call it. */
+/** Wraps the app's own router with a cache so the pure matching library can call it efficiently. */
 export function makeAppRouter(
     getShortestPath: NonNullable<TimelineImportModalProps['getShortestPath']>
 ): Router {
-    return async (fromId, toId) => {
-        const r = await getShortestPath(fromId, toId);
-        if (!r) return null;
-        const geometry = r.geometries.flat();
-        if (geometry.length < 2) return null;
-        const route: CandidateRoute = {
-            fromStationId: fromId,
-            toStationId: toId,
-            geometry,
-            stationIds: r.path,
-            // The app's own convention is kilometres (see Trip.distance); the
-            // matching library works in metres throughout, so it is converted
-            // once here rather than carrying two units through the library.
-            distance: r.distance * 1000,
-            sectionIds: r.sectionIds.map(Number),
-            lineIds: []
-        };
-        return route;
+    const cache = new Map<string, Promise<CandidateRoute | null>>();
+
+    return (fromId, toId) => {
+        const key = `${fromId}>${toId}`;
+        const existing = cache.get(key);
+        if (existing) return existing;
+
+        const p = (async () => {
+            const r = await getShortestPath(fromId, toId);
+            if (!r) return null;
+            const geometry = r.geometries.flat();
+            if (geometry.length < 2) return null;
+            const route: CandidateRoute = {
+                fromStationId: fromId,
+                toStationId: toId,
+                geometry,
+                stationIds: r.path,
+                // The app's own convention is kilometres (see Trip.distance); the
+                // matching library works in metres throughout, so it is converted
+                // once here rather than carrying two units through the library.
+                distance: r.distance * 1000,
+                sectionIds: r.sectionIds.map(Number),
+                lineIds: []
+            };
+            return route;
+        })();
+
+        cache.set(key, p);
+        return p;
     };
 }
 
@@ -79,7 +91,6 @@ export function tripFromResult(result: MatchResult, railData: RailData | null): 
     const toName = railData?.stations[route.toStationId]?.name ?? route.toStationId;
     return {
         id: `timeline_${result.segment.startTime}_${Math.random().toString(36).slice(2, 7)}`,
-        name: undefined,
         createdAt: new Date(result.segment.startTime).toISOString(),
         start: fromName,
         end: toName,
@@ -94,15 +105,19 @@ export function tripFromResult(result: MatchResult, railData: RailData | null): 
 }
 
 export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
-    isOpen, onClose, railData, getShortestPath, onImportTrips
+    isOpen,
+    onClose,
+    railData,
+    getShortestPath,
+    onImportTrips
 }) => {
     const { language } = useI18n();
     const t = getTranslations(TIMELINE_IMPORT_TRANSLATIONS, language);
 
     const [phase, setPhase] = useState<Phase>('intro');
-    const [platformTab, setPlatformTab] = useState<'android' | 'ios'>('android');
     const [fileNames, setFileNames] = useState<string[]>([]);
     const [progress, setProgress] = useState({ done: 0, total: 0 });
+    const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
     const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<MatchResult[]>([]);
     const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -122,6 +137,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
         setPhase('intro');
         setFileNames([]);
         setProgress({ done: 0, total: 0 });
+        setImportProgress({ done: 0, total: 0 });
         setError(null);
         setResults([]);
         setSelected(new Set());
@@ -135,7 +151,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
 
     const handleFiles = useCallback(async (fileList: FileList | null) => {
         if (!fileList || fileList.length === 0) return;
-        if (!railData || !stationIndex || !getShortestPath) {
+        if (!railData || !stationIndex) {
             setError(t.mapNotReady);
             setPhase('error');
             return;
@@ -169,17 +185,29 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
             }
 
             const { segments } = parseTimeline(validRoots);
-            if (segments.length === 0) {
+            // Pre-filter to segments with coordinates in Japan AND relevant hints (rail or unknown)
+            // Explicit non-rail activities (foot, road, cycling, flight, etc.) are skipped immediately for 10x speed.
+            const targetSegments = segments.filter(s => {
+                if (s.trace.length === 0) return false;
+                if (s.hint !== 'rail' && s.hint !== 'unknown') return false;
+                const f = s.trace[0];
+                const l = s.trace[s.trace.length - 1];
+                return isPointInJapan(f.lat, f.lon) || isPointInJapan(l.lat, l.lon);
+            });
+
+            if (targetSegments.length === 0) {
                 if (token !== runToken.current) return;
                 setError(t.noSegmentsFound);
                 setPhase('error');
                 return;
             }
 
-            const router = makeAppRouter(getShortestPath);
+            // Use client-side in-memory router (0.02ms per path lookup, 0 network latency)
+            const router = createClientRouter(railData);
             const matched = await matchAll(
-                segments, stationIndex, router, stationPos, DEFAULT_MATCH_OPTIONS,
-                (done, total) => { if (token === runToken.current) setProgress({ done, total }); }
+                targetSegments, stationIndex, router, stationPos, DEFAULT_MATCH_OPTIONS,
+                (done, total) => { if (token === runToken.current) setProgress({ done, total }); },
+                12
             );
             if (token !== runToken.current) return;
 
@@ -198,7 +226,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
             setError(t.parseFailed);
             setPhase('error');
         }
-    }, [railData, stationIndex, getShortestPath, stationPos, t]);
+    }, [railData, stationIndex, stationPos, t]);
 
     const toggle = useCallback((id: string) => {
         setSelected(prev => {
@@ -211,14 +239,30 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
     const matchedResults = useMemo(() => results.filter(r => r.candidates.length > 0), [results]);
     const unmatchedResults = useMemo(() => results.filter(r => r.candidates.length === 0), [results]);
 
-    const handleImport = useCallback(() => {
+    const handleImport = useCallback(async () => {
         const trips = matchedResults
             .filter(r => selected.has(r.segment.id))
             .map(r => tripFromResult(r, railData))
             .filter((t): t is Trip => t !== null);
-        onImportTrips(trips);
-        handleClose();
-    }, [matchedResults, selected, railData, onImportTrips, handleClose]);
+
+        if (trips.length === 0) return;
+
+        setPhase('importing');
+        setImportProgress({ done: 0, total: trips.length });
+
+        try {
+            await onImportTrips(trips, (done, total) => {
+                setImportProgress({ done, total });
+            });
+            setTimeout(() => {
+                handleClose();
+            }, 300);
+        } catch (err) {
+            console.error('Import failed', err);
+            setError(t.parseFailed);
+            setPhase('error');
+        }
+    }, [matchedResults, selected, railData, onImportTrips, handleClose, t]);
 
     if (!isOpen) return null;
 
@@ -253,44 +297,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                     {phase === 'intro' && (
                         <div className="p-4 flex flex-col gap-4">
                             <section>
-                                <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">{t.howTo}</h4>
-                                <div className="flex p-1 gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl mb-3">
-                                    {(['android', 'ios'] as const).map(p => (
-                                        <button
-                                            key={p}
-                                            onClick={() => setPlatformTab(p)}
-                                            className={`flex-1 h-10 rounded-lg text-xs font-bold transition-colors ${platformTab === p
-                                                ? 'bg-white dark:bg-slate-900 text-primary shadow-sm'
-                                                : 'text-slate-500 dark:text-slate-400'}`}
-                                        >
-                                            {p === 'android' ? t.androidTab : t.iosTab}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <ol className="flex flex-col gap-2 mb-3">
-                                    {t.stepsShared.map((step, i) => (
-                                        <li key={i} className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-300">
-                                            <span className="shrink-0 mt-0.5 size-5 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">
-                                                {i + 1}
-                                            </span>
-                                            <span className="leading-relaxed">{step}</span>
-                                        </li>
-                                    ))}
-                                </ol>
-
-                                <p className="text-[10.5px] text-slate-400 dark:text-slate-500 leading-relaxed mb-3">
-                                    {platformTab === 'android' ? t.androidNote : t.iosNote}
-                                </p>
-
-                                <a
-                                    href={platformTab === 'android' ? OPEN_MAPS_APP_HREF.android : OPEN_MAPS_APP_HREF.ios}
-                                    className="flex items-center justify-center gap-2 h-11 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                                >
-                                    <ExternalLinkIcon className="w-4 h-4" />
-                                    {t.openMapsApp}
-                                </a>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 text-center">{t.openMapsHint}</p>
+                                <TimelineGuideSection language={language as 'ko' | 'ja' | 'en'} />
                             </section>
 
                             <div className="h-px bg-slate-100 dark:bg-slate-800" />
@@ -313,11 +320,6 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                                     onChange={e => handleFiles(e.target.files)}
                                 />
                             </section>
-
-                            <p className="flex items-start gap-2 text-[10.5px] text-slate-400 dark:text-slate-500 leading-relaxed">
-                                <LockIcon className="w-4 h-4 shrink-0 text-slate-400" />
-                                {t.privacyNote}
-                            </p>
                         </div>
                     )}
 
@@ -336,6 +338,40 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({
                                         className="h-full bg-primary transition-all duration-200"
                                         style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }}
                                     />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {phase === 'importing' && (
+                        <div className="h-full flex flex-col items-center justify-center gap-5 p-6 animate-in fade-in duration-300">
+                            <div className="relative flex items-center justify-center size-14">
+                                <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                                <TimelineIcon className="w-6 h-6 text-primary animate-pulse" />
+                            </div>
+                            <div className="text-center">
+                                <p className="text-base font-bold text-slate-800 dark:text-slate-100">{t.importing}</p>
+                                {importProgress.total > 0 ? (
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium">
+                                        {t.importingProgress(importProgress.done, importProgress.total)}
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-slate-400 mt-1.5">{t.importing}</p>
+                                )}
+                            </div>
+                            {importProgress.total > 0 && (
+                                <div className="w-full max-w-sm flex flex-col items-center gap-2">
+                                    <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-inner p-0.5">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-150 ease-out"
+                                            style={{
+                                                width: `${Math.max(4, Math.round((importProgress.done / importProgress.total) * 100))}%`
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-primary dark:text-blue-400">
+                                        {Math.round((importProgress.done / importProgress.total) * 100)}%
+                                    </span>
                                 </div>
                             )}
                         </div>

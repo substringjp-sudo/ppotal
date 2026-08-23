@@ -124,9 +124,56 @@ export function traceLength(points: { lon: number; lat: number }[]): number {
 }
 
 export function percentile(sorted: number[], p: number): number {
-    if (sorted.length === 0) return NaN;
-    const idx = (sorted.length - 1) * p;
-    const lo = Math.floor(idx), hi = Math.ceil(idx);
-    if (lo === hi) return sorted[lo];
-    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+    if (sorted.length === 0) return 0;
+    const idx = Math.max(0, Math.min(sorted.length - 1, Math.floor(p * sorted.length)));
+    return sorted[idx];
+}
+
+/**
+ * Densifies a trace by interpolating intermediate points along hops longer than stepMeters.
+ * Step size default: ~3000m (3km).
+ * Skips extreme hops (> 600km) to avoid synthesizing flights.
+ */
+export function densifyTrace<T extends { lon: number; lat: number; t: number }>(
+    trace: T[],
+    stepMeters = 3000,
+    maxPoints = 80
+): T[] {
+    if (trace.length <= 1) return trace;
+    const result: T[] = [trace[0]];
+
+    for (let i = 0; i < trace.length - 1; i++) {
+        const p1 = trace[i];
+        const p2 = trace[i + 1];
+        const dist = metersBetween([p1.lon, p1.lat], [p2.lon, p2.lat]);
+
+        if (dist > 600_000) {
+            result.push(p2);
+            continue;
+        }
+
+        if (dist > stepMeters) {
+            const steps = Math.min(Math.floor(dist / stepMeters), 30);
+            for (let s = 1; s < steps; s++) {
+                const ratio = s / steps;
+                result.push({
+                    ...p1,
+                    lon: p1.lon + (p2.lon - p1.lon) * ratio,
+                    lat: p1.lat + (p2.lat - p1.lat) * ratio,
+                    t: Math.round(p1.t + (p2.t - p1.t) * ratio),
+                });
+            }
+        }
+        result.push(p2);
+    }
+
+    if (result.length > maxPoints) {
+        const step = (result.length - 1) / (maxPoints - 1);
+        const sampled: T[] = [];
+        for (let i = 0; i < maxPoints; i++) {
+            sampled.push(result[Math.round(i * step)]);
+        }
+        return sampled;
+    }
+    return result;
 }

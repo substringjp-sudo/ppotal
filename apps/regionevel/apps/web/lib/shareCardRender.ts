@@ -43,8 +43,8 @@ export const LIGHT_THEME: ShareCardTheme = {
   inkSoft: "#64748b",
   accent: "#2563eb",
   ocean: "#e0f2fe",
-  unvisited: "#e2e8f0",
-  border: "#e2e8f0",
+  unvisited: "#f1f5f9",
+  border: "#94a3b8",
 };
 
 export const DARK_THEME: ShareCardTheme = {
@@ -53,9 +53,9 @@ export const DARK_THEME: ShareCardTheme = {
   ink: "#f8fafc",
   inkSoft: "#94a3b8",
   accent: "#60a5fa",
-  ocean: "#0c2036",
+  ocean: "#091728",
   unvisited: "#1e293b",
-  border: "#334155",
+  border: "#64748b",
 };
 
 export interface ShareCardInput {
@@ -196,12 +196,20 @@ function drawMap(
     24,
   );
 
+  // 1. Surrounding Context Features (Drawn subtly behind)
+  const isLight = theme.ocean === "#e0f2fe";
   for (const f of contextFeatures ?? []) {
     drawFeature(ctx, f, project);
-    ctx.fillStyle = theme.unvisited;
+    ctx.fillStyle = isLight ? "#e2e8f0" : "#112233";
     ctx.fill();
+    if (showBorders) {
+      ctx.strokeStyle = isLight ? "#cbd5e1" : "#1e293b";
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
   }
 
+  // 2. Scoped Focus Features (Prefecture/City regions)
   for (const f of features) {
     const score = featureScore(f, scores);
     const value = score
@@ -212,7 +220,17 @@ function drawMap(
     ctx.fill();
     if (showBorders) {
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // 3. Highlighted outer boundary stroke if zoomed into a sub-region
+  if ((contextFeatures?.length ?? 0) > 0 && features.length > 0) {
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 2.5;
+    for (const f of features) {
+      drawFeature(ctx, f, project);
       ctx.stroke();
     }
   }

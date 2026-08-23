@@ -2,6 +2,7 @@ import { memo, useMemo, useState, useEffect } from "react";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import type { Region, RegionScore, VisitCategory } from "@regionevel/types";
 import { padId } from "@regionevel/utils";
+import { CloseIcon } from "@ppotal/ui";
 import { Z } from "@/lib/layers";
 import { SAFE_AREA } from "@/lib/mobile";
 
@@ -160,7 +161,7 @@ export const RegionTooltip = memo(function RegionTooltip({
       <div
         style={isMobile ? mobileStyle : desktopStyle}
         className={`
-          bg-white/95 backdrop-blur-md shadow-2xl overflow-hidden flex flex-col border border-slate-200/80
+          bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-2xl overflow-hidden flex flex-col border border-slate-200/80 dark:border-slate-800 pointer-events-auto
           ${isMobile 
             ? "animate-in slide-in-from-bottom duration-400 ease-out w-full max-h-[85vh] rounded-t-[32px]" 
             : "animate-in fade-in zoom-in duration-200 rounded-2xl"
@@ -170,20 +171,20 @@ export const RegionTooltip = memo(function RegionTooltip({
         {/* Mobile Handle */}
         {isMobile && (
           <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
-            <div className="w-10 h-1 bg-slate-200 rounded-full" />
+            <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
           </div>
         )}
 
-        <div className={`flex items-center justify-between px-5 py-4 shrink-0 border-b border-slate-100 bg-slate-50/50`}>
+        <div className={`flex items-center justify-between px-5 py-4 shrink-0 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50`}>
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <p className="font-black text-lg leading-tight text-slate-800">{region.name}</p>
+              <p className="font-black text-lg leading-tight text-slate-800 dark:text-white">{region.name}</p>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 shrink-0 shadow-sm">
+                <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-900/40 shrink-0 shadow-sm">
                   EXP {Math.round(score.directScore)}
                 </span>
                 {region.admLevel !== 2 && (
-                  <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 shrink-0 shadow-sm">
+                  <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/50 px-2 py-0.5 rounded-full border border-orange-100 dark:border-orange-900/40 shrink-0 shadow-sm">
                     Rate {Math.ceil(score.rateScore)}%
                   </span>
                 )}
@@ -196,30 +197,28 @@ export const RegionTooltip = memo(function RegionTooltip({
           {!isMobile && (
             <button
               onClick={onClose}
-              className="w-7 h-7 flex items-center justify-center rounded bg-white border border-slate-200 hover:bg-slate-50 transition-all text-slate-400"
-              aria-label="Close"
+              className="size-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              aria-label="닫기"
             >
-              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <CloseIcon className="w-4 h-4" />
             </button>
           )}
         </div>
 
         {region.admLevel === 1 && (
-          <div className="flex items-center justify-between px-5 py-2 border-b border-slate-50 bg-white shrink-0">
+          <div className="flex items-center justify-between px-5 py-2 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
             <button 
               onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
-              className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
               {activeTab === "summary" ? "Summary" : "Visit History"}
             </span>
             <button 
               onClick={() => setActiveTab(activeTab === "summary" ? "manual" : "summary")}
-              className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
             </button>
@@ -229,16 +228,16 @@ export const RegionTooltip = memo(function RegionTooltip({
         <div className={`flex-1 overflow-y-auto ${isMobile ? "px-6" : "px-5"} ${region.admLevel === 2 ? "pb-2" : "pb-4"}`}>
           {activeTab === "summary" && subRegionStats && (
             <div className="pt-4 pb-2">
-               <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-100 mb-5">
+               <div className="bg-orange-50/50 dark:bg-orange-950/20 rounded-2xl p-4 border border-orange-100 dark:border-orange-900/40 mb-5">
                   <div className="flex justify-between items-end mb-3">
                     <div>
                       <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Rate</p>
                       <div className="flex items-baseline gap-1">
-                        <p className="text-2xl font-black tabular-nums text-orange-600">
+                        <p className="text-2xl font-black tabular-nums text-orange-600 dark:text-orange-400">
                           {Math.ceil(score.rateScore)}<span className="text-sm ml-0.5">%</span>
                         </p>
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-orange-300 ml-2 bg-white px-2 py-0.5 rounded-full border border-orange-100">
-                          <span className="text-orange-500">{Math.round(score.childSum)}</span>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-orange-400 dark:text-orange-300 ml-2 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-orange-100 dark:border-orange-900/40">
+                          <span className="text-orange-500 dark:text-orange-400">{Math.round(score.childSum)}</span>
                           <span>/</span>
                           <div className="flex items-center">
                             <span className="text-orange-400/80">{Math.round(score.childMax / 50)}</span>
@@ -253,7 +252,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                           {region.admLevel === 0 ? "Regions" : "Cities"}
                         </p>
-                        <p className="text-[11px] font-bold tabular-nums text-slate-600">
+                        <p className="text-[11px] font-bold tabular-nums text-slate-600 dark:text-slate-300">
                           {subRegionStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{subRegionStats.totalCount}
                         </p>
                       </div>
@@ -262,7 +261,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                             Cities
                           </p>
-                          <p className="text-[11px] font-bold tabular-nums text-slate-600">
+                          <p className="text-[11px] font-bold tabular-nums text-slate-600 dark:text-slate-300">
                             {score.cityStats.visitedCount}<span className="text-[9px] text-slate-400 mx-0.5">/</span>{score.cityStats.totalCount}
                           </p>
                         </div>
@@ -278,15 +277,14 @@ export const RegionTooltip = memo(function RegionTooltip({
                </div>
 
                 <div className="grid grid-cols-5 gap-1.5 mb-5">
-
                  {VISIT_CATEGORY_ORDER.map(cat => {
                    const count = subRegionStats.categoryCounts[cat];
                    const cfg = VISIT_CONFIG[cat];
                    return (
                      <div key={cat} className="flex flex-col items-center">
-                        <div className={`w-full py-1.5 border ${count > 0 ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-50/50 border-slate-100 opacity-40'} flex flex-col items-center transition-all`}>
-                         <span className="text-xs font-black text-slate-800 tabular-nums">{count}</span>
-                         <span className="text-[7px] font-black text-slate-400 uppercase tracking-tighter mt-0.5">{cfg.label.slice(0, 4)}</span>
+                        <div className={`w-full py-1.5 rounded-xl border ${count > 0 ? 'bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 shadow-xs' : 'bg-slate-50/50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800/60 opacity-40'} flex flex-col items-center transition-all`}>
+                         <span className="text-xs font-black text-slate-800 dark:text-white tabular-nums">{count}</span>
+                         <span className="text-[7px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-tighter mt-0.5">{cfg.label.slice(0, 4)}</span>
                        </div>
                      </div>
                    );
@@ -313,12 +311,12 @@ export const RegionTooltip = memo(function RegionTooltip({
                     .map(child => (
                       <div 
                         key={child.id} 
-                        className="flex flex-col gap-1.5 group/item p-2 rounded-lg hover:bg-slate-50 transition-all cursor-pointer border border-transparent hover:border-slate-100"
+                        className="flex flex-col gap-1.5 group/item p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-700/60"
                         onClick={() => onDrillDown(child.id)}
                       >
                         <div className="flex justify-between items-end px-1">
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-black text-slate-700 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 transition-colors">{child.name}</span>
+                            <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 truncate max-w-[180px] leading-tight group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors">{child.name}</span>
                             <span className="text-[9px] font-bold text-slate-400">
                               {child.admLevel < 2 ? `Rate ${child.score!.rateScore}% · ` : ""}Base {child.score!.directScore}
                             </span>
@@ -327,7 +325,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                             {Math.round(child.score!.totalScore)}
                           </span>
                         </div>
-                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden relative">
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
                           <div 
                             className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${child.score!.scoreType === 'orange' ? 'bg-orange-500' : 'bg-blue-500'}`}
                             style={{ width: `${child.score!.totalScore}%` }}
@@ -358,7 +356,7 @@ export const RegionTooltip = memo(function RegionTooltip({
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em]">Visit History</p>
                     {isReadOnly && (
-                      <span className="text-[8px] font-black text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-tighter animate-pulse">
+                      <span className="text-[8px] font-black text-blue-500 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded-full uppercase tracking-tighter animate-pulse border border-blue-100 dark:border-blue-900/40">
                         Summed from sub-regions
                       </span>
                     )}
@@ -373,10 +371,10 @@ export const RegionTooltip = memo(function RegionTooltip({
                       <div key={cat} className={`group ${isReadOnly ? 'opacity-90' : ''}`}>
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-baseline gap-2 overflow-hidden mr-2">
-                            <span className="text-sm font-bold text-slate-700 whitespace-nowrap shrink-0">{cfg.label}</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap shrink-0">{cfg.label}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full`}>
+                            <span className={`text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900/40 px-2 py-0.5 rounded-full`}>
                               {b?.points || 0} pts
                             </span>
                           </div>
@@ -389,25 +387,25 @@ export const RegionTooltip = memo(function RegionTooltip({
                                 onClick={() => !isReadOnly && onVisitSet(cat, i + 1 === displayCount ? i : i + 1)}
                                 className={`flex-1 h-2 rounded-full transition-all duration-300 ${!isReadOnly ? 'hover:scale-y-125' : ''} ${
                                   i < displayCount 
-                                    ? "bg-blue-600 shadow-sm shadow-blue-200"
-                                    : "bg-slate-100"
+                                    ? "bg-blue-600 shadow-sm shadow-blue-200 dark:shadow-none"
+                                    : "bg-slate-100 dark:bg-slate-800"
                                 }`}
                               />
                             ))}
                           </div>
                           {!isReadOnly && (
-                            <div className="flex items-center gap-1 shrink-0">
+                            <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 onClick={() => onVisitSet(cat, Math.max(0, (b?.directCount || 0) - 1))}
                                 disabled={(b?.directCount || 0) <= 0}
-                                className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:opacity-20 text-slate-600 font-black text-base flex items-center justify-center transition-all border border-slate-100 active:scale-95"
+                                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-20 text-slate-700 dark:text-slate-300 font-black text-base flex items-center justify-center transition-all border border-slate-200/60 dark:border-slate-700 active:scale-95 cursor-pointer"
                               >
                                 −
                               </button>
                               <button
                                 onClick={() => onVisitSet(cat, Math.min(cfg.maxCount, (b?.directCount || 0) + 1))}
                                 disabled={(b?.directCount || 0) >= cfg.maxCount}
-                                className={`w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-100 disabled:opacity-20 font-black text-base flex items-center justify-center transition-all border active:scale-95`}
+                                className={`w-8 h-8 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800 disabled:opacity-20 font-black text-base flex items-center justify-center transition-all active:scale-95 cursor-pointer`}
                               >
                                 +
                               </button>
@@ -431,16 +429,16 @@ export const RegionTooltip = memo(function RegionTooltip({
         </div>
 
         {region.admLevel < 2 && (
-          <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white border-t border-gray-50" : "px-4 pb-4 pt-2"}`}>
+          <div className={`shrink-0 ${isMobile ? "px-6 pb-8 pt-2 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800" : "px-4 pb-4 pt-2"}`}>
             <button
               onClick={() => onDrillDown(padId(region.id))}
-              className={`w-full py-3.5 ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-200" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200"} text-white text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]`}
+              className={`w-full py-3.5 rounded-2xl ${score.scoreType === "orange" ? "bg-orange-600 hover:bg-orange-700 shadow-orange-500/20" : "bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-slate-900/20"} text-white text-sm font-black transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98] cursor-pointer`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              Explore
+              하위 지역 탐색 (Explore)
             </button>
           </div>
         )}

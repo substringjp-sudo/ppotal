@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { HelpCircle, X } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
+import { CloseIcon } from '@ppotal/ui';
 import { useI18n } from '../lib/i18n-context';
 import { HOW_TO_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { Z } from '../lib/layers';
@@ -61,7 +62,7 @@ const HowToModal: React.FC<HowToModalProps> = ({ isOpen, onClose }) => {
                         className="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         aria-label="닫기"
                     >
-                        <X className="w-5 h-5" />
+                        <CloseIcon className="w-5 h-5" />
                     </button>
                 </div>
 

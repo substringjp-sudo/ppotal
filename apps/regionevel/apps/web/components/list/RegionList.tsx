@@ -26,19 +26,19 @@ const RegionListItem = memo(({
   hasChildren: boolean;
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-shadow">
       <div className={`flex items-start justify-between ${region.admLevel >= 2 ? "mb-4" : "mb-2"}`}>
         <div className="flex items-center gap-3">
           <div
-            className="w-5 h-5 rounded-full border-2 border-white shadow-sm shrink-0"
+            className="w-5 h-5 rounded-full border-2 border-white dark:border-slate-800 shadow-xs shrink-0"
             style={{ backgroundColor: getScoreColor(score.totalScore) }}
           />
           <div>
-            <h3 className="font-bold text-gray-800 leading-tight">{region.name}</h3>
+            <h3 className="font-bold text-slate-800 dark:text-white leading-tight">{region.name}</h3>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs text-blue-600 font-bold">{score.totalScore} pts</span>
+              <span className="text-xs text-blue-600 dark:text-blue-400 font-bold">{score.totalScore} pts</span>
               {(score.rateScore > 0 || score.directScore > 0) && (
-                <span className="text-[10px] text-gray-400 font-medium">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                   ({[
                     region.admLevel !== 0 && `Exp ${score.directScore}`,
                     region.admLevel !== 2 && `Rate ${score.rateScore}%`
@@ -52,9 +52,9 @@ const RegionListItem = memo(({
         {hasChildren && (
           <button
             onClick={() => onDrillDown(region.id)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
           >
-            Details
+            상세
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -72,19 +72,19 @@ const RegionListItem = memo(({
         <div className="flex items-center gap-6 py-1">
           {score.subRegionStats && score.subRegionStats.totalCount > 0 && (
             <div className="flex flex-col">
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Regions</span>
+              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Regions</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-sm font-black text-gray-700">{score.subRegionStats.visitedCount}</span>
-                <span className="text-[10px] text-gray-400 font-medium">/ {score.subRegionStats.totalCount}</span>
+                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{score.subRegionStats.visitedCount}</span>
+                <span className="text-[10px] text-slate-400 font-medium">/ {score.subRegionStats.totalCount}</span>
               </div>
             </div>
           )}
           {score.cityStats && score.cityStats.totalCount > 0 && (
             <div className="flex flex-col">
-              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Cities</span>
+              <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider mb-0.5">Cities</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-sm font-black text-gray-700">{score.cityStats.visitedCount}</span>
-                <span className="text-[10px] text-gray-400 font-medium">/ {score.cityStats.totalCount}</span>
+                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{score.cityStats.visitedCount}</span>
+                <span className="text-[10px] text-slate-400 font-medium">/ {score.cityStats.totalCount}</span>
               </div>
             </div>
           )}
@@ -106,12 +106,12 @@ const RegionListItem = memo(({
               <button
                 key={cat}
                 onClick={() => onUpdateVisit(cat, ((b?.directCount ?? 0) + 1) % ((config?.maxCount ?? 0) + 1))}
-                className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all relative overflow-hidden ${
+                className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all relative overflow-hidden cursor-pointer ${
                   isActive
-                    ? "bg-blue-600 border-blue-600 text-white shadow-sm"
+                    ? "bg-blue-600 border-blue-600 text-white shadow-xs"
                     : hasSubWeight
-                      ? "bg-blue-50 border-blue-200 text-blue-600"
-                      : "bg-white border-gray-100 text-gray-400 hover:border-blue-200 hover:bg-blue-50/30"
+                      ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400"
+                      : "bg-white dark:bg-slate-800/60 border-slate-200/70 dark:border-slate-800 text-slate-400 hover:border-blue-200 dark:hover:border-blue-700 hover:bg-blue-50/30 dark:hover:bg-blue-950/30"
                 }`}
               >
                 <div 
@@ -119,7 +119,7 @@ const RegionListItem = memo(({
                   style={{ width: `${((b?.effectiveCount ?? 0) / (config?.maxCount || 1)) * 100}%` }}
                 />
                 {isActive && (
-                  <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full">
                     {b?.points ?? 0} pts
                   </span>
                 )}
@@ -129,7 +129,7 @@ const RegionListItem = memo(({
                 <span className="text-[10px] font-bold tracking-tighter whitespace-nowrap z-10">
                   {config?.label}
                 </span>
-                <span className={`text-xs font-black z-10 ${isActive ? "text-blue-100" : hasSubWeight ? "text-blue-400" : "text-gray-300"}`}>
+                <span className={`text-xs font-black z-10 ${isActive ? "text-blue-100" : hasSubWeight ? "text-blue-400" : "text-slate-300 dark:text-slate-600"}`}>
                   {isActive ? b?.directCount : hasSubWeight ? `+${b?.effectiveCount}` : 0}
                 </span>
               </button>
@@ -325,16 +325,16 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
   }, [currentRegions, initialRegions, currentParentId]);
 
   const sortOptions: { value: SortOrder; label: string }[] = [
-    { value: "NAME_ASC", label: "Name (A-Z)" },
-    { value: "NAME_DESC", label: "Name (Z-A)" },
-    { value: "SCORE_DESC", label: "Highest Score" },
-    { value: "SCORE_ASC", label: "Lowest Score" },
+    { value: "NAME_ASC", label: "이름순 (A-Z)" },
+    { value: "NAME_DESC", label: "이름순 (Z-A)" },
+    { value: "SCORE_DESC", label: "점수 높은순" },
+    { value: "SCORE_ASC", label: "점수 낮은순" },
   ];
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
       {/* Header with Search and Breadcrumbs */}
-      <div className="sticky top-0 bg-white border-b border-gray-200 z-20 shadow-sm">
+      <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 z-20 shadow-xs">
         {/* Loading Bar */}
         {(loading || loadingSearch) && (
           <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden z-30">
@@ -345,13 +345,13 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
           <div className="relative">
             <input
               type="search"
-              placeholder="Search for a country or region..."
+              placeholder="국가 또는 지역 검색..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-100 border-none rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border border-transparent focus:border-slate-300 dark:focus:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 transition-all outline-none"
             />
             <svg
-              className="absolute left-3 top-3 w-4 h-4 text-gray-400"
+              className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 pointer-events-none"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -365,7 +365,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
             </svg>
             {(loading || loadingSearch) && (
               <div className="absolute right-3 top-3 flex items-center gap-2">
-                {loadingSearch && <span className="text-[10px] text-blue-500 font-bold animate-pulse">Loading Global Data...</span>}
+                {loadingSearch && <span className="text-[10px] text-blue-500 font-bold animate-pulse">데이터 동기화 중...</span>}
                 <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               </div>
             )}
@@ -373,15 +373,15 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
 
           {/* Sort Options */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">Sort</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">정렬</span>
             {sortOptions.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setSortOrder(opt.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   sortOrder === opt.value
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
                 }`}
               >
                 {opt.label}
@@ -395,7 +395,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
                 <div key={bc.id || "root"} className="flex items-center shrink-0">
                   {i > 0 && (
                     <svg
-                      className="w-4 h-4 text-gray-300 mx-1"
+                      className="w-4 h-4 text-slate-300 dark:text-slate-600 mx-1"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -410,10 +410,10 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
                   )}
                   <button
                     onClick={() => setCurrentParentId(bc.id)}
-                    className={`text-sm font-medium px-2 py-1 rounded-lg transition-colors ${
+                    className={`text-sm font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
                       i === breadcrumbs.length - 1
-                        ? "text-blue-600 bg-blue-50"
-                        : "text-gray-500 hover:bg-gray-100"
+                        ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
+                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >
                     {bc.name}
@@ -441,15 +441,14 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
         {sortedAndFiltered.length > visibleItems.length && (
           <button
             onClick={() => setDisplayCount(prev => prev + 50)}
-            className="w-full py-4 text-sm font-bold text-blue-600 bg-white rounded-2xl border border-dashed border-blue-200 hover:bg-blue-50 transition-colors"
+            className="w-full py-4 text-sm font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-blue-200 dark:border-blue-800 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
           >
-            Load More ({sortedAndFiltered.length - visibleItems.length} remaining)
+            더 보기 ({sortedAndFiltered.length - visibleItems.length}개 남음)
           </button>
         )}
 
         {sortedAndFiltered.length === 0 && !loading && !loadingSearch && (
-
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
             <svg
               className="w-12 h-12 mb-3 opacity-20"
               fill="none"
@@ -469,7 +468,7 @@ export function RegionList({ regions: initialRegions = [] }: RegionListProps) {
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            <p className="text-sm">No results found</p>
+            <p className="text-sm font-medium">검색 결과가 없습니다</p>
           </div>
         )}
       </div>

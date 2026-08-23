@@ -10,7 +10,8 @@ import {
   GoogleAuthProvider,
 } from 'firebase/auth';
 import { auth } from '@ppotal/firebase';
-import { X, Mail, Lock, User as UserIcon, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Loader2 } from 'lucide-react';
+import { CloseIcon } from './icons';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -30,9 +31,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
 
   if (!isOpen) return null;
 
+  const userLang = language || (typeof navigator !== 'undefined' ? navigator.language : 'ko');
+  const isKo = userLang.startsWith('ko');
+  const isJa = userLang.startsWith('ja');
+
   const getFriendlyErrorMessage = (err: any): string => {
     const code = err?.code;
-    const defaultFail = 'Authentication failed';
+    const defaultFail = isKo ? '인증에 실패했습니다.' : isJa ? '認証に失敗しました。' : 'Authentication failed';
     if (!code) {
       return err instanceof Error ? err.message : defaultFail;
     }
@@ -72,11 +77,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
         ko: '너무 많은 시도가 감지되었습니다. 잠시 후 다시 시도해주세요.',
         en: 'Too many attempts. Please try again later.',
         ja: '試行回数が多すぎます。しばらく時間をおいてから再度お試しください。'
+      },
+      'auth/popup-closed-by-user': {
+        ko: '로그인 팝업이 닫혔습니다.',
+        en: 'Sign-in popup was closed.',
+        ja: 'ログインポップアップが閉じられました。'
       }
     };
 
-    const userLang = language || (typeof navigator !== 'undefined' ? navigator.language : 'en');
-    const langKey = userLang.startsWith('ko') ? 'ko' : userLang.startsWith('ja') ? 'ja' : 'en';
+    const langKey = isKo ? 'ko' : isJa ? 'ja' : 'en';
     return messages[code]?.[langKey] || err.message || defaultFail;
   };
 
@@ -98,9 +107,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
         onClose();
       } else if (mode === 'reset') {
         await sendPasswordResetEmail(auth, email);
-        const userLang = language || (typeof navigator !== 'undefined' ? navigator.language : 'en');
-        const isKo = userLang.startsWith('ko');
-        const isJa = userLang.startsWith('ja');
         setSuccessMessage(
           isKo ? '비밀번호 재설정 이메일이 발송되었습니다. 메일함을 확인해주세요.' :
           isJa ? 'パスワード再設定メールを送信しました。メールボックスをご確認ください。' :
@@ -108,7 +114,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
         );
       }
     } catch (err: any) {
-      console.error('Auth error:', err);
+      const code = err?.code;
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+        console.warn('[Auth] Login attempt failed with invalid credentials.');
+      } else {
+        console.error('[Auth] Error:', err);
+      }
       setError(getFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
@@ -123,7 +134,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
       await signInWithPopup(auth, provider);
       onClose();
     } catch (err: any) {
-      console.error('Google Auth error:', err);
+      if (err?.code === 'auth/popup-closed-by-user') {
+        console.warn('[Auth] Google popup closed by user.');
+      } else {
+        console.error('[Auth] Google Auth error:', err);
+      }
       setError(getFriendlyErrorMessage(err));
     } finally {
       setLoading(false);
@@ -137,36 +152,48 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
 
       {/* Modal Content */}
       <div className="auth-modal-container">
-        <button className="auth-modal-close-btn" onClick={onClose}>
-          <X size={18} />
+        <button className="auth-modal-close-btn" onClick={onClose} aria-label={isKo ? "닫기" : isJa ? "閉じる" : "Close"}>
+          <CloseIcon size={18} />
         </button>
 
         <div className="auth-modal-header">
           <div className="auth-modal-icon-container">
             <UserIcon size={24} />
           </div>
-          <h2>{mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Join the Journey' : 'Reset Password'}</h2>
-          <p>{mode === 'login' ? `Log in to access ${appName} services` : mode === 'signup' ? `Create an account for all ${appName} features` : `Enter your email to receive a password reset link`}</p>
+          <h2>
+            {mode === 'login' 
+              ? (isKo ? '로그인' : isJa ? 'ログイン' : 'Welcome Back')
+              : mode === 'signup' 
+                ? (isKo ? '회원가입' : isJa ? '新規登録' : 'Create Account')
+                : (isKo ? '비밀번호 재설정' : isJa ? 'パスワード再設定' : 'Reset Password')}
+          </h2>
+          <p>
+            {mode === 'login'
+              ? (isKo ? `${appName} 서비스에 로그인합니다.` : isJa ? `${appName} サービスにログインします。` : `Log in to access ${appName} services`)
+              : mode === 'signup'
+                ? (isKo ? `${appName}의 모든 기능을 위한 계정을 생성합니다.` : isJa ? `${appName}のすべての機能を利用するためのアカウントを作成します。` : `Create an account for all ${appName} features`)
+                : (isKo ? '가입한 이메일을 입력하면 재설정 링크를 보내드립니다.' : isJa ? '登録したメールアドレスを入力して再設定リンクを受信します。' : `Enter your email to receive a password reset link`)}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-modal-form">
           {mode === 'signup' && (
             <div className="auth-form-group">
-              <label>Nickname</label>
+              <label>{isKo ? '닉네임' : isJa ? 'ニックネーム' : 'Nickname'}</label>
               <div className="auth-input-wrapper">
                 <UserIcon size={18} className="auth-input-icon" />
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your Name"
+                  placeholder={isKo ? '사용할 닉네임' : isJa ? 'ニックネーム' : 'Your Name'}
                 />
               </div>
             </div>
           )}
 
           <div className="auth-form-group">
-            <label>Email Address</label>
+            <label>{isKo ? '이메일 주소' : isJa ? 'メールアドレス' : 'Email Address'}</label>
             <div className="auth-input-wrapper">
               <Mail size={18} className="auth-input-icon" />
               <input
@@ -181,7 +208,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
 
           {mode !== 'reset' && (
             <div className="auth-form-group">
-              <label>Password</label>
+              <label>{isKo ? '비밀번호' : isJa ? 'パスワード' : 'Password'}</label>
               <div className="auth-input-wrapper">
                 <Lock size={18} className="auth-input-icon" />
                 <input
@@ -203,7 +230,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
                 className="auth-toggle-btn"
                 style={{ fontSize: '0.8rem', textDecoration: 'none' }}
               >
-                {language?.startsWith('ko') ? '비밀번호를 잊으셨나요?' : language?.startsWith('ja') ? 'パスワードをお忘れですか？' : 'Forgot Password?'}
+                {isKo ? '비밀번호를 잊으셨나요?' : isJa ? 'パスワードをお忘れですか？' : 'Forgot Password?'}
               </button>
             </div>
           )}
@@ -233,7 +260,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
               <Loader2 className="auth-spinner" size={20} />
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <span>{mode === 'login' ? 'Log In' : mode === 'signup' ? 'Create Account' : (language?.startsWith('ko') ? '재설정 메일 전송' : language?.startsWith('ja') ? '再設定メールを送信' : 'Send Reset Link')}</span>
+                <span>
+                  {mode === 'login' 
+                    ? (isKo ? '로그인' : isJa ? 'ログイン' : 'Log In') 
+                    : mode === 'signup' 
+                      ? (isKo ? '가입하기' : isJa ? '登録する' : 'Create Account') 
+                      : (isKo ? '재설정 메일 전송' : isJa ? '再設定メールを送信' : 'Send Reset Link')}
+                </span>
                 <ArrowRight size={18} />
               </div>
             )}
@@ -259,7 +292,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
                   <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.04 0 12s.47 3.79 1.29 5.42l3.99-3.15z"/>
                   <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                 </svg>
-                <span>{language?.startsWith('ko') ? 'Google 계정으로 계속' : language?.startsWith('ja') ? 'Googleで継続' : 'Continue with Google'}</span>
+                <span>{isKo ? 'Google 계정으로 계속' : isJa ? 'Googleで継続' : 'Continue with Google'}</span>
               </button>
             </>
           )}
@@ -268,11 +301,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
         <div className="auth-modal-footer">
           {mode === 'reset' ? (
             <button onClick={() => { setMode('login'); setError(null); setSuccessMessage(null); }} className="auth-toggle-btn">
-              {language?.startsWith('ko') ? '로그인 화면으로 돌아가기' : language?.startsWith('ja') ? 'ログイン画面に戻る' : 'Back to Login'}
+              {isKo ? '로그인 화면으로 돌아가기' : isJa ? 'ログイン画面に戻る' : 'Back to Login'}
             </button>
           ) : (
             <>
-              <span>{mode === 'login' ? "Don't have an account?" : "Already have an account?"}</span>
+              <span>{mode === 'login' ? (isKo ? '계정이 없으신가요?' : isJa ? 'アカウントをお持ちでないですか？' : "Don't have an account?") : (isKo ? '이미 계정이 있으신가요?' : isJa ? 'すでにアカウントをお持ちですか？' : "Already have an account?")}</span>
               <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); setSuccessMessage(null); }} className="auth-toggle-btn">
                 {mode === 'login' ? 'Sign up for free' : 'Log in here'}
               </button>

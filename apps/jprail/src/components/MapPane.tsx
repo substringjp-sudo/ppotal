@@ -8,9 +8,8 @@ import JapanMap from './JapanMap';
 import MunicipalMap from './MunicipalMap';
 import AirportLayer from './AirportLayer';
 import Stations from './Stations';
-import { sharedSvgRenderer } from './Map';
 import RailroadLayer from './RailroadLayer';
-import { StationNode, LineSegment } from '../lib/graphUtils';
+import { StationNode, LineSegment, getSectionMap } from '../lib/graphUtils';
 import { getLineColor } from '../lib/lineColors';
 import { MapStyleSettings } from './MainPageClient';
 import { trackEvent } from '../lib/gtag';
@@ -178,9 +177,9 @@ const MapPane: React.FC<MapPaneProps> = ({
             }
         });
 
-        const rawSections = (railData as unknown as RailData).sections.sections || [];
+        const sectionMap = getSectionMap(railData);
         uniqueSectionIds.forEach(sid => {
-            const section = rawSections.find((s: Section) => s.id === sid);
+            const section = sectionMap.get(sid);
             if (section) {
                 const lineId = `${section.company_id}::${section.line_id}`;
                 const pairKey = [section.start, section.end].sort().join('<->');
@@ -315,7 +314,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragStartStation,
         dragPath,
         handleStationMouseDown: rawHandleStationMouseDown,
-        handleStationMouseUp,
+        handleStationMouseUp: rawHandleStationMouseUp,
         snapCandidate,
         pressCandidate
     } = useTripRecorder({
@@ -343,10 +342,16 @@ const MapPane: React.FC<MapPaneProps> = ({
     const handleStationMouseDown = useCallback((id: string, coords: [number, number]) => {
         if (onSetActiveLine) onSetActiveLine(null);
         setHoveredLine(null);
-        setFloatingTooltip(prev => ({ ...prev, visible: false }));
+        setFloatingTooltip(prev => ({ ...prev, visible: false, content: null }));
 
         rawHandleStationMouseDown(id, coords);
     }, [rawHandleStationMouseDown, onSetActiveLine]);
+
+    const handleStationMouseUp = useCallback((_id?: string) => {
+        setFloatingTooltip(prev => ({ ...prev, visible: false, content: null, priority: 'low' }));
+        setHoveredLine(null);
+        rawHandleStationMouseUp();
+    }, [rawHandleStationMouseUp]);
 
     const handleTooltipUpdate = useCallback((content: string | null, x: number, y: number, priority: 'low' | 'high' = 'high') => {
         if (styleSettings.landForm !== 'outline') {

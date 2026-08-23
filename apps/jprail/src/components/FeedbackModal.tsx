@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, X } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
+import { CloseIcon } from '@ppotal/ui';
 import { db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useI18n } from '../lib/i18n-context';
@@ -23,6 +24,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
 
     useEffect(() => {
         if (isOpen) {
+            setContent('');
+            setMessage(null);
             const handleEscape = (e: KeyboardEvent) => {
                 if (e.key === 'Escape') onClose();
             };
@@ -47,10 +50,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         try {
             await addDoc(collection(db, 'feedbacks'), {
                 content,
-                author: author || t.placeholderName,
-                type: 'General',
-                createdAt: serverTimestamp(),
-                status: 'new'
+                author: author.trim() || 'Anonymous',
+                timestamp: serverTimestamp(),
+                language,
+                userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+                app: 'jprail'
             });
 
             setMessage({ type: 'success', text: t.successMsg });
@@ -59,9 +63,9 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
             setTimeout(() => {
                 onClose();
                 setMessage(null);
-            }, 2000);
+            }, 1500);
         } catch (error) {
-            console.error('Feedback submission error:', error);
+            console.error('Error submitting feedback:', error);
             setMessage({ type: 'error', text: t.errorMsg });
         } finally {
             setIsSubmitting(false);
@@ -88,7 +92,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
                     className="absolute top-6 right-6 size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     aria-label="닫기"
                 >
-                    <X className="w-5 h-5" />
+                    <CloseIcon className="w-5 h-5" />
                 </button>
 
                 {/* Title & Desc */}

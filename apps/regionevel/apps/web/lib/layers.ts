@@ -18,21 +18,21 @@
  */
 export const Z = {
   /** Floats over the map: breadcrumb, level switch, badges, loading. */
-  mapOverlay: 1000,
+  mapOverlay: 100,
   /** A sheet that leaves the rest of the app usable. */
-  sheet: 1200,
-  /** The desktop region detail pane. */
-  detailPane: 1400,
+  sheet: 200,
   /** The top bar, on both phone and desktop. */
-  header: 1600,
+  header: 1100,
+  /** The desktop region detail pane. */
+  detailPane: 1200,
   /** Anything that dims the screen behind it, including the mobile detail sheet. */
-  modal: 2000,
+  modal: 10000,
   /** A dialog raised from inside another dialog. */
-  modalNested: 2200,
+  modalNested: 10100,
   /** Transient notices that must outlive whatever raised them. */
-  toast: 2400,
+  toast: 10200,
   /** Follows the pointer; above everything by definition. */
-  tooltip: 2600,
+  tooltip: 10300,
 } as const;
 
 export type LayerName = keyof typeof Z;

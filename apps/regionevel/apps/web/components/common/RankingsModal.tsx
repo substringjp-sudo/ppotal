@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useAuth } from "@ppotal/ui";
+import { useAuth, CloseIcon } from "@ppotal/ui";
 import { db } from "@ppotal/firebase";
 import { collection, getDocs, doc, setDoc } from "firebase/firestore";
 import { useVisitStore } from "@/store/visitStore";
@@ -227,10 +227,10 @@ export const RankingsModal: React.FC<RankingsModalProps> = ({ isOpen, onClose })
 
           <button
             onClick={onClose}
-            className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors font-bold"
-            aria-label="Close modal"
+            className="size-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="닫기"
           >
-            <X className="w-4 h-4" />
+            <CloseIcon className="w-4 h-4" />
           </button>
         </header>
 

@@ -24,21 +24,21 @@
  */
 export const Z = {
     /** Floats over the map: zoom, style, off-screen markers, loading. */
-    mapOverlay: 1000,
+    mapOverlay: 100,
     /** The phone bottom sheet. Above the map, below anything that covers it. */
-    sheet: 1200,
+    sheet: 200,
     /** Desktop station and line detail panes. */
-    detailPane: 1400,
+    detailPane: 300,
     /** The top bar, on both phone and desktop. */
-    header: 1600,
+    header: 500,
     /** Dialogs. Above the header, which is the bug this scale was written for. */
-    modal: 2000,
+    modal: 10000,
     /** A dialog raised from inside another dialog. */
-    modalNested: 2200,
+    modalNested: 10100,
     /** Transient notices that must outlive whatever raised them. */
-    toast: 2400,
+    toast: 10200,
     /** Follows the pointer; above everything by definition. */
-    tooltip: 2600
+    tooltip: 10300,
 } as const;
 
 export type LayerName = keyof typeof Z;

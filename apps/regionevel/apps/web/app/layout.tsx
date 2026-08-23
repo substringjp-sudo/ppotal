@@ -112,7 +112,7 @@ export default function RootLayout({
           <FirebaseProvider>
             <div className="flex-1 flex flex-col w-full bg-white h-full overflow-hidden">
               <Nav />
-              <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+              <main className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
                 <script
                   type="application/ld+json"
                   dangerouslySetInnerHTML={{

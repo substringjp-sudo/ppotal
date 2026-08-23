@@ -70,13 +70,46 @@ export async function fetchChildren(parentId: string | null): Promise<Region[]> 
   }
 }
 
+const CACHE_VERSION = "v1";
+const ALL_REGIONS_CACHE_KEY = `regionevel_all_regions_${CACHE_VERSION}`;
+const GEOMETRY_CACHE_PREFIX = `regionevel_geom_${CACHE_VERSION}_`;
+
+function getLocalCache<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+function setLocalCache<T>(key: string, data: T): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.warn("[regions cache] Failed to set localStorage cache", e);
+  }
+}
+
 export async function fetchAllRegions(): Promise<Region[]> {
+  const cached = getLocalCache<Region[]>(ALL_REGIONS_CACHE_KEY);
+  if (cached && Array.isArray(cached) && cached.length > 50) {
+    return cached;
+  }
+
   try {
     const store = await getStore();
-    return await store.getAllRegions();
+    const list = await store.getAllRegions();
+    if (list && list.length > 0) {
+      setLocalCache(ALL_REGIONS_CACHE_KEY, list);
+    }
+    return list;
   } catch (e) {
     console.error("Failed to fetch all regions", e);
-    return [];
+    return cached || [];
   }
 }
 
@@ -227,7 +260,14 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
   const cached = geometryCache.get(cacheKey);
   if (cached) return cached;
 
+  const storageKey = `${GEOMETRY_CACHE_PREFIX}${cacheKey}`;
+  const localCached = getLocalCache<any[]>(storageKey);
+
   const request = (async () => {
+    if (localCached && Array.isArray(localCached) && localCached.length > 0) {
+      return localCached;
+    }
+
     try {
       const store = await getStore();
       let rawFeatures = await getGeometriesByParentResolvingRoot(store, parentId);
@@ -242,11 +282,15 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
         console.warn(`[fetchGeometries] No geometries found for parent ${parentId ?? "root"}`);
       }
 
-      return normalizeFeatures(rawFeatures);
+      const normalized = normalizeFeatures(rawFeatures);
+      if (normalized.length > 0) {
+        setLocalCache(storageKey, normalized);
+      }
+      return normalized;
     } catch (e) {
       console.error(`Failed to fetch geometries for parent ${parentId}`, e);
       geometryCache.delete(cacheKey); // a failure should not be cached
-      return [];
+      return localCached || [];
     }
   })();
 
@@ -259,7 +303,14 @@ export async function fetchCountryGeometries(iso3: string, admLevel: number): Pr
   const cached = geometryCache.get(cacheKey);
   if (cached) return cached;
 
+  const storageKey = `${GEOMETRY_CACHE_PREFIX}${cacheKey}`;
+  const localCached = getLocalCache<any[]>(storageKey);
+
   const request = (async () => {
+    if (localCached && Array.isArray(localCached) && localCached.length > 0) {
+      return localCached;
+    }
+
     try {
       const store = await getStore();
       let rawFeatures = await store.getGeometriesByCountry(iso3, admLevel);
@@ -270,11 +321,15 @@ export async function fetchCountryGeometries(iso3: string, admLevel: number): Pr
         rawFeatures = await fsStore.getGeometriesByCountry(iso3, admLevel);
       }
 
-      return normalizeFeatures(rawFeatures);
+      const normalized = normalizeFeatures(rawFeatures);
+      if (normalized.length > 0) {
+        setLocalCache(storageKey, normalized);
+      }
+      return normalized;
     } catch (e) {
-      console.error(`Failed to fetch geometries for country ${iso3} level ${admLevel}`, e);
+      console.error(`Failed to fetch geometries for ${iso3}/${admLevel}`, e);
       geometryCache.delete(cacheKey);
-      return [];
+      return localCached || [];
     }
   })();
 

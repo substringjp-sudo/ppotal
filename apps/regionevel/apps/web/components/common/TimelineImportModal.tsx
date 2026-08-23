@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Z } from "@/lib/layers";
 import {
-  TimelineIcon, CloseIcon, UploadIcon, WarningIcon
+  TimelineIcon, CloseIcon, UploadIcon, WarningIcon, TimelineGuideSection
 } from "@ppotal/ui";
 import { Loader2, CheckCircle2, Footprints, TrainFront, Camera, BedDouble } from "lucide-react";
 import type { VisitCategory } from "@regionevel/types";
@@ -40,6 +40,10 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<TimelineImportPreview | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [progress, setProgress] = useState<{ percent: number; message: string }>({
+    percent: 0,
+    message: "타임라인 분석 준비 중…",
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const totals = useMemo(() => {
@@ -56,6 +60,7 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
   const runImport = useCallback(async (roots: unknown[]) => {
     setPhase("analyzing");
     setError(null);
+    setProgress({ percent: 5, message: "타임라인 데이터 구조 분석 중…" });
     try {
       const parsed = parseGoogleTimeline(roots.length === 1 ? roots[0] : roots);
       if (parsed.stays.length === 0 && parsed.moves.length === 0) {
@@ -66,7 +71,9 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
         setPhase("error");
         return;
       }
-      const built = await buildTimelineImportPreview(parsed);
+      const built = await buildTimelineImportPreview(parsed, (percent, message) => {
+        setProgress({ percent, message });
+      });
       if (built.regions.length === 0) {
         console.warn("[Timeline] no regions matched:", built.resolution, parsed.diagnostics);
         const { pointsTried, pointsResolved } = built.resolution;
@@ -99,6 +106,8 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     try {
+      setPhase("analyzing");
+      setProgress({ percent: 2, message: "파일 읽는 중…" });
       const roots = await readFilesAsJson(files);
       await runImport(roots);
     } catch {
@@ -107,10 +116,16 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
     }
   }, [runImport]);
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (!preview || preview.applyList.length === 0) return;
-    applyTimelineImport(preview.applyList);
-    setPhase("done");
+    try {
+      await applyTimelineImport(preview.applyList);
+      setPhase("done");
+    } catch (err) {
+      console.error("Failed to apply timeline import:", err);
+      setError("방문 기록 저장 중 오류가 발생했습니다.");
+      setPhase("error");
+    }
   }, [preview, applyTimelineImport]);
 
   const handleClose = useCallback(() => {
@@ -153,36 +168,21 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
           {phase === "intro" && (
             <>
-              <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  스마트폰에서 Timeline.json 내보내기
-                </p>
-                <ol className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed space-y-1.5 list-decimal list-inside">
-                  <li>구글맵 앱 → 프로필 → <strong>내 위치기록(타임라인)</strong> 을 엽니다.</li>
-                  <li><strong>위치기록 데이터 및 개인정보 보호</strong> → <strong>타임라인 데이터 내보내기</strong>를 선택합니다.</li>
-                  <li>다운로드된 <code className="px-1 py-0.5 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">Timeline.json</code> 파일을 이 기기로 옮겨 아래에 첨부하세요.</li>
-                </ol>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-                  * 옛날에 받은 Google Takeout의 &quot;semantic location history&quot; 파일(월별 JSON)도 지원돼요.
-                </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                  * 위치 데이터는 이 브라우저 안에서만 처리되고 서버로 전송되지 않아요.
-                </p>
-              </div>
+              {/* Common Timeline Extraction Guide with Auto Device Detection */}
+              <TimelineGuideSection language="ko" />
 
+              {/* Judgment Criteria */}
               <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">판정 기준</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">방문 판정 기준</p>
                 <ul className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed space-y-1">
-                  <li>🚗 <strong>통과</strong> — 그 지역에서 멈춘 기록 없이 지나감</li>
-                  <li>🚉 <strong>환승</strong> — 30분 이하로 머무름</li>
-                  <li>📸 <strong>방문</strong> — 30분 넘게 머무름</li>
-                  <li>🛌 <strong>숙박</strong> — 새벽 2~6시 사이 그 지역에 있었음이 확인됨</li>
+                  <li>🚗 <strong>통과 (Pass)</strong> — 해당 지역에서 멈춘 기록 없이 지나감</li>
+                  <li>🚉 <strong>환승 (Transit)</strong> — 30분 이하로 머무름</li>
+                  <li>📸 <strong>방문 (Visit)</strong> — 30분 초과 머무름</li>
+                  <li>🛌 <strong>숙박 (Stay)</strong> — 심야 시간(새벽 2~6시) 체류 확인됨</li>
                 </ul>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-                  * 숙박 판정은 경도로 추정한 현지 시간을 기준으로 해요. 시간대 경계 근처에서는 오차가 있을 수 있어요.
-                </p>
               </div>
 
+              {/* File Upload Dropzone */}
               <label
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
@@ -196,8 +196,8 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
                 }`}
               >
                 <UploadIcon className="w-7 h-7 text-blue-500" />
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                  Timeline.json 파일을 여기로 드래그하거나 클릭해서 선택
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 text-center">
+                  Timeline.json 또는 Takeout JSON 파일을 여기로 드래그하거나 클릭하여 선택
                 </span>
                 <input
                   ref={fileInputRef}
@@ -212,9 +212,32 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
           )}
 
           {phase === "analyzing" && (
-            <div className="flex flex-col items-center justify-center gap-3 py-14">
-              <Loader2 className="w-7 h-7 text-blue-500 animate-spin" />
-              <p className="text-xs font-bold text-slate-500">타임라인을 지역별로 분석하는 중...</p>
+            <div className="flex flex-col items-center justify-center gap-5 py-12 px-4 max-w-sm mx-auto text-center animate-in fade-in duration-200">
+              <div className="relative">
+                <div className="size-16 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
+                  <TimelineIcon className="w-8 h-8 animate-pulse" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 size-6 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-md border border-slate-100 dark:border-slate-800">
+                  <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
+                </div>
+              </div>
+
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between text-xs font-black">
+                  <span className="text-slate-700 dark:text-slate-200 truncate pr-2">{progress.message}</span>
+                  <span className="text-blue-600 dark:text-blue-400 tabular-nums">{progress.percent}%</span>
+                </div>
+                <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700/60">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${Math.max(4, Math.min(100, progress.percent))}%` }}
+                  />
+                </div>
+              </div>
+
+              <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-relaxed">
+                데이터 크기와 방문 지역 수에 따라 수 초 정도 걸릴 수 있습니다.
+              </p>
             </div>
           )}
 

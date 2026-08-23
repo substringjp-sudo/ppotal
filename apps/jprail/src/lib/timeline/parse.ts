@@ -1,3 +1,4 @@
+import { densifyTrace, metersBetween } from './geo';
 import type { ActivityHint, ParseResult, TimelineSegment, TracePoint } from './types';
 
 /**
@@ -130,6 +131,8 @@ function sortTrace(trace: TracePoint[]): TracePoint[] {
 
 function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Record<string, number>) {
     const list: any[] = root.semanticSegments ?? [];
+    let lastKnownFix: { lon: number; lat: number; endTime: number } | null = null;
+
     list.forEach((seg, i) => {
         const startTime = parseTime(seg.startTime);
         const endTime = parseTime(seg.endTime);
@@ -138,21 +141,14 @@ function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Recor
             return;
         }
 
-        // A `visit` is time spent in one place; only movement can be a ride.
-        if (seg.visit && !seg.activity && !seg.timelinePath) {
-            skipped.visit = (skipped.visit ?? 0) + 1;
-            return;
-        }
-
+        // Extract any available coordinates for this segment
+        let cFirst: [number, number] | null = null;
+        let cLast: [number, number] | null = null;
         const trace: TracePoint[] = [];
 
-        // `timelinePath` is the sampled trace. On a train this can be a point
-        // per minute, which at 80km/h is 1.3km apart — sparse enough that the
-        // corridor test has to know how little evidence it is working from.
         for (const p of seg.timelinePath ?? []) {
             const c = parseCoordinate(p.point);
             if (!c) continue;
-            // Newer exports give an absolute `time`; older ones an offset.
             let t = parseTime(p.time);
             if (!Number.isFinite(t) && p.durationMinutesOffsetFromStartTime != null) {
                 t = startTime + Number(p.durationMinutesOffsetFromStartTime) * 60_000;
@@ -161,13 +157,57 @@ function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Recor
         }
 
         const act = seg.activity;
-        // The endpoints are worth more than the middle here: a ride must begin
-        // and end at a station, so we never want to lose them to sampling.
         if (act) {
             const s = parseCoordinate(act.start?.latLng ?? act.start);
             const e = parseCoordinate(act.end?.latLng ?? act.end);
             if (s) trace.unshift({ lon: s[0], lat: s[1], t: startTime });
             if (e) trace.push({ lon: e[0], lat: e[1], t: endTime });
+        }
+
+        if (seg.visit) {
+            const c = parseCoordinate(seg.visit?.topCandidate?.placeLocation ?? seg.visit?.point ?? seg.visit);
+            if (c) {
+                cFirst = c;
+                cLast = c;
+            }
+        } else if (trace.length > 0) {
+            cFirst = [trace[0].lon, trace[0].lat];
+            cLast = [trace[trace.length - 1].lon, trace[trace.length - 1].lat];
+        }
+
+        // Gap Filling: If position jumped significantly since lastKnownFix, synthesize a transition
+        if (lastKnownFix && cFirst) {
+            const timeGapMs = startTime - lastKnownFix.endTime;
+            if (timeGapMs >= 0 && timeGapMs <= 12 * 3600_000) {
+                const dist = metersBetween([lastKnownFix.lon, lastKnownFix.lat], [cFirst[0], cFirst[1]]);
+                if (dist >= 800 && dist <= 600_000) {
+                    const approxDurationMs = Math.max(5 * 60_000, Math.min(timeGapMs, (dist / 15) * 1000));
+                    const synthStartTime = Math.max(lastKnownFix.endTime, startTime - approxDurationMs);
+                    const synthTrace: TracePoint[] = [
+                        { lon: lastKnownFix.lon, lat: lastKnownFix.lat, t: synthStartTime },
+                        { lon: cFirst[0], lat: cFirst[1], t: startTime }
+                    ];
+                    out.push({
+                        id: `sem_synth:${i}`,
+                        startTime: synthStartTime,
+                        endTime: startTime,
+                        trace: densifyTrace(sortTrace(synthTrace)),
+                        reportedMeters: Math.round(dist),
+                        hint: 'unknown',
+                        source: 'semanticSegments'
+                    });
+                }
+            }
+        }
+
+        if (cLast) {
+            lastKnownFix = { lon: cLast[0], lat: cLast[1], endTime };
+        }
+
+        // If it was just a visit with no trace, skip the segment itself (the gap is handled)
+        if (seg.visit && !seg.activity && !seg.timelinePath) {
+            skipped.visit = (skipped.visit ?? 0) + 1;
+            return;
         }
 
         if (trace.length < 2) {
@@ -178,7 +218,7 @@ function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Recor
         out.push({
             id: `sem:${i}`,
             startTime, endTime,
-            trace: sortTrace(trace),
+            trace: densifyTrace(sortTrace(trace)),
             hint: toHint(act?.topCandidate?.type),
             hintProbability: act?.topCandidate?.probability != null
                 ? Number(act.topCandidate.probability) : undefined,
@@ -194,12 +234,46 @@ function parseSemanticSegments(root: any, out: TimelineSegment[], skipped: Recor
 
 function parseActivitySegments(root: any, out: TimelineSegment[], skipped: Record<string, number>) {
     const objects: any[] = root.timelineObjects ?? [];
+    let lastVisit: { lon: number; lat: number; endTime: number } | null = null;
+
     objects.forEach((obj, i) => {
         const a = obj.activitySegment;
         if (!a) {
-            if (obj.placeVisit) skipped.visit = (skipped.visit ?? 0) + 1;
+            if (obj.placeVisit) {
+                skipped.visit = (skipped.visit ?? 0) + 1;
+                const pv = obj.placeVisit;
+                const c = parseE7(pv.location) ?? parseCoordinate(pv.centerLatE7 != null ? pv : null);
+                const startTime = parseTime(pv.duration?.startTimestamp ?? pv.duration?.startTimestampMs);
+                const endTime = parseTime(pv.duration?.endTimestamp ?? pv.duration?.endTimestampMs);
+
+                if (c && Number.isFinite(startTime) && Number.isFinite(endTime)) {
+                    if (lastVisit && startTime > lastVisit.endTime && startTime - lastVisit.endTime <= 12 * 3600_000) {
+                        const dist = metersBetween([lastVisit.lon, lastVisit.lat], [c[0], c[1]]);
+                        if (dist >= 400 && dist <= 600_000) {
+                            const approxDurationMs = Math.max(5 * 60_000, Math.min(startTime - lastVisit.endTime, (dist / 12) * 1000));
+                            const synthStartTime = Math.max(lastVisit.endTime, startTime - approxDurationMs);
+                            const synthTrace: TracePoint[] = [
+                                { lon: lastVisit.lon, lat: lastVisit.lat, t: synthStartTime },
+                                { lon: c[0], lat: c[1], t: startTime }
+                            ];
+                            out.push({
+                                id: `act_synth:${i}`,
+                                startTime: synthStartTime,
+                                endTime: startTime,
+                                trace: densifyTrace(sortTrace(synthTrace)),
+                                reportedMeters: Math.round(dist),
+                                hint: 'unknown',
+                                source: 'activitySegment'
+                            });
+                        }
+                    }
+                    lastVisit = { lon: c[0], lat: c[1], endTime };
+                }
+            }
             return;
         }
+
+        lastVisit = null;
         const startTime = parseTime(a.duration?.startTimestamp ?? a.duration?.startTimestampMs);
         const endTime = parseTime(a.duration?.endTimestamp ?? a.duration?.endTimestampMs);
         if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
@@ -210,9 +284,6 @@ function parseActivitySegments(root: any, out: TimelineSegment[], skipped: Recor
         const trace: TracePoint[] = [];
         const span = Math.max(1, endTime - startTime);
 
-        // `simplifiedRawPath` is closer to the truth than `waypointPath`, which
-        // Google has already snapped to what it believed the route was — and
-        // snapping to a road is exactly the error we are trying to detect.
         const raw = a.simplifiedRawPath?.points ?? [];
         for (const p of raw) {
             const c = parseE7(p);
@@ -225,8 +296,6 @@ function parseActivitySegments(root: any, out: TimelineSegment[], skipped: Recor
             wps.forEach((w: any, k: number) => {
                 const c = parseE7(w);
                 if (!c) return;
-                // Waypoints carry no time; spread them across the span so the
-                // speed checks downstream still have something to work with.
                 trace.push({ lon: c[0], lat: c[1], t: startTime + (span * k) / Math.max(1, wps.length - 1) });
             });
         }
@@ -244,7 +313,7 @@ function parseActivitySegments(root: any, out: TimelineSegment[], skipped: Recor
         out.push({
             id: `act:${i}`,
             startTime, endTime,
-            trace: sortTrace(trace),
+            trace: densifyTrace(sortTrace(trace)),
             hint: toHint(a.activityType),
             hintProbability: a.confidence === 'HIGH' ? 0.9
                 : a.confidence === 'MEDIUM' ? 0.6

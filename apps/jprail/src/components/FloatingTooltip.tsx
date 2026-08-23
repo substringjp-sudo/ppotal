@@ -85,7 +85,7 @@ const FloatingTooltip: React.FC<FloatingTooltipProps> = ({ content, visible, x, 
         <div
             ref={tooltipRef}
             style={style}
-            className="bg-[#ffffffF2] dark:bg-[#0f172aF2] backdrop-blur-md rounded-xl shadow-2xl border border-[#e2e8f080] dark:border-[#1e293b80] overflow-hidden"
+            className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             dangerouslySetInnerHTML={{ __html: content }}
         />
     );

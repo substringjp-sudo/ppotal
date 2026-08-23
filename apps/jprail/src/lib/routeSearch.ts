@@ -836,3 +836,76 @@ export function findCandidateRoutes(
 
     return { legs, totalCandidatesCount, hasTooManyCandidates };
 }
+
+export interface RouteSearchProgress {
+    currentLeg: number;
+    totalLegs: number;
+    percent: number;
+    startName?: string;
+    endName?: string;
+}
+
+/**
+ * Asynchronously searches candidate routes with UI event loop yields and progress reporting.
+ * Prevents UI lockup and allows smooth progress animations.
+ */
+export async function findCandidateRoutesAsync(
+    waypoints: Station[],
+    railData: RailData | null,
+    onProgress?: (progress: RouteSearchProgress) => void
+): Promise<RouteSearchResult> {
+    if (!railData || !waypoints || waypoints.length < 2) {
+        return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
+    }
+
+    const totalLegs = waypoints.length - 1;
+    onProgress?.({ currentLeg: 0, totalLegs, percent: 5 });
+    await new Promise(r => setTimeout(r, 16));
+
+    const graph = buildRouteGraph(railData);
+    onProgress?.({ currentLeg: 0, totalLegs, percent: 15 });
+    await new Promise(r => setTimeout(r, 16));
+
+    const legs: LegSearchResult[] = [];
+    let totalCandidatesCount = 0;
+    let hasTooManyCandidates = false;
+
+    for (let i = 0; i < totalLegs; i++) {
+        const startStation = waypoints[i];
+        const endStation = waypoints[i + 1];
+        
+        const basePercent = 15 + Math.round((i / totalLegs) * 80);
+        onProgress?.({
+            currentLeg: i + 1,
+            totalLegs,
+            percent: basePercent,
+            startName: startStation.name,
+            endName: endStation.name
+        });
+        await new Promise(r => setTimeout(r, 10));
+
+        const candidates = searchLeg(graph, railData, startStation, endStation, i);
+
+        if (candidates.length === 0) {
+            return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
+        }
+
+        totalCandidatesCount += candidates.length;
+        if (candidates.length >= MAX_CANDIDATES_PER_LEG) hasTooManyCandidates = true;
+
+        legs.push({ legIndex: i, startStation, endStation, candidates });
+
+        const endPercent = 15 + Math.round(((i + 1) / totalLegs) * 80);
+        onProgress?.({
+            currentLeg: i + 1,
+            totalLegs,
+            percent: endPercent,
+            startName: startStation.name,
+            endName: endStation.name
+        });
+        await new Promise(r => setTimeout(r, 10));
+    }
+
+    onProgress?.({ currentLeg: totalLegs, totalLegs, percent: 100 });
+    return { legs, totalCandidatesCount, hasTooManyCandidates };
+}

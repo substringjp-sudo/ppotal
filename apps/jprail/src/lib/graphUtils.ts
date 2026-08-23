@@ -1,4 +1,6 @@
 
+import type { RailData, Section } from '../types/railData';
+
 export interface StationNode {
     id: string; // station_id (from stations.json)
     name: string;
@@ -45,4 +47,24 @@ export const haversineDistance = (coords1: [number, number], coords2: [number, n
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 };
-;
+
+const sectionMapCache = new WeakMap<RailData, Map<number, Section>>();
+
+/**
+ * Returns a cached Map of section_id -> Section for O(1) instant lookup.
+ * Eliminates catastrophic O(N*M) linear search overhead across ~30,000 sections.
+ */
+export function getSectionMap(railData: RailData | null): Map<number, Section> {
+    if (!railData) return new Map();
+    let map = sectionMapCache.get(railData);
+    if (!map) {
+        map = new Map<number, Section>();
+        const raw = railData.sections?.sections || [];
+        for (let i = 0; i < raw.length; i++) {
+            const s = raw[i];
+            map.set(s.id, s);
+        }
+        sectionMapCache.set(railData, map);
+    }
+    return map;
+}

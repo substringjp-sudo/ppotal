@@ -118,15 +118,6 @@ export function Nav() {
           Map
         </Link>
         <Link
-          href="/list"
-          className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${
-            pathname === "/list" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
-          }`}
-        >
-          <TrophyIcon className="w-4 h-4" />
-          List
-        </Link>
-        <Link
           href="/about"
           className={`text-sm font-bold transition-colors flex items-center gap-1.5 ${
             pathname === "/about" ? "text-blue-600" : "text-slate-500 hover:text-blue-600"
@@ -154,14 +145,6 @@ export function Nav() {
         >
           <ShareIcon className="w-4 h-4" />
           <span>Share</span>
-        </button>
-        <button
-          onClick={() => setIsTimelineImportOpen(true)}
-          className="text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors flex items-center gap-1.5 active:scale-95 cursor-pointer focus:outline-none"
-          title="Google 타임라인 가져오기"
-        >
-          <TimelineIcon className="w-4 h-4" />
-          <span>Timeline</span>
         </button>
       </nav>
 
@@ -213,7 +196,7 @@ export function Nav() {
                     className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <LogOutIcon className="w-4 h-4" />
-                    Logout
+                    로그아웃
                   </button>
                 </div>
               </div>
@@ -226,7 +209,7 @@ export function Nav() {
             onClick={() => setIsAuthModalOpen(true)}
             className="!bg-blue-600 hover:!bg-blue-700 font-bold shadow-md"
           >
-            Sign In
+            로그인
           </Button>
         )}
       </div>

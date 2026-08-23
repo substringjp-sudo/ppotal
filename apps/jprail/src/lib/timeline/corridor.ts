@@ -21,7 +21,7 @@ import type { StationIndex } from './stationIndex';
  * all of that while still being far tighter than the distance between a railway
  * and any road that is not directly beside it.
  */
-export const CORRIDOR_TOLERANCE_M = 150;
+export const CORRIDOR_TOLERANCE_M = 350;
 
 /** Below this many usable points the corridor numbers are not evidence. */
 export const MIN_CORRIDOR_POINTS = 4;

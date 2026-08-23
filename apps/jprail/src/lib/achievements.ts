@@ -1,6 +1,7 @@
 import { Trip } from '../types/trip';
 import { RailData, Station } from '../types/railData';
 import { PrefectureId, prefectureIds, REGIONS } from './prefectures';
+import { getSectionMap } from './graphUtils';
 
 export interface Achievement {
   id: string;
@@ -51,10 +52,11 @@ const getTotalDistance = (trips: Trip[]): number => {
 // Helper: check Shinkansen distance
 const getShinkansenDistance = (trips: Trip[], railData: RailData | null): number => {
   if (!railData?.sections || !railData.lines) return 0;
+  const sectionMap = getSectionMap(railData);
   let dist = 0;
   trips.forEach((t) => {
     t.sectionIds?.forEach((sid) => {
-      const section = railData.sections.sections.find((s) => s.id === sid);
+      const section = sectionMap.get(sid);
       if (section) {
         const line = railData.lines[section.line_id];
         if (line && (line.name?.includes('신칸센') || line.name?.includes('Shinkansen') || line.name?.includes('新幹線'))) {
@@ -69,10 +71,11 @@ const getShinkansenDistance = (trips: Trip[], railData: RailData | null): number
 // Helper: check Private rail distance (corp_id != JR companies)
 const getPrivateRailDistance = (trips: Trip[], railData: RailData | null): number => {
   if (!railData?.sections || !railData.lines) return 0;
+  const sectionMap = getSectionMap(railData);
   let dist = 0;
   trips.forEach((t) => {
     t.sectionIds?.forEach((sid) => {
-      const section = railData.sections.sections.find((s) => s.id === sid);
+      const section = sectionMap.get(sid);
       if (section) {
         const line = railData.lines[section.line_id];
         // JR corp IDs are typically 1 to 6
@@ -328,17 +331,21 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     calcProgress: (trips, railData) => {
       let isUnlocked = false;
       if (railData?.sections && railData.lines) {
-        trips.forEach((t) => {
-          t.sectionIds?.forEach((sid) => {
-            const section = railData.sections.sections.find((s) => s.id === sid);
+        const sectionMap = getSectionMap(railData);
+        for (const t of trips) {
+          if (!t.sectionIds) continue;
+          for (const sid of t.sectionIds) {
+            const section = sectionMap.get(sid);
             if (section) {
               const line = railData.lines[section.line_id];
               if (line && (line.name?.includes('야마노테') || line.name?.includes('Yamanote') || line.name?.includes('山手'))) {
                 isUnlocked = true;
+                break;
               }
             }
-          });
-        });
+          }
+          if (isUnlocked) break;
+        }
       }
       return { current: isUnlocked ? 1 : 0, percent: isUnlocked ? 100 : 0, isUnlocked };
     },
@@ -362,17 +369,21 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     calcProgress: (trips, railData) => {
       let isUnlocked = false;
       if (railData?.sections && railData.lines) {
-        trips.forEach((t) => {
-          t.sectionIds?.forEach((sid) => {
-            const section = railData.sections.sections.find((s) => s.id === sid);
+        const sectionMap = getSectionMap(railData);
+        for (const t of trips) {
+          if (!t.sectionIds) continue;
+          for (const sid of t.sectionIds) {
+            const section = sectionMap.get(sid);
             if (section) {
               const line = railData.lines[section.line_id];
               if (line && (line.name?.includes('에노시마') || line.name?.includes('Enoshima') || line.name?.includes('江ノ島'))) {
                 isUnlocked = true;
+                break;
               }
             }
-          });
-        });
+          }
+          if (isUnlocked) break;
+        }
       }
       return { current: isUnlocked ? 1 : 0, percent: isUnlocked ? 100 : 0, isUnlocked };
     },
@@ -396,9 +407,11 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
     calcProgress: (trips, railData) => {
       let isUnlocked = false;
       if (railData?.sections && railData.lines) {
-        trips.forEach((t) => {
-          t.sectionIds?.forEach((sid) => {
-            const section = railData.sections.sections.find((s) => s.id === sid);
+        const sectionMap = getSectionMap(railData);
+        for (const t of trips) {
+          if (!t.sectionIds) continue;
+          for (const sid of t.sectionIds) {
+            const section = sectionMap.get(sid);
             if (section) {
               const line = railData.lines[section.line_id];
               if (
@@ -410,10 +423,12 @@ export const JPRAIL_ACHIEVEMENTS: Achievement[] = [
                   line.name?.includes('Monorail'))
               ) {
                 isUnlocked = true;
+                break;
               }
             }
-          });
-        });
+          }
+          if (isUnlocked) break;
+        }
       }
       return { current: isUnlocked ? 1 : 0, percent: isUnlocked ? 100 : 0, isUnlocked };
     },

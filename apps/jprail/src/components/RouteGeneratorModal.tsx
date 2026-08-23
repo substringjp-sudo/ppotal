@@ -8,7 +8,7 @@ import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
 import { useRegionNames } from '../hooks/useRegionNames';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
-import { findCandidateRoutes, CandidateRoute, RouteSearchResult, RouteSegment } from '../lib/routeSearch';
+import { findCandidateRoutes, findCandidateRoutesAsync, CandidateRoute, RouteSearchResult, RouteSegment, RouteSearchProgress } from '../lib/routeSearch';
 import RouteMiniMap, { RouteMiniMapWaypoint } from './RouteMiniMap';
 import { rankByRelevance } from '../lib/searchRanking';
 import { Z } from '../lib/layers';
@@ -432,6 +432,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const [activeLeg, setActiveLeg] = useState(0);
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [isSearching, setIsSearching] = useState(false);
+    const [searchProgress, setSearchProgress] = useState<RouteSearchProgress | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
@@ -445,6 +446,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
         setHoveredId(null);
         setHasSearched(false);
         setIsSearching(false);
+        setSearchProgress(null);
     }, [isOpen]);
 
     // Editing the itinerary invalidates whatever was found for the old one.
@@ -526,17 +528,19 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
         return () => observer.disconnect();
     }, [summary]);
 
-    const handleSearchRoutes = useCallback(() => {
+    const handleSearchRoutes = useCallback(async () => {
         if (!startStation || !endStation || !railData) return;
 
         setIsSearching(true);
         setHasSearched(false);
+        setSearchProgress({ currentLeg: 0, totalLegs: 1, percent: 5 });
 
         const stops = [startStation, ...viaStations.filter((v): v is Station => v !== null), endStation];
 
-        // Yield a frame so the spinner paints before the search blocks the thread.
-        setTimeout(() => {
-            const result = findCandidateRoutes(stops, railData);
+        try {
+            const result = await findCandidateRoutesAsync(stops, railData, prog => {
+                setSearchProgress(prog);
+            });
 
             const initial: Record<number, string> = {};
             result.legs.forEach(leg => {
@@ -546,9 +550,13 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
             setSearchResult(result);
             setSelectedByLeg(initial);
             setActiveLeg(0);
-            setIsSearching(false);
             setHasSearched(true);
-        }, 50);
+        } catch (e) {
+            console.error("Route search failed", e);
+        } finally {
+            setIsSearching(false);
+            setSearchProgress(null);
+        }
     }, [startStation, endStation, viaStations, railData]);
 
     const handleCreateTrip = () => {
@@ -690,6 +698,40 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
 
                         {/* Results */}
                         <div className="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-2 custom-scrollbar">
+                            {isSearching && (
+                                <div className="p-4 bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg flex flex-col gap-3 animate-in fade-in duration-200">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />
+                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
+                                                {searchProgress?.startName && searchProgress?.endName
+                                                    ? `${searchProgress.startName} → ${searchProgress.endName}`
+                                                    : t.searching}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs font-black text-primary tabular-nums shrink-0">
+                                            {searchProgress?.percent ?? 10}%
+                                        </span>
+                                    </div>
+
+                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-primary transition-all duration-300 ease-out rounded-full"
+                                            style={{ width: `${searchProgress?.percent ?? 10}%` }}
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold">
+                                        <span>
+                                            {searchProgress && searchProgress.totalLegs > 1
+                                                ? `${t.legLabel} ${searchProgress.currentLeg || 1} / ${searchProgress.totalLegs}`
+                                                : t.searching}
+                                        </span>
+                                        <span>최적 경로 탐색 중...</span>
+                                    </div>
+                                </div>
+                            )}
+
                             {!hasSearched && !isSearching && (
                                 <p className="text-[11px] text-slate-400 text-center py-6 px-4 leading-relaxed">
                                     {t.beforeSearchHint}

@@ -545,6 +545,9 @@ const Stations: React.FC<StationsProps> = ({
             },
             mouseup: (eValue: L.LeafletMouseEvent) => {
                 L.DomEvent.stopPropagation(eValue);
+                onTooltipUpdate?.(null, 0, 0);
+                setLocalHoveredStation(null);
+                if (onStationHover) onStationHover(null);
                 if (isStationActive && handleStationMouseUp) {
                     handleStationMouseUp(id);
                 }
