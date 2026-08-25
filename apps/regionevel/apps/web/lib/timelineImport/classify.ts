@@ -14,9 +14,6 @@ const OVERNIGHT_START_HOUR = 2;
 const OVERNIGHT_END_HOUR = 4;
 /** Maximum time gap for overnight bridge detection (18 hours) */
 const OVERNIGHT_BRIDGE_MAX_GAP_MS = 18 * 60 * 60_000;
-/** Cap on how many points of one movement segment we bother resolving */
-const MOVE_SAMPLE_MAX_POINTS = 6;
-
 interface ResolvedPoint {
   regionId: string;
   admLevel: 0 | 1 | 2;
@@ -230,10 +227,12 @@ export function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lo
 
 /**
  * Densifies a movement trace by interpolating intermediate points along long hops.
- * Step size: ~3km to reliably hit intermediate city/county polygons.
- * Maximum points per segment: 60 points to prevent overload while catching all passed regions.
+ * Step size: ~5km, coarse enough that a whole trip still resolves in seconds
+ * (administrative regions are typically far wider than the GPS noise a finer
+ * step would chase), while still catching cities passed through along the way.
+ * Maximum points per segment: 40, capping the cost of any single very long hop.
  */
-export function densifyTrace(trace: TracePoint[], stepKm = 3, maxPointsPerSegment = 60): TracePoint[] {
+export function densifyTrace(trace: TracePoint[], stepKm = 5, maxPointsPerSegment = 40): TracePoint[] {
   if (trace.length === 0) return [];
   if (trace.length === 1) return [...trace];
 
@@ -301,7 +300,7 @@ export async function buildTimelineImportPreview(
   moves.forEach((rawTrace, mi) => {
     if (rawTrace.length === 0) return;
     // Densify trajectory to capture all traversed intermediate regions
-    const trace = densifyTrace(rawTrace, 3, 60);
+    const trace = densifyTrace(rawTrace);
 
     const startP = trace[0]!;
     const endP = trace[trace.length - 1]!;
