@@ -183,6 +183,27 @@ export default function LocationStep() {
                             type="text"
                             value={searchQuery}
                             onChange={handleSearchChange}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && searchQuery.trim()) {
+                                    e.preventDefault();
+                                    if (internalRegions.length > 0) {
+                                        const r = internalRegions[0];
+                                        const standardIds: RegionIds = {
+                                            countryId: r.countryId || (r.type === 'country' ? r.id : undefined),
+                                            prefectureId: r.prefectureId || (r.type === 'prefecture' ? r.id : undefined),
+                                            cityId: r.type === 'city' ? r.id : undefined
+                                        };
+                                        addLocation(r.name, standardIds);
+                                    } else if (predictions.length > 0) {
+                                        handleSelectPrediction(predictions[0]);
+                                    } else {
+                                        addLocation(searchQuery.trim());
+                                    }
+                                    setSearchQuery('');
+                                    setInternalRegions([]);
+                                    setPredictions([]);
+                                }
+                            }}
                             placeholder="도시, 지역 검색..."
                             className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-bold outline-none ring-primary/10 focus:ring-4 focus:border-primary transition-all shadow-sm shadow-slate-200/50 dark:shadow-none"
                             aria-label="장소 검색"

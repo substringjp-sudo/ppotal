@@ -158,6 +158,22 @@
     to { transform: rotate(360deg); }
   }
   --animation-spin-slow: spin-slow 3s linear infinite;
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  --animation-page-enter: page-enter 0.18s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-page-enter {
+  animation: page-enter 0.18s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 :root {

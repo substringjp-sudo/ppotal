@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { generateId, type TripSummary, type Travelog, cn } from '@pplaner/shared';
+import { generateId, type TripSummary, type Travelog, cn, useWizardStore } from '@pplaner/shared';
 import { parseISO, startOfDay, isAfter, isBefore, format } from 'date-fns';
 
 /**
@@ -125,11 +125,23 @@ export default function JourneyGallery({
 
             {/* 여행 갤러리 */}
             {journeys.length === 0 ? (
-                <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center">
-                    <span className="material-symbols-rounded text-4xl text-slate-300">luggage</span>
-                    <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400">
-                        아직 여행이 없어요. 오른쪽 위 <b className="text-primary">+</b> 버튼에서 시작해 보세요.
+                <div className="rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <span className="material-symbols-rounded text-3xl">luggage</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                        아직 등록된 여행이 없어요
+                    </h3>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
+                        여행 날짜, 가고 싶은 지역, 테마와 동행 인원을 선택하고 나만의 맞춤형 여행 계획을 시작해 보세요.
                     </p>
+                    <button
+                        onClick={() => useWizardStore.getState().open('PLAN')}
+                        className="px-6 py-3 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                    >
+                        <span className="material-symbols-rounded text-lg">auto_awesome</span>
+                        <span>첫 여행 계획 시작하기</span>
+                    </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

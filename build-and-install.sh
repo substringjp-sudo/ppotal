@@ -75,10 +75,16 @@ echo ""
 TARGET_ARG="$1"
 
 if [ -n "$TARGET_ARG" ]; then
-  # 특정 타겟만 배포하는 경우 (예: ./build-and-install.sh portal)
+  # 특정 타겟만 배포하는 경우 (예: ./build-and-install.sh portal, ./build-and-install.sh rules, ./build-and-install.sh all)
   case "$TARGET_ARG" in
     portal|jprail|regionevel|p-plan)
       DEPLOY_TARGET="hosting:$TARGET_ARG"
+      ;;
+    rules)
+      DEPLOY_TARGET="firestore:rules,storage"
+      ;;
+    all)
+      DEPLOY_TARGET="hosting,firestore:rules,storage"
       ;;
     hosting:*)
       DEPLOY_TARGET="$TARGET_ARG"
@@ -87,10 +93,10 @@ if [ -n "$TARGET_ARG" ]; then
       DEPLOY_TARGET="$TARGET_ARG"
       ;;
   esac
-  echo "🌐 4. Firebase Hosting 특정 타겟 배포: $DEPLOY_TARGET"
+  echo "🌐 4. Firebase 특정 타겟 배포: $DEPLOY_TARGET"
   $FIREBASE_CMD deploy --only "$DEPLOY_TARGET"
 else
-  # 전체 호스팅 배포
+  # 기본: 전체 호스팅 배포
   echo "🌐 4. Firebase Hosting 전체 타겟 배포..."
   $FIREBASE_CMD deploy --only hosting
 fi

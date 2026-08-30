@@ -91,6 +91,10 @@ export const subscribeToTripComments = (
     tripId: string,
     callback: (comments: TripComment[]) => void
 ) => {
+    if (!tripId || tripId === 'guest') {
+        callback([]);
+        return () => {};
+    }
     const commentsRef = collection(db, TRIPS_COLLECTION, tripId, COMMENTS_SUB);
     const q = query(commentsRef, orderBy("createdAt", "asc"));
 
@@ -101,7 +105,7 @@ export const subscribeToTripComments = (
         } as TripComment));
         callback(comments);
     }, (error) => {
-        console.error("Error subscribing to trip comments:", error);
+        console.warn("Could not subscribe to trip comments:", error);
     });
 };
 

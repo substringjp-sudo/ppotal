@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from "firebase/firestore";
+import { initializeFirestore, getFirestore, persistentLocalCache, Firestore } from "firebase/firestore";
 import { Auth, getAuth } from "firebase/auth";
 import { FirebaseStorage, getStorage } from "firebase/storage";
 import { Functions, getFunctions, httpsCallable } from "firebase/functions";
@@ -33,13 +33,23 @@ app = (isConfigured || getApps().length > 0)
 
 auth = getAuth(app);
 
+// Clean up any legacy firestore_targets localStorage entries that exceeded quota
+if (typeof window !== 'undefined') {
+    try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('firestore_targets_')) {
+                localStorage.removeItem(key);
+            }
+        }
+    } catch { /* ignore storage errors */ }
+}
+
 try {
     if (typeof window !== 'undefined') {
-        // Browser: use persistent multi-tab cache for offline support
+        // Browser: use persistent IndexedDB cache without localStorage multi-tab quota overflow
         db = initializeFirestore(app, {
-            localCache: persistentLocalCache({
-                tabManager: persistentMultipleTabManager()
-            })
+            localCache: persistentLocalCache({})
         }, DB_NAME);
     } else {
         // Server (SSR): no IndexedDB — use default in-memory cache

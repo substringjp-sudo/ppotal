@@ -203,18 +203,18 @@ export default function WizardModal() {
                                 // 마지막 단계: 여행 생성 및 모달 닫기
                                 setIsCreating(true);
                                 try {
-                                    // 애니메이션을 위해 최소 2초 대기 (데이터 처리 느낌)
+                                    // 애니메이션을 위해 최소 1.5초 대기 (데이터 처리 느낌)
                                     const [targetId] = await Promise.all([
                                         mode === 'PLAN' 
                                             ? createTrip(wizardState, user?.uid, profile)
                                             : createTravelog(wizardState, user?.uid, profile),
-                                        new Promise(resolve => setTimeout(resolve, 3500))
+                                        new Promise(resolve => setTimeout(resolve, 1600))
                                     ]);
 
                                     if (targetId) {
                                         // 애니메이션 종료 후 전환
                                         const path = mode === 'PLAN' 
-                                            ? `/edit-trip/${targetId}`
+                                            ? (targetId === 'guest' ? '/edit-trip/guest' : `/edit-trip/${targetId}`)
                                             : `/travelogs/${targetId}`;
                                         
                                         router.push(path);
@@ -222,7 +222,7 @@ export default function WizardModal() {
                                         setTimeout(() => {
                                             close();
                                             setIsCreating(false);
-                                        }, 500);
+                                        }, 400);
                                     } else {
                                         console.error(`Failed to get ID from ${mode === 'PLAN' ? 'createTrip' : 'createTravelog'}`);
                                         setIsCreating(false);

@@ -8,7 +8,7 @@ export function useTrip(id: string) {
     return useQuery({
         queryKey: ['trip', id],
         queryFn: () => getTripMain(id),
-        enabled: !!id,
+        enabled: !!id && id !== 'guest',
         staleTime: 1000 * 60 * 5, // 5분간 fresh 유지
     });
 }
@@ -20,7 +20,7 @@ export function useTripSubData(id: string, subCollection: string, enabled: boole
     return useQuery({
         queryKey: ['trip', id, subCollection],
         queryFn: () => getTripSubCollection(id, subCollection),
-        enabled: !!id && enabled,
+        enabled: !!id && id !== 'guest' && enabled,
         staleTime: 1000 * 60 * 5,
     });
 }

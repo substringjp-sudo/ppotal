@@ -14,6 +14,7 @@ import { updateTripState } from '../utils';
 import { inferCurrencyFromRegions, DEFAULT_EXCHANGE_RATES, CURRENCY_SYMBOLS } from '../../lib/currency-utils';
 import { useExchangeRateStore } from '../exchangeRateStore';
 import { useUserStore } from '../userStore';
+import { format, addDays, parseISO } from 'date-fns';
 
 export interface TripInfoSlice {
     trips: Trip[];
@@ -205,8 +206,35 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             userProfile?.residence?.country
         );
 
+        let initialDailyTimeline: Trip['dailyTimeline'] = [];
+        if (!wizardData.isDateUndecided && wizardData.startDate && wizardData.endDate) {
+            try {
+                const start = parseISO(wizardData.startDate);
+                const end = parseISO(wizardData.endDate);
+                const diffTime = end.getTime() - start.getTime();
+                const totalDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+                initialDailyTimeline = Array.from({ length: totalDays }).map((_, idx) => ({
+                    day: idx + 1,
+                    date: format(addDays(start, idx), 'yyyy-MM-dd'),
+                    events: []
+                }));
+            } catch (err) {
+                console.error("Failed to parse dates for dailyTimeline:", err);
+            }
+        }
+        if (initialDailyTimeline.length === 0) {
+            const count = wizardData.durationDays || 3;
+            initialDailyTimeline = Array.from({ length: count }).map((_, idx) => ({
+                day: idx + 1,
+                date: '',
+                events: []
+            }));
+        }
+
+        const tripId = userId ? generateId() : 'guest';
+
         const newTrip: Trip = {
-            id: generateId(),
+            id: tripId,
             title: wizardData.isLocationUndecided
                 ? `미정 지역 ${wizardData.theme} 탐방기`
                 : `${wizardData.locations[0] || '미정'} 중심 ${wizardData.theme} 탐방기`,
@@ -281,7 +309,7 @@ export const createTripInfoSlice: StateCreator<TripState, [], [], TripInfoSlice>
             checklist: [],
             reservations: [],
             bucketList: [],
-            dailyTimeline: [],
+            dailyTimeline: initialDailyTimeline,
             healthInfo: { allergies: [], medications: [] },
             timeDifference: '',
             memo: '',

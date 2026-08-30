@@ -7,9 +7,12 @@ export default function ReviewStep() {
         isDateUndecided, isLocationUndecided, isParticipantsUndecided, durationDays
     } = useWizardStore();
 
+    const totalParticipantsCount = participants.reduce((acc, p) => acc + p.count, 0);
     const participantsText = isParticipantsUndecided
         ? '인원 미정'
-        : participants.filter(p => p.count > 0).map(p => `${p.type}(${p.count})`).join(', ');
+        : totalParticipantsCount > 0
+            ? `총 ${totalParticipantsCount}명 (${participants.filter(p => p.count > 0).map(p => `${p.type} ${p.count}명`).join(', ')})`
+            : '미지정';
 
 
     const dateRange = isDateUndecided

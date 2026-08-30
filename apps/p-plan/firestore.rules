@@ -183,9 +183,9 @@ service cloud.firestore {
 
     // Users (Unified for all apps)
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'updatedAt']));
+      allow update: if isOwner(userId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'updatedAt', 'jprailStats', 'regionevelStats']));
 
       // Sub-collections (jprail visits, p-plan data, etc.)
       match /{allPaths=**} {

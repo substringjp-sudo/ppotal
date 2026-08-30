@@ -6,7 +6,6 @@ import TripSyncProvider from "@/components/providers/TripSyncProvider";
 import GlobalOverlays from "@/components/common/GlobalOverlays";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 import ExchangeRateProvider from "@/components/providers/ExchangeRateProvider";
-import PageTransitionProvider from "@/components/providers/PageTransitionProvider";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import Header from "@/components/layout/Header";
 import { Toaster } from 'sonner';
@@ -83,9 +82,7 @@ export default function RootLayout({
                     <GlobalOverlays />
                     <Header />
                     <div id="main-content" className="w-full max-w-[1440px] mx-auto pb-[calc(var(--mobile-nav-height,4rem)+env(safe-area-inset-bottom,0px))] md:pb-0 px-4 md:px-6 flex flex-col min-h-[calc(100vh-64px)]">
-                      <PageTransitionProvider>
-                        {children}
-                      </PageTransitionProvider>
+                      {children}
                     </div>
                     <MobileBottomNav />
                     <Toaster position="top-center" richColors />

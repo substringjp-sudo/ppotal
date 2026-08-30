@@ -3,9 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 
-import { useTripStore } from '@pplaner/shared';
-import { useUserStore } from '@pplaner/shared';
-import { useUIStore } from '@pplaner/shared';
+import { useTripStore, useUserStore, useUIStore, useWizardStore } from '@pplaner/shared';
 import { TripEvent } from '@pplaner/shared';
 import { CATEGORY_MAP, MainCategory, WishlistItem } from '@pplaner/shared';
 import { useTrip, useTripSubData, useSaveTrip } from '@/hooks/useTripQuery';
@@ -73,34 +71,12 @@ export default function TripEditorApp({ id }: { id: string }) {
         }
     }, [searchParams]);
 
-    // Initial trip sync & guest trip auto-creation
+    // Initial trip sync & guest trip initialization
     useEffect(() => {
         if (id === 'guest') {
             if (!currentTrip || currentTrip.id !== 'guest') {
-                const today = new Date().toISOString().split('T')[0];
-                const d2 = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-                const d3 = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
-                const guestTrip: Trip = {
-                    id: 'guest',
-                    title: '나의 첫 여행 계획 (비로그인)',
-                    dates: { startDate: today, endDate: d3, flexibilityDays: 0, isUndecided: false },
-                    locations: { regionNames: [], center: { lat: 37.5665, lng: 126.9780 }, regions: [] },
-                    participants: [],
-                    budget: { baseCurrency: 'KRW', currency: 'KRW', expenses: [], activeCurrencies: [], exchanges: [], commonAllocated: 0, individualAllocated: 0, participantBudgets: [] },
-                    transportSettings: { useFlight: false, useDriving: false },
-                    flights: [], accommodation: [], driving: [], publicTransport: [],
-                    checklist: [], reservations: [], bucketList: [],
-                    dailyTimeline: [
-                        { day: 1, date: today, events: [] },
-                        { day: 2, date: d2, events: [] },
-                        { day: 3, date: d3, events: [] },
-                    ],
-                    theme: 'nature',
-                    isOverseas: false,
-                    status: 'draft',
-                    planningStatus: 'planned',
-                };
-                updateTrip(guestTrip);
+                // 게스트 여행이 아직 없으면 마법사를 열어 사용자가 먼저 날짜, 지역, 테마, 인원수를 정하도록 유도
+                useWizardStore.getState().open('PLAN');
             }
             return;
         }
@@ -153,9 +129,9 @@ export default function TripEditorApp({ id }: { id: string }) {
         updateTrip, currentTrip
     ]);
 
-    // Comments subscription
+    // Comments subscription (skip for guest trips)
     useEffect(() => {
-        if (!id) return;
+        if (!id || id === 'guest') return;
         const unsubscribe = subscribeComments(id);
         return () => unsubscribe();
     }, [id, subscribeComments]);
@@ -278,6 +254,13 @@ export default function TripEditorApp({ id }: { id: string }) {
                 <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-center text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center justify-center gap-2">
                     <span className="material-symbols-rounded text-base font-semibold text-amber-600">info</span>
                     <span>비로그인 체험 모드입니다. 작성하신 여행 계획은 브라우저(로컬 캐시)에만 보관됩니다.</span>
+                    <button
+                        onClick={() => useWizardStore.getState().open('PLAN')}
+                        className="ml-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-full text-xs font-semibold transition-all flex items-center gap-1 shadow-sm"
+                    >
+                        <span className="material-symbols-rounded text-xs">auto_awesome</span>
+                        새 여행 마법사
+                    </button>
                     <button
                         onClick={() => loginWithGoogle()}
                         className="ml-2 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-xs font-semibold transition-all flex items-center gap-1 shadow-sm"
