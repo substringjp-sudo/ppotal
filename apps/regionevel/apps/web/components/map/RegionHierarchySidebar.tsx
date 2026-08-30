@@ -241,9 +241,16 @@ export function RegionHierarchySidebar() {
 
                   <div className="flex items-center gap-2 shrink-0 ml-2">
                     {score && (
-                      <span className="text-xs font-black text-primary tabular-nums">
-                        {score.totalScore}p
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-black text-primary tabular-nums">
+                          {score.totalScore}p
+                        </span>
+                        {score.rateScore > 0 && (
+                          <span className="text-xs font-black text-orange-500 dark:text-orange-400 tabular-nums">
+                            {Math.round(score.rateScore)}%
+                          </span>
+                        )}
+                      </div>
                     )}
                     <div className="p-0.5 text-slate-400">
                       {isCountryExpanded ? (
@@ -258,10 +265,9 @@ export function RegionHierarchySidebar() {
                 {score && (
                   <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
                     <div
-                      className="bg-primary h-full rounded-full transition-all duration-300"
+                      className="h-full rounded-full transition-all duration-300 bg-orange-500 dark:bg-orange-400"
                       style={{
                         width: `${percent}%`,
-                        backgroundColor: getScoreColor(score.totalScore)
                       }}
                     />
                   </div>
@@ -332,11 +338,16 @@ export function RegionHierarchySidebar() {
 
                           {prefScore && (
                             <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                              <span className="text-[10px] font-bold text-slate-500 tabular-nums">
+                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 tabular-nums">
                                 {prefScore.totalScore}p
                               </span>
+                              {prefScore.rateScore > 0 && (
+                                <span className="text-[10px] font-bold text-orange-500 dark:text-orange-400 tabular-nums">
+                                  {Math.round(prefScore.rateScore)}%
+                                </span>
+                              )}
                               <div
-                                className="w-2 h-2 rounded-full"
+                                className="w-2 h-2 rounded-full shrink-0"
                                 style={{ backgroundColor: getScoreColor(prefScore.totalScore) }}
                               />
                             </div>

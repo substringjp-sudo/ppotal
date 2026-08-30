@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from "firebase/firestore";
+import { initializeFirestore, getFirestore, persistentLocalCache, Firestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getFunctions } from "firebase/functions";
 import { firebaseConfig } from "@ppotal/ui";
@@ -16,7 +16,7 @@ try {
   } else {
     dbInstance = getFirestore(app);
   }
-} catch (e) {
+} catch {
   dbInstance = getFirestore(app);
 }
 

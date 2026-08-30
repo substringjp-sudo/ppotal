@@ -9,8 +9,8 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import type { Region } from "@regionevel/types";
-import type { RegionDataStore } from "./types.js";
-import { getFirestoreDb } from "./firebase-app.js";
+import type { RegionDataStore } from "./types";
+import { getFirestoreDb } from "./firebase-app";
 
 export function createFirestoreRegionStore(): RegionDataStore {
   const db = getFirestoreDb();

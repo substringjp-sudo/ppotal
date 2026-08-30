@@ -6,8 +6,8 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
-import type { AuthUser } from "./types.js";
-import { getFirebaseApp } from "./firebase-app.js";
+import type { AuthUser } from "./types";
+import { getFirebaseApp } from "./firebase-app";
 
 function toAuthUser(user: User): AuthUser {
   return {

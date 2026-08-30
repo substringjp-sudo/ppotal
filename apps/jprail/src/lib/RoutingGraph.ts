@@ -1,4 +1,4 @@
-import { StationNode, haversineDistance, LineSegment } from './graphUtils';
+import { StationNode, LineSegment } from './graphUtils';
 import { RailData, Section, Station, Joint } from '../types/railData';
 
 export interface RouteEdge {
@@ -179,10 +179,10 @@ export class RoutingGraph {
     getLineIdMap = (): Map<string, string> => this.lineIdMap;
     getLineLengths = (): Record<string, number> => this.lineLengths;
 
-    getLineSegments = (lineId: string, hierarchy: RailData['hierarchy']): LineSegment[] => {
+    getLineSegments = (lineId: string, _hierarchy?: RailData['hierarchy']): LineSegment[] => {
         const segments: LineSegment[] = [];
         if (!this.nodes.size) return [];
-        const [companyId, lineNumericId] = lineId.split('::');
+        const [, lineNumericId] = lineId.split('::');
 
         // 1. line_data를 통한 고속 렌더링 (대부분의 노선)
         if (this.network?.line_data?.[lineNumericId]) {

@@ -156,6 +156,21 @@ const MapPane: React.FC<MapPaneProps> = ({
     const { prefectures, municipalities, airports } = useMapData();
     const { railData } = useRailData();
 
+    // Apply paper-theme-active class for texture and filters
+    useEffect(() => {
+        if (!map) return;
+        const container = map.getContainer();
+        const theme = styleSettings.theme;
+        if (theme === 'paper') {
+            container.classList.add('paper-theme-active');
+        } else {
+            container.classList.remove('paper-theme-active');
+        }
+        return () => {
+            container.classList.remove('paper-theme-active');
+        };
+    }, [map, styleSettings.theme]);
+
     const graph: RoutingGraph | null = useMemo(() => (railData ? new RoutingGraph(railData) : null), [railData]);
 
     const { lineIdMap, lineLengths, visitedLineLengths } = useMemo(() => {
@@ -996,6 +1011,16 @@ const MapPane: React.FC<MapPaneProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* SVG Filters for Map Themes */}
+            <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+                <defs>
+                    <filter id="ink-brush">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="3" result="noise" />
+                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+                    </filter>
+                </defs>
+            </svg>
         </>
 
     );

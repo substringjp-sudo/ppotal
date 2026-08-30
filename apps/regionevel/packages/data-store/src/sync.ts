@@ -1,5 +1,5 @@
 import type { RegionVisit } from "@regionevel/types";
-import type { VisitDataStore } from "./types.js";
+import type { VisitDataStore } from "./types";
 
 export interface SyncTarget {
   getLocalVisits(): RegionVisit[];

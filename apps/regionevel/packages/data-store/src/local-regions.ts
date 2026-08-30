@@ -1,5 +1,5 @@
-import type { Region } from "@regionevel/types";
-import type { RegionDataStore } from "./types.js";
+import type { Region, AdmLevel } from "@regionevel/types";
+import type { RegionDataStore } from "./types";
 
 export function createLocalRegionStore(
   regions: Region[],

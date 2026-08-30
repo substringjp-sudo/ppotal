@@ -112,7 +112,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 title={isReadOnly ? (language === 'ko' ? '도트/스퀘어/허니콤 모드에서는 경로 생성이 비활성화됩니다.' : 'Route generator disabled in tile mode') : undefined}
                             >
                                 <RouteIcon className="w-4 h-4" />
-                                <span>{t.generateRoute || '경로 생성'}</span>
+                                <span>{t.generateRoute}</span>
                             </button>
                         )}
                         {onOpenTimelineImport && (
@@ -167,12 +167,12 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                         : 'border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-98 cursor-pointer'}`}
                                 >
                                     <TrashIcon className="w-3.5 h-3.5" />
-                                    {(t as any).clearAllTrips || '모든 여행 기록 초기화'}
+                                    {t.clearAllTrips}
                                 </button>
                             ) : (
                                 <div className="p-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/30 flex flex-col gap-2 animate-in fade-in duration-200">
                                     <p className="text-xs font-bold text-red-700 dark:text-red-300 text-center">
-                                        {(t as any).confirmClearTrips || '모든 여행 기록을 정말 삭제하시겠습니까?'}
+                                        {t.confirmClearTrips}
                                     </p>
                                     <div className="grid grid-cols-2 gap-2 mt-1">
                                         <button
@@ -182,13 +182,13 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                             }}
                                             className={`rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition-all active:scale-95 cursor-pointer ${isMobile ? 'h-11' : 'py-1.5'}`}
                                         >
-                                            {(t as any).yesDelete || '예, 초기화'}
+                                            {t.yesDelete}
                                         </button>
                                         <button
                                             onClick={() => setIsResetConfirming(false)}
                                             className={`rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all active:scale-95 cursor-pointer ${isMobile ? 'h-11' : 'py-1.5'}`}
                                         >
-                                            {(t as any).cancel || '취소'}
+                                            {t.cancel}
                                         </button>
                                     </div>
                                 </div>
@@ -201,7 +201,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
             {displayTrips.length === 0 ? (
                 <div className="text-center py-12 px-4">
                     <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mb-1">{t.noTrips}</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-600">지도를 드래그하여 첫 탑승 경로를 기록해보세요!</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-600">{t.dragToRecordHint}</p>
                 </div>
             ) : (
                 <div className="space-y-2 pb-8">
@@ -219,21 +219,21 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                         <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                                         <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                                            {isRoundTrip ? `${startName} (순환)` : `${startName} → ${endName}`}
+                                            {isRoundTrip ? `${startName} ${t.roundTrip}` : `${startName} → ${endName}`}
                                         </h4>
                                     </div>
                                     {onDeleteTrip && (
                                         <button
                                             onClick={() => onDeleteTrip(trip.id)}
                                             className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 rounded-md transition-all cursor-pointer"
-                                            title="삭제"
+                                            title={t.delete}
                                         >
                                             <TrashIcon className="w-3.5 h-3.5" />
                                         </button>
                                     )}
                                 </div>
                                 <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-semibold px-0.5">
-                                    <span>{trip.distance ? `${trip.distance.toFixed(1)} km` : ''} · {trip.sectionIds?.length || 0}구간</span>
+                                    <span>{trip.distance ? `${trip.distance.toFixed(1)} km` : ''} · {trip.sectionIds?.length || 0}{language === 'en' ? ' segments' : t.legLabel}</span>
                                     <span>{trip.createdAt ? new Date(trip.createdAt).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
                                 </div>
                             </div>

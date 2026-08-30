@@ -156,7 +156,7 @@ export function findConnectingPath(
     const prev = new Map<string, { from: string; edge: RouteEdge }>();
 
     // Small frontier, so a plain array scan beats the bookkeeping of a heap.
-    let frontier: string[] = [fromId];
+    const frontier: string[] = [fromId];
 
     while (frontier.length > 0) {
         let pickIndex = 0;
@@ -397,7 +397,7 @@ function distance(a: Vec, b: Vec) {
 }
 
 /** Distance from `p` to the segment `a`–`b`. */
-function pointToSegmentDistance(p: Vec, a: Vec, b: Vec) {
+export function pointToSegmentDistance(p: Vec, a: Vec, b: Vec) {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const lengthSquared = dx * dx + dy * dy;

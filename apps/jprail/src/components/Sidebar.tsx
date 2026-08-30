@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
 import { BranchIcon, ChevronDownIcon, ChevronUpIcon, SidebarFrame, SidebarSegmentTabs } from '@ppotal/ui';
+import { Layers } from 'lucide-react';
 import { trackEvent } from '../lib/gtag';
 import { useStationHierarchy } from '../hooks/useStationHierarchy';
 import { useRailData } from '../hooks/useRailData';
@@ -169,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <SidebarFrame
             className={className}
-            icon={<BranchIcon className="w-5 h-5 text-primary" />}
+            icon={<Layers className="w-5 h-5 text-primary" />}
             title={t.title}
             subtitle={t.subtitle}
             onClose={onClose}

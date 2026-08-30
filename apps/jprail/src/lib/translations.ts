@@ -201,6 +201,12 @@ export const MY_LINES_TRANSLATIONS = {
         deleteAll: '전체 삭제',
         noTrips: '기록된 여정이 없습니다.',
         dragToRecord: '역 사이를 드래그하여 기록하세요',
+        dragToRecordHint: '지도를 드래그하여 첫 탑승 경로를 기록해보세요!',
+        clearAllTrips: '모든 여행 기록 초기화',
+        confirmClearTrips: '모든 여행 기록을 정말 삭제하시겠습니까?',
+        yesDelete: '예, 초기화',
+        roundTrip: '(순환)',
+        delete: '삭제',
         stations: '개 역',
         deleteTrip: '이 기록 삭제',
         generateRoute: '경로 생성',
@@ -252,6 +258,12 @@ export const MY_LINES_TRANSLATIONS = {
         deleteAll: 'Delete All',
         noTrips: 'No trips recorded yet.',
         dragToRecord: 'Drag between stations to record!',
+        dragToRecordHint: 'Drag the map and record your first trip!',
+        clearAllTrips: 'Clear All Trips',
+        confirmClearTrips: 'Are you sure you want to delete all trips?',
+        yesDelete: 'Yes, Delete',
+        roundTrip: '(Loop)',
+        delete: 'Delete',
         stations: ' Stations',
         deleteTrip: 'Delete this trip',
         generateRoute: 'Generate Route',
@@ -303,6 +315,12 @@ export const MY_LINES_TRANSLATIONS = {
         deleteAll: 'すべて削除',
         noTrips: '記録された履歴がありません。',
         dragToRecord: '駅の間をドラッグして記録してください',
+        dragToRecordHint: '地図をドラッグして最初の経路を記録してみましょう！',
+        clearAllTrips: 'すべての履歴をリセット',
+        confirmClearTrips: 'すべての履歴を本当に削除してもよろしいですか？',
+        yesDelete: 'はい、削除します',
+        roundTrip: '(循環)',
+        delete: '削除',
         stations: '駅',
         deleteTrip: 'この履歴を削除',
         generateRoute: '経路作成',
@@ -785,42 +803,6 @@ export const HOW_TO_TRANSLATIONS = {
                 { title: '地図の操作', desc: '2本の指でピンチして拡大・縮小、1本の指でドラッグして移動します。' }
             ]
         }
-    }
-};
-
-export const ROUTE_PANE_TRANSLATIONS = {
-    ko: {
-        title: '경로 탐색',
-        start: '출발',
-        end: '도착',
-        placeholder: '역명 입력',
-        totalDistance: '총 이동 거리',
-        transfers: (count: number) => `환승: ${count}회`,
-        transfer: '환승',
-        rail: '철도',
-        noSelection: '역을 선택하여 경로를 탐색하세요.'
-    },
-    en: {
-        title: 'Route Planner',
-        start: 'START',
-        end: 'END',
-        placeholder: 'Station Name',
-        totalDistance: 'Total Distance',
-        transfers: (count: number) => `Transfers: ${count}`,
-        transfer: 'Transfer',
-        rail: 'Rail',
-        noSelection: 'Select stations to route.'
-    },
-    ja: {
-        title: 'ルート検索',
-        start: '出発',
-        end: '到着',
-        placeholder: '駅名を入力',
-        totalDistance: '総移動距離',
-        transfers: (count: number) => `乗り換え: ${count}回`,
-        transfer: '乗り換え',
-        rail: '鉄道',
-        noSelection: '駅を選択してルートを検索してください。'
     }
 };
 

@@ -5,7 +5,7 @@ import { useVisitStore } from "@/store/visitStore";
 import { useMapStore } from "@/store/mapStore";
 import { SidebarFrame, TimelineIcon, ProgressCard } from "@ppotal/ui";
 import { 
-  Trophy, MapPin, Globe, Landmark, Sparkles, Footprints, 
+  History, MapPin, Globe, Landmark, Sparkles, Footprints, 
   Car, Eye, Home as HomeIcon, Building2, ChevronRight, Trash2
 } from "lucide-react";
 import { VISIT_CONFIG, VISIT_CATEGORY_ORDER } from "@regionevel/types";
@@ -22,12 +22,19 @@ const CATEGORY_ICONS: Record<VisitCategory, React.ElementType> = {
 };
 
 export function MyVisitsPane() {
-  const { visits, allRegions, scores: allScores, stats: storeStats, clearRegionVisits } = useVisitStore();
+  const { visits, allRegions, scores: allScores, stats: storeStats, clearRegionVisits, clearAllVisits } = useVisitStore();
   const { toggleRightDrawer, jumpToRegion } = useMapStore();
 
   const [selectedCategory, setSelectedCategory] = useState<VisitCategory | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isTimelineImportOpen, setIsTimelineImportOpen] = useState(false);
+  const [isResetConfirming, setIsResetConfirming] = useState(false);
+
+  React.useEffect(() => {
+    if (visits.length === 0) {
+      setIsResetConfirming(false);
+    }
+  }, [visits.length]);
 
   const regionsById = useMemo(() => {
     const map = new Map<string, Region>();
@@ -117,7 +124,7 @@ export function MyVisitsPane() {
   return (
     <>
       <SidebarFrame
-        icon={<Trophy className="w-5 h-5 text-primary" />}
+        icon={<History className="w-5 h-5 text-primary" />}
         title="나의 여행 기록"
         subtitle="My Travels"
         onClose={toggleRightDrawer}
@@ -163,6 +170,44 @@ export function MyVisitsPane() {
                 </div>
               </div>
             </ProgressCard>
+
+            {/* Clear All Visits button & Confirmation dialog */}
+            {visits.length > 0 && (
+              <div>
+                {!isResetConfirming ? (
+                  <button
+                    onClick={() => setIsResetConfirming(true)}
+                    className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-98 cursor-pointer py-2 text-xs font-bold transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>모든 방문 기록 초기화</span>
+                  </button>
+                ) : (
+                  <div className="p-3 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50/50 dark:bg-red-950/30 flex flex-col gap-2 animate-in fade-in duration-200">
+                    <p className="text-xs font-bold text-red-700 dark:text-red-300 text-center">
+                      모든 방문 기록을 정말 삭제하시겠습니까?
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <button
+                        onClick={() => {
+                          clearAllVisits();
+                          setIsResetConfirming(false);
+                        }}
+                        className="rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow py-1.5 transition-all active:scale-95 cursor-pointer"
+                      >
+                        예, 초기화
+                      </button>
+                      <button
+                        onClick={() => setIsResetConfirming(false)}
+                        className="rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 transition-all active:scale-95 cursor-pointer"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Category Filter Pills */}
             <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar pb-0.5">
@@ -212,9 +257,9 @@ export function MyVisitsPane() {
           filteredItems.map(({ region, visits: regVisits, totalExp: regExp }) => {
             const displayName = region.nameKo || region.name;
             const primaryVisit = regVisits[0];
-            const primaryCat = primaryVisit?.category || "visit";
-            const config = VISIT_CONFIG[primaryCat];
-            const Icon = CATEGORY_ICONS[primaryCat] || Footprints;
+            const primaryCat = primaryVisit?.category as VisitCategory;
+            const config = (primaryCat && VISIT_CONFIG[primaryCat]) ? VISIT_CONFIG[primaryCat] : VISIT_CONFIG.visit;
+            const Icon = (primaryCat && CATEGORY_ICONS[primaryCat]) ? CATEGORY_ICONS[primaryCat] : Footprints;
 
             return (
               <div

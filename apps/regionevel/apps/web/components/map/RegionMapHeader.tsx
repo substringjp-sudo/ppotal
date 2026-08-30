@@ -3,7 +3,7 @@
 import React, { memo, useMemo, useCallback } from "react";
 import { MapSubHeader, SubHeaderStatsGroup, SubHeaderBreadcrumb } from "@ppotal/ui";
 import type { SubHeaderStatItem, BreadcrumbSegment } from "@ppotal/ui";
-import { Layers, Trophy, Globe, MapPin, Building, Flame } from "lucide-react";
+import { Layers, History, Globe, MapPin, Building, Flame } from "lucide-react";
 import { useMapStore } from "@/store/mapStore";
 import { useVisitStore } from "@/store/visitStore";
 import { padId } from "@regionevel/utils";
@@ -194,7 +194,7 @@ export const RegionMapHeader: React.FC<RegionMapHeaderProps> = memo(({ className
       isRightOpen={rightDrawerOpen}
       onToggleRight={toggleRightDrawer}
       rightTooltip={rightDrawerOpen ? "방문 내역 접기" : "방문 내역 펼치기"}
-      rightIcon={<Trophy className="w-4 h-4" />}
+      rightIcon={<History className="w-4 h-4" />}
       breadcrumb={
         <SubHeaderBreadcrumb
           segments={breadcrumbSegments}

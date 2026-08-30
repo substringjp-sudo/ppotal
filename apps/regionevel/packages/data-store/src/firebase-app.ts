@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
-import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
-import type { FirebaseConfig } from "./types.js";
+import { initializeFirestore, getFirestore, persistentLocalCache, type Firestore } from "firebase/firestore";
+import type { FirebaseConfig } from "./types";
 
 let _app: FirebaseApp | null = null;
 let _db: Firestore | null = null;
@@ -30,7 +30,7 @@ export function getFirestoreDb(): Firestore {
     } else {
       _db = getFirestore(app);
     }
-  } catch (e) {
+  } catch {
     _db = getFirestore(app);
   }
   return _db;

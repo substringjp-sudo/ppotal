@@ -17,8 +17,7 @@ import { Z } from "@/lib/layers";
 import { RegionTooltip } from "./RegionTooltip";
 import { ScoreStatsBar } from "./ScoreStatsBar";
 import { ShareCardModal } from "./ShareCardModal";
-import { MapSubHeader } from "@ppotal/ui";
-import { Pencil, CheckCircle2, X, Layers, Trophy } from "lucide-react";
+import { Pencil, CheckCircle2, X } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
 // Prevent React 18/19 StrictMode / HMR container reuse cleanup crashes in Leaflet

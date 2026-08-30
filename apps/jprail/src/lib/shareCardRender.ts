@@ -656,7 +656,7 @@ function drawTotals(
         // 4. Value inside Arc Gauge (Auto-scaled so text never touches arc line)
         let valFontSize = 26;
         context.font = font(900, valFontSize);
-        let valWidth = context.measureText(cell.value).width;
+        const valWidth = context.measureText(cell.value).width;
         if (valWidth > innerMaxWidth) {
             valFontSize = Math.max(16, Math.floor(valFontSize * (innerMaxWidth / valWidth)));
             context.font = font(900, valFontSize);
@@ -667,7 +667,7 @@ function drawTotals(
         // 5. Total count inside Arc Gauge (Auto-scaled so text never touches arc line)
         let totFontSize = 13;
         context.font = font(700, totFontSize);
-        let totWidth = context.measureText(cell.total).width;
+        const totWidth = context.measureText(cell.total).width;
         if (totWidth > innerMaxWidth) {
             totFontSize = Math.max(10, Math.floor(totFontSize * (innerMaxWidth / totWidth)));
             context.font = font(700, totFontSize);
@@ -827,7 +827,7 @@ function drawPrefectures(
 function drawBadges(
     context: CanvasRenderingContext2D,
     x: number, y: number, w: number,
-    badges: string[], theme: MapTheme
+    badges: string[], _theme?: MapTheme
 ): number {
     context.font = font(800, 19);
     let chipX = x;

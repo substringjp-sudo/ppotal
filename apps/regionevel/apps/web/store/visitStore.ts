@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, subscribeWithSelector } from "zustand/middleware";
+import { persist, subscribeWithSelector, createJSONStorage } from "zustand/middleware";
 import type { Region, RegionScore, RegionVisit, VisitCategory } from "@regionevel/types";
 import { VISIT_CATEGORY_ORDER, VISIT_CONFIG } from "@regionevel/types";
 import {
@@ -11,6 +11,40 @@ import {
 } from "@regionevel/utils";
 import { auth, db, getRegionevelShapeId } from "@ppotal/firebase";
 import { collection, getDocs, doc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
+
+const safeLocalStorage = createJSONStorage(() => ({
+  getItem: (name: string) => {
+    try {
+      if (typeof window === "undefined") return null;
+      return localStorage.getItem(name);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string) => {
+    try {
+      if (typeof window === "undefined") return;
+      localStorage.setItem(name, value);
+    } catch (err: any) {
+      if (
+        err?.name === "QuotaExceededError" ||
+        err?.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+        err?.code === 22 ||
+        err?.code === 1014
+      ) {
+        console.warn("[visitStore] LocalStorage quota exceeded. State is safely maintained in memory.");
+      }
+    }
+  },
+  removeItem: (name: string) => {
+    try {
+      if (typeof window === "undefined") return;
+      localStorage.removeItem(name);
+    } catch {
+      // ignore
+    }
+  },
+}));
 
 interface VisitStore {
   visits: RegionVisit[];
@@ -614,8 +648,15 @@ export const useVisitStore = create<VisitStore>()(
     {
       name: "regionevel-visits",
       version: 3,
-      partialize: (state) => ({ visits: state.visits }),
- // Only persist visits, not derived scores
+      storage: safeLocalStorage,
+      partialize: (state) => ({
+        visits: state.visits.map((v) => ({
+          regionId: v.regionId,
+          category: v.category,
+          count: v.count,
+          ...(v.notes ? { notes: v.notes } : {}),
+        })),
+      }),
       onRehydrateStorage: (state) => {
         return () => {
           state?.setHasHydrated(true);

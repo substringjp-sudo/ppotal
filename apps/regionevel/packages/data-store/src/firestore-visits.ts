@@ -9,8 +9,8 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import type { RegionVisit, VisitCategory } from "@regionevel/types";
-import type { VisitDataStore } from "./types.js";
-import { getFirestoreDb } from "./firebase-app.js";
+import type { VisitDataStore } from "./types";
+import { getFirestoreDb } from "./firebase-app";
 
 function docToVisit(data: Record<string, unknown>): RegionVisit {
   const visit: RegionVisit = {
