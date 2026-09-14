@@ -91,6 +91,15 @@ export interface RegionVisit {
   count: number;
   notes?: string;
   updatedAt?: number; // ms since epoch — used for conflict resolution during sync
+  /**
+   * Local dates ("YYYY-MM-DD") the counted occasions happened on, oldest first.
+   *
+   * Distinct from `updatedAt`, which is when the record was written. Only a
+   * timeline import knows these; a hand-added visit has none, so this is absent
+   * rather than empty. One entry per counted occasion, so `dates.length` is at
+   * most `count` — both are capped by the category's `maxCount` together.
+   */
+  dates?: string[];
 }
 
 export interface RegionScoreBreakdown {

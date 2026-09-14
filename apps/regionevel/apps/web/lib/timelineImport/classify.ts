@@ -439,6 +439,17 @@ export async function buildTimelineImportPreview(
   const regionAdmLevels = new Map<string, 0 | 1 | 2>();
   const regionCounts = new Map<string, Partial<Record<VisitCategory, number>>>();
 
+  /**
+   * When each counted occasion happened, alongside the count of them.
+   *
+   * The dates are already known at every tally site below — they are what the
+   * day sets are keyed on — and collapsing them to a bare count here is what
+   * used to make the import's output undateable. Kept as a parallel structure
+   * so the counts (which the preview and the score both read) keep their
+   * existing shape.
+   */
+  const regionDates = new Map<string, Partial<Record<VisitCategory, string[]>>>();
+
   const getCounts = (regionId: string, admLevel: 0 | 1 | 2) => {
     regionAdmLevels.set(regionId, admLevel);
     let c = regionCounts.get(regionId);
@@ -449,12 +460,24 @@ export async function buildTimelineImportPreview(
     return c;
   };
 
+  const addDates = (regionId: string, category: VisitCategory, dates: Iterable<string>) => {
+    let d = regionDates.get(regionId);
+    if (!d) {
+      d = {};
+      regionDates.set(regionId, d);
+    }
+    const list = d[category] ?? [];
+    for (const date of dates) list.push(date);
+    d[category] = list;
+  };
+
   // 4a. Apply overnight stays
   for (const [regionId, dates] of overnightStaysByRegion) {
     const sampleEvent = events.find((e) => e.regionId === regionId);
     const adm = sampleEvent ? sampleEvent.admLevel : 2;
     const c = getCounts(regionId, adm);
     c.stay = dates.size;
+    addDates(regionId, "stay", dates);
   }
 
   // 4b. Apply visits from place stops
@@ -473,10 +496,13 @@ export async function buildTimelineImportPreview(
   for (const occ of mergedStays) {
     const c = getCounts(occ.regionId, occ.admLevel);
     const duration = occ.endTime - occ.startTime;
+    const day = localDateKey(occ.startTime, occ.lon);
     if (duration <= TRANSIT_MAX_MS) {
       c.transit = (c.transit ?? 0) + 1;
+      addDates(occ.regionId, "transit", [day]);
     } else {
       c.visit = (c.visit ?? 0) + 1;
+      addDates(occ.regionId, "visit", [day]);
     }
   }
 
@@ -496,6 +522,7 @@ export async function buildTimelineImportPreview(
     const adm = regionAdmLevels.get(regionId) ?? 2;
     const c = getCounts(regionId, adm);
     c.transit = Math.max(c.transit ?? 0, dates.size);
+    addDates(regionId, "transit", dates);
   }
 
   // 4d. Apply pass from intermediate waypoints (Movement path)
@@ -514,6 +541,7 @@ export async function buildTimelineImportPreview(
     const adm = regionAdmLevels.get(regionId) ?? 2;
     const c = getCounts(regionId, adm);
     c.pass = (c.pass ?? 0) + days.size;
+    addDates(regionId, "pass", days);
   }
 
   // Cap all counts to VISIT_CONFIG[cat].maxCount
@@ -564,7 +592,14 @@ export async function buildTimelineImportPreview(
   for (const r of regions) {
     for (const cat of Object.keys(r.counts) as VisitCategory[]) {
       const n = r.counts[cat] ?? 0;
-      for (let i = 0; i < n; i++) applyList.push({ regionId: r.regionId, category: cat });
+      // Oldest first, so that when there are more days than the category's cap
+      // the occasions that survive are the ones that happened first, rather
+      // than whichever the tally happened to reach last.
+      const days = (regionDates.get(r.regionId)?.[cat] ?? []).slice().sort();
+      for (let i = 0; i < n; i++) {
+        const date = days[i];
+        applyList.push({ regionId: r.regionId, category: cat, ...(date ? { date } : {}) });
+      }
     }
   }
 

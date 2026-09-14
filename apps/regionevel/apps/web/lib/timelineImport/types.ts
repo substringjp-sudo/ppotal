@@ -76,8 +76,14 @@ export interface RegionImportSummary {
 export interface TimelineImportPreview {
   regions: RegionImportSummary[];
   skipped: Record<string, number>;
-  /** Occasions actually applied when the user confirms, one entry per upsert. */
-  applyList: Array<{ regionId: string; category: VisitCategory }>;
+  /**
+   * Occasions actually applied when the user confirms, one entry per upsert.
+   *
+   * `date` is the local day ("YYYY-MM-DD") the occasion happened on. It is
+   * optional only because an occasion can outnumber the days recorded for it;
+   * a timeline import normally knows every one.
+   */
+  applyList: Array<{ regionId: string; category: VisitCategory; date?: string }>;
   /**
    * How many parsed points landed on a region. A file can parse perfectly and
    * still match nothing — no boundary data for that country, or the fetch
