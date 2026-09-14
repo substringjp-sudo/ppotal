@@ -5,6 +5,7 @@ import { MAP_THEMES, MAP_THEME_IDS, LandForm, MapThemeId } from '../lib/mapTheme
 import { MAP_SHAPE_MODES, MapShapeMode } from '../lib/lineShapes';
 import { useI18n } from '../lib/i18n-context';
 import { Z } from '../lib/layers';
+import type { GroupingMode } from '../types/railData';
 
 export interface MapStyleSettings {
     theme: MapThemeId;
@@ -12,6 +13,8 @@ export interface MapStyleSettings {
     shapeMode: MapShapeMode;
     showLabels: boolean;
     showAirports: boolean;
+    /** 선을 선적(線籍)으로 묶을지 운행계통(運転系統)으로 묶을지. */
+    grouping: GroupingMode;
     flow?: boolean;
     unvisited: {
         weight: number;
@@ -35,6 +38,7 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
     shapeMode: 'smooth',
     showLabels: true,
     showAirports: true,
+    grouping: 'track',
     flow: false,
     unvisited: {
         weight: 1.0,
@@ -82,6 +86,8 @@ const TEXT = {
         resetToDefaults: '기본 설정으로 초기화',
         showStationNames: '역 이름 표시',
         showAirports: '공항 표시',
+        groupByService: '운행계통으로 묶기',
+        groupByServiceHint: '야마노테선처럼 여러 선적을 넘나드는 실제 운행 단위로 표시합니다',
     },
     en: {
         mapStyle: 'Map Style',
@@ -110,6 +116,8 @@ const TEXT = {
         resetToDefaults: 'Reset to Defaults',
         showStationNames: 'Show Station Names',
         showAirports: 'Show Airports',
+        groupByService: 'Group by service',
+        groupByServiceHint: 'Show operating routes such as the Yamanote loop, which spans three registered lines',
     },
     ja: {
         mapStyle: 'マップスタイル',
@@ -138,6 +146,8 @@ const TEXT = {
         resetToDefaults: 'デフォルトに戻す',
         showStationNames: '駅名を表示',
         showAirports: '空港を表示',
+        groupByService: '運転系統で表示',
+        groupByServiceHint: '山手線のように複数の線籍にまたがる実際の運転単位で表示します',
     }
 };
 
@@ -526,6 +536,21 @@ export const MapStylePanel: React.FC<MapStylePanelProps> = ({
                                             className="sr-only peer"
                                             checked={settings.showAirports}
                                             onChange={(e) => handleChange('showAirports', null, e.target.checked)}
+                                        />
+                                        <div className="w-10 h-6 bg-slate-300/50 dark:bg-slate-700/70 backdrop-blur-sm peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                                    </div>
+                                </label>
+                                <label className="flex justify-between items-start cursor-pointer group px-1 py-1 gap-3">
+                                    <span className="flex flex-col">
+                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary transition-colors">{t.groupByService}</span>
+                                        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{t.groupByServiceHint}</span>
+                                    </span>
+                                    <div className="relative shrink-0 mt-0.5">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={settings.grouping === 'service'}
+                                            onChange={(e) => onSettingsChange({ ...settings, grouping: e.target.checked ? 'service' : 'track' })}
                                         />
                                         <div className="w-10 h-6 bg-slate-300/50 dark:bg-slate-700/70 backdrop-blur-sm peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary shadow-inner"></div>
                                     </div>

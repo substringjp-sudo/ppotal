@@ -104,6 +104,14 @@ export interface MapStyleSettings {
     theme: MapThemeId;
     /** Outline, or the landmass as a lattice of tiles. */
     landForm: LandForm;
+    /**
+     * 선을 **선적(線籍)** 으로 묶을지 **운행계통(運転系統)** 으로 묶을지.
+     *
+     * 무엇이 선택되는지는 바뀌지 않는다. 땅에 깔린 선로는 그대로고 어느 구간을 한
+     * 이름으로 묶는가만 달라진다. 모드에 따라 클릭 결과가 달라지면 사용자가 자기가
+     * 무엇을 고른 건지 알 수 없게 된다.
+     */
+    grouping: import('../types/railData').GroupingMode;
 }
 
 export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
@@ -126,7 +134,8 @@ export const DEFAULT_STYLE_SETTINGS: MapStyleSettings = {
     shapeMode: 'geographic',
     flow: false,
     theme: 'day',
-    landForm: 'outline'
+    landForm: 'outline',
+    grouping: 'track'
 };
 
 const MobileBottomSheet = dynamic(() => import('./Mobile/MobileBottomSheet'), { ssr: false });
@@ -1123,6 +1132,7 @@ const MainPageClient = () => {
                                     isMobile={isMobile}
                                     selectedStation={selectedStation?.id}
                                     onMapClick={handleMapClick}
+                                    groupingMode={styleSettings.grouping}
                                     showLabels={styleSettings.showLabels}
                                     onToggleLabels={() => updateStyleSettings({ ...styleSettings, showLabels: !styleSettings.showLabels })}
                                     draftTrip={draftTrip}

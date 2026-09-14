@@ -13,6 +13,7 @@ import { StationNode, LineSegment, getSectionMap } from '../lib/graphUtils';
 import { getLineColor } from '../lib/lineColors';
 import { MapStyleSettings } from './MainPageClient';
 import { trackEvent } from '../lib/gtag';
+import { useServiceGroups } from '../hooks/useServiceGroups';
 import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
 import FloatingTooltip from './FloatingTooltip';
@@ -72,6 +73,8 @@ interface MapPaneProps {
     tripStartStationId?: string | null;
     onStationHover?: (id: string | null) => void;
     onPrefectureClick?: (name: string) => void;
+    /** 선을 선적으로 묶을지 운행계통으로 묶을지. */
+    groupingMode?: import('../types/railData').GroupingMode;
     leftBound?: number;
     rightBound?: number;
     isHoverLoading?: boolean;
@@ -117,6 +120,7 @@ const MapPane: React.FC<MapPaneProps> = ({
 
     onTransitionStateChange,
     showLabels = false,
+    groupingMode = 'track',
     onToggleLabels,
     tripStartStationId,
     onStationHover: onStationHoverExternal,
@@ -129,6 +133,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     regionevelVisits
 }) => {
     const map = useMap();
+    const serviceGroups = useServiceGroups();
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
     const [mapReady, setMapReady] = useState(false);
@@ -779,6 +784,8 @@ const MapPane: React.FC<MapPaneProps> = ({
             {railDataForMap && (
                 <RailroadLayer
                     railroadNetwork={railDataForMap}
+                    services={serviceGroups}
+                    groupingMode={groupingMode}
                     selectedLines={selectedLines}
                     hoveredLine={hoveredLine}
                     activeLine={activeLine}

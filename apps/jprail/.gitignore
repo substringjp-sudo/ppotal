@@ -50,3 +50,12 @@ firebase-debug.log*
 .vscode
 .idea
 
+
+# OSM 운행계통 내보내기 — 전국 내보내기는 수십 MB 라 커밋하지 않는다.
+# 파이프라인 표본인 야마노테선 것만 남긴다. data/osm/README.md 참고.
+data/osm/*
+!data/osm/README.md
+!data/osm/yamanote.geojson
+
+# 되짚기 타임라인 검증용 임시 산출물
+/.verify/

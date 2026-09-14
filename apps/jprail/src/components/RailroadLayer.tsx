@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { getLineColor } from '../lib/lineColors';
 import { getSmartTooltipOptions } from '../lib/uiUtils';
 import { trackEvent } from '../lib/gtag';
-import { RailData, Section } from '../types/railData';
+import { GroupingMode, RailData, Section, ServiceGroup } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName } from '../lib/i18n-utils';
 import { glowCanvas, casingCanvas, railroadCanvas, sharedSvgRenderer } from './Map';
@@ -26,6 +26,10 @@ interface RailroadLayerProps {
     isDragging?: boolean;
     draftSectionIds?: Set<number>;
     settings: import('./MainPageClient').MapStyleSettings;
+    /** 실어 온 운행계통. 비어 있으면 계통 모드로 두어도 선적처럼 보인다. */
+    services?: ServiceGroup[];
+    /** 선을 선적으로 묶을지 운행계통으로 묶을지. */
+    groupingMode?: GroupingMode;
     onTooltipUpdate?: (content: string | null, x: number, y: number, priority?: 'low' | 'high') => void;
     /** Bumps whenever the set of sections handed in actually changes. */
     dataRevision: number;
@@ -41,6 +45,8 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
     onRailroadHover,
     zoomLevel,
     isMobile,
+    services,
+    groupingMode = 'track',
     isMoving = false,
     usedSectionIds = new Set(),
     isDragging = false,
@@ -174,13 +180,30 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 color: l.color
             }));
 
-            // Group sections by (line_id, isUsed, isDraft)
+            // 계통 모드에서 구간을 무슨 이름·색으로 묶을지.
+            //
+            // 계통이 정의된 구간만 제 색을 얻고 나머지는 선적 그대로 남는다. 일본
+            // 철도에서 계통과 선적이 갈리는 곳은 대도시권 몇 군데뿐이라, 계통을 못
+            // 채운 노선을 지도에서 지우는 것보다 선적으로 남겨 두는 편이 사실에 가깝다.
+            const serviceBySection = new Map<number, ServiceGroup>();
+            if (groupingMode === 'service' && services) {
+                services.forEach((svc) => {
+                    svc.sections.forEach((id) => {
+                        if (!serviceBySection.has(id)) serviceBySection.set(id, svc);
+                    });
+                });
+            }
+
+            // Group sections by (group, isUsed, isDraft)
+            // group 은 선적 모드면 line_id, 계통 모드면 계통 id(없으면 line_id)다.
             const groupedSections = new Map<string, [number, number][][]>();
             if (data.sections && Array.isArray(data.sections.sections)) {
                 data.sections.sections.forEach((s: Section) => {
                     const isUsed = usedSectionIds.has(s.id);
                     const isDraft = draftSectionIds?.has(s.id) || false;
-                    const key = `${s.line_id}_${isUsed}_${isDraft}`;
+                    const svc = serviceBySection.get(s.id);
+                    // '\u0000' 로 나눠 이름에 밑줄이 있어도 안 깨지게 한다.
+                    const key = [svc ? `svc:${svc.id}` : `line:${s.line_id}`, s.line_id, isUsed, isDraft].join('\u0000');
                     if (!groupedSections.has(key)) groupedSections.set(key, []);
                     // Reshaping is cached against the geometry array, so this is
                     // a map lookup for every section after the first sighting.
@@ -189,7 +212,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
             }
 
             groupedSections.forEach((geoms, key) => {
-                const [lineIdStr, isUsedStr, isDraftStr] = key.split('_');
+                const [groupKey, lineIdStr, isUsedStr, isDraftStr] = key.split('\u0000');
                 const lineId = parseInt(lineIdStr);
                 const isUsed = isUsedStr === 'true';
                 const isDraft = isDraftStr === 'true';
@@ -200,19 +223,29 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                 const companyName = companyInfo?.name || String(info.companyId);
                 const fullId = `${info.companyId}::${lineId}`;
 
+                // 계통으로 묶였으면 이름과 색은 계통 것을 쓴다. 다만 **누르면 잡히는
+                // 대상은 그대로 선적**이다(fullId). 모드에 따라 클릭 결과가 달라지면
+                // 사용자가 자기가 무엇을 고른 건지 알 수 없게 된다.
+                const svc = groupKey.startsWith('svc:')
+                    ? services?.find((x) => `svc:${x.id}` === groupKey)
+                    : undefined;
+
                 features.push({
                     type: 'Feature',
                     properties: {
                         id: fullId,
-                        name: info.name,
+                        name: svc?.name || info.name,
                         name_en: info.name_en,
-                        name_kr: info.name_kr,
+                        name_kr: svc?.name_kr || info.name_kr,
                         company: companyName,
                         company_en: companyInfo?.name_en || '',
                         company_kr: companyInfo?.name_kr || '',
-                        color: getLineColor(fullId, data) || '#999',
+                        color: svc?.color || getLineColor(fullId, data) || '#999',
                         isUsed: isUsed,
-                        isDraft: isDraft
+                        isDraft: isDraft,
+                        serviceId: svc?.id,
+                        serviceName: svc ? svc.name_kr || svc.name : undefined,
+                        trackName: info.name_kr || info.name
                     },
                     geometry: { type: 'MultiLineString', coordinates: geoms }
                 });
@@ -252,7 +285,7 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         }
 
         return { type: 'FeatureCollection', features };
-    }, [railroadNetwork, usedSectionIds, draftSectionIds, settings.shapeMode]);
+    }, [railroadNetwork, usedSectionIds, draftSectionIds, settings.shapeMode, services, groupingMode]);
 
 
     // Unified Style Function: Decides all visuals in one pass
@@ -396,6 +429,11 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
                     </div>
                 </div>
                 <div style="flex: 1;">
+                    ${props.serviceName ? `
+                        <div style="font-size: 10px; color: #a0aec0; margin-bottom: 6px; line-height: 1.5;">
+                            <span style="font-weight: 700; color: #718096;">선적</span> ${props.trackName}
+                        </div>
+                    ` : ''}
                     <div style="font-size: 12px; font-weight: 700; color: #4a5568; line-height: 1.4;">
                         ${primaryCorp}
                     </div>
@@ -503,8 +541,13 @@ const RailroadLayer: React.FC<RailroadLayerProps> = ({
         // usedSectionIds의 실제 내용 변화를 감지하기 위해 size뿐만 아니라
         // 데이터의 특징적인 값(해시 대용)을 포함합니다.
         const usedIdsHash = Array.from(usedSectionIds).slice(-10).join(',');
-        return `${dataRevision}_${settings.shapeMode}_${usedSectionIds.size}_${usedIdsHash}_${draftKey}_${language}`;
-    }, [dataRevision, settings.shapeMode, usedSectionIds, draftSectionIds, language]);
+
+        // 묶는 방식이 바뀌면 구간이 다른 덩어리로 다시 묶이므로 이것도 데이터 변화다.
+        // 계통 목록은 뒤늦게 도착하니(비동기) 개수도 같이 넣는다 — 'service' 로
+        // 저장된 채로 새로 들어온 경우, 목록이 도착하는 순간 다시 그려야 한다.
+        const groupKey = `${groupingMode}_${services?.length ?? 0}`;
+        return `${dataRevision}_${settings.shapeMode}_${usedSectionIds.size}_${usedIdsHash}_${draftKey}_${language}_${groupKey}`;
+    }, [dataRevision, settings.shapeMode, usedSectionIds, draftSectionIds, language, groupingMode, services]);
 
     if (!mergedGeoJsonData || !panesReady) return null;
 
