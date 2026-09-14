@@ -411,3 +411,18 @@ export function parseTimeline(input: unknown | unknown[]): ParseResult {
 
     return { segments, skipped };
 }
+
+/** 일본 표준시. 타임라인의 시각은 epoch 로 들어와 원래 시차가 남아 있지 않다. */
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/**
+ * 탄 날(`YYYY-MM-DD`)을 일본 시각으로 읽는다.
+ *
+ * UTC 로 자르면 밤에 탄 기록이 하루 전으로 밀린다 — 21시 JST 는 같은 날 12시 UTC 가
+ * 아니라 **전날** 12시 UTC 다. 보는 사람의 시간대로 자르는 것도 답이 아니다. 한국에서
+ * 보든 미국에서 보든 그 여정을 탄 날은 일본에서의 그 날이기 때문이다.
+ */
+export function rideDateOf(epochMs: number): string {
+    if (!Number.isFinite(epochMs)) return '';
+    return new Date(epochMs + JST_OFFSET_MS).toISOString().slice(0, 10);
+}

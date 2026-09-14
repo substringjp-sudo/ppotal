@@ -9,7 +9,7 @@ import { getLocalizedName } from '../lib/i18n-utils';
 import { TIMELINE_IMPORT_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { Z } from '../lib/layers';
 
-import { parseTimeline } from '../lib/timeline/parse';
+import { parseTimeline, rideDateOf } from '../lib/timeline/parse';
 import { StationIndex } from '../lib/timeline/stationIndex';
 import { matchAll, mergeAdjacent, DEFAULT_MATCH_OPTIONS, isPointInJapan } from '../lib/timeline/match';
 import { createClientRouter } from '../lib/timeline/clientRouter';
@@ -92,6 +92,9 @@ export function tripFromResult(result: MatchResult, railData: RailData | null): 
     return {
         id: `timeline_${result.segment.startTime}_${Math.random().toString(36).slice(2, 7)}`,
         createdAt: new Date(result.segment.startTime).toISOString(),
+        // 타임라인에서 온 여정은 **진짜 탄 날을 안다**. 되짚기가 시간순으로 도는
+        // 근거가 이것이다. 손으로 그린 경로에는 이 값이 없다.
+        date: rideDateOf(result.segment.startTime),
         start: fromName,
         end: toName,
         startId: route.fromStationId,

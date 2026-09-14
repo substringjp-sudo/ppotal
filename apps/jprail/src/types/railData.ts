@@ -176,3 +176,36 @@ export interface RailData {
     railroadNetwork?: RailroadNetwork;
     stationsLod?: StationLod[];
 }
+
+/**
+ * 운행계통(運転系統).
+ *
+ * `lines.json` 이 담은 **선적(線籍)** 과는 다른 층이다. 원본 국토수치정보 N02 는
+ * 선적만 담기 때문에 `山手線`(320)은 시나가와~다바타 17역이 전부이고, 우리가 아는
+ * 순환선은 선적 세 개를 밟는 운행계통이다. `京浜東北線`·`湘南新宿ライン` 은 데이터에
+ * 아예 없다.
+ *
+ * `scripts/build_services.mjs` 가 OpenStreetMap 에서 만들고, 정차역 순서가 실제
+ * 선로에서 이어지는지 검증까지 끝낸 결과가 `public/rail/services.json` 이다.
+ *
+ * © OpenStreetMap contributors, ODbL 1.0
+ */
+export interface ServiceGroup {
+    id: string;
+    name: string;
+    name_kr?: string;
+    color: string;
+    kind: 'LOOP' | 'LIMITED_EXPRESS' | 'RAPID' | 'THROUGH' | 'TRACK';
+    is_loop: boolean;
+    /** 정차역 ID 를 운행 순서대로. `is_loop` 면 마지막에서 첫 역으로 돌아온다. */
+    stops: string[];
+    /** 이 계통이 밟는 구간 ID. 지도에 그릴 선이자 완승률을 셀 단위. */
+    sections: number[];
+}
+
+export interface ServicesFile {
+    services: Record<string, ServiceGroup>;
+}
+
+/** 지도의 선을 무엇으로 묶어 보여줄지. */
+export type GroupingMode = 'track' | 'service';
