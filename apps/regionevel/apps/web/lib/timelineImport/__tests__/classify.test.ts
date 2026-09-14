@@ -184,6 +184,48 @@ describe("buildTimelineImportPreview classification rules", () => {
     expect(shinjuku?.counts.stay).toBe(1);
   });
 
+  it("carries the day each occasion fell on into the apply list", async () => {
+    // Two nights in Shinjuku, a month apart. Without dates on the apply list
+    // these collapse into "stay ×2" and the order they happened in is gone.
+    const parsed: ParsedTimeline = {
+      stays: [
+        {
+          lat: 35.6938,
+          lon: 139.7034,
+          startTime: Date.parse("2026-05-01T23:00:00+09:00"),
+          endTime: Date.parse("2026-05-02T05:00:00+09:00"),
+        },
+        {
+          lat: 35.6938,
+          lon: 139.7034,
+          startTime: Date.parse("2026-06-10T23:00:00+09:00"),
+          endTime: Date.parse("2026-06-11T05:00:00+09:00"),
+        },
+      ],
+      moves: [],
+      skipped: {},
+      diagnostics: {
+        formats: ["semanticSegments"],
+        topLevelKeys: [],
+        segmentsSeen: 2,
+        visitsSeen: 2,
+        visitsParsed: 2,
+        activitiesSeen: 0,
+        activitiesParsed: 0,
+      },
+    };
+
+    const preview = await buildTimelineImportPreview(parsed);
+    const stays = preview.applyList.filter(
+      (e) => e.regionId === "JP-13104" && e.category === "stay",
+    );
+
+    expect(stays).toHaveLength(2);
+    expect(stays.map((e) => e.date).sort()).toEqual(["2026-05-02", "2026-06-11"]);
+    // Every entry the import produces should know its day.
+    expect(preview.applyList.every((e) => typeof e.date === "string")).toBe(true);
+  });
+
   it("densifies long distance movement and captures intermediate pass regions", async () => {
     // Movement with only 2 points (Start in Shinjuku, End in Shibuya, 4km apart)
     // Densification should produce intermediate points and register them

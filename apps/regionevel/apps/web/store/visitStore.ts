@@ -67,7 +67,7 @@ interface VisitStore {
   clearAllVisits: () => void;
   quickIncrement: (regionId: string) => void;
   addDrawPathVisits: (startRegionId: string, endRegionId: string, pathRegionIds: string[]) => void;
-  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory }>) => Promise<void>;
+  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory; date?: string }>) => Promise<void>;
   getScore: (regionId: string) => RegionScore | undefined;
   setRegions: (regions: Region[]) => void;
   recalculateScores: (regions?: Region[]) => void;
@@ -393,17 +393,29 @@ export const useVisitStore = create<VisitStore>()(
           return found ? found.count : 0;
         };
 
-        const applyChange = (rid: string, cat: VisitCategory, targetCount: number) => {
+        const applyChange = (
+          rid: string,
+          cat: VisitCategory,
+          targetCount: number,
+          addedDates: string[] = [],
+        ) => {
           const cfg = VISIT_CONFIG[cat];
           if (!cfg) return;
           const finalCount = Math.max(0, Math.min(cfg.maxCount, targetCount));
           const key = `${padId(rid)}__${cat}`;
           if (finalCount > 0) {
+            const prev = visitMap.get(key);
+            // Oldest first, and never more dates than the occasions they
+            // describe — the count is capped, so the dates are capped with it.
+            const dates = [...(prev?.dates ?? []), ...addedDates]
+              .sort()
+              .slice(0, finalCount);
             visitMap.set(key, {
               regionId: padId(rid),
               category: cat,
               count: finalCount,
               updatedAt: Date.now(),
+              ...(dates.length > 0 ? { dates } : {}),
             });
           } else {
             visitMap.delete(key);
@@ -412,9 +424,15 @@ export const useVisitStore = create<VisitStore>()(
 
         const order: VisitCategory[] = ["pass", "transit", "visit", "stay"];
         const grouped = new Map<string, number>(); // `${regionId}__${category}` -> count
-        for (const { regionId, category } of entries) {
+        const groupedDates = new Map<string, string[]>(); // same key -> the days they fell on
+        for (const { regionId, category, date } of entries) {
           const key = `${padId(regionId)}__${category}`;
           grouped.set(key, (grouped.get(key) ?? 0) + 1);
+          if (date) {
+            const list = groupedDates.get(key) ?? [];
+            list.push(date);
+            groupedDates.set(key, list);
+          }
         }
 
         const byRegion = new Map<string, Set<VisitCategory>>();
@@ -436,23 +454,26 @@ export const useVisitStore = create<VisitStore>()(
             const prevCount = getCount(regionId, category);
             const newTarget = prevCount + added;
             const diff = newTarget - prevCount;
+            // A stay on the 1st is also a visit, a transit and a pass on the
+            // 1st — the cascade below carries the day down with the count.
+            const days = groupedDates.get(`${regionId}__${category}`) ?? [];
 
-            applyChange(regionId, category, newTarget);
+            applyChange(regionId, category, newTarget, days);
             touchedKeys.add(`${padId(regionId)}__${category}`);
 
             if (diff > 0) {
               if (category === "transit") {
-                applyChange(regionId, "pass", getCount(regionId, "pass") + diff);
+                applyChange(regionId, "pass", getCount(regionId, "pass") + diff, days);
                 touchedKeys.add(`${padId(regionId)}__pass`);
               } else if (category === "visit") {
-                applyChange(regionId, "transit", getCount(regionId, "transit") + diff);
-                applyChange(regionId, "pass", getCount(regionId, "pass") + diff);
+                applyChange(regionId, "transit", getCount(regionId, "transit") + diff, days);
+                applyChange(regionId, "pass", getCount(regionId, "pass") + diff, days);
                 touchedKeys.add(`${padId(regionId)}__transit`);
                 touchedKeys.add(`${padId(regionId)}__pass`);
               } else if (category === "stay") {
-                applyChange(regionId, "visit", getCount(regionId, "visit") + diff);
-                applyChange(regionId, "transit", getCount(regionId, "transit") + diff);
-                applyChange(regionId, "pass", getCount(regionId, "pass") + diff);
+                applyChange(regionId, "visit", getCount(regionId, "visit") + diff, days);
+                applyChange(regionId, "transit", getCount(regionId, "transit") + diff, days);
+                applyChange(regionId, "pass", getCount(regionId, "pass") + diff, days);
                 touchedKeys.add(`${padId(regionId)}__visit`);
                 touchedKeys.add(`${padId(regionId)}__transit`);
                 touchedKeys.add(`${padId(regionId)}__pass`);
@@ -487,6 +508,7 @@ export const useVisitStore = create<VisitStore>()(
                   category: v.category,
                   count: v.count,
                   ...(v.notes !== undefined ? { notes: v.notes } : {}),
+                  ...(v.dates && v.dates.length > 0 ? { dates: v.dates } : {}),
                   updatedAt: serverTimestamp(),
                 });
               });
@@ -655,6 +677,7 @@ export const useVisitStore = create<VisitStore>()(
           category: v.category,
           count: v.count,
           ...(v.notes ? { notes: v.notes } : {}),
+          ...(v.dates && v.dates.length > 0 ? { dates: v.dates } : {}),
         })),
       }),
       onRehydrateStorage: (state) => {

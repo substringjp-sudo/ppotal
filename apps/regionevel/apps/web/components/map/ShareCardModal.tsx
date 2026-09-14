@@ -6,7 +6,10 @@ import type { Feature } from "geojson";
 import {
   ShareIcon, DownloadIcon, CopyIcon, CloseIcon, CheckIcon, SunIcon, MoonIcon
 } from "@ppotal/ui";
-import { Share2, Download, Copy, X, Check, ChevronDown, Sparkles, MapPin, Globe, Building2, Map as MapIcon, Loader2 } from "lucide-react";
+import {
+  Share2, Download, Copy, X, Check, ChevronDown, Sparkles, MapPin, Globe,
+  Building2, Map as MapIcon, Loader2, Image as ImageIcon, Film, Play, Pause, RotateCcw,
+} from "lucide-react";
 import type { Region, RegionScore, RegionVisit } from "@regionevel/types";
 import { padId } from "@regionevel/utils";
 import { Z } from "@/lib/layers";
@@ -20,6 +23,8 @@ import {
   CARD_SIZE, DARK_THEME, LIGHT_THEME, drawShareCard, type CardAspectRatio,
 } from "@/lib/shareCardRender";
 import { fetchCountryGeometries } from "@/lib/regions";
+import { useShareAnimation } from "@/lib/useShareAnimation";
+import { isRecordingSupported, recordFrames } from "@/lib/recordCanvas";
 
 export interface ShareCardModalProps {
   isOpen: boolean;
@@ -36,6 +41,9 @@ export interface ShareCardModalProps {
 }
 
 type Delivery = "share" | "copy" | "download";
+
+/** What the card leaves as: a still, or the map filling up over time. */
+type ExportMode = "image" | "animation";
 
 const RATIOS: Array<{ id: CardAspectRatio; label: string; hint: string }> = [
   { id: "1:1", label: "1:1", hint: "지도만" },
@@ -76,6 +84,8 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
   );
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [exportMode, setExportMode] = useState<ExportMode>("image");
+  const [recordProgress, setRecordProgress] = useState<number | null>(null);
   const [loadingGeometries, setLoadingGeometries] = useState(false);
   const [dynamicFeatures, setDynamicFeatures] = useState<Feature[] | null>(null);
 
@@ -255,27 +265,71 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
   }, [activeFeatures, scopedFeatures, scope.kind]);
 
   const message = useMemo(() => shareMessage(scopeLabel, stats), [scopeLabel, stats]);
-  const filename = useMemo(
-    () => `Regionevel-${scopeLabel.replace(/[/\\?%*:|"<>]/g, "_")}-${new Date().toISOString().slice(0, 10)}.png`,
+  const baseName = useMemo(
+    () => `Regionevel-${scopeLabel.replace(/[/\\?%*:|"<>]/g, "_")}-${new Date().toISOString().slice(0, 10)}`,
     [scopeLabel],
+  );
+  const filename = `${baseName}.png`;
+
+  /**
+   * Only the regions actually on the card need a score per frame. Scoring the
+   * whole world for every day of a trip is what would make this unusable.
+   */
+  const animationTargets = useMemo(
+    () => scopedFeatures
+      .map((f) => padId(f.properties?.id || f.properties?.shapeID))
+      .filter((id): id is string => !!id),
+    [scopedFeatures],
+  );
+
+  const animation = useShareAnimation({
+    enabled: isOpen && exportMode === "animation",
+    visits,
+    regions,
+    targetIds: animationTargets,
+  });
+
+  const canRecord = useMemo(() => isRecordingSupported(), []);
+
+  /** One card, at whichever point in time it should show. */
+  const cardInputFor = useCallback(
+    (frameIndex: number | null) => {
+      const frame = frameIndex === null ? null : animation.frames[frameIndex] ?? null;
+      const total = animation.frames.length;
+      return {
+        aspectRatio,
+        theme: dark ? DARK_THEME : LIGHT_THEME,
+        blocks,
+        scope,
+        scopeLabel,
+        stats,
+        features: scopedFeatures,
+        contextFeatures,
+        scores: frame ? frame.scores : scores,
+        showBorders,
+        footer: "rgnevel.pplaner.com",
+        ...(frame
+          ? {
+            playhead: {
+              date: frame.date,
+              progress: total > 1 ? (frameIndex! + 1) / total : 1,
+            },
+          }
+          : {}),
+      };
+    },
+    [aspectRatio, dark, blocks, scope, scopeLabel, stats, scopedFeatures, contextFeatures, scores, showBorders, animation.frames],
   );
 
   useEffect(() => {
     if (!isOpen || !canvasRef.current) return;
-    drawShareCard(canvasRef.current, {
-      aspectRatio,
-      theme: dark ? DARK_THEME : LIGHT_THEME,
-      blocks,
-      scope,
-      scopeLabel,
-      stats,
-      features: scopedFeatures,
-      contextFeatures,
-      scores,
-      showBorders,
-      footer: "rgnevel.pplaner.com",
-    });
-  }, [isOpen, aspectRatio, dark, blocks, scope, scopeLabel, stats, scopedFeatures, contextFeatures, scores, showBorders]);
+    // While recording, the recorder owns the canvas and drives every frame.
+    if (recordProgress !== null) return;
+    const showFrame = exportMode === "animation" && animation.status === "ready"
+      ? animation.index
+      : null;
+    drawShareCard(canvasRef.current, cardInputFor(showFrame));
+  }, [isOpen, cardInputFor, exportMode, animation.status, animation.index, recordProgress]);
 
   useEffect(() => {
     if (!notice) return;
@@ -340,6 +394,55 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
       setBusy(false);
     }
   }, [toBlob, filename, message]);
+
+  const deliverVideo = useCallback(async (preferShare: boolean) => {
+    const canvas = canvasRef.current;
+    if (!canvas || animation.frames.length === 0) return;
+
+    setBusy(true);
+    setNotice(null);
+    animation.pause();
+    setRecordProgress(0);
+    try {
+      const { blob, extension } = await recordFrames(
+        canvas,
+        animation.frames.length,
+        animation.fps,
+        (i) => drawShareCard(canvas, cardInputFor(i)),
+        { onProgress: (done, total) => setRecordProgress(done / total) },
+      );
+
+      const name = `${baseName}.${extension}`;
+      const file = new File([blob], name, { type: blob.type });
+
+      if (
+        preferShare
+        && typeof navigator !== "undefined"
+        && navigator.canShare?.({ files: [file] }) && navigator.share
+      ) {
+        await navigator.share({ files: [file], text: message });
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(url);
+      if (extension === "webm") {
+        setNotice("webm으로 저장했어요. 인스타그램에 올리려면 mp4 변환이 필요할 수 있어요.");
+      }
+    } catch (error) {
+      if ((error as { name?: string })?.name !== "AbortError") {
+        console.error("[ShareCard] recording failed", error);
+        setNotice("영상을 만들지 못했어요.");
+      }
+    } finally {
+      setRecordProgress(null);
+      setBusy(false);
+    }
+  }, [animation, cardInputFor, baseName, message]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -444,39 +547,186 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
               )}
             </div>
 
+            {/* Playback transport — only while the card is an animation */}
+            {exportMode === "animation" && (
+              <div className="w-full pt-3 shrink-0 max-w-lg">
+                {animation.status === "building" && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] font-black">
+                      <span className="text-slate-600 dark:text-slate-300">애니메이션 준비 중…</span>
+                      <span className="text-blue-600 dark:text-blue-400 tabular-nums">
+                        {Math.round(animation.buildProgress * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-600 rounded-full transition-all duration-150"
+                        style={{ width: `${Math.max(3, animation.buildProgress * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {animation.status === "empty" && (
+                  <p className="text-[11px] font-bold text-slate-400 text-center py-1">
+                    애니메이션으로 만들 기록이 부족해요. 타임라인을 가져오면 날짜순으로 쌓입니다.
+                  </p>
+                )}
+
+                {animation.status === "ready" && (
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={animation.toggle}
+                      disabled={busy}
+                      className="size-9 shrink-0 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center shadow-md active:scale-95 transition-transform cursor-pointer disabled:opacity-50"
+                      aria-label={animation.playing ? "일시정지" : "재생"}
+                    >
+                      {animation.playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                    </button>
+
+                    <button
+                      onClick={animation.restart}
+                      disabled={busy}
+                      className="size-9 shrink-0 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center active:scale-95 transition-transform cursor-pointer disabled:opacity-50"
+                      aria-label="처음부터"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+
+                    <input
+                      type="range"
+                      min={0}
+                      max={animation.frames.length - 1}
+                      value={animation.index}
+                      disabled={busy}
+                      onChange={(e) => animation.setIndex(Number(e.target.value))}
+                      className="flex-1 accent-blue-600 cursor-pointer"
+                      aria-label="재생 위치"
+                    />
+
+                    <span className="text-[11px] font-black tabular-nums text-slate-500 dark:text-slate-400 shrink-0 w-[86px] text-right">
+                      {animation.frame?.date ?? ""}
+                    </span>
+                  </div>
+                )}
+
+                {animation.status === "ready" && animation.syntheticShare > 0 && (
+                  <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 pt-1.5">
+                    날짜 기록이 없는 {Math.round(animation.syntheticShare * 100)}%는 마지막에 임의 순서로 채워집니다.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Quick Delivery Actions Bar */}
             <div className="w-full pt-4 shrink-0 flex items-center gap-2 max-w-lg">
-              <button
-                onClick={() => deliver("download")}
-                disabled={busy}
-                className="flex-1 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" />
-                <span>이미지 저장</span>
-              </button>
+              {exportMode === "image" ? (
+                <>
+                  <button
+                    onClick={() => deliver("download")}
+                    disabled={busy}
+                    className="flex-1 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>이미지 저장</span>
+                  </button>
 
-              <button
-                onClick={() => deliver("copy")}
-                disabled={busy}
-                className="flex-1 py-3 px-4 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-extrabold text-xs border border-slate-200 dark:border-slate-700 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <Copy className="w-4 h-4" />
-                <span>이미지 복사</span>
-              </button>
+                  <button
+                    onClick={() => deliver("copy")}
+                    disabled={busy}
+                    className="flex-1 py-3 px-4 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-extrabold text-xs border border-slate-200 dark:border-slate-700 shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span>이미지 복사</span>
+                  </button>
 
-              <button
-                onClick={() => deliver("share")}
-                disabled={busy}
-                className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                title="공유 / X에 포스팅"
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
+                  <button
+                    onClick={() => deliver("share")}
+                    disabled={busy}
+                    className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    title="공유 / X에 포스팅"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => deliverVideo(false)}
+                    disabled={busy || animation.status !== "ready" || !canRecord}
+                    className="flex-1 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  >
+                    {recordProgress !== null
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Download className="w-4 h-4" />}
+                    <span>
+                      {recordProgress !== null
+                        ? `녹화 중 ${Math.round(recordProgress * 100)}%`
+                        : "영상 저장"}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => deliverVideo(true)}
+                    disabled={busy || animation.status !== "ready" || !canRecord}
+                    className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    title="영상 공유"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </>
+              )}
             </div>
+
+            {exportMode === "animation" && !canRecord && (
+              <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 pt-2 text-center max-w-lg">
+                이 브라우저는 영상 저장을 지원하지 않아요. 미리보기 재생은 됩니다.
+              </p>
+            )}
           </div>
 
           {/* Right Column: Scrollable Settings Panel */}
           <div className="md:col-span-5 flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-white dark:bg-slate-900">
+            {/* 0. Still or replay */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                내보내기 형식 (EXPORT)
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setExportMode("image")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    exportMode === "image"
+                      ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-black shadow-xs ring-1 ring-blue-600/30"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 font-bold"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>이미지</span>
+                  </div>
+                  <div className="text-[10px] opacity-70 mt-0.5">지금의 지도 한 장</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setExportMode("animation")}
+                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    exportMode === "animation"
+                      ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 font-black shadow-xs ring-1 ring-blue-600/30"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 font-bold"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <Film className="w-3.5 h-3.5" />
+                    <span>애니메이션</span>
+                  </div>
+                  <div className="text-[10px] opacity-70 mt-0.5">날짜순으로 쌓이는 영상</div>
+                </button>
+              </div>
+            </div>
+
             {/* 1. Card Ratio Selector */}
             <div className="space-y-2">
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">카드 비율 (RATIO)</p>

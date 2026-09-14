@@ -72,6 +72,14 @@ export interface ShareCardInput {
   contextFeatures?: Feature[];
   showBorders: boolean;
   footer: string;
+  /**
+   * Set when this card is one frame of a replay rather than a still.
+   *
+   * A map filling up means nothing without the date it is filling up to, so
+   * the frame carries it: the day being shown, and how far through the
+   * sequence that day is (0–1).
+   */
+  playhead?: { date: string; progress: number };
 }
 
 const MERCATOR_LIMIT = 85.05112878;
@@ -158,6 +166,48 @@ function drawFeature(ctx: CanvasRenderingContext2D, feature: Feature, project: P
   }
 }
 
+export interface PlayheadLayout {
+  chip: { x: number; y: number; w: number; h: number };
+  bar: { x: number; y: number; w: number; h: number; filled: number };
+  fontSize: number;
+}
+
+/**
+ * Where the date chip and the progress bar sit within the map.
+ *
+ * Kept apart from the drawing, like the card's numbers are, so that "the chip
+ * stays inside the map and stays a label rather than a banner" is something
+ * that can be checked rather than eyeballed.
+ */
+export function playheadLayout(
+  rect: { x: number; y: number; w: number; h: number },
+  date: string,
+  progress: number,
+  measure: (fontSize: number) => number,
+): PlayheadLayout {
+  const inset = Math.round(Math.min(rect.w, rect.h) * 0.03);
+  const chipH = Math.round(rect.h * 0.07);
+  const fontSize = Math.max(16, Math.round(chipH * 0.44));
+  // Never wider than half the map, however long the label renders.
+  const chipW = Math.min(measure(fontSize) + fontSize * 1.8, rect.w * 0.5);
+
+  const barH = Math.max(6, Math.round(rect.h * 0.012));
+  const barW = rect.w - inset * 2;
+  const clamped = Math.max(0, Math.min(1, progress));
+
+  return {
+    chip: { x: rect.x + rect.w - chipW - inset, y: rect.y + inset, w: chipW, h: chipH },
+    bar: {
+      x: rect.x + inset,
+      y: rect.y + rect.h - barH - inset,
+      w: barW,
+      h: barH,
+      filled: Math.max(barH, barW * clamped),
+    },
+    fontSize,
+  };
+}
+
 function featureScore(feature: Feature, scores: Record<string, RegionScore>) {
   const raw = feature.properties?.id || feature.properties?.shapeID;
   const id = padId(raw);
@@ -233,6 +283,43 @@ function drawMap(
       drawFeature(ctx, f, project);
       ctx.stroke();
     }
+  }
+
+  // 4. Playhead — the date this frame is showing, and how far in it is.
+  if (input.playhead) {
+    const { date, progress } = input.playhead;
+    const layout = playheadLayout(
+      rect, date, progress,
+      (size) => {
+        ctx.font = font(size, 900);
+        return ctx.measureText(date).width;
+      },
+    );
+    const { chip, bar, fontSize } = layout;
+
+    ctx.save();
+    roundRect(ctx, chip.x, chip.y, chip.w, chip.h, chip.h / 2);
+    ctx.fillStyle = theme.panel;
+    ctx.globalAlpha = 0.92;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.font = font(fontSize, 900);
+    ctx.fillStyle = theme.ink;
+    ctx.textAlign = "center";
+    ctx.fillText(date, chip.x + chip.w / 2, chip.y + chip.h / 2 + fontSize * 0.36);
+    ctx.textAlign = "left";
+
+    ctx.save();
+    roundRect(ctx, bar.x, bar.y, bar.w, bar.h, bar.h / 2);
+    ctx.fillStyle = theme.panel;
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+    ctx.restore();
+
+    roundRect(ctx, bar.x, bar.y, bar.filled, bar.h, bar.h / 2);
+    ctx.fillStyle = theme.accent;
+    ctx.fill();
   }
 
   ctx.restore();
