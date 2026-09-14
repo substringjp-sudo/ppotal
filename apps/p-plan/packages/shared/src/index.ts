@@ -97,5 +97,19 @@ export * from './lib/wishlist-recommendations';
 export * from './lib/sun-utils';
 export * from './lib/constants/editTrip';
 
+// Currency & Chemistry
+export * from './lib/currency/currency-engine';
+export * from './lib/chemistry/travel-chemistry';
+export * from './lib/country-intelligence-service';
+export * from './lib/country-matcher';
+export * from './lib/spatial-service';
+
+// Persona & Travel Intelligence
+export * from './lib/persona/persona-types';
+export * from './lib/persona/persona-engine';
+export * from './lib/persona/persona-matrix-db';
+export * from './lib/persona/persona-stress-tester';
+export * from './lib/data/travel-purposes';
+
 // Firebase
 export * from './lib/firebase';

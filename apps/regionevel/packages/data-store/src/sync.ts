@@ -38,13 +38,29 @@ export class SyncManager {
     // Upload only the visits that actually differ from Firestore.
     const toUpload = merged.filter((v) => {
       const remote = this.remoteMap.get(visitKey(v));
-      return !remote || remote.count !== v.count || remote.notes !== v.notes;
+      return (
+        !remote ||
+        remote.count !== v.count ||
+        remote.notes !== v.notes ||
+        (v.dates?.length ?? 0) !== (remote.dates?.length ?? 0)
+      );
     });
-    await Promise.all(
-      toUpload.map((v) =>
-        this.remote.upsertVisit(v.regionId, v.category, v.count, v.notes),
-      ),
-    );
+
+    if (toUpload.length > 0) {
+      if (this.remote.saveVisitsBundle) {
+        await this.remote.saveVisitsBundle(merged);
+      }
+      // Chunk individual document writes so we never flood the network
+      const CHUNK_SIZE = 25;
+      for (let i = 0; i < Math.min(toUpload.length, 100); i += CHUNK_SIZE) {
+        const chunk = toUpload.slice(i, i + CHUNK_SIZE);
+        await Promise.all(
+          chunk.map((v) =>
+            this.remote.upsertVisit(v.regionId, v.category, v.count, v.notes),
+          ),
+        );
+      }
+    }
 
     // Optimistically update remoteMap so the imminent Firestore snapshot
     // doesn't look like a new diff.
@@ -126,7 +142,10 @@ function mergeVisits(local: RegionVisit[], remote: RegionVisit[]): RegionVisit[]
     const vTime = v.updatedAt ?? 0;
     const eTime = existing.updatedAt ?? 0;
     if (vTime > eTime || (vTime === eTime && v.count > existing.count)) {
-      map.set(key, v);
+      const dates = v.dates ?? existing.dates;
+      map.set(key, dates ? { ...v, dates } : v);
+    } else if (!existing.dates && v.dates) {
+      map.set(key, { ...existing, dates: v.dates });
     }
   }
 

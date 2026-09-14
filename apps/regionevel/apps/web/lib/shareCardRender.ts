@@ -71,6 +71,7 @@ export interface ShareCardInput {
   /** Drawn under the region fills so a country reads in its surroundings. */
   contextFeatures?: Feature[];
   showBorders: boolean;
+  borderWidth?: number;
   footer: string;
   /**
    * Set when this card is one frame of a replay rather than a still.
@@ -219,7 +220,7 @@ function drawMap(
   rect: { x: number; y: number; w: number; h: number },
   input: ShareCardInput,
 ) {
-  const { features, contextFeatures, scores, theme, showBorders } = input;
+  const { features, contextFeatures, scores, theme, showBorders, borderWidth = 1.5 } = input;
 
   ctx.save();
   roundRect(ctx, rect.x, rect.y, rect.w, rect.h, 32);
@@ -254,7 +255,7 @@ function drawMap(
     ctx.fill();
     if (showBorders) {
       ctx.strokeStyle = isLight ? "#cbd5e1" : "#1e293b";
-      ctx.lineWidth = 0.8;
+      ctx.lineWidth = Math.max(0.4, borderWidth * 0.55);
       ctx.stroke();
     }
   }
@@ -270,7 +271,7 @@ function drawMap(
     ctx.fill();
     if (showBorders) {
       ctx.strokeStyle = theme.border;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = borderWidth;
       ctx.stroke();
     }
   }
@@ -278,7 +279,7 @@ function drawMap(
   // 3. Highlighted outer boundary stroke if zoomed into a sub-region
   if ((contextFeatures?.length ?? 0) > 0 && features.length > 0) {
     ctx.strokeStyle = theme.accent;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = Math.max(1.5, borderWidth * 1.6);
     for (const f of features) {
       drawFeature(ctx, f, project);
       ctx.stroke();

@@ -10,41 +10,10 @@ import {
   padId,
 } from "@regionevel/utils";
 import { auth, db, getRegionevelShapeId } from "@ppotal/firebase";
-import { collection, getDocs, doc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch, serverTimestamp } from "firebase/firestore";
+import { indexedDbStorage } from "@/lib/storage/indexedDbStorage";
 
-const safeLocalStorage = createJSONStorage(() => ({
-  getItem: (name: string) => {
-    try {
-      if (typeof window === "undefined") return null;
-      return localStorage.getItem(name);
-    } catch {
-      return null;
-    }
-  },
-  setItem: (name: string, value: string) => {
-    try {
-      if (typeof window === "undefined") return;
-      localStorage.setItem(name, value);
-    } catch (err: any) {
-      if (
-        err?.name === "QuotaExceededError" ||
-        err?.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
-        err?.code === 22 ||
-        err?.code === 1014
-      ) {
-        console.warn("[visitStore] LocalStorage quota exceeded. State is safely maintained in memory.");
-      }
-    }
-  },
-  removeItem: (name: string) => {
-    try {
-      if (typeof window === "undefined") return;
-      localStorage.removeItem(name);
-    } catch {
-      // ignore
-    }
-  },
-}));
+const idbStorage = createJSONStorage(() => indexedDbStorage);
 
 interface VisitStore {
   visits: RegionVisit[];
@@ -365,6 +334,10 @@ export const useVisitStore = create<VisitStore>()(
                 onProgress?.(percent);
               }
             }
+
+            // Also delete aggregated bundle document
+            const bundleRef = doc(db, "users", currentUser.uid, "meta", "visits_bundle");
+            await deleteDoc(bundleRef).catch(() => {});
           } catch (err) {
             console.error("[visitStore] Failed to clear visits in Firestore:", err);
           }
@@ -561,6 +534,21 @@ export const useVisitStore = create<VisitStore>()(
               const pct = 40 + Math.round(((batchIndex + 1) / totalBatches) * 55);
               updateProgress(Math.min(95, pct));
             }
+
+            // Also write single aggregated bundle doc for lightning-fast future reads (100ms)
+            const bundleRef = doc(db, "users", currentUser.uid, "meta", "visits_bundle");
+            await setDoc(bundleRef, {
+              visits: updatedVisits.map((v) => ({
+                regionId: v.regionId,
+                category: v.category,
+                count: v.count,
+                ...(v.notes ? { notes: v.notes } : {}),
+                ...(v.dates && v.dates.length > 0 ? { dates: v.dates } : {}),
+                ...(v.updatedAt ? { updatedAt: v.updatedAt } : {}),
+              })),
+              count: updatedVisits.length,
+              updatedAt: serverTimestamp(),
+            }).catch((e) => console.warn("[visitStore] Failed to update visits_bundle:", e));
           } catch (err) {
             console.error("[visitStore] Failed to commit timeline visits to Firestore:", err);
           }
@@ -722,7 +710,7 @@ export const useVisitStore = create<VisitStore>()(
     {
       name: "regionevel-visits",
       version: 3,
-      storage: safeLocalStorage,
+      storage: idbStorage,
       partialize: (state) => ({
         visits: state.visits.map((v) => ({
           regionId: v.regionId,
@@ -731,10 +719,16 @@ export const useVisitStore = create<VisitStore>()(
           ...(v.notes ? { notes: v.notes } : {}),
           ...(v.dates && v.dates.length > 0 ? { dates: v.dates } : {}),
         })),
+        scores: state.scores,
+        stats: state.stats,
       }),
-      onRehydrateStorage: (state) => {
-        return () => {
+      onRehydrateStorage: () => {
+        return (state) => {
           state?.setHasHydrated(true);
+          // If hydrated with visits but without scores, recalculate immediately
+          if (state && state.visits.length > 0 && Object.keys(state.scores || {}).length === 0) {
+            state.recalculateScores();
+          }
         };
       },
       migrate: (persistedState: any, version: number) => {

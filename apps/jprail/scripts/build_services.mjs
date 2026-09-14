@@ -34,6 +34,9 @@ const MAX_MATCH_KM = 0.6;
  */
 const MAX_JOINT_HOPS = 6;
 
+/** JR 6개사 회사 ID (companies.json 기준) */
+const JR_COMPANY_IDS = new Set([28, 50, 65, 103, 106, 147]);
+
 /** 역이 아닌 통과점(분기점)인지. */
 const isJoint = (id) => id.startsWith('J_');
 
@@ -45,6 +48,41 @@ function haversineKm(aLat, aLon, bLat, bLon) {
         Math.sin(dLat / 2) ** 2 +
         Math.cos((aLat * Math.PI) / 180) * Math.cos((bLat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
     return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+// ---------------------------------------------------------------- 회사 매핑
+
+const COMPANY_ALIASES = {
+    'JR東日本': '東日本旅客鉄道',
+    'JR西日本': '西日本旅客鉄道',
+    'JR東海': '東海旅客鉄道',
+    'JR九州': '九州旅客鉄道',
+    'JR北海道': '北海道旅客鉄道',
+    'JR四国': '四国旅客鉄道',
+    '東京メトロ': '東京地下鉄',
+    '南海電鉄': '南海電気鉄道',
+    '南海電철': '南海電気鉄道',
+    '京都丹後鉄道': 'WILLER TRAINS',
+    '富士急行': '富士山麓電気鉄道',
+    '近鉄': '近畿日本鉄道',
+    'Kintetsu Corporation': '近畿日本鉄道',
+};
+
+function buildCompanyLookup(companies) {
+    const compMap = new Map();
+    for (const [id, c] of Object.entries(companies)) {
+        compMap.set(c.name, Number(id));
+        if (c.name_en) compMap.set(c.name_en, Number(id));
+    }
+    return (operator) => {
+        if (!operator) return null;
+        let op = COMPANY_ALIASES[operator] || operator;
+        if (compMap.has(op)) return compMap.get(op);
+        for (const [name, id] of compMap.entries()) {
+            if (op.includes(name) || name.includes(op)) return id;
+        }
+        return null;
+    };
 }
 
 // ---------------------------------------------------------------- 선로 그래프
@@ -96,43 +134,136 @@ function buildStationAdjacency(sectionsMeta) {
                 if (!current || next.km < current.km) best.set(edge.to, next);
             }
         }
-        links.set(node, new Map([...best].map(([to, walk]) => [to, walk.sectionIds])));
+        links.set(node, best);
     }
     return links;
 }
 
+/**
+ * 역 단위 선로 그래프 상에서 두 역 사이의 최단 경로(구간 목록)를 찾는다.
+ *
+ * 우등 열차(급행, 특급, 쾌특, 신칸센)는 중간 역을 건너뛰므로,
+ * 정차역 사이가 직결 인접역이 아니더라도 통과역을 거쳐 연결되어 있는지 확인한다.
+ */
+function findStationPath(fromId, toId, links, stationsMaster) {
+    if (fromId === toId) return { sectionIds: [], km: 0 };
+    const direct = links.get(fromId)?.get(toId);
+    if (direct) return direct;
+
+    const fromS = stationsMaster[fromId];
+    const toS = stationsMaster[toId];
+    const airDist = fromS && toS ? haversineKm(fromS.lat, fromS.lon, toS.lat, toS.lon) : 50;
+    const maxAllowedKm = Math.max(30, airDist * 3);
+
+    const queue = [{ node: fromId, sectionIds: [], km: 0, hops: 0 }];
+    const visited = new Map([[fromId, 0]]);
+
+    while (queue.length > 0) {
+        const curr = queue.shift();
+        if (curr.node === toId) return curr;
+        if (curr.hops >= 60) continue; // 최대 60개 역 통과 허용 (장거리 무정차 특급 등)
+        if (curr.km > maxAllowedKm) continue;
+
+        for (const [nextStation, walk] of links.get(curr.node) || []) {
+            const nextKm = curr.km + walk.km;
+            if (nextKm > maxAllowedKm) continue;
+            const prevBest = visited.get(nextStation);
+            if (prevBest !== undefined && prevBest <= nextKm) continue;
+            visited.set(nextStation, nextKm);
+            queue.push({
+                node: nextStation,
+                sectionIds: [...curr.sectionIds, ...walk.sectionIds],
+                km: nextKm,
+                hops: curr.hops + 1,
+            });
+        }
+    }
+    return null;
+}
+
 // ---------------------------------------------------------------- 역 찾기
 
-/** 좌표로 가장 가까운 역을 찾기 위한 격자 색인. */
-function buildStationIndex(stationsMaster) {
+/** 좌표 및 운영사 정보를 바탕으로 가장 적합한 역을 찾기 위한 격자 색인. */
+function buildStationIndex(stationsMaster, platformsMeta, activeStations) {
     const CELL = 0.05; // 약 5km
     const grid = new Map();
     const key = (la, lo) => `${Math.floor(la / CELL)}:${Math.floor(lo / CELL)}`;
     const all = [];
+
     for (const [id, s] of Object.entries(stationsMaster)) {
         if (typeof s.lat !== 'number' || typeof s.lon !== 'number') continue;
-        const station = { id, name: s.name, nameKr: s.name_kr || '', lat: s.lat, lon: s.lon };
+        const companies = new Set();
+        for (const pid of s.platform_ids || []) {
+            if (platformsMeta[pid]?.company !== undefined) {
+                companies.add(platformsMeta[pid].company);
+            }
+        }
+        const station = {
+            id,
+            name: s.name,
+            nameKr: s.name_kr || '',
+            lat: s.lat,
+            lon: s.lon,
+            companies,
+        };
         all.push(station);
         const k = key(s.lat, s.lon);
         if (!grid.has(k)) grid.set(k, []);
         grid.get(k).push(station);
     }
+
     return {
         all,
-        nearest(lat, lon, maxKm) {
+        nearest(lat, lon, maxKm, compId, isJr) {
             const rings = Math.max(1, Math.ceil(maxKm / (CELL * 111)));
             const baseLa = Math.floor(lat / CELL);
             const baseLo = Math.floor(lon / CELL);
-            let best = null;
+            const candidates = [];
+
             for (let dLa = -rings; dLa <= rings; dLa++) {
                 for (let dLo = -rings; dLo <= rings; dLo++) {
-                    for (const s of grid.get(`${baseLa + dLa}:${baseLo + dLo}`) || []) {
+                    const list = grid.get(`${baseLa + dLa}:${baseLo + dLo}`);
+                    if (!list) continue;
+                    for (const s of list) {
+                        // 선로가 없는 고립역은 매칭 대상에서 제외
+                        if (activeStations && !activeStations.has(s.id)) continue;
                         const km = haversineKm(lat, lon, s.lat, s.lon);
-                        if (km <= maxKm && (!best || km < best.km)) best = { station: s, km };
+                        if (km <= maxKm) candidates.push({ station: s, km });
                     }
                 }
             }
-            return best;
+
+            if (candidates.length === 0) return null;
+
+            // 1. JR 노선인 경우 JR 계열사 승강장을 가진 역을 최우선
+            if (isJr) {
+                const jrCandidates = candidates.filter((c) =>
+                    [...c.station.companies].some((id) => JR_COMPANY_IDS.has(id))
+                );
+                if (jrCandidates.length > 0) {
+                    jrCandidates.sort((a, b) => a.km - b.km);
+                    return jrCandidates[0];
+                }
+            } else if (compId !== null) {
+                // 2. 일반 사철의 경우 운영사 일치 역 우선
+                const compCandidates = candidates.filter((c) => c.station.companies.has(compId));
+                if (compCandidates.length > 0) {
+                    compCandidates.sort((a, b) => a.km - b.km);
+                    return compCandidates[0];
+                }
+            }
+
+            // 3. 노면전차/버스 정류장 이름('~駅前', '~口')보다 본선 역명 우선
+            const mainCandidates = candidates.filter(
+                (c) => !c.station.name.endsWith('駅前') && !c.station.name.endsWith('口')
+            );
+            if (mainCandidates.length > 0) {
+                mainCandidates.sort((a, b) => a.km - b.km);
+                return mainCandidates[0];
+            }
+
+            candidates.sort((a, b) => a.km - b.km);
+            return candidates[0];
         },
     };
 }
@@ -141,10 +272,6 @@ function buildStationIndex(stationsMaster) {
 
 /**
  * overpass-turbo 가 내보낸 GeoJSON 에서 route 릴레이션을 뽑는다.
- *
- * **정차역 순서는 읽지 않는다.** GeoJSON 으로 변환되는 순간 릴레이션 멤버 순서가
- * 통째로 사라지기 때문이다(실제로 받아 보니 뒤죽박죽이었다). 대신 릴레이션에 붙은
- * 선로 모양을 가져와, 나중에 그 위로 정차역을 투영해 순서를 만든다.
  */
 function readOsmRoutes(file) {
     const geo = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -171,6 +298,7 @@ function readOsmRoutes(file) {
             id: `relation_${relId}`,
             name: props.name || props['name:ja'] || `relation ${relId}`,
             nameKr: props['name:ko'] || '',
+            operator: props.operator || props['operator:ja'] || '',
             color: props.colour || '',
             isLoop: props.roundtrip === 'yes',
             path: chainSegments(geometry.coordinates),
@@ -183,9 +311,6 @@ function readOsmRoutes(file) {
 
 /**
  * 흩어진 선분을 하나의 선으로 잇는다.
- *
- * 끝점이 맞는 것끼리 이어 붙이고, 더 붙일 것이 없으면 멈춘다. 순환선은 여기서
- * 닫힌 고리가 된다.
  */
 function chainSegments(segments) {
     if (segments.length === 0) return [];
@@ -216,12 +341,16 @@ function chainSegments(segments) {
 // ---------------------------------------------------------------- 계통 만들기
 
 /** 정차역을 선로 위에 투영해 순서를 세우고, 선로 그래프로 검증한다. */
-function toService(route, index, adjacency) {
+function toService(route, index, links, stationsMaster, resolveCompany) {
+    const compId = resolveCompany(route.operator);
+    const isJr =
+        (route.operator && (route.operator.includes('JR') || route.operator.includes('旅客鉄道'))) ||
+        (route.name && (route.name.startsWith('JR') || route.name.includes('新幹線')));
+
     const unmatched = [];
-    // 같은 역에 정차점이 여럿 붙기도 한다(방향별 승강장, 순환선의 되돌아오는 종점).
     const matched = new Map();
     for (const stop of route.stops) {
-        const hit = index.nearest(stop.lat, stop.lon, MAX_MATCH_KM);
+        const hit = index.nearest(stop.lat, stop.lon, MAX_MATCH_KM, compId, isJr);
         if (!hit) unmatched.push(stop);
         else if (!matched.has(hit.station.id)) matched.set(hit.station.id, hit.station);
     }
@@ -252,16 +381,19 @@ function toService(route, index, adjacency) {
         .sort((a, b) => a.along - b.along)
         .map((entry) => entry.station);
 
-    // 선언한 순서가 선로에서 실제로 이어지는지.
+    // 선언한 순서가 선로에서 실제로 이어지는지 (우등 열차는 통과역을 거치는 경로 탐색 지원)
     const gaps = [];
     const sectionIds = new Set();
     const lastIndex = route.isLoop ? ordered.length - 1 : ordered.length - 2;
     for (let i = 0; i <= lastIndex; i++) {
         const from = ordered[i];
         const to = ordered[(i + 1) % ordered.length];
-        const between = (adjacency.get(from.id) || new Map()).get(to.id);
-        if (!between) gaps.push({ from: from.nameKr || from.name, to: to.nameKr || to.name });
-        else between.forEach((id) => sectionIds.add(id));
+        const pathRes = findStationPath(from.id, to.id, links, stationsMaster);
+        if (!pathRes) {
+            gaps.push({ from: from.nameKr || from.name, to: to.nameKr || to.name });
+        } else {
+            pathRes.sectionIds.forEach((id) => sectionIds.add(id));
+        }
     }
 
     return {
@@ -294,18 +426,23 @@ function main() {
 
     const sectionsMeta = JSON.parse(fs.readFileSync(path.join(RAIL_DIR, 'sections_meta.json'), 'utf8'));
     const stationsMaster = JSON.parse(fs.readFileSync(path.join(RAIL_DIR, 'stations_master.json'), 'utf8'));
+    const platformsMeta = JSON.parse(fs.readFileSync(path.join(RAIL_DIR, 'platforms_meta.json'), 'utf8'));
+    const companies = JSON.parse(fs.readFileSync(path.join(RAIL_DIR, 'companies.json'), 'utf8'));
+
+    const resolveCompany = buildCompanyLookup(companies);
 
     console.log('선로 그래프를 접는 중…');
-    const adjacency = buildStationAdjacency(sectionsMeta);
-    const index = buildStationIndex(stationsMaster);
-    console.log(`  역 ${index.all.length}개, 인접 관계를 가진 역 ${adjacency.size}개`);
+    const links = buildStationAdjacency(sectionsMeta);
+    const activeStations = new Set(links.keys());
+    const index = buildStationIndex(stationsMaster, platformsMeta, activeStations);
+    console.log(`  역 ${index.all.length}개, 인접 관계를 가진 유효 역 ${links.size}개`);
 
     const files = fs
         .readdirSync(inDir)
-        .filter((f) => f.endsWith('.geojson') || f.endsWith('.json'))
+        .filter((f) => f.endsWith('.geojson'))
         .map((f) => path.join(inDir, f));
     if (files.length === 0) {
-        console.error(`${inDir} 에 OSM 내보내기 파일이 없습니다.`);
+        console.error(`${inDir} 에 OSM GeoJSON 내보내기 파일이 없습니다.`);
         process.exit(1);
     }
 
@@ -313,7 +450,7 @@ function main() {
     let rejected = 0;
     for (const file of files) {
         for (const route of readOsmRoutes(file)) {
-            const result = toService(route, index, adjacency);
+            const result = toService(route, index, links, stationsMaster, resolveCompany);
             const label = `${route.name}${route.nameKr ? ` (${route.nameKr})` : ''}`;
             if (!result.service || result.gaps.length > 0) {
                 rejected++;
@@ -331,7 +468,8 @@ function main() {
             );
             if (twinId) {
                 const twin = services[twinId];
-                const better = (result.service.name_kr || result.service.name).length <
+                const better =
+                    (result.service.name_kr || result.service.name).length <
                     (twin.name_kr || twin.name).length;
                 if (better) {
                     delete services[twinId];

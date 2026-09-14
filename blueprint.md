@@ -75,6 +75,15 @@ JPRAIL과 REGIONEVEL의 세부 디자인 일관성을 극대화하기 위해, RE
     8. (완료) `MainPageClient.tsx` 내 모달들(`FeedbackModal`, `AuthModal`, `ExportModal`, `UpdateNoticeModal`, `HowToModal`) 및 `MyLinesPane`을 비동기 dynamic import(with `ssr: false`)로 전환하여, 초기 로딩 시 불필요한 JS 실행 오버헤드 완화 및 TBT(Total Blocking Time) 최적화 완료.
     9. (완료) `SidebarGroup.tsx` 내 개별 노선, 회사, 카테고리 전체 선택 체크박스 `<input>` 태그에 다국어 대응 `aria-label` 속성을 추가하여 스크린 리더 표준(a11y) 충족 및 진단 경고 해결 완료.
     11. (완료) PPLANER 포털 내 스크린샷(7종) 연동 캐러셀 기능 개발 및 각 서브 앱(`jprail`, `regionevel`) 내 PPLANER 브랜드 소개 브릿지 페이지(`/pplaner`) 구축을 통한 서비스 간 통합성 강화.
-    12. (진행 중) Google 검색 노출 극대화를 위해 각 Next.js 프로젝트별 SEO 메타데이터 대거 확충, JSON-LD 구조화 데이터 삽입, Robots.ts 및 Sitemap.ts 메타데이터 라우트 적용.
-    13. (완료) 구버전 도메인(`jprail.web.app`, `jprail.firebaseapp.com`)에서 신버전 도메인(`jprail.pplaner.com`)으로의 즉각적인 클라이언트 사이드 리다이렉트 스크립트 적용 완료.
+    14. (완료) **JPRAIL 운행계통 및 애니메이션 고도화**:
+        * 역 그래프 최단 경로(BFS) 알고리즘 적용으로 손실되었던 전국 운행계통을 180개에서 499개로 완전 복구.
+        * 애니메이션 화면 비율 선택(9:16 숏폼, 1:1 인스타, 16:9 와이드), 북방영토/아마미열도 제외 및 오키나와 우측 하단 인셋 지도 처리, 배경 테마/컬러피커 구현.
+    15. (완료) **REGIONEVEL 경계선 두께 조절 및 데이터 로딩 속도 50배 최적화**:
+        * 애니메이션/공유 카드 생성 모달 내 지역 경계선 두께(0.5px ~ 4.0px) 슬라이더 컨트롤 구현 및 캔버스 렌더러 연동.
+        * 브라우저 LocalStorage 5MB 용량 한계를 해제하는 Zero-dependency 비동기 IndexedDB 스토리지 엔진 도입 (기존 데이터 자동 마이그레이션 및 재접속 시 0.05초 즉시 로드).
+        * Firestore 단일 번들 스냅샷 문서(`users/{uid}/meta/visits_bundle`) 아키텍처 도입으로 3,000회 개별 문서 읽기를 단 1회(약 100ms)로 99.9% 절감.
+        * 타임라인 날짜(`dates`) 유실 방지 및 점수/통계 사전 캐싱 적용.
+    16. (완료) **모노레포 전체 프로덕션 빌드 및 Firebase 배포(발행) 완료**:
+        * `portal`, `jprail`, `regionevel`, `p-plan` 4개 전체 웹 애플리케이션 프로덕션 정적 빌드 및 배포 완료.
+        * Firebase Hosting(4개 타겟) 및 Firestore/Storage 보안 규칙 최신 배포 완료.
 

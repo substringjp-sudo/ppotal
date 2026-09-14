@@ -4,6 +4,7 @@ export interface VisitDataStore {
   getVisits(): Promise<RegionVisit[]>;
   upsertVisit(regionId: string, category: VisitCategory, count: number, notes?: string): Promise<void>;
   removeVisit(regionId: string, category: VisitCategory): Promise<void>;
+  saveVisitsBundle?(visits: RegionVisit[]): Promise<void>;
   /** Subscribe to real-time changes. Returns unsubscribe function. */
   subscribe(callback: (visits: RegionVisit[]) => void): () => void;
 }

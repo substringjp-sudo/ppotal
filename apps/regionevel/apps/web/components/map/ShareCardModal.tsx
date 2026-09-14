@@ -79,6 +79,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
 
   const [dark, setDark] = useState(false);
   const [showBorders, setShowBorders] = useState(true);
+  const [borderWidth, setBorderWidth] = useState(1.5);
   const [blocks, setBlocks] = useState<Set<ShareBlockId>>(
     () => new Set<ShareBlockId>(SHARE_BLOCKS),
   );
@@ -307,6 +308,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
         contextFeatures,
         scores: frame ? frame.scores : scores,
         showBorders,
+        borderWidth,
         footer: "rgnevel.pplaner.com",
         ...(frame
           ? {
@@ -318,7 +320,7 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
           : {}),
       };
     },
-    [aspectRatio, dark, blocks, scope, scopeLabel, stats, scopedFeatures, contextFeatures, scores, showBorders, animation.frames],
+    [aspectRatio, dark, blocks, scope, scopeLabel, stats, scopedFeatures, contextFeatures, scores, showBorders, borderWidth, animation.frames],
   );
 
   useEffect(() => {
@@ -950,6 +952,35 @@ export const ShareCardModal: React.FC<ShareCardModalProps> = ({
                   />
                 </span>
               </label>
+
+              {showBorders && (
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 space-y-2 transition-all">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                      경계선 두께
+                    </span>
+                    <span className="font-mono text-[11px] font-semibold text-primary px-1.5 py-0.5 bg-primary/10 rounded-md">
+                      {borderWidth.toFixed(1)}px
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="range"
+                      min={0.5}
+                      max={4.0}
+                      step={0.1}
+                      value={borderWidth}
+                      onChange={(e) => setBorderWidth(parseFloat(e.target.value))}
+                      className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-400 font-medium px-0.5">
+                    <span>가늘게 (0.5px)</span>
+                    <span>보통 (1.5px)</span>
+                    <span>굵게 (4.0px)</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

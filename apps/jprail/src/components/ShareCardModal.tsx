@@ -16,7 +16,7 @@ import {
     availableScopes, computeShareStats
 } from '../lib/shareCard';
 import { drawShareCard, CARD_SIZE, DEFAULT_CARD_STYLE, ShareCardStyle, CardAspectRatio } from '../lib/shareCardRender';
-import TripReplayPanel from './TripReplayPanel';
+import TripReplayPanel, { type ReplayAspectRatio } from './TripReplayPanel';
 import { extractRings } from '../lib/replayRenderer';
 import { buildReplayRailLines, buildReplayTrips } from '../lib/replayTrips';
 import { Z } from '../lib/layers';
@@ -123,6 +123,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const [style, setStyle] = useState<ShareCardStyle>(DEFAULT_CARD_STYLE);
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [mode, setMode] = useState<ShareMode>('image');
+    const [animationRatio, setAnimationRatio] = useState<ReplayAspectRatio>('9:16');
 
     // 되짚기에 넘길 것들. 지도가 이미 받아 둔 데이터를 그대로 쓰므로 더 받아 오는
     // 파일이 없다.
@@ -280,7 +281,8 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const targetW = aspectRatio === '16:9' ? 1920 : 1080;
     const targetH = aspectRatio === '9:16' ? 1920 : 1080;
 
-    const modalMaxWidth = mode === 'animation' ? 'max-w-[560px]'
+    const modalMaxWidth = mode === 'animation'
+        ? (animationRatio === '16:9' ? 'max-w-[820px]' : animationRatio === '1:1' ? 'max-w-[680px]' : 'max-w-[560px]')
         : aspectRatio === '16:9' ? 'max-w-[1360px]' : aspectRatio === '1:1' ? 'max-w-[1120px]' : 'max-w-[900px]';
 
     return (
@@ -326,6 +328,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                             trips={replayTrips}
                             landRings={replayLandRings}
                             railLines={replayRailLines}
+                            onAspectRatioChange={setAnimationRatio}
                         />
                     </div>
                 ) : (
