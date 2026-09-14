@@ -16,6 +16,9 @@ import {
     availableScopes, computeShareStats
 } from '../lib/shareCard';
 import { drawShareCard, CARD_SIZE, DEFAULT_CARD_STYLE, ShareCardStyle, CardAspectRatio } from '../lib/shareCardRender';
+import TripReplayPanel from './TripReplayPanel';
+import { extractRings } from '../lib/replayRenderer';
+import { buildReplayRailLines, buildReplayTrips } from '../lib/replayTrips';
 import { Z } from '../lib/layers';
 
 export interface ShareCardModalProps {
@@ -36,6 +39,9 @@ export interface ShareCardModalProps {
 
 type Delivery = 'share' | 'copy' | 'download';
 
+/** 같은 기록을 한 장으로 보여 줄지, 그려지는 과정으로 보여 줄지. */
+type ShareMode = 'image' | 'animation';
+
 const TEXT = {
     ko: {
         aspectRatio: '카드 비율',
@@ -47,6 +53,7 @@ const TEXT = {
         advanced: '고급', followMap: '지도 설정 따르기', showContext: '미방문 노선 표시',
         showBorders: '도도부현 경계선', riddenWeight: '탄 노선 두께', contextWeight: '미방문 노선 두께',
         moreLines: (n: number, avg: number) => `외 ${n}개 노선 · 평균 ${avg}%`,
+        modeImage: '지도 이미지', modeAnimation: '주행 되짚기',
         title: '공유 카드 만들기', scope: '무엇에 대한 카드인가요', include: '담을 내용',
         all: '전체', prefecture: '도도부현', company: '회사', line: '노선',
         map: '지도', totals: '총계', lines: '노선 완주율 TOP 5', prefectures: '도도부현 정복', badges: '업적',
@@ -66,6 +73,7 @@ const TEXT = {
         advanced: 'Advanced', followMap: 'Follow map settings', showContext: 'Show unridden track',
         showBorders: 'Prefecture borders', riddenWeight: 'Ridden line weight', contextWeight: 'Unridden line weight',
         moreLines: (n: number, avg: number) => `and ${n} more lines · ${avg}% on average`,
+        modeImage: 'Map Image', modeAnimation: 'Journey Replay',
         title: 'Create Share Card', scope: 'What is this card about', include: 'What to include',
         all: 'Everything', prefecture: 'Prefecture', company: 'Operator', line: 'Line',
         map: 'Map', totals: 'Totals', lines: 'Line progress TOP 5', prefectures: 'Prefectures', badges: 'Badges',
@@ -85,6 +93,7 @@ const TEXT = {
         advanced: '詳細', followMap: 'マップ設定に従う', showContext: '未乗車路線を表示',
         showBorders: '都道府県の境界線', riddenWeight: '乗車路線の太さ', contextWeight: '未乗車路線の太さ',
         moreLines: (n: number, avg: number) => `他 ${n} 路線 · 平均 ${avg}%`,
+        modeImage: '地図画像', modeAnimation: '走行の振り返り',
         title: '共有カード作成', scope: '何についてのカードですか', include: '含める内容',
         all: '全体', prefecture: '都道府県', company: '会社', line: '路線',
         map: '地図', totals: '合計', lines: '路線の走破率 TOP 5', prefectures: '都道府県制覇', badges: '実績',
@@ -113,6 +122,13 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const [busy, setBusy] = useState(false);
     const [style, setStyle] = useState<ShareCardStyle>(DEFAULT_CARD_STYLE);
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [mode, setMode] = useState<ShareMode>('image');
+
+    // 되짚기에 넘길 것들. 지도가 이미 받아 둔 데이터를 그대로 쓰므로 더 받아 오는
+    // 파일이 없다.
+    const replayTrips = useMemo(() => buildReplayTrips(trips, railData), [trips, railData]);
+    const replayLandRings = useMemo(() => extractRings(prefectures), [prefectures]);
+    const replayRailLines = useMemo(() => buildReplayRailLines(railData), [railData]);
 
     // "__NONE__" is the map's way of saying the filter is on but empty.
     const selectedLineIds = useMemo(
@@ -181,7 +197,7 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
         };
         draw();
         return () => { cancelled = true; };
-    }, [isOpen, aspectRatio, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights, selectedLineIds, language]);
+    }, [isOpen, mode, aspectRatio, stats, scope, blocks, themeId, shapeMode, railData, trips, prefectures, badges, isoToPrefecture, t, style, mapWeights, selectedLineIds, language]);
 
     const toBlob = useCallback(async (): Promise<Blob | null> => {
         const canvas = canvasRef.current;
@@ -264,7 +280,8 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
     const targetW = aspectRatio === '16:9' ? 1920 : 1080;
     const targetH = aspectRatio === '9:16' ? 1920 : 1080;
 
-    const modalMaxWidth = aspectRatio === '16:9' ? 'max-w-[1360px]' : aspectRatio === '1:1' ? 'max-w-[1120px]' : 'max-w-[900px]';
+    const modalMaxWidth = mode === 'animation' ? 'max-w-[560px]'
+        : aspectRatio === '16:9' ? 'max-w-[1360px]' : aspectRatio === '1:1' ? 'max-w-[1120px]' : 'max-w-[900px]';
 
     return (
         <div style={{ zIndex: Z.modal }} className="fixed inset-0 flex items-center justify-center p-4">
@@ -281,8 +298,36 @@ const ShareCardModal: React.FC<ShareCardModalProps> = ({
                     </button>
                 </div>
 
+                {/* 같은 기록을 한 장으로 낼지, 그려지는 과정으로 낼지. 고르는 것은
+                    내보내는 형식이지 무엇을 담을지가 아니므로 맨 위에 둔다. */}
+                {trips.length > 0 && (
+                    <div className="px-6 pt-4 shrink-0">
+                        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800">
+                            {(['image', 'animation'] as ShareMode[]).map(value => (
+                                <button
+                                    key={value}
+                                    onClick={() => setMode(value)}
+                                    className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all cursor-pointer ${mode === value
+                                        ? 'bg-white dark:bg-slate-900 text-primary shadow-sm'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                >
+                                    {value === 'image' ? t.modeImage : t.modeAnimation}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {trips.length === 0 ? (
                     <div className="p-12 text-center text-sm font-bold text-slate-400">{t.nothing}</div>
+                ) : mode === 'animation' ? (
+                    <div className="flex-1 min-h-0 overflow-y-auto sheet-scroll custom-scrollbar">
+                        <TripReplayPanel
+                            trips={replayTrips}
+                            landRings={replayLandRings}
+                            railLines={replayRailLines}
+                        />
+                    </div>
                 ) : (
                     <div className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden grid md:grid-cols-[1fr_360px] gap-6 p-6">
                         {/* Preview (Fixed / Pinned) */}

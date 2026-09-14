@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:animation": "tsc src/lib/tripAnimation.ts src/lib/timeline/parse.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_trip_animation.cjs"
   },
   "dependencies": {
     "@turf/turf": "^7.3.4",

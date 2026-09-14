@@ -241,6 +241,9 @@ const MainPageClient = () => {
             id: trip.id,
             name: trip.name || null,
             createdAt: trip.createdAt || new Date().toISOString(),
+            // 탄 날은 모르면 모르는 채로 올린다. 여기서 오늘 날짜로 메우면
+            // 되짚기가 시간순으로 도는 화면인데 틀린 날이 박힌다.
+            date: trip.date || null,
             start: trip.start || '',
             end: trip.end || '',
             startId: trip.startId || '',
