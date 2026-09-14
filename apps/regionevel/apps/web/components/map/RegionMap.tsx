@@ -1003,15 +1003,32 @@ export function RegionMap() {
         </div>
       )}
 
-      {/* Map Controls */}
-      <div style={{ zIndex: Z.mapOverlay }} className={`absolute flex flex-col items-end gap-2 pointer-events-none transition-all duration-500 bottom-4 right-4 no-export`}>
-        {loading && (
-          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-lg px-3 py-1.5 flex items-center gap-2">
-            <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Loading</span>
+      {/* Floating Center Loading Indicator (Positioned between left & right panels) */}
+      {loading && (
+        <div
+          style={{
+            zIndex: Z.toast,
+            left: isMobile ? "50%" : `calc(50% + ${(leftSidebarOpen ? 350 : 0) - (rightDrawerOpen ? 350 : 0)}px / 2)`,
+            top: isMobile ? "56px" : "68px",
+            transform: "translateX(-50%)",
+          }}
+          className="absolute pointer-events-none transition-all duration-300 ease-in-out no-export"
+        >
+          <div className="bg-slate-900/90 dark:bg-slate-900/95 text-white backdrop-blur-md border border-slate-700/80 rounded-full shadow-2xl px-4 py-2 flex items-center gap-2.5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-bold tracking-wide">지도 데이터 로딩 중…</span>
           </div>
-        )}
+        </div>
+      )}
 
+      {/* Map Controls */}
+      <div
+        style={{
+          zIndex: Z.mapOverlay,
+          right: !isMobile && rightDrawerOpen ? "366px" : "16px",
+        }}
+        className="absolute flex flex-col items-end gap-2 pointer-events-none transition-all duration-300 bottom-4 no-export"
+      >
         <div className="pointer-events-auto">
           <ScoreLegend 
             isMobile={isMobile} 

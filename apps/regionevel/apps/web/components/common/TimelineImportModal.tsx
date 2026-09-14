@@ -36,6 +36,8 @@ async function readFilesAsJson(files: FileList): Promise<unknown[]> {
 
 export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen, onClose }) => {
   const applyTimelineImport = useVisitStore((s) => s.applyTimelineImport);
+  const isImporting = useVisitStore((s) => s.isImporting);
+  const importProgress = useVisitStore((s) => s.importProgress);
   const [phase, setPhase] = useState<Phase>("intro");
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<TimelineImportPreview | null>(null);
@@ -326,15 +328,32 @@ export const TimelineImportModal: React.FC<TimelineImportModalProps> = ({ isOpen
             <>
               <button
                 onClick={handleClose}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                disabled={isImporting}
+                className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50"
               >
                 취소
               </button>
               <button
                 onClick={handleConfirm}
-                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md active:scale-98 cursor-pointer"
+                disabled={isImporting}
+                className="relative overflow-hidden px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-90 flex items-center justify-center gap-1.5 min-h-[34px]"
               >
-                {preview?.regions.length ?? 0}개 지역 반영하기
+                {isImporting && (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-blue-800/80 transition-all duration-200 ease-out"
+                    style={{ width: `${importProgress}%` }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5">
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>반영 중 {Math.round(importProgress)}%</span>
+                    </>
+                  ) : (
+                    <span>{preview?.regions.length ?? 0}개 지역 반영하기</span>
+                  )}
+                </span>
               </button>
             </>
           )}

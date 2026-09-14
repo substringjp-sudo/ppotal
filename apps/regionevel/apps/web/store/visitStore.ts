@@ -64,10 +64,12 @@ interface VisitStore {
   upsertVisit: (regionId: string, category: VisitCategory, count: number) => void;
   removeVisit: (regionId: string, category: VisitCategory) => void;
   clearRegionVisits: (regionId: string) => void;
-  clearAllVisits: () => void;
+  clearAllVisits: (onProgress?: (percent: number) => void) => Promise<void>;
   quickIncrement: (regionId: string) => void;
   addDrawPathVisits: (startRegionId: string, endRegionId: string, pathRegionIds: string[]) => void;
-  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory; date?: string }>) => Promise<void>;
+  applyTimelineImport: (entries: Array<{ regionId: string; category: VisitCategory; date?: string }>, onProgress?: (percent: number) => void) => Promise<void>;
+  isImporting: boolean;
+  importProgress: number;
   getScore: (regionId: string) => RegionScore | undefined;
   setRegions: (regions: Region[]) => void;
   recalculateScores: (regions?: Region[]) => void;
@@ -225,6 +227,8 @@ export const useVisitStore = create<VisitStore>()(
         stay: 0,
         residence: 0,
       },
+      isImporting: false,
+      importProgress: 0,
       _hasHydrated: false,
 
       setHasHydrated(val) {
@@ -338,10 +342,39 @@ export const useVisitStore = create<VisitStore>()(
         set({ visits: updatedVisits, scores: newScores, stats });
       },
 
-      clearAllVisits() {
+      async clearAllVisits(onProgress) {
+        onProgress?.(10);
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          try {
+            const visitsRef = collection(db, "users", currentUser.uid, "visits");
+            const snap = await getDocs(visitsRef);
+            const docs = snap.docs;
+            const totalDocs = docs.length;
+
+            if (totalDocs > 0) {
+              const BATCH_SIZE = 400;
+              let deletedCount = 0;
+              for (let i = 0; i < totalDocs; i += BATCH_SIZE) {
+                const chunk = docs.slice(i, i + BATCH_SIZE);
+                const batch = writeBatch(db);
+                chunk.forEach((d) => batch.delete(d.ref));
+                await batch.commit();
+                deletedCount += chunk.length;
+                const percent = Math.min(95, 10 + Math.round((deletedCount / totalDocs) * 85));
+                onProgress?.(percent);
+              }
+            }
+          } catch (err) {
+            console.error("[visitStore] Failed to clear visits in Firestore:", err);
+          }
+        }
+
+        onProgress?.(98);
         const { allRegions } = get();
         const { scores: newScores, stats } = calculateScoresAndStats([], allRegions, {});
         set({ visits: [], scores: newScores, stats });
+        onProgress?.(100);
       },
 
       quickIncrement(regionId) {
@@ -379,8 +412,15 @@ export const useVisitStore = create<VisitStore>()(
         });
       },
 
-      async applyTimelineImport(entries) {
+      async applyTimelineImport(entries, onProgress) {
         if (!entries || entries.length === 0) return;
+
+        const updateProgress = (pct: number) => {
+          set({ isImporting: true, importProgress: pct });
+          onProgress?.(pct);
+        };
+
+        updateProgress(5);
 
         const { visits: prevVisits, allRegions, scores: currentScores } = get();
         const visitMap = new Map<string, RegionVisit>();
@@ -482,11 +522,14 @@ export const useVisitStore = create<VisitStore>()(
           }
         }
 
+        updateProgress(25);
+
         const updatedVisits = Array.from(visitMap.values());
         const { scores: newScores, stats } = calculateScoresAndStats(updatedVisits, allRegions, currentScores);
         
         // Single atomic state update
         set({ visits: updatedVisits, scores: newScores, stats });
+        updateProgress(40);
 
         // Cloud persistence if user is logged in
         const currentUser = auth.currentUser;
@@ -497,7 +540,9 @@ export const useVisitStore = create<VisitStore>()(
               .map((k) => visitMap.get(k))
               .filter((v): v is RegionVisit => !!v);
 
+            const totalBatches = Math.ceil(touchedVisits.length / BATCH_SIZE);
             for (let i = 0; i < touchedVisits.length; i += BATCH_SIZE) {
+              const batchIndex = Math.floor(i / BATCH_SIZE);
               const chunk = touchedVisits.slice(i, i + BATCH_SIZE);
               const batch = writeBatch(db);
               chunk.forEach((v) => {
@@ -513,11 +558,18 @@ export const useVisitStore = create<VisitStore>()(
                 });
               });
               await batch.commit();
+              const pct = 40 + Math.round(((batchIndex + 1) / totalBatches) * 55);
+              updateProgress(Math.min(95, pct));
             }
           } catch (err) {
             console.error("[visitStore] Failed to commit timeline visits to Firestore:", err);
           }
         }
+
+        updateProgress(100);
+        setTimeout(() => {
+          set({ isImporting: false, importProgress: 0 });
+        }, 600);
       },
 
       getScore(regionId: string) {

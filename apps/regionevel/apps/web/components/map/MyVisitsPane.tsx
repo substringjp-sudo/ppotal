@@ -6,7 +6,7 @@ import { useMapStore } from "@/store/mapStore";
 import { SidebarFrame, TimelineIcon, ProgressCard } from "@ppotal/ui";
 import { 
   History, MapPin, Globe, Landmark, Sparkles, Footprints, 
-  Car, Eye, Home as HomeIcon, Building2, ChevronRight, Trash2
+  Car, Eye, Home as HomeIcon, Building2, ChevronRight, Trash2, Loader2
 } from "lucide-react";
 import { VISIT_CONFIG, VISIT_CATEGORY_ORDER } from "@regionevel/types";
 import type { VisitCategory, Region, RegionVisit } from "@regionevel/types";
@@ -22,19 +22,37 @@ const CATEGORY_ICONS: Record<VisitCategory, React.ElementType> = {
 };
 
 export function MyVisitsPane() {
-  const { visits, allRegions, scores: allScores, stats: storeStats, clearRegionVisits, clearAllVisits } = useVisitStore();
+  const { visits, allRegions, scores: allScores, stats: storeStats, clearRegionVisits, clearAllVisits, isImporting, importProgress } = useVisitStore();
   const { toggleRightDrawer, jumpToRegion } = useMapStore();
 
   const [selectedCategory, setSelectedCategory] = useState<VisitCategory | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isTimelineImportOpen, setIsTimelineImportOpen] = useState(false);
   const [isResetConfirming, setIsResetConfirming] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const [clearProgress, setClearProgress] = useState(0);
 
   React.useEffect(() => {
-    if (visits.length === 0) {
+    if (visits.length === 0 && !isClearing) {
       setIsResetConfirming(false);
     }
-  }, [visits.length]);
+  }, [visits.length, isClearing]);
+
+  const handleClearAll = async () => {
+    setIsClearing(true);
+    setClearProgress(5);
+    try {
+      await clearAllVisits((pct) => {
+        setClearProgress(pct);
+      });
+    } catch (err) {
+      console.error("Failed to clear visits:", err);
+    } finally {
+      setIsClearing(false);
+      setIsResetConfirming(false);
+      setClearProgress(0);
+    }
+  };
 
   const regionsById = useMemo(() => {
     const map = new Map<string, Region>();
@@ -133,11 +151,29 @@ export function MyVisitsPane() {
             {/* Timeline Import Action */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsTimelineImportOpen(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95 cursor-pointer"
+                onClick={() => !isImporting && setIsTimelineImportOpen(true)}
+                disabled={isImporting}
+                className="relative overflow-hidden flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-95 cursor-pointer disabled:opacity-90 min-h-[36px]"
               >
-                <TimelineIcon className="w-4 h-4" />
-                <span>Google 타임라인 가져오기</span>
+                {isImporting && (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-blue-700/80 transition-all duration-200 ease-out"
+                    style={{ width: `${importProgress}%` }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center justify-center gap-1.5">
+                  {isImporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>타임라인 반영 중… {Math.round(importProgress)}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <TimelineIcon className="w-4 h-4" />
+                      <span>Google 타임라인 가져오기</span>
+                    </>
+                  )}
+                </span>
               </button>
             </div>
 
@@ -189,17 +225,31 @@ export function MyVisitsPane() {
                     </p>
                     <div className="grid grid-cols-2 gap-2 mt-1">
                       <button
-                        onClick={() => {
-                          clearAllVisits();
-                          setIsResetConfirming(false);
-                        }}
-                        className="rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow py-1.5 transition-all active:scale-95 cursor-pointer"
+                        onClick={handleClearAll}
+                        disabled={isClearing}
+                        className="relative overflow-hidden rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow py-1.5 transition-all active:scale-95 cursor-pointer disabled:opacity-90 flex items-center justify-center gap-1.5 min-h-[32px]"
                       >
-                        예, 초기화
+                        {isClearing && (
+                          <div
+                            className="absolute inset-y-0 left-0 bg-red-800/80 transition-all duration-200 ease-out"
+                            style={{ width: `${clearProgress}%` }}
+                          />
+                        )}
+                        <span className="relative z-10 flex items-center gap-1.5">
+                          {isClearing ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>삭제 중 {Math.round(clearProgress)}%</span>
+                            </>
+                          ) : (
+                            <span>예, 초기화</span>
+                          )}
+                        </span>
                       </button>
                       <button
-                        onClick={() => setIsResetConfirming(false)}
-                        className="rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 transition-all active:scale-95 cursor-pointer"
+                        onClick={() => !isClearing && setIsResetConfirming(false)}
+                        disabled={isClearing}
+                        className="rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-200 text-xs font-bold py-1.5 transition-all active:scale-95 cursor-pointer disabled:opacity-50 flex items-center justify-center"
                       >
                         취소
                       </button>
