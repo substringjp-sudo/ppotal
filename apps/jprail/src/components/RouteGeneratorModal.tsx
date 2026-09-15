@@ -48,7 +48,7 @@ const getStationLineColors = (station: Station, railData: RailData | null): stri
  * Compact station picker
  * ------------------------------------------------------------------ */
 
-interface StationPickerRowProps {
+export interface StationPickerRowProps {
     role: 'start' | 'via' | 'end';
     placeholder: string;
     selectedStation: Station | null;
@@ -64,7 +64,7 @@ const ROLE_STYLES: Record<StationPickerRowProps['role'], { dot: string; ring: st
     end: { dot: 'bg-rose-500', ring: 'ring-rose-500/30' }
 };
 
-const StationPickerRow: React.FC<StationPickerRowProps> = ({
+export const StationPickerRow: React.FC<StationPickerRowProps> = ({
     role,
     placeholder,
     selectedStation,

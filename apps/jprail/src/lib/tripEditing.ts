@@ -22,6 +22,21 @@ export function endIdOf(trip: Trip): string | undefined {
 }
 
 /**
+ * 제자리로 돌아오는 여정인지.
+ *
+ * 끝점이 같은 자리면 순환이다. 다만 **끝점을 모르는 기록**(앱에서 넘어온 것)은
+ * 둘 다 undefined 라서 `startId === endId` 가 참이 되어 버린다 — 전부 순환으로
+ * 보이던 버그가 여기서 났다. 그래서 끝점이 실제로 있을 때만 견준다.
+ *
+ * 구간이 둘 이하면 순환이라 부르지 않는다. 한 정거장 갔다 온 것은 왕복이지 순환이
+ * 아니고, 화면에 "(순환)"이라고 적으면 거짓말이 된다.
+ */
+export function isRoundTrip(trip: Trip): boolean {
+    const a = startIdOf(trip);
+    return !!a && a === endIdOf(trip) && (trip.sectionIds?.length || 0) > 2;
+}
+
+/**
  * 방향을 뒤집는다.
  *
  * 탄 선로는 그대로고 순서만 반대다. 그래서 새로 찾을 것이 없다 — 거리도 구간도

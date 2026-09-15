@@ -14,7 +14,8 @@ const {
     applyRoute,
     retractTrip,
     neighboursToExtend,
-    needsResearch
+    needsResearch,
+    isRoundTrip
 } = require('../.verify/lib/tripEditing.js');
 
 let failures = 0;
@@ -61,6 +62,27 @@ eq(endIdOf(trip()), 'c', '종료 역');
     const bare = { ...trip(), startId: undefined, endId: undefined };
     eq(startIdOf(bare), 'a', 'startId 가 없으면 path 첫 칸');
     eq(endIdOf(bare), 'c', 'endId 가 없으면 path 마지막 칸');
+}
+
+// --- 순환 판별 ---------------------------------------------------------------
+{
+    ok(!isRoundTrip(trip()), 'a 에서 c 로 갔으면 순환이 아니다');
+
+    const loop = { ...trip(), startId: 'a', endId: 'a', path: ['a', 'b', 'c', 'a'], sectionIds: [1, 2, 3] };
+    ok(isRoundTrip(loop), '제자리로 돌아오면 순환');
+
+    // 앱에서 넘어온 기록은 끝점이 비어 있다. undefined === undefined 로 전부 순환이
+    // 되어 버리던 자리다.
+    const bare = { ...trip(), startId: undefined, endId: undefined };
+    ok(!isRoundTrip(bare), '끝점을 모르는 기록을 순환이라 하지 않는다');
+
+    // 지나간 역에서 끌어온 끝점도 같은 규칙을 탄다.
+    const bareLoop = { ...trip(), startId: undefined, endId: undefined, path: ['a', 'b', 'c', 'a'], sectionIds: [1, 2, 3] };
+    ok(isRoundTrip(bareLoop), 'path 로 끌어온 끝점이 같으면 순환');
+
+    // 한 정거장 갔다 온 것은 왕복이지 순환이 아니다.
+    const there = { ...trip(), startId: 'a', endId: 'a', path: ['a', 'b', 'a'], sectionIds: [1, 2] };
+    ok(!isRoundTrip(there), '구간이 둘뿐이면 순환이 아니다');
 }
 
 // --- 뒤집기 ------------------------------------------------------------------

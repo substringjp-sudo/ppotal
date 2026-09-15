@@ -2,9 +2,10 @@
 
 import React, { useMemo } from 'react';
 import { HistoryIcon, RouteIcon, TimelineIcon, LockIcon, TrashIcon, SidebarFrame, ProgressCard } from '@ppotal/ui';
+import { Pencil } from 'lucide-react';
 import { RailData, Station } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
-import { startIdOf, endIdOf } from '../lib/tripEditing';
+import { isRoundTrip } from '../lib/tripEditing';
 import { getLocalizedName } from '../lib/i18n-utils';
 import { useRegionNames } from '../hooks/useRegionNames';
 import { Trip } from '../types/trip';
@@ -15,6 +16,8 @@ export interface MyLinesPaneProps {
     /** 펼쳐 놓은 여정. 지도에도 이 여정의 시작·종료가 찍힌다. */
     selectedTripId?: string | null;
     onSelectTrip?: (id: string | null) => void;
+    /** 상세·편집 창을 연다. */
+    onEditTrip?: (id: string) => void;
     onDeleteTrip?: (id: string) => void;
     onResetTrips?: () => void;
     railData: RailData | null;
@@ -57,6 +60,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     recordedTrips = [],
     selectedTripId = null,
     onSelectTrip,
+    onEditTrip,
     onDeleteTrip,
     onResetTrips,
     railData,
@@ -214,11 +218,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     {displayTrips.map((trip) => {
                         const startName = getStationDisplayName(trip.start, trip.startId, railData, language);
                         const endName = getStationDisplayName(trip.end, trip.endId, railData, language);
-                        // 끝점이 비어 있는 기록(앱에서 넘어온 것)은 undefined === undefined 로
-                        // 전부 순환으로 보였다. 먼저 끝점을 찾아 두고, 둘 다 있을 때만 견준다.
-                        const sId = startIdOf(trip);
-                        const eId = endIdOf(trip);
-                        const isRoundTrip = !!sId && sId === eId && !!trip.sectionIds && trip.sectionIds.length > 2;
+                        const isLoop = isRoundTrip(trip);
                         const isSelected = selectedTripId === trip.id;
                         // 탄 날을 먼저 보여 준다. createdAt 은 기록한 날이지 탄 날이 아니다.
                         // 타임라인에서 온 여정만 탄 날을 알고, 손으로 그린 것은 비어 있다.
@@ -257,14 +257,26 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                         <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                                         <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                                            {isRoundTrip ? `${startName} ${t.roundTrip}` : `${startName} → ${endName}`}
+                                            {isLoop ? `${startName} ${t.roundTrip}` : `${startName} → ${endName}`}
                                         </h4>
                                     </div>
+                                    {onEditTrip && (
+                                        <button
+                                            onClick={e => { e.stopPropagation(); onEditTrip(trip.id); }}
+                                            data-edit-trip={trip.id}
+                                            className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 text-slate-400 hover:text-primary rounded-md transition-all cursor-pointer"
+                                            title={t.editTrip}
+                                            aria-label={t.editTrip}
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                     {onDeleteTrip && (
                                         <button
                                             onClick={e => { e.stopPropagation(); onDeleteTrip(trip.id); }}
-                                            className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 rounded-md transition-all cursor-pointer"
+                                            className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 text-slate-400 hover:text-red-500 rounded-md transition-all cursor-pointer"
                                             title={t.delete}
+                                            aria-label={t.delete}
                                         >
                                             <TrashIcon className="w-3.5 h-3.5" />
                                         </button>
