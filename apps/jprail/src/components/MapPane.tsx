@@ -14,6 +14,9 @@ import { getLineColor } from '../lib/lineColors';
 import { MapStyleSettings } from './MainPageClient';
 import { trackEvent } from '../lib/gtag';
 import { useServiceGroups } from '../hooks/useServiceGroups';
+import { useI18n } from '../lib/i18n-context';
+import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { startIdOf, endIdOf } from '../lib/tripEditing';
 import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
 import FloatingTooltip from './FloatingTooltip';
@@ -21,7 +24,7 @@ import FloatingTooltip from './FloatingTooltip';
 
 import { useRailData } from '../hooks/useRailData';
 import { RoutingGraph } from '../lib/RoutingGraph';
-import { RailData, Section } from '../types/railData';
+import { RailData, Section, Station } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
 import { MOBILE_CHROME, LONG_PRESS_MS } from '../lib/mobile';
@@ -38,6 +41,8 @@ import { Z } from '../lib/layers';
 interface MapPaneProps {
     selectedLines: string[];
     recordedTrips: Trip[];
+    /** 목록에서 고른 여정. 지도에 시작·종료를 따로 찍어 어디서 타고 내렸는지 보여 준다. */
+    selectedTrip?: Trip | null;
     onRecordTrip?: (trip: Trip) => void;
     onRailroadClick?: (line: string) => void;
     onStationClick?: (name: string, lines?: string[]) => void;
@@ -98,6 +103,7 @@ const PANE_STYLES = {
 const MapPane: React.FC<MapPaneProps> = ({
     selectedLines,
     recordedTrips,
+    selectedTrip,
     onRecordTrip,
     onRailroadClick,
     onStationClick,
@@ -136,6 +142,13 @@ const MapPane: React.FC<MapPaneProps> = ({
     const serviceGroups = useServiceGroups();
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
+    const { language } = useI18n();
+    // 지도 위 여정 끝점 글자. 세 나라 말을 쓰는 화면에 한국어를 박아 둘 수 없다.
+    const tripText = useMemo(
+        () => getTranslations(MY_LINES_TRANSLATIONS, language),
+        [language]
+    );
+
     const [mapReady, setMapReady] = useState(false);
     const { triggerBounce } = useZoomBounce(map, { minZoom: 4, maxZoom: 18 });
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
@@ -710,12 +723,60 @@ const MapPane: React.FC<MapPaneProps> = ({
         iconAnchor: [26, 26]
     }), []);
 
+    /**
+     * 탄 여정의 시작·종료 표시.
+     *
+     * 색만 다르게 하면 색각 이상이 있는 사람에게는 같은 점 두 개다. 그래서 **모양도**
+     * 다르게 둔다 — 시작은 채운 원, 종료는 사각형. 글자까지 얹어 확실히 가른다.
+     */
+    const tripEndIcon = useCallback((kind: 'start' | 'end', label: string) => L.divIcon({
+        className: 'trip-end-marker',
+        html: `<span style="
+            display:flex;align-items:center;justify-content:center;
+            width:22px;height:22px;
+            background:${kind === 'start' ? '#16A34A' : '#DC2626'};
+            color:#fff;font-size:9px;font-weight:800;line-height:1;
+            border:2px solid #fff;
+            border-radius:${kind === 'start' ? '50%' : '5px'};
+            box-shadow:0 1px 4px rgba(0,0,0,.45);
+        ">${label}</span>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+    }), []);
+
     const selectedStationIcon = useMemo(() => L.divIcon({
         className: 'selected-station-marker',
         html: '<span class="selected-station-ring"></span><span class="selected-station-dot"></span>',
         iconSize: [0, 0],
         iconAnchor: [0, 0]
     }), []);
+
+    /**
+     * 고른 여정의 양 끝 좌표와 글자.
+     *
+     * 왕복이면 두 끝이 같은 자리다. 그때는 "왕복"이라고 한 번에 말해 주는 편이,
+     * 같은 점에 출·도착을 겹쳐 놓고 하나가 가려지게 두는 것보다 정직하다.
+     */
+    const tripEnds = useMemo(() => {
+        if (!selectedTrip || !railData?.stations) return null;
+        const startId = startIdOf(selectedTrip);
+        const endId = endIdOf(selectedTrip);
+        if (!startId || !endId) return null;
+
+        const stations = railData.stations as Record<string, Station>;
+        const start = stations[startId];
+        const end = stations[endId];
+        if (!start || !end) return null;
+
+        const sameSpot = startId === endId;
+        return {
+            start,
+            end,
+            labels: sameSpot
+                ? { start: tripText.markerLoopStart, end: tripText.markerLoopEnd }
+                : { start: tripText.markerStart, end: tripText.markerEnd }
+        };
+    }, [selectedTrip, railData, tripText]);
 
     const isTransforming = isMoving || isZooming || isPending || !!dragStartStation;
 
@@ -869,6 +930,28 @@ const MapPane: React.FC<MapPaneProps> = ({
                             interactive={false}
                         />
                     ))}
+                </>
+            )}
+
+            {/* 고른 여정의 시작과 종료. 겹쳐 있으면(왕복) 종료가 위로 온다. */}
+            {tripEnds && (
+                <>
+                    <Marker
+                        key="trip-start"
+                        position={[tripEnds.start.lat, tripEnds.start.lon]}
+                        icon={tripEndIcon('start', tripEnds.labels.start)}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1200}
+                    />
+                    <Marker
+                        key="trip-end"
+                        position={[tripEnds.end.lat, tripEnds.end.lon]}
+                        icon={tripEndIcon('end', tripEnds.labels.end)}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1201}
+                    />
                 </>
             )}
 

@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { HistoryIcon, RouteIcon, TimelineIcon, LockIcon, TrashIcon, SidebarFrame, ProgressCard } from '@ppotal/ui';
 import { RailData, Station } from '../types/railData';
 import { useI18n } from '../lib/i18n-context';
+import { startIdOf, endIdOf } from '../lib/tripEditing';
 import { getLocalizedName } from '../lib/i18n-utils';
 import { useRegionNames } from '../hooks/useRegionNames';
 import { Trip } from '../types/trip';
@@ -11,6 +12,9 @@ import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
 
 export interface MyLinesPaneProps {
     recordedTrips?: Trip[];
+    /** 펼쳐 놓은 여정. 지도에도 이 여정의 시작·종료가 찍힌다. */
+    selectedTripId?: string | null;
+    onSelectTrip?: (id: string | null) => void;
     onDeleteTrip?: (id: string) => void;
     onResetTrips?: () => void;
     railData: RailData | null;
@@ -51,6 +55,8 @@ const getStationDisplayName = (
 
 const MyLinesPane: React.FC<MyLinesPaneProps> = ({
     recordedTrips = [],
+    selectedTripId = null,
+    onSelectTrip,
     onDeleteTrip,
     onResetTrips,
     railData,
@@ -208,12 +214,44 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                     {displayTrips.map((trip) => {
                         const startName = getStationDisplayName(trip.start, trip.startId, railData, language);
                         const endName = getStationDisplayName(trip.end, trip.endId, railData, language);
-                        const isRoundTrip = trip.startId === trip.endId && trip.sectionIds && trip.sectionIds.length > 2;
+                        // 끝점이 비어 있는 기록(앱에서 넘어온 것)은 undefined === undefined 로
+                        // 전부 순환으로 보였다. 먼저 끝점을 찾아 두고, 둘 다 있을 때만 견준다.
+                        const sId = startIdOf(trip);
+                        const eId = endIdOf(trip);
+                        const isRoundTrip = !!sId && sId === eId && !!trip.sectionIds && trip.sectionIds.length > 2;
+                        const isSelected = selectedTripId === trip.id;
+                        // 탄 날을 먼저 보여 준다. createdAt 은 기록한 날이지 탄 날이 아니다.
+                        // 타임라인에서 온 여정만 탄 날을 알고, 손으로 그린 것은 비어 있다.
+                        const riddenOn = trip.date
+                            ? trip.date
+                            : trip.createdAt
+                                ? new Date(trip.createdAt).toLocaleDateString(
+                                    language === 'ko' ? 'ko-KR' : language === 'en' ? 'en-US' : 'ja-JP',
+                                    { year: 'numeric', month: 'long', day: 'numeric' }
+                                )
+                                : '';
 
                         return (
                             <div
                                 key={trip.id}
-                                className="group relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col gap-1.5"
+                                data-trip-id={trip.id}
+                                onClick={() => onSelectTrip?.(isSelected ? null : trip.id)}
+                                role={onSelectTrip ? 'button' : undefined}
+                                tabIndex={onSelectTrip ? 0 : undefined}
+                                onKeyDown={e => {
+                                    if (!onSelectTrip) return;
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        onSelectTrip(isSelected ? null : trip.id);
+                                    }
+                                }}
+                                className={`group relative bg-white dark:bg-slate-900 border rounded-2xl p-3 shadow-xs transition-all flex flex-col gap-1.5 ${
+                                    onSelectTrip ? 'cursor-pointer' : ''
+                                } ${
+                                    isSelected
+                                        ? 'border-primary ring-1 ring-primary/30'
+                                        : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                }`}
                             >
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -224,7 +262,7 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                     </div>
                                     {onDeleteTrip && (
                                         <button
-                                            onClick={() => onDeleteTrip(trip.id)}
+                                            onClick={e => { e.stopPropagation(); onDeleteTrip(trip.id); }}
                                             className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 rounded-md transition-all cursor-pointer"
                                             title={t.delete}
                                         >
@@ -234,7 +272,9 @@ const MyLinesPane: React.FC<MyLinesPaneProps> = ({
                                 </div>
                                 <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-semibold px-0.5">
                                     <span>{trip.distance ? `${trip.distance.toFixed(1)} km` : ''} · {trip.sectionIds?.length || 0}{language === 'en' ? ' segments' : t.legLabel}</span>
-                                    <span>{trip.createdAt ? new Date(trip.createdAt).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
+                                    <span title={trip.date ? t.riddenOn : t.recordedOn}>
+                                        {trip.date ? '' : '· '}{riddenOn}
+                                    </span>
                                 </div>
                             </div>
                         );

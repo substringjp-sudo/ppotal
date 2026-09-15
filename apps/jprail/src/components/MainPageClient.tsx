@@ -197,6 +197,14 @@ const MainPageClient = () => {
     const [isMobile, setIsMobile] = React.useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
     const [isMyLinesOpen, setIsMyLinesOpen] = React.useState(true);
+    /** 목록에서 펼쳐 놓은 여정. 지도에도 이 여정의 시작·종료가 찍힌다. */
+    const [selectedTripId, setSelectedTripId] = React.useState<string | null>(null);
+
+    const selectedTrip = React.useMemo(
+        () => recordedTrips.find(trip => trip.id === selectedTripId) ?? null,
+        [recordedTrips, selectedTripId]
+    );
+
     const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
@@ -1135,6 +1143,7 @@ const MainPageClient = () => {
                                     isMobile={isMobile}
                                     selectedStation={selectedStation?.id}
                                     onMapClick={handleMapClick}
+                                    selectedTrip={selectedTrip}
                                     groupingMode={styleSettings.grouping}
                                     showLabels={styleSettings.showLabels}
                                     onToggleLabels={() => updateStyleSettings({ ...styleSettings, showLabels: !styleSettings.showLabels })}
@@ -1184,6 +1193,8 @@ const MainPageClient = () => {
                         rightPanel={
                             <MyLinesPane
                                 recordedTrips={recordedTrips}
+                                selectedTripId={selectedTripId}
+                                onSelectTrip={setSelectedTripId}
                                 onDeleteTrip={handleDeleteTrip}
                                 onResetTrips={handleResetTrips}
                                 railData={railData}
@@ -1320,6 +1331,8 @@ const MainPageClient = () => {
                                             <MyLinesPane
                                                 isMobile
                                                 recordedTrips={recordedTrips}
+                                                selectedTripId={selectedTripId}
+                                                onSelectTrip={setSelectedTripId}
                                                 onDeleteTrip={handleDeleteTrip}
                                                 onResetTrips={handleResetTrips}
                                                 railData={railData}
