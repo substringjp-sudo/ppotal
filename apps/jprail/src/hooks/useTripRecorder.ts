@@ -85,6 +85,15 @@ export type SpanEnd = 'start' | 'finish';
  * every other map.
  */
 export interface HeldSpan {
+    /**
+     * What to call it, when something already named it — a route found from
+     * two stations arrives as "A → B".
+     *
+     * Dropped the moment an end is pulled somewhere else: the name described
+     * *those* two stations, and keeping it on a different pair would be a
+     * label that lies. The list falls back to the ends' own names.
+     */
+    name?: string;
     /** Exactly what was drawn, so picking it up again continues rather than re-routes. */
     trail: DragTrail;
     /** Stations the cursor really passed. The rest the app filled in. */
@@ -100,6 +109,18 @@ export interface HeldSpan {
     distance: number;
     sectionIds: number[];
     geometries: [number, number][][];
+}
+
+/**
+ * A route that arrived already found rather than drawn — a search result, or
+ * one of the grey ways offered beside a drawing.
+ */
+export interface FoundRoute {
+    path: string[];
+    sectionIds: number[];
+    geometries: [number, number][][];
+    distance: number;
+    name?: string;
 }
 
 /** Hops the cursor went over, split from hops the app filled in. */
@@ -614,7 +635,11 @@ export const useTripRecorder = ({
      * Packs a finished trail into something that can sit on the map and still
      * be picked up. Returns null when there is nothing to keep.
      */
-    const holdFrom = useCallback((trail: DragTrail, touched: Set<string>): HeldSpan | null => {
+    const holdFrom = useCallback((
+        trail: DragTrail,
+        touched: Set<string>,
+        name?: string
+    ): HeldSpan | null => {
         const index = snapIndexRef.current;
         if (!index) return null;
         const { waypoints, segments } = trail;
@@ -626,6 +651,7 @@ export const useTripRecorder = ({
         if (!start || !finish) return null;
 
         return {
+            name,
             trail,
             touched,
             path,
@@ -694,6 +720,10 @@ export const useTripRecorder = ({
         if (!span) return;
         const trip: Trip = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+            name: span.name,
+            // When it was kept, not when it was ridden — `date` stays empty
+            // because a drawing does not say which day it was.
+            createdAt: new Date().toISOString(),
             start: span.start.id,
             end: span.finish.id,
             startId: span.start.id,
@@ -828,37 +858,54 @@ export const useTripRecorder = ({
     }, [heldSpan, railData]);
 
     /**
-     * Take one of the offered ways instead of what was drawn.
+     * Put a route that was *found* rather than drawn onto the map, editable.
      *
-     * Its middle is the search's, not the user's, so only the two ends count
-     * as remembered — the rest goes on the map dashed, the same as any stretch
-     * the hand skipped.
+     * Finding two stations and getting the answer recorded on the spot leaves
+     * nothing to correct — and the middle of that answer is a guess the user
+     * never made. So it lands like a drawing instead: handles on both ends,
+     * grey alternatives beside it, and nothing kept until a tap on empty map
+     * says so.
+     *
+     * Only the two ends count as remembered. The rest is the search's, so it
+     * goes on dashed, the same as any stretch a hand skipped.
      */
-    const adoptDetour = useCallback((candidate: CandidateRoute) => {
+    const holdFoundRoute = useCallback((route: FoundRoute): boolean => {
         const index = snapIndexRef.current;
-        if (!index) return;
-        const path = candidate.stationIds;
-        const start = index.byId.get(path[0]);
-        const finish = index.byId.get(path[path.length - 1]);
-        if (!start || !finish) return;
+        if (!index) return false;
+        const path = route.path;
+        if (path.length < 2) return false;
+        if (!index.byId.has(path[0]) || !index.byId.has(path[path.length - 1])) return false;
 
         const trail: DragTrail = {
             waypoints: [path[0], path[path.length - 1]],
             segments: [{
                 path: [...path],
-                sectionIds: [...candidate.sectionIds],
-                geometries: candidate.geometries.map(g => [...g]),
-                distance: candidate.distance
+                sectionIds: [...route.sectionIds],
+                geometries: route.geometries.map(g => [...g]),
+                distance: route.distance
             }],
-            drawn: candidate.geometries.map(g => [...g]),
-            usedSections: new Set(candidate.sectionIds)
+            drawn: route.geometries.map(g => [...g]),
+            usedSections: new Set(route.sectionIds)
         };
-        const touched = touchedForFoundRoute(path);
-        const span = holdFrom(trail, touched);
+        const span = holdFrom(trail, touchedForFoundRoute(path), route.name);
+        if (!span) return false;
         setHeldSpan(span);
         heldSpanRef.current = span;
         setDetours([]);
+        return true;
     }, [holdFrom]);
+
+    /** Take one of the offered ways instead of what was drawn. */
+    const adoptDetour = useCallback((candidate: CandidateRoute) => {
+        holdFoundRoute({
+            path: candidate.stationIds,
+            sectionIds: candidate.sectionIds,
+            geometries: candidate.geometries,
+            distance: candidate.distance,
+            // The ends do not move, so whatever named it still names it.
+            name: heldSpanRef.current?.name
+        });
+    }, [holdFoundRoute]);
 
     /** Which offered way a tap landed on, if any. */
     const detourAt = useCallback((containerPoint: L.Point): CandidateRoute | null => {
@@ -1103,6 +1150,8 @@ export const useTripRecorder = ({
         heldSpan,
         /** Other ways between the same two stations, drawn grey beside it. */
         detours,
+        /** Puts an already-found route on the map as an editable drawing. */
+        holdFoundRoute,
         /** What the last tap put away, while it can still be taken back. */
         lastRecorded,
         undoLastRecorded,

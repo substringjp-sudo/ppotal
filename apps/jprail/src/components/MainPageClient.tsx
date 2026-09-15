@@ -218,6 +218,13 @@ const MainPageClient = () => {
     const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
+    /**
+     * 탐색이 찾아 준 경로를 지도에 올려 달라는 한 번짜리 부탁.
+     *
+     * 올라가면 지도가 비워 줍니다(`onFoundRoutePlaced`). 계속 들고 있으면 같은 것을
+     * 두 번 올리게 되고, 사용자가 손잡이로 고쳐 놓은 것을 원래대로 되돌려 버립니다.
+     */
+    const [foundRoute, setFoundRoute] = React.useState<Trip | null>(null);
     const [tempPath, setTempPath] = React.useState<string[]>([]);
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
@@ -271,6 +278,9 @@ const MainPageClient = () => {
             waypoints: trip.waypoints || [],
             geometries: JSON.stringify(trip.geometries || []),
             sectionIds: trip.sectionIds || [],
+            // 스친 역 목록. 없으면 아예 올리지 않는다 — `null` 로 올리면 "아무것도
+            // 기억 못 했다"는 뜻이 되고, 없다는 건 **모른다**는 뜻이다.
+            touched: trip.touched,
             cityIds
         };
 
@@ -481,25 +491,22 @@ const MainPageClient = () => {
                     createdAt: new Date().toISOString()
                 };
 
-                // Immediate UI update
-                setRecordedTrips(prev => [...prev, newTrip]);
+                // 바로 기록하지 않습니다. 찾아 준 답을 그 자리에서 기록으로
+                // 넣어 버리면 고칠 데가 없고, 가운데는 사용자가 고른 적 없는
+                // 길입니다. 대신 지도에 **고칠 수 있는 구간**으로 올려서, 양 끝을
+                // 끌어 맞추고 빈 곳을 톡 쳐야 기록되게 합니다 — 그때
+                // `handleRecordTrip` 이 받습니다.
+                setFoundRoute(newTrip);
                 setTripStartStation(null);
                 setDraftTrip(null);
                 setSelectedStation(null);
 
                 trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
-
-                // Background sync with Firebase if user logged in
-                if (user) {
-                    setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip)).catch(err => {
-                        console.error("Cloud sync failed", err);
-                    });
-                }
             }
         } catch (err) {
             console.error("End trip search failed:", err);
         }
-    }, [tripStartStation, lineDetailData, user]);
+    }, [tripStartStation, lineDetailData]);
 
     const handleRecordTrip = React.useCallback((trip: Trip) => {
         // Immediate optimistic UI update
@@ -842,6 +849,10 @@ const MainPageClient = () => {
         setIsMobileSheetOpen(false);
     }, []);
 
+    const handleFoundRoutePlaced = React.useCallback(() => {
+        setFoundRoute(null);
+    }, []);
+
     const handleDraftComplete = React.useCallback((trip: Trip) => {
         setDraftTrip(trip);
         setTempPath([]);
@@ -1161,6 +1172,8 @@ const MainPageClient = () => {
                                     recordedTrips={recordedTrips}
                                     onRecordTrip={handleRecordTrip}
                                     onDeleteTrip={handleDeleteTrip}
+                                    foundRoute={foundRoute}
+                                    onFoundRoutePlaced={handleFoundRoutePlaced}
                                     regionevelVisits={regionevelVisits}
                                     onRailroadClick={handleRailroadClick}
                                     onStationClick={handleStationClick}

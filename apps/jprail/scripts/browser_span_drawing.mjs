@@ -14,6 +14,8 @@
  *   5. **손을 떼도 편집이 이어지는가.** 양 끝 손잡이가 생기고, 빈 지도를 톡 쳐야
  *      올라가고, 잠깐은 되돌릴 수 있는가.
  *   6. **손이 멈추면 다른 길이 회색으로 뜨는가.** 그리는 중에는 뜨지 않아야 한다.
+ *   7. **찾아 준 경로도 고칠 수 있게 올라오는가.** 역을 눌러 시작→도착으로 찾은 경로가
+ *      바로 기록되지 않고 손잡이 달린 구간으로 지도에 올라와야 한다.
  *
  * 쓰는 법 — 먼저 `npx next dev -p 3111`, 그리고
  *
@@ -319,6 +321,125 @@ console.log('넓은 창 + 손가락: 짧게 치기');
     ok(await draggable(page), '뗀 직후의 흉내 mousedown 도 그리기를 열지 않는다');
     await page.mouse.move(st.x - 200, st.y);           // 클릭으로 끝나지 않게 뺀다
     await page.mouse.up();
+    await ctx.close();
+}
+
+/**
+ * `findPath` 는 Cloud Function 이라 이 검증에서는 닿지 않는다(그리기는 전부 로컬인데
+ * 역을 눌러 찾는 쪽만 아직 서버를 부른다). 그래서 **그 호출만** 가짜로 답하게 하고,
+ * 돌아온 경로가 기록으로 직행하지 않고 고칠 수 있는 구간으로 지도에 올라오는지를 본다.
+ * 여기서 가짜인 것은 경로를 **찾는 일**뿐이고, 그 뒤의 처리는 전부 진짜다.
+ */
+const encodePolyline = points => {
+    let lastLat = 0;
+    let lastLon = 0;
+    let out = '';
+    const chunk = value => {
+        let v = value < 0 ? ~(value << 1) : (value << 1);
+        let s = '';
+        while (v >= 0x20) {
+            s += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
+            v >>= 5;
+        }
+        return s + String.fromCharCode(v + 63);
+    };
+    for (const [lon, lat] of points) {
+        const iLat = Math.round(lat * 1e5);
+        const iLon = Math.round(lon * 1e5);
+        out += chunk(iLat - lastLat) + chunk(iLon - lastLon);
+        lastLat = iLat;
+        lastLon = iLon;
+    }
+    return out;
+};
+
+console.log('찾아 준 경로도 고쳐서 올린다');
+{
+    const { ctx, page } = await open(false);
+
+    // 화면 가운데 가까운 역 둘과, 그 사이에 있는 역 하나.
+    const pick = await page.evaluate(async () => {
+        const src = await (await fetch('/rail/stations_master.json')).json();
+        const map = window.__MAP__;
+        const bounds = map.getBounds();
+        const r = map.getContainer().getBoundingClientRect();
+        const inView = [];
+        for (const key of Object.keys(src)) {
+            const s = src[key];
+            if (!bounds.contains([s.lat, s.lon])) continue;
+            const pt = map.latLngToContainerPoint([s.lat, s.lon]);
+            inView.push({
+                id: key, name: s.name, lat: s.lat, lon: s.lon,
+                x: Math.round(pt.x + r.left), y: Math.round(pt.y + r.top),
+                d: Math.hypot(pt.x - r.width / 2, pt.y - r.height / 2)
+            });
+        }
+        inView.sort((a, b) => a.d - b.d);
+        const first = inView[0];
+        const second = inView.find(s => Math.hypot(s.x - first.x, s.y - first.y) > 180);
+        if (!first || !second) return null;
+        const midLat = (first.lat + second.lat) / 2;
+        const midLon = (first.lon + second.lon) / 2;
+        let middle = null;
+        let best = Infinity;
+        for (const s of inView) {
+            if (s.id === first.id || s.id === second.id) continue;
+            const d = Math.hypot(s.lat - midLat, s.lon - midLon);
+            if (d < best) { best = d; middle = s; }
+        }
+        return { first, second, middle };
+    });
+    ok(pick !== null && pick.middle !== null, '멀찍이 떨어진 역 둘과 그 사이 역 하나를 찾았다');
+
+    if (pick) {
+        const chain = [pick.first, pick.middle, pick.second];
+        const body = JSON.stringify({
+            result: {
+                path: chain.map(s => s.id),
+                sectionIds: [],
+                distance: 4.2,
+                geometries: [encodePolyline(chain.map(s => [s.lon, s.lat]))]
+            }
+        });
+        await page.route('**/findPath', route => route.fulfill({
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Methods': '*'
+            },
+            body: route.request().method() === 'OPTIONS' ? '' : body
+        }));
+
+        const pressIcon = async icon => {
+            const btn = page.locator(`button:has(span.material-symbols-outlined:text-is("${icon}"))`).first();
+            await btn.waitFor({ state: 'visible', timeout: 15000 });
+            await btn.click();
+        };
+        await page.mouse.click(pick.first.x, pick.first.y);
+        await page.waitForTimeout(900);
+        await pressIcon('play_arrow');                 // 이 역에서 출발
+        await page.waitForTimeout(400);
+        await page.mouse.click(pick.second.x, pick.second.y);
+        await page.waitForTimeout(900);
+        await pressIcon('flag');                       // 이 역에서 도착
+        await page.waitForTimeout(2500);
+
+        ok((await gripCount(page)) === 2, '찾은 경로가 손잡이 달린 구간으로 올라온다',
+            `${pick.first.name} → ${pick.second.name}`);
+        ok(await nothingRecorded(page), '찾기만으로는 아직 기록되지 않는다');
+        ok((await fogBadge(page)) === '흐림 1역',
+            '가운데는 탐색이 채운 것이라 흐림으로 센다', String(await fogBadge(page)));
+
+        const empty = await emptySpot(page);
+        await page.mouse.move(empty.x, empty.y);
+        await page.mouse.down();
+        await page.mouse.up();
+        await page.waitForTimeout(800);
+        ok(!(await nothingRecorded(page)), '빈 곳을 누르면 그때 기록된다');
+        ok(await undoVisible(page), '이 경로도 되돌릴 수 있다');
+    }
     await ctx.close();
 }
 

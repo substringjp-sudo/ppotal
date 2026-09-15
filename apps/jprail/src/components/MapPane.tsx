@@ -71,6 +71,13 @@ interface MapPaneProps {
 
 
     draftTrip?: Trip | null;
+    /**
+     * 탐색이 찾아 준 경로. 기록으로 바로 들어가지 않고 **고칠 수 있는 구간**으로
+     * 지도에 올라가서, 양 끝을 끌어 맞추고 빈 곳을 톡 쳐야 기록됩니다.
+     */
+    foundRoute?: Trip | null;
+    /** 올려 놓았으니 같은 것을 두 번 올리지 않게 비워 달라는 뜻. */
+    onFoundRoutePlaced?: () => void;
     onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
 
@@ -124,6 +131,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     onMapClick,
 
     draftTrip,
+    foundRoute,
+    onFoundRoutePlaced,
     onDraftComplete,
     onDragUpdate,
 
@@ -354,6 +363,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         unsureCount,
         heldSpan,
         detours,
+        holdFoundRoute,
         lastRecorded,
         undoLastRecorded,
         dismissLastRecorded,
@@ -634,6 +644,44 @@ const MapPane: React.FC<MapPaneProps> = ({
         const topChrome = MOBILE_CHROME.topBar + MOBILE_CHROME.mapControls;
         return (sheet - topChrome) / 2;
     }, [isMobile]);
+
+    /**
+     * 찾아 준 경로를 지도에 **고칠 수 있는 구간**으로 올린다.
+     *
+     * 올려 놓고 화면 밖이면 아무 소용이 없다 — 손잡이를 잡을 수가 없으니 고치라고
+     * 올린 것이 그냥 목록에 한 줄 더 생긴 것과 같아진다. 그래서 올리면서 그 구간이
+     * 다 보이도록 지도를 맞춘다. 휴대폰에서는 아래를 시트가 덮으므로 그만큼 여백을
+     * 더 준다.
+     */
+    useEffect(() => {
+        if (!foundRoute || !map) return;
+        const placed = holdFoundRoute({
+            path: foundRoute.path,
+            sectionIds: foundRoute.sectionIds,
+            geometries: foundRoute.geometries,
+            distance: foundRoute.distance,
+            name: foundRoute.name
+        });
+        if (placed) {
+            const points = foundRoute.geometries
+                .flat()
+                .map(c => [c[1], c[0]] as [number, number]);
+            // 이미 다 보이는 것까지 맞추면 가만히 있어도 될 지도가 움직인다.
+            // 손잡이에 손이 닿지 않을 때만 카메라를 쓴다.
+            if (points.length > 1) {
+                const span = L.latLngBounds(points);
+                if (!map.getBounds().contains(span)) {
+                    const sheet = isMobile ? MOBILE_CHROME.sheetPeek : 0;
+                    map.fitBounds(span, {
+                        paddingTopLeft: [60, 60 + (isMobile ? MOBILE_CHROME.topBar : 0)],
+                        paddingBottomRight: [60, 60 + sheet],
+                        animate: true
+                    });
+                }
+            }
+        }
+        onFoundRoutePlaced?.();
+    }, [foundRoute, map, isMobile, holdFoundRoute, onFoundRoutePlaced]);
 
     /** `latlng` shifted so that focusing it leaves it in the uncovered strip. */
     const focusPoint = useCallback((lat: number, lon: number, zoom?: number) => {
