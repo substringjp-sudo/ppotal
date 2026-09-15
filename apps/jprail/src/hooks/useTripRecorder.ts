@@ -23,9 +23,12 @@ import {
 import { isActive as edgePanActive, step as edgePanStep } from '../lib/edgePan';
 import {
     Point as ScreenPoint,
+    distanceToSegment,
     touchedStations as measureTouched,
+    touchedForFoundRoute,
     unsureCount as countUnsure
 } from '../lib/spanCertainty';
+import { CandidateRoute, findCandidateRoutesAsync } from '../lib/routeSearch';
 import {
     PointerKind,
     acceptsMouseDown,
@@ -54,6 +57,21 @@ const TAP_MAX_MS = 500;
  * app's `SAVED_UNDO_WINDOW_MS`.
  */
 export const UNDO_WINDOW_MS = 6000;
+
+/**
+ * How still a finished drawing has to be before other ways round are offered
+ * (ms). The app's `SPAN_IDLE_BEFORE_DETOURS_MS`.
+ *
+ * Offering them straight away would put grey lines under a hand that is still
+ * working. They are for the moment the hand stops.
+ */
+export const DETOUR_IDLE_MS = 900;
+
+/** At most this many. A handful to glance at, not a list to read. */
+export const MAX_DETOURS = 3;
+
+/** How near a grey line a tap counts as picking it (px). */
+const DETOUR_TAP_PX = 22;
 
 export type SpanEnd = 'start' | 'finish';
 
@@ -140,6 +158,8 @@ export const useTripRecorder = ({
     const [heldSpan, setHeldSpan] = useState<HeldSpan | null>(null);
     /** What the last tap put away, so it can be taken back. */
     const [lastRecorded, setLastRecorded] = useState<Trip | null>(null);
+    /** Other ways between the same two stations, offered once the hand stops. */
+    const [detours, setDetours] = useState<CandidateRoute[]>([]);
 
     const dragStartStationRef = useRef<string | null>(null);
     const visibleStationsRef = useRef(visibleStations);
@@ -179,6 +199,8 @@ export const useTripRecorder = ({
     const knownPathRef = useRef<Set<string>>(new Set());
 
     const heldSpanRef = useRef<HeldSpan | null>(null);
+    const detoursRef = useRef<CandidateRoute[]>([]);
+    useEffect(() => { detoursRef.current = detours; }, [detours]);
     /**
      * True while the working trail is turned around.
      *
@@ -333,6 +355,7 @@ export const useTripRecorder = ({
             // A new drawing replaces the one still sitting on the map.
             setHeldSpan(null);
             heldSpanRef.current = null;
+            setDetours([]);
             // The station you started from is one you certainly remember.
             trailWorldRef.current = [[coords[1], coords[0]]];
             trailScreenRef.current = [];
@@ -629,6 +652,7 @@ export const useTripRecorder = ({
         // drawing is gone rather than kept empty.
         setHeldSpan(span);
         heldSpanRef.current = span;
+        setDetours([]);
 
         setDragStartStation(null);
         setDragStartCoords(null);
@@ -685,6 +709,7 @@ export const useTripRecorder = ({
         };
         setHeldSpan(null);
         heldSpanRef.current = null;
+        setDetours([]);
         onRecordTrip?.(trip);
         onDraftComplete?.(null as never);
         setLastRecorded(trip);
@@ -756,12 +781,109 @@ export const useTripRecorder = ({
         setUnsureCount(countUnsure(span.path, span.touched));
         setHeldSpan(null);
         heldSpanRef.current = null;
+        setDetours([]);
 
         mapInstance.dragging.disable();
         lastLayerPointRef.current = mapInstance.latLngToLayerPoint(L.latLng(head.lat, head.lon));
         redrawRef.current();
         return true;
     }, []);
+
+    /**
+     * Other ways between the same two stations, once the hand has stopped.
+     *
+     * Only ever *offered* — drawn grey, off to the side of what the user drew.
+     * A drawing is a memory, and the app replacing it with something it
+     * believes more would be the app overwriting the memory. So the search
+     * answers beside the drawing rather than instead of it, and only a tap
+     * takes one.
+     */
+    useEffect(() => {
+        if (!heldSpan || !railData) return;
+        if (heldSpan.start.id === heldSpan.finish.id) return;
+        const from = railData.stations?.[heldSpan.start.id];
+        const to = railData.stations?.[heldSpan.finish.id];
+        if (!from || !to) return;
+
+        let live = true;
+        const timer = setTimeout(async () => {
+            const result = await findCandidateRoutesAsync([from, to], railData).catch(() => null);
+            // The drawing may have moved on while the search ran; a late
+            // answer to an old question is worse than none.
+            if (!live || !result) return;
+            const drawn = heldSpan.path.join('\u0000');
+            const seen = new Set<string>([drawn]);
+            const others: CandidateRoute[] = [];
+            for (const candidate of result.legs[0]?.candidates ?? []) {
+                const key = candidate.stationIds.join('\u0000');
+                if (candidate.stationIds.length < 2 || seen.has(key)) continue;
+                seen.add(key);
+                others.push(candidate);
+                if (others.length >= MAX_DETOURS) break;
+            }
+            setDetours(others);
+        }, DETOUR_IDLE_MS);
+
+        return () => { live = false; clearTimeout(timer); };
+    }, [heldSpan, railData]);
+
+    /**
+     * Take one of the offered ways instead of what was drawn.
+     *
+     * Its middle is the search's, not the user's, so only the two ends count
+     * as remembered — the rest goes on the map dashed, the same as any stretch
+     * the hand skipped.
+     */
+    const adoptDetour = useCallback((candidate: CandidateRoute) => {
+        const index = snapIndexRef.current;
+        if (!index) return;
+        const path = candidate.stationIds;
+        const start = index.byId.get(path[0]);
+        const finish = index.byId.get(path[path.length - 1]);
+        if (!start || !finish) return;
+
+        const trail: DragTrail = {
+            waypoints: [path[0], path[path.length - 1]],
+            segments: [{
+                path: [...path],
+                sectionIds: [...candidate.sectionIds],
+                geometries: candidate.geometries.map(g => [...g]),
+                distance: candidate.distance
+            }],
+            drawn: candidate.geometries.map(g => [...g]),
+            usedSections: new Set(candidate.sectionIds)
+        };
+        const touched = touchedForFoundRoute(path);
+        const span = holdFrom(trail, touched);
+        setHeldSpan(span);
+        heldSpanRef.current = span;
+        setDetours([]);
+    }, [holdFrom]);
+
+    /** Which offered way a tap landed on, if any. */
+    const detourAt = useCallback((containerPoint: L.Point): CandidateRoute | null => {
+        const mapInstance = mapInstanceRef.current;
+        if (!mapInstance) return null;
+        const at = { x: containerPoint.x, y: containerPoint.y };
+        let best: CandidateRoute | null = null;
+        let bestDistance = DETOUR_TAP_PX;
+        for (const candidate of detoursRef.current) {
+            for (const line of candidate.geometries) {
+                for (let i = 1; i < line.length; i += 1) {
+                    const a = mapInstance.latLngToContainerPoint(L.latLng(line[i - 1][1], line[i - 1][0]));
+                    const b = mapInstance.latLngToContainerPoint(L.latLng(line[i][1], line[i][0]));
+                    const d = distanceToSegment(at, { x: a.x, y: a.y }, { x: b.x, y: b.y });
+                    if (d < bestDistance) { bestDistance = d; best = candidate; }
+                }
+            }
+        }
+        return best;
+    }, []);
+
+    const detourAtRef = useRef(detourAt);
+    useEffect(() => { detourAtRef.current = detourAt; }, [detourAt]);
+    const adoptDetourRef = useRef(adoptDetour);
+    useEffect(() => { adoptDetourRef.current = adoptDetour; }, [adoptDetour]);
 
     const gripAtRef = useRef(gripAt);
     useEffect(() => { gripAtRef.current = gripAt; }, [gripAt]);
@@ -935,7 +1057,13 @@ export const useTripRecorder = ({
             if (wasDrawing || !pressed || !heldSpanRef.current) return;
             if (Date.now() - pressed.at > TAP_MAX_MS) return;
             const point = pointAt(e.clientX, e.clientY);
-            if (gripAtRef.current(point) || stationAtPointRef.current(point)) return;
+            if (gripAtRef.current(point)) return;
+            // A grey line answers before the map does: tapping one takes that
+            // way instead, and only a tap on nothing at all puts the drawing
+            // away.
+            const detour = detourAtRef.current(point);
+            if (detour) { adoptDetourRef.current(detour); return; }
+            if (stationAtPointRef.current(point)) return;
             commitHeldRef.current();
         };
 
@@ -973,6 +1101,8 @@ export const useTripRecorder = ({
         unsureCount,
         /** A finished drawing still on the map, with a handle at each end. */
         heldSpan,
+        /** Other ways between the same two stations, drawn grey beside it. */
+        detours,
         /** What the last tap put away, while it can still be taken back. */
         lastRecorded,
         undoLastRecorded,

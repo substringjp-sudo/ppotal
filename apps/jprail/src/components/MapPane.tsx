@@ -353,6 +353,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragGuide,
         unsureCount,
         heldSpan,
+        detours,
         lastRecorded,
         undoLastRecorded,
         dismissLastRecorded,
@@ -995,6 +996,30 @@ const MapPane: React.FC<MapPaneProps> = ({
                 />
             ))}
 
+            {/* 손이 멈추면 옆에 조용히 뜨는 다른 길들.
+                그린 것을 밀어내지 않고 회색으로 비켜서 있다 — 그린 구간은
+                기억이고, 앱이 더 그럴듯한 것으로 갈아 끼우는 건 남의 기억을
+                덮어쓰는 일이다. 톡 쳐야 그때 바뀐다. */}
+            {detours.map((detour, idx) => (
+                <React.Fragment key={`detour-${detour.id}`}>
+                    {detour.geometries.map((segment, part) => (
+                        <Polyline
+                            key={`detour-${idx}-${part}`}
+                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#64748B',
+                                weight: 8,
+                                opacity: 0.38,
+                                lineCap: 'round',
+                                lineJoin: 'round',
+                                pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                </React.Fragment>
+            ))}
+
             {/* 다 그렸지만 아직 올리지 않은 구간.
                 손을 떼도 지도에 남아 있고, 양 끝 손잡이를 끌면 시작·도착이
                 바뀐다. 아무것도 없는 곳을 톡 치면 그때 올라간다. */}
@@ -1213,6 +1238,32 @@ const MapPane: React.FC<MapPaneProps> = ({
                 >
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                         {`흐림 ${dragStartStation ? unsureCount : heldSpan?.unsureCount ?? 0}역`}
+                    </span>
+                </div>
+            )}
+
+            {/* 회색 선이 그냥 그어져 있으면 무엇인지, 눌러도 되는지 알 수 없다.
+                몇 개가 있고 톡 치면 바뀐다는 것만 한 줄로 알린다. */}
+            {heldSpan && detours.length > 0 && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: heldSpan.unsureCount > 0 ? '104px' : '64px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: Z.toast,
+                        padding: '6px 13px',
+                        borderRadius: '18px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'none'
+                    }}
+                    className="dark:bg-slate-900/85 dark:border-slate-800/40"
+                >
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                        {`다른 길 ${detours.length}개 · 톡 치면 바뀝니다`}
                     </span>
                 </div>
             )}

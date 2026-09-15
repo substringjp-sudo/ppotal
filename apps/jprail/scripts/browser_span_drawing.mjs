@@ -13,6 +13,7 @@
  *      닿지 않아 그리다 만 채 얼어붙는다.
  *   5. **손을 떼도 편집이 이어지는가.** 양 끝 손잡이가 생기고, 빈 지도를 톡 쳐야
  *      올라가고, 잠깐은 되돌릴 수 있는가.
+ *   6. **손이 멈추면 다른 길이 회색으로 뜨는가.** 그리는 중에는 뜨지 않아야 한다.
  *
  * 쓰는 법 — 먼저 `npx next dev -p 3111`, 그리고
  *
@@ -131,6 +132,18 @@ const draggable = page => page.evaluate(() => window.__MAP__.dragging.enabled())
 const centre = page => page.evaluate(() => { const c = window.__MAP__.getCenter(); return [c.lat, c.lng]; });
 const nothingRecorded = page => page.evaluate(() => document.body.innerText.includes('No trips recorded yet'));
 const gripCount = page => page.evaluate(() => document.querySelectorAll('.span-grip-marker').length);
+/**
+ * 회색으로 비켜선 다른 길의 수.
+ *
+ * 선 자체는 canvas 로 그려져 DOM 에 없다. 대신 몇 개가 있는지 알리는 한 줄을 읽는다 —
+ * 사용자도 그 줄로 회색 선이 눌러도 되는 것임을 안다.
+ */
+const detourCount = page => page.evaluate(() => {
+    const hint = [...document.querySelectorAll('span')]
+        .map(el => el.textContent)
+        .find(t => t && /^다른 길 \d+개/.test(t));
+    return hint ? Number(hint.match(/\d+/)[0]) : 0;
+});
 const undoVisible = page => page.evaluate(() =>
     [...document.querySelectorAll('button')].some(b => b.textContent?.trim() === '되돌리기'));
 const clickUndo = page => page.locator('button:has-text("되돌리기")').first().click();
@@ -255,6 +268,10 @@ console.log('넓은 창 + 손가락: 떼고 나서 고치고 올리기');
     await touch('touchEnd', st.x - 140, st.y + 40);
     await page.waitForTimeout(700);
     ok((await gripCount(page)) === 2, '그리고 떼면 손잡이 둘');
+    ok((await detourCount(page)) === 0, '뗀 직후에는 아직 다른 길이 없다');
+    await page.waitForTimeout(2500);                   // 손이 멈춘 채로 기다린다
+    const greys = await detourCount(page);
+    ok(greys > 0 && greys <= 3, '손이 멈추면 다른 길이 회색으로 뜬다', `${greys}개`);
 
     // 손잡이를 잡으면 눌러 두지 않아도 바로 이어 그린다.
     const grip = await onScreenGrip(page);
