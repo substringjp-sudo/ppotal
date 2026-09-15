@@ -18,6 +18,13 @@ import {
     TOUCH_HIT_RADIUS_PX,
     haptic
 } from '../lib/mobile';
+import { isActive as edgePanActive, step as edgePanStep } from '../lib/edgePan';
+import {
+    PointerKind,
+    acceptsMouseDown,
+    normalisePointerType,
+    prefersCoarsePointer
+} from '../lib/pointerInput';
 
 interface UseTripRecorderProps {
     railData: RailData | null;
@@ -27,7 +34,13 @@ interface UseTripRecorderProps {
     onDraftComplete?: (trip: Trip) => void;
     selectedLines?: string[];
     activeLine?: string | null;
-    /** Touch gets the hold-then-drag entry point; a mouse starts on mousedown. */
+    /**
+     * Layout only. Which *gesture* starts a drawing is decided per event from
+     * `PointerEvent.pointerType`, not from the width of the window — see
+     * `lib/pointerInput`. Kept so callers that pass it still compile.
+     *
+     * @deprecated 그리기 진입은 창 너비가 아니라 짚은 방식으로 가른다.
+     */
     isMobile?: boolean;
 }
 
@@ -38,8 +51,7 @@ export const useTripRecorder = ({
     onDragUpdate,
     onDraftComplete,
     selectedLines = [],
-    activeLine = null,
-    isMobile = false
+    activeLine = null
 }: UseTripRecorderProps) => {
     const map = useMap();
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
@@ -50,7 +62,15 @@ export const useTripRecorder = ({
     const visibleStationsRef = useRef(visibleStations);
     const snapIndexRef = useRef<SnapIndex | null>(null);
 
-    const scrollVelocityRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    /**
+     * Sub-pixel carry for the edge pan.
+     *
+     * The pan is a speed in pixels per second, so a frame is rarely a whole
+     * number of pixels. Rounding each frame away would make a slow crawl stop
+     * dead; keeping the remainder lets 0.4px/frame still travel.
+     */
+    const panCarryRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    const lastPanTickRef = useRef<number | null>(null);
     const lastContainerPointRef = useRef<L.Point | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const lastLayerPointRef = useRef<L.Point | null>(null);
@@ -70,6 +90,13 @@ export const useTripRecorder = ({
     const [pressCandidate, setPressCandidate] = useState<{ id: string; lat: number; lon: number } | null>(null);
     const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const pressOriginRef = useRef<{ x: number; y: number } | null>(null);
+
+    /** What the user last touched the map with, and when a finger last left it. */
+    const pointerKindRef = useRef<PointerKind>('unknown');
+    const lastTouchAtRef = useRef<number | null>(null);
+    /** Only consulted when the browser gives no `pointerType` to go on. */
+    const coarseRef = useRef(false);
+    useEffect(() => { coarseRef.current = prefersCoarsePointer(); }, []);
 
     useEffect(() => {
         visibleStationsRef.current = visibleStations;
@@ -141,7 +168,14 @@ export const useTripRecorder = ({
         return mapInstance.latLngToLayerPoint(L.latLng(station.lat, station.lon));
     }, []);
 
-    const handleStationMouseDown = useCallback(
+    /**
+     * Start drawing from a station, whatever opened the door.
+     *
+     * Unguarded on purpose: the hold path has already decided a finger meant
+     * this, so it must not be second-guessed by the same check that keeps a
+     * *mouse* event from starting a second drawing.
+     */
+    const beginDrag = useCallback(
         (id: string, coords: [number, number]) => {
             const index = snapIndexRef.current;
             // Only stations the graph can route from can start a drag; otherwise
@@ -178,6 +212,24 @@ export const useTripRecorder = ({
             }
         },
         [map, onDragUpdate]
+    );
+
+    /**
+     * A station was pressed with a pointing device.
+     *
+     * Only a real mouse starts a drawing here. A finger reaches drawing through
+     * the hold below — and the browser's compatibility `mousedown`, fired a
+     * moment after that same finger lifts, would otherwise start a second one
+     * over the tap the user already finished.
+     */
+    const handleStationMouseDown = useCallback(
+        (id: string, coords: [number, number]) => {
+            if (!acceptsMouseDown(
+                pointerKindRef.current, coarseRef.current, lastTouchAtRef.current, Date.now()
+            )) return;
+            beginDrag(id, coords);
+        },
+        [beginDrag]
     );
 
     /** Nearest routable station to a screen point, or null if none is close. */
@@ -288,11 +340,31 @@ export const useTripRecorder = ({
         if (!dragStartStation || !map) return;
 
         const loop = () => {
-            const velocity = scrollVelocityRef.current;
-            if ((velocity.x !== 0 || velocity.y !== 0) && lastContainerPointRef.current) {
-                map.panBy([velocity.x, velocity.y], { animate: false });
-                const latlng = map.containerPointToLatLng(lastContainerPointRef.current);
-                updateDragPathRef.current(map, map.latLngToLayerPoint(latlng), latlng);
+            const now = performance.now();
+            const previous = lastPanTickRef.current;
+            lastPanTickRef.current = now;
+            // A frame the browser skipped must not become one long jump, so the
+            // step is capped at what a very slow frame would have been.
+            const seconds = previous === null ? 0 : Math.min(0.05, (now - previous) / 1000);
+
+            const point = lastContainerPointRef.current;
+            const size = map.getSize();
+            if (point && seconds > 0 && edgePanActive(point.x, point.y, size.x, size.y)) {
+                const [dx, dy] = edgePanStep(point.x, point.y, size.x, size.y, seconds);
+                const carry = panCarryRef.current;
+                const wantX = carry.x + dx;
+                const wantY = carry.y + dy;
+                // Whole pixels keep the tiles crisp; the fraction is carried.
+                const panX = Math.trunc(wantX);
+                const panY = Math.trunc(wantY);
+                panCarryRef.current = { x: wantX - panX, y: wantY - panY };
+                if (panX !== 0 || panY !== 0) {
+                    map.panBy([panX, panY], { animate: false });
+                    const latlng = map.containerPointToLatLng(point);
+                    updateDragPathRef.current(map, map.latLngToLayerPoint(latlng), latlng);
+                }
+            } else {
+                panCarryRef.current = { x: 0, y: 0 };
             }
 
             // Ease the guide line towards where it should point instead of
@@ -368,7 +440,8 @@ export const useTripRecorder = ({
         guideShownRef.current = null;
         setSnapCandidate(null);
         lastLayerPointRef.current = null;
-        scrollVelocityRef.current = { x: 0, y: 0 };
+        panCarryRef.current = { x: 0, y: 0 };
+        lastPanTickRef.current = null;
         if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
     }, [onRecordTrip, onDraftComplete]);
 
@@ -385,8 +458,8 @@ export const useTripRecorder = ({
     const cancelPressRef = useRef(cancelPress);
     useEffect(() => { cancelPressRef.current = cancelPress; }, [cancelPress]);
 
-    const startDragRef = useRef(handleStationMouseDown);
-    useEffect(() => { startDragRef.current = handleStationMouseDown; }, [handleStationMouseDown]);
+    const startDragRef = useRef(beginDrag);
+    useEffect(() => { startDragRef.current = beginDrag; }, [beginDrag]);
 
     // A hold left armed when the component goes away would fire into nothing.
     useEffect(() => () => {
@@ -399,27 +472,14 @@ export const useTripRecorder = ({
         const handleMove = (containerPoint: L.Point, layerPoint: L.Point, latlng: L.LatLng) => {
             lastContainerPointRef.current = containerPoint;
             if (!dragStartStationRef.current) {
-                scrollVelocityRef.current = { x: 0, y: 0 };
                 lastLayerPointRef.current = layerPoint;
                 return;
             }
 
-            // Edge scrolling accelerates with how far past the edge the cursor
-            // is, so crossing the country no longer creeps at a fixed 10px.
-            const { x, y } = containerPoint;
-            const { x: width, y: height } = map.getSize();
-            const margin = 70;
-            const speed = (overshoot: number) =>
-                Math.min(38, 6 + Math.round((overshoot / margin) * 32));
-
-            let vx = 0;
-            let vy = 0;
-            if (x < margin) vx = -speed(margin - x);
-            else if (x > width - margin) vx = speed(x - (width - margin));
-            if (y < margin) vy = -speed(margin - y);
-            else if (y > height - margin) vy = speed(y - (height - margin));
-
-            scrollVelocityRef.current = { x: vx, y: vy };
+            // Where the map pans is read from this position by the frame loop
+            // (`lib/edgePan`), so nothing is computed here: a hand held still
+            // inside the band keeps the map moving, which a per-event ramp
+            // could not do.
             updateDragPathRef.current(map, layerPoint, latlng);
         };
 
@@ -427,10 +487,12 @@ export const useTripRecorder = ({
             handleMove(e.containerPoint, e.layerPoint, e.latlng);
         const onMouseUp = () => handleEndRef.current();
         const onTouchEndAll = () => {
+            lastTouchAtRef.current = Date.now();
             cancelPressRef.current();
             handleEndRef.current();
         };
         const onTouchMove = (e: TouchEvent) => {
+            lastTouchAtRef.current = Date.now();
             if (!dragStartStationRef.current) return;
             e.preventDefault();
             const touch = e.touches[0];
@@ -453,7 +515,11 @@ export const useTripRecorder = ({
          * pan has to stay a pan.
          */
         const onTouchStart = (e: TouchEvent) => {
-            if (!isMobile) return;
+            // No width test. A `touchstart` *is* a finger, and a touchscreen
+            // laptop is as much a finger as a phone — gating this on the size
+            // of the window is what kept drawing out of reach there.
+            pointerKindRef.current = 'touch';
+            lastTouchAtRef.current = Date.now();
             if (dragStartStationRef.current) return;
             // A second finger means a pinch, which is a zoom, not a draw.
             if (e.touches.length !== 1) { cancelPressRef.current(); return; }
@@ -488,9 +554,18 @@ export const useTripRecorder = ({
             }
         };
 
+        // Capture, so the kind of pointer is known before any handler that
+        // might act on it — including Leaflet's own.
+        const onPointerDown = (e: PointerEvent) => {
+            const kind = normalisePointerType(e.pointerType);
+            pointerKindRef.current = kind;
+            if (kind === 'touch' || kind === 'pen') lastTouchAtRef.current = Date.now();
+        };
+
         map.on('mousemove', onMouseMove);
         map.on('mouseup', onMouseUp);
         const container = map.getContainer();
+        container.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
         container.addEventListener('touchstart', onTouchStart, { passive: true });
         container.addEventListener('touchmove', onTouchMoveArmed, { passive: true });
         container.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -502,6 +577,7 @@ export const useTripRecorder = ({
         return () => {
             map.off('mousemove', onMouseMove);
             map.off('mouseup', onMouseUp);
+            container.removeEventListener('pointerdown', onPointerDown, { capture: true });
             container.removeEventListener('touchstart', onTouchStart);
             container.removeEventListener('touchmove', onTouchMoveArmed);
             container.removeEventListener('touchmove', onTouchMove);
@@ -509,7 +585,7 @@ export const useTripRecorder = ({
             container.removeEventListener('touchcancel', onTouchEndAll);
             window.removeEventListener('mouseup', onMouseUp);
         };
-    }, [map, isMobile]);
+    }, [map]);
 
     return {
         dragStartStation,

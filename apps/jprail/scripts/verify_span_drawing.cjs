@@ -1,8 +1,9 @@
 /**
- * 지도에 구간을 그릴 때의 두 규칙 검증.
+ * 지도에 구간을 그릴 때의 세 규칙 검증.
  *
  *   1. 가장자리에서 지도가 따라오는 감촉(`edgePan`)
  *   2. 기억한 역과 앱이 채운 역을 가르는 규칙(`spanCertainty`)
+ *   3. 마우스와 손가락을 갈라 보는 규칙(`pointerInput`)
  *
  * 둘 다 앱(jpApp)의 `EdgePan.kt` · `SpanDrawing.kt` 와 같은 규칙이다. 한쪽만 고치면
  * 같은 손짓이 기기마다 다른 답을 낸다.
@@ -18,6 +19,7 @@ const load = name => {
 };
 const edgePan = load('edgePan');
 const certainty = load('spanCertainty');
+const pointer = load('pointerInput');
 
 let failures = 0;
 let checks = 0;
@@ -137,6 +139,36 @@ near(certainty.distanceToSegment({ x: 150, y: 10 }, { x: 0, y: 0 }, { x: 0, y: 0
     '선분이 한 점이면 그 점까지의 거리');
 near(certainty.distanceToSegment({ x: -50, y: 0 }, { x: 0, y: 0 }, { x: 300, y: 0 }), 50, 0.01,
     '선분 밖은 가까운 끝에서 잰다');
+
+// ── 마우스와 손가락 ────────────────────────────────────────────────────────
+// 창 너비가 아니라 이번 짚음이 무엇이냐로 가른다.
+eq(pointer.entryFor('mouse', false), 'immediate', '마우스는 누르는 순간 그리기 시작');
+eq(pointer.entryFor('touch', false), 'hold', '손가락은 눌러 두어야 열린다');
+eq(pointer.entryFor('pen', false), 'hold', '펜도 지도를 미는 도구라 손가락 쪽이다');
+eq(pointer.entryFor('mouse', true), 'immediate',
+    '터치 기기에 꽂은 마우스도 마우스다 — 창 너비·기기가 아니라 짚은 방식으로 가른다');
+eq(pointer.entryFor('unknown', true), 'hold', '모를 때는 손가락뿐인 기기면 눌러 두기');
+eq(pointer.entryFor('unknown', false), 'immediate', '모를 때 마우스가 있는 기기면 바로');
+
+eq(pointer.normalisePointerType('touch'), 'touch', 'pointerType 은 그대로 쓴다');
+eq(pointer.normalisePointerType(''), 'unknown', '빈 값은 모르는 것');
+eq(pointer.normalisePointerType(undefined), 'unknown', '없는 값도 모르는 것');
+
+// 손가락을 뗀 직후 브라우저가 흉내로 쏘는 마우스 이벤트를, 짚기 한 번이 그리기 두 번이
+// 되지 않도록 흘려보낸다.
+ok(pointer.isCompatibilityMouse(1000, 1100), '뗀 직후의 마우스는 흉내');
+ok(!pointer.isCompatibilityMouse(1000, 1000 + pointer.COMPAT_MOUSE_WINDOW_MS),
+    '창이 지나면 진짜 마우스');
+ok(!pointer.isCompatibilityMouse(null, 1000), '손가락을 쓴 적이 없으면 언제나 진짜');
+ok(!pointer.isCompatibilityMouse(2000, 1000), '시계가 거꾸로 가면 흉내로 보지 않는다');
+
+ok(!pointer.acceptsMouseDown('touch', false, null, 1000), '손가락의 mousedown 은 받지 않는다');
+ok(!pointer.acceptsMouseDown('mouse', false, 1000, 1100), '뗀 직후의 마우스도 받지 않는다');
+ok(pointer.acceptsMouseDown('mouse', false, 1000, 3000), '한참 뒤의 마우스는 받는다');
+ok(pointer.acceptsMouseDown('mouse', true, null, 1000),
+    '넓은 화면이든 좁은 화면이든 마우스는 받는다');
+ok(!pointer.acceptsMouseDown('unknown', true, null, 1000),
+    '포인터 종류를 모르는 터치 전용 기기에서는 받지 않는다');
 
 // 앱과 같은 값이어야 한다. 갈라지면 같은 손짓이 기기마다 다른 답을 낸다.
 eq(edgePan.BAND_PX, 76, '가장자리 띠는 앱과 같은 76');
