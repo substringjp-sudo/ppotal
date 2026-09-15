@@ -14,6 +14,9 @@ import { getLineColor } from '../lib/lineColors';
 import { MapStyleSettings } from './MainPageClient';
 import { trackEvent } from '../lib/gtag';
 import { useServiceGroups } from '../hooks/useServiceGroups';
+import { useI18n } from '../lib/i18n-context';
+import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
+import { startIdOf, endIdOf } from '../lib/tripEditing';
 import MapControls from './MapControls';
 import OffScreenIndicator from './OffScreenIndicator';
 import FloatingTooltip from './FloatingTooltip';
@@ -21,7 +24,7 @@ import FloatingTooltip from './FloatingTooltip';
 
 import { useRailData } from '../hooks/useRailData';
 import { RoutingGraph } from '../lib/RoutingGraph';
-import { RailData, Section } from '../types/railData';
+import { RailData, Section, Station } from '../types/railData';
 import { useVisibleStations } from '../hooks/useVisibleStations';
 import { useTripRecorder } from '../hooks/useTripRecorder';
 import { MOBILE_CHROME, LONG_PRESS_MS } from '../lib/mobile';
@@ -38,7 +41,11 @@ import { Z } from '../lib/layers';
 interface MapPaneProps {
     selectedLines: string[];
     recordedTrips: Trip[];
+    /** 목록에서 고른 여정. 지도에 시작·종료를 따로 찍어 어디서 타고 내렸는지 보여 준다. */
+    selectedTrip?: Trip | null;
     onRecordTrip?: (trip: Trip) => void;
+    /** 방금 올린 것을 되돌릴 때. 기록 목록에서 지우는 것과 같은 길을 쓴다. */
+    onDeleteTrip?: (id: string) => void;
     onRailroadClick?: (line: string) => void;
     onStationClick?: (name: string, lines?: string[]) => void;
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
@@ -64,6 +71,13 @@ interface MapPaneProps {
 
 
     draftTrip?: Trip | null;
+    /**
+     * 탐색이 찾아 준 경로. 기록으로 바로 들어가지 않고 **고칠 수 있는 구간**으로
+     * 지도에 올라가서, 양 끝을 끌어 맞추고 빈 곳을 톡 쳐야 기록됩니다.
+     */
+    foundRoute?: Trip | null;
+    /** 올려 놓았으니 같은 것을 두 번 올리지 않게 비워 달라는 뜻. */
+    onFoundRoutePlaced?: () => void;
     onDraftComplete?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
 
@@ -98,7 +112,9 @@ const PANE_STYLES = {
 const MapPane: React.FC<MapPaneProps> = ({
     selectedLines,
     recordedTrips,
+    selectedTrip,
     onRecordTrip,
+    onDeleteTrip,
     onRailroadClick,
     onStationClick,
     onLengthsCalculated,
@@ -115,6 +131,8 @@ const MapPane: React.FC<MapPaneProps> = ({
     onMapClick,
 
     draftTrip,
+    foundRoute,
+    onFoundRoutePlaced,
     onDraftComplete,
     onDragUpdate,
 
@@ -136,6 +154,13 @@ const MapPane: React.FC<MapPaneProps> = ({
     const serviceGroups = useServiceGroups();
     const [zoomLevel, setZoomLevel] = useState(5);
     const [mapBounds, setMapBounds] = useState<LatLngBounds | null>(null);
+    const { language } = useI18n();
+    // 지도 위 여정 끝점 글자. 세 나라 말을 쓰는 화면에 한국어를 박아 둘 수 없다.
+    const tripText = useMemo(
+        () => getTranslations(MY_LINES_TRANSLATIONS, language),
+        [language]
+    );
+
     const [mapReady, setMapReady] = useState(false);
     const { triggerBounce } = useZoomBounce(map, { minZoom: 4, maxZoom: 18 });
     const [hoveredLine, setHoveredLine] = useState<string | null>(null);
@@ -333,6 +358,15 @@ const MapPane: React.FC<MapPaneProps> = ({
     const {
         dragStartStation,
         dragPath,
+        dragPathUnsure,
+        dragGuide,
+        unsureCount,
+        heldSpan,
+        detours,
+        holdFoundRoute,
+        lastRecorded,
+        undoLastRecorded,
+        dismissLastRecorded,
         handleStationMouseDown: rawHandleStationMouseDown,
         handleStationMouseUp: rawHandleStationMouseUp,
         snapCandidate,
@@ -341,7 +375,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         railData,
         visibleStations,
         onRecordTrip,
-
+        onDeleteTrip,
         onDraftComplete,
         onDragUpdate,
         selectedLines,
@@ -611,6 +645,44 @@ const MapPane: React.FC<MapPaneProps> = ({
         return (sheet - topChrome) / 2;
     }, [isMobile]);
 
+    /**
+     * 찾아 준 경로를 지도에 **고칠 수 있는 구간**으로 올린다.
+     *
+     * 올려 놓고 화면 밖이면 아무 소용이 없다 — 손잡이를 잡을 수가 없으니 고치라고
+     * 올린 것이 그냥 목록에 한 줄 더 생긴 것과 같아진다. 그래서 올리면서 그 구간이
+     * 다 보이도록 지도를 맞춘다. 휴대폰에서는 아래를 시트가 덮으므로 그만큼 여백을
+     * 더 준다.
+     */
+    useEffect(() => {
+        if (!foundRoute || !map) return;
+        const placed = holdFoundRoute({
+            path: foundRoute.path,
+            sectionIds: foundRoute.sectionIds,
+            geometries: foundRoute.geometries,
+            distance: foundRoute.distance,
+            name: foundRoute.name
+        });
+        if (placed) {
+            const points = foundRoute.geometries
+                .flat()
+                .map(c => [c[1], c[0]] as [number, number]);
+            // 이미 다 보이는 것까지 맞추면 가만히 있어도 될 지도가 움직인다.
+            // 손잡이에 손이 닿지 않을 때만 카메라를 쓴다.
+            if (points.length > 1) {
+                const span = L.latLngBounds(points);
+                if (!map.getBounds().contains(span)) {
+                    const sheet = isMobile ? MOBILE_CHROME.sheetPeek : 0;
+                    map.fitBounds(span, {
+                        paddingTopLeft: [60, 60 + (isMobile ? MOBILE_CHROME.topBar : 0)],
+                        paddingBottomRight: [60, 60 + sheet],
+                        animate: true
+                    });
+                }
+            }
+        }
+        onFoundRoutePlaced?.();
+    }, [foundRoute, map, isMobile, holdFoundRoute, onFoundRoutePlaced]);
+
     /** `latlng` shifted so that focusing it leaves it in the uncovered strip. */
     const focusPoint = useCallback((lat: number, lon: number, zoom?: number) => {
         if (!map) return L.latLng(lat, lon);
@@ -710,12 +782,77 @@ const MapPane: React.FC<MapPaneProps> = ({
         iconAnchor: [26, 26]
     }), []);
 
+    /**
+     * 다 그린 구간의 양 끝 손잡이.
+     *
+     * 잡아서 끌라고 놓아 둔 것이라 역보다 크다 — 44pt 를 채우는 히트 영역에 눈에
+     * 보이는 고리를 얹었다. 이게 있어서 손을 뗀 뒤에도 편집이 끝나지 않는다.
+     */
+    const gripIcon = useMemo(() => L.divIcon({
+        className: 'span-grip-marker',
+        html: `<span style="
+            display:block;width:22px;height:22px;
+            background:#fff;border:4px solid #007AFF;border-radius:50%;
+            box-shadow:0 2px 6px rgba(0,0,0,0.25);
+            box-sizing:border-box;"></span>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+    }), []);
+
+    /**
+     * 탄 여정의 시작·종료 표시.
+     *
+     * 색만 다르게 하면 색각 이상이 있는 사람에게는 같은 점 두 개다. 그래서 **모양도**
+     * 다르게 둔다 — 시작은 채운 원, 종료는 사각형. 글자까지 얹어 확실히 가른다.
+     */
+    const tripEndIcon = useCallback((kind: 'start' | 'end', label: string) => L.divIcon({
+        className: 'trip-end-marker',
+        html: `<span style="
+            display:flex;align-items:center;justify-content:center;
+            width:22px;height:22px;
+            background:${kind === 'start' ? '#16A34A' : '#DC2626'};
+            color:#fff;font-size:9px;font-weight:800;line-height:1;
+            border:2px solid #fff;
+            border-radius:${kind === 'start' ? '50%' : '5px'};
+            box-shadow:0 1px 4px rgba(0,0,0,.45);
+        ">${label}</span>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+    }), []);
+
     const selectedStationIcon = useMemo(() => L.divIcon({
         className: 'selected-station-marker',
         html: '<span class="selected-station-ring"></span><span class="selected-station-dot"></span>',
         iconSize: [0, 0],
         iconAnchor: [0, 0]
     }), []);
+
+    /**
+     * 고른 여정의 양 끝 좌표와 글자.
+     *
+     * 왕복이면 두 끝이 같은 자리다. 그때는 "왕복"이라고 한 번에 말해 주는 편이,
+     * 같은 점에 출·도착을 겹쳐 놓고 하나가 가려지게 두는 것보다 정직하다.
+     */
+    const tripEnds = useMemo(() => {
+        if (!selectedTrip || !railData?.stations) return null;
+        const startId = startIdOf(selectedTrip);
+        const endId = endIdOf(selectedTrip);
+        if (!startId || !endId) return null;
+
+        const stations = railData.stations as Record<string, Station>;
+        const start = stations[startId];
+        const end = stations[endId];
+        if (!start || !end) return null;
+
+        const sameSpot = startId === endId;
+        return {
+            start,
+            end,
+            labels: sameSpot
+                ? { start: tripText.markerLoopStart, end: tripText.markerLoopEnd }
+                : { start: tripText.markerStart, end: tripText.markerEnd }
+        };
+    }, [selectedTrip, railData, tripText]);
 
     const isTransforming = isMoving || isZooming || isPending || !!dragStartStation;
 
@@ -851,17 +988,76 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             }
 
-            {/* 드래그 중인 경로 표시 (개별 세그먼트로 렌더링하여 강제 연결 방지) */}
-            {dragPath && dragPath.length > 0 && (
-                <>
-                    {dragPath.map((segment, idx) => (
+            {/* 그리는 중인 구간.
+                세 갈래로 나눠 그린다. 지나온 자리는 그대로, 앱이 채운 자리는
+                점선으로, 커서까지의 지시선은 옅게. 한 겹으로 그리면 "여기는
+                내가 지나갔다"와 "여기는 앱이 채웠다"가 같은 선이 되어,
+                기억한 것과 지어낸 것이 기록에서 섞인다.
+                조각마다 따로 그리는 것은 구간이 머리-꼬리로 이어져 있지 않아
+                한 선으로 그리면 없는 직선이 생기기 때문이다. */}
+            {dragPath.map((segment, idx) => (
+                <Polyline
+                    key={`drag-seg-${idx}`}
+                    positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.5,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            ))}
+
+            {dragPathUnsure.map((segment, idx) => (
+                <Polyline
+                    key={`drag-fog-${idx}`}
+                    positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.32,
+                        dashArray: '2 16',
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            ))}
+
+            {dragGuide.map((segment, idx) => (
+                <Polyline
+                    key={`drag-guide-${idx}`}
+                    positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.3,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            ))}
+
+            {/* 손이 멈추면 옆에 조용히 뜨는 다른 길들.
+                그린 것을 밀어내지 않고 회색으로 비켜서 있다 — 그린 구간은
+                기억이고, 앱이 더 그럴듯한 것으로 갈아 끼우는 건 남의 기억을
+                덮어쓰는 일이다. 톡 쳐야 그때 바뀐다. */}
+            {detours.map((detour, idx) => (
+                <React.Fragment key={`detour-${detour.id}`}>
+                    {detour.geometries.map((segment, part) => (
                         <Polyline
-                            key={`drag-seg-${idx}`}
+                            key={`detour-${idx}-${part}`}
                             positions={segment.map(c => [c[1], c[0]] as [number, number])}
                             pathOptions={{
-                                color: '#007AFF',
-                                weight: 12,
-                                opacity: idx === dragPath.length - 1 ? 0.3 : 0.5, // 지시선은 좀 더 투명하게
+                                color: '#64748B',
+                                weight: 8,
+                                opacity: 0.38,
                                 lineCap: 'round',
                                 lineJoin: 'round',
                                 pane: 'ui-elements'
@@ -869,6 +1065,74 @@ const MapPane: React.FC<MapPaneProps> = ({
                             interactive={false}
                         />
                     ))}
+                </React.Fragment>
+            ))}
+
+            {/* 다 그렸지만 아직 올리지 않은 구간.
+                손을 떼도 지도에 남아 있고, 양 끝 손잡이를 끌면 시작·도착이
+                바뀐다. 아무것도 없는 곳을 톡 치면 그때 올라간다. */}
+            {heldSpan && (
+                <>
+                    {heldSpan.sure.map((segment, idx) => (
+                        <Polyline
+                            key={`held-seg-${idx}`}
+                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#007AFF', weight: 12, opacity: 0.55,
+                                lineCap: 'round', lineJoin: 'round', pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                    {heldSpan.unsure.map((segment, idx) => (
+                        <Polyline
+                            key={`held-fog-${idx}`}
+                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#007AFF', weight: 12, opacity: 0.32, dashArray: '2 16',
+                                lineCap: 'round', lineJoin: 'round', pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                    <Marker
+                        key="held-grip-start"
+                        position={[heldSpan.start.lat, heldSpan.start.lon]}
+                        icon={gripIcon}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1300}
+                    />
+                    <Marker
+                        key="held-grip-finish"
+                        position={[heldSpan.finish.lat, heldSpan.finish.lon]}
+                        icon={gripIcon}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1301}
+                    />
+                </>
+            )}
+
+            {/* 고른 여정의 시작과 종료. 겹쳐 있으면(왕복) 종료가 위로 온다. */}
+            {tripEnds && (
+                <>
+                    <Marker
+                        key="trip-start"
+                        position={[tripEnds.start.lat, tripEnds.start.lon]}
+                        icon={tripEndIcon('start', tripEnds.labels.start)}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1200}
+                    />
+                    <Marker
+                        key="trip-end"
+                        position={[tripEnds.end.lat, tripEnds.end.lon]}
+                        icon={tripEndIcon('end', tripEnds.labels.end)}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1201}
+                    />
                 </>
             )}
 
@@ -986,6 +1250,118 @@ const MapPane: React.FC<MapPaneProps> = ({
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                         {"경로 조회 중..."}
                     </span>
+                </div>
+            )}
+
+            {/* 그리는 동안, 커서가 지나지 않아 앱이 채운 역 수.
+                고칠 후보를 늘어놓지 않는다 — 가운데가 기억나지 않는 사람에게
+                목록을 줘도 고를 수가 없다. 몇 역이 흐린지만 알리고, 고치고
+                싶으면 그 자리를 다시 그으면 된다. */}
+            {(() => {
+                const fog = dragStartStation ? unsureCount : (heldSpan?.unsureCount ?? 0);
+                return fog > 0;
+            })() && (
+                <div
+                    style={{
+                        // 지도 조작줄 바로 아래. 위쪽 한가운데는 그 줄이 쓰고 있고,
+                        // 아래쪽 한가운데는 기록 시트가 올라오면 덮인다.
+                        position: 'absolute',
+                        top: '64px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        // 이 조각은 지도 컨테이너 **안**에 그려진다. leaflet 의 pane
+                        // 들이 200~700 을 쓰고 있어서 mapOverlay(100) 로는 그 밑에
+                        // 깔린다 — 선을 짚으라고 깔아 둔 투명한 히트 영역까지
+                        // 포함해서.
+                        zIndex: Z.toast,
+                        padding: '7px 14px',
+                        borderRadius: '20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'none'
+                    }}
+                    className="dark:bg-slate-900/85 dark:border-slate-800/40"
+                >
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {`흐림 ${dragStartStation ? unsureCount : heldSpan?.unsureCount ?? 0}역`}
+                    </span>
+                </div>
+            )}
+
+            {/* 회색 선이 그냥 그어져 있으면 무엇인지, 눌러도 되는지 알 수 없다.
+                몇 개가 있고 톡 치면 바뀐다는 것만 한 줄로 알린다. */}
+            {heldSpan && detours.length > 0 && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: heldSpan.unsureCount > 0 ? '104px' : '64px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: Z.toast,
+                        padding: '6px 13px',
+                        borderRadius: '18px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'none'
+                    }}
+                    className="dark:bg-slate-900/85 dark:border-slate-800/40"
+                >
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                        {`다른 길 ${detours.length}개 · 톡 치면 바뀝니다`}
+                    </span>
+                </div>
+            )}
+
+            {/* 방금 올린 것을 되돌릴 수 있는 잠깐.
+                빈 지도를 톡 치는 것은 "아무것도 없다"는 뜻으로도 쓰는 손짓이라
+                실수로 올리기 쉽다. 올리기가 쉬운 만큼 되돌리기도 쉬워야 한다. */}
+            {lastRecorded && (
+                <div
+                    style={{
+                        // 흐림 배지와 같은 자리. 둘이 같이 뜨는 일은 없다 — 올리고
+                        // 나면 그리던 구간은 더 이상 지도에 없다.
+                        position: 'absolute',
+                        top: '64px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        // 흐림 배지와 같은 이유로 pane 위에 올린다. 이건 누를 수
+                        // 있어야 하므로 깔리면 아예 못 누른다.
+                        zIndex: Z.toast,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px 12px 10px 18px',
+                        borderRadius: '20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'auto'
+                    }}
+                    className="dark:bg-slate-900/90 dark:border-slate-800/40"
+                >
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {`지도에 올렸습니다 · ${lastRecorded.distance} km`}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={undoLastRecorded}
+                        className="text-xs font-black text-primary px-3 h-9 rounded-2xl bg-primary/10 hover:bg-primary/20"
+                    >
+                        되돌리기
+                    </button>
+                    <button
+                        type="button"
+                        onClick={dismissLastRecorded}
+                        aria-label="닫기"
+                        className="material-symbols-outlined text-slate-400 hover:text-slate-600 text-lg leading-none"
+                    >
+                        close
+                    </button>
                 </div>
             )}
 

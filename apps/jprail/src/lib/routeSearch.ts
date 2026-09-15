@@ -1,4 +1,11 @@
 import { RailData, Station, Section } from '../types/railData';
+import {
+    TransferPlatform,
+    bearingOf,
+    transferLinksFor,
+    transferCostFactor,
+    MIN_MINUTES as TRANSFER_MIN_MINUTES
+} from './transferWalk';
 import { haversineDistance } from './graphUtils';
 
 export interface RouteLineInfo {
@@ -31,6 +38,13 @@ export interface CandidateRoute {
     distance: number; // in km
     transferCount: number; // number of line transfers (incl. walking transfers)
     walkCount: number;
+    /**
+     * 갈아타며 걷는 시간의 합(분).
+     *
+     * 승강장 좌표에서 구한 추정값이다 — 열차를 기다리는 시간은 들어 있지 않다(다이어가
+     * 없으므로 알 수 없다). 그래서 화면에는 "약"을 붙여 보여 준다.
+     */
+    transferWalkMinutes: number;
     stationIds: string[];
     stationNames: string[];
     sectionIds: number[];
@@ -67,6 +81,18 @@ const UNBOARDED = -1; // state line id meaning "not on a train yet"
 
 /** Walking transfers are only created between same-named stations closer than this. */
 const MAX_WALK_TRANSFER_KM = 1.5;
+/**
+ * How close two *differently named* stations must be to count as one place.
+ *
+ * Linking only same-name stations leaves 鷹ノ巣 and 鷹巣, 諫早 and 諫早（雲仙・島原口）,
+ * 人吉 and 人吉温泉 as strangers even though their coordinates are identical — so a
+ * 1.2km hop came out as a 240km detour. Same-name pairs number 49 in this dataset;
+ * differently-named pairs within 300m number 474.
+ *
+ * Beyond 300m the question stops being "can you walk it" and becomes "do the rails
+ * actually join", which this rule cannot answer.
+ */
+const MAX_NEARBY_TRANSFER_KM = 0.3;
 
 export interface RouteEdge {
     to: string;
@@ -88,6 +114,63 @@ export interface RouteGraph {
      * between them is not a transfer.
      */
     lineGroup: Map<number, number>;
+    /**
+     * 같은 역에서 노선 그룹을 갈아탈 때 걸어야 하는 시간(분).
+     *
+     * 키는 `역id|그룹A_그룹B`(그룹은 작은 쪽부터). 없는 짝은 예전처럼 상수를 쓴다 —
+     * 승강장 좌표가 없는 역까지 벌점을 받아서는 안 된다. 규칙은 `lib/transferWalk`.
+     */
+    transferMinutes: Map<string, number>;
+}
+
+/** 환승 표의 키. 그룹 순서를 타지 않는다. */
+function transferKey(stationId: string, a: number, b: number): string {
+    return a <= b ? `${stationId}|${a}_${b}` : `${stationId}|${b}_${a}`;
+}
+
+/**
+ * 노선별 승강장 좌표에서 환승 시간을 구한다.
+ *
+ * 예전에는 환승 비용이 상수 하나였다. 新宿에서 547m 를 걸어 층을 오르내리는 환승과
+ * 같은 승강장 건너편으로 28m 가는 환승이 라우터에게 같은 값이었다.
+ *
+ * 탐색은 노선을 **그룹**으로 묶어 보므로(회사 경계에서 id 가 갈리는 노선을 한 줄로
+ * 본다) 표도 그룹 단위로 만든다. 같은 그룹 안에서 승강장이 갈리는 것은 환승이 아니다.
+ */
+function buildTransferMinutes(
+    railData: RailData,
+    lineGroup: Map<number, number>
+): Map<string, number> {
+    const table = new Map<string, number>();
+    const platforms = railData.platforms;
+    const stations = railData.stations;
+    if (!platforms || !stations) return table;
+
+    Object.entries(stations).forEach(([stationId, station]) => {
+        const ids = station.platform_ids || [];
+        if (ids.length < 2) return;
+
+        const stops: TransferPlatform[] = [];
+        ids.forEach(pid => {
+            const p = platforms[pid];
+            if (!p) return;
+            const line = lineGroup.get(p.line) ?? p.line;
+            stops.push({
+                id: pid,
+                lineId: line,
+                lat: p.lat,
+                lon: p.lon,
+                bearingDeg: bearingOf(p.geometries?.[0] || [])
+            });
+        });
+        if (stops.length < 2) return;
+
+        transferLinksFor(stationId, stops).forEach(link => {
+            table.set(transferKey(stationId, link.lineA, link.lineB), link.minutes);
+        });
+    });
+
+    return table;
 }
 
 /** Groups line ids that carry the same name and physically meet at a station. */
@@ -292,6 +375,17 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
         else stationsByName.set(st.name, [st.id]);
     });
 
+    const walked = new Set<string>();
+    const linkWalk = (a: Station, b: Station, km: number) => {
+        if (!a || !b || a.id === b.id) return;
+        if (!adj.has(a.id) || !adj.has(b.id)) return;
+        const key = a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
+        if (walked.has(key)) return;
+        walked.add(key);
+        pushEdge(a.id, { to: b.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+        pushEdge(b.id, { to: a.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+    };
+
     stationsByName.forEach(ids => {
         if (ids.length < 2) return;
         for (let i = 0; i < ids.length; i++) {
@@ -299,18 +393,47 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                 const a = railData.stations[ids[i]];
                 const b = railData.stations[ids[j]];
                 if (!a || !b) continue;
-                if (!adj.has(a.id) || !adj.has(b.id)) continue;
-
                 const km = haversineDistance([a.lon, a.lat], [b.lon, b.lat]);
                 if (km > MAX_WALK_TRANSFER_KM) continue;
-
-                pushEdge(a.id, { to: b.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
-                pushEdge(b.id, { to: a.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+                linkWalk(a, b, km);
             }
         }
     });
 
-    const graph: RouteGraph = { adj, sections, stationsByName, lineGroup };
+    // Differently named stations that sit on top of each other. Bucketed by a
+    // 0.01° grid: comparing all 9,000 stations pairwise is 80M checks.
+    const CELL = 0.01;
+    const cells = new Map<string, Station[]>();
+    Object.values(railData.stations || {}).forEach(st => {
+        const key = `${Math.floor(st.lat / CELL)}|${Math.floor(st.lon / CELL)}`;
+        const bucket = cells.get(key);
+        if (bucket) bucket.push(st);
+        else cells.set(key, [st]);
+    });
+    Object.values(railData.stations || {}).forEach(st => {
+        const cy = Math.floor(st.lat / CELL);
+        const cx = Math.floor(st.lon / CELL);
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const bucket = cells.get(`${cy + dy}|${cx + dx}`);
+                if (!bucket) continue;
+                for (const other of bucket) {
+                    if (other.id === st.id || other.name === st.name) continue;
+                    const km = haversineDistance([st.lon, st.lat], [other.lon, other.lat]);
+                    if (km > MAX_NEARBY_TRANSFER_KM) continue;
+                    linkWalk(st, other, km);
+                }
+            }
+        }
+    });
+
+    const graph: RouteGraph = {
+        adj,
+        sections,
+        stationsByName,
+        lineGroup,
+        transferMinutes: buildTransferMinutes(railData, lineGroup)
+    };
     graphCache.set(railData, graph);
     return graph;
 }
@@ -399,6 +522,13 @@ interface SearchOptions {
     transferPenalty: number;
     /** Line groups whose usage is multiplied in cost, used to force genuinely different alternatives. */
     penalizedLines?: Set<number>;
+    /**
+     * When false, never walk between stations — only rails count.
+     *
+     * Some places are then unreachable, which is the honest answer rather than a
+     * failure: it means the rails do not join.
+     */
+    allowWalkTransfer?: boolean;
 }
 
 interface RawPath {
@@ -413,6 +543,31 @@ interface RawPath {
 }
 
 const PENALIZED_LINE_MULTIPLIER = 3;
+
+/**
+ * 이 역에서 이 환승이 보통 환승의 몇 배로 무거운지.
+ *
+ * **환승 최소** 목적(MIN_TRANSFER_PENALTY)에는 적용하지 않는다. 그 목적의 벌점은
+ * 거리를 압도하는 큰 수여서 "환승 횟수를 먼저 세고 그 다음 거리"라는 뜻인데, 거기에
+ * 배수를 곱하면 "쉬운 환승 여덟 번"이 "어려운 환승 한 번"보다 싸져서 목적 자체가
+ * 뒤집힌다. 환승 최소는 말 그대로 횟수를 세는 목적이다.
+ *
+ * 아는 것이 없으면 1 — 예전과 같은 값이다. 승강장 좌표가 없다고 그 역의 환승을 비싸게
+ * 매기면, 데이터가 빈 시골역이 도심역보다 불리해진다.
+ */
+function transferWeight(
+    graph: RouteGraph,
+    stationId: string,
+    from: number,
+    to: number,
+    penalty: number
+): number {
+    // 사전식 목적은 횟수만 센다. 배수를 곱하면 목적이 뒤집힌다.
+    if (penalty >= MIN_TRANSFER_PENALTY) return 1;
+    const minutes = graph.transferMinutes.get(transferKey(stationId, from, to));
+    if (minutes === undefined) return 1;
+    return transferCostFactor(minutes);
+}
 
 function searchPath(
     graph: RouteGraph,
@@ -456,6 +611,7 @@ function searchPath(
 
         for (const edge of edges) {
             if (edge.isWalk) {
+                if (options.allowWalkTransfer === false) continue;
                 // Walking only makes sense between two rides.
                 if (current.line === UNBOARDED) continue;
                 const nextKey = stateKey(edge.to, UNBOARDED);
@@ -478,8 +634,12 @@ function searchPath(
 
                 const isTransfer = current.line !== UNBOARDED && current.line !== group;
                 const multiplier = penalizedLines?.has(group) ? PENALIZED_LINE_MULTIPLIER : 1;
-                const nextCost =
-                    current.cost + edge.distance * multiplier + (isTransfer ? transferPenalty : 0);
+                // 갈아타는 자리는 지금 서 있는 역(current.node)이다. 거기서 두 노선의
+                // 승강장이 얼마나 떨어져 있는지에 따라 값이 달라진다.
+                const changeCost = isTransfer
+                    ? transferPenalty * transferWeight(graph, current.node, current.line, group, transferPenalty)
+                    : 0;
+                const nextCost = current.cost + edge.distance * multiplier + changeCost;
                 const nextKey = stateKey(edge.to, group);
                 if (nextCost < (best.get(nextKey) ?? Infinity) - 1e-9) {
                     best.set(nextKey, nextCost);
@@ -668,11 +828,28 @@ function toCandidate(
 
     const distance = Math.round(path.distance * 10) / 10;
 
+    // 선로에서 선로로 갈아탄 자리마다 걷는 시간을 더한다. 걸어서 갈아탄 구간(walk)은
+    // 빼고 센다 — 그쪽은 이미 도보 간선의 몫이라 두 번 세게 된다.
+    let transferWalkMinutes = 0;
+    for (let i = 1; i < segments.length; i += 1) {
+        const prev = segments[i - 1];
+        const cur = segments[i];
+        if (prev.kind !== 'rail' || cur.kind !== 'rail') continue;
+        if (!prev.line || !cur.line || prev.line.id === cur.line.id) continue;
+        const from = groupOf(graph, prev.line.id);
+        const to = groupOf(graph, cur.line.id);
+        if (from === to) continue;
+        transferWalkMinutes +=
+            graph.transferMinutes.get(transferKey(cur.fromStationId, from, to)) ??
+            TRANSFER_MIN_MINUTES;
+    }
+
     return {
         id: `leg${legIndex}_cand${index}`,
         distance,
         transferCount: path.transfers,
         walkCount: segments.filter(s => s.kind === 'walk').length,
+        transferWalkMinutes: Math.round(transferWalkMinutes * 10) / 10,
         stationIds: path.nodes,
         stationNames: path.nodes.map(id => railData.stations[id]?.name || id),
         sectionIds,
@@ -726,7 +903,8 @@ function searchLeg(
     railData: RailData,
     startStation: Station,
     endStation: Station,
-    legIndex: number
+    legIndex: number,
+    allowWalkTransfer: boolean
 ): CandidateRoute[] {
     const startIds = resolveEndpoints(startStation, graph, railData);
     const targetIds = resolveEndpoints(endStation, graph, railData);
@@ -754,7 +932,7 @@ function searchLeg(
     // Primary objectives: fewest transfers, a realistic balance, and near-shortest.
     [MIN_TRANSFER_PENALTY, BALANCED_PENALTY, FAST_PENALTY].forEach(transferPenalty => {
         if (found.length >= MAX_CANDIDATES_PER_LEG) return;
-        accept(searchPath(graph, startIds, targetIds, { transferPenalty }));
+        accept(searchPath(graph, startIds, targetIds, { transferPenalty, allowWalkTransfer }));
     });
 
     if (found.length === 0) return [];
@@ -770,7 +948,8 @@ function searchLeg(
 
         const alternative = searchPath(graph, startIds, targetIds, {
             transferPenalty: BALANCED_PENALTY,
-            penalizedLines
+            penalizedLines,
+            allowWalkTransfer
         });
         if (!alternative) break;
         if (alternative.distance > bestDistance * ALT_DISTANCE_SLACK + ALT_DISTANCE_MARGIN) break;
@@ -805,9 +984,15 @@ function searchLeg(
  * Searches candidate routes connecting a series of waypoints (Start -> Via 1 -> ... -> End).
  * Each leg is solved independently and returns up to 4 meaningfully different itineraries.
  */
+export interface RouteSearchOptions {
+    /** When false, routes are found using rails only — no walking between stations. */
+    allowWalkTransfer?: boolean;
+}
+
 export function findCandidateRoutes(
     waypoints: Station[],
-    railData: RailData | null
+    railData: RailData | null,
+    options: RouteSearchOptions = {}
 ): RouteSearchResult {
     if (!railData || !waypoints || waypoints.length < 2) {
         return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
@@ -822,7 +1007,9 @@ export function findCandidateRoutes(
     for (let i = 0; i < waypoints.length - 1; i++) {
         const startStation = waypoints[i];
         const endStation = waypoints[i + 1];
-        const candidates = searchLeg(graph, railData, startStation, endStation, i);
+        const candidates = searchLeg(
+            graph, railData, startStation, endStation, i, options.allowWalkTransfer !== false
+        );
 
         if (candidates.length === 0) {
             return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
@@ -852,7 +1039,8 @@ export interface RouteSearchProgress {
 export async function findCandidateRoutesAsync(
     waypoints: Station[],
     railData: RailData | null,
-    onProgress?: (progress: RouteSearchProgress) => void
+    onProgress?: (progress: RouteSearchProgress) => void,
+    options: RouteSearchOptions = {}
 ): Promise<RouteSearchResult> {
     if (!railData || !waypoints || waypoints.length < 2) {
         return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
@@ -884,7 +1072,9 @@ export async function findCandidateRoutesAsync(
         });
         await new Promise(r => setTimeout(r, 10));
 
-        const candidates = searchLeg(graph, railData, startStation, endStation, i);
+        const candidates = searchLeg(
+            graph, railData, startStation, endStation, i, options.allowWalkTransfer !== false
+        );
 
         if (candidates.length === 0) {
             return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };

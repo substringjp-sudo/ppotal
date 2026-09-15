@@ -63,11 +63,13 @@ const AuthModal = dynamic(() => import('@ppotal/ui').then(m => m.AuthModal), { s
 const ShareCardModal = dynamic<ShareCardModalProps>(() => import('./ShareCardModal'), { ssr: false });
 const UpdateNoticeModal = dynamic(() => import('./UpdateNoticeModal'), { ssr: false });
 const MyLinesPane = dynamic<MyLinesPaneProps>(() => import('./MyLinesPane'), { ssr: false });
+const TripDetailModal = dynamic<TripDetailModalProps>(() => import('./TripDetailModal'), { ssr: false });
 
 import { useRegionNames } from '../hooks/useRegionNames';
 import { getLocalizedName, getLocalizedAddress } from '../lib/i18n-utils';
 import { getLineColor } from '../lib/lineColors';
 import type { MobileSheetDetail } from './Mobile/MobileBottomSheet';
+import type { TripDetailModalProps } from './TripDetailModal';
 import type { RouteGeneratorModalProps } from './RouteGeneratorModal';
 const RouteGeneratorModal = dynamic<RouteGeneratorModalProps>(() => import('./RouteGeneratorModal').then(m => m.RouteGeneratorModal), { ssr: false });
 import type { TimelineImportModalProps } from './TimelineImportModal';
@@ -197,9 +199,32 @@ const MainPageClient = () => {
     const [isMobile, setIsMobile] = React.useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
     const [isMyLinesOpen, setIsMyLinesOpen] = React.useState(true);
+    /** 목록에서 펼쳐 놓은 여정. 지도에도 이 여정의 시작·종료가 찍힌다. */
+    const [selectedTripId, setSelectedTripId] = React.useState<string | null>(null);
+
+    const selectedTrip = React.useMemo(
+        () => recordedTrips.find(trip => trip.id === selectedTripId) ?? null,
+        [recordedTrips, selectedTripId]
+    );
+    const [editingTripId, setEditingTripId] = React.useState<string | null>(null);
+    const editingTrip = React.useMemo(
+        () => recordedTrips.find(trip => trip.id === editingTripId) ?? null,
+        [recordedTrips, editingTripId]
+    );
+    // 편집 창에서 아직 저장하지 않은 모습. 지도는 이것을 먼저 그린다 — 고친 결과를
+    // 눈으로 보고 저장할지 정해야 하기 때문이다.
+    const [previewTrip, setPreviewTrip] = React.useState<Trip | null>(null);
+
     const [windowWidth, setWindowWidth] = React.useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     const [draftTrip, setDraftTrip] = React.useState<Trip | null>(null);
+    /**
+     * 탐색이 찾아 준 경로를 지도에 올려 달라는 한 번짜리 부탁.
+     *
+     * 올라가면 지도가 비워 줍니다(`onFoundRoutePlaced`). 계속 들고 있으면 같은 것을
+     * 두 번 올리게 되고, 사용자가 손잡이로 고쳐 놓은 것을 원래대로 되돌려 버립니다.
+     */
+    const [foundRoute, setFoundRoute] = React.useState<Trip | null>(null);
     const [tempPath, setTempPath] = React.useState<string[]>([]);
     const [isHowToOpen, setIsHowToOpen] = React.useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = React.useState(false);
@@ -253,6 +278,9 @@ const MainPageClient = () => {
             waypoints: trip.waypoints || [],
             geometries: JSON.stringify(trip.geometries || []),
             sectionIds: trip.sectionIds || [],
+            // 스친 역 목록. 없으면 아예 올리지 않는다 — `null` 로 올리면 "아무것도
+            // 기억 못 했다"는 뜻이 되고, 없다는 건 **모른다**는 뜻이다.
+            touched: trip.touched,
             cityIds
         };
 
@@ -463,25 +491,22 @@ const MainPageClient = () => {
                     createdAt: new Date().toISOString()
                 };
 
-                // Immediate UI update
-                setRecordedTrips(prev => [...prev, newTrip]);
+                // 바로 기록하지 않습니다. 찾아 준 답을 그 자리에서 기록으로
+                // 넣어 버리면 고칠 데가 없고, 가운데는 사용자가 고른 적 없는
+                // 길입니다. 대신 지도에 **고칠 수 있는 구간**으로 올려서, 양 끝을
+                // 끌어 맞추고 빈 곳을 톡 쳐야 기록되게 합니다 — 그때
+                // `handleRecordTrip` 이 받습니다.
+                setFoundRoute(newTrip);
                 setTripStartStation(null);
                 setDraftTrip(null);
                 setSelectedStation(null);
 
                 trackEvent('end_trip', 'engagement', `${newTrip.start} to ${newTrip.end}`, Math.round(newTrip.distance));
-
-                // Background sync with Firebase if user logged in
-                if (user) {
-                    setDoc(doc(db, `users/${user.uid}/trips`, newTrip.id), toFirestoreTrip(newTrip)).catch(err => {
-                        console.error("Cloud sync failed", err);
-                    });
-                }
             }
         } catch (err) {
             console.error("End trip search failed:", err);
         }
-    }, [tripStartStation, lineDetailData, user]);
+    }, [tripStartStation, lineDetailData]);
 
     const handleRecordTrip = React.useCallback((trip: Trip) => {
         // Immediate optimistic UI update
@@ -774,6 +799,31 @@ const MainPageClient = () => {
         };
     }, [visitedLineLengths, recordedTrips]);
 
+    /**
+     * 고친 여정을 덮어쓴다.
+     *
+     * 새 기록을 더하는 것이 아니라 **같은 id 를 갈아 끼우는** 것이다. 그래서 id 로
+     * 찾아 제자리에 넣는다 — 뒤에 붙이면 목록에서 순서가 튀고, 지운 뒤 더하면
+     * 잠깐이지만 그 여정이 사라진 화면이 보인다.
+     */
+    const handleUpdateTrip = React.useCallback((next: Trip) => {
+        setRecordedTrips(prev => prev.map(t => (t.id === next.id ? next : t)));
+        setEditingTripId(null);
+        setPreviewTrip(null);
+        trackEvent('edit_trip', 'engagement', `${next.start} to ${next.end}`);
+
+        if (user) {
+            setDoc(doc(db, `users/${user.uid}/trips`, next.id), toFirestoreTrip(next)).catch(e => {
+                console.error("Cloud sync failed", e);
+            });
+        }
+    }, [user]);
+
+    const handleCloseTripDetail = React.useCallback(() => {
+        setEditingTripId(null);
+        setPreviewTrip(null);
+    }, []);
+
     const handleDeleteTrip = React.useCallback(async (id: string) => {
         setIsRecordingLoading(true);
         try {
@@ -797,6 +847,10 @@ const MainPageClient = () => {
         setSelectedStation(null);
         setActiveLine(null);
         setIsMobileSheetOpen(false);
+    }, []);
+
+    const handleFoundRoutePlaced = React.useCallback(() => {
+        setFoundRoute(null);
     }, []);
 
     const handleDraftComplete = React.useCallback((trip: Trip) => {
@@ -1117,6 +1171,9 @@ const MainPageClient = () => {
                                     selectedLines={selectedLines}
                                     recordedTrips={recordedTrips}
                                     onRecordTrip={handleRecordTrip}
+                                    onDeleteTrip={handleDeleteTrip}
+                                    foundRoute={foundRoute}
+                                    onFoundRoutePlaced={handleFoundRoutePlaced}
                                     regionevelVisits={regionevelVisits}
                                     onRailroadClick={handleRailroadClick}
                                     onStationClick={handleStationClick}
@@ -1135,6 +1192,7 @@ const MainPageClient = () => {
                                     isMobile={isMobile}
                                     selectedStation={selectedStation?.id}
                                     onMapClick={handleMapClick}
+                                    selectedTrip={previewTrip ?? selectedTrip}
                                     groupingMode={styleSettings.grouping}
                                     showLabels={styleSettings.showLabels}
                                     onToggleLabels={() => updateStyleSettings({ ...styleSettings, showLabels: !styleSettings.showLabels })}
@@ -1184,6 +1242,9 @@ const MainPageClient = () => {
                         rightPanel={
                             <MyLinesPane
                                 recordedTrips={recordedTrips}
+                                selectedTripId={selectedTripId}
+                                onSelectTrip={setSelectedTripId}
+                                onEditTrip={setEditingTripId}
                                 onDeleteTrip={handleDeleteTrip}
                                 onResetTrips={handleResetTrips}
                                 railData={railData}
@@ -1320,6 +1381,9 @@ const MainPageClient = () => {
                                             <MyLinesPane
                                                 isMobile
                                                 recordedTrips={recordedTrips}
+                                                selectedTripId={selectedTripId}
+                                                onSelectTrip={setSelectedTripId}
+                                                onEditTrip={setEditingTripId}
                                                 onDeleteTrip={handleDeleteTrip}
                                                 onResetTrips={handleResetTrips}
                                                 railData={railData}
@@ -1497,6 +1561,17 @@ const MainPageClient = () => {
                 onClose={() => setIsRouteGeneratorOpen(false)}
                 railData={railData}
                 onAddTrip={handleRecordTrip}
+            />
+
+            <TripDetailModal
+                isOpen={!!editingTrip}
+                trip={editingTrip}
+                railData={railData}
+                regionNames={regionNames}
+                onSave={handleUpdateTrip}
+                onDelete={id => { handleCloseTripDetail(); handleDeleteTrip(id); }}
+                onClose={handleCloseTripDetail}
+                onPreview={setPreviewTrip}
             />
 
             <TimelineImportModal

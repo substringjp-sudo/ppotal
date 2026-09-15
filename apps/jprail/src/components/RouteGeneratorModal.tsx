@@ -6,6 +6,7 @@ import { RailData, Station } from '../types/railData';
 import { Trip } from '../types/trip';
 import { useI18n } from '../lib/i18n-context';
 import { getLocalizedName, getLocalizedAddress, RegionNames } from '../lib/i18n-utils';
+import { formatTransferWalk } from '../lib/transferWalk';
 import { useRegionNames } from '../hooks/useRegionNames';
 import { MY_LINES_TRANSLATIONS, getTranslations } from '../lib/translations';
 import { findCandidateRoutes, findCandidateRoutesAsync, CandidateRoute, RouteSearchResult, RouteSegment, RouteSearchProgress } from '../lib/routeSearch';
@@ -48,7 +49,7 @@ const getStationLineColors = (station: Station, railData: RailData | null): stri
  * Compact station picker
  * ------------------------------------------------------------------ */
 
-interface StationPickerRowProps {
+export interface StationPickerRowProps {
     role: 'start' | 'via' | 'end';
     placeholder: string;
     selectedStation: Station | null;
@@ -64,7 +65,7 @@ const ROLE_STYLES: Record<StationPickerRowProps['role'], { dot: string; ring: st
     end: { dot: 'bg-rose-500', ring: 'ring-rose-500/30' }
 };
 
-const StationPickerRow: React.FC<StationPickerRowProps> = ({
+export const StationPickerRow: React.FC<StationPickerRowProps> = ({
     role,
     placeholder,
     selectedStation,
@@ -380,6 +381,13 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
                             ? t.direct
                             : t.transferTimes(candidate.transferCount)}
                     </span>
+                    {/* 승강장 사이를 걷는 시간. 열차를 기다리는 시간은 빠져 있다 —
+                        다이어가 없으므로 알 수 없다. 그래서 "약"이라고 적는다. */}
+                    {formatTransferWalk(candidate.transferWalkMinutes, language) && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
+                            {formatTransferWalk(candidate.transferWalkMinutes, language)}
+                        </span>
+                    )}
                 </div>
                 <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 shrink-0">{candidate.distance} km</span>
             </div>
@@ -433,6 +441,8 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [searchProgress, setSearchProgress] = useState<RouteSearchProgress | null>(null);
+    // 끄면 선로로만 잇는다. 역과 역이 코앞이어도 걷지 않으므로 길이 없을 수도 있다.
+    const [allowWalkTransfer, setAllowWalkTransfer] = useState(true);
     const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
@@ -540,7 +550,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
         try {
             const result = await findCandidateRoutesAsync(stops, railData, prog => {
                 setSearchProgress(prog);
-            });
+            }, { allowWalkTransfer });
 
             const initial: Record<number, string> = {};
             result.legs.forEach(leg => {
@@ -557,7 +567,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
             setIsSearching(false);
             setSearchProgress(null);
         }
-    }, [startStation, endStation, viaStations, railData]);
+    }, [startStation, endStation, viaStations, railData, allowWalkTransfer]);
 
     const handleCreateTrip = () => {
         if (!startStation || !endStation || !allLegsSelected) return;
@@ -670,6 +680,21 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 railData={railData}
                                 regionNames={regionNames}
                             />
+
+                            <label
+                                className="flex items-center gap-2 pt-1 cursor-pointer select-none"
+                                title={t.excludeWalkHint}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={!allowWalkTransfer}
+                                    onChange={e => setAllowWalkTransfer(!e.target.checked)}
+                                    className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                                />
+                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                                    {t.excludeWalk}
+                                </span>
+                            </label>
 
                             <div className="flex items-center gap-1.5 pt-0.5">
                                 <button
