@@ -392,6 +392,23 @@ export function createTrail(startId: string): DragTrail {
     return { waypoints: [startId], segments: [], drawn: [], usedSections: new Set() };
 }
 
+/**
+ * Every station the drawing passes, in order.
+ *
+ * Longer than `waypoints`: a hop the router resolved can carry stations in
+ * between — the stops under a skip-stop edge, or the run across a jump — and
+ * those are ridden through just the same. Segments overlap at their ends, so
+ * each one after the first drops its first station.
+ */
+export function stationPath(trail: DragTrail): string[] {
+    if (trail.segments.length === 0) return trail.waypoints.slice(0, 1);
+    const out: string[] = [];
+    trail.segments.forEach((segment, index) => {
+        out.push(...(index === 0 ? segment.path : segment.path.slice(1)));
+    });
+    return out;
+}
+
 function distance(a: Vec, b: Vec) {
     return Math.hypot(a.x - b.x, a.y - b.y);
 }

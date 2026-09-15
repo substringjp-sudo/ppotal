@@ -21,4 +21,14 @@ export interface Trip {
     waypoints: string[];
     geometries: [number, number][][]; // Array of segments, each segment is array of points [lon, lat]
     sectionIds: number[];
+    /**
+     * 그릴 때 손가락·커서가 실제로 스친 역들(`path` 의 부분집합).
+     *
+     * 나머지는 앱이 채운 자리다. 기억한 것과 지어낸 것을 섞지 않으려고 따로 남긴다 —
+     * 기록에 경로만이 아니라 **어디까지가 확실했는지**가 같이 남는다.
+     *
+     * 없으면 **모른다**는 뜻이다. 이 값을 남기기 전에 만든 기록이 그렇고, 없는 것을
+     * 흐림으로 바꿔 칠하지는 않는다. 새로 만드는 기록에는 언제나 들어간다.
+     */
+    touched?: string[];
 }

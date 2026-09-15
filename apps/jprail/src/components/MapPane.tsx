@@ -346,6 +346,9 @@ const MapPane: React.FC<MapPaneProps> = ({
     const {
         dragStartStation,
         dragPath,
+        dragPathUnsure,
+        dragGuide,
+        unsureCount,
         handleStationMouseDown: rawHandleStationMouseDown,
         handleStationMouseUp: rawHandleStationMouseUp,
         snapCandidate,
@@ -912,26 +915,61 @@ const MapPane: React.FC<MapPaneProps> = ({
 
             }
 
-            {/* 드래그 중인 경로 표시 (개별 세그먼트로 렌더링하여 강제 연결 방지) */}
-            {dragPath && dragPath.length > 0 && (
-                <>
-                    {dragPath.map((segment, idx) => (
-                        <Polyline
-                            key={`drag-seg-${idx}`}
-                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
-                            pathOptions={{
-                                color: '#007AFF',
-                                weight: 12,
-                                opacity: idx === dragPath.length - 1 ? 0.3 : 0.5, // 지시선은 좀 더 투명하게
-                                lineCap: 'round',
-                                lineJoin: 'round',
-                                pane: 'ui-elements'
-                            }}
-                            interactive={false}
-                        />
-                    ))}
-                </>
-            )}
+            {/* 그리는 중인 구간.
+                세 갈래로 나눠 그린다. 지나온 자리는 그대로, 앱이 채운 자리는
+                점선으로, 커서까지의 지시선은 옅게. 한 겹으로 그리면 "여기는
+                내가 지나갔다"와 "여기는 앱이 채웠다"가 같은 선이 되어,
+                기억한 것과 지어낸 것이 기록에서 섞인다.
+                조각마다 따로 그리는 것은 구간이 머리-꼬리로 이어져 있지 않아
+                한 선으로 그리면 없는 직선이 생기기 때문이다. */}
+            {dragPath.map((segment, idx) => (
+                <Polyline
+                    key={`drag-seg-${idx}`}
+                    positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.5,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            ))}
+
+            {dragPathUnsure.map((segment, idx) => (
+                <Polyline
+                    key={`drag-fog-${idx}`}
+                    positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.32,
+                        dashArray: '2 16',
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            ))}
+
+            {dragGuide.map((segment, idx) => (
+                <Polyline
+                    key={`drag-guide-${idx}`}
+                    positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                    pathOptions={{
+                        color: '#007AFF',
+                        weight: 12,
+                        opacity: 0.3,
+                        lineCap: 'round',
+                        lineJoin: 'round',
+                        pane: 'ui-elements'
+                    }}
+                    interactive={false}
+                />
+            ))}
 
             {/* 고른 여정의 시작과 종료. 겹쳐 있으면(왕복) 종료가 위로 온다. */}
             {tripEnds && (
@@ -1068,6 +1106,34 @@ const MapPane: React.FC<MapPaneProps> = ({
                     <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                         {"경로 조회 중..."}
+                    </span>
+                </div>
+            )}
+
+            {/* 그리는 동안, 커서가 지나지 않아 앱이 채운 역 수.
+                고칠 후보를 늘어놓지 않는다 — 가운데가 기억나지 않는 사람에게
+                목록을 줘도 고를 수가 없다. 몇 역이 흐린지만 알리고, 고치고
+                싶으면 그 자리를 다시 그으면 된다. */}
+            {dragStartStation && unsureCount > 0 && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: Z.mapOverlay,
+                        padding: '7px 14px',
+                        borderRadius: '20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'none'
+                    }}
+                    className="dark:bg-slate-900/85 dark:border-slate-800/40"
+                >
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {`흐림 ${unsureCount}역`}
                     </span>
                 </div>
             )}

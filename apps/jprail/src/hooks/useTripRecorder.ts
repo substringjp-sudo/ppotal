@@ -9,6 +9,7 @@ import {
     buildSnapIndex,
     createTrail,
     querySnapBox,
+    stationPath,
     DragTrail,
     SnapIndex
 } from '../lib/dragRouting';
@@ -20,11 +21,19 @@ import {
 } from '../lib/mobile';
 import { isActive as edgePanActive, step as edgePanStep } from '../lib/edgePan';
 import {
+    Point as ScreenPoint,
+    touchedStations as measureTouched,
+    unsureCount as countUnsure
+} from '../lib/spanCertainty';
+import {
     PointerKind,
     acceptsMouseDown,
     normalisePointerType,
     prefersCoarsePointer
 } from '../lib/pointerInput';
+
+/** How far the cursor must move before the trail records another point. */
+const TRAIL_STEP_PX = 2;
 
 interface UseTripRecorderProps {
     railData: RailData | null;
@@ -56,7 +65,14 @@ export const useTripRecorder = ({
     const map = useMap();
     const [dragStartStation, setDragStartStation] = useState<string | null>(null);
     const [dragStartCoords, setDragStartCoords] = useState<[number, number] | null>(null);
+    /** Track the user drew over herself. */
     const [dragPath, setDragPath] = useState<[number, number][][]>([]);
+    /** Track the app filled in where the cursor never went. Drawn dashed. */
+    const [dragPathUnsure, setDragPathUnsure] = useState<[number, number][][]>([]);
+    /** The eased tether from the head of the drawing to the cursor. */
+    const [dragGuide, setDragGuide] = useState<[number, number][][]>([]);
+    /** How many stations on the drawing the cursor never passed. */
+    const [unsureCount, setUnsureCount] = useState(0);
 
     const dragStartStationRef = useRef<string | null>(null);
     const visibleStationsRef = useRef(visibleStations);
@@ -77,6 +93,23 @@ export const useTripRecorder = ({
     const mapInstanceRef = useRef<L.Map | null>(null);
 
     const dragState = useRef<DragTrail>(createTrail(''));
+
+    /**
+     * Where the cursor has been, in world coordinates, and the same path
+     * projected to the screen.
+     *
+     * World coordinates are the record because the map moves underneath: with
+     * edge panning, a trail kept in screen pixels would point at the wrong
+     * ground a second later, and stations the user really did pass would come
+     * out as "filled in". The projection is cached and only rebuilt when the
+     * zoom changes, since panning does not move layer points.
+     */
+    const trailWorldRef = useRef<[number, number][]>([]);
+    const trailScreenRef = useRef<ScreenPoint[]>([]);
+    const trailZoomRef = useRef<number | null>(null);
+    /** Stations the cursor has passed, and the path as it was one move ago. */
+    const touchedRef = useRef<Set<string>>(new Set());
+    const knownPathRef = useRef<Set<string>>(new Set());
     const headingRef = useRef<{ x: number; y: number } | null>(null);
     /** Where the guide line should point, and where it is drawn right now. */
     const guideTargetRef = useRef<[number, number] | null>(null);
@@ -112,8 +145,17 @@ export const useTripRecorder = ({
 
     useEffect(() => {
         if (!map || !map.dragging) return;
-        if (dragStartStation) map.dragging.disable();
-        else map.dragging.enable();
+        const container = map.getContainer();
+        if (dragStartStation) {
+            map.dragging.disable();
+            // Leaflet's own `touch-action: none` comes from the class it adds
+            // for map dragging — which we just took away. Without this the
+            // page itself scrolls under a finger that is drawing.
+            container.style.touchAction = 'none';
+        } else {
+            map.dragging.enable();
+            container.style.touchAction = '';
+        }
     }, [map, dragStartStation]);
 
     /**
@@ -147,16 +189,32 @@ export const useTripRecorder = ({
         return lineIds.some(id => allowed.has(id));
     }, []);
 
-    /** Repaints the route plus the eased guide line. */
+    /**
+     * Repaints the route plus the eased guide line.
+     *
+     * A hop is drawn solid only if the cursor passed *every* station on it. A
+     * hop the router filled in — a skip-stop edge, or a jump across a gap —
+     * has stations nobody touched, and drawing it like the rest would claim a
+     * memory the user never had.
+     */
     const redraw = useCallback(() => {
         const index = snapIndexRef.current;
         const trail = dragState.current;
         if (!index || !dragStartStationRef.current) return;
 
+        const touched = touchedRef.current;
+        const sure: [number, number][][] = [];
+        const unsure: [number, number][][] = [];
+        trail.segments.forEach(segment => {
+            const bucket = segment.path.every(id => touched.has(id)) ? sure : unsure;
+            bucket.push(...segment.geometries);
+        });
+
         const head = index.byId.get(trail.waypoints[trail.waypoints.length - 1]);
         const shown = guideShownRef.current;
-        const guide: [number, number][][] = head && shown ? [[[head.lon, head.lat], shown]] : [];
-        setDragPath([...trail.drawn, ...guide]);
+        setDragPath(sure);
+        setDragPathUnsure(unsure);
+        setDragGuide(head && shown ? [[[head.lon, head.lat], shown]] : []);
     }, []);
 
     const redrawRef = useRef(redraw);
@@ -200,6 +258,15 @@ export const useTripRecorder = ({
             setDragStartCoords(coords);
             setDragPath([]);
             dragState.current = createTrail(id);
+            // The station you started from is one you certainly remember.
+            trailWorldRef.current = [[coords[1], coords[0]]];
+            trailScreenRef.current = [];
+            trailZoomRef.current = null;
+            touchedRef.current = new Set([id]);
+            knownPathRef.current = new Set([id]);
+            setDragPathUnsure([]);
+            setDragGuide([]);
+            setUnsureCount(0);
             headingRef.current = null;
             guideTargetRef.current = [coords[1], coords[0]];
             guideShownRef.current = [coords[1], coords[0]];
@@ -222,6 +289,37 @@ export const useTripRecorder = ({
      * moment after that same finger lifts, would otherwise start a second one
      * over the tap the user already finished.
      */
+    /**
+     * Records where the cursor is and hands back the whole trail in screen
+     * coordinates, ready to be measured against.
+     */
+    const noteCursor = useCallback((mapInstance: L.Map, lat: number, lon: number): ScreenPoint[] => {
+        const zoom = mapInstance.getZoom();
+        const point = mapInstance.latLngToLayerPoint(L.latLng(lat, lon));
+        // Panning does not move layer points, so the cache survives an edge
+        // pan untouched. A zoom does move them, and then it is rebuilt.
+        if (trailZoomRef.current !== zoom) {
+            trailZoomRef.current = zoom;
+            trailScreenRef.current = trailWorldRef.current.map(([wlon, wlat]) => {
+                const at = mapInstance.latLngToLayerPoint(L.latLng(wlat, wlon));
+                return { x: at.x, y: at.y };
+            });
+        }
+
+        const last = trailScreenRef.current[trailScreenRef.current.length - 1];
+        if (!last || Math.hypot(point.x - last.x, point.y - last.y) >= TRAIL_STEP_PX) {
+            trailWorldRef.current.push([lon, lat]);
+            trailScreenRef.current.push({ x: point.x, y: point.y });
+        } else {
+            // Still the current position, even when it is too small a move to
+            // keep: the last point of the trail is what "where the cursor is
+            // now" means to the certainty rule.
+            trailScreenRef.current[trailScreenRef.current.length - 1] = { x: point.x, y: point.y };
+            trailWorldRef.current[trailWorldRef.current.length - 1] = [lon, lat];
+        }
+        return trailScreenRef.current;
+    }, []);
+
     const handleStationMouseDown = useCallback(
         (id: string, coords: [number, number]) => {
             if (!acceptsMouseDown(
@@ -322,13 +420,32 @@ export const useTripRecorder = ({
                 : currentLatLng;
             guideTargetRef.current = [snapped.lng, snapped.lat];
 
+            // Which stations the user actually passed, measured against the
+            // whole trail rather than the points that happened to be sampled —
+            // so the same sweep gives the same answer drawn fast or slow.
+            const screenTrail = noteCursor(mapInstance, currentLatLng.lat, currentLatLng.lng);
+            const fullPath = stationPath(trail);
+            touchedRef.current = measureTouched({
+                path: fullPath,
+                previous: touchedRef.current,
+                known: knownPathRef.current,
+                project: id => {
+                    const at = pointOf(mapInstance, id);
+                    return at ? { x: at.x, y: at.y } : null;
+                },
+                trail: screenTrail
+            });
+            knownPathRef.current = new Set(fullPath);
+            const unsure = countUnsure(fullPath, touchedRef.current);
+            setUnsureCount(previous => (previous === unsure ? previous : unsure));
+
             setSnapCandidate(previous => (previous === result.candidate ? previous : result.candidate));
             if (result.changed) onDragUpdate?.([...trail.waypoints]);
 
             lastLayerPointRef.current = currentLayerPoint;
             redrawRef.current();
         },
-        [isEdgeAllowed, onDragUpdate, pointOf]
+        [isEdgeAllowed, noteCursor, onDragUpdate, pointOf]
     );
 
     const updateDragPathRef = useRef(updateDragPath);
@@ -400,6 +517,7 @@ export const useTripRecorder = ({
         dragStartStationRef.current = null;
 
         const { waypoints, segments } = dragState.current;
+        const touched = touchedRef.current;
 
         if (segments.length > 0 && segments.length === waypoints.length - 1) {
             const fullPath: string[] = [];
@@ -426,7 +544,10 @@ export const useTripRecorder = ({
                 distance: Math.round(totalDistance * 10) / 10,
                 geometries: fullGeoms,
                 waypoints: [...waypoints],
-                sectionIds: Array.from(new Set(fullSectionIds))
+                sectionIds: Array.from(new Set(fullSectionIds)),
+                // Kept in the path's own order, so reading the record back
+                // does not depend on how a Set happened to iterate.
+                touched: fullPath.filter(id => touched.has(id))
             });
             onDraftComplete?.(null as never);
         }
@@ -434,6 +555,14 @@ export const useTripRecorder = ({
         setDragStartStation(null);
         setDragStartCoords(null);
         setDragPath([]);
+        setDragPathUnsure([]);
+        setDragGuide([]);
+        setUnsureCount(0);
+        trailWorldRef.current = [];
+        trailScreenRef.current = [];
+        trailZoomRef.current = null;
+        touchedRef.current = new Set();
+        knownPathRef.current = new Set();
         dragState.current = createTrail('');
         headingRef.current = null;
         guideTargetRef.current = null;
@@ -486,20 +615,30 @@ export const useTripRecorder = ({
         const onMouseMove = (e: L.LeafletMouseEvent) =>
             handleMove(e.containerPoint, e.layerPoint, e.latlng);
         const onMouseUp = () => handleEndRef.current();
-        const onTouchEndAll = () => {
-            lastTouchAtRef.current = Date.now();
-            cancelPressRef.current();
-            handleEndRef.current();
+
+        const container = map.getContainer();
+        const pointAt = (clientX: number, clientY: number) => {
+            const rect = container.getBoundingClientRect();
+            return L.point(clientX - rect.left, clientY - rect.top);
         };
-        const onTouchMove = (e: TouchEvent) => {
-            lastTouchAtRef.current = Date.now();
-            if (!dragStartStationRef.current) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = map.getContainer().getBoundingClientRect();
-            const point = L.point(touch.clientX - rect.left, touch.clientY - rect.top);
-            const latlng = map.containerPointToLatLng(point);
-            handleMove(point, map.latLngToLayerPoint(latlng), latlng);
+
+        /**
+         * Fingers currently on the glass, and the one the drawing is following.
+         *
+         * Capturing that one on the *container* is what keeps a long drawing
+         * alive. Without it the browser sends every later event to whatever
+         * element the finger first landed on — often a rail line drawn as SVG —
+         * and when the map pans far enough for that layer to be redrawn, the
+         * element is gone and the events go nowhere. The drawing then freezes
+         * mid-stroke and can never be finished, which is exactly what drawing
+         * to the edge of the screen makes happen.
+         */
+        const down = new Set<number>();
+        let captured: number | null = null;
+        const release = () => {
+            if (captured === null) return;
+            try { container.releasePointerCapture(captured); } catch { /* already gone */ }
+            captured = null;
         };
 
         /**
@@ -507,37 +646,37 @@ export const useTripRecorder = ({
          *
          * On a phone the drag gesture cannot begin on contact, because that is
          * how the map pans. So contact only *arms* it: if the finger stays
-         * within a few pixels for `LONG_PRESS_MS`, the same drag the desktop
-         * starts on mousedown takes over, and everything below this — the
-         * trail, the snapping, the edge scrolling — is already shared.
+         * within a few pixels for `LONG_PRESS_MS`, the same drag a mouse starts
+         * on mousedown takes over, and everything below this — the trail, the
+         * snapping, the edge panning — is already shared.
          *
          * Nothing is preventDefault-ed while waiting. A hold that turns into a
          * pan has to stay a pan.
          */
-        const onTouchStart = (e: TouchEvent) => {
-            // No width test. A `touchstart` *is* a finger, and a touchscreen
-            // laptop is as much a finger as a phone — gating this on the size
-            // of the window is what kept drawing out of reach there.
-            pointerKindRef.current = 'touch';
+        const onPointerDown = (e: PointerEvent) => {
+            const kind = normalisePointerType(e.pointerType);
+            pointerKindRef.current = kind;
+            if (kind === 'mouse') return;
+
             lastTouchAtRef.current = Date.now();
+            down.add(e.pointerId);
             if (dragStartStationRef.current) return;
             // A second finger means a pinch, which is a zoom, not a draw.
-            if (e.touches.length !== 1) { cancelPressRef.current(); return; }
+            if (down.size !== 1) { cancelPressRef.current(); return; }
 
-            const touch = e.touches[0];
-            const rect = map.getContainer().getBoundingClientRect();
-            const point = L.point(touch.clientX - rect.left, touch.clientY - rect.top);
-
-            const station = stationAtPointRef.current(point);
+            const station = stationAtPointRef.current(pointAt(e.clientX, e.clientY));
             if (!station) return;
 
-            pressOriginRef.current = { x: touch.clientX, y: touch.clientY };
+            pressOriginRef.current = { x: e.clientX, y: e.clientY };
             setPressCandidate(station);
 
+            const pointerId = e.pointerId;
             pressTimerRef.current = setTimeout(() => {
                 pressTimerRef.current = null;
                 pressOriginRef.current = null;
                 setPressCandidate(null);
+                if (!down.has(pointerId)) return;
+                try { container.setPointerCapture(pointerId); captured = pointerId; } catch { /* gone */ }
                 // The buzz is the confirmation that the hold took, so it fires
                 // with the state change rather than after the first movement.
                 haptic('select');
@@ -545,44 +684,47 @@ export const useTripRecorder = ({
             }, LONG_PRESS_MS);
         };
 
-        const onTouchMoveArmed = (e: TouchEvent) => {
+        const onPointerMove = (e: PointerEvent) => {
+            if (normalisePointerType(e.pointerType) === 'mouse') return;
+            lastTouchAtRef.current = Date.now();
+
             const origin = pressOriginRef.current;
-            if (!origin || !e.touches.length) return;
-            const touch = e.touches[0];
-            if (Math.hypot(touch.clientX - origin.x, touch.clientY - origin.y) > LONG_PRESS_CANCEL_PX) {
+            if (origin && Math.hypot(e.clientX - origin.x, e.clientY - origin.y) > LONG_PRESS_CANCEL_PX) {
                 cancelPressRef.current();
             }
+            if (!dragStartStationRef.current) return;
+
+            const point = pointAt(e.clientX, e.clientY);
+            const latlng = map.containerPointToLatLng(point);
+            handleMove(point, map.latLngToLayerPoint(latlng), latlng);
         };
 
-        // Capture, so the kind of pointer is known before any handler that
-        // might act on it — including Leaflet's own.
-        const onPointerDown = (e: PointerEvent) => {
-            const kind = normalisePointerType(e.pointerType);
-            pointerKindRef.current = kind;
-            if (kind === 'touch' || kind === 'pen') lastTouchAtRef.current = Date.now();
+        const onPointerEnd = (e: PointerEvent) => {
+            if (normalisePointerType(e.pointerType) === 'mouse') return;
+            lastTouchAtRef.current = Date.now();
+            down.delete(e.pointerId);
+            if (e.pointerId === captured) release();
+            cancelPressRef.current();
+            handleEndRef.current();
         };
 
         map.on('mousemove', onMouseMove);
         map.on('mouseup', onMouseUp);
-        const container = map.getContainer();
-        container.addEventListener('pointerdown', onPointerDown, { capture: true, passive: true });
-        container.addEventListener('touchstart', onTouchStart, { passive: true });
-        container.addEventListener('touchmove', onTouchMoveArmed, { passive: true });
-        container.addEventListener('touchmove', onTouchMove, { passive: false });
-        container.addEventListener('touchend', onTouchEndAll);
-        container.addEventListener('touchcancel', onTouchEndAll);
+        container.addEventListener('pointerdown', onPointerDown, { capture: true });
+        container.addEventListener('pointermove', onPointerMove);
+        container.addEventListener('pointerup', onPointerEnd);
+        container.addEventListener('pointercancel', onPointerEnd);
         // A drag that ends outside the map must still settle.
         window.addEventListener('mouseup', onMouseUp);
 
         return () => {
             map.off('mousemove', onMouseMove);
             map.off('mouseup', onMouseUp);
+            release();
             container.removeEventListener('pointerdown', onPointerDown, { capture: true });
-            container.removeEventListener('touchstart', onTouchStart);
-            container.removeEventListener('touchmove', onTouchMoveArmed);
-            container.removeEventListener('touchmove', onTouchMove);
-            container.removeEventListener('touchend', onTouchEndAll);
-            container.removeEventListener('touchcancel', onTouchEndAll);
+            container.removeEventListener('pointermove', onPointerMove);
+            container.removeEventListener('pointerup', onPointerEnd);
+            container.removeEventListener('pointercancel', onPointerEnd);
             window.removeEventListener('mouseup', onMouseUp);
         };
     }, [map]);
@@ -590,7 +732,14 @@ export const useTripRecorder = ({
     return {
         dragStartStation,
         dragStartCoords,
+        /** Track the cursor went over. */
         dragPath,
+        /** Track the app filled in; the caller draws it dashed. */
+        dragPathUnsure,
+        /** The tether from the head of the drawing to the cursor. */
+        dragGuide,
+        /** Stations on the drawing the cursor never passed. */
+        unsureCount,
         handleStationMouseDown,
         handleStationMouseUp: handleEnd,
         /** Station the drawing is currently pulling towards, for the snap hint. */
