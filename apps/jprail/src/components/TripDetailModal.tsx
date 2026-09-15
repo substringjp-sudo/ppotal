@@ -22,6 +22,7 @@ import {
     neighboursToExtend,
     needsResearch
 } from '../lib/tripEditing';
+import { formatTransferWalk } from '../lib/transferWalk';
 import { StationPickerRow } from './RouteGeneratorModal';
 import { Z } from '../lib/layers';
 
@@ -423,6 +424,8 @@ const TripDetailEditor: React.FC<Omit<TripDetailModalProps, 'isOpen' | 'trip'> &
                                                     {t.transferCount(candidate.transferCount)}
                                                     {candidate.walkCount > 0 &&
                                                         ` · ${t.walkCountLabel(candidate.walkCount)}`}
+                                                    {formatTransferWalk(candidate.transferWalkMinutes, language) &&
+                                                        ` · ${formatTransferWalk(candidate.transferWalkMinutes, language)}`}
                                                 </div>
                                                 <div className="flex flex-wrap gap-1 mt-1.5">
                                                     {candidate.lines.slice(0, 6).map((line, i) => (
