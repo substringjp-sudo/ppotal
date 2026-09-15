@@ -393,6 +393,33 @@ export function createTrail(startId: string): DragTrail {
 }
 
 /**
+ * The same drawing, read from the other end.
+ *
+ * A trail only ever grows at its head, so moving the station a drawing
+ * *starts* from means turning it around first and growing what is now the
+ * head. Nothing is re-routed and nothing is lost: every hop is the same track
+ * ridden the other way, so the stations, the segments and the drawn geometry
+ * all flip order and the distances stand. Reversing twice gives back what you
+ * started with.
+ */
+export function reverseTrail(trail: DragTrail): DragTrail {
+    const segments = trail.segments
+        .map(segment => ({
+            path: [...segment.path].reverse(),
+            sectionIds: [...segment.sectionIds],
+            geometries: segment.geometries.map(g => [...g].reverse()).reverse(),
+            distance: segment.distance
+        }))
+        .reverse();
+    return {
+        waypoints: [...trail.waypoints].reverse(),
+        segments,
+        drawn: segments.flatMap(segment => segment.geometries),
+        usedSections: new Set(trail.usedSections)
+    };
+}
+
+/**
  * Every station the drawing passes, in order.
  *
  * Longer than `waypoints`: a hop the router resolved can carry stations in

@@ -20,6 +20,7 @@ const load = name => {
 const edgePan = load('edgePan');
 const certainty = load('spanCertainty');
 const pointer = load('pointerInput');
+const drag = load('dragRouting');
 
 let failures = 0;
 let checks = 0;
@@ -169,6 +170,28 @@ ok(pointer.acceptsMouseDown('mouse', true, null, 1000),
     '넓은 화면이든 좁은 화면이든 마우스는 받는다');
 ok(!pointer.acceptsMouseDown('unknown', true, null, 1000),
     '포인터 종류를 모르는 터치 전용 기기에서는 받지 않는다');
+
+// ── 반대쪽 끝에서 읽기 ────────────────────────────────────────────────────
+// 그리기는 머리에서만 자란다. 그래서 시작역을 옮기려면 먼저 돌려세워야 한다.
+const trail = {
+    waypoints: ['A', 'C', 'E'],
+    segments: [
+        { path: ['A', 'B', 'C'], sectionIds: [1, 2], geometries: [[[0, 0], [1, 1]], [[1, 1], [2, 2]]], distance: 3 },
+        { path: ['C', 'D', 'E'], sectionIds: [3], geometries: [[[2, 2], [4, 4]]], distance: 5 }
+    ],
+    drawn: [[[0, 0], [1, 1]], [[1, 1], [2, 2]], [[2, 2], [4, 4]]],
+    usedSections: new Set([1, 2, 3])
+};
+const back = drag.reverseTrail(trail);
+eq(back.waypoints.join(','), 'E,C,A', '경유역이 뒤집힌다');
+eq(drag.stationPath(back).join(','), 'E,D,C,B,A', '지나는 역도 뒤집힌다');
+eq(drag.stationPath(trail).join(','), 'A,B,C,D,E', '원래 것은 그대로다');
+eq(back.segments.map(s => s.distance).join(','), '5,3', '거리는 그대로 따라온다');
+eq(JSON.stringify(back.drawn[0]), '[[4,4],[2,2]]', '그린 선도 지나는 차례대로 뒤집힌다');
+eq(back.usedSections.size, 3, '이미 쓴 구간은 그대로다');
+eq(JSON.stringify(drag.stationPath(drag.reverseTrail(back))), JSON.stringify(drag.stationPath(trail)),
+    '두 번 뒤집으면 제자리');
+eq(drag.stationPath(drag.createTrail('A')).join(','), 'A', '아직 자라지 않은 그리기는 시작역 하나');
 
 // 앱과 같은 값이어야 한다. 갈라지면 같은 손짓이 기기마다 다른 답을 낸다.
 eq(edgePan.BAND_PX, 76, '가장자리 띠는 앱과 같은 76');

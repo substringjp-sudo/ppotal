@@ -9,6 +9,7 @@ import {
     buildSnapIndex,
     createTrail,
     querySnapBox,
+    reverseTrail,
     stationPath,
     DragTrail,
     SnapIndex
@@ -35,12 +36,73 @@ import {
 /** How far the cursor must move before the trail records another point. */
 const TRAIL_STEP_PX = 2;
 
+/**
+ * How near an end of a finished drawing counts as grabbing its handle (px).
+ * The app's `SpanDrawing.GRIP_RADIUS_DP`.
+ */
+export const GRIP_RADIUS_PX = 26;
+
+/** A press that moves less than this, and ends sooner than this, is a tap. */
+const TAP_SLOP_PX = 8;
+const TAP_MAX_MS = 500;
+
+/**
+ * How long a drawing just put away can be taken back (ms).
+ *
+ * Tapping empty map is easy to do by accident — it is also how you dismiss
+ * things — so keeping it must be as easy to undo as it was to trigger. The
+ * app's `SAVED_UNDO_WINDOW_MS`.
+ */
+export const UNDO_WINDOW_MS = 6000;
+
+export type SpanEnd = 'start' | 'finish';
+
+/**
+ * A drawing the user has finished but not yet put away.
+ *
+ * Letting go of a drawing used to record it on the spot. It does not any more:
+ * the drawing stays on the map with a handle at each end, so the ends can be
+ * pulled to the right stations before it is kept. Tapping an empty part of the
+ * map is what says "that's it" — the same gesture that means "nothing here" on
+ * every other map.
+ */
+export interface HeldSpan {
+    /** Exactly what was drawn, so picking it up again continues rather than re-routes. */
+    trail: DragTrail;
+    /** Stations the cursor really passed. The rest the app filled in. */
+    touched: Set<string>;
+    path: string[];
+    /** Stations on it the cursor never passed. */
+    unsureCount: number;
+    /** Track the cursor went over, and track the app filled in. */
+    sure: [number, number][][];
+    unsure: [number, number][][];
+    start: { id: string; lat: number; lon: number };
+    finish: { id: string; lat: number; lon: number };
+    distance: number;
+    sectionIds: number[];
+    geometries: [number, number][][];
+}
+
+/** Hops the cursor went over, split from hops the app filled in. */
+function splitByCertainty(trail: DragTrail, touched: ReadonlySet<string>) {
+    const sure: [number, number][][] = [];
+    const unsure: [number, number][][] = [];
+    trail.segments.forEach(segment => {
+        const bucket = segment.path.every(id => touched.has(id)) ? sure : unsure;
+        bucket.push(...segment.geometries);
+    });
+    return { sure, unsure };
+}
+
 interface UseTripRecorderProps {
     railData: RailData | null;
     visibleStations: Record<string, ProcessedStation> | null;
     onRecordTrip?: (trip: Trip) => void;
     onDragUpdate?: (waypoints: string[]) => void;
     onDraftComplete?: (trip: Trip) => void;
+    /** Takes back what the last tap put away. */
+    onDeleteTrip?: (id: string) => void;
     selectedLines?: string[];
     activeLine?: string | null;
     /**
@@ -59,6 +121,7 @@ export const useTripRecorder = ({
     onRecordTrip,
     onDragUpdate,
     onDraftComplete,
+    onDeleteTrip,
     selectedLines = [],
     activeLine = null
 }: UseTripRecorderProps) => {
@@ -73,6 +136,10 @@ export const useTripRecorder = ({
     const [dragGuide, setDragGuide] = useState<[number, number][][]>([]);
     /** How many stations on the drawing the cursor never passed. */
     const [unsureCount, setUnsureCount] = useState(0);
+    /** A finished drawing, still on the map and still editable. */
+    const [heldSpan, setHeldSpan] = useState<HeldSpan | null>(null);
+    /** What the last tap put away, so it can be taken back. */
+    const [lastRecorded, setLastRecorded] = useState<Trip | null>(null);
 
     const dragStartStationRef = useRef<string | null>(null);
     const visibleStationsRef = useRef(visibleStations);
@@ -110,6 +177,16 @@ export const useTripRecorder = ({
     /** Stations the cursor has passed, and the path as it was one move ago. */
     const touchedRef = useRef<Set<string>>(new Set());
     const knownPathRef = useRef<Set<string>>(new Set());
+
+    const heldSpanRef = useRef<HeldSpan | null>(null);
+    /**
+     * True while the working trail is turned around.
+     *
+     * A trail only grows at its head, so pulling the *starting* end means
+     * drawing a reversed copy and turning it back when the hand lifts. The
+     * drawing the user sees never changes direction.
+     */
+    const reversedRef = useRef(false);
     const headingRef = useRef<{ x: number; y: number } | null>(null);
     /** Where the guide line should point, and where it is drawn right now. */
     const guideTargetRef = useRef<[number, number] | null>(null);
@@ -202,13 +279,7 @@ export const useTripRecorder = ({
         const trail = dragState.current;
         if (!index || !dragStartStationRef.current) return;
 
-        const touched = touchedRef.current;
-        const sure: [number, number][][] = [];
-        const unsure: [number, number][][] = [];
-        trail.segments.forEach(segment => {
-            const bucket = segment.path.every(id => touched.has(id)) ? sure : unsure;
-            bucket.push(...segment.geometries);
-        });
+        const { sure, unsure } = splitByCertainty(trail, touchedRef.current);
 
         const head = index.byId.get(trail.waypoints[trail.waypoints.length - 1]);
         const shown = guideShownRef.current;
@@ -258,6 +329,10 @@ export const useTripRecorder = ({
             setDragStartCoords(coords);
             setDragPath([]);
             dragState.current = createTrail(id);
+            reversedRef.current = false;
+            // A new drawing replaces the one still sitting on the map.
+            setHeldSpan(null);
+            heldSpanRef.current = null;
             // The station you started from is one you certainly remember.
             trailWorldRef.current = [[coords[1], coords[0]]];
             trailScreenRef.current = [];
@@ -512,45 +587,48 @@ export const useTripRecorder = ({
         };
     }, [map, dragStartStation]);
 
+    /**
+     * Packs a finished trail into something that can sit on the map and still
+     * be picked up. Returns null when there is nothing to keep.
+     */
+    const holdFrom = useCallback((trail: DragTrail, touched: Set<string>): HeldSpan | null => {
+        const index = snapIndexRef.current;
+        if (!index) return null;
+        const { waypoints, segments } = trail;
+        if (segments.length === 0 || segments.length !== waypoints.length - 1) return null;
+
+        const path = stationPath(trail);
+        const start = index.byId.get(path[0]);
+        const finish = index.byId.get(path[path.length - 1]);
+        if (!start || !finish) return null;
+
+        return {
+            trail,
+            touched,
+            path,
+            unsureCount: countUnsure(path, touched),
+            ...splitByCertainty(trail, touched),
+            start: { id: start.id, lat: start.lat, lon: start.lon },
+            finish: { id: finish.id, lat: finish.lat, lon: finish.lon },
+            distance: Math.round(segments.reduce((sum, s) => sum + s.distance, 0) * 10) / 10,
+            sectionIds: Array.from(new Set(segments.flatMap(s => s.sectionIds))),
+            geometries: segments.flatMap(s => s.geometries)
+        };
+    }, []);
+
     const handleEnd = useCallback(() => {
         if (!dragStartStationRef.current) return;
         dragStartStationRef.current = null;
 
-        const { waypoints, segments } = dragState.current;
-        const touched = touchedRef.current;
-
-        if (segments.length > 0 && segments.length === waypoints.length - 1) {
-            const fullPath: string[] = [];
-            const fullGeoms: [number, number][][] = [];
-            const fullSectionIds: number[] = [];
-            let totalDistance = 0;
-
-            segments.forEach((segment, index) => {
-                if (index === 0) fullPath.push(...segment.path);
-                else fullPath.push(...segment.path.slice(1));
-
-                fullGeoms.push(...segment.geometries);
-                fullSectionIds.push(...segment.sectionIds);
-                totalDistance += segment.distance;
-            });
-
-            onRecordTrip?.({
-                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                start: waypoints[0],
-                end: waypoints[waypoints.length - 1],
-                startId: waypoints[0],
-                endId: waypoints[waypoints.length - 1],
-                path: fullPath,
-                distance: Math.round(totalDistance * 10) / 10,
-                geometries: fullGeoms,
-                waypoints: [...waypoints],
-                sectionIds: Array.from(new Set(fullSectionIds)),
-                // Kept in the path's own order, so reading the record back
-                // does not depend on how a Set happened to iterate.
-                touched: fullPath.filter(id => touched.has(id))
-            });
-            onDraftComplete?.(null as never);
-        }
+        // Turn a reversed working copy back before anyone looks at it, so the
+        // drawing keeps the direction it was first drawn in.
+        const drawn = reversedRef.current ? reverseTrail(dragState.current) : dragState.current;
+        reversedRef.current = false;
+        const span = holdFrom(drawn, touchedRef.current);
+        // Nothing left to hold means the ends were pulled back together; the
+        // drawing is gone rather than kept empty.
+        setHeldSpan(span);
+        heldSpanRef.current = span;
 
         setDragStartStation(null);
         setDragStartCoords(null);
@@ -572,12 +650,125 @@ export const useTripRecorder = ({
         panCarryRef.current = { x: 0, y: 0 };
         lastPanTickRef.current = null;
         if (mapInstanceRef.current) mapInstanceRef.current.dragging.enable();
-    }, [onRecordTrip, onDraftComplete]);
+    }, [holdFrom]);
 
     const handleEndRef = useRef(handleEnd);
     useEffect(() => {
         handleEndRef.current = handleEnd;
     }, [handleEnd]);
+
+    const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const clearUndoTimer = () => {
+        if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+        undoTimerRef.current = null;
+    };
+    useEffect(() => clearUndoTimer, []);
+
+    /** Put the held drawing away as a trip. */
+    const commitHeld = useCallback(() => {
+        const span = heldSpanRef.current;
+        if (!span) return;
+        const trip: Trip = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+            start: span.start.id,
+            end: span.finish.id,
+            startId: span.start.id,
+            endId: span.finish.id,
+            path: span.path,
+            distance: span.distance,
+            geometries: span.geometries,
+            waypoints: [...span.trail.waypoints],
+            sectionIds: span.sectionIds,
+            // Kept in the path's own order, so reading the record back does
+            // not depend on how a Set happened to iterate.
+            touched: span.path.filter(id => span.touched.has(id))
+        };
+        setHeldSpan(null);
+        heldSpanRef.current = null;
+        onRecordTrip?.(trip);
+        onDraftComplete?.(null as never);
+        setLastRecorded(trip);
+        clearUndoTimer();
+        undoTimerRef.current = setTimeout(() => setLastRecorded(null), UNDO_WINDOW_MS);
+    }, [onRecordTrip, onDraftComplete]);
+
+    /** Take the last one back, and leave it on the map to carry on editing. */
+    const undoLastRecorded = useCallback(() => {
+        const trip = lastRecorded;
+        if (!trip) return;
+        clearUndoTimer();
+        setLastRecorded(null);
+        onDeleteTrip?.(trip.id);
+    }, [lastRecorded, onDeleteTrip]);
+
+    const dismissLastRecorded = useCallback(() => {
+        clearUndoTimer();
+        setLastRecorded(null);
+    }, []);
+
+    /** Which end of the held drawing a press landed on, if either. */
+    const gripAt = useCallback((containerPoint: L.Point): SpanEnd | null => {
+        const span = heldSpanRef.current;
+        const mapInstance = mapInstanceRef.current;
+        if (!span || !mapInstance) return null;
+        const near = (at: { lat: number; lon: number }) => {
+            const point = mapInstance.latLngToContainerPoint(L.latLng(at.lat, at.lon));
+            return Math.hypot(point.x - containerPoint.x, point.y - containerPoint.y) <= GRIP_RADIUS_PX;
+        };
+        // When the two ends sit on top of each other — a there-and-back — the
+        // finishing end is the one that answers, since that is the one the
+        // hand just left.
+        if (near(span.finish)) return 'finish';
+        if (near(span.start)) return 'start';
+        return null;
+    }, []);
+
+    /**
+     * Pick a finished drawing back up by one of its ends.
+     *
+     * Unlike starting a drawing, this needs no hold: a handle is an explicit
+     * thing to grab, so grabbing it cannot be mistaken for panning the map.
+     */
+    const resumeFromGrip = useCallback((end: SpanEnd): boolean => {
+        const span = heldSpanRef.current;
+        const mapInstance = mapInstanceRef.current;
+        if (!span || !mapInstance) return false;
+
+        const working = end === 'start' ? reverseTrail(span.trail) : span.trail;
+        reversedRef.current = end === 'start';
+        const head = end === 'start' ? span.start : span.finish;
+
+        dragState.current = working;
+        dragStartStationRef.current = working.waypoints[0];
+        setDragStartStation(working.waypoints[0]);
+        setDragStartCoords([head.lat, head.lon]);
+        // Everything already drawn stays as certain as it was; only what the
+        // hand does from here can change that.
+        touchedRef.current = new Set(span.touched);
+        knownPathRef.current = new Set(span.path);
+        trailWorldRef.current = [[head.lon, head.lat]];
+        trailScreenRef.current = [];
+        trailZoomRef.current = null;
+        headingRef.current = null;
+        guideTargetRef.current = [head.lon, head.lat];
+        guideShownRef.current = [head.lon, head.lat];
+        setSnapCandidate(null);
+        setUnsureCount(countUnsure(span.path, span.touched));
+        setHeldSpan(null);
+        heldSpanRef.current = null;
+
+        mapInstance.dragging.disable();
+        lastLayerPointRef.current = mapInstance.latLngToLayerPoint(L.latLng(head.lat, head.lon));
+        redrawRef.current();
+        return true;
+    }, []);
+
+    const gripAtRef = useRef(gripAt);
+    useEffect(() => { gripAtRef.current = gripAt; }, [gripAt]);
+    const resumeFromGripRef = useRef(resumeFromGrip);
+    useEffect(() => { resumeFromGripRef.current = resumeFromGrip; }, [resumeFromGrip]);
+    const commitHeldRef = useRef(commitHeld);
+    useEffect(() => { commitHeldRef.current = commitHeld; }, [commitHeld]);
 
     // The touch listeners below are bound once per map, so they reach the
     // current callbacks through refs rather than re-binding on every render.
@@ -635,6 +826,8 @@ export const useTripRecorder = ({
          */
         const down = new Set<number>();
         let captured: number | null = null;
+        /** Where a press started, so a press that never travelled reads as a tap. */
+        let pressedAt: { x: number; y: number; at: number } | null = null;
         const release = () => {
             if (captured === null) return;
             try { container.releasePointerCapture(captured); } catch { /* already gone */ }
@@ -656,6 +849,24 @@ export const useTripRecorder = ({
         const onPointerDown = (e: PointerEvent) => {
             const kind = normalisePointerType(e.pointerType);
             pointerKindRef.current = kind;
+            pressedAt = { x: e.clientX, y: e.clientY, at: Date.now() };
+
+            // A handle on a finished drawing is grabbed the same way whatever
+            // is doing the grabbing, and with no hold: it is a thing put there
+            // to be pulled, so pulling it cannot be mistaken for a pan.
+            if (!dragStartStationRef.current) {
+                const grip = gripAtRef.current(pointAt(e.clientX, e.clientY));
+                if (grip) {
+                    if (kind !== 'mouse') {
+                        down.add(e.pointerId);
+                        try { container.setPointerCapture(e.pointerId); captured = e.pointerId; } catch { /* gone */ }
+                        haptic('select');
+                    }
+                    resumeFromGripRef.current(grip);
+                    return;
+                }
+            }
+
             if (kind === 'mouse') return;
 
             lastTouchAtRef.current = Date.now();
@@ -685,6 +896,9 @@ export const useTripRecorder = ({
         };
 
         const onPointerMove = (e: PointerEvent) => {
+            if (pressedAt && Math.hypot(e.clientX - pressedAt.x, e.clientY - pressedAt.y) > TAP_SLOP_PX) {
+                pressedAt = null;
+            }
             if (normalisePointerType(e.pointerType) === 'mouse') return;
             lastTouchAtRef.current = Date.now();
 
@@ -700,12 +914,29 @@ export const useTripRecorder = ({
         };
 
         const onPointerEnd = (e: PointerEvent) => {
-            if (normalisePointerType(e.pointerType) === 'mouse') return;
-            lastTouchAtRef.current = Date.now();
-            down.delete(e.pointerId);
-            if (e.pointerId === captured) release();
-            cancelPressRef.current();
-            handleEndRef.current();
+            const kind = normalisePointerType(e.pointerType);
+            const pressed = pressedAt;
+            pressedAt = null;
+            // A press that ended a drawing is not a tap, however still it was.
+            const wasDrawing = !!dragStartStationRef.current;
+
+            if (kind !== 'mouse') {
+                lastTouchAtRef.current = Date.now();
+                down.delete(e.pointerId);
+                if (e.pointerId === captured) release();
+                cancelPressRef.current();
+                handleEndRef.current();
+            }
+
+            // Tapping a part of the map with nothing on it means "that's it",
+            // and puts the finished drawing away. Pointer events run ahead of
+            // the compatibility mouse events, so a mouse drawing is still in
+            // progress here and cannot be put away by its own release.
+            if (wasDrawing || !pressed || !heldSpanRef.current) return;
+            if (Date.now() - pressed.at > TAP_MAX_MS) return;
+            const point = pointAt(e.clientX, e.clientY);
+            if (gripAtRef.current(point) || stationAtPointRef.current(point)) return;
+            commitHeldRef.current();
         };
 
         map.on('mousemove', onMouseMove);
@@ -740,6 +971,12 @@ export const useTripRecorder = ({
         dragGuide,
         /** Stations on the drawing the cursor never passed. */
         unsureCount,
+        /** A finished drawing still on the map, with a handle at each end. */
+        heldSpan,
+        /** What the last tap put away, while it can still be taken back. */
+        lastRecorded,
+        undoLastRecorded,
+        dismissLastRecorded,
         handleStationMouseDown,
         handleStationMouseUp: handleEnd,
         /** Station the drawing is currently pulling towards, for the snap hint. */

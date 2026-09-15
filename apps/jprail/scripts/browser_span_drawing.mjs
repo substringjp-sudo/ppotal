@@ -11,6 +11,8 @@
  *   4. **길게 그어도 끝까지 살아 있는가.** 손가락이 처음 닿은 요소가 지도 이동으로
  *      다시 그려져 사라지면, 포인터를 붙잡아 두지 않는 한 그 뒤의 이벤트가 어디에도
  *      닿지 않아 그리다 만 채 얼어붙는다.
+ *   5. **손을 떼도 편집이 이어지는가.** 양 끝 손잡이가 생기고, 빈 지도를 톡 쳐야
+ *      올라가고, 잠깐은 되돌릴 수 있는가.
  *
  * 쓰는 법 — 먼저 `npx next dev -p 3111`, 그리고
  *
@@ -128,6 +130,59 @@ const fogBadge = page => page.evaluate(() =>
 const draggable = page => page.evaluate(() => window.__MAP__.dragging.enabled());
 const centre = page => page.evaluate(() => { const c = window.__MAP__.getCenter(); return [c.lat, c.lng]; });
 const nothingRecorded = page => page.evaluate(() => document.body.innerText.includes('No trips recorded yet'));
+const gripCount = page => page.evaluate(() => document.querySelectorAll('.span-grip-marker').length);
+const undoVisible = page => page.evaluate(() =>
+    [...document.querySelectorAll('button')].some(b => b.textContent?.trim() === '되돌리기'));
+const clickUndo = page => page.locator('button:has-text("되돌리기")').first().click();
+/** 화면 안에 있는 손잡이 하나. 밀려 나간 것을 짚으면 아무 데도 닿지 않는다. */
+const onScreenGrip = page => page.evaluate(() => {
+    for (const el of document.querySelectorAll('.span-grip-marker')) {
+        const r = el.getBoundingClientRect();
+        const x = r.left + r.width / 2;
+        const y = r.top + r.height / 2;
+        if (x > 40 && y > 40 && x < window.innerWidth - 40 && y < window.innerHeight - 40) {
+            return { x: Math.round(x), y: Math.round(y) };
+        }
+    }
+    return null;
+});
+
+/**
+ * 역도 없고 위에 덮인 패널도 없는 자리를 화면 좌표로.
+ *
+ * 지도는 창 전체를 차지하고 목록·시트는 그 위에 얹혀 있다. 그래서 "역이 없는 자리"만
+ * 고르면 패널에 가려진 데를 짚어 지도에는 아무것도 닿지 않는다.
+ */
+const emptySpot = page => page.evaluate(async () => {
+    const src = await (await fetch('/rail/stations_master.json')).json();
+    const map = window.__MAP__;
+    const bounds = map.getBounds();
+    const r = map.getContainer().getBoundingClientRect();
+    const points = [];
+    for (const key of Object.keys(src)) {
+        const s = src[key];
+        if (!bounds.contains([s.lat, s.lon])) continue;
+        points.push(map.latLngToContainerPoint([s.lat, s.lon]));
+    }
+    let best = null;
+    let bestClearance = -1;
+    for (let x = 60; x < r.width - 60; x += 25) {
+        for (let y = 60; y < r.height - 60; y += 25) {
+            let nearest = Infinity;
+            for (const pt of points) {
+                const d = Math.hypot(pt.x - x, pt.y - y);
+                if (d < nearest) nearest = d;
+                if (nearest < bestClearance) break;
+            }
+            if (nearest <= bestClearance) continue;
+            const at = document.elementFromPoint(x + r.left, y + r.top);
+            if (!at || !map.getContainer().contains(at)) continue;
+            bestClearance = nearest;
+            best = { x: Math.round(x + r.left), y: Math.round(y + r.top), clearance: Math.round(nearest) };
+        }
+    }
+    return best;
+});
 const toucher = async (ctx, page) => {
     const cdp = await ctx.newCDPSession(page);
     return (type, x, y) => cdp.send('Input.dispatchTouchEvent', {
@@ -178,9 +233,55 @@ console.log('넓은 창 + 손가락: 눌러 두고 긋기');
     await page.waitForTimeout(900);
     // 여기까지 오면 포인터를 붙잡아 둔 덕이다. 놓아 두면 지도가 밀리는 사이 손가락이
     // 처음 닿은 선이 다시 그려져 사라지고, 그 뒤의 이벤트가 어디에도 닿지 않는다.
-    ok((await fogBadge(page)) === null, '길게 긋고 손을 떼도 그리던 표시가 걷힌다');
     ok(await draggable(page), '손을 떼면 지도를 다시 끌 수 있다');
-    ok(!(await nothingRecorded(page)), '손을 떼면 기록이 남는다');
+    ok((await gripCount(page)) === 2, '손을 떼면 양 끝에 손잡이가 남는다');
+    ok(await nothingRecorded(page), '손을 뗀 것만으로는 아직 올라가지 않는다');
+    await ctx.close();
+}
+
+console.log('넓은 창 + 손가락: 떼고 나서 고치고 올리기');
+{
+    const { ctx, page } = await open(true);
+    const touch = await toucher(ctx, page);
+    const st = await nearestStation(page);
+
+    await touch('touchStart', st.x, st.y);
+    await page.waitForTimeout(520);
+    for (let i = 1; i <= 20; i += 1) {
+        await touch('touchMove', st.x - i * 7, st.y + i * 2);
+        await page.waitForTimeout(16);
+    }
+    await page.waitForTimeout(200);
+    await touch('touchEnd', st.x - 140, st.y + 40);
+    await page.waitForTimeout(700);
+    ok((await gripCount(page)) === 2, '그리고 떼면 손잡이 둘');
+
+    // 손잡이를 잡으면 눌러 두지 않아도 바로 이어 그린다.
+    const grip = await onScreenGrip(page);
+    ok(grip !== null, '손잡이가 화면 안에 있다');
+    if (grip) {
+        await touch('touchStart', grip.x, grip.y);
+        await page.waitForTimeout(150);
+        ok(!(await draggable(page)), '손잡이는 눌러 두지 않아도 바로 잡힌다');
+        await touch('touchMove', grip.x + 24, grip.y + 8);
+        await page.waitForTimeout(60);
+        await touch('touchEnd', grip.x + 24, grip.y + 8);
+        await page.waitForTimeout(600);
+        ok((await gripCount(page)) === 2, '손잡이를 놓아도 구간은 그대로 남는다');
+    }
+
+    // 아무것도 없는 곳을 톡 치면 그때 올라간다.
+    const empty = await emptySpot(page);
+    await touch('touchStart', empty.x, empty.y);
+    await page.waitForTimeout(90);
+    await touch('touchEnd', empty.x, empty.y);
+    await page.waitForTimeout(700);
+    ok(!(await nothingRecorded(page)), '빈 지도를 톡 치면 올라간다', `빈 자리 ${empty.clearance}px`);
+    ok((await gripCount(page)) === 0, '올리고 나면 손잡이가 걷힌다');
+    ok(await undoVisible(page), '잠깐은 되돌릴 수 있다');
+    await clickUndo(page);
+    await page.waitForTimeout(700);
+    ok(await nothingRecorded(page), '되돌리면 기록에서 사라진다');
     await ctx.close();
 }
 
@@ -220,7 +321,15 @@ console.log('넓은 창 + 마우스');
     await page.mouse.up();
     await page.waitForTimeout(900);
     ok(await draggable(page), '마우스를 떼면 지도를 다시 끌 수 있다');
-    ok(!(await nothingRecorded(page)), '마우스로 그은 것도 기록으로 남는다');
+    ok((await gripCount(page)) === 2, '마우스로 그은 것도 손잡이가 남는다');
+
+    const empty = await emptySpot(page);
+    await page.mouse.move(empty.x, empty.y);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.waitForTimeout(700);
+    ok(!(await nothingRecorded(page)), '빈 지도를 누르면 올라간다');
+    ok(await undoVisible(page), '마우스로도 되돌릴 수 있다');
     await ctx.close();
 }
 

@@ -44,6 +44,8 @@ interface MapPaneProps {
     /** 목록에서 고른 여정. 지도에 시작·종료를 따로 찍어 어디서 타고 내렸는지 보여 준다. */
     selectedTrip?: Trip | null;
     onRecordTrip?: (trip: Trip) => void;
+    /** 방금 올린 것을 되돌릴 때. 기록 목록에서 지우는 것과 같은 길을 쓴다. */
+    onDeleteTrip?: (id: string) => void;
     onRailroadClick?: (line: string) => void;
     onStationClick?: (name: string, lines?: string[]) => void;
     onLengthsCalculated?: (lengths: Record<string, number>) => void;
@@ -105,6 +107,7 @@ const MapPane: React.FC<MapPaneProps> = ({
     recordedTrips,
     selectedTrip,
     onRecordTrip,
+    onDeleteTrip,
     onRailroadClick,
     onStationClick,
     onLengthsCalculated,
@@ -349,6 +352,10 @@ const MapPane: React.FC<MapPaneProps> = ({
         dragPathUnsure,
         dragGuide,
         unsureCount,
+        heldSpan,
+        lastRecorded,
+        undoLastRecorded,
+        dismissLastRecorded,
         handleStationMouseDown: rawHandleStationMouseDown,
         handleStationMouseUp: rawHandleStationMouseUp,
         snapCandidate,
@@ -357,7 +364,7 @@ const MapPane: React.FC<MapPaneProps> = ({
         railData,
         visibleStations,
         onRecordTrip,
-
+        onDeleteTrip,
         onDraftComplete,
         onDragUpdate,
         selectedLines,
@@ -727,6 +734,23 @@ const MapPane: React.FC<MapPaneProps> = ({
     }), []);
 
     /**
+     * 다 그린 구간의 양 끝 손잡이.
+     *
+     * 잡아서 끌라고 놓아 둔 것이라 역보다 크다 — 44pt 를 채우는 히트 영역에 눈에
+     * 보이는 고리를 얹었다. 이게 있어서 손을 뗀 뒤에도 편집이 끝나지 않는다.
+     */
+    const gripIcon = useMemo(() => L.divIcon({
+        className: 'span-grip-marker',
+        html: `<span style="
+            display:block;width:22px;height:22px;
+            background:#fff;border:4px solid #007AFF;border-radius:50%;
+            box-shadow:0 2px 6px rgba(0,0,0,0.25);
+            box-sizing:border-box;"></span>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+    }), []);
+
+    /**
      * 탄 여정의 시작·종료 표시.
      *
      * 색만 다르게 하면 색각 이상이 있는 사람에게는 같은 점 두 개다. 그래서 **모양도**
@@ -971,6 +995,52 @@ const MapPane: React.FC<MapPaneProps> = ({
                 />
             ))}
 
+            {/* 다 그렸지만 아직 올리지 않은 구간.
+                손을 떼도 지도에 남아 있고, 양 끝 손잡이를 끌면 시작·도착이
+                바뀐다. 아무것도 없는 곳을 톡 치면 그때 올라간다. */}
+            {heldSpan && (
+                <>
+                    {heldSpan.sure.map((segment, idx) => (
+                        <Polyline
+                            key={`held-seg-${idx}`}
+                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#007AFF', weight: 12, opacity: 0.55,
+                                lineCap: 'round', lineJoin: 'round', pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                    {heldSpan.unsure.map((segment, idx) => (
+                        <Polyline
+                            key={`held-fog-${idx}`}
+                            positions={segment.map(c => [c[1], c[0]] as [number, number])}
+                            pathOptions={{
+                                color: '#007AFF', weight: 12, opacity: 0.32, dashArray: '2 16',
+                                lineCap: 'round', lineJoin: 'round', pane: 'ui-elements'
+                            }}
+                            interactive={false}
+                        />
+                    ))}
+                    <Marker
+                        key="held-grip-start"
+                        position={[heldSpan.start.lat, heldSpan.start.lon]}
+                        icon={gripIcon}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1300}
+                    />
+                    <Marker
+                        key="held-grip-finish"
+                        position={[heldSpan.finish.lat, heldSpan.finish.lon]}
+                        icon={gripIcon}
+                        interactive={false}
+                        keyboard={false}
+                        zIndexOffset={1301}
+                    />
+                </>
+            )}
+
             {/* 고른 여정의 시작과 종료. 겹쳐 있으면(왕복) 종료가 위로 온다. */}
             {tripEnds && (
                 <>
@@ -1114,14 +1184,23 @@ const MapPane: React.FC<MapPaneProps> = ({
                 고칠 후보를 늘어놓지 않는다 — 가운데가 기억나지 않는 사람에게
                 목록을 줘도 고를 수가 없다. 몇 역이 흐린지만 알리고, 고치고
                 싶으면 그 자리를 다시 그으면 된다. */}
-            {dragStartStation && unsureCount > 0 && (
+            {(() => {
+                const fog = dragStartStation ? unsureCount : (heldSpan?.unsureCount ?? 0);
+                return fog > 0;
+            })() && (
                 <div
                     style={{
+                        // 지도 조작줄 바로 아래. 위쪽 한가운데는 그 줄이 쓰고 있고,
+                        // 아래쪽 한가운데는 기록 시트가 올라오면 덮인다.
                         position: 'absolute',
-                        top: '20px',
+                        top: '64px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        zIndex: Z.mapOverlay,
+                        // 이 조각은 지도 컨테이너 **안**에 그려진다. leaflet 의 pane
+                        // 들이 200~700 을 쓰고 있어서 mapOverlay(100) 로는 그 밑에
+                        // 깔린다 — 선을 짚으라고 깔아 둔 투명한 히트 영역까지
+                        // 포함해서.
+                        zIndex: Z.toast,
                         padding: '7px 14px',
                         borderRadius: '20px',
                         backgroundColor: 'rgba(255, 255, 255, 0.85)',
@@ -1133,8 +1212,57 @@ const MapPane: React.FC<MapPaneProps> = ({
                     className="dark:bg-slate-900/85 dark:border-slate-800/40"
                 >
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                        {`흐림 ${unsureCount}역`}
+                        {`흐림 ${dragStartStation ? unsureCount : heldSpan?.unsureCount ?? 0}역`}
                     </span>
+                </div>
+            )}
+
+            {/* 방금 올린 것을 되돌릴 수 있는 잠깐.
+                빈 지도를 톡 치는 것은 "아무것도 없다"는 뜻으로도 쓰는 손짓이라
+                실수로 올리기 쉽다. 올리기가 쉬운 만큼 되돌리기도 쉬워야 한다. */}
+            {lastRecorded && (
+                <div
+                    style={{
+                        // 흐림 배지와 같은 자리. 둘이 같이 뜨는 일은 없다 — 올리고
+                        // 나면 그리던 구간은 더 이상 지도에 없다.
+                        position: 'absolute',
+                        top: '64px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        // 흐림 배지와 같은 이유로 pane 위에 올린다. 이건 누를 수
+                        // 있어야 하므로 깔리면 아예 못 누른다.
+                        zIndex: Z.toast,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '10px 12px 10px 18px',
+                        borderRadius: '20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                        border: '1px solid rgba(255, 255, 255, 0.4)',
+                        pointerEvents: 'auto'
+                    }}
+                    className="dark:bg-slate-900/90 dark:border-slate-800/40"
+                >
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                        {`지도에 올렸습니다 · ${lastRecorded.distance} km`}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={undoLastRecorded}
+                        className="text-xs font-black text-primary px-3 h-9 rounded-2xl bg-primary/10 hover:bg-primary/20"
+                    >
+                        되돌리기
+                    </button>
+                    <button
+                        type="button"
+                        onClick={dismissLastRecorded}
+                        aria-label="닫기"
+                        className="material-symbols-outlined text-slate-400 hover:text-slate-600 text-lg leading-none"
+                    >
+                        close
+                    </button>
                 </div>
             )}
 

@@ -1160,6 +1160,7 @@ const MainPageClient = () => {
                                     selectedLines={selectedLines}
                                     recordedTrips={recordedTrips}
                                     onRecordTrip={handleRecordTrip}
+                                    onDeleteTrip={handleDeleteTrip}
                                     regionevelVisits={regionevelVisits}
                                     onRailroadClick={handleRailroadClick}
                                     onStationClick={handleStationClick}
