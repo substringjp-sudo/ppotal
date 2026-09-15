@@ -11,6 +11,7 @@
     "verify:links": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_boundary_links.cjs",
     "verify:walk": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_walk_transfers.cjs",
     "verify:tripedit": "tsc src/lib/tripEditing.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_trip_editing.cjs",
+    "verify:span": "tsc src/lib/edgePan.ts src/lib/spanCertainty.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_span_drawing.cjs",
     "verify:transfer": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_transfer_walk.cjs"
   },
   "dependencies": {
