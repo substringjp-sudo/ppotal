@@ -433,6 +433,8 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
     const [hoveredId, setHoveredId] = useState<string | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [searchProgress, setSearchProgress] = useState<RouteSearchProgress | null>(null);
+    // 끄면 선로로만 잇는다. 역과 역이 코앞이어도 걷지 않으므로 길이 없을 수도 있다.
+    const [allowWalkTransfer, setAllowWalkTransfer] = useState(true);
     const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
@@ -540,7 +542,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
         try {
             const result = await findCandidateRoutesAsync(stops, railData, prog => {
                 setSearchProgress(prog);
-            });
+            }, { allowWalkTransfer });
 
             const initial: Record<number, string> = {};
             result.legs.forEach(leg => {
@@ -557,7 +559,7 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
             setIsSearching(false);
             setSearchProgress(null);
         }
-    }, [startStation, endStation, viaStations, railData]);
+    }, [startStation, endStation, viaStations, railData, allowWalkTransfer]);
 
     const handleCreateTrip = () => {
         if (!startStation || !endStation || !allLegsSelected) return;
@@ -670,6 +672,21 @@ export const RouteGeneratorModal: React.FC<RouteGeneratorModalProps> = ({
                                 railData={railData}
                                 regionNames={regionNames}
                             />
+
+                            <label
+                                className="flex items-center gap-2 pt-1 cursor-pointer select-none"
+                                title={t.excludeWalkHint}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={!allowWalkTransfer}
+                                    onChange={e => setAllowWalkTransfer(!e.target.checked)}
+                                    className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                                />
+                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                                    {t.excludeWalk}
+                                </span>
+                            </label>
 
                             <div className="flex items-center gap-1.5 pt-0.5">
                                 <button

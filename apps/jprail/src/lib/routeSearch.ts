@@ -67,6 +67,18 @@ const UNBOARDED = -1; // state line id meaning "not on a train yet"
 
 /** Walking transfers are only created between same-named stations closer than this. */
 const MAX_WALK_TRANSFER_KM = 1.5;
+/**
+ * How close two *differently named* stations must be to count as one place.
+ *
+ * Linking only same-name stations leaves 鷹ノ巣 and 鷹巣, 諫早 and 諫早（雲仙・島原口）,
+ * 人吉 and 人吉温泉 as strangers even though their coordinates are identical — so a
+ * 1.2km hop came out as a 240km detour. Same-name pairs number 49 in this dataset;
+ * differently-named pairs within 300m number 474.
+ *
+ * Beyond 300m the question stops being "can you walk it" and becomes "do the rails
+ * actually join", which this rule cannot answer.
+ */
+const MAX_NEARBY_TRANSFER_KM = 0.3;
 
 export interface RouteEdge {
     to: string;
@@ -292,6 +304,17 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
         else stationsByName.set(st.name, [st.id]);
     });
 
+    const walked = new Set<string>();
+    const linkWalk = (a: Station, b: Station, km: number) => {
+        if (!a || !b || a.id === b.id) return;
+        if (!adj.has(a.id) || !adj.has(b.id)) return;
+        const key = a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
+        if (walked.has(key)) return;
+        walked.add(key);
+        pushEdge(a.id, { to: b.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+        pushEdge(b.id, { to: a.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+    };
+
     stationsByName.forEach(ids => {
         if (ids.length < 2) return;
         for (let i = 0; i < ids.length; i++) {
@@ -299,13 +322,36 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                 const a = railData.stations[ids[i]];
                 const b = railData.stations[ids[j]];
                 if (!a || !b) continue;
-                if (!adj.has(a.id) || !adj.has(b.id)) continue;
-
                 const km = haversineDistance([a.lon, a.lat], [b.lon, b.lat]);
                 if (km > MAX_WALK_TRANSFER_KM) continue;
+                linkWalk(a, b, km);
+            }
+        }
+    });
 
-                pushEdge(a.id, { to: b.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
-                pushEdge(b.id, { to: a.id, distance: km, lineIds: [WALK_LINE], sectionIds: [], isWalk: true });
+    // Differently named stations that sit on top of each other. Bucketed by a
+    // 0.01° grid: comparing all 9,000 stations pairwise is 80M checks.
+    const CELL = 0.01;
+    const cells = new Map<string, Station[]>();
+    Object.values(railData.stations || {}).forEach(st => {
+        const key = `${Math.floor(st.lat / CELL)}|${Math.floor(st.lon / CELL)}`;
+        const bucket = cells.get(key);
+        if (bucket) bucket.push(st);
+        else cells.set(key, [st]);
+    });
+    Object.values(railData.stations || {}).forEach(st => {
+        const cy = Math.floor(st.lat / CELL);
+        const cx = Math.floor(st.lon / CELL);
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const bucket = cells.get(`${cy + dy}|${cx + dx}`);
+                if (!bucket) continue;
+                for (const other of bucket) {
+                    if (other.id === st.id || other.name === st.name) continue;
+                    const km = haversineDistance([st.lon, st.lat], [other.lon, other.lat]);
+                    if (km > MAX_NEARBY_TRANSFER_KM) continue;
+                    linkWalk(st, other, km);
+                }
             }
         }
     });
@@ -399,6 +445,13 @@ interface SearchOptions {
     transferPenalty: number;
     /** Line groups whose usage is multiplied in cost, used to force genuinely different alternatives. */
     penalizedLines?: Set<number>;
+    /**
+     * When false, never walk between stations — only rails count.
+     *
+     * Some places are then unreachable, which is the honest answer rather than a
+     * failure: it means the rails do not join.
+     */
+    allowWalkTransfer?: boolean;
 }
 
 interface RawPath {
@@ -456,6 +509,7 @@ function searchPath(
 
         for (const edge of edges) {
             if (edge.isWalk) {
+                if (options.allowWalkTransfer === false) continue;
                 // Walking only makes sense between two rides.
                 if (current.line === UNBOARDED) continue;
                 const nextKey = stateKey(edge.to, UNBOARDED);
@@ -726,7 +780,8 @@ function searchLeg(
     railData: RailData,
     startStation: Station,
     endStation: Station,
-    legIndex: number
+    legIndex: number,
+    allowWalkTransfer: boolean
 ): CandidateRoute[] {
     const startIds = resolveEndpoints(startStation, graph, railData);
     const targetIds = resolveEndpoints(endStation, graph, railData);
@@ -754,7 +809,7 @@ function searchLeg(
     // Primary objectives: fewest transfers, a realistic balance, and near-shortest.
     [MIN_TRANSFER_PENALTY, BALANCED_PENALTY, FAST_PENALTY].forEach(transferPenalty => {
         if (found.length >= MAX_CANDIDATES_PER_LEG) return;
-        accept(searchPath(graph, startIds, targetIds, { transferPenalty }));
+        accept(searchPath(graph, startIds, targetIds, { transferPenalty, allowWalkTransfer }));
     });
 
     if (found.length === 0) return [];
@@ -770,7 +825,8 @@ function searchLeg(
 
         const alternative = searchPath(graph, startIds, targetIds, {
             transferPenalty: BALANCED_PENALTY,
-            penalizedLines
+            penalizedLines,
+            allowWalkTransfer
         });
         if (!alternative) break;
         if (alternative.distance > bestDistance * ALT_DISTANCE_SLACK + ALT_DISTANCE_MARGIN) break;
@@ -805,9 +861,15 @@ function searchLeg(
  * Searches candidate routes connecting a series of waypoints (Start -> Via 1 -> ... -> End).
  * Each leg is solved independently and returns up to 4 meaningfully different itineraries.
  */
+export interface RouteSearchOptions {
+    /** When false, routes are found using rails only — no walking between stations. */
+    allowWalkTransfer?: boolean;
+}
+
 export function findCandidateRoutes(
     waypoints: Station[],
-    railData: RailData | null
+    railData: RailData | null,
+    options: RouteSearchOptions = {}
 ): RouteSearchResult {
     if (!railData || !waypoints || waypoints.length < 2) {
         return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
@@ -822,7 +884,9 @@ export function findCandidateRoutes(
     for (let i = 0; i < waypoints.length - 1; i++) {
         const startStation = waypoints[i];
         const endStation = waypoints[i + 1];
-        const candidates = searchLeg(graph, railData, startStation, endStation, i);
+        const candidates = searchLeg(
+            graph, railData, startStation, endStation, i, options.allowWalkTransfer !== false
+        );
 
         if (candidates.length === 0) {
             return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
@@ -852,7 +916,8 @@ export interface RouteSearchProgress {
 export async function findCandidateRoutesAsync(
     waypoints: Station[],
     railData: RailData | null,
-    onProgress?: (progress: RouteSearchProgress) => void
+    onProgress?: (progress: RouteSearchProgress) => void,
+    options: RouteSearchOptions = {}
 ): Promise<RouteSearchResult> {
     if (!railData || !waypoints || waypoints.length < 2) {
         return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
@@ -884,7 +949,9 @@ export async function findCandidateRoutesAsync(
         });
         await new Promise(r => setTimeout(r, 10));
 
-        const candidates = searchLeg(graph, railData, startStation, endStation, i);
+        const candidates = searchLeg(
+            graph, railData, startStation, endStation, i, options.allowWalkTransfer !== false
+        );
 
         if (candidates.length === 0) {
             return { legs: [], totalCandidatesCount: 0, hasTooManyCandidates: false };
