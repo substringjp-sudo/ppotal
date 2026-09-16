@@ -373,6 +373,11 @@ function addJunctionEdges(
         existing.add(`${from}|${to}`);
     };
 
+    // 같은 역쌍에 여러 체인이 닿으면 **가장 짧은 것**만 남긴다. 먼저 닿은 것을 쓰면
+    // 米原↔醒ヶ井 이 6.088km(米原–J_642)로 잡힌다 — 5.906km(米原–J_493–J_642)가 있는데도.
+    // 앱(`GraphRepair`)도 같은 규칙이라 이렇게 해야 양쪽 답이 같다.
+    const best = new Map<string, { from: string; to: string; km: number; lineId: number; sectionIds: number[] }>();
+
     Array.from(incident.keys()).filter(isStation).sort().forEach(start => {
         const startLines = platformLines.get(start);
         if (!startLines) return;
@@ -403,15 +408,25 @@ function addJunctionEdges(
                     if (isStation(next.other)) {
                         if (!platformLines.get(next.other)?.has(lineName)) return;
                         if (existing.has(`${start}|${next.other}`)) return;
-                        const sectionIds = [...step.used, next.sectionId];
-                        push(start, next.other, km, first.lineId, sectionIds);
-                        push(next.other, start, km, first.lineId, sectionIds);
+                        const key = start < next.other ? `${start}|${next.other}` : `${next.other}|${start}`;
+                        const previous = best.get(key);
+                        if (previous && previous.km <= km) return;
+                        best.set(key, { from: start, to: next.other, km, lineId: first.lineId, sectionIds: [...step.used, next.sectionId] });
                     } else if (!settled.has(next.other)) {
                         queue.push({ km, joint: next.other, used: [...step.used, next.sectionId] });
                     }
                 });
             }
         });
+    });
+
+    best.forEach(entry => {
+        if (!existing.has(`${entry.from}|${entry.to}`)) {
+            push(entry.from, entry.to, entry.km, entry.lineId, entry.sectionIds);
+        }
+        if (!existing.has(`${entry.to}|${entry.from}`)) {
+            push(entry.to, entry.from, entry.km, entry.lineId, entry.sectionIds);
+        }
     });
 }
 
