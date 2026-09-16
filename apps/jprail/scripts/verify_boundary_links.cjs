@@ -149,6 +149,20 @@ ok(recovered.has('米原↔醒ヶ井'), '도카이도선 미하라 이음매(米
 ok(recovered.has('上の町↔児島'), '세토대교(上の町↔児島)가 이어져야 한다');
 ok(recovered.has('杉原↔猪谷'), '다카야마 본선(杉原↔猪谷)이 이어져야 한다');
 
+// station_graph 가 이웃을 말하는데 그래프에는 선로 간선이 하나도 없는 역.
+// `lines.json` 의 0 번은 IRいしかわ鉄道線 인데, 이걸 "노선 없음"으로 보고 간선을
+// 통째로 버리던 때 東金沢·森本 이 이렇게 사라졌다. 앱에는 없던 증상이라 같은 기록에서
+// 앱과 웹이 다른 경로를 냈다.
+const stranded = [];
+for (const [from, neighbours] of Object.entries(stationGraph)) {
+    if (!stationsMaster[from]) continue;
+    const wanted = Object.keys(neighbours || {}).filter((to) => stationsMaster[to]);
+    if (wanted.length === 0) continue;
+    if ((graph.adj.get(from) || []).some((edge) => !edge.isWalk)) continue;
+    stranded.push(nameOf(from));
+}
+ok(stranded.length === 0, `station_graph 에 이웃이 있는데 선로 간선이 사라진 역: ${JSON.stringify(stranded)}`);
+
 // 접합부가 역처럼 섞여 들어오면 없는 노선이 생긴다.
 let jointLeak = 0;
 graph.adj.forEach((edges, from) => {

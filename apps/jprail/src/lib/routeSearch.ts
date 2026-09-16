@@ -76,7 +76,14 @@ export interface RouteSearchResult {
  * Graph
  * ------------------------------------------------------------------ */
 
-const WALK_LINE = 0; // pseudo line id for a walking transfer
+/**
+ * 도보 환승을 나타내는 가짜 노선 id.
+ *
+ * 0 이면 **안 된다** — `lines.json` 의 0 번은 IRいしかわ鉄道線 이라 진짜 노선과
+ * 값이 겹친다. 겹친 채로 두면 이시카와선을 탄 구간이 "걸어서 갈아탔다"로 세어진다.
+ * -1 은 [UNBOARDED] 가 쓰므로 -2 를 쓴다.
+ */
+const WALK_LINE = -2;
 const UNBOARDED = -1; // state line id meaning "not on a train yet"
 
 /** Walking transfers are only created between same-named stations closer than this. */
@@ -274,7 +281,7 @@ function addContractedJointEdges(
                 if (!section) return;
                 const km = (section.length || 0) / 1000;
                 distance += km;
-                if (section.line_id > 0) {
+                if (section.line_id >= 0) {
                     lengthByLine.set(section.line_id, (lengthByLine.get(section.line_id) || 0) + km);
                 }
             });
@@ -452,7 +459,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                     sectionIds.push(sid);
                     const km = (sec.length || 0) / 1000;
                     distance += km;
-                    if (sec.line_id > 0) {
+                    if (sec.line_id >= 0) {
                         lengthByLine.set(sec.line_id, (lengthByLine.get(sec.line_id) || 0) + km);
                     }
                 });
