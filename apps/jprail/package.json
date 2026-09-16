@@ -18,8 +18,9 @@
     "verify:span:browser": "node scripts/browser_span_drawing.mjs",
     "verify:transfer": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_transfer_walk.cjs",
     "verify:manifest": "node scripts/verify_rail_manifest.cjs",
-    "verify:all": "npm run verify:links && npm run verify:manifest && npm run verify:fixture && npm run verify:walk && npm run verify:transfer && npm run verify:span && npm run verify:tripedit && npm run verify:animation",
-    "verify:fixture": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_route_fixture.cjs"
+    "verify:all": "npm run verify:links && npm run verify:manifest && npm run verify:fixture && npm run verify:rules && npm run verify:walk && npm run verify:transfer && npm run verify:span && npm run verify:tripedit && npm run verify:animation",
+    "verify:fixture": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_route_fixture.cjs",
+    "verify:rules": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_rules.cjs"
   },
   "dependencies": {
     "@turf/turf": "^7.3.4",

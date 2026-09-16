@@ -43,7 +43,8 @@ function railData() {
         stations: read('stations_master.json'),
         sections: { sections, lod: { high: sections, mid: sections, low: sections } },
         railroadNetwork: { ...read('railroad_network_lite.json'), station_graph: read('station_graph.json') },
-        graphPatch: read('graph_patch.json')
+        graphPatch: read('graph_patch.json'),
+        rules: read('rules.json')
     };
 }
 

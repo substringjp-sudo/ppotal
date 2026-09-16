@@ -180,6 +180,21 @@ export interface GraphPatch {
     edges: GraphPatchEdge[];
 }
 
+/**
+ * `rail/rules.json` — 앱과 웹이 함께 읽는 값.
+ *
+ * 같은 뜻을 가진 값이 Kotlin 과 TypeScript 에 따로 적혀 있으면 언젠가 갈라진다.
+ * 실제로 갈라졌다 — 이름이 같은 역을 걸어서 잇는 거리가 웹 1.5km, 앱 1.0km 였다.
+ * 여기 있는 것만 런타임에 읽고, 나머지(환승 시간 어림값 등)는 양쪽 코드에 상수로
+ * 두되 이 파일과 같은지 검증이 본다.
+ */
+export interface RailRules {
+    walk_transfer?: {
+        same_name_max_km?: number;
+        nearby_max_km?: number;
+    };
+}
+
 export interface RailData {
     companies: Record<string, Company>;
     lines: Record<string, Line>;
@@ -204,6 +219,8 @@ export interface RailData {
     stationsLod?: StationLod[];
     /** 빌드 때 미리 계산한 보수 간선. 없으면 규칙을 그 자리에서 돌린다. */
     graphPatch?: GraphPatch;
+    /** 앱과 함께 읽는 값. 없으면 아래 기본값을 쓴다. */
+    rules?: RailRules;
 }
 
 /**

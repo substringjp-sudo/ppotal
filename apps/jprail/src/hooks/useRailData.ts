@@ -68,6 +68,11 @@ export const useRailData = () => {
                             .then(res => (res.ok ? res.json() : null))
                             .catch(() => null);
 
+                        // 앱과 함께 읽는 값(도보 환승 반경 등). 없으면 lib/routeSearch 의 기본값.
+                        const rules = await fetch('/rail/rules.json')
+                            .then(res => (res.ok ? res.json() : null))
+                            .catch(() => null);
+
                         const [
                             companies,
                             lines,
@@ -127,7 +132,8 @@ export const useRailData = () => {
                             hierarchy: buildHierarchyFromLineData(railroadNetworkLite.line_data),
                             joints,
                             stationsLod,
-                            graphPatch: graphPatch || undefined
+                            graphPatch: graphPatch || undefined,
+                            rules: rules || undefined
                         } as RailData;
                     })();
                 }

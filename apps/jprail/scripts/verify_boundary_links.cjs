@@ -48,7 +48,8 @@ const railData = {
     stations: stationsMaster,
     sections: { sections, lod: { high: sections, mid: sections, low: sections } },
     railroadNetwork: { ...railroadNetworkLite, station_graph: stationGraph },
-    graphPatch
+    graphPatch,
+    rules: read('rules.json')
 };
 
 /** 되살아나야 하는 연결. `역A↔역B`, 이름 오름차순. */

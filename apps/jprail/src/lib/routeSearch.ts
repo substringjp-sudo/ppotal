@@ -95,7 +95,7 @@ const UNBOARDED = -1; // state line id meaning "not on a train yet"
  * 石川·平野·御影·市場·長田 다섯 쌍이 1.0~1.5km 사이에 있었다. 이름이 다른 역을
  * 잇는 규칙이 300m 인 것과도 앞뒤가 맞는다.
  */
-const MAX_WALK_TRANSFER_KM = 1.0;
+export const MAX_WALK_TRANSFER_KM = 1.0;
 /**
  * How close two *differently named* stations must be to count as one place.
  *
@@ -107,7 +107,7 @@ const MAX_WALK_TRANSFER_KM = 1.0;
  * Beyond 300m the question stops being "can you walk it" and becomes "do the rails
  * actually join", which this rule cannot answer.
  */
-const MAX_NEARBY_TRANSFER_KM = 0.3;
+export const MAX_NEARBY_TRANSFER_KM = 0.3;
 
 export interface RouteEdge {
     to: string;
@@ -230,7 +230,7 @@ function buildLineGroups(adj: Map<string, RouteEdge[]>, railData: RailData): Map
 const graphCache = new WeakMap<RailData, RouteGraph>();
 
 /** Longest chain of joints we will collapse into a single station-to-station edge. */
-const MAX_JOINT_CHAIN = 40;
+export const MAX_JOINT_CHAIN = 40;
 
 /**
  * station_graph.json is missing a handful of station-to-station links — most
@@ -335,8 +335,8 @@ function addContractedJointEdges(
  * 330·381·382·484). OpenStreetMap 선로로 43쌍을 따로 맞췄고, OSM 에 자료가 있던
  * 23쌍에서 답이 모두 같았다. 앱(jpApp)의 `domain/engine/GraphRepair.kt` 와 같은 규칙이다.
  */
-const MAX_JUNCTION_CHAIN_KM = 30;
-const MAX_JUNCTION_CHAIN_SECTIONS = 40;
+export const MAX_JUNCTION_CHAIN_KM = 30;
+export const MAX_JUNCTION_CHAIN_SECTIONS = 40;
 
 function addJunctionEdges(
     railData: RailData,
@@ -604,6 +604,11 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
         else stationsByName.set(st.name, [st.id]);
     });
 
+    // 반경은 `rail/rules.json` 이 원본이다. 앱(`WalkTransfers`)도 같은 파일을 읽는다.
+    // 파일이 없으면 아래 기본값 — 지금 파일에 적힌 것과 같은 값이다.
+    const sameNameMaxKm = railData.rules?.walk_transfer?.same_name_max_km ?? MAX_WALK_TRANSFER_KM;
+    const nearbyMaxKm = railData.rules?.walk_transfer?.nearby_max_km ?? MAX_NEARBY_TRANSFER_KM;
+
     const walked = new Set<string>();
     const linkWalk = (a: Station, b: Station, km: number) => {
         if (!a || !b || a.id === b.id) return;
@@ -623,7 +628,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                 const b = railData.stations[ids[j]];
                 if (!a || !b) continue;
                 const km = haversineDistance([a.lon, a.lat], [b.lon, b.lat]);
-                if (km > MAX_WALK_TRANSFER_KM) continue;
+                if (km > sameNameMaxKm) continue;
                 linkWalk(a, b, km);
             }
         }
@@ -649,7 +654,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                 for (const other of bucket) {
                     if (other.id === st.id || other.name === st.name) continue;
                     const km = haversineDistance([st.lon, st.lat], [other.lon, other.lat]);
-                    if (km > MAX_NEARBY_TRANSFER_KM) continue;
+                    if (km > nearbyMaxKm) continue;
                     linkWalk(st, other, km);
                 }
             }
