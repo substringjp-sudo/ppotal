@@ -153,6 +153,33 @@ export interface RailroadNetwork {
     sections: Record<string, NetworkSection>;
 }
 
+/**
+ * 미리 계산해 둔 그래프 보수 간선 한 줄.
+ *
+ * `station_graph.json` 은 노선이 갈리는 자리에서 간선을 빠뜨린다. 그걸 되살리는
+ * 규칙이 웹(`lib/routeSearch`)과 앱(`domain/engine/GraphRepair.kt`)에 **따로**
+ * 구현되어 있어 한쪽만 틀리는 일이 실제로 있었다. 그래서 규칙은 빌드 때 한 번만
+ * 돌리고(`scripts/build_graph_patch.cjs`) 결과를 `public/rail/graph_patch.json`
+ * 으로 내보낸다. 앱과 웹은 이 목록을 읽기만 한다.
+ *
+ * 한 역쌍은 한 줄로만 적혀 있고, 읽는 쪽이 양방향으로 넣는다.
+ */
+export interface GraphPatchEdge {
+    from: string;
+    to: string;
+    /** 두 역 사이 선로 길이(km). */
+    km: number;
+    /** 길이가 긴 노선부터. */
+    line_ids: number[];
+    section_ids: number[];
+    /** 어느 규칙이 만들었는지. 사람이 읽기 위한 것으로 적용에는 쓰지 않는다. */
+    rule?: string;
+}
+
+export interface GraphPatch {
+    edges: GraphPatchEdge[];
+}
+
 export interface RailData {
     companies: Record<string, Company>;
     lines: Record<string, Line>;
@@ -175,6 +202,8 @@ export interface RailData {
     };
     railroadNetwork?: RailroadNetwork;
     stationsLod?: StationLod[];
+    /** 빌드 때 미리 계산한 보수 간선. 없으면 규칙을 그 자리에서 돌린다. */
+    graphPatch?: GraphPatch;
 }
 
 /**

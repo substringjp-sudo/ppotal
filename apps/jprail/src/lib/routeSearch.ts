@@ -1,4 +1,4 @@
-import { RailData, Station, Section } from '../types/railData';
+import { RailData, Station, Section, GraphPatch, GraphPatchEdge } from '../types/railData';
 import {
     TransferPlatform,
     bearingOf,
@@ -415,6 +415,126 @@ function addJunctionEdges(
     });
 }
 
+/** `station_graph.json` 이 말하는 간선만 담는다. 보수는 하지 않는다. */
+function addStationGraphEdges(
+    railData: RailData,
+    sections: Map<number, Section>,
+    adj: Map<string, RouteEdge[]>
+) {
+    const stationGraph = railData.railroadNetwork?.station_graph as
+        | Record<string, Record<string, { section_ids?: (number | string)[]; available_lines?: (number | string)[] }>>
+        | undefined;
+    if (!stationGraph) return;
+
+    Object.entries(stationGraph).forEach(([from, neighbors]) => {
+        if (!adj.has(from)) adj.set(from, []);
+
+        Object.entries(neighbors || {}).forEach(([to, conn]) => {
+            if (!conn || from === to) return;
+
+            const sectionIds: number[] = [];
+            const lengthByLine = new Map<number, number>();
+            let distance = 0;
+
+            (conn.section_ids || []).forEach(raw => {
+                const sid = Number(raw);
+                const sec = sections.get(sid);
+                if (!sec) return;
+                sectionIds.push(sid);
+                const km = (sec.length || 0) / 1000;
+                distance += km;
+                if (sec.line_id >= 0) {
+                    lengthByLine.set(sec.line_id, (lengthByLine.get(sec.line_id) || 0) + km);
+                }
+            });
+
+            if (sectionIds.length === 0) return;
+            if (distance <= 0) distance = 0.4;
+
+            const lineIds = Array.from(lengthByLine.entries())
+                .sort((a, b) => b[1] - a[1])
+                .map(([lineId]) => lineId);
+
+            if (lineIds.length === 0) return;
+
+            const list = adj.get(from);
+            const edge: RouteEdge = { to, distance, lineIds, sectionIds, isWalk: false };
+            if (list) list.push(edge);
+            else adj.set(from, [edge]);
+        });
+    });
+}
+
+/** 미리 계산해 둔 보수 간선을 얹는다. 이미 있는 방향은 건드리지 않는다. */
+function applyGraphPatch(patch: GraphPatch, adj: Map<string, RouteEdge[]>) {
+    const existing = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => existing.add(`${from}|${edge.to}`)));
+
+    const add = (from: string, to: string, source: GraphPatchEdge) => {
+        if (!from || !to || from === to) return;
+        if (existing.has(`${from}|${to}`)) return;
+        existing.add(`${from}|${to}`);
+        const edge: RouteEdge = {
+            to,
+            distance: source.km > 0 ? source.km : 0.4,
+            lineIds: source.line_ids,
+            sectionIds: source.section_ids,
+            isWalk: false
+        };
+        const list = adj.get(from);
+        if (list) list.push(edge);
+        else adj.set(from, [edge]);
+    };
+
+    patch.edges.forEach(edge => {
+        add(edge.from, edge.to, edge);
+        add(edge.to, edge.from, edge);
+    });
+}
+
+/**
+ * 보수 규칙을 돌려 **새로 생긴 간선만** 뽑는다. `scripts/build_graph_patch.cjs`
+ * 의 입구이고, 검증에서는 실려 나가는 파일이 규칙과 같은지 맞대는 데 쓴다.
+ *
+ * 한 역쌍은 한 줄로만 적는다. 읽는 쪽이 양방향으로 넣는다.
+ */
+export function collectRepairEdges(railData: RailData): GraphPatchEdge[] {
+    const sections = new Map<number, Section>();
+    railData.sections?.sections?.forEach(s => sections.set(s.id, s));
+
+    const adj = new Map<string, RouteEdge[]>();
+    addStationGraphEdges(railData, sections, adj);
+
+    const seen = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => seen.add(`${from}|${edge.to}`)));
+
+    const collected: GraphPatchEdge[] = [];
+    const harvest = (rule: string) => {
+        adj.forEach((edges, from) => {
+            edges.forEach(edge => {
+                if (edge.isWalk || seen.has(`${from}|${edge.to}`)) return;
+                seen.add(`${from}|${edge.to}`);
+                seen.add(`${edge.to}|${from}`);
+                collected.push({
+                    from,
+                    to: edge.to,
+                    km: Math.round(edge.distance * 1000) / 1000,
+                    line_ids: edge.lineIds,
+                    section_ids: edge.sectionIds,
+                    rule
+                });
+            });
+        });
+    };
+
+    addContractedJointEdges(railData, sections, adj);
+    harvest('joint-chain');
+    addJunctionEdges(railData, sections, adj);
+    harvest('junction');
+
+    return collected.sort((a, b) => (a.from === b.from ? a.to.localeCompare(b.to) : a.from.localeCompare(b.from)));
+}
+
 /**
  * Builds a station-level routing graph.
  *
@@ -437,49 +557,18 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
         else adj.set(from, [edge]);
     };
 
-    const stationGraph = railData.railroadNetwork?.station_graph as
-        | Record<string, Record<string, { section_ids?: (number | string)[]; available_lines?: (number | string)[] }>>
-        | undefined;
+    addStationGraphEdges(railData, sections, adj);
 
-    if (stationGraph) {
-        Object.entries(stationGraph).forEach(([from, neighbors]) => {
-            if (!adj.has(from)) adj.set(from, []);
-
-            Object.entries(neighbors || {}).forEach(([to, conn]) => {
-                if (!conn || from === to) return;
-
-                const sectionIds: number[] = [];
-                const lengthByLine = new Map<number, number>();
-                let distance = 0;
-
-                (conn.section_ids || []).forEach(raw => {
-                    const sid = Number(raw);
-                    const sec = sections.get(sid);
-                    if (!sec) return;
-                    sectionIds.push(sid);
-                    const km = (sec.length || 0) / 1000;
-                    distance += km;
-                    if (sec.line_id >= 0) {
-                        lengthByLine.set(sec.line_id, (lengthByLine.get(sec.line_id) || 0) + km);
-                    }
-                });
-
-                if (sectionIds.length === 0) return;
-                if (distance <= 0) distance = 0.4;
-
-                const lineIds = Array.from(lengthByLine.entries())
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([lineId]) => lineId);
-
-                if (lineIds.length === 0) return;
-
-                pushEdge(from, { to, distance, lineIds, sectionIds, isWalk: false });
-            });
-        });
+    // 보수 간선은 **빌드 때 미리 계산해 둔 것**을 읽는다. 규칙을 런타임에 다시
+    // 돌리면 앱(`GraphRepair.kt`)의 같은 규칙과 갈라질 수 있다. 파일이 없을 때만
+    // 규칙으로 되돌아간다 — 그 결과가 곧 파일의 내용이므로 동작은 같다.
+    const patch = railData.graphPatch;
+    if (patch && patch.edges && patch.edges.length > 0) {
+        applyGraphPatch(patch, adj);
+    } else {
+        addContractedJointEdges(railData, sections, adj);
+        addJunctionEdges(railData, sections, adj);
     }
-
-    addContractedJointEdges(railData, sections, adj);
-    addJunctionEdges(railData, sections, adj);
 
     const lineGroup = buildLineGroups(adj, railData);
 

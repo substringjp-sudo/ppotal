@@ -62,6 +62,12 @@ export const useRailData = () => {
 
                         const jsonData = await Promise.all(responses.map(res => res.json()));
 
+                        // 그래프 보수 간선은 빌드 때 미리 계산해 둔 것을 읽는다(앱도 같은 파일을 쓴다).
+                        // 없으면 `buildRouteGraph` 가 규칙을 그 자리에서 돌리므로 지도는 그대로 뜬다.
+                        const graphPatch = await fetch('/rail/graph_patch.json')
+                            .then(res => (res.ok ? res.json() : null))
+                            .catch(() => null);
+
                         const [
                             companies,
                             lines,
@@ -120,7 +126,8 @@ export const useRailData = () => {
                             },
                             hierarchy: buildHierarchyFromLineData(railroadNetworkLite.line_data),
                             joints,
-                            stationsLod
+                            stationsLod,
+                            graphPatch: graphPatch || undefined
                         } as RailData;
                     })();
                 }

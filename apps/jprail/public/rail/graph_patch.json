@@ -1,0 +1,364 @@
+{
+  "_source": "scripts/build_graph_patch.cjs — lib/routeSearch 의 보수 규칙을 빌드 때 한 번 돌린 결과.",
+  "_note": "station_graph.json 이 빠뜨린 선로 간선. 앱과 웹이 각자 규칙을 돌리지 않고 이 목록을 읽는다. 한 역쌍은 한 줄이고, 읽는 쪽이 양방향으로 넣는다. 이름은 사람이 읽기 위한 것이다.",
+  "version": "f407ff696ae9",
+  "edges": [
+    {
+      "from": "001666",
+      "to": "001643",
+      "km": 36.627,
+      "line_ids": [
+        458
+      ],
+      "section_ids": [
+        21682
+      ],
+      "rule": "joint-chain",
+      "from_name": "糸魚川",
+      "to_name": "上越妙高"
+    },
+    {
+      "from": "001669",
+      "to": "001683",
+      "km": 5.226,
+      "line_ids": [
+        455
+      ],
+      "section_ids": [
+        8625
+      ],
+      "rule": "joint-chain",
+      "from_name": "七尾",
+      "to_name": "徳田"
+    },
+    {
+      "from": "001821",
+      "to": "001835",
+      "km": 1.389,
+      "line_ids": [
+        316
+      ],
+      "section_ids": [
+        15680
+      ],
+      "rule": "joint-chain",
+      "from_name": "南小谷",
+      "to_name": "千国"
+    },
+    {
+      "from": "002200",
+      "to": "002246",
+      "km": 8.675,
+      "line_ids": [
+        388
+      ],
+      "section_ids": [
+        11641
+      ],
+      "rule": "joint-chain",
+      "from_name": "猪谷",
+      "to_name": "杉原"
+    },
+    {
+      "from": "002616",
+      "to": "002636",
+      "km": 3.739,
+      "line_ids": [
+        297
+      ],
+      "section_ids": [
+        16068,
+        16078
+      ],
+      "rule": "junction",
+      "from_name": "塩尻",
+      "to_name": "みどり湖"
+    },
+    {
+      "from": "002616",
+      "to": "002705",
+      "km": 9.725,
+      "line_ids": [
+        297
+      ],
+      "section_ids": [
+        16068,
+        16067
+      ],
+      "rule": "junction",
+      "from_name": "塩尻",
+      "to_name": "小野"
+    },
+    {
+      "from": "003676",
+      "to": "003675",
+      "km": 0.124,
+      "line_ids": [
+        279
+      ],
+      "section_ids": [
+        13153
+      ],
+      "rule": "joint-chain",
+      "from_name": "東日本橋",
+      "to_name": "馬喰横山"
+    },
+    {
+      "from": "004633",
+      "to": "004653",
+      "km": 0.654,
+      "line_ids": [
+        417
+      ],
+      "section_ids": [
+        10177
+      ],
+      "rule": "joint-chain",
+      "from_name": "横浜",
+      "to_name": "平沼橋"
+    },
+    {
+      "from": "005075",
+      "to": "005033",
+      "km": 6.088,
+      "line_ids": [
+        382
+      ],
+      "section_ids": [
+        12207,
+        12201
+      ],
+      "rule": "junction",
+      "from_name": "米原",
+      "to_name": "醒ヶ井"
+    },
+    {
+      "from": "005685",
+      "to": "005541",
+      "km": 5.108,
+      "line_ids": [
+        330
+      ],
+      "section_ids": [
+        16306,
+        16296,
+        16297,
+        16298
+      ],
+      "rule": "junction",
+      "from_name": "熱海",
+      "to_name": "湯河原"
+    },
+    {
+      "from": "006143",
+      "to": "006144",
+      "km": 0.093,
+      "line_ids": [
+        538
+      ],
+      "section_ids": [
+        2282
+      ],
+      "rule": "joint-chain",
+      "from_name": "近鉄四日市",
+      "to_name": "あすなろう四日市"
+    },
+    {
+      "from": "006144",
+      "to": "006112",
+      "km": 1.058,
+      "line_ids": [
+        530
+      ],
+      "section_ids": [
+        2464
+      ],
+      "rule": "joint-chain",
+      "from_name": "あすなろう四日市",
+      "to_name": "川原町"
+    },
+    {
+      "from": "006437",
+      "to": "006392",
+      "km": 4.376,
+      "line_ids": [
+        386
+      ],
+      "section_ids": [
+        11478
+      ],
+      "rule": "joint-chain",
+      "from_name": "亀山",
+      "to_name": "井田川"
+    },
+    {
+      "from": "006867",
+      "to": "006979",
+      "km": 4.297,
+      "line_ids": [
+        382
+      ],
+      "section_ids": [
+        12130
+      ],
+      "rule": "joint-chain",
+      "from_name": "袋井",
+      "to_name": "御厨"
+    },
+    {
+      "from": "007090",
+      "to": "007087",
+      "km": 0.032,
+      "line_ids": [
+        210
+      ],
+      "section_ids": [
+        10453
+      ],
+      "rule": "joint-chain",
+      "from_name": "大阪天満宮",
+      "to_name": "南森町"
+    },
+    {
+      "from": "007216",
+      "to": "007182",
+      "km": 0.551,
+      "line_ids": [
+        576
+      ],
+      "section_ids": [
+        4742,
+        4746
+      ],
+      "rule": "junction",
+      "from_name": "高速神戸",
+      "to_name": "西元町"
+    },
+    {
+      "from": "007241",
+      "to": "007220",
+      "km": 0.309,
+      "line_ids": [
+        430
+      ],
+      "section_ids": [
+        6748
+      ],
+      "rule": "joint-chain",
+      "from_name": "新開地",
+      "to_name": "湊川"
+    },
+    {
+      "from": "007241",
+      "to": "007279",
+      "km": 0.827,
+      "line_ids": [
+        576
+      ],
+      "section_ids": [
+        4738
+      ],
+      "rule": "joint-chain",
+      "from_name": "新開地",
+      "to_name": "大開"
+    },
+    {
+      "from": "007447",
+      "to": "007439",
+      "km": 0.193,
+      "line_ids": [
+        210
+      ],
+      "section_ids": [
+        10424
+      ],
+      "rule": "joint-chain",
+      "from_name": "天王寺駅前",
+      "to_name": "天王寺"
+    },
+    {
+      "from": "007460",
+      "to": "007486",
+      "km": 0.784,
+      "line_ids": [
+        210
+      ],
+      "section_ids": [
+        10440
+      ],
+      "rule": "joint-chain",
+      "from_name": "阿倍野",
+      "to_name": "文の里"
+    },
+    {
+      "from": "007919",
+      "to": "007859",
+      "km": 3.05,
+      "line_ids": [
+        483
+      ],
+      "section_ids": [
+        9698
+      ],
+      "rule": "joint-chain",
+      "from_name": "児島",
+      "to_name": "上の町"
+    },
+    {
+      "from": "008630",
+      "to": "008592",
+      "km": 3.541,
+      "line_ids": [
+        479
+      ],
+      "section_ids": [
+        8594
+      ],
+      "rule": "joint-chain",
+      "from_name": "下関",
+      "to_name": "幡生"
+    },
+    {
+      "from": "008874",
+      "to": "008865",
+      "km": 3.528,
+      "line_ids": [
+        384
+      ],
+      "section_ids": [
+        11516
+      ],
+      "rule": "joint-chain",
+      "from_name": "新宮",
+      "to_name": "鵜殿"
+    },
+    {
+      "from": "008934",
+      "to": "008950",
+      "km": 0.962,
+      "line_ids": [
+        54
+      ],
+      "section_ids": [
+        3427
+      ],
+      "rule": "joint-chain",
+      "from_name": "一本松",
+      "to_name": "上伊田"
+    },
+    {
+      "from": "009296",
+      "to": "009306",
+      "km": 1.878,
+      "line_ids": [
+        506
+      ],
+      "section_ids": [
+        6837
+      ],
+      "rule": "joint-chain",
+      "from_name": "甘木",
+      "to_name": "馬田"
+    }
+  ]
+}

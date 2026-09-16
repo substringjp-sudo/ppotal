@@ -19,7 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { buildRouteGraph } = require('../.verify/lib/routeSearch.js');
+const { buildRouteGraph, collectRepairEdges } = require('../.verify/lib/routeSearch.js');
 
 const RAIL = path.join(__dirname, '..', 'public', 'rail');
 const read = (name) => JSON.parse(fs.readFileSync(path.join(RAIL, name), 'utf8'));
@@ -32,6 +32,8 @@ const railroadNetworkLite = read('railroad_network_lite.json');
 // 분기형 접합부를 넘을지 가르는 관문이 **승강장**의 노선을 본다. 없으면 아무것도 넘지 않는다.
 const lines = read('lines.json');
 const platformsMeta = read('platforms_meta.json');
+// 빌드 때 미리 계산해 둔 보수 간선. 앱도 같은 파일을 읽는다.
+const graphPatch = read('graph_patch.json');
 
 // useRailData 가 만드는 것과 같은 모양. 좌표는 이 검증에 쓰이지 않아 비워 둔다.
 const sections = Object.keys(sectionsGeomHigh).map((id) => ({
@@ -45,7 +47,8 @@ const railData = {
     platforms: platformsMeta,
     stations: stationsMaster,
     sections: { sections, lod: { high: sections, mid: sections, low: sections } },
-    railroadNetwork: { ...railroadNetworkLite, station_graph: stationGraph }
+    railroadNetwork: { ...railroadNetworkLite, station_graph: stationGraph },
+    graphPatch
 };
 
 /** 되살아나야 하는 연결. `역A↔역B`, 이름 오름차순. */
@@ -148,6 +151,22 @@ ok(recovered.has('米原↔醒ヶ井'), '도카이도선 미하라 이음매(米
 // 가장 아팠던 두 곳은 따로 못 박는다.
 ok(recovered.has('上の町↔児島'), '세토대교(上の町↔児島)가 이어져야 한다');
 ok(recovered.has('杉原↔猪谷'), '다카야마 본선(杉原↔猪谷)이 이어져야 한다');
+
+// 실려 나가는 목록이 규칙과 같은가.
+// 런타임은 규칙을 돌리지 않고 이 파일만 읽으므로, 파일이 규칙과 어긋나면 아무도
+// 모르게 그래프가 달라진다. 앱(`RailJointLinkTest`)도 자기 구현으로 같은 것을 맞댄다.
+const fresh = collectRepairEdges(railData);
+const strip = (list) =>
+    list
+        .map((e) => [e.from, e.to, e.km, (e.line_ids || []).join(','), (e.section_ids || []).join(','), e.rule].join('|'))
+        .sort();
+const shipped = strip(graphPatch.edges);
+const computed = strip(fresh);
+ok(
+    JSON.stringify(shipped) === JSON.stringify(computed),
+    `graph_patch.json 이 규칙과 어긋난다 (파일 ${shipped.length}줄, 규칙 ${computed.length}줄). npm run build:graph-patch 를 다시 돌려라`
+);
+ok(graphPatch.edges.length > 0, 'graph_patch.json 이 비어 있다');
 
 // station_graph 가 이웃을 말하는데 그래프에는 선로 간선이 하나도 없는 역.
 // `lines.json` 의 0 번은 IRいしかわ鉄道線 인데, 이걸 "노선 없음"으로 보고 간선을
