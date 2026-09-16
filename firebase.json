@@ -31,6 +31,12 @@
       ],
       "headers": [
         {
+          "source": "/rail/manifest.json",
+          "headers": [
+            { "key": "Cache-Control", "value": "public, max-age=60" }
+          ]
+        },
+        {
           "source": "**/*.@(js|css|woff|woff2)",
           "headers": [
             {
