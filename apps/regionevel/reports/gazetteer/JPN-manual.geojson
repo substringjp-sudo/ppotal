@@ -1,0 +1,36 @@
+{
+  "type": "FeatureCollection",
+  "_note": "Coordinates identified by hand for shapes no boundary source could name. A point carries no geometry, so it cannot bring a resolution mismatch or a coastline with it.",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeName": "Misato",
+        "name": "美里町"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.174,
+          36.177
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shapeName": "Saitama",
+        "name": "さいたま市",
+        "partOf": "Saitama",
+        "_note": "Saitama City's second polygon — the prefecture's 64th shape against 63 municipalities."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.545,
+          35.935
+        ]
+      }
+    }
+  ]
+}

@@ -52,7 +52,18 @@
     "sourceShapeId": "22064153B55567026325895"
   },
   {
-    "id": "273051509101",
+    "id": "273051507101",
+    "parentId": "1507101",
+    "admLevel": 2,
+    "name": "Toshima",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B29202371584226"
+  },
+  {
+    "id": "273061509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Ogano",
@@ -65,7 +76,7 @@
     "sourceShapeId": "22064153B60558378980420"
   },
   {
-    "id": "273061509101",
+    "id": "273071509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Yokoze",
@@ -78,7 +89,7 @@
     "sourceShapeId": "22064153B11347435242213"
   },
   {
-    "id": "273071509101",
+    "id": "273081509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Moroyama",
@@ -91,7 +102,7 @@
     "sourceShapeId": "22064153B41312501853097"
   },
   {
-    "id": "273081509101",
+    "id": "273091509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Ogose",
@@ -104,7 +115,7 @@
     "sourceShapeId": "22064153B55422469295161"
   },
   {
-    "id": "273091509101",
+    "id": "273101509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Matsubushi",
@@ -117,7 +128,7 @@
     "sourceShapeId": "22064153B14191280892347"
   },
   {
-    "id": "273101509101",
+    "id": "273111509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Miyashiro",
@@ -130,7 +141,7 @@
     "sourceShapeId": "22064153B51464692079899"
   },
   {
-    "id": "273111509101",
+    "id": "273121509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Sugito",
@@ -143,7 +154,7 @@
     "sourceShapeId": "22064153B81183812222249"
   },
   {
-    "id": "273121509101",
+    "id": "273131509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Ina",
@@ -156,7 +167,7 @@
     "sourceShapeId": "22064153B1420949553929"
   },
   {
-    "id": "273131509101",
+    "id": "273141509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Kawajima",
@@ -169,7 +180,7 @@
     "sourceShapeId": "22064153B79488910412367"
   },
   {
-    "id": "273141509101",
+    "id": "273151509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Tokigawa",
@@ -182,7 +193,7 @@
     "sourceShapeId": "22064153B83233320380459"
   },
   {
-    "id": "273151509101",
+    "id": "273161509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Ranzan",
@@ -195,7 +206,7 @@
     "sourceShapeId": "22064153B7091731953162"
   },
   {
-    "id": "273161509101",
+    "id": "273171509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Namegawa",
@@ -208,7 +219,7 @@
     "sourceShapeId": "22064153B42446330332241"
   },
   {
-    "id": "273171509101",
+    "id": "273181509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Hatoyama",
@@ -221,7 +232,7 @@
     "sourceShapeId": "22064153B84652164446594"
   },
   {
-    "id": "273181509101",
+    "id": "273191509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Yorii",
@@ -234,7 +245,7 @@
     "sourceShapeId": "22064153B63829453739833"
   },
   {
-    "id": "273191509101",
+    "id": "273201509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Ogawa",
@@ -247,7 +258,7 @@
     "sourceShapeId": "22064153B93622399148332"
   },
   {
-    "id": "273201509101",
+    "id": "273211509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Higashi-Chichibu",
@@ -260,7 +271,7 @@
     "sourceShapeId": "22064153B74511540229227"
   },
   {
-    "id": "273211509101",
+    "id": "273221509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Minano",
@@ -273,7 +284,20 @@
     "sourceShapeId": "22064153B67559782883122"
   },
   {
-    "id": "273231509101",
+    "id": "273241509101",
+    "parentId": "1509101",
+    "admLevel": 2,
+    "name": "Misato",
+    "nameKo": "美里町",
+    "nameEn": "Misato",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "JPN-manual.geojson",
+    "sourceShapeId": "22064153B18486924389046"
+  },
+  {
+    "id": "273251509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Nagatoro",
@@ -286,7 +310,7 @@
     "sourceShapeId": "22064153B25299017238233"
   },
   {
-    "id": "273251507101",
+    "id": "273271507101",
     "parentId": "1507101",
     "admLevel": 2,
     "name": "Kozushima",
@@ -297,7 +321,7 @@
     "sourceShapeId": "22064153B75016173897449"
   },
   {
-    "id": "273261517101",
+    "id": "273281517101",
     "parentId": "1517101",
     "admLevel": 2,
     "name": "Mishima",
@@ -308,7 +332,7 @@
     "sourceShapeId": "22064153B77106514402580"
   },
   {
-    "id": "273271517101",
+    "id": "273291517101",
     "parentId": "1517101",
     "admLevel": 2,
     "name": "Yoron",
@@ -319,7 +343,7 @@
     "sourceShapeId": "22064153B83011890767677"
   },
   {
-    "id": "273281499101",
+    "id": "273301499101",
     "parentId": "1499101",
     "admLevel": 2,
     "name": "Himeshima",
@@ -330,7 +354,7 @@
     "sourceShapeId": "22064153B59466036865569"
   },
   {
-    "id": "273291514101",
+    "id": "273311514101",
     "parentId": "1514101",
     "admLevel": 2,
     "name": "Odika",
@@ -341,7 +365,7 @@
     "sourceShapeId": "22064153B95571124657554"
   },
   {
-    "id": "273301541101",
+    "id": "273321541101",
     "parentId": "1541101",
     "admLevel": 2,
     "name": "Naoshima",
@@ -352,7 +376,7 @@
     "sourceShapeId": "22064153B66253302818122"
   },
   {
-    "id": "273311542101",
+    "id": "273331542101",
     "parentId": "1542101",
     "admLevel": 2,
     "name": "Kitadaito",
@@ -363,7 +387,7 @@
     "sourceShapeId": "22064153B50498119246525"
   },
   {
-    "id": "273341526101",
+    "id": "273361526101",
     "parentId": "1526101",
     "admLevel": 2,
     "name": "Awashimaura",
@@ -374,7 +398,7 @@
     "sourceShapeId": "22064153B53652975826268"
   },
   {
-    "id": "273351507101",
+    "id": "273371507101",
     "parentId": "1507101",
     "admLevel": 2,
     "name": "Aogashima",
