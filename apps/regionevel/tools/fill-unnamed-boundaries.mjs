@@ -1,0 +1,479 @@
+#!/usr/bin/env node
+/**
+ * Fills the holes in a city-level map without importing any new geometry.
+ *
+ * The holes are not missing boundaries. geoBoundaries ships a polygon for
+ * every Japanese municipality (1742 shapes against ~1741 municipalities), and
+ * those polygons tile their prefecture correctly. What is missing is the
+ * *name*: 26 of the ADM2 shapes carry `shapeName: null` or "?????". The seed
+ * matched shapes to region records by name, so those shapes never became
+ * regions — and a shape with no region is a hole you cannot even hover.
+ *
+ * That is why patching from OSM went wrong. It imported geometry to fill a
+ * gap that was never geometric, so every patched polygon duplicated one we
+ * already had, at a different resolution, and coastal ones dragged in
+ * territorial water because OSM municipal relations extend past the shore.
+ *
+ * So this takes the opposite path: keep the geoBoundaries polygon, and read
+ * only a *name* off the other source, matched by where the shapes are rather
+ * than by what they are called. No foreign geometry is ever emitted, which is
+ * what makes a resolution mismatch and a sea overhang impossible here rather
+ * than merely unlikely.
+ *
+ * Writes nothing to Firestore. It emits files to review and seed.
+ *
+ * Usage:
+ *   node tools/fill-unnamed-boundaries.mjs \
+ *     --shapes  ../jprail/public/data/geoBoundaries-JPN-ADM2_simplified.geojson \
+ *     --parents ../jprail/public/data/geoBoundaries-JPN-ADM1_simplified.geojson \
+ *     --regions reports/all-regions.json \
+ *     --names   reports/JPN_ADM2_patch.geojson \
+ *     --iso3 JPN --out reports/fill-JPN
+ */
+
+import fs from "node:fs";
+import path from "node:path";
+
+// ---------------------------------------------------------------- geometry --
+
+function* rings(geometry) {
+  if (!geometry) return;
+  if (geometry.type === "Polygon") {
+    if (geometry.coordinates?.[0]) yield geometry.coordinates[0];
+  } else if (geometry.type === "MultiPolygon") {
+    for (const poly of geometry.coordinates ?? []) if (poly?.[0]) yield poly[0];
+  }
+}
+
+function ringArea(ring) {
+  let a = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    a += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+  }
+  return Math.abs(a / 2);
+}
+
+function pointInRing(pt, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1];
+    const xj = ring[j][0], yj = ring[j][1];
+    if (((yi > pt[1]) !== (yj > pt[1]))
+      && (pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function pointInGeometry(pt, geometry) {
+  for (const ring of rings(geometry)) if (pointInRing(pt, ring)) return true;
+  return false;
+}
+
+/** Planar ring area. Only ever compared against another area nearby, so degrees are fine. */
+function geometryArea(geometry) {
+  let total = 0;
+  for (const ring of rings(geometry)) total += ringArea(ring);
+  return total;
+}
+
+function bbox(geometry) {
+  const b = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const ring of rings(geometry)) {
+    for (const p of ring) {
+      if (p[0] < b[0]) b[0] = p[0];
+      if (p[1] < b[1]) b[1] = p[1];
+      if (p[0] > b[2]) b[2] = p[0];
+      if (p[1] > b[3]) b[3] = p[1];
+    }
+  }
+  return Number.isFinite(b[0]) ? b : null;
+}
+
+/**
+ * A point that actually lies inside the shape.
+ *
+ * The plain centroid escapes concave shapes — a C-shaped municipality, or one
+ * wrapped around a bay — and a point outside its own polygon would then match
+ * whatever neighbour happens to contain it, which is a silently wrong name.
+ */
+function interiorPoint(geometry) {
+  let best = null;
+  let bestArea = -1;
+  for (const ring of rings(geometry)) {
+    const a = ringArea(ring);
+    if (a > bestArea) { bestArea = a; best = ring; }
+  }
+  if (!best || best.length === 0) return null;
+
+  let x = 0, y = 0;
+  for (const p of best) { x += p[0]; y += p[1]; }
+  const centre = [x / best.length, y / best.length];
+  if (pointInRing(centre, best)) return centre;
+
+  // Walk in from each vertex towards the centre until a point lands inside.
+  for (const p of best) {
+    for (const t of [0.5, 0.25, 0.1]) {
+      const cand = [p[0] + (centre[0] - p[0]) * t, p[1] + (centre[1] - p[1]) * t];
+      if (pointInRing(cand, best)) return cand;
+    }
+  }
+  return null;
+}
+
+// -------------------------------------------------------------------- misc --
+
+const NAME_KEYS = ["name", "shapeName", "nameEn", "nameJa", "NAME"];
+
+function readName(props) {
+  for (const k of NAME_KEYS) {
+    const v = props?.[k];
+    if (typeof v === "string" && v.trim() && !/^\?+$/.test(v.trim())) return v.trim();
+  }
+  return null;
+}
+
+/**
+ * The region table stores a romanised `name` with the local spelling beside it
+ * in `nameKo`. A name source may carry both under either key, so pick by
+ * script rather than by key: taking whichever key came first is how a table of
+ * "Ine", "Chichibu" ends up with a "富士吉田市" in the middle of it, and how a
+ * duplicate check against existing romanised names silently never matches.
+ */
+const LOCAL_SCRIPT = /[぀-ヿ㐀-鿿가-힯]/;
+
+function readNamePair(props) {
+  const values = NAME_KEYS
+    .map((k) => props?.[k])
+    .filter((v) => typeof v === "string" && v.trim() && !/^\?+$/.test(v.trim()))
+    .map((v) => v.trim());
+  if (values.length === 0) return null;
+  const local = values.find((v) => LOCAL_SCRIPT.test(v)) ?? null;
+  const roman = values.find((v) => !LOCAL_SCRIPT.test(v)) ?? null;
+  return { name: roman ?? local, local: local && local !== roman ? local : null };
+}
+
+/**
+ * Designations that occupy a polygon without being a municipality. Seeding one
+ * creates a region nobody can ever visit.
+ */
+const NOT_A_MUNICIPALITY = [/^所属未定地$/, /^境界未定地/];
+
+/** A shape whose name is unusable is exactly the shape the seed dropped. */
+function hasUsableName(feature) {
+  return readName(feature.properties) !== null;
+}
+
+function arg(flag, fallback = null) {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
+}
+
+function argAll(flag) {
+  const out = [];
+  process.argv.forEach((a, i) => {
+    if (a === flag && process.argv[i + 1]) out.push(process.argv[i + 1]);
+  });
+  return out;
+}
+
+function readJson(p) {
+  return JSON.parse(fs.readFileSync(p, "utf8"));
+}
+
+function featuresOf(doc) {
+  if (Array.isArray(doc)) return doc;
+  if (Array.isArray(doc?.features)) return doc.features;
+  return Object.values(doc);
+}
+
+// -------------------------------------------------------------------- main --
+
+function main() {
+  const shapesPath = arg("--shapes");
+  const parentsPath = arg("--parents");
+  const regionsPath = arg("--regions");
+  const namePaths = argAll("--names");
+  const iso3 = arg("--iso3", "JPN");
+  const outDir = arg("--out", `reports/fill-${iso3}`);
+
+  if (!shapesPath || !parentsPath || !regionsPath) {
+    console.error("Need --shapes, --parents and --regions. See the header for an example.");
+    process.exit(1);
+  }
+
+  const shapes = featuresOf(readJson(shapesPath));
+  const parents = featuresOf(readJson(parentsPath));
+  const regions = featuresOf(readJson(regionsPath));
+
+  const nameSources = namePaths.flatMap((p) => featuresOf(readJson(p)).map((f) => {
+    const pair = readNamePair(f.properties) ?? readNamePair(f);
+    return {
+      name: pair?.name ?? null,
+      local: pair?.local ?? null,
+      geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry,
+      from: path.basename(p),
+    };
+  })).filter((s) => s.name && s.geometry);
+
+  for (const s of nameSources) {
+    s.box = bbox(s.geometry);
+    s.area = geometryArea(s.geometry);
+  }
+
+  // --- the region table, as it stands
+  const parentRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 1);
+  const childRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 2);
+  const parentByName = new Map(parentRecords.map((r) => [r.name, r]));
+
+  const seeded = new Set(
+    childRecords.map((r) => `${r.parentId}::${String(r.name).toLowerCase()}`),
+  );
+
+  // --- id allocation, following the scheme already in the table:
+  //     a child id is a sequential prefix followed by its parent's whole id.
+  const usedIds = new Set(regions.map((r) => String(r.id)));
+  let nextPrefix = 0;
+  for (const r of childRecords) {
+    const id = String(r.id);
+    const parentId = String(r.parentId ?? "");
+    if (!parentId || !id.endsWith(parentId)) continue;
+    const prefix = Number(id.slice(0, id.length - parentId.length));
+    if (Number.isFinite(prefix) && prefix > nextPrefix) nextPrefix = prefix;
+  }
+  const allocateId = (parentId) => {
+    for (;;) {
+      nextPrefix += 1;
+      const id = `${nextPrefix}${parentId}`;
+      if (!usedIds.has(id)) { usedIds.add(id); return id; }
+    }
+  };
+
+  const parentBoxes = parents.map((f) => ({ f, box: bbox(f.geometry) }));
+
+  /** Which parent boundary a point falls in, and the region record for it. */
+  const parentAt = (pt) => {
+    const hit = parentBoxes.find(({ f, box }) =>
+      box && pt[0] >= box[0] && pt[0] <= box[2] && pt[1] >= box[1] && pt[1] <= box[3]
+      && pointInGeometry(pt, f.geometry));
+    const parentName = hit ? readName(hit.f.properties) : null;
+    return { parentName, parentRecord: parentName ? parentByName.get(parentName) ?? null : null };
+  };
+
+  // A name already carried by a shape in the same parent is taken too, even if
+  // the seed never turned that shape into a record. Scoped to the parent on
+  // purpose: "Ina" and "Ogawa" name towns in several prefectures, and treating
+  // a name as claimed nationwide rejects the very shapes we are here to fill.
+  for (const f of shapes) {
+    const n = readName(f.properties);
+    if (!n) continue;
+    const pt = interiorPoint(f.geometry);
+    if (!pt) continue;
+    const { parentRecord } = parentAt(pt);
+    if (parentRecord) seeded.add(`${parentRecord.id}::${n.toLowerCase()}`);
+  }
+
+  const newRegions = [];
+  const newGeometries = [];
+  const unresolved = [];
+  const review = [];
+
+  for (const shape of shapes) {
+    if (hasUsableName(shape)) continue; // this one was seeded under its name
+
+    const shapeId = shape.properties?.shapeID ?? shape.properties?.id;
+    const at = interiorPoint(shape.geometry);
+    if (!at) {
+      unresolved.push({ shapeId, reason: "no interior point could be found" });
+      continue;
+    }
+
+    // Parent, by where the shape is.
+    const { parentName, parentRecord } = parentAt(at);
+
+    if (!parentRecord) {
+      unresolved.push({
+        shapeId, at,
+        reason: parentName
+          ? `no region record for parent "${parentName}"`
+          : "not inside any parent boundary",
+      });
+      continue;
+    }
+
+    // Name, by where the shape is — never the other source's geometry.
+    const hits = nameSources.filter(({ box, geometry }) =>
+      box && at[0] >= box[0] && at[0] <= box[2] && at[1] >= box[1] && at[1] <= box[3]
+      && pointInGeometry(at, geometry));
+
+    if (hits.length === 0) {
+      unresolved.push({
+        shapeId, at, parent: parentRecord.name,
+        reason: "no name source covers this point",
+      });
+      continue;
+    }
+
+    // Prefer the source polygon closest in size to the shape being named. A
+    // point inside a much larger polygon says only that the shape is somewhere
+    // within it — a neighbouring municipality would test just as true.
+    const shapeArea = geometryArea(shape.geometry);
+    hits.sort((a, b) => Math.abs(a.area - shapeArea) - Math.abs(b.area - shapeArea));
+
+    const best = hits[0];
+    const name = best.name;
+
+    if (hits.length > 1 && new Set(hits.map((h) => h.name)).size > 1) {
+      review.push({
+        shapeId, at, parent: parentRecord.name,
+        reason: `name sources disagree: ${[...new Set(hits.map((h) => h.name))].join(" / ")}`,
+        chose: name,
+      });
+    }
+
+    if (NOT_A_MUNICIPALITY.some((re) => re.test(name) || (best.local && re.test(best.local)))) {
+      review.push({
+        shapeId, at, parent: parentRecord.name, name,
+        reason: "not a municipality — a designation for land with no municipality, so no region was emitted",
+      });
+      continue;
+    }
+
+    // Is this name already spoken for? A point inside a much larger source
+    // polygon says only that the shape lies within it, so a neighbouring
+    // municipality tests just as true. Comparing areas cannot separate the two
+    // here: a coastal source polygon is inflated by the territorial water this
+    // whole approach exists to avoid, so the honest signal is whether anything
+    // already carries the name. Unclaimed means the shape really is the gap.
+    const claimedKey = name.toLowerCase();
+    if (seeded.has(`${parentRecord.id}::${claimedKey}`)) {
+      review.push({
+        shapeId, at, parent: parentRecord.name, name,
+        areaRatio: shapeArea > 0 ? +(best.area / shapeArea).toFixed(1) : null,
+        reason: `"${name}" is already on the map, so this match probably means this shape sits inside it rather than is it`,
+      });
+      continue;
+    }
+    seeded.add(`${parentRecord.id}::${claimedKey}`);
+
+    const id = allocateId(parentRecord.id);
+
+    newRegions.push({
+      id,
+      parentId: parentRecord.id,
+      admLevel: 2,
+      name,
+      ...(best.local ? { nameKo: best.local, nameEn: name } : {}),
+      iso3,
+      code: iso3,
+      childrenCount: 0,
+      // So a later pass can tell these apart from a normal seed, and see what
+      // named them without having to re-derive it.
+      nameSource: best.from,
+      sourceShapeId: shapeId,
+    });
+
+    newGeometries.push({
+      id,
+      parentId: parentRecord.id,
+      type: "Feature",
+      // The geoBoundaries polygon, untouched. This is the whole point.
+      geometry: shape.geometry,
+      properties: {
+        id,
+        shapeID: shapeId,
+        shapeName: name,
+        name: best.local ?? name,
+        level: "city",
+        iso3,
+        countryId: iso3,
+        parentId: parentRecord.id,
+        // Not "osm": the app filters osm-sourced features out of every read,
+        // so mislabelling these would hide them all over again.
+        source: "geoBoundaries",
+      },
+    });
+  }
+
+  // --- childrenCount drift: the denominator of every "visited N of M"
+  const countsBefore = new Map(parentRecords.map((r) => [r.id, r.childrenCount ?? 0]));
+  const added = new Map();
+  for (const r of newRegions) added.set(r.parentId, (added.get(r.parentId) ?? 0) + 1);
+
+  const childrenCountFixes = [...added.entries()].map(([parentId, n]) => ({
+    parentId,
+    name: parentRecords.find((r) => r.id === parentId)?.name,
+    childrenCount: (countsBefore.get(parentId) ?? 0) + n,
+    was: countsBefore.get(parentId) ?? 0,
+    added: n,
+  })).sort((a, b) => b.added - a.added);
+
+  // --- self-checks, because this output is going to be seeded
+  const problems = [];
+  const ids = new Set();
+  for (const r of newRegions) {
+    if (ids.has(r.id)) problems.push(`duplicate generated id ${r.id}`);
+    ids.add(r.id);
+    if (!parentRecords.some((p) => p.id === r.parentId)) {
+      problems.push(`${r.id} (${r.name}) points at a parent that does not exist`);
+    }
+    if (!String(r.id).endsWith(String(r.parentId))) {
+      problems.push(`${r.id} does not follow the <prefix><parentId> id scheme`);
+    }
+  }
+  if (newRegions.length !== newGeometries.length) {
+    problems.push("region and geometry counts disagree");
+  }
+  for (const g of newGeometries) {
+    if (g.properties.source === "osm") problems.push(`${g.id} is marked osm and would be filtered out`);
+  }
+
+  fs.mkdirSync(outDir, { recursive: true });
+  const write = (file, data) => {
+    const p = path.join(outDir, file);
+    fs.writeFileSync(p, JSON.stringify(data, null, 2));
+    return p;
+  };
+  write("regions.json", newRegions);
+  write("geometries.json", newGeometries);
+  write("children-count.json", childrenCountFixes);
+  write("unresolved.json", unresolved);
+  write("review.json", review);
+
+  const unnamed = shapes.filter((f) => !hasUsableName(f)).length;
+  console.log(`shapes in ${path.basename(shapesPath)}: ${shapes.length}`);
+  console.log(`  already named (seeded by name): ${shapes.length - unnamed}`);
+  console.log(`  unnamed, i.e. holes:            ${unnamed}`);
+  console.log(`\nresolved from a name source:      ${newRegions.length}`);
+  console.log(`needs a name from elsewhere:      ${unresolved.length}`);
+  console.log(`flagged for review:               ${review.length}`);
+
+  if (childrenCountFixes.length > 0) {
+    console.log("\nchildrenCount corrections (the 'visited N of M' denominator):");
+    for (const c of childrenCountFixes) {
+      console.log(`  ${c.name}: ${c.was} -> ${c.childrenCount}  (+${c.added})`);
+    }
+  }
+  if (unresolved.length > 0) {
+    console.log("\nstill unnamed:");
+    for (const u of unresolved) {
+      console.log(`  ${u.shapeId} ${u.at ? `@${u.at.map((v) => v.toFixed(3)).join(",")}` : ""} — ${u.reason}`);
+    }
+  }
+  if (review.length > 0) {
+    console.log("\nreview before seeding:");
+    for (const r of review) console.log(`  ${r.name ?? r.shapeId} — ${r.reason}`);
+  }
+
+  console.log(`\nwrote ${outDir}/{regions,geometries,children-count,unresolved,review}.json`);
+
+  if (problems.length > 0) {
+    console.log("\nSELF-CHECK FAILED — do not seed this output:");
+    for (const p of problems) console.log(`  ${p}`);
+    process.exit(1);
+  }
+  console.log("self-check passed: ids unique, parents exist, no osm-sourced geometry emitted.");
+}
+
+main();

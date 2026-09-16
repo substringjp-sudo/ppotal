@@ -1,0 +1,23 @@
+[
+  {
+    "parentId": "1509101",
+    "name": "Saitama",
+    "childrenCount": 61,
+    "was": 43,
+    "added": 18
+  },
+  {
+    "parentId": "1533101",
+    "name": "Iwate",
+    "childrenCount": 33,
+    "was": 29,
+    "added": 4
+  },
+  {
+    "parentId": "1529101",
+    "name": "Yamanashi",
+    "childrenCount": 28,
+    "was": 27,
+    "added": 1
+  }
+]
