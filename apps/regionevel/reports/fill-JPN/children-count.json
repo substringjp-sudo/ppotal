@@ -1,0 +1,132 @@
+[
+  {
+    "parentId": "1509101",
+    "name": "Saitama",
+    "was": 43,
+    "change": 19,
+    "childrenCount": 62,
+    "shapes": 64,
+    "phantomRecords": 0,
+    "agreesWithShapes": false
+  },
+  {
+    "parentId": "1533101",
+    "name": "Iwate",
+    "was": 29,
+    "change": 4,
+    "childrenCount": 33,
+    "shapes": 33,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1517101",
+    "name": "Kagoshima Prefecture",
+    "was": 41,
+    "change": 2,
+    "childrenCount": 43,
+    "shapes": 43,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1507101",
+    "name": "Tokyo",
+    "was": 60,
+    "change": 1,
+    "childrenCount": 61,
+    "shapes": 62,
+    "phantomRecords": 0,
+    "agreesWithShapes": false
+  },
+  {
+    "parentId": "1499101",
+    "name": "Oita",
+    "was": 17,
+    "change": 1,
+    "childrenCount": 18,
+    "shapes": 18,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1514101",
+    "name": "Nagasaki Prefecture",
+    "was": 20,
+    "change": 1,
+    "childrenCount": 21,
+    "shapes": 21,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1541101",
+    "name": "Kagawa Prefecture",
+    "was": 16,
+    "change": 1,
+    "childrenCount": 17,
+    "shapes": 17,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1542101",
+    "name": "Okinawa Prefecture",
+    "was": 40,
+    "change": 1,
+    "childrenCount": 41,
+    "shapes": 41,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1526101",
+    "name": "Niigata",
+    "was": 29,
+    "change": 1,
+    "childrenCount": 30,
+    "shapes": 30,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1528101",
+    "name": "Aichi Prefecture",
+    "was": 55,
+    "change": -1,
+    "childrenCount": 54,
+    "shapes": 54,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1504101",
+    "name": "Gifu Prefecture",
+    "was": 41,
+    "change": 1,
+    "childrenCount": 42,
+    "shapes": 42,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1522101",
+    "name": "Kanagawa",
+    "was": 32,
+    "change": 1,
+    "childrenCount": 33,
+    "shapes": 33,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
+    "parentId": "1518101",
+    "name": "Gunma",
+    "was": 35,
+    "change": -1,
+    "childrenCount": 34,
+    "shapes": 34,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  }
+]

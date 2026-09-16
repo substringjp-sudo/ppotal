@@ -1,0 +1,20 @@
+[
+  {
+    "shapeId": "22064153B18486924389046",
+    "at": [
+      139.17410044444446,
+      36.17711911111111
+    ],
+    "parent": "Saitama",
+    "reason": "no name source covers this point"
+  },
+  {
+    "shapeId": "22064153B20100015994007",
+    "at": [
+      139.5449036,
+      35.934823
+    ],
+    "parent": "Saitama",
+    "reason": "no name source covers this point"
+  }
+]
