@@ -31,6 +31,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      # 앱(jpApp)과 나눠 쓰는 데이터·규칙이 어긋났는지 본다. 여기서 걸러야
+      # 앱과 웹이 같은 기록에서 다른 경로를 내는 일이 배포까지 가지 않는다.
+      - name: Verify jprail data & logic
+        run: pnpm --filter japanrailnote run verify:all
+
       - name: Build & Typecheck All Apps & Packages
         run: pnpm build
 

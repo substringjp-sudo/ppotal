@@ -19,6 +19,7 @@
 -   `joints.json`: 노선 연결점 정보를 담고 있습니다.
 -   `services.json`: **운행계통(運転系統)** 정보를 담고 있습니다. `scripts/build_services.mjs` 로 생성합니다.
 -   `graph_patch.json`: `station_graph.json` 이 빠뜨린 **선로 간선**. `scripts/build_graph_patch.cjs` 로 생성합니다.
+-   `manifest.json`: 이 폴더의 **파일 목록과 sha256**. `scripts/build_rail_manifest.cjs` 로 생성합니다.
 
 ## 스키마 상세
 
@@ -105,6 +106,31 @@
 ## 데이터 로드 전략
 
 애플리케이션(`useRailData` 훅)은 메타데이터와 지오메트리 파일을 각각 fetch한 후, 클라이언트 측에서 `decodePolyline` 유틸리티를 사용하여 원래의 배열 형태로 복구하고 메타데이터와 병합하여 사용합니다. 이를 통해 네트워크 전송량을 최대 80% 이상 절감할 수 있습니다.
+
+### `manifest.json`
+
+-   **설명**: `public/rail` 의 모든 JSON 파일과 그 sha256·크기.
+-   **왜 필요한가**: 앱(jpApp)은 오프라인 우선이라 이 데이터를 통째로 안고 다닙니다(32MB).
+    그 사본은 스토어에 새 빌드를 올려야만 갱신되므로, 웹이 먼저 고쳐지면 둘이 어긋난 채로
+    지냅니다. 그렇다고 켤 때마다 32MB 를 받을 수는 없습니다.
+    앱은 켜질 때 이 작은 파일만 받아(수 KB) 자기 사본과 대조하고 **해시가 다른 파일만**
+    내려받습니다. 네트워크가 없으면 아무 일도 일어나지 않고 안고 있던 사본으로 돕니다.
+-   **생성**: `npm run build:rail-manifest` · **검증**: `npm run verify:manifest`
+    (데이터를 고치고 다시 만들기를 잊으면 CI 가 걸러 냅니다)
+-   **구조**:
+    ```json
+    {
+      "version": "31625c6a1ea7",
+      "files": [
+        { "path": "stations_master.json", "sha256": "…64자…", "bytes": 2409441 }
+      ]
+    }
+    ```
+    - `version`: 목록 전체(`경로:해시` 줄들)의 해시. 같으면 받을 것이 없다는 뜻입니다.
+    - 같은 내용이면 같은 파일이 나옵니다 — 시각을 적지 않으므로 다시 돌렸다는 이유만으로
+      diff 가 생기지 않습니다.
+-   **배포**: `firebase.json` 이 이 파일만 `max-age=60` 으로 내립니다. 나머지는 기본값입니다.
+    앱이 "받을 것이 있는가"를 묻는 파일이라 오래 캐시되면 갱신이 늦어집니다.
 
 ### `graph_patch.json`
 

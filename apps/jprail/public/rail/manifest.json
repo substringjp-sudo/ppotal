@@ -1,0 +1,97 @@
+{
+  "_source": "scripts/build_rail_manifest.cjs — public/rail 의 파일 목록과 sha256.",
+  "_note": "앱이 켜질 때 이것만 받아 자기 사본과 대조하고 해시가 다른 파일만 내려받는다. version 은 목록 전체의 해시라, 같으면 받을 것이 없다는 뜻이다.",
+  "version": "31625c6a1ea7",
+  "files": [
+    {
+      "path": "companies.json",
+      "sha256": "acee1a1a2380e67dfdcbcf592c1792e057961b74ac630507ea41c578d7c96811",
+      "bytes": 31617
+    },
+    {
+      "path": "graph_patch.json",
+      "sha256": "190dac8b0e6f01dfca5ff74d8d766daec6c66c04696cf8c354b26b31f7f9e968",
+      "bytes": 6882
+    },
+    {
+      "path": "joints.json",
+      "sha256": "4c54ebd165685bc5d61c525b488690e6ec1b640bb1e3887f36333cf983d5408f",
+      "bytes": 303243
+    },
+    {
+      "path": "lines.json",
+      "sha256": "6115726eddead5cc138f896930094c5c3958c9b25f8561eb7cd9b65f39df13e7",
+      "bytes": 111273
+    },
+    {
+      "path": "platform_graph.json",
+      "sha256": "5f4af12f8f9db8442b7bfaae6ef59bd39d4a0eb60885100126587bb53074b9d5",
+      "bytes": 8632633
+    },
+    {
+      "path": "platforms_geom.json",
+      "sha256": "5205dd7ade00b6cee68a3a67ed0efc8efdc8962802ef699d2b2a52b33c9cd165",
+      "bytes": 296240
+    },
+    {
+      "path": "platforms_meta.json",
+      "sha256": "3d843b5b7c687ef17ae37fb773e8d9e4115243716d1e2b5aec9e3943bb17765b",
+      "bytes": 2233854
+    },
+    {
+      "path": "railroad_hierarchy.json",
+      "sha256": "7bf2c487918788992ad95b5b60d211fa4b0d937cf33f573fcefb69d484611704",
+      "bytes": 651127
+    },
+    {
+      "path": "railroad_network.json",
+      "sha256": "9a6156e9da397998748fbbe02b1154958e894535f2366177d52654d7340ea97e",
+      "bytes": 8539798
+    },
+    {
+      "path": "railroad_network_lite.json",
+      "sha256": "bba31c7723d7f495ef20d30ce58ed13a844e80ed6018cff469ec878a4f419d19",
+      "bytes": 1760268
+    },
+    {
+      "path": "sections_geom_high.json",
+      "sha256": "89a5373ec68080b8f23f011e55470d4f74aa2e37664ae130cb55f86fa3fb5f16",
+      "bytes": 1482788
+    },
+    {
+      "path": "sections_geom_low.json",
+      "sha256": "50d69da7fdd58684dc91da745b11da033f77d4af93ee34b269a1de4cb73c09d4",
+      "bytes": 339592
+    },
+    {
+      "path": "sections_geom_mid.json",
+      "sha256": "33ef469eb07b46c5562b546dbdcc998f58b0cdc52e6a0770633d72ee268c0fdf",
+      "bytes": 458858
+    },
+    {
+      "path": "sections_meta.json",
+      "sha256": "4fcf80f642cdcd33e280c8584e01f7530b552576bae7440abe2cd3a533dde2cc",
+      "bytes": 995740
+    },
+    {
+      "path": "services.json",
+      "sha256": "f49a4fd5f550cd633e872a6e51ee039f66512d754eca073b25fbb04e40eee24a",
+      "bytes": 525816
+    },
+    {
+      "path": "station_graph.json",
+      "sha256": "0d1e8e2203a1d11ad377231074ae317c92235d5e0555ad9ed65c1dacd7762354",
+      "bytes": 2489083
+    },
+    {
+      "path": "stations_lod.json",
+      "sha256": "24e2c20f62d7181d5caacc59cc5e4e985e5c3e70ddff11d69283aee0d834f9a4",
+      "bytes": 2853054
+    },
+    {
+      "path": "stations_master.json",
+      "sha256": "c5d4573841b843b33ad37d488b218e1f6afd2ba6baa99f6289d67b125bed10e8",
+      "bytes": 2409441
+    }
+  ]
+}
