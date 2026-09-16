@@ -1,7 +1,7 @@
 {
   "_source": "scripts/build_rail_manifest.cjs — public/rail 의 파일 목록과 sha256.",
   "_note": "앱이 켜질 때 이것만 받아 자기 사본과 대조하고 해시가 다른 파일만 내려받는다. version 은 목록 전체의 해시라, 같으면 받을 것이 없다는 뜻이다.",
-  "version": "31625c6a1ea7",
+  "version": "a468a0feaae6",
   "files": [
     {
       "path": "companies.json",
@@ -52,6 +52,11 @@
       "path": "railroad_network_lite.json",
       "sha256": "bba31c7723d7f495ef20d30ce58ed13a844e80ed6018cff469ec878a4f419d19",
       "bytes": 1760268
+    },
+    {
+      "path": "route_fixture.json",
+      "sha256": "da87e984d3119b820ff22c84d1bed354e4bfc90b4f29632319c461206e929c39",
+      "bytes": 39276
     },
     {
       "path": "sections_geom_high.json",

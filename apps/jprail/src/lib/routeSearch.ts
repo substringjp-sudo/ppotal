@@ -86,8 +86,16 @@ export interface RouteSearchResult {
 const WALK_LINE = -2;
 const UNBOARDED = -1; // state line id meaning "not on a train yet"
 
-/** Walking transfers are only created between same-named stations closer than this. */
-const MAX_WALK_TRANSFER_KM = 1.5;
+/**
+ * 이름이 같은 역끼리 걸어갈 수 있다고 보는 거리.
+ *
+ * 앱(`WalkTransfers.SAME_NAME_MAX_KM`)과 **같은 값이어야 한다.** 1.5km 로 두었더니
+ * 앱은 1.0km 라 같은 역쌍에서 두 클라이언트가 다른 거리를 냈다(고정물 396개 중
+ * 14개). 1km 를 넘는 같은 이름은 갈아타는 곳이 아니라 이름이 겹친 남남에 가깝다 —
+ * 石川·平野·御影·市場·長田 다섯 쌍이 1.0~1.5km 사이에 있었다. 이름이 다른 역을
+ * 잇는 규칙이 300m 인 것과도 앞뒤가 맞는다.
+ */
+const MAX_WALK_TRANSFER_KM = 1.0;
 /**
  * How close two *differently named* stations must be to count as one place.
  *

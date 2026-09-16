@@ -20,6 +20,7 @@
 -   `services.json`: **운행계통(運転系統)** 정보를 담고 있습니다. `scripts/build_services.mjs` 로 생성합니다.
 -   `graph_patch.json`: `station_graph.json` 이 빠뜨린 **선로 간선**. `scripts/build_graph_patch.cjs` 로 생성합니다.
 -   `manifest.json`: 이 폴더의 **파일 목록과 sha256**. `scripts/build_rail_manifest.cjs` 로 생성합니다.
+-   `route_fixture.json`: 앱과 웹이 **같은 그래프**를 세우는지 맞대는 고정물. `scripts/build_route_fixture.cjs` 로 생성합니다.
 
 ## 스키마 상세
 
@@ -106,6 +107,37 @@
 ## 데이터 로드 전략
 
 애플리케이션(`useRailData` 훅)은 메타데이터와 지오메트리 파일을 각각 fetch한 후, 클라이언트 측에서 `decodePolyline` 유틸리티를 사용하여 원래의 배열 형태로 복구하고 메타데이터와 병합하여 사용합니다. 이를 통해 네트워크 전송량을 최대 80% 이상 절감할 수 있습니다.
+
+### `route_fixture.json`
+
+-   **설명**: 역쌍마다 **두 역 사이 최단 거리**. 선로만 쓴 것(`rail_km`)과 도보 환승까지
+    쓴 것(`walk_km`)을 따로 적습니다. 닿지 않으면 `null`.
+-   **왜 필요한가**: 선로 데이터도 `graph_patch.json` 도 이제 한 곳에서 만들어 앱과 웹이
+    나눠 읽습니다. 그런데 **그 재료로 같은 그래프가 세워지는지**는 아무도 보지 않았습니다.
+    도보 환승 반경처럼 양쪽 코드에 따로 적힌 값이 어긋나면 같은 기록에서 앱과 웹이 다른
+    경로를 냅니다 — 실제로 그랬습니다(웹 1.5km · 앱 1.0km, 396개 검사 중 14개가 어긋남).
+-   **무엇을 고정하나**: **그래프**입니다. 최단 거리는 간선 집합이 같으면 같습니다 — 길이
+    여럿이어도 값은 하나라 흔들리지 않습니다. **경로 선택은 고정하지 않습니다.** 앱
+    (`PENALTY_FACTOR = 2.2`)과 웹(`BALANCED_PENALTY = 25`)은 환승에 매기는 값이 아직
+    달라서 같은 경로를 내지 않습니다. 그건 다음에 맞출 일입니다.
+-   **생성**: `npm run build:route-fixture` · **검증**: `npm run verify:fixture`(웹의 지금
+    그래프와 맞는지) · 앱은 `RailRouteFixtureTest` 가 자기 재료로 다시 재어 맞댑니다.
+-   **구조**:
+    ```json
+    {
+      "pairs": [
+        {
+          "from": "005075", "to": "005033",
+          "from_name": "米原", "to_name": "醒ヶ井",
+          "why": "patch",
+          "rail_km": 5.906,
+          "walk_km": 5.906
+        }
+      ]
+    }
+    ```
+    - `why`: `patch`(메워 넣은 연결) 또는 `stride:N`(고르게 흩뿌린 표본). 난수를 쓰지
+      않으므로 다시 돌려도 같은 목록이 나옵니다.
 
 ### `manifest.json`
 
