@@ -102,7 +102,21 @@ console.log("            will file them at different levels:");
 [...shapes.entries()].sort((a, b) => b[1] - a[1]).forEach(([s, n]) => console.log(`              ${String(n).padStart(6)}  ${s}`));
 
 // -------------------------------------------------------------- findings
-const findings = { sentinel: [], badIso3: [], levelMismatch: [], collision: [], dangling: [], levelSkip: [], countDrift: [] };
+const findings = {
+  sentinel: [], badIso3: [], levelMismatch: [], collision: [], dangling: [],
+  levelSkip: [], countDrift: [], noAdmLevel: [], unusableName: [], shadowOrphan: [],
+  nameLookup: [],
+};
+
+/** A name the map cannot label, and that name-based seeding cannot match on. */
+const unusable = (n) => n == null
+  || typeof n !== "string"
+  || !n.trim()
+  || /^\?+$/.test(n.trim())
+  || /^(unknown|n\/?a|null|undefined)$/i.test(n.trim());
+
+/** Either spelling of the country field: the two schemas disagree on it. */
+const countryOf = (r) => r.iso3 ?? r.country ?? "(none)";
 
 for (const [k, list] of byKey) if (list.length > 1) findings.collision.push({ key: k, list });
 
@@ -115,6 +129,16 @@ for (const r of regions) {
   if (shapeLevel !== null && r.admLevel != null && shapeLevel !== r.admLevel) {
     findings.levelMismatch.push({ r, shapeLevel });
   }
+
+  // A record with no admLevel was written by a different seeding path than the
+  // rest of the table, and every query the app makes filters on admLevel — so
+  // it is present in the data and absent from the map.
+  if (r.admLevel == null) findings.noAdmLevel.push(r);
+
+  // The seed matched shapes to records by name. A shape whose name is unusable
+  // matches nothing, which is how a boundary ends up with no region at all and
+  // leaves a hole you cannot even hover.
+  if (unusable(r.name)) findings.unusableName.push(r);
 }
 
 if (FULL) {
@@ -136,6 +160,33 @@ if (FULL) {
     if (r.childrenCount == null) continue;
     const have = actual.get(padId(r.id)) ?? 0;
     if (have !== r.childrenCount) findings.countDrift.push({ r, have });
+  }
+
+  // Which of the off-schema records are holes rather than duplicates: one
+  // whose name the proper table also carries is a second copy of a region that
+  // is already on the map, but one whose name appears nowhere else is the only
+  // record that boundary has — and it is in the half the app cannot see.
+  const properNames = new Set();
+  for (const r of regions) {
+    if (r.admLevel == null || unusable(r.name)) continue;
+    properNames.add(`${countryOf(r)}::${String(r.name).toLowerCase().trim()}`);
+  }
+  // A root-level entry keyed by an alpha-3 code is a country-name lookup that
+  // happens to live in this collection, not a boundary missing its region.
+  // Counting it as a hole would put 235 phantom findings in front of the real
+  // ones.
+  const isCountryLookup = (r) => (r.parentId == null || r.parentId === "")
+    && /^[A-Za-z]{3}$/.test(String(r.id ?? ""));
+
+  /** The tree's own root. It has no admLevel because it sits above all of them. */
+  const isRoot = (r) => String(r.id) === "world" || r.level === -1;
+
+  for (const r of findings.noAdmLevel) {
+    if (isRoot(r) || isCountryLookup(r)) { findings.nameLookup.push(r); continue; }
+    if (unusable(r.name)) { findings.shadowOrphan.push(r); continue; }
+    if (!properNames.has(`${countryOf(r)}::${String(r.name).toLowerCase().trim()}`)) {
+      findings.shadowOrphan.push(r);
+    }
   }
 } else {
   // Without the whole table we can still spot the shape of a level skip: a
@@ -174,5 +225,48 @@ if (FULL) report("childrenCount drift", findings.countDrift,
   "this is the denominator of every 'visited N of M' on screen");
 else console.log(`\n[dangling parents / childrenCount drift] need the whole table — rerun with --full`);
 
-const total = Object.values(findings).reduce((n, l) => n + l.length, 0);
+const perCountry = (list) => {
+  const m = new Map();
+  for (const r of list) m.set(countryOf(r), (m.get(countryOf(r)) ?? 0) + 1);
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+};
+
+report("records with no admLevel", findings.noAdmLevel,
+  (r) => `id=${r.id} parent=${r.parentId} name=${JSON.stringify(r.name)} country=${countryOf(r)}`,
+  "every query the app makes filters on admLevel, so these are in the data and off the map");
+if (findings.noAdmLevel.length) {
+  console.log(`            by country: ${perCountry(findings.noAdmLevel).map(([c, n]) => `${c}:${n}`).join(", ")}`);
+}
+
+report("unusable names", findings.unusableName,
+  (r) => `id=${r.id} name=${JSON.stringify(r.name)} country=${countryOf(r)}`,
+  "name-based seeding matches nothing here, which is how a boundary loses its region");
+if (findings.unusableName.length) {
+  console.log(`            by country: ${perCountry(findings.unusableName).map(([c, n]) => `${c}:${n}`).join(", ")}`);
+}
+
+if (FULL) {
+  report("off-schema records with no counterpart", findings.shadowOrphan,
+    (r) => `id=${r.id} name=${JSON.stringify(r.name)} country=${countryOf(r)}`,
+    "the only record these boundaries have, and it is in the half the app cannot see");
+  if (findings.shadowOrphan.length) {
+    console.log(`            by country: ${perCountry(findings.shadowOrphan).map(([c, n]) => `${c}:${n}`).join(", ")}`);
+  }
+  if (findings.nameLookup.length) {
+    console.log(`\n[country-name lookup rows] ${findings.nameLookup.length}`);
+    console.log("          not boundaries — a translation table sharing this collection; listed so it is not mistaken for holes");
+  }
+}
+
+// Which countries are implicated at all, so "is this only Japan?" has an answer.
+const implicated = new Set();
+for (const key of ["noAdmLevel", "unusableName", "shadowOrphan", "dangling", "levelSkip", "countDrift", "sentinel"]) {
+  for (const x of findings[key]) implicated.add(countryOf(x.r ?? x));
+}
+console.log(`\n[countries with any finding] ${implicated.size}`);
+console.log(`            ${[...implicated].sort().join(", ") || "(none)"}`);
+
+const total = Object.entries(findings)
+  .filter(([k]) => k !== "nameLookup")
+  .reduce((n, [, l]) => n + l.length, 0);
 console.log(`\n${total === 0 ? "clean" : `${total} findings`}`);
