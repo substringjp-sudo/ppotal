@@ -106,6 +106,28 @@ const CreditsPage = () => {
 
                 <section className="mb-8">
                     <h3 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-200">
+                        Station Numbering (駅ナンバリング)
+                    </h3>
+                    <p className="leading-relaxed text-sm text-slate-600 dark:text-slate-400 mb-3">
+                        The line symbol and station number on a station name board &mdash; <code>JY&nbsp;01</code> for Tokyo on the Yamanote Line &mdash;
+                        are not part of the National Land Numerical Information dataset. They come from{' '}
+                        <a href="https://github.com/piuccio/open-data-jp-railway-stations" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">open-data-jp-railway-stations</a> (MIT),
+                        which in turn draws on 駅データ.jp and the Public Transportation Open Data Center.
+                        Coverage is currently the Greater Tokyo Area: 1,056 stations across 22 operators.
+                        Stations without a published number are rendered with the number block left empty &mdash; the app does not derive one from position along the line.
+                    </p>
+                    <div className="bg-slate-100 dark:bg-slate-800/60 p-4 rounded-xl text-xs leading-relaxed text-slate-600 dark:text-slate-300 border-l-4 border-blue-500">
+                        <strong className="text-slate-800 dark:text-slate-200">Required Attribution:</strong><br />
+                        このデータは、<a href="https://www.odpt.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">公共交通オープンデータセンター</a>において提供されるデータ等を利用して作成しています。
+                        データ等の正確性及び完全性等は保証されておらず、また、権利者は利用者による利用に関して一切の責任を負いません。<br />
+                        <span className="block mt-2">
+                            Published at <a href="/rail/station_codes.json" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">/rail/station_codes.json</a>.
+                        </span>
+                    </div>
+                </section>
+
+                <section className="mb-8">
+                    <h3 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-200">
                         Station Passenger Counts &amp; Airports
                     </h3>
                     <p className="leading-relaxed text-sm text-slate-600 dark:text-slate-400 mb-3">
