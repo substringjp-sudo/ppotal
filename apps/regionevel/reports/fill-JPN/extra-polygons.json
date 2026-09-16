@@ -1,0 +1,13 @@
+[
+  {
+    "shapeId": "22064153B20100015994007",
+    "at": [
+      139.5449036,
+      35.934823
+    ],
+    "parent": "Saitama",
+    "partOf": "Saitama",
+    "regionId": "257651509101",
+    "reason": "another polygon of Saitama (257651509101); merge it into that region's geometry rather than seeding a second region"
+  }
+]
