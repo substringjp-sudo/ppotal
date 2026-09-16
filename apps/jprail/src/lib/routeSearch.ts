@@ -300,6 +300,115 @@ function addContractedJointEdges(
 }
 
 /**
+ * 접합부 너머로 끊긴 이음매를 되살린다.
+ *
+ * [addContractedJointEdges] 는 **통과형** 접합부(차수 2)만 접는다. 분기형은 들어온
+ * 선로에서 나갈 선로를 골라야 해서 건드리지 않는데, 그 바람에 醒ヶ井(JR 도카이)에서
+ * 米原(JR 서일본)까지 5.9km 를 두고 **138km 를 돌아갔다.** 그 사이가
+ * `醒ヶ井–J_642–J_493–米原` 이고 접합부 차수가 3~4 다.
+ *
+ * 고를 것이 없는 경우만 넘는다.
+ *
+ *  1. 체인의 **모든 구간이 같은 `line_id`** 여야 한다. 각도로 고르는 것이 아니라
+ *     데이터가 스스로 "같은 노선"이라 말한 것만 따라간다.
+ *  2. 그 노선의 **이름이 양 끝 역의 승강장에** 있어야 한다. 소속을 구간에서 읽으면
+ *     스쳐 지나가기만 하는 선로도 그 역의 노선이 되어, 名鉄名古屋本線이 下地 를
+ *     스치는 것만으로 `下地 ↔ 伊奈` 가 살아난다 — 그 둘은 平井신호장에서 선로가
+ *     붙어 있을 뿐 다니는 열차가 없다.
+ *
+ * 이름으로 보는 이유는 같은 노선이 여러 레코드로 쪼개져 있어서다(東海道線 하나가
+ * 330·381·382·484). OpenStreetMap 선로로 43쌍을 따로 맞췄고, OSM 에 자료가 있던
+ * 23쌍에서 답이 모두 같았다. 앱(jpApp)의 `domain/engine/GraphRepair.kt` 와 같은 규칙이다.
+ */
+const MAX_JUNCTION_CHAIN_KM = 30;
+const MAX_JUNCTION_CHAIN_SECTIONS = 40;
+
+function addJunctionEdges(
+    railData: RailData,
+    sections: Map<number, Section>,
+    adj: Map<string, RouteEdge[]>
+) {
+    const incident = new Map<string, { sectionId: number; other: string; lineId: number; km: number }[]>();
+    const link = (node: string, entry: { sectionId: number; other: string; lineId: number; km: number }) => {
+        const list = incident.get(node);
+        if (list) list.push(entry);
+        else incident.set(node, [entry]);
+    };
+    sections.forEach(section => {
+        if (!section.start || !section.end || section.start === section.end) return;
+        const km = (section.length || 0) / 1000;
+        const lineId = section.line_id;
+        link(section.start, { sectionId: section.id, other: section.end, lineId, km });
+        link(section.end, { sectionId: section.id, other: section.start, lineId, km });
+    });
+
+    const isStation = (id: string) => Boolean(railData.stations?.[id]);
+    const existing = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => existing.add(`${from}|${edge.to}`)));
+
+    // 역의 노선 소속은 **승강장**에서 읽는다.
+    const lineNameOf = (id: number) => railData.lines?.[String(id)]?.name || '';
+    const platformLines = new Map<string, Set<string>>();
+    Object.values(railData.stations || {}).forEach(station => {
+        const names = new Set<string>();
+        (station.platform_ids || []).forEach(pid => {
+            const name = lineNameOf(railData.platforms?.[pid]?.line ?? -1);
+            if (name) names.add(name);
+        });
+        if (names.size > 0) platformLines.set(station.id, names);
+    });
+
+    const push = (from: string, to: string, distance: number, lineId: number, sectionIds: number[]) => {
+        const edge: RouteEdge = { to, distance: distance > 0 ? distance : 0.4, lineIds: [lineId], sectionIds, isWalk: false };
+        const list = adj.get(from);
+        if (list) list.push(edge);
+        else adj.set(from, [edge]);
+        existing.add(`${from}|${to}`);
+    };
+
+    Array.from(incident.keys()).filter(isStation).sort().forEach(start => {
+        const startLines = platformLines.get(start);
+        if (!startLines) return;
+
+        (incident.get(start) || []).forEach(first => {
+            if (isStation(first.other)) return;       // 역↔역은 station_graph 의 몫
+            const lineName = lineNameOf(first.lineId);
+            if (!lineName || !startLines.has(lineName)) return;
+
+            // 짧은 쪽부터 꺼내 같은 역쌍을 여러 경로로 만나도 가장 짧은 것이 남는다.
+            const queue: { km: number; joint: string; used: number[] }[] =
+                [{ km: first.km, joint: first.other, used: [first.sectionId] }];
+            const settled = new Set<string>();
+            while (queue.length > 0) {
+                queue.sort((a, b) => a.km - b.km);
+                const step = queue.shift()!;
+                if (step.km > MAX_JUNCTION_CHAIN_KM) continue;
+                if (step.used.length > MAX_JUNCTION_CHAIN_SECTIONS) continue;
+                if (settled.has(step.joint)) continue;
+                settled.add(step.joint);
+
+                (incident.get(step.joint) || []).forEach(next => {
+                    if (next.lineId !== first.lineId || next.other === start) return;
+                    if (step.used.includes(next.sectionId)) return;
+                    const km = step.km + next.km;
+                    if (km > MAX_JUNCTION_CHAIN_KM) return;
+
+                    if (isStation(next.other)) {
+                        if (!platformLines.get(next.other)?.has(lineName)) return;
+                        if (existing.has(`${start}|${next.other}`)) return;
+                        const sectionIds = [...step.used, next.sectionId];
+                        push(start, next.other, km, first.lineId, sectionIds);
+                        push(next.other, start, km, first.lineId, sectionIds);
+                    } else if (!settled.has(next.other)) {
+                        queue.push({ km, joint: next.other, used: [...step.used, next.sectionId] });
+                    }
+                });
+            }
+        });
+    });
+}
+
+/**
  * Builds a station-level routing graph.
  *
  * Only `section_ids` are used to decide which lines serve an edge — the
@@ -363,6 +472,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
     }
 
     addContractedJointEdges(railData, sections, adj);
+    addJunctionEdges(railData, sections, adj);
 
     const lineGroup = buildLineGroups(adj, railData);
 
