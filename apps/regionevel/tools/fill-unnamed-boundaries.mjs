@@ -34,138 +34,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// ---------------------------------------------------------------- geometry --
-
-function* rings(geometry) {
-  if (!geometry) return;
-  if (geometry.type === "Polygon") {
-    if (geometry.coordinates?.[0]) yield geometry.coordinates[0];
-  } else if (geometry.type === "MultiPolygon") {
-    for (const poly of geometry.coordinates ?? []) if (poly?.[0]) yield poly[0];
-  }
-}
-
-function ringArea(ring) {
-  let a = 0;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    a += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
-  }
-  return Math.abs(a / 2);
-}
-
-function pointInRing(pt, ring) {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const xi = ring[i][0], yi = ring[i][1];
-    const xj = ring[j][0], yj = ring[j][1];
-    if (((yi > pt[1]) !== (yj > pt[1]))
-      && (pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi)) {
-      inside = !inside;
-    }
-  }
-  return inside;
-}
-
-function pointInGeometry(pt, geometry) {
-  for (const ring of rings(geometry)) if (pointInRing(pt, ring)) return true;
-  return false;
-}
-
-/** Planar ring area. Only ever compared against another area nearby, so degrees are fine. */
-function geometryArea(geometry) {
-  let total = 0;
-  for (const ring of rings(geometry)) total += ringArea(ring);
-  return total;
-}
-
-/** The coordinates of a Point or MultiPoint source, or none for an area source. */
-function pointsOf(geometry) {
-  if (geometry?.type === "Point") return [geometry.coordinates];
-  if (geometry?.type === "MultiPoint") return geometry.coordinates ?? [];
-  return [];
-}
-
-function bbox(geometry) {
-  const b = [Infinity, Infinity, -Infinity, -Infinity];
-  for (const ring of rings(geometry)) {
-    for (const p of ring) {
-      if (p[0] < b[0]) b[0] = p[0];
-      if (p[1] < b[1]) b[1] = p[1];
-      if (p[0] > b[2]) b[2] = p[0];
-      if (p[1] > b[3]) b[3] = p[1];
-    }
-  }
-  return Number.isFinite(b[0]) ? b : null;
-}
-
-/**
- * A point that actually lies inside the shape.
- *
- * The plain centroid escapes concave shapes — a C-shaped municipality, or one
- * wrapped around a bay — and a point outside its own polygon would then match
- * whatever neighbour happens to contain it, which is a silently wrong name.
- */
-function interiorPoint(geometry) {
-  let best = null;
-  let bestArea = -1;
-  for (const ring of rings(geometry)) {
-    const a = ringArea(ring);
-    if (a > bestArea) { bestArea = a; best = ring; }
-  }
-  if (!best || best.length === 0) return null;
-
-  let x = 0, y = 0;
-  for (const p of best) { x += p[0]; y += p[1]; }
-  const centre = [x / best.length, y / best.length];
-  if (pointInRing(centre, best)) return centre;
-
-  // Walk in from each vertex towards the centre until a point lands inside.
-  for (const p of best) {
-    for (const t of [0.5, 0.25, 0.1]) {
-      const cand = [p[0] + (centre[0] - p[0]) * t, p[1] + (centre[1] - p[1]) * t];
-      if (pointInRing(cand, best)) return cand;
-    }
-  }
-  return null;
-}
-
-// -------------------------------------------------------------------- misc --
-
-const NAME_KEYS = ["name", "shapeName", "nameEn", "nameJa", "NAME"];
-
-function readName(props) {
-  for (const k of NAME_KEYS) {
-    const v = props?.[k];
-    if (typeof v === "string" && v.trim() && !/^\?+$/.test(v.trim())) return v.trim();
-  }
-  return null;
-}
-
-/**
- * The region table stores a romanised `name` with the local spelling beside it
- * in `nameKo`. A name source may carry both under either key, so pick by
- * script rather than by key: taking whichever key came first is how a table of
- * "Ine", "Chichibu" ends up with a "富士吉田市" in the middle of it, and how a
- * duplicate check against existing romanised names silently never matches.
- */
-const LOCAL_SCRIPT = /[぀-ヿ㐀-鿿가-힯]/;
-
-function readNamePair(props) {
-  const values = NAME_KEYS
-    .map((k) => props?.[k])
-    .filter((v) => typeof v === "string" && v.trim() && !/^\?+$/.test(v.trim()))
-    .map((v) => v.trim());
-  if (values.length === 0) return null;
-  const local = values.find((v) => LOCAL_SCRIPT.test(v)) ?? null;
-  const roman = values.find((v) => !LOCAL_SCRIPT.test(v)) ?? null;
-  return { name: roman ?? local, local: local && local !== roman ? local : null };
-}
-
-/**
- * Designations that occupy a polygon without being a municipality. Seeding one
- * creates a region nobody can ever visit.
- */
-const NOT_A_MUNICIPALITY = [/^所属未定地$/, /^境界未定地/];
+import {
+  bbox, featuresOf, geometryArea, interiorPoint, isUnusableName, NOT_A_MUNICIPALITY,
+  pointInGeometry, pointsOf, readJson as readJsonWith, readName, readNamePair,
+} from "./lib/boundaries.mjs";
 
 /** A shape whose name is unusable is exactly the shape the seed dropped. */
 function hasUsableName(feature) {
@@ -185,16 +57,6 @@ function argAll(flag) {
   return out;
 }
 
-function readJson(p) {
-  return JSON.parse(fs.readFileSync(p, "utf8"));
-}
-
-function featuresOf(doc) {
-  if (Array.isArray(doc)) return doc;
-  if (Array.isArray(doc?.features)) return doc.features;
-  return Object.values(doc);
-}
-
 // -------------------------------------------------------------------- main --
 
 function main() {
@@ -210,11 +72,11 @@ function main() {
     process.exit(1);
   }
 
-  const shapes = featuresOf(readJson(shapesPath));
-  const parents = featuresOf(readJson(parentsPath));
-  const regions = featuresOf(readJson(regionsPath));
+  const shapes = featuresOf(readJsonWith(shapesPath, fs));
+  const parents = featuresOf(readJsonWith(parentsPath, fs));
+  const regions = featuresOf(readJsonWith(regionsPath, fs));
 
-  const nameSources = namePaths.flatMap((p) => featuresOf(readJson(p)).map((f) => {
+  const nameSources = namePaths.flatMap((p) => featuresOf(readJsonWith(p, fs)).map((f) => {
     const pair = readNamePair(f.properties) ?? readNamePair(f);
     return {
       name: pair?.name ?? null,
