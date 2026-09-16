@@ -273,7 +273,7 @@
     "sourceShapeId": "22064153B67559782883122"
   },
   {
-    "id": "273221509101",
+    "id": "273231509101",
     "parentId": "1509101",
     "admLevel": 2,
     "name": "Nagatoro",
@@ -286,16 +286,102 @@
     "sourceShapeId": "22064153B25299017238233"
   },
   {
-    "id": "273231529101",
-    "parentId": "1529101",
+    "id": "273251507101",
+    "parentId": "1507101",
     "admLevel": 2,
-    "name": "Fujiyoshida",
-    "nameKo": "富士吉田市",
-    "nameEn": "Fujiyoshida",
+    "name": "Kozushima",
     "iso3": "JPN",
     "code": "JPN",
     "childrenCount": 0,
-    "nameSource": "JPN_ADM2_patch.geojson",
-    "sourceShapeId": "22064153B45156088025009"
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B75016173897449"
+  },
+  {
+    "id": "273261517101",
+    "parentId": "1517101",
+    "admLevel": 2,
+    "name": "Mishima",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B77106514402580"
+  },
+  {
+    "id": "273271517101",
+    "parentId": "1517101",
+    "admLevel": 2,
+    "name": "Yoron",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B83011890767677"
+  },
+  {
+    "id": "273281499101",
+    "parentId": "1499101",
+    "admLevel": 2,
+    "name": "Himeshima",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B59466036865569"
+  },
+  {
+    "id": "273291514101",
+    "parentId": "1514101",
+    "admLevel": 2,
+    "name": "Odika",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B95571124657554"
+  },
+  {
+    "id": "273301541101",
+    "parentId": "1541101",
+    "admLevel": 2,
+    "name": "Naoshima",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B66253302818122"
+  },
+  {
+    "id": "273311542101",
+    "parentId": "1542101",
+    "admLevel": 2,
+    "name": "Kitadaito",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B50498119246525"
+  },
+  {
+    "id": "273341526101",
+    "parentId": "1526101",
+    "admLevel": 2,
+    "name": "Awashimaura",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B53652975826268"
+  },
+  {
+    "id": "273351507101",
+    "parentId": "1507101",
+    "admLevel": 2,
+    "name": "Aogashima",
+    "iso3": "JPN",
+    "code": "JPN",
+    "childrenCount": 0,
+    "nameSource": "the shape's own name",
+    "sourceShapeId": "22064153B27158878874900"
   }
 ]

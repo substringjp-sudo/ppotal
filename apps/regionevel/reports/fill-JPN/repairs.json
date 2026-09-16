@@ -1,0 +1,60 @@
+[
+  {
+    "id": "271911529101",
+    "kind": "rename",
+    "name": {
+      "from": "?????",
+      "to": "Fujiyoshida"
+    },
+    "parentId": {
+      "from": "1529101",
+      "to": "1529101"
+    },
+    "nameKo": "富士吉田市",
+    "nameEn": "Fujiyoshida",
+    "sourceShapeId": "22064153B45156088025009",
+    "reason": "record carries \"?????\", which the shape could not supply"
+  },
+  {
+    "id": "270741528101",
+    "kind": "re-parent",
+    "name": {
+      "from": "Kasamatsu",
+      "to": "Kasamatsu"
+    },
+    "parentId": {
+      "from": "1528101",
+      "to": "1504101"
+    },
+    "sourceShapeId": "22064153B71223857958688",
+    "reason": "record is filed under Aichi Prefecture but the boundary is in Gifu Prefecture"
+  },
+  {
+    "id": "259631507101",
+    "kind": "re-parent",
+    "name": {
+      "from": "Kawasaki",
+      "to": "Kawasaki"
+    },
+    "parentId": {
+      "from": "1507101",
+      "to": "1522101"
+    },
+    "sourceShapeId": "22064153B90768154691941",
+    "reason": "record is filed under Tokyo but the boundary is in Kanagawa"
+  },
+  {
+    "id": "258201518101",
+    "kind": "re-parent",
+    "name": {
+      "from": "Kamikawa",
+      "to": "Kamikawa"
+    },
+    "parentId": {
+      "from": "1518101",
+      "to": "1509101"
+    },
+    "sourceShapeId": "22064153B65475311637837",
+    "reason": "record is filed under Gunma but the boundary is in Saitama"
+  }
+]

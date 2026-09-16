@@ -227,9 +227,14 @@ function main() {
   const childRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 2);
   const parentByName = new Map(parentRecords.map((r) => [r.name, r]));
 
-  const seeded = new Set(
+  // Two different questions, so two sets. "A record exists" is what decides
+  // whether a shape is a hole; "a shape carries this name" is what decides
+  // whether a name is still unclaimed. Conflating them makes every named shape
+  // look seeded and hides the second kind of hole entirely.
+  const recordedNames = new Set(
     childRecords.map((r) => `${r.parentId}::${String(r.name).toLowerCase()}`),
   );
+  const claimedNames = new Set(recordedNames);
 
   // --- id allocation, following the scheme already in the table:
   //     a child id is a sequential prefix followed by its parent's whole id.
@@ -261,37 +266,69 @@ function main() {
     return { parentName, parentRecord: parentName ? parentByName.get(parentName) ?? null : null };
   };
 
-  // A name already carried by a shape in the same parent is taken too, even if
-  // the seed never turned that shape into a record. Scoped to the parent on
-  // purpose: "Ina" and "Ogawa" name towns in several prefectures, and treating
-  // a name as claimed nationwide rejects the very shapes we are here to fill.
-  for (const f of shapes) {
-    const n = readName(f.properties);
-    if (!n) continue;
-    const pt = interiorPoint(f.geometry);
-    if (!pt) continue;
-    const { parentRecord } = parentAt(pt);
-    if (parentRecord) seeded.add(`${parentRecord.id}::${n.toLowerCase()}`);
-  }
+  // Locate every shape once: both passes below need its interior point and its
+  // parent, and point-in-polygon over 47 parents is not worth doing twice.
+  // Scoped to the parent on purpose: "Ina" and "Ogawa" name towns in several
+  // prefectures, and treating a name as claimed nationwide would reject the
+  // very shapes we are here to fill.
+  const located = shapes.map((shape) => {
+    const at = interiorPoint(shape.geometry);
+    const { parentName, parentRecord } = at ? parentAt(at) : { parentName: null, parentRecord: null };
+    const own = readName(shape.properties);
+    if (own && parentRecord) claimedNames.add(`${parentRecord.id}::${own.toLowerCase()}`);
+    return { shape, at, parentName, parentRecord, own };
+  });
 
   const newRegions = [];
   const newGeometries = [];
   const unresolved = [];
   const review = [];
 
-  for (const shape of shapes) {
-    if (hasUsableName(shape)) continue; // this one was seeded under its name
+  /** Adds the region and geometry pair for one shape. */
+  const emit = (shape, shapeId, parentRecord, name, local, nameSource) => {
+    const id = allocateId(parentRecord.id);
+    newRegions.push({
+      id,
+      parentId: parentRecord.id,
+      admLevel: 2,
+      name,
+      ...(local ? { nameKo: local, nameEn: name } : {}),
+      iso3,
+      code: iso3,
+      childrenCount: 0,
+      // So a later pass can tell these apart from a normal seed, and see what
+      // named them without having to re-derive it.
+      nameSource,
+      sourceShapeId: shapeId,
+    });
+    newGeometries.push({
+      id,
+      parentId: parentRecord.id,
+      type: "Feature",
+      // The geoBoundaries polygon, untouched. This is the whole point.
+      geometry: shape.geometry,
+      properties: {
+        id,
+        shapeID: shapeId,
+        shapeName: name,
+        name: local ?? name,
+        level: "city",
+        iso3,
+        countryId: iso3,
+        parentId: parentRecord.id,
+        // Not "osm": the app filters osm-sourced features out of every read,
+        // so mislabelling these would hide them all over again.
+        source: "geoBoundaries",
+      },
+    });
+  };
 
+  for (const { shape, at, parentName, parentRecord, own } of located) {
     const shapeId = shape.properties?.shapeID ?? shape.properties?.id;
-    const at = interiorPoint(shape.geometry);
     if (!at) {
       unresolved.push({ shapeId, reason: "no interior point could be found" });
       continue;
     }
-
-    // Parent, by where the shape is.
-    const { parentName, parentRecord } = parentAt(at);
-
     if (!parentRecord) {
       unresolved.push({
         shapeId, at,
@@ -299,6 +336,22 @@ function main() {
           ? `no region record for parent "${parentName}"`
           : "not inside any parent boundary",
       });
+      continue;
+    }
+
+    // A shape that already carries its own name needs no name source at all —
+    // it is a hole only because the seed never turned it into a record.
+    if (own) {
+      if (recordedNames.has(`${parentRecord.id}::${own.toLowerCase()}`)) continue;
+      if (NOT_A_MUNICIPALITY.some((re) => re.test(own))) {
+        review.push({
+          shapeId, at, parent: parentRecord.name, name: own,
+          reason: "not a municipality — a designation for land with no municipality, so no region was emitted",
+        });
+        continue;
+      }
+      recordedNames.add(`${parentRecord.id}::${own.toLowerCase()}`);
+      emit(shape, shapeId, parentRecord, own, null, "the shape's own name");
       continue;
     }
 
@@ -346,8 +399,8 @@ function main() {
     // here: a coastal source polygon is inflated by the territorial water this
     // whole approach exists to avoid, so the honest signal is whether anything
     // already carries the name. Unclaimed means the shape really is the gap.
-    const claimedKey = name.toLowerCase();
-    if (seeded.has(`${parentRecord.id}::${claimedKey}`)) {
+    const claimedKey = `${parentRecord.id}::${name.toLowerCase()}`;
+    if (claimedNames.has(claimedKey)) {
       review.push({
         shapeId, at, parent: parentRecord.name, name,
         areaRatio: shapeArea > 0 ? +(best.area / shapeArea).toFixed(1) : null,
@@ -355,59 +408,149 @@ function main() {
       });
       continue;
     }
-    seeded.add(`${parentRecord.id}::${claimedKey}`);
+    claimedNames.add(claimedKey);
+    recordedNames.add(claimedKey);
 
-    const id = allocateId(parentRecord.id);
-
-    newRegions.push({
-      id,
-      parentId: parentRecord.id,
-      admLevel: 2,
-      name,
-      ...(best.local ? { nameKo: best.local, nameEn: name } : {}),
-      iso3,
-      code: iso3,
-      childrenCount: 0,
-      // So a later pass can tell these apart from a normal seed, and see what
-      // named them without having to re-derive it.
-      nameSource: best.from,
-      sourceShapeId: shapeId,
-    });
-
-    newGeometries.push({
-      id,
-      parentId: parentRecord.id,
-      type: "Feature",
-      // The geoBoundaries polygon, untouched. This is the whole point.
-      geometry: shape.geometry,
-      properties: {
-        id,
-        shapeID: shapeId,
-        shapeName: name,
-        name: best.local ?? name,
-        level: "city",
-        iso3,
-        countryId: iso3,
-        parentId: parentRecord.id,
-        // Not "osm": the app filters osm-sourced features out of every read,
-        // so mislabelling these would hide them all over again.
-        source: "geoBoundaries",
-      },
-    });
+    emit(shape, shapeId, parentRecord, name, best.local, best.from);
   }
+
+  // --- the mirror problem: a record whose shape does not exist
+  //
+  // Filling holes only fixes one direction. A record with no shape draws
+  // nothing, cannot be hovered, and still counts against the denominator — so
+  // a parent can come out of this with more children than it has boundaries.
+  // Reported rather than resolved: removing a record is destructive and is the
+  // owner's call, and a missing shape can equally mean the shape is the thing
+  // at fault.
+  const shapeNamesByParent = new Set();
+  const shapesPerParent = new Map();
+  for (const { parentRecord, own } of located) {
+    if (!parentRecord) continue;
+    shapesPerParent.set(parentRecord.id, (shapesPerParent.get(parentRecord.id) ?? 0) + 1);
+    if (own) shapeNamesByParent.add(`${parentRecord.id}::${own.toLowerCase()}`);
+  }
+  for (const r of newRegions) {
+    shapeNamesByParent.add(`${r.parentId}::${String(r.name).toLowerCase()}`);
+  }
+
+  const phantoms = childRecords
+    .filter((r) => !shapeNamesByParent.has(`${r.parentId}::${String(r.name).toLowerCase()}`))
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      parentId: r.parentId,
+      parent: parentRecords.find((p) => p.id === r.parentId)?.name,
+      reason: "no boundary under this parent carries this name — the record draws nothing",
+    }));
+
+  // --- reconcile: a hole may already have a record, just a broken one
+  //
+  // The phantoms are not random. They are the same municipalities, filed under
+  // the wrong parent (Kawasaki under Tokyo, Kasamatsu under Aichi) or seeded
+  // under the unusable name the shape carried ("?????"). Inserting a second
+  // record for one of those would leave a duplicate on the map, so the record
+  // is repaired in place and keeps its id — anything already pointing at it,
+  // a visit included, keeps pointing at the right place.
+  const repairs = [];
+  const phantomByName = new Map();
+  for (const p of phantoms) {
+    const k = String(p.name).toLowerCase();
+    if (!phantomByName.has(k)) phantomByName.set(k, p);
+  }
+  const unusablePhantomsByParent = new Map();
+  for (const p of phantoms) {
+    if (readName({ name: p.name })) continue; // it has a real name
+    const list = unusablePhantomsByParent.get(p.parentId) ?? [];
+    list.push(p);
+    unusablePhantomsByParent.set(p.parentId, list);
+  }
+
+  const claimedPhantomIds = new Set();
+  for (let i = newRegions.length - 1; i >= 0; i--) {
+    const region = newRegions[i];
+    const byName = phantomByName.get(String(region.name).toLowerCase());
+    const sameParentUnusable = unusablePhantomsByParent.get(region.parentId) ?? [];
+
+    let target = null;
+    let kind = null;
+    if (byName && !claimedPhantomIds.has(byName.id)) {
+      target = byName;
+      kind = byName.parentId === region.parentId ? "rename" : "re-parent";
+    } else if (sameParentUnusable.length === 1 && !claimedPhantomIds.has(sameParentUnusable[0].id)) {
+      target = sameParentUnusable[0];
+      kind = "rename";
+    } else if (sameParentUnusable.length > 1) {
+      review.push({
+        shapeId: region.sourceShapeId,
+        name: region.name,
+        parent: parentRecords.find((p) => p.id === region.parentId)?.name,
+        reason: `${sameParentUnusable.length} records under this parent have unusable names, so which one this shape is cannot be told apart — inserted as new, check for a duplicate`,
+      });
+    }
+
+    if (!target) continue;
+    claimedPhantomIds.add(target.id);
+
+    repairs.push({
+      id: target.id,
+      kind,
+      name: { from: target.name, to: region.name },
+      parentId: { from: target.parentId, to: region.parentId },
+      ...(region.nameKo ? { nameKo: region.nameKo, nameEn: region.nameEn } : {}),
+      sourceShapeId: region.sourceShapeId,
+      reason: kind === "re-parent"
+        ? `record is filed under ${parentRecords.find((p) => p.id === target.parentId)?.name ?? target.parentId} but the boundary is in ${parentRecords.find((p) => p.id === region.parentId)?.name ?? region.parentId}`
+        : `record carries "${target.name}", which the shape could not supply`,
+    });
+
+    // The geometry keeps the record's existing id rather than a new one.
+    const geom = newGeometries[i];
+    geom.id = target.id;
+    geom.properties.id = target.id;
+    geom.properties.parentId = region.parentId;
+    geom.parentId = region.parentId;
+
+    usedIds.delete(region.id);
+    newRegions.splice(i, 1);
+  }
+
+  // A repaired record is no longer a phantom, and no longer an addition.
+  const repairedIds = new Set(repairs.map((r) => r.id));
+  const remainingPhantoms = phantoms.filter((p) => !repairedIds.has(p.id));
 
   // --- childrenCount drift: the denominator of every "visited N of M"
   const countsBefore = new Map(parentRecords.map((r) => [r.id, r.childrenCount ?? 0]));
-  const added = new Map();
-  for (const r of newRegions) added.set(r.parentId, (added.get(r.parentId) ?? 0) + 1);
+  const delta = new Map();
+  const bump = (parentId, by) => delta.set(parentId, (delta.get(parentId) ?? 0) + by);
 
-  const childrenCountFixes = [...added.entries()].map(([parentId, n]) => ({
-    parentId,
-    name: parentRecords.find((r) => r.id === parentId)?.name,
-    childrenCount: (countsBefore.get(parentId) ?? 0) + n,
-    was: countsBefore.get(parentId) ?? 0,
-    added: n,
-  })).sort((a, b) => b.added - a.added);
+  for (const r of newRegions) bump(r.parentId, 1);
+  // A re-parent moves a child: the wrong parent loses one, the right one gains.
+  for (const r of repairs) {
+    if (r.parentId.from === r.parentId.to) continue;
+    bump(r.parentId.from, -1);
+    bump(r.parentId.to, 1);
+  }
+
+  const phantomsPerParent = new Map();
+  for (const p of remainingPhantoms) {
+    phantomsPerParent.set(p.parentId, (phantomsPerParent.get(p.parentId) ?? 0) + 1);
+  }
+
+  const childrenCountFixes = [...delta.entries()].map(([parentId, n]) => {
+    const was = countsBefore.get(parentId) ?? 0;
+    const shapes = shapesPerParent.get(parentId) ?? 0;
+    return {
+      parentId,
+      name: parentRecords.find((r) => r.id === parentId)?.name,
+      was,
+      change: n,
+      childrenCount: was + n,
+      /** Boundaries actually present — what the count should agree with. */
+      shapes,
+      phantomRecords: phantomsPerParent.get(parentId) ?? 0,
+      agreesWithShapes: was + n === shapes,
+    };
+  }).sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
 
   // --- self-checks, because this output is going to be seeded
   const problems = [];
@@ -422,8 +565,21 @@ function main() {
       problems.push(`${r.id} does not follow the <prefix><parentId> id scheme`);
     }
   }
-  if (newRegions.length !== newGeometries.length) {
-    problems.push("region and geometry counts disagree");
+  // Every geometry belongs to something: a record being added, or one being
+  // repaired in place (which keeps its own id rather than taking a new one).
+  if (newGeometries.length !== newRegions.length + repairs.length) {
+    problems.push(
+      `${newGeometries.length} geometries for ${newRegions.length} new records and ${repairs.length} repairs`,
+    );
+  }
+  const ownerIds = new Set([...newRegions.map((r) => r.id), ...repairs.map((r) => r.id)]);
+  for (const g of newGeometries) {
+    if (!ownerIds.has(g.id)) problems.push(`geometry ${g.id} belongs to no record`);
+  }
+  for (const r of repairs) {
+    if (!childRecords.some((c) => c.id === r.id)) {
+      problems.push(`repair targets ${r.id}, which is not an existing record`);
+    }
   }
   for (const g of newGeometries) {
     if (g.properties.source === "osm") problems.push(`${g.id} is marked osm and would be filtered out`);
@@ -440,20 +596,45 @@ function main() {
   write("children-count.json", childrenCountFixes);
   write("unresolved.json", unresolved);
   write("review.json", review);
+  write("phantom-records.json", remainingPhantoms);
+  write("repairs.json", repairs);
 
   const unnamed = shapes.filter((f) => !hasUsableName(f)).length;
+  const fromOwnName = newRegions.filter((r) => r.nameSource === "the shape's own name").length;
   console.log(`shapes in ${path.basename(shapesPath)}: ${shapes.length}`);
-  console.log(`  already named (seeded by name): ${shapes.length - unnamed}`);
-  console.log(`  unnamed, i.e. holes:            ${unnamed}`);
-  console.log(`\nresolved from a name source:      ${newRegions.length}`);
-  console.log(`needs a name from elsewhere:      ${unresolved.length}`);
-  console.log(`flagged for review:               ${review.length}`);
+  console.log(`  carrying a name:  ${shapes.length - unnamed}`);
+  console.log(`  unnamed:          ${unnamed}`);
+  console.log(`\nregion records before: ${childRecords.length}`);
+  console.log(`holes filled:          ${newRegions.length}`);
+  console.log(`  named shapes the seed never recorded: ${fromOwnName}`);
+  console.log(`  unnamed shapes named from a source:   ${newRegions.length - fromOwnName}`);
+  console.log(`still needs a name from elsewhere:      ${unresolved.length}`);
+  console.log(`flagged for review:                     ${review.length}`);
+  console.log(`repaired instead of duplicated:        ${repairs.length}`);
+  const uncovered = unresolved.length + review.filter((r) => !r.chose).length;
+  console.log(`\nboundaries left without a region: ${uncovered} of ${shapes.length}`);
 
   if (childrenCountFixes.length > 0) {
     console.log("\nchildrenCount corrections (the 'visited N of M' denominator):");
     for (const c of childrenCountFixes) {
-      console.log(`  ${c.name}: ${c.was} -> ${c.childrenCount}  (+${c.added})`);
+      const flag = c.agreesWithShapes
+        ? ""
+        : `  <- still ${c.was + c.change - c.shapes > 0 ? "over" : "under"} the ${c.shapes} boundaries present`
+          + (c.phantomRecords > 0 ? `, ${c.phantomRecords} record(s) draw nothing` : "");
+      const sign = c.change >= 0 ? `+${c.change}` : `${c.change}`;
+      console.log(`  ${c.name}: ${c.was} -> ${c.childrenCount}  (${sign})${flag}`);
     }
+  }
+  if (repairs.length > 0) {
+    console.log(`\nexisting records repaired rather than duplicated: ${repairs.length}`);
+    for (const r of repairs) {
+      console.log(`  ${r.kind}: "${r.name.from}" -> "${r.name.to}"  (${r.reason})`);
+    }
+  }
+  if (remainingPhantoms.length > 0) {
+    console.log(`\nrecords with no boundary (draw nothing, still counted): ${remainingPhantoms.length}`);
+    for (const p of remainingPhantoms.slice(0, 15)) console.log(`  ${p.parent} / ${p.name}  (${p.id})`);
+    if (remainingPhantoms.length > 15) console.log(`  ...and ${remainingPhantoms.length - 15} more, in phantom-records.json`);
   }
   if (unresolved.length > 0) {
     console.log("\nstill unnamed:");
@@ -466,7 +647,7 @@ function main() {
     for (const r of review) console.log(`  ${r.name ?? r.shapeId} — ${r.reason}`);
   }
 
-  console.log(`\nwrote ${outDir}/{regions,geometries,children-count,unresolved,review}.json`);
+  console.log(`\nwrote ${outDir}/{regions,geometries,repairs,children-count,unresolved,review,phantom-records}.json`);
 
   if (problems.length > 0) {
     console.log("\nSELF-CHECK FAILED — do not seed this output:");
