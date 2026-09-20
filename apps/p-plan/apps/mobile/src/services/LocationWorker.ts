@@ -4,7 +4,7 @@ import * as Battery from 'expo-battery';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { saveFootprint } from '../lib/database';
-import { TripRecordingSettings, useSettingsStore } from '@pplaner/shared';
+import { TripRecordingSettings, useSettingsStore, useLocationStore } from '@pplaner/shared';
 
 export const LOCATION_TASK_NAME = 'pplaner-background-location';
 export const LIFELOG_TASK_NAME = 'pplaner-background-lifelog';
@@ -215,5 +215,54 @@ export const stopBackgroundTracking = async () => {
     const isStarted = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
     if (isStarted) {
         await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+    }
+};
+
+/**
+ * 앱이 다시 뜰 때 기록 세션과 실제 위치 태스크를 맞춘다.
+ *
+ * "기록 중인가"의 답을 두 군데가 따로 들고 있다. 화면이 보는 것은 세션
+ * (locationStore)이고, 실제로 발자취를 쌓는 것은 OS 의 위치 태스크다. 둘은
+ * 따로 사라진다. 앱이 밤사이 내려가면 세션이, 기기를 재부팅하면 태스크가
+ * 없어진다. 어느 쪽이든 한쪽만 없어진 채로 두면 화면이 거짓말을 한다.
+ * 기록이 멈췄다고 하면서 실제로는 쌓이고 있거나, 기록 중이라면서 아무것도
+ * 쌓이지 않거나.
+ *
+ * 무엇이 기록되어야 하는지의 기준은 AsyncStorage 의 여행 ID 다. 이것은
+ * 기록을 시작할 때 쓰이고 종료할 때만 지워지므로, 사용자의 마지막 의사를
+ * 그대로 담고 있다.
+ */
+export const reconcileTripTracking = async () => {
+    if (Platform.OS === 'web') return;
+
+    const { activeSession, resumeRecordingSession, stopRecordingSession } = useLocationStore.getState();
+
+    let activeTripId: string | null = null;
+    try {
+        activeTripId = await AsyncStorage.getItem(ACTIVE_TRIP_ID_KEY);
+    } catch (e) {
+        // 저장소를 못 읽으면 아무것도 단정하지 않는다. 멀쩡한 세션을 끄는 것이
+        // 더 나쁘다.
+        console.warn('PPLANER: Could not read active trip id, leaving session as is.', e);
+        return;
+    }
+
+    if (!activeTripId) {
+        // 사용자가 기록을 끝냈는데 세션만 살아 있는 경우.
+        if (activeSession?.isActive) stopRecordingSession();
+        return;
+    }
+
+    // 기록해야 할 여행이 있다. 세션을 되살리고,
+    resumeRecordingSession(activeTripId);
+
+    // 태스크가 죽어 있으면(재부팅 등) 다시 띄운다.
+    try {
+        const isStarted = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+        if (!isStarted) {
+            await startBackgroundTracking(activeTripId);
+        }
+    } catch (e) {
+        console.error('PPLANER: Failed to resume background tracking', e);
     }
 };

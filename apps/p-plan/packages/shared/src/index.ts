@@ -50,6 +50,7 @@ export * from './lib/tripCollaborationService';
 
 // Utils
 export * from './lib/utils';
+export * from './lib/date-utils';
 export * from './lib/currency-utils';
 export * from './lib/budget-utils';
 export * from './lib/flight-utils';

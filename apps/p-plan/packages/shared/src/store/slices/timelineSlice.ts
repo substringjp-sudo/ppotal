@@ -6,6 +6,7 @@ import { searchRegions } from '../../lib/intelligence-service';
 
 import { updateTripState } from '../utils';
 import { TIMELINE_SAFETY_MAX_DAYS } from '../../lib/constants/common';
+import { localDateKey } from '../../lib/date-utils';
 
 export interface TimelineSlice {
     initializeDailyTimeline: () => void;
@@ -47,13 +48,16 @@ export const createTimelineSlice: StateCreator<TripState, [], [], TimelineSlice>
                     const end = new Date(endDateStr);
 
                     if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start <= end) {
-                        const current = new Date(start);
+                        // 현지 달력으로 하루씩 넘긴다. UTC 자정으로 읽힌 날짜에
+                        // 현지 getDate/setDate 를 쓰면 시간대에 따라 하루가
+                        // 밀리거나 건너뛴다.
+                        const current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
                         let dayNum = 1;
                         let safetyCounter = 0;
                         while (current <= end && safetyCounter < TIMELINE_SAFETY_MAX_DAYS) {
                             days.push({
                                 day: dayNum++,
-                                date: current.toISOString().split('T')[0],
+                                date: localDateKey(current),
                                 events: []
                             });
                             current.setDate(current.getDate() + 1);

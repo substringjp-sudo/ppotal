@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { DESIGN_TOKENS, Trip, useTripStore } from '@pplaner/shared';
+import { DESIGN_TOKENS, Trip, useTripStore, localDateKey } from '@pplaner/shared';
 import Animated, { FadeIn, Layout } from 'react-native-reanimated';
 
 interface FootprintCalendarProps {
@@ -22,11 +22,6 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
   const [activityData, setActivityData] = useState<Record<string, DayData>>({});
   const [selectedDayInfo, setSelectedDayInfo] = useState<DayData | null>(null);
   
-  const getLocalDateKey = (dateInput: number | string | Date) => {
-    const d = new Date(dateInput);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  };
-
   // Group data by date
   useEffect(() => {
     const data: Record<string, DayData> = {};
@@ -37,7 +32,7 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
       if (trip.photos) {
         trip.photos.forEach(photo => {
           if (photo.timestamp) {
-            const dateKey = getLocalDateKey(photo.timestamp);
+            const dateKey = localDateKey(photo.timestamp);
             if (!data[dateKey]) data[dateKey] = { footprintCount: 0, photoCount: 0, trips: [], rawFootprints: [] };
             data[dateKey].photoCount += 1;
             if (!data[dateKey].trips.find(t => t.id === trip.id)) {
@@ -71,7 +66,7 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
         const rawFps = getFootprintsInRange(start, end);
         
         rawFps.forEach((fp: any) => {
-          const dateKey = getLocalDateKey(fp.timestamp);
+          const dateKey = localDateKey(fp.timestamp);
           if (!data[dateKey]) data[dateKey] = { footprintCount: 0, photoCount: 0, trips: [], rawFootprints: [] };
           data[dateKey].footprintCount += 1;
           data[dateKey].rawFootprints.push(fp);
@@ -88,7 +83,7 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
     
     // Initial selection update
     if (selectedDate) {
-      const key = getLocalDateKey(selectedDate);
+      const key = localDateKey(selectedDate);
       setSelectedDayInfo(data[key] || null);
     }
   }, [trips]);
@@ -118,7 +113,7 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
 
   const handleDatePress = (date: Date) => {
     setSelectedDate(date);
-    const key = getLocalDateKey(date);
+    const key = localDateKey(date);
     const info = activityData[key] || { footprintCount: 0, photoCount: 0, trips: [], rawFootprints: [] };
     setSelectedDayInfo(info);
     if (onDateSelect) onDateSelect(date, info);
@@ -164,7 +159,7 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
         {daysInMonth.map((date, index) => {
           if (!date) return <View key={`empty-${index}`} style={styles.dayCell} />;
           
-          const dateKey = getLocalDateKey(date);
+          const dateKey = localDateKey(date);
           const data = activityData[dateKey];
           const hasPhotos = data && data.photoCount > 0;
           const hasFootprints = data && data.footprintCount > 0;
@@ -223,7 +218,7 @@ export const FootprintCalendar: React.FC<FootprintCalendarProps> = ({ onDateSele
               <TouchableOpacity 
                 style={styles.reconstructButton}
                 onPress={() => {
-                  const dateStr = getLocalDateKey(selectedDate);
+                  const dateStr = localDateKey(selectedDate);
                   const { router } = require('expo-router');
                   router.push({ pathname: '/reconstruct', params: { date: dateStr } });
                 }}
