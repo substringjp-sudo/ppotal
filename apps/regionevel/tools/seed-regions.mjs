@@ -83,6 +83,9 @@ function main() {
   const existing = featuresOf(readJson(regionsPath, fs));
 
   const country = existing.find((r) => r.iso3 === iso3 && r.admLevel === 0);
+  // Not the ISO3: the city-level read filters geometries on the country's
+  // record id, resolved from the regions collection.
+  const countryRecordId = country?.id ?? null;
   if (!country) {
     console.error(`No country record for ${iso3} in ${path.basename(regionsPath)}.`);
     process.exit(1);
@@ -240,7 +243,11 @@ function main() {
           name: named?.local ?? next.name,
           level: admLevel === 1 ? "prefecture" : "city",
           iso3,
-          countryId: iso3,
+          // The country's record id, not its ISO3. The city-level read filters on
+          // `properties.countryId == <country region id>` (it resolves that id
+          // from the regions collection), so an ISO3 here makes every emitted
+          // city invisible to that query while still looking right in the doc.
+          countryId: countryRecordId,
           parentId: next.parentId,
           source: "geoBoundaries",
         },

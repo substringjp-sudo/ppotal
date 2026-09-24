@@ -103,6 +103,15 @@ function main() {
 
   // --- the region table, as it stands
   const parentRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 1);
+  // Every ADM1 record points at the country record; that id — not the ISO3 — is
+  // what the city-level read filters geometries on.
+  const countryRecordId = regions.find((r) => r.iso3 === iso3 && r.admLevel === 0)?.id
+    ?? parentRecords[0]?.parentId
+    ?? null;
+  if (!countryRecordId) {
+    console.error(`No country record for ${iso3}; emitted geometries would be invisible to the city map.`);
+    process.exit(1);
+  }
   const childRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 2);
   const parentByName = new Map(parentRecords.map((r) => [r.name, r]));
 
@@ -218,7 +227,11 @@ function main() {
         name: local ?? name,
         level: "city",
         iso3,
-        countryId: iso3,
+        // The country's record id, not its ISO3. The city-level read filters on
+        // `properties.countryId == <country region id>` (it resolves that id from
+        // the regions collection), so an ISO3 here makes every emitted city
+        // invisible to that query while still looking right in the document.
+        countryId: countryRecordId,
         parentId: parentRecord.id,
         // Not "osm": the app filters osm-sourced features out of every read,
         // so mislabelling these would hide them all over again.
