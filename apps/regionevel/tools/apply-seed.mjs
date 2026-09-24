@@ -20,12 +20,15 @@
  * credentials, which bypass rules. Point GOOGLE_APPLICATION_CREDENTIALS at a
  * service account key for the project.
  *
+ * Run it from apps/regionevel, which is what --plan is relative to. The key is
+ * the downloaded service account JSON; GOOGLE_APPLICATION_CREDENTIALS takes the
+ * path to that file, not its contents.
+ *
  * Usage:
+ *   pnpm install                                   # firebase-admin is already a dependency here
  *   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
  *   node tools/apply-seed.mjs --plan reports/fill-JPN --project p-plan          # dry run
  *   node tools/apply-seed.mjs --plan reports/fill-JPN --project p-plan --apply
- *
- * Needs firebase-admin:  pnpm add -w -D firebase-admin
  */
 
 import fs from "node:fs";
@@ -81,7 +84,7 @@ async function main() {
   try {
     admin = await import("firebase-admin");
   } catch {
-    console.error("firebase-admin is not installed.  pnpm add -w -D firebase-admin");
+    console.error("firebase-admin is not installed. Run `pnpm install` from the repo root.");
     process.exit(1);
   }
   if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
