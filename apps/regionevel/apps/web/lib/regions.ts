@@ -70,7 +70,12 @@ export async function fetchChildren(parentId: string | null): Promise<Region[]> 
   }
 }
 
-const CACHE_VERSION = "v1";
+// Bump this whenever the geometry or region data behind the cache changes.
+// `getLocalCache` has no expiry: once a viewer has a key in localStorage they
+// keep that copy forever, so seeding new cities left every returning viewer
+// looking at the pre-seed array and concluding the holes were still there.
+// v2: the Japanese city seed of 2026-09-24.
+const CACHE_VERSION = "v2";
 const ALL_REGIONS_CACHE_KEY = `regionevel_all_regions_${CACHE_VERSION}`;
 const GEOMETRY_CACHE_PREFIX = `regionevel_geom_${CACHE_VERSION}_`;
 
