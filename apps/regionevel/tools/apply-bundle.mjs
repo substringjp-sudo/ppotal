@@ -11,7 +11,14 @@
  * changes what every viewer sees at country level, so it is worth the same care
  * as the region writes.
  *
+ * Install from the REPOSITORY ROOT: apps/regionevel has its own
+ * pnpm-workspace.yaml covering only its own apps/* and packages/*, so a
+ * `pnpm install` run from inside it cannot see @ppotal/ui at the repo root and
+ * fails with ERR_PNPM_WORKSPACE_PKG_NOT_FOUND.
+ *
  * Usage:
+ *   pnpm install                                   # from the repo root
+ *   cd apps/regionevel
  *   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
  *   node tools/apply-bundle.mjs --bundle reports/bundle-JPN/JPN_ADM2.json --iso3 JPN --level 2    # dry run
  *   node tools/apply-bundle.mjs --bundle reports/bundle-JPN/JPN_ADM2.json --iso3 JPN --level 2 --apply

@@ -20,12 +20,18 @@
  * credentials, which bypass rules. Point GOOGLE_APPLICATION_CREDENTIALS at a
  * service account key for the project.
  *
- * Run it from apps/regionevel, which is what --plan is relative to. The key is
- * the downloaded service account JSON; GOOGLE_APPLICATION_CREDENTIALS takes the
- * path to that file, not its contents.
+ * Install from the REPOSITORY ROOT, not from here. apps/regionevel has its own
+ * pnpm-workspace.yaml listing only its own apps/* and packages/*, so installing
+ * from inside it cannot see @ppotal/ui at the repo root and fails with
+ * ERR_PNPM_WORKSPACE_PKG_NOT_FOUND. Then run the tool from apps/regionevel,
+ * which is what --plan is relative to.
+ *
+ * The key is the downloaded service account JSON, and
+ * GOOGLE_APPLICATION_CREDENTIALS takes the path to that file, not its contents.
  *
  * Usage:
- *   pnpm install                                   # firebase-admin is already a dependency here
+ *   pnpm install                                   # from the repo root
+ *   cd apps/regionevel
  *   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
  *   node tools/apply-seed.mjs --plan reports/fill-JPN --project p-plan          # dry run
  *   node tools/apply-seed.mjs --plan reports/fill-JPN --project p-plan --apply
