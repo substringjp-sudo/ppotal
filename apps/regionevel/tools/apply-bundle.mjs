@@ -114,7 +114,13 @@ async function main() {
     const backupPath = path.join(path.dirname(bundlePath), `backup-${docId}-${Date.now()}.json`);
     fs.writeFileSync(backupPath, JSON.stringify(snap.data(), null, 2));
     const prev = snap.data();
-    console.log(`\nbacked up the existing bundle (${String(prev?.data ?? "").length.toLocaleString()} bytes, updated ${prev?.updatedAt ?? "unknown"})`);
+    // `updatedAt` is a string on the bundles this tool writes but a Firestore
+    // Timestamp on the ones written before it, and interpolating that gives
+    // "[object Object]". Take whichever form is there.
+    const prevWhen = typeof prev?.updatedAt === "string"
+      ? prev.updatedAt
+      : (prev?.updatedAt?.toDate?.().toISOString() ?? snap.updateTime?.toDate?.().toISOString() ?? "unknown");
+    console.log(`\nbacked up the existing bundle (${String(prev?.data ?? "").length.toLocaleString()} bytes, updated ${prevWhen})`);
     console.log(`  -> ${backupPath}`);
   } else {
     console.log(`\nno existing bundle at ${docId}; this creates it.`);
