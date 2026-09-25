@@ -273,7 +273,7 @@
       "name": "普代村",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1533101",
       "source": "geoBoundaries"
     }
@@ -840,7 +840,7 @@
       "name": "一戸町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1533101",
       "source": "geoBoundaries"
     }
@@ -1195,7 +1195,7 @@
       "name": "九戸村",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1533101",
       "source": "geoBoundaries"
     }
@@ -1962,7 +1962,7 @@
       "name": "葛巻町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1533101",
       "source": "geoBoundaries"
     }
@@ -2161,7 +2161,7 @@
       "name": "Toshima",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1507101",
       "source": "geoBoundaries"
     }
@@ -2580,7 +2580,7 @@
       "name": "小鹿野町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -2767,7 +2767,7 @@
       "name": "横瀬町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -3050,7 +3050,7 @@
       "name": "毛呂山町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -3277,7 +3277,7 @@
       "name": "越生町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -3432,7 +3432,7 @@
       "name": "松伏町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -3611,7 +3611,7 @@
       "name": "宮代町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -3910,7 +3910,7 @@
       "name": "杉戸町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -4037,7 +4037,7 @@
       "name": "伊奈町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -4344,7 +4344,7 @@
       "name": "川島町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -4655,7 +4655,7 @@
       "name": "ときがわ町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -4930,7 +4930,7 @@
       "name": "嵐山町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -5145,7 +5145,7 @@
       "name": "滑川町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -5312,7 +5312,7 @@
       "name": "鳩山町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -5691,7 +5691,7 @@
       "name": "寄居町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -6054,7 +6054,7 @@
       "name": "小川町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -6265,7 +6265,7 @@
       "name": "東秩父村",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -6612,7 +6612,7 @@
       "name": "皆野町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -7011,7 +7011,7 @@
       "name": "Kamikawa",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -7240,7 +7240,7 @@
       "name": "美里町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -7459,7 +7459,7 @@
       "name": "長瀞町",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1509101",
       "source": "geoBoundaries"
     }
@@ -8100,7 +8100,7 @@
       "name": "Kawasaki",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1522101",
       "source": "geoBoundaries"
     }
@@ -8295,7 +8295,7 @@
       "name": "Kozushima",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1507101",
       "source": "geoBoundaries"
     }
@@ -8612,7 +8612,7 @@
       "name": "Mishima",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1517101",
       "source": "geoBoundaries"
     }
@@ -8747,7 +8747,7 @@
       "name": "Yoron",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1517101",
       "source": "geoBoundaries"
     }
@@ -8886,7 +8886,7 @@
       "name": "Himeshima",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1499101",
       "source": "geoBoundaries"
     }
@@ -9299,7 +9299,7 @@
       "name": "Odika",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1514101",
       "source": "geoBoundaries"
     }
@@ -9540,7 +9540,7 @@
       "name": "Naoshima",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1541101",
       "source": "geoBoundaries"
     }
@@ -9657,7 +9657,7 @@
       "name": "Kitadaito",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1542101",
       "source": "geoBoundaries"
     }
@@ -9856,7 +9856,7 @@
       "name": "Kasamatsu",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1504101",
       "source": "geoBoundaries"
     }
@@ -10193,7 +10193,7 @@
       "name": "富士吉田市",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1529101",
       "source": "geoBoundaries"
     }
@@ -10328,7 +10328,7 @@
       "name": "Awashimaura",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1526101",
       "source": "geoBoundaries"
     }
@@ -10395,7 +10395,7 @@
       "name": "Aogashima",
       "level": "city",
       "iso3": "JPN",
-      "countryId": "JPN",
+      "countryId": "101",
       "parentId": "1507101",
       "source": "geoBoundaries"
     }

@@ -72,7 +72,12 @@ export const MAX_TOTAL_SCORE = 100;
 export type AdmLevel = 0 | 1 | 2 | 3 | 4;
 
 export interface Region {
-  // geoBoundaries shapeID used as-is — globally unique, no name/code matching
+  /**
+   * Numeric, and its width carries the level: 3 digits a country, 7 a
+   * prefecture, 12 a city. `padId` infers the level from that width, and
+   * visits, scores and regions all join on the padded form — so this is a key,
+   * not a reference to the source data. Use `shapeId` for that.
+   */
   id: string;
   parentId: string | null;
   name: string;
@@ -83,6 +88,25 @@ export interface Region {
   childrenCount?: number;
   code?: string;
   type?: string;
+  /**
+   * The boundary this region was built from, as the source identifies it.
+   *
+   * The join key between a region and its shape. Matching the two by name
+   * instead is what produced every boundary fault found so far: shapes whose
+   * name is null matched nothing and became holes in the map, the same missing
+   * names elsewhere went in as the literal string "Null", and two
+   * municipalities that romanise alike — 豊島区 and 利島村, 三郷市 and 美里町 —
+   * collapsed into one record. A shapeID has none of those failure modes.
+   */
+  shapeId?: string;
+  /**
+   * Set when no source could name this boundary.
+   *
+   * A region with no name is still a region: it draws, it can be hovered, and
+   * it counts. Dropping it instead is what left holes you could not even point
+   * at, so the gap is recorded rather than acted on.
+   */
+  nameMissing?: boolean;
 }
 
 export interface RegionVisit {

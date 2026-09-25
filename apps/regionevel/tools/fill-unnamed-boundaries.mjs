@@ -34,131 +34,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// ---------------------------------------------------------------- geometry --
-
-function* rings(geometry) {
-  if (!geometry) return;
-  if (geometry.type === "Polygon") {
-    if (geometry.coordinates?.[0]) yield geometry.coordinates[0];
-  } else if (geometry.type === "MultiPolygon") {
-    for (const poly of geometry.coordinates ?? []) if (poly?.[0]) yield poly[0];
-  }
-}
-
-function ringArea(ring) {
-  let a = 0;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    a += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
-  }
-  return Math.abs(a / 2);
-}
-
-function pointInRing(pt, ring) {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const xi = ring[i][0], yi = ring[i][1];
-    const xj = ring[j][0], yj = ring[j][1];
-    if (((yi > pt[1]) !== (yj > pt[1]))
-      && (pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi)) {
-      inside = !inside;
-    }
-  }
-  return inside;
-}
-
-function pointInGeometry(pt, geometry) {
-  for (const ring of rings(geometry)) if (pointInRing(pt, ring)) return true;
-  return false;
-}
-
-/** Planar ring area. Only ever compared against another area nearby, so degrees are fine. */
-function geometryArea(geometry) {
-  let total = 0;
-  for (const ring of rings(geometry)) total += ringArea(ring);
-  return total;
-}
-
-function bbox(geometry) {
-  const b = [Infinity, Infinity, -Infinity, -Infinity];
-  for (const ring of rings(geometry)) {
-    for (const p of ring) {
-      if (p[0] < b[0]) b[0] = p[0];
-      if (p[1] < b[1]) b[1] = p[1];
-      if (p[0] > b[2]) b[2] = p[0];
-      if (p[1] > b[3]) b[3] = p[1];
-    }
-  }
-  return Number.isFinite(b[0]) ? b : null;
-}
-
-/**
- * A point that actually lies inside the shape.
- *
- * The plain centroid escapes concave shapes — a C-shaped municipality, or one
- * wrapped around a bay — and a point outside its own polygon would then match
- * whatever neighbour happens to contain it, which is a silently wrong name.
- */
-function interiorPoint(geometry) {
-  let best = null;
-  let bestArea = -1;
-  for (const ring of rings(geometry)) {
-    const a = ringArea(ring);
-    if (a > bestArea) { bestArea = a; best = ring; }
-  }
-  if (!best || best.length === 0) return null;
-
-  let x = 0, y = 0;
-  for (const p of best) { x += p[0]; y += p[1]; }
-  const centre = [x / best.length, y / best.length];
-  if (pointInRing(centre, best)) return centre;
-
-  // Walk in from each vertex towards the centre until a point lands inside.
-  for (const p of best) {
-    for (const t of [0.5, 0.25, 0.1]) {
-      const cand = [p[0] + (centre[0] - p[0]) * t, p[1] + (centre[1] - p[1]) * t];
-      if (pointInRing(cand, best)) return cand;
-    }
-  }
-  return null;
-}
-
-// -------------------------------------------------------------------- misc --
-
-const NAME_KEYS = ["name", "shapeName", "nameEn", "nameJa", "NAME"];
-
-function readName(props) {
-  for (const k of NAME_KEYS) {
-    const v = props?.[k];
-    if (typeof v === "string" && v.trim() && !/^\?+$/.test(v.trim())) return v.trim();
-  }
-  return null;
-}
-
-/**
- * The region table stores a romanised `name` with the local spelling beside it
- * in `nameKo`. A name source may carry both under either key, so pick by
- * script rather than by key: taking whichever key came first is how a table of
- * "Ine", "Chichibu" ends up with a "富士吉田市" in the middle of it, and how a
- * duplicate check against existing romanised names silently never matches.
- */
-const LOCAL_SCRIPT = /[぀-ヿ㐀-鿿가-힯]/;
-
-function readNamePair(props) {
-  const values = NAME_KEYS
-    .map((k) => props?.[k])
-    .filter((v) => typeof v === "string" && v.trim() && !/^\?+$/.test(v.trim()))
-    .map((v) => v.trim());
-  if (values.length === 0) return null;
-  const local = values.find((v) => LOCAL_SCRIPT.test(v)) ?? null;
-  const roman = values.find((v) => !LOCAL_SCRIPT.test(v)) ?? null;
-  return { name: roman ?? local, local: local && local !== roman ? local : null };
-}
-
-/**
- * Designations that occupy a polygon without being a municipality. Seeding one
- * creates a region nobody can ever visit.
- */
-const NOT_A_MUNICIPALITY = [/^所属未定地$/, /^境界未定地/];
+import {
+  bbox, featuresOf, geometryArea, interiorPoint, isUnusableName, NOT_A_MUNICIPALITY,
+  pointInGeometry, pointsOf, readJson as readJsonWith, readName, readNamePair,
+} from "./lib/boundaries.mjs";
 
 /** A shape whose name is unusable is exactly the shape the seed dropped. */
 function hasUsableName(feature) {
@@ -178,16 +57,6 @@ function argAll(flag) {
   return out;
 }
 
-function readJson(p) {
-  return JSON.parse(fs.readFileSync(p, "utf8"));
-}
-
-function featuresOf(doc) {
-  if (Array.isArray(doc)) return doc;
-  if (Array.isArray(doc?.features)) return doc.features;
-  return Object.values(doc);
-}
-
 // -------------------------------------------------------------------- main --
 
 function main() {
@@ -203,15 +72,20 @@ function main() {
     process.exit(1);
   }
 
-  const shapes = featuresOf(readJson(shapesPath));
-  const parents = featuresOf(readJson(parentsPath));
-  const regions = featuresOf(readJson(regionsPath));
+  const shapes = featuresOf(readJsonWith(shapesPath, fs));
+  const parents = featuresOf(readJsonWith(parentsPath, fs));
+  const regions = featuresOf(readJsonWith(regionsPath, fs));
 
-  const nameSources = namePaths.flatMap((p) => featuresOf(readJson(p)).map((f) => {
+  const nameSources = namePaths.flatMap((p) => featuresOf(readJsonWith(p, fs)).map((f) => {
     const pair = readNamePair(f.properties) ?? readNamePair(f);
     return {
       name: pair?.name ?? null,
       local: pair?.local ?? null,
+      // Set when this polygon is another piece of a region that already
+      // exists rather than a region of its own. Only whoever identified the
+      // place can know which, so the source says it rather than the tool
+      // guessing from a name that may simply collide.
+      partOf: typeof f.properties?.partOf === "string" ? f.properties.partOf : null,
       geometry: typeof f.geometry === "string" ? JSON.parse(f.geometry) : f.geometry,
       from: path.basename(p),
     };
@@ -220,10 +94,24 @@ function main() {
   for (const s of nameSources) {
     s.box = bbox(s.geometry);
     s.area = geometryArea(s.geometry);
+    // A point source names whichever shape contains it, rather than being
+    // tested for containing the shape. That is how a coordinate someone looked
+    // up by hand becomes a usable name source, and it is the only kind that
+    // carries no geometry to get the resolution or the coastline wrong.
+    s.points = pointsOf(s.geometry);
   }
 
   // --- the region table, as it stands
   const parentRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 1);
+  // Every ADM1 record points at the country record; that id — not the ISO3 — is
+  // what the city-level read filters geometries on.
+  const countryRecordId = regions.find((r) => r.iso3 === iso3 && r.admLevel === 0)?.id
+    ?? parentRecords[0]?.parentId
+    ?? null;
+  if (!countryRecordId) {
+    console.error(`No country record for ${iso3}; emitted geometries would be invisible to the city map.`);
+    process.exit(1);
+  }
   const childRecords = regions.filter((r) => r.iso3 === iso3 && r.admLevel === 2);
   const parentByName = new Map(parentRecords.map((r) => [r.name, r]));
 
@@ -279,10 +167,35 @@ function main() {
     return { shape, at, parentName, parentRecord, own };
   });
 
+  /**
+   * How many boundaries carry each name under each parent, against how many
+   * records do.
+   *
+   * A name being present is not the same as it being accounted for. Tokyo
+   * holds both 豊島区 and 利島村 and Saitama holds both 三郷市 and 美里町 —
+   * each pair romanises to one string, so asking merely "is this name taken"
+   * loses the second municipality every time. Counting finds it.
+   */
+  const shapesPerName = new Map();
+  for (const { parentRecord, own } of located) {
+    if (!parentRecord || !own) continue;
+    const k = `${parentRecord.id}::${own.toLowerCase()}`;
+    shapesPerName.set(k, (shapesPerName.get(k) ?? 0) + 1);
+  }
+  const recordsPerName = new Map();
+  for (const r of childRecords) {
+    const k = `${r.parentId}::${String(r.name).toLowerCase()}`;
+    recordsPerName.set(k, (recordsPerName.get(k) ?? 0) + 1);
+  }
+  /** True while this name has more boundaries under this parent than records. */
+  const needsAnother = (key) => (shapesPerName.get(key) ?? 0) > (recordsPerName.get(key) ?? 0);
+  const countOneRecord = (key) => recordsPerName.set(key, (recordsPerName.get(key) ?? 0) + 1);
+
   const newRegions = [];
   const newGeometries = [];
   const unresolved = [];
   const review = [];
+  const extraPolygons = [];
 
   /** Adds the region and geometry pair for one shape. */
   const emit = (shape, shapeId, parentRecord, name, local, nameSource) => {
@@ -314,7 +227,11 @@ function main() {
         name: local ?? name,
         level: "city",
         iso3,
-        countryId: iso3,
+        // The country's record id, not its ISO3. The city-level read filters on
+        // `properties.countryId == <country region id>` (it resolves that id from
+        // the regions collection), so an ISO3 here makes every emitted city
+        // invisible to that query while still looking right in the document.
+        countryId: countryRecordId,
         parentId: parentRecord.id,
         // Not "osm": the app filters osm-sourced features out of every read,
         // so mislabelling these would hide them all over again.
@@ -342,7 +259,8 @@ function main() {
     // A shape that already carries its own name needs no name source at all —
     // it is a hole only because the seed never turned it into a record.
     if (own) {
-      if (recordedNames.has(`${parentRecord.id}::${own.toLowerCase()}`)) continue;
+      const key = `${parentRecord.id}::${own.toLowerCase()}`;
+      if (!needsAnother(key)) continue; // every boundary of this name has a record
       if (NOT_A_MUNICIPALITY.some((re) => re.test(own))) {
         review.push({
           shapeId, at, parent: parentRecord.name, name: own,
@@ -350,15 +268,19 @@ function main() {
         });
         continue;
       }
-      recordedNames.add(`${parentRecord.id}::${own.toLowerCase()}`);
+      countOneRecord(key);
       emit(shape, shapeId, parentRecord, own, null, "the shape's own name");
       continue;
     }
 
     // Name, by where the shape is — never the other source's geometry.
-    const hits = nameSources.filter(({ box, geometry }) =>
-      box && at[0] >= box[0] && at[0] <= box[2] && at[1] >= box[1] && at[1] <= box[3]
-      && pointInGeometry(at, geometry));
+    const hits = nameSources.filter((s) => (s.points.length > 0
+      // A point source: does it fall inside this shape?
+      ? s.points.some((p) => pointInGeometry(p, shape.geometry))
+      // An area source: does this shape sit inside it?
+      : s.box && at[0] >= s.box[0] && at[0] <= s.box[2]
+        && at[1] >= s.box[1] && at[1] <= s.box[3]
+        && pointInGeometry(at, s.geometry)));
 
     if (hits.length === 0) {
       unresolved.push({
@@ -371,8 +293,11 @@ function main() {
     // Prefer the source polygon closest in size to the shape being named. A
     // point inside a much larger polygon says only that the shape is somewhere
     // within it — a neighbouring municipality would test just as true.
+    // A point inside this shape identifies it outright, so it wins over any
+    // area source, which can only ever say "somewhere within me".
     const shapeArea = geometryArea(shape.geometry);
-    hits.sort((a, b) => Math.abs(a.area - shapeArea) - Math.abs(b.area - shapeArea));
+    hits.sort((a, b) => (b.points.length > 0) - (a.points.length > 0)
+      || Math.abs(a.area - shapeArea) - Math.abs(b.area - shapeArea));
 
     const best = hits[0];
     const name = best.name;
@@ -399,8 +324,30 @@ function main() {
     // here: a coastal source polygon is inflated by the territorial water this
     // whole approach exists to avoid, so the honest signal is whether anything
     // already carries the name. Unclaimed means the shape really is the gap.
+    // Another piece of a region that already exists. It cannot be seeded as a
+    // record of its own — the geometry is keyed by region id, so a second doc
+    // would collide — so it is reported for its polygon to be merged into the
+    // region's existing one.
+    if (best.partOf) {
+      const target = childRecords.find((c) => c.parentId === parentRecord.id
+        && String(c.name).toLowerCase() === best.partOf.toLowerCase());
+      extraPolygons.push({
+        shapeId, at, parent: parentRecord.name,
+        partOf: best.partOf,
+        regionId: target?.id ?? null,
+        reason: target
+          ? `another polygon of ${best.partOf} (${target.id}); merge it into that region's geometry rather than seeding a second region`
+          : `marked as part of "${best.partOf}", but no region of that name exists under ${parentRecord.name}`,
+      });
+      continue;
+    }
+
+    // A point source identifies this shape outright, so the guard below —
+    // which exists to catch a shape merely sitting inside a larger polygon —
+    // has nothing to catch. Names collide legitimately: Saitama holds both
+    // 三郷市 and 美里町, and both romanise to "Misato".
     const claimedKey = `${parentRecord.id}::${name.toLowerCase()}`;
-    if (claimedNames.has(claimedKey)) {
+    if (best.points.length === 0 && claimedNames.has(claimedKey) && !needsAnother(claimedKey)) {
       review.push({
         shapeId, at, parent: parentRecord.name, name,
         areaRatio: shapeArea > 0 ? +(best.area / shapeArea).toFixed(1) : null,
@@ -409,6 +356,7 @@ function main() {
       continue;
     }
     claimedNames.add(claimedKey);
+    countOneRecord(claimedKey);
     recordedNames.add(claimedKey);
 
     emit(shape, shapeId, parentRecord, name, best.local, best.from);
@@ -597,6 +545,7 @@ function main() {
   write("unresolved.json", unresolved);
   write("review.json", review);
   write("phantom-records.json", remainingPhantoms);
+  write("extra-polygons.json", extraPolygons);
   write("repairs.json", repairs);
 
   const unnamed = shapes.filter((f) => !hasUsableName(f)).length;
@@ -612,6 +561,7 @@ function main() {
   console.log(`flagged for review:                     ${review.length}`);
   console.log(`repaired instead of duplicated:        ${repairs.length}`);
   const uncovered = unresolved.length + review.filter((r) => !r.chose).length;
+  void extraPolygons;
   console.log(`\nboundaries left without a region: ${uncovered} of ${shapes.length}`);
 
   if (childrenCountFixes.length > 0) {
@@ -631,6 +581,10 @@ function main() {
       console.log(`  ${r.kind}: "${r.name.from}" -> "${r.name.to}"  (${r.reason})`);
     }
   }
+  if (extraPolygons.length > 0) {
+    console.log(`\nextra polygons for regions that already exist: ${extraPolygons.length}`);
+    for (const e of extraPolygons) console.log(`  ${e.partOf} — ${e.reason}`);
+  }
   if (remainingPhantoms.length > 0) {
     console.log(`\nrecords with no boundary (draw nothing, still counted): ${remainingPhantoms.length}`);
     for (const p of remainingPhantoms.slice(0, 15)) console.log(`  ${p.parent} / ${p.name}  (${p.id})`);
@@ -647,7 +601,7 @@ function main() {
     for (const r of review) console.log(`  ${r.name ?? r.shapeId} — ${r.reason}`);
   }
 
-  console.log(`\nwrote ${outDir}/{regions,geometries,repairs,children-count,unresolved,review,phantom-records}.json`);
+  console.log(`\nwrote ${outDir}/{regions,geometries,repairs,children-count,unresolved,review,phantom-records,extra-polygons}.json`);
 
   if (problems.length > 0) {
     console.log("\nSELF-CHECK FAILED — do not seed this output:");

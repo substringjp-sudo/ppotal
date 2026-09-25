@@ -3,8 +3,8 @@
     "parentId": "1509101",
     "name": "Saitama",
     "was": 43,
-    "change": 19,
-    "childrenCount": 62,
+    "change": 20,
+    "childrenCount": 63,
     "shapes": 64,
     "phantomRecords": 0,
     "agreesWithShapes": false
@@ -20,6 +20,16 @@
     "agreesWithShapes": true
   },
   {
+    "parentId": "1507101",
+    "name": "Tokyo",
+    "was": 60,
+    "change": 2,
+    "childrenCount": 62,
+    "shapes": 62,
+    "phantomRecords": 0,
+    "agreesWithShapes": true
+  },
+  {
     "parentId": "1517101",
     "name": "Kagoshima Prefecture",
     "was": 41,
@@ -28,16 +38,6 @@
     "shapes": 43,
     "phantomRecords": 0,
     "agreesWithShapes": true
-  },
-  {
-    "parentId": "1507101",
-    "name": "Tokyo",
-    "was": 60,
-    "change": 1,
-    "childrenCount": 61,
-    "shapes": 62,
-    "phantomRecords": 0,
-    "agreesWithShapes": false
   },
   {
     "parentId": "1499101",

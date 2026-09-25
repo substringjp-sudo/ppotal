@@ -12,19 +12,19 @@
   },
   "dependencies": {
     "@next/third-parties": "^16.2.6",
+    "@ppotal/firebase": "workspace:*",
+    "@ppotal/ui": "workspace:*",
     "@regionevel/data-store": "workspace:*",
     "@regionevel/types": "workspace:*",
     "@regionevel/utils": "workspace:*",
+    "firebase": "^11.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.14.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
-    "zustand": "^5.0.5",
-    "@ppotal/ui": "workspace:*",
-    "@ppotal/firebase": "workspace:*",
-    "firebase": "^11.0.0"
+    "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
@@ -33,6 +33,7 @@
     "@types/node": "^22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/topojson-client": "^3.1.5",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.1",
     "eslint-config-next": "16.1.6",

@@ -2,6 +2,7 @@ import type { Region } from "@regionevel/types";
 import { padId } from "@regionevel/utils";
 import { createFirestoreRegionStore, createLocalRegionStore, type RegionDataStore } from "@regionevel/data-store";
 import { initializeFirebase } from "./firebase";
+import { bigCacheGet, bigCacheSet, bigCacheEvictExcept } from "./bigCache";
 
 let storePromise: Promise<RegionDataStore> | null = null;
 
@@ -70,32 +71,43 @@ export async function fetchChildren(parentId: string | null): Promise<Region[]> 
   }
 }
 
-const CACHE_VERSION = "v1";
+// Bump this whenever the geometry or region data behind the cache changes.
+// The cache has no expiry: once a viewer holds a key they keep that copy, so
+// seeding new cities left every returning viewer looking at the pre-seed array
+// and concluding the holes were still there. A bump drops the old entries.
+// v2: the Japanese city seed of 2026-09-24.
+const CACHE_VERSION = "v2";
 const ALL_REGIONS_CACHE_KEY = `regionevel_all_regions_${CACHE_VERSION}`;
 const GEOMETRY_CACHE_PREFIX = `regionevel_geom_${CACHE_VERSION}_`;
 
-function getLocalCache<T>(key: string): T | null {
+/**
+ * These payloads outgrew localStorage, so they live in IndexedDB.
+ *
+ * The region table alone is ~55,000 documents and about 9 MB of JSON against an
+ * origin budget of roughly 5 MB: the write threw every time, the throw was
+ * swallowed, and the cache stayed permanently empty. Every visit re-downloaded
+ * all 55,000 documents. See `bigCache` for the rest.
+ */
+async function getCached<T>(key: string): Promise<T | null> {
   if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
+  return bigCacheGet<T>(key);
 }
 
-function setLocalCache<T>(key: string, data: T): void {
+async function setCached<T>(key: string, data: T): Promise<void> {
   if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (e) {
-    console.warn("[regions cache] Failed to set localStorage cache", e);
-  }
+  await bigCacheSet(key, data);
+}
+
+let evicted = false;
+function evictOldVersionsOnce(): void {
+  if (evicted || typeof window === "undefined") return;
+  evicted = true;
+  void bigCacheEvictExcept("regionevel_", CACHE_VERSION);
 }
 
 export async function fetchAllRegions(): Promise<Region[]> {
-  const cached = getLocalCache<Region[]>(ALL_REGIONS_CACHE_KEY);
+  evictOldVersionsOnce();
+  const cached = await getCached<Region[]>(ALL_REGIONS_CACHE_KEY);
   if (cached && Array.isArray(cached) && cached.length > 50) {
     return cached;
   }
@@ -104,7 +116,7 @@ export async function fetchAllRegions(): Promise<Region[]> {
     const store = await getStore();
     const list = await store.getAllRegions();
     if (list && list.length > 0) {
-      setLocalCache(ALL_REGIONS_CACHE_KEY, list);
+      await setCached(ALL_REGIONS_CACHE_KEY, list);
     }
     return list;
   } catch (e) {
@@ -261,9 +273,9 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
   if (cached) return cached;
 
   const storageKey = `${GEOMETRY_CACHE_PREFIX}${cacheKey}`;
-  const localCached = getLocalCache<any[]>(storageKey);
 
   const request = (async () => {
+    const localCached = await getCached<any[]>(storageKey);
     if (localCached && Array.isArray(localCached) && localCached.length > 0) {
       return localCached;
     }
@@ -284,13 +296,73 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
 
       const normalized = normalizeFeatures(rawFeatures);
       if (normalized.length > 0) {
-        setLocalCache(storageKey, normalized);
+        await setCached(storageKey, normalized);
       }
       return normalized;
     } catch (e) {
       console.error(`Failed to fetch geometries for parent ${parentId}`, e);
       geometryCache.delete(cacheKey); // a failure should not be cached
-      return localCached || [];
+      return [];
+    }
+  })();
+
+  geometryCache.set(cacheKey, request);
+  return request;
+}
+
+/**
+ * The internal border network of a country's bundle, as one MultiLineString.
+ *
+ * Adjacent polygons drawn separately on a canvas leave a hairline between them
+ * even when their shared edge is coordinate-identical: each one's anti-aliased
+ * edge pixels blend with the background rather than with its neighbour, and a
+ * translucent fill lets that show through. Stroking each polygon does not fix
+ * it — it makes the seam worse, because both neighbours draw the same border and
+ * the line comes out double width.
+ *
+ * A topojson bundle stores each shared border once, as an arc, so `mesh` can
+ * hand back the whole network with every border in it exactly once. Drawn as a
+ * single layer over unstroked fills, borders are one line wide and the fills
+ * meet each other directly.
+ *
+ * Returns null when the country has no bundle, which is the signal to fall back
+ * to stroking each polygon.
+ */
+export async function fetchCountryBorderMesh(
+  iso3: string,
+  admLevel: number,
+): Promise<any | null> {
+  const cacheKey = `mesh:${iso3}:${admLevel}`;
+  const cached = geometryCache.get(cacheKey);
+  if (cached) return cached;
+
+  const storageKey = `${GEOMETRY_CACHE_PREFIX}${cacheKey}`;
+
+  const request = (async () => {
+    const local = await getCached<any>(storageKey);
+    if (local) return local;
+
+    try {
+      const store = await getStore();
+      const bundle = await store.getGeometryBundle(iso3, admLevel);
+      if (!bundle?.data) return null;
+
+      const topo = typeof bundle.data === "string" ? JSON.parse(bundle.data) : bundle.data;
+      const key = Object.keys(topo?.objects ?? {})[0];
+      if (!key) return null;
+
+      const { mesh } = await import("topojson-client");
+      // The two-argument form gives every arc; passing a filter would drop the
+      // country's outline, which the map still wants drawn.
+      const lines = mesh(topo, topo.objects[key]);
+      if (!lines?.coordinates?.length) return null;
+
+      await setCached(storageKey, lines);
+      return lines;
+    } catch (e) {
+      console.error(`Failed to build a border mesh for ${iso3}/${admLevel}`, e);
+      geometryCache.delete(cacheKey);
+      return null;
     }
   })();
 
@@ -304,9 +376,9 @@ export async function fetchCountryGeometries(iso3: string, admLevel: number): Pr
   if (cached) return cached;
 
   const storageKey = `${GEOMETRY_CACHE_PREFIX}${cacheKey}`;
-  const localCached = getLocalCache<any[]>(storageKey);
 
   const request = (async () => {
+    const localCached = await getCached<any[]>(storageKey);
     if (localCached && Array.isArray(localCached) && localCached.length > 0) {
       return localCached;
     }
@@ -323,13 +395,13 @@ export async function fetchCountryGeometries(iso3: string, admLevel: number): Pr
 
       const normalized = normalizeFeatures(rawFeatures);
       if (normalized.length > 0) {
-        setLocalCache(storageKey, normalized);
+        await setCached(storageKey, normalized);
       }
       return normalized;
     } catch (e) {
       console.error(`Failed to fetch geometries for ${iso3}/${admLevel}`, e);
       geometryCache.delete(cacheKey);
-      return localCached || [];
+      return [];
     }
   })();
 
