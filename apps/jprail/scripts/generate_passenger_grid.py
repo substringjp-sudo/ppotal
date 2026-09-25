@@ -21,7 +21,22 @@
 로직:
   - 줌 레벨별로 1400x800 화면을 20등분한 격자 크기를 계산
   - 각 격자 안에서 가장 이용객이 많은 역 하나만 선택
-  - S12_001c가 stations_lod.json의 id와 일치
+
+역을 잇는 법 (여기가 예전에 틀려 있었다):
+  원본 S12 는 **사업자마다 한 줄**이다. 渋谷 는 東急·JR東·京王·메트로가 각각 제
+  줄을 갖고, 줄마다 다른 S12_001c 를 쓴다(003922 / 003926 / 003930 / 003932).
+  東京 는 12줄, 新宿 는 11줄로 쪼개져 있다.
+
+  예전에는 `S12_001c` 를 그대로 키로 잡고 **같은 id 끼리만** 합쳤다. 그래서
+    (a) 사업자 사이가 안 합쳐졌고 — 新宿 이 京王 몫 105만으로만 남았다(실제 약 390만),
+    (b) stations_lod.json 이 쓰는 허브 대표 id 가 값 없는 사업자 줄인 경우
+        아예 0 이 됐다. 9,033개 중 1,644개(18%)가 0 이었고, 하필 渋谷·東京·
+        京都·品川·大宮 이 전부 0 이었다.
+
+  지금은 **이름 + 근접**으로 잇는다. lod 항목마다 이름이 같고 HUB_DEG 안에 있는
+  S12 줄을 전부 모아 더하고, 줄 하나는 **가장 가까운 허브 하나에만** 들어간다
+  (같은 이름의 다른 역이 근처에 있어도 두 번 세지 않는다). 이 묶는 규칙은
+  generate_station_lod.js 의 허브 묶기와 같은 기준이다.
 """
 
 import json
@@ -43,6 +58,10 @@ SCREEN_HEIGHT_PX = 800
 
 # 격자 분할 수
 GRID_DIVISIONS = 20
+
+# 같은 역으로 볼 거리(도). generate_station_lod.js 의 허브 묶기와 같은 값이다.
+# 0.005도 는 위도로 약 550m — 한 역 구내의 사업자별 출입구가 흩어지는 범위다.
+HUB_DEG = 0.005
 
 
 def zoom_to_cell_size(zoom: int):
@@ -83,59 +102,74 @@ def main():
     with open(geojson_path, encoding='utf-8') as f:
         geojson = json.load(f)
 
-    # S12_001c -> {passengers, lat, lon} 맵
-    station_passengers: dict[str, dict] = {}
+    # 사업자별 한 줄씩 그대로 읽는다. 합치는 것은 아래 허브 단계에서 한다.
+    records: list[dict] = []
     for feature in geojson['features']:
         props = feature['properties']
-        station_id = props.get('S12_001c') or ''
-        station_id = station_id.strip() if isinstance(station_id, str) else ''
+        name = (props.get('S12_001') or '').strip()
         passengers = props.get('S12_057')  # 2023년 이용객 (일평균)
-        if not station_id or passengers is None:
+        if not name or passengers is None:
             continue
 
         # LineString의 중심점 계산
         coords = feature['geometry']['coordinates']
-        lat = sum(c[1] for c in coords) / len(coords)
-        lon = sum(c[0] for c in coords) / len(coords)
+        records.append({
+            'name': name,
+            'passengers': passengers,
+            'lat': sum(c[1] for c in coords) / len(coords),
+            'lon': sum(c[0] for c in coords) / len(coords),
+        })
 
-        # 동일 역 ID가 여러 번 등장하면 이용객 수 합산
-        if station_id in station_passengers:
-            station_passengers[station_id]['passengers'] += passengers
-        else:
-            station_passengers[station_id] = {
-                'passengers': passengers,
-                'lat': lat,
-                'lon': lon
-            }
+    print(f"  Loaded {len(records)} operator rows")
 
-    print(f"  Loaded {len(station_passengers)} stations with passenger data")
-
-    # 2. stations_lod에서 역 목록 읽기 (좌표 보정용)
+    # 2. stations_lod에서 역 목록 읽기 (이쪽 id 가 소비자가 쓰는 id 다)
     print("Loading stations_lod...")
     with open(lod_path, encoding='utf-8') as f:
         stations_lod = json.load(f)
 
-    # lod_id -> 좌표 맵 (GeoJSON 좌표보다 더 정확할 수 있음)
-    lod_coords: dict[str, tuple] = {}
-    lod_ids: set[str] = set()
+    hubs: list[dict] = []
+    hubs_by_name: dict[str, list[dict]] = {}
     for stn in stations_lod:
-        lod_ids.add(stn['id'])
-        lod_coords[stn['id']] = tuple(stn['c'])  # [lat, lon]
+        lat, lon = stn['c']  # [lat, lon]
+        hub = {'id': stn['id'], 'name': (stn.get('name') or '').strip(),
+               'lat': lat, 'lon': lon, 'passengers': 0}
+        hubs.append(hub)
+        hubs_by_name.setdefault(hub['name'], []).append(hub)
 
-    # 3. stations_lod에 있는 역만 필터링하고 좌표를 lod 기준으로 보정
-    valid_stations: list[dict] = []
-    for sid, info in station_passengers.items():
-        if sid not in lod_ids:
+    # 3. 사업자 줄을 허브에 붙인다 — 이름이 같고 HUB_DEG 안에서 **가장 가까운** 하나.
+    #
+    # 가장 가까운 하나에만 넣는 것이 요점이다. 같은 이름의 다른 역이 근처에 있으면
+    # 한 줄이 두 허브에 들어가 이용객이 두 번 세어진다.
+    matched = 0
+    unmatched_pax = 0
+    for r in records:
+        best, best_d = None, None
+        for hub in hubs_by_name.get(r['name'], ()):
+            dlat = abs(hub['lat'] - r['lat'])
+            dlon = abs(hub['lon'] - r['lon'])
+            if dlat >= HUB_DEG or dlon >= HUB_DEG:
+                continue
+            d = dlat * dlat + dlon * dlon
+            if best_d is None or d < best_d:
+                best, best_d = hub, d
+        if best is None:
+            unmatched_pax += r['passengers']
             continue
-        lat, lon = lod_coords[sid]
-        valid_stations.append({
-            'id': sid,
-            'passengers': info['passengers'],
-            'lat': lat,
-            'lon': lon
-        })
+        best['passengers'] += r['passengers']
+        matched += 1
 
-    print(f"  Valid stations (in lod): {len(valid_stations)}")
+    print(f"  Matched {matched}/{len(records)} rows to hubs"
+          f"  (unmatched daily riders: {unmatched_pax:,})")
+
+    # 이용객이 0 인 허브는 내보내지 않는다 — 「자료 없음」 과 「이용객 0」 을
+    # 구별할 방법이 없고, 0 을 실어 보내면 소비자가 그 역을 **가장 한산한 역**으로
+    # 읽는다. 없으면 없는 것이 낫다.
+    valid_stations = [
+        {'id': h['id'], 'passengers': h['passengers'], 'lat': h['lat'], 'lon': h['lon']}
+        for h in hubs if h['passengers'] > 0
+    ]
+
+    print(f"  Hubs with ridership: {len(valid_stations)} / {len(hubs)}")
 
     # 이용객 수 내림차순 정렬 (같은 격자에서 먼저 배치된 역이 우선)
     valid_stations.sort(key=lambda s: s['passengers'], reverse=True)
@@ -173,6 +207,14 @@ def main():
     print(f"\nOutput written to: {output_path}")
     print(f"File size: {size_kb:.1f} KB")
     print(f"Passengers map size: {len(passengers_map)} entries")
+
+    # 사람이 눈으로 볼 수 있는 확인. 이 목록 맨 위에 新宿·渋谷·東京 이 없으면
+    # 잇는 규칙이 또 깨진 것이다 — 예전 판은 渋谷·東京 이 0 이었다.
+    by_name = {h['id']: h['name'] for h in hubs}
+    top = sorted(valid_stations, key=lambda s: -s['passengers'])[:10]
+    print("\nTop 10 (daily riders, all operators summed):")
+    for s_ in top:
+        print(f"  {by_name.get(s_['id'], '?'):<10} {s_['passengers']:>10,}")
 
 
 if __name__ == '__main__':
