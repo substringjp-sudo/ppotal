@@ -8,12 +8,21 @@
     "start": "next start",
     "lint": "eslint",
     "verify:animation": "tsc src/lib/tripAnimation.ts src/lib/timeline/parse.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_trip_animation.cjs",
+    "build:graph-patch": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/build_graph_patch.cjs",
+    "build:rail-manifest": "node scripts/build_rail_manifest.cjs",
+    "build:route-fixture": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/build_route_fixture.cjs",
     "verify:links": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_boundary_links.cjs",
     "verify:walk": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_walk_transfers.cjs",
     "verify:tripedit": "tsc src/lib/tripEditing.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_trip_editing.cjs",
     "verify:span": "tsc src/lib/edgePan.ts src/lib/spanCertainty.ts src/lib/pointerInput.ts src/lib/dragRouting.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_span_drawing.cjs",
     "verify:span:browser": "node scripts/browser_span_drawing.mjs",
-    "verify:transfer": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_transfer_walk.cjs"
+    "verify:transfer": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_transfer_walk.cjs",
+    "verify:manifest": "node scripts/verify_rail_manifest.cjs",
+    "verify:all": "npm run verify:links && npm run verify:manifest && npm run verify:station-codes && npm run verify:fixture && npm run verify:rules && npm run verify:walk && npm run verify:transfer && npm run verify:span && npm run verify:tripedit && npm run verify:animation",
+    "verify:fixture": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_route_fixture.cjs",
+    "verify:rules": "tsc src/lib/routeSearch.ts src/lib/graphUtils.ts src/lib/transferWalk.ts --outDir .verify --target es2022 --module commonjs --strict --skipLibCheck && node scripts/verify_rules.cjs",
+    "verify:station-codes": "node scripts/verify_station_codes.cjs",
+    "build:station-codes": "python3 scripts/build_station_codes.py"
   },
   "dependencies": {
     "@turf/turf": "^7.3.4",

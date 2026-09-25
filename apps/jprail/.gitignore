@@ -59,3 +59,4 @@ data/osm/*
 
 # 되짚기 타임라인 검증용 임시 산출물
 /.verify/
+.station-codes-cache/

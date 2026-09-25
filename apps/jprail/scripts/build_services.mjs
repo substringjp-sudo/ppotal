@@ -253,9 +253,16 @@ function buildStationIndex(stationsMaster, platformsMeta, activeStations) {
                 }
             }
 
-            // 3. 노면전차/버스 정류장 이름('~駅前', '~口')보다 본선 역명 우선
+            // 3. 노면전차 정류장보다 본선 역명 우선.
+            //    전차는 앞 역 이름에 '駅'·'駅前'·'口' 를 붙여 부른다. 이름이 '駅' 로
+            //    끝나는 역 7곳은 전부 노면전차 정류장이다(福井駅·広島駅·富山駅…).
+            //    이걸 빼지 않으면 越美北線 종점이 JR 福井 가 아니라 福武線 福井駅 에
+            //    붙어, 타지 않는 구간이 계통에 섞인다.
             const mainCandidates = candidates.filter(
-                (c) => !c.station.name.endsWith('駅前') && !c.station.name.endsWith('口')
+                (c) =>
+                    !c.station.name.endsWith('駅前') &&
+                    !c.station.name.endsWith('口') &&
+                    !c.station.name.endsWith('駅')
             );
             if (mainCandidates.length > 0) {
                 mainCandidates.sort((a, b) => a.km - b.km);

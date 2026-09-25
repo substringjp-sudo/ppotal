@@ -11,11 +11,12 @@ import { stopBackgroundTracking } from '../../src/services/LocationWorker';
 import { pickAndProcessPhoto, pickMultiplePhotosAndProcess } from '../../src/services/PhotoService';
 import MapComponent from '../../src/components/common/MapComponent';
 import { CompanionHistoryView } from '../../src/components/companion/CompanionHistoryView';
+import { useToday } from '../../src/hooks/useToday';
 import { FastStartModal } from '../../src/components/home/FastStartModal';
 import { QuickMemoModal } from '../../src/components/companion/QuickMemoModal';
 import { PhotoReconstructionModal } from '../../src/components/companion/PhotoReconstructionModal';
 import { PastTripReconstructionModal } from '../../src/components/companion/PastTripReconstructionModal';
-import { createFastTrip, reconstructTripFromHistory, TripRecordingSettings, useReconstructionStore, RawDataPoint } from '@pplaner/shared';
+import { createFastTrip, reconstructTripFromHistory, TripRecordingSettings, useReconstructionStore, RawDataPoint, localDateKey } from '@pplaner/shared';
 
 export default function CompanionScreen() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function CompanionScreen() {
   const isRecording = activeSession?.isActive === true;
   
   // 현재 진행 중인 여행 찾기 (세션 우선 -> 오늘 날짜 활성 여행 순)
-  const today = new Date().toISOString().split('T')[0];
+  const today = useToday();
   const activeTrip = trips.find(t => t.id === activeSession?.tripId) || 
                    trips.find((t: Trip) => t.status === 'active' || (t.dates?.startDate <= today && t.dates?.endDate >= today));
 
@@ -155,7 +156,7 @@ export default function CompanionScreen() {
       url: p.uri
     }));
 
-    const dateStr = photos.length > 0 ? new Date(photos[0].timestamp).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    const dateStr = photos.length > 0 ? localDateKey(photos[0].timestamp) : today;
     
     useReconstructionStore.getState().setData({
       sourceData: rawPoints,
@@ -383,7 +384,7 @@ export default function CompanionScreen() {
         if (startTime) {
           const durationMs = now.getTime() - new Date(startTime).getTime();
           const isTooShort = durationMs < 5 * 60 * 1000;
-          const hasEvents = (activeTrip?.dailyTimeline?.[0]?.events?.length || 0) > 0;
+          const hasEvents = (activeTrip?.dailyTimeline || []).some((d: any) => (d.events?.length || 0) > 0);
           
           if (isTooShort && !hasEvents) {
             // 위치 데이터가 실제로 있는지 확인
@@ -575,23 +576,39 @@ export default function CompanionScreen() {
             }}
           >
             {(() => {
-              const currentDayTimeline = activeTrip.dailyTimeline?.find((d: any) => d.date === today) || activeTrip.dailyTimeline?.[0];
+              // 오늘 칸이 없으면 아직 오늘 기록이 없다는 뜻이다. 예전에는 여기서
+              // dailyTimeline[0] 으로 떨어져, 이튿날에도 첫날 일정이 오늘인 척
+              // 보였다.
+              const currentDayTimeline = activeTrip.dailyTimeline?.find((d: any) => d.date === today);
               const events = currentDayTimeline?.events || [];
-              const photos = activeTrip.photos || [];
+              // 사진도 오늘 찍은 것만. 전체를 그대로 붙이면 이튿날 화면에
+              // 첫날 사진이 계속 따라온다.
+              const photos = (activeTrip.photos || []).filter(
+                (p: any) => p.timestamp && localDateKey(p.timestamp) === today
+              );
               
               // 이벤트와 사진을 하나의 리스트로 합치고 시간순 정렬
               const combinedTimeline = [
-                // 기본 시작 지점 추가 (데이터가 없어도 보이게)
-                { id: 'start', type: 'sightseeing', title: '여행 기록 시작', startTime: '오후 02:30', timelineType: 'event' },
                 ...events.map((e: any) => ({ ...e, timelineType: 'event' })),
                 ...photos.map((p: any, idx: number) => ({ 
                   id: `photo-${idx}`, 
                   type: 'photo', 
                   title: '사진 촬영', 
-                  startTime: p.timestamp ? new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '방금 전',
+                  startTime: new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                   timelineType: 'photo' 
                 }))
               ].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+
+              if (combinedTimeline.length === 0) {
+                return (
+                  <View style={styles.timelineEmpty}>
+                    <Ionicons name="time-outline" size={28} color={DESIGN_TOKENS.colors.slate[300]} />
+                    <Text style={styles.timelineEmptyText}>
+                      {isRecording ? '오늘 기록이 아직 없습니다. 위치는 계속 쌓이고 있어요.' : '오늘 기록이 없습니다.'}
+                    </Text>
+                  </View>
+                );
+              }
 
               return combinedTimeline.map((item: any, index: number) => (
                 <View key={item.id} style={styles.timelineEntry}>
@@ -628,7 +645,7 @@ export default function CompanionScreen() {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{activeTrip.dailyTimeline?.[0]?.events?.length || 0}</Text>
+            <Text style={styles.statValue}>{activeTrip.dailyTimeline?.find((d: any) => d.date === today)?.events?.length || 0}</Text>
             <Text style={styles.statLabel}>방문 장소</Text>
           </View>
           <View style={styles.statDivider} />
@@ -866,6 +883,17 @@ const styles = StyleSheet.create({
   },
   fullTimeline: {
     height: 300,
+  },
+  timelineEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    gap: 10,
+  },
+  timelineEmptyText: {
+    fontSize: 14,
+    color: DESIGN_TOKENS.colors.slate[400],
+    textAlign: 'center',
   },
   timelineEntry: {
     flexDirection: 'row',

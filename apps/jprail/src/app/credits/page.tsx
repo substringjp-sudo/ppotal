@@ -88,6 +88,62 @@ const CreditsPage = () => {
 
                 <section className="mb-8">
                     <h3 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-200">
+                        Train Service Patterns (運行系統)
+                    </h3>
+                    <p className="leading-relaxed text-sm text-slate-600 dark:text-slate-400 mb-3">
+                        National Land Numerical Information describes track ownership (線籍), not the routes trains actually run.
+                        The service patterns shown on the map &mdash; the Yamanote loop, the Keihin-Tohoku Line, and others that span several track records &mdash;
+                        are derived from OpenStreetMap <code>route</code> relations.
+                    </p>
+                    <div className="bg-slate-100 dark:bg-slate-800/60 p-4 rounded-xl text-xs leading-relaxed text-slate-600 dark:text-slate-300 border-l-4 border-blue-500">
+                        <strong className="text-slate-800 dark:text-slate-200">Required Attribution:</strong><br />
+                        &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">OpenStreetMap</a> contributors, licensed under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">Open Database License (ODbL) 1.0</a>.<br />
+                        <span className="block mt-2">
+                            The derived database published at <a href="/rail/services.json" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">/rail/services.json</a> is offered under the same ODbL 1.0 terms.
+                        </span>
+                    </div>
+                </section>
+
+                <section className="mb-8">
+                    <h3 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-200">
+                        Station Numbering (駅ナンバリング)
+                    </h3>
+                    <p className="leading-relaxed text-sm text-slate-600 dark:text-slate-400 mb-3">
+                        The line symbol and station number on a station name board &mdash; <code>JY&nbsp;01</code> for Tokyo on the Yamanote Line &mdash;
+                        are not part of the National Land Numerical Information dataset. They come from{' '}
+                        <a href="https://github.com/piuccio/open-data-jp-railway-stations" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">open-data-jp-railway-stations</a> (MIT),
+                        which in turn draws on 駅データ.jp and the Public Transportation Open Data Center.
+                        Coverage is currently the Greater Tokyo Area: 1,056 stations across 22 operators.
+                        Stations without a published number are rendered with the number block left empty &mdash; the app does not derive one from position along the line.
+                    </p>
+                    <div className="bg-slate-100 dark:bg-slate-800/60 p-4 rounded-xl text-xs leading-relaxed text-slate-600 dark:text-slate-300 border-l-4 border-blue-500">
+                        <strong className="text-slate-800 dark:text-slate-200">Required Attribution:</strong><br />
+                        このデータは、<a href="https://www.odpt.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">公共交通オープンデータセンター</a>において提供されるデータ等を利用して作成しています。
+                        データ等の正確性及び完全性等は保証されておらず、また、権利者は利用者による利用に関して一切の責任を負いません。<br />
+                        <span className="block mt-2">
+                            Published at <a href="/rail/station_codes.json" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">/rail/station_codes.json</a>.
+                        </span>
+                    </div>
+                </section>
+
+                <section className="mb-8">
+                    <h3 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-200">
+                        Station Passenger Counts &amp; Airports
+                    </h3>
+                    <p className="leading-relaxed text-sm text-slate-600 dark:text-slate-400 mb-3">
+                        Station label priority at low zoom levels is ranked by passenger counts, and airport markers come from the same National Land Numerical Information programme.
+                    </p>
+                    <div className="bg-slate-100 dark:bg-slate-800/60 p-4 rounded-xl text-xs leading-relaxed text-slate-600 dark:text-slate-300 border-l-4 border-blue-500">
+                        <strong className="text-slate-800 dark:text-slate-200">Required Attribution:</strong><br />
+                        「国土数値情報（駅別乗降客数データ）」（国土交通省）（<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-S12-v2_3.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-S12-v2_3.html</a>）を加工して作成<br />
+                        <span className="block mt-2">
+                            「国土数値情報（空港データ）」（国土交通省）（<a href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-C28-v3_0.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-C28-v3_0.html</a>）を加工して作成
+                        </span>
+                    </div>
+                </section>
+
+                <section className="mb-8">
+                    <h3 className="text-base font-bold mb-2 text-slate-800 dark:text-slate-200">
                         Administrative Boundaries
                     </h3>
                     <p className="leading-relaxed text-sm text-slate-600 dark:text-slate-400 mb-3">

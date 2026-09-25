@@ -1,0 +1,1788 @@
+{
+  "_source": "scripts/build_route_fixture.cjs — lib/routeSearch 가 세운 그래프에서 잰 최단 거리.",
+  "_note": "앱과 웹이 같은 그래프를 세우는지 맞대는 고정물. rail_km 은 선로만, walk_km 은 도보 환승까지 쓴 거리다(km, 닿지 않으면 null). 환승 벌점 없는 순수 최단 거리라 길이 여럿이어도 값은 하나다. 경로 선택은 고정하지 않는다 — 두 라우터의 가중치가 아직 다르다.",
+  "pairs": [
+    {
+      "from": "001666",
+      "to": "001643",
+      "from_name": "糸魚川",
+      "to_name": "上越妙高",
+      "why": "patch",
+      "rail_km": 36.627,
+      "walk_km": 36.627
+    },
+    {
+      "from": "001669",
+      "to": "001683",
+      "from_name": "七尾",
+      "to_name": "徳田",
+      "why": "patch",
+      "rail_km": 5.226,
+      "walk_km": 5.226
+    },
+    {
+      "from": "001821",
+      "to": "001835",
+      "from_name": "南小谷",
+      "to_name": "千国",
+      "why": "patch",
+      "rail_km": 1.389,
+      "walk_km": 1.389
+    },
+    {
+      "from": "002200",
+      "to": "002246",
+      "from_name": "猪谷",
+      "to_name": "杉原",
+      "why": "patch",
+      "rail_km": 8.675,
+      "walk_km": 8.675
+    },
+    {
+      "from": "002616",
+      "to": "002636",
+      "from_name": "塩尻",
+      "to_name": "みどり湖",
+      "why": "patch",
+      "rail_km": 3.739,
+      "walk_km": 3.739
+    },
+    {
+      "from": "002616",
+      "to": "002705",
+      "from_name": "塩尻",
+      "to_name": "小野",
+      "why": "patch",
+      "rail_km": 9.725,
+      "walk_km": 9.725
+    },
+    {
+      "from": "003676",
+      "to": "003675",
+      "from_name": "東日本橋",
+      "to_name": "馬喰横山",
+      "why": "patch",
+      "rail_km": 0.124,
+      "walk_km": 0.124
+    },
+    {
+      "from": "004633",
+      "to": "004653",
+      "from_name": "横浜",
+      "to_name": "平沼橋",
+      "why": "patch",
+      "rail_km": 0.654,
+      "walk_km": 0.654
+    },
+    {
+      "from": "005075",
+      "to": "005033",
+      "from_name": "米原",
+      "to_name": "醒ヶ井",
+      "why": "patch",
+      "rail_km": 5.906,
+      "walk_km": 5.906
+    },
+    {
+      "from": "005685",
+      "to": "005541",
+      "from_name": "熱海",
+      "to_name": "湯河原",
+      "why": "patch",
+      "rail_km": 5.108,
+      "walk_km": 5.108
+    },
+    {
+      "from": "006143",
+      "to": "006144",
+      "from_name": "近鉄四日市",
+      "to_name": "あすなろう四日市",
+      "why": "patch",
+      "rail_km": 0.093,
+      "walk_km": 0.068
+    },
+    {
+      "from": "006144",
+      "to": "006112",
+      "from_name": "あすなろう四日市",
+      "to_name": "川原町",
+      "why": "patch",
+      "rail_km": 1.058,
+      "walk_km": 1.058
+    },
+    {
+      "from": "006437",
+      "to": "006392",
+      "from_name": "亀山",
+      "to_name": "井田川",
+      "why": "patch",
+      "rail_km": 4.376,
+      "walk_km": 4.376
+    },
+    {
+      "from": "006867",
+      "to": "006979",
+      "from_name": "袋井",
+      "to_name": "御厨",
+      "why": "patch",
+      "rail_km": 4.297,
+      "walk_km": 4.297
+    },
+    {
+      "from": "007090",
+      "to": "007087",
+      "from_name": "大阪天満宮",
+      "to_name": "南森町",
+      "why": "patch",
+      "rail_km": 0.032,
+      "walk_km": 0.032
+    },
+    {
+      "from": "007216",
+      "to": "007182",
+      "from_name": "高速神戸",
+      "to_name": "西元町",
+      "why": "patch",
+      "rail_km": 0.551,
+      "walk_km": 0.551
+    },
+    {
+      "from": "007241",
+      "to": "007220",
+      "from_name": "新開地",
+      "to_name": "湊川",
+      "why": "patch",
+      "rail_km": 0.309,
+      "walk_km": 0.309
+    },
+    {
+      "from": "007241",
+      "to": "007279",
+      "from_name": "新開地",
+      "to_name": "大開",
+      "why": "patch",
+      "rail_km": 0.827,
+      "walk_km": 0.827
+    },
+    {
+      "from": "007447",
+      "to": "007439",
+      "from_name": "天王寺駅前",
+      "to_name": "天王寺",
+      "why": "patch",
+      "rail_km": 0.193,
+      "walk_km": 0.193
+    },
+    {
+      "from": "007460",
+      "to": "007486",
+      "from_name": "阿倍野",
+      "to_name": "文の里",
+      "why": "patch",
+      "rail_km": 0.784,
+      "walk_km": 0.784
+    },
+    {
+      "from": "007919",
+      "to": "007859",
+      "from_name": "児島",
+      "to_name": "上の町",
+      "why": "patch",
+      "rail_km": 3.05,
+      "walk_km": 3.05
+    },
+    {
+      "from": "008630",
+      "to": "008592",
+      "from_name": "下関",
+      "to_name": "幡生",
+      "why": "patch",
+      "rail_km": 3.541,
+      "walk_km": 3.541
+    },
+    {
+      "from": "008874",
+      "to": "008865",
+      "from_name": "新宮",
+      "to_name": "鵜殿",
+      "why": "patch",
+      "rail_km": 3.528,
+      "walk_km": 3.528
+    },
+    {
+      "from": "008934",
+      "to": "008950",
+      "from_name": "一本松",
+      "to_name": "上伊田",
+      "why": "patch",
+      "rail_km": 0.962,
+      "walk_km": 0.962
+    },
+    {
+      "from": "009296",
+      "to": "009306",
+      "from_name": "甘木",
+      "to_name": "馬田",
+      "why": "patch",
+      "rail_km": 1.878,
+      "walk_km": 1.878
+    },
+    {
+      "from": "000001",
+      "to": "000002",
+      "from_name": "稚内",
+      "to_name": "南稚内",
+      "why": "stride:1",
+      "rail_km": 2.21,
+      "walk_km": 2.21
+    },
+    {
+      "from": "000353",
+      "to": "000355",
+      "from_name": "南千歳",
+      "to_name": "蘭越",
+      "why": "stride:1",
+      "rail_km": 159.194,
+      "walk_km": 159.194
+    },
+    {
+      "from": "000710",
+      "to": "000711",
+      "from_name": "兄畑",
+      "to_name": "横間",
+      "why": "stride:1",
+      "rail_km": 15.32,
+      "walk_km": 15.32
+    },
+    {
+      "from": "001067",
+      "to": "001069",
+      "from_name": "前谷地",
+      "to_name": "佳景山",
+      "why": "stride:1",
+      "rail_km": 4.169,
+      "walk_km": 4.169
+    },
+    {
+      "from": "001430",
+      "to": "001431",
+      "from_name": "笈川",
+      "to_name": "小島谷",
+      "why": "stride:1",
+      "rail_km": 150.147,
+      "walk_km": 150.147
+    },
+    {
+      "from": "001793",
+      "to": "001794",
+      "from_name": "柳橋",
+      "to_name": "湯檜曽",
+      "why": "stride:1",
+      "rail_km": null,
+      "walk_km": 205.275
+    },
+    {
+      "from": "002157",
+      "to": "002158",
+      "from_name": "金島",
+      "to_name": "楡原",
+      "why": "stride:1",
+      "rail_km": 308.196,
+      "walk_km": 308.196
+    },
+    {
+      "from": "002524",
+      "to": "002525",
+      "from_name": "水居",
+      "to_name": "本庄早稲田",
+      "why": "stride:1",
+      "rail_km": 433.871,
+      "walk_km": 432.6
+    },
+    {
+      "from": "002876",
+      "to": "002877",
+      "from_name": "大宮公園",
+      "to_name": "西大宮",
+      "why": "stride:1",
+      "rail_km": 7.965,
+      "walk_km": 7.965
+    },
+    {
+      "from": "003261",
+      "to": "003262",
+      "from_name": "氷川台",
+      "to_name": "久米川",
+      "why": "stride:1",
+      "rail_km": 24.338,
+      "walk_km": 24.338
+    },
+    {
+      "from": "003695",
+      "to": "003696",
+      "from_name": "東大島",
+      "to_name": "西新宿五丁目",
+      "why": "stride:1",
+      "rail_km": 13.326,
+      "walk_km": 13.326
+    },
+    {
+      "from": "004122",
+      "to": "004123",
+      "from_name": "城崎温泉",
+      "to_name": "天王洲アイル",
+      "why": "stride:1",
+      "rail_km": 605.045,
+      "walk_km": 604.831
+    },
+    {
+      "from": "004506",
+      "to": "004507",
+      "from_name": "京急鶴見",
+      "to_name": "丹後神崎",
+      "why": "stride:1",
+      "rail_km": 525.781,
+      "walk_km": 525.781
+    },
+    {
+      "from": "004873",
+      "to": "004874",
+      "from_name": "美濃赤坂",
+      "to_name": "横田",
+      "why": "stride:1",
+      "rail_km": 453.182,
+      "walk_km": 453.182
+    },
+    {
+      "from": "005243",
+      "to": "005244",
+      "from_name": "森上",
+      "to_name": "井出",
+      "why": "stride:1",
+      "rail_km": 253.165,
+      "walk_km": 253.165
+    },
+    {
+      "from": "005616",
+      "to": "005617",
+      "from_name": "瑞穂運動場東",
+      "to_name": "丹生川",
+      "why": "stride:1",
+      "rail_km": null,
+      "walk_km": null
+    },
+    {
+      "from": "005974",
+      "to": "005976",
+      "from_name": "大府",
+      "to_name": "山ノ内",
+      "why": "stride:1",
+      "rail_km": 215.314,
+      "walk_km": 150.928
+    },
+    {
+      "from": "006342",
+      "to": "006343",
+      "from_name": "相見",
+      "to_name": "東觜崎",
+      "why": "stride:1",
+      "rail_km": 304.728,
+      "walk_km": 295.277
+    },
+    {
+      "from": "006704",
+      "to": "006705",
+      "from_name": "志染",
+      "to_name": "大池",
+      "why": "stride:1",
+      "rail_km": 23.772,
+      "walk_km": 23.772
+    },
+    {
+      "from": "007080",
+      "to": "007081",
+      "from_name": "西梅田",
+      "to_name": "西神南",
+      "why": "stride:1",
+      "rail_km": 47.686,
+      "walk_km": 44.821
+    },
+    {
+      "from": "007502",
+      "to": "007503",
+      "from_name": "北田辺",
+      "to_name": "備前西市",
+      "why": "stride:1",
+      "rail_km": 189.639,
+      "walk_km": 163.837
+    },
+    {
+      "from": "007865",
+      "to": "007866",
+      "from_name": "大和新庄",
+      "to_name": "下深川",
+      "why": "stride:1",
+      "rail_km": 349.061,
+      "walk_km": 341.475
+    },
+    {
+      "from": "008231",
+      "to": "008232",
+      "from_name": "木太東口",
+      "to_name": "橋本",
+      "why": "stride:1",
+      "rail_km": null,
+      "walk_km": 287.001
+    },
+    {
+      "from": "008588",
+      "to": "008589",
+      "from_name": "島田",
+      "to_name": "岐波",
+      "why": "stride:1",
+      "rail_km": 70.605,
+      "walk_km": 70.605
+    },
+    {
+      "from": "008946",
+      "to": "008947",
+      "from_name": "新改",
+      "to_name": "西鉄千早",
+      "why": "stride:1",
+      "rail_km": 544.964,
+      "walk_km": 538.747
+    },
+    {
+      "from": "009309",
+      "to": "009310",
+      "from_name": "弥生が丘",
+      "to_name": "松崎",
+      "why": "stride:1",
+      "rail_km": 8.014,
+      "walk_km": 8.014
+    },
+    {
+      "from": "009663",
+      "to": "009664",
+      "from_name": "湯江",
+      "to_name": "田原坂",
+      "why": "stride:1",
+      "rail_km": 148.478,
+      "walk_km": 148.478
+    },
+    {
+      "from": "010025",
+      "to": "010026",
+      "from_name": "竜ヶ水",
+      "to_name": "内之田",
+      "why": "stride:1",
+      "rail_km": 145.461,
+      "walk_km": 145.461
+    },
+    {
+      "from": "000001",
+      "to": "000008",
+      "from_name": "稚内",
+      "to_name": "幌延",
+      "why": "stride:7",
+      "rail_km": 58.904,
+      "walk_km": 58.904
+    },
+    {
+      "from": "000353",
+      "to": "000361",
+      "from_name": "南千歳",
+      "to_name": "遠浅",
+      "why": "stride:7",
+      "rail_km": 26.797,
+      "walk_km": 26.797
+    },
+    {
+      "from": "000710",
+      "to": "000717",
+      "from_name": "兄畑",
+      "to_name": "小屋の畑",
+      "why": "stride:7",
+      "rail_km": 21.783,
+      "walk_km": 21.783
+    },
+    {
+      "from": "001067",
+      "to": "001075",
+      "from_name": "前谷地",
+      "to_name": "東根",
+      "why": "stride:7",
+      "rail_km": 124.888,
+      "walk_km": 124.888
+    },
+    {
+      "from": "001430",
+      "to": "001437",
+      "from_name": "笈川",
+      "to_name": "小高",
+      "why": "stride:7",
+      "rail_km": 218.47,
+      "walk_km": 218.47
+    },
+    {
+      "from": "001793",
+      "to": "001800",
+      "from_name": "柳橋",
+      "to_name": "磯原",
+      "why": "stride:7",
+      "rail_km": null,
+      "walk_km": 449.359
+    },
+    {
+      "from": "002157",
+      "to": "002164",
+      "from_name": "金島",
+      "to_name": "花輪",
+      "why": "stride:7",
+      "rail_km": 68.574,
+      "walk_km": 68.574
+    },
+    {
+      "from": "002524",
+      "to": "002531",
+      "from_name": "水居",
+      "to_name": "宮脇",
+      "why": "stride:7",
+      "rail_km": null,
+      "walk_km": null
+    },
+    {
+      "from": "002876",
+      "to": "002883",
+      "from_name": "大宮公園",
+      "to_name": "スポーツ公園",
+      "why": "stride:7",
+      "rail_km": 484.921,
+      "walk_km": 481.178
+    },
+    {
+      "from": "003261",
+      "to": "003271",
+      "from_name": "氷川台",
+      "to_name": "保谷",
+      "why": "stride:7",
+      "rail_km": 10.48,
+      "walk_km": 10.48
+    },
+    {
+      "from": "003695",
+      "to": "003703",
+      "from_name": "東大島",
+      "to_name": "新日本橋",
+      "why": "stride:7",
+      "rail_km": 6.494,
+      "walk_km": 5.541
+    },
+    {
+      "from": "004122",
+      "to": "004130",
+      "from_name": "城崎温泉",
+      "to_name": "登戸",
+      "why": "stride:7",
+      "rail_km": 599.097,
+      "walk_km": 598.61
+    },
+    {
+      "from": "004506",
+      "to": "004513",
+      "from_name": "京急鶴見",
+      "to_name": "永田",
+      "why": "stride:7",
+      "rail_km": 75.386,
+      "walk_km": 74.483
+    },
+    {
+      "from": "004873",
+      "to": "004881",
+      "from_name": "美濃赤坂",
+      "to_name": "姫",
+      "why": "stride:7",
+      "rail_km": 52.993,
+      "walk_km": 52.948
+    },
+    {
+      "from": "005243",
+      "to": "005250",
+      "from_name": "森上",
+      "to_name": "箱根板橋",
+      "why": "stride:7",
+      "rail_km": 283.17,
+      "walk_km": 283.17
+    },
+    {
+      "from": "005616",
+      "to": "005624",
+      "from_name": "瑞穂運動場東",
+      "to_name": "赤池",
+      "why": "stride:7",
+      "rail_km": 6.827,
+      "walk_km": 6.827
+    },
+    {
+      "from": "005974",
+      "to": "005982",
+      "from_name": "大府",
+      "to_name": "近鉄富田",
+      "why": "stride:7",
+      "rail_km": 48.799,
+      "walk_km": 47.908
+    },
+    {
+      "from": "006342",
+      "to": "006349",
+      "from_name": "相見",
+      "to_name": "仁豊野",
+      "why": "stride:7",
+      "rail_km": 295.501,
+      "walk_km": 286.05
+    },
+    {
+      "from": "006704",
+      "to": "006711",
+      "from_name": "志染",
+      "to_name": "狛田",
+      "why": "stride:7",
+      "rail_km": 87.549,
+      "walk_km": 86.934
+    },
+    {
+      "from": "007080",
+      "to": "007087",
+      "from_name": "西梅田",
+      "to_name": "南森町",
+      "why": "stride:7",
+      "rail_km": 3.119,
+      "walk_km": 1.497
+    },
+    {
+      "from": "007502",
+      "to": "007509",
+      "from_name": "北田辺",
+      "to_name": "備後三川",
+      "why": "stride:7",
+      "rail_km": 277.287,
+      "walk_km": 251.485
+    },
+    {
+      "from": "007865",
+      "to": "007875",
+      "from_name": "大和新庄",
+      "to_name": "狩留家",
+      "why": "stride:7",
+      "rail_km": 355.11,
+      "walk_km": 347.524
+    },
+    {
+      "from": "008231",
+      "to": "008239",
+      "from_name": "木太東口",
+      "to_name": "宮島ボートレース場",
+      "why": "stride:7",
+      "rail_km": null,
+      "walk_km": 252.445
+    },
+    {
+      "from": "008588",
+      "to": "008596",
+      "from_name": "島田",
+      "to_name": "岩鼻",
+      "why": "stride:7",
+      "rail_km": 85.435,
+      "walk_km": 85.435
+    },
+    {
+      "from": "008946",
+      "to": "008953",
+      "from_name": "新改",
+      "to_name": "鯖瀬",
+      "why": "stride:7",
+      "rail_km": 198.685,
+      "walk_km": 198.685
+    },
+    {
+      "from": "009309",
+      "to": "009316",
+      "from_name": "弥生が丘",
+      "to_name": "山本",
+      "why": "stride:7",
+      "rail_km": 63.734,
+      "walk_km": 63.734
+    },
+    {
+      "from": "009663",
+      "to": "009670",
+      "from_name": "湯江",
+      "to_name": "植木",
+      "why": "stride:7",
+      "rail_km": 152.724,
+      "walk_km": 152.724
+    },
+    {
+      "from": "010025",
+      "to": "010033",
+      "from_name": "竜ヶ水",
+      "to_name": "鹿児島駅前",
+      "why": "stride:7",
+      "rail_km": null,
+      "walk_km": 6.898
+    },
+    {
+      "from": "000001",
+      "to": "000055",
+      "from_name": "稚内",
+      "to_name": "中愛別",
+      "why": "stride:53",
+      "rail_km": 282.271,
+      "walk_km": 282.271
+    },
+    {
+      "from": "000353",
+      "to": "000410",
+      "from_name": "南千歳",
+      "to_name": "母恋",
+      "why": "stride:53",
+      "rail_km": 87.204,
+      "walk_km": 87.204
+    },
+    {
+      "from": "000710",
+      "to": "000765",
+      "from_name": "兄畑",
+      "to_name": "上桧木内",
+      "why": "stride:53",
+      "rail_km": 159.871,
+      "walk_km": 130.572
+    },
+    {
+      "from": "001067",
+      "to": "001123",
+      "from_name": "前谷地",
+      "to_name": "東塩釜",
+      "why": "stride:53",
+      "rail_km": 44.78,
+      "walk_km": 44.78
+    },
+    {
+      "from": "001430",
+      "to": "001485",
+      "from_name": "笈川",
+      "to_name": "双葉",
+      "why": "stride:53",
+      "rail_km": 205.172,
+      "walk_km": 205.172
+    },
+    {
+      "from": "001793",
+      "to": "001849",
+      "from_name": "柳橋",
+      "to_name": "南中郷",
+      "why": "stride:53",
+      "rail_km": null,
+      "walk_km": 444.935
+    },
+    {
+      "from": "002157",
+      "to": "002212",
+      "from_name": "金島",
+      "to_name": "冠着",
+      "why": "stride:53",
+      "rail_km": 143.667,
+      "walk_km": 143.667
+    },
+    {
+      "from": "002524",
+      "to": "002578",
+      "from_name": "水居",
+      "to_name": "広丘",
+      "why": "stride:53",
+      "rail_km": 332.552,
+      "walk_km": 331.281
+    },
+    {
+      "from": "002876",
+      "to": "002940",
+      "from_name": "大宮公園",
+      "to_name": "南大塚",
+      "why": "stride:53",
+      "rail_km": 58.526,
+      "walk_km": 41.378
+    },
+    {
+      "from": "003261",
+      "to": "003324",
+      "from_name": "氷川台",
+      "to_name": "千川",
+      "why": "stride:53",
+      "rail_km": 2.939,
+      "walk_km": 2.939
+    },
+    {
+      "from": "003695",
+      "to": "003773",
+      "from_name": "東大島",
+      "to_name": "茅場町",
+      "why": "stride:53",
+      "rail_km": 6.101,
+      "walk_km": 6.101
+    },
+    {
+      "from": "004122",
+      "to": "004183",
+      "from_name": "城崎温泉",
+      "to_name": "上大月",
+      "why": "stride:53",
+      "rail_km": 559.243,
+      "walk_km": 558.983
+    },
+    {
+      "from": "004506",
+      "to": "004560",
+      "from_name": "京急鶴見",
+      "to_name": "京急新子安",
+      "why": "stride:53",
+      "rail_km": 2.621,
+      "walk_km": 2.621
+    },
+    {
+      "from": "004873",
+      "to": "004933",
+      "from_name": "美濃赤坂",
+      "to_name": "徳丸",
+      "why": "stride:53",
+      "rail_km": 331.528,
+      "walk_km": 330.174
+    },
+    {
+      "from": "005243",
+      "to": "005297",
+      "from_name": "森上",
+      "to_name": "上小田井",
+      "why": "stride:53",
+      "rail_km": 35.979,
+      "walk_km": 30.278
+    },
+    {
+      "from": "005616",
+      "to": "005676",
+      "from_name": "瑞穂運動場東",
+      "to_name": "湯里",
+      "why": "stride:53",
+      "rail_km": 551.22,
+      "walk_km": 550.502
+    },
+    {
+      "from": "005974",
+      "to": "006036",
+      "from_name": "大府",
+      "to_name": "大仁",
+      "why": "stride:53",
+      "rail_km": 221.172,
+      "walk_km": 221.172
+    },
+    {
+      "from": "006342",
+      "to": "006397",
+      "from_name": "相見",
+      "to_name": "上郡",
+      "why": "stride:53",
+      "rail_km": 320.802,
+      "walk_km": 311.351
+    },
+    {
+      "from": "006704",
+      "to": "006761",
+      "from_name": "志染",
+      "to_name": "甲東園",
+      "why": "stride:53",
+      "rail_km": 42.15,
+      "walk_km": 42.15
+    },
+    {
+      "from": "007080",
+      "to": "007152",
+      "from_name": "西梅田",
+      "to_name": "旧居留地・大丸前",
+      "why": "stride:53",
+      "rail_km": 40.248,
+      "walk_km": 30.674
+    },
+    {
+      "from": "007502",
+      "to": "007559",
+      "from_name": "北田辺",
+      "to_name": "帝塚山四丁目",
+      "why": "stride:53",
+      "rail_km": 28.986,
+      "walk_km": 5.148
+    },
+    {
+      "from": "007865",
+      "to": "007925",
+      "from_name": "大和新庄",
+      "to_name": "岸和田",
+      "why": "stride:53",
+      "rail_km": 57.011,
+      "walk_km": 54.216
+    },
+    {
+      "from": "008231",
+      "to": "008286",
+      "from_name": "木太東口",
+      "to_name": "神前",
+      "why": "stride:53",
+      "rail_km": null,
+      "walk_km": 21.296
+    },
+    {
+      "from": "008588",
+      "to": "008644",
+      "from_name": "島田",
+      "to_name": "宇部岬",
+      "why": "stride:53",
+      "rail_km": 81.095,
+      "walk_km": 81.095
+    },
+    {
+      "from": "008946",
+      "to": "009008",
+      "from_name": "新改",
+      "to_name": "吉富",
+      "why": "stride:53",
+      "rail_km": 528.024,
+      "walk_km": 525.575
+    },
+    {
+      "from": "009309",
+      "to": "009365",
+      "from_name": "弥生が丘",
+      "to_name": "筑後吉井",
+      "why": "stride:53",
+      "rail_km": 34.945,
+      "walk_km": 34.945
+    },
+    {
+      "from": "009663",
+      "to": "009719",
+      "from_name": "湯江",
+      "to_name": "崇城大学前",
+      "why": "stride:53",
+      "rail_km": 155.385,
+      "walk_km": 155.385
+    },
+    {
+      "from": "010025",
+      "to": "010085",
+      "from_name": "竜ヶ水",
+      "to_name": "谷山",
+      "why": "stride:53",
+      "rail_km": 16.743,
+      "walk_km": 15.709
+    },
+    {
+      "from": "000001",
+      "to": "000221",
+      "from_name": "稚内",
+      "to_name": "北12条",
+      "why": "stride:211",
+      "rail_km": null,
+      "walk_km": 396.81
+    },
+    {
+      "from": "000353",
+      "to": "000582",
+      "from_name": "南千歳",
+      "to_name": "撫牛子",
+      "why": "stride:211",
+      "rail_km": 428.782,
+      "walk_km": 428.782
+    },
+    {
+      "from": "000710",
+      "to": "000939",
+      "from_name": "兄畑",
+      "to_name": "上浜",
+      "why": "stride:211",
+      "rail_km": 220.199,
+      "walk_km": 220.199
+    },
+    {
+      "from": "001067",
+      "to": "001299",
+      "from_name": "前谷地",
+      "to_name": "中浦",
+      "why": "stride:211",
+      "rail_km": 245.866,
+      "walk_km": 245.866
+    },
+    {
+      "from": "001430",
+      "to": "001664",
+      "from_name": "笈川",
+      "to_name": "越後鹿渡",
+      "why": "stride:211",
+      "rail_km": 183.113,
+      "walk_km": 183.113
+    },
+    {
+      "from": "001793",
+      "to": "002025",
+      "from_name": "柳橋",
+      "to_name": "滝",
+      "why": "stride:211",
+      "rail_km": null,
+      "walk_km": 387.651
+    },
+    {
+      "from": "002157",
+      "to": "002384",
+      "from_name": "金島",
+      "to_name": "小諸",
+      "why": "stride:211",
+      "rail_km": 86.268,
+      "walk_km": 86.268
+    },
+    {
+      "from": "002524",
+      "to": "002750",
+      "from_name": "水居",
+      "to_name": "姫宮",
+      "why": "stride:211",
+      "rail_km": 493.252,
+      "walk_km": 491.981
+    },
+    {
+      "from": "002876",
+      "to": "003111",
+      "from_name": "大宮公園",
+      "to_name": "元山",
+      "why": "stride:211",
+      "rail_km": 45.494,
+      "walk_km": 42.067
+    },
+    {
+      "from": "003261",
+      "to": "003520",
+      "from_name": "氷川台",
+      "to_name": "恋ヶ窪",
+      "why": "stride:211",
+      "rail_km": 26.806,
+      "walk_km": 26.806
+    },
+    {
+      "from": "003695",
+      "to": "003980",
+      "from_name": "東大島",
+      "to_name": "南多摩",
+      "why": "stride:211",
+      "rail_km": 31.279,
+      "walk_km": 30.431
+    },
+    {
+      "from": "004122",
+      "to": "004364",
+      "from_name": "城崎温泉",
+      "to_name": "穴守稲荷",
+      "why": "stride:211",
+      "rail_km": 603.414,
+      "walk_km": 603.2
+    },
+    {
+      "from": "004506",
+      "to": "004742",
+      "from_name": "京急鶴見",
+      "to_name": "弥生台",
+      "why": "stride:211",
+      "rail_km": 19.428,
+      "walk_km": 19.428
+    },
+    {
+      "from": "004873",
+      "to": "005108",
+      "from_name": "美濃赤坂",
+      "to_name": "月崎",
+      "why": "stride:211",
+      "rail_km": 452.319,
+      "walk_km": 452.319
+    },
+    {
+      "from": "005243",
+      "to": "005480",
+      "from_name": "森上",
+      "to_name": "ひらんだ",
+      "why": "stride:211",
+      "rail_km": 214.97,
+      "walk_km": 214.97
+    },
+    {
+      "from": "005616",
+      "to": "005846",
+      "from_name": "瑞穂運動場東",
+      "to_name": "油木",
+      "why": "stride:211",
+      "rail_km": 457.895,
+      "walk_km": 447.94
+    },
+    {
+      "from": "005974",
+      "to": "006214",
+      "from_name": "大府",
+      "to_name": "備後西城",
+      "why": "stride:211",
+      "rail_km": 468.446,
+      "walk_km": 458.995
+    },
+    {
+      "from": "006342",
+      "to": "006573",
+      "from_name": "相見",
+      "to_name": "英賀保",
+      "why": "stride:211",
+      "rail_km": 292.097,
+      "walk_km": 282.646
+    },
+    {
+      "from": "006704",
+      "to": "006942",
+      "from_name": "志染",
+      "to_name": "西中島南方",
+      "why": "stride:211",
+      "rail_km": 56.921,
+      "walk_km": 54.35
+    },
+    {
+      "from": "007080",
+      "to": "007360",
+      "from_name": "西梅田",
+      "to_name": "県庁通り",
+      "why": "stride:211",
+      "rail_km": null,
+      "walk_km": 155.281
+    },
+    {
+      "from": "007502",
+      "to": "007735",
+      "from_name": "北田辺",
+      "to_name": "上野芝",
+      "why": "stride:211",
+      "rail_km": 36.283,
+      "walk_km": 10.873
+    },
+    {
+      "from": "007865",
+      "to": "008104",
+      "from_name": "大和新庄",
+      "to_name": "鍋倉",
+      "why": "stride:211",
+      "rail_km": 502.134,
+      "walk_km": 494.548
+    },
+    {
+      "from": "008231",
+      "to": "008455",
+      "from_name": "木太東口",
+      "to_name": "南岩国",
+      "why": "stride:211",
+      "rail_km": null,
+      "walk_km": 275.378
+    },
+    {
+      "from": "008588",
+      "to": "008820",
+      "from_name": "島田",
+      "to_name": "切目",
+      "why": "stride:211",
+      "rail_km": 511.515,
+      "walk_km": 508.561
+    },
+    {
+      "from": "008946",
+      "to": "009182",
+      "from_name": "新改",
+      "to_name": "桟橋通二丁目",
+      "why": "stride:211",
+      "rail_km": 22.749,
+      "walk_km": 22.228
+    },
+    {
+      "from": "009309",
+      "to": "009535",
+      "from_name": "弥生が丘",
+      "to_name": "若井",
+      "why": "stride:211",
+      "rail_km": 651.032,
+      "walk_km": 649.236
+    },
+    {
+      "from": "009663",
+      "to": "009896",
+      "from_name": "湯江",
+      "to_name": "東都農",
+      "why": "stride:211",
+      "rail_km": 379.885,
+      "walk_km": 379.885
+    },
+    {
+      "from": "000001",
+      "to": "000973",
+      "from_name": "稚内",
+      "to_name": "釜淵",
+      "why": "stride:907",
+      "rail_km": 1089.337,
+      "walk_km": 1063.963
+    },
+    {
+      "from": "000353",
+      "to": "001335",
+      "from_name": "南千歳",
+      "to_name": "大泉",
+      "why": "stride:907",
+      "rail_km": 803.105,
+      "walk_km": 803.105
+    },
+    {
+      "from": "000710",
+      "to": "001702",
+      "from_name": "兄畑",
+      "to_name": "良川",
+      "why": "stride:907",
+      "rail_km": 718.673,
+      "walk_km": 718.673
+    },
+    {
+      "from": "001067",
+      "to": "002063",
+      "from_name": "前谷地",
+      "to_name": "上滝",
+      "why": "stride:907",
+      "rail_km": 498.452,
+      "walk_km": 496.207
+    },
+    {
+      "from": "001430",
+      "to": "002431",
+      "from_name": "笈川",
+      "to_name": "磯部",
+      "why": "stride:907",
+      "rail_km": 247.023,
+      "walk_km": 247.023
+    },
+    {
+      "from": "001793",
+      "to": "002787",
+      "from_name": "柳橋",
+      "to_name": "丸山",
+      "why": "stride:907",
+      "rail_km": null,
+      "walk_km": 321.367
+    },
+    {
+      "from": "002157",
+      "to": "003154",
+      "from_name": "金島",
+      "to_name": "赤木",
+      "why": "stride:907",
+      "rail_km": 220.203,
+      "walk_km": 220.203
+    },
+    {
+      "from": "002524",
+      "to": "003568",
+      "from_name": "水居",
+      "to_name": "中野",
+      "why": "stride:907",
+      "rail_km": 509.371,
+      "walk_km": 508.1
+    },
+    {
+      "from": "002876",
+      "to": "004023",
+      "from_name": "大宮公園",
+      "to_name": "スポーツセンター",
+      "why": "stride:907",
+      "rail_km": 65.481,
+      "walk_km": 61.584
+    },
+    {
+      "from": "003261",
+      "to": "004404",
+      "from_name": "氷川台",
+      "to_name": "十日市場",
+      "why": "stride:907",
+      "rail_km": 87.338,
+      "walk_km": 87.338
+    },
+    {
+      "from": "003695",
+      "to": "004777",
+      "from_name": "東大島",
+      "to_name": "美江寺",
+      "why": "stride:907",
+      "rail_km": 387.249,
+      "walk_km": 387.12
+    },
+    {
+      "from": "004122",
+      "to": "005145",
+      "from_name": "城崎温泉",
+      "to_name": "大多喜",
+      "why": "stride:907",
+      "rail_km": 702.55,
+      "walk_km": 702.336
+    },
+    {
+      "from": "004506",
+      "to": "005517",
+      "from_name": "京急鶴見",
+      "to_name": "向市場",
+      "why": "stride:907",
+      "rail_km": 315.875,
+      "walk_km": 315.267
+    },
+    {
+      "from": "004873",
+      "to": "005881",
+      "from_name": "美濃赤坂",
+      "to_name": "東栄",
+      "why": "stride:907",
+      "rail_km": 159.707,
+      "walk_km": 147.738
+    },
+    {
+      "from": "005243",
+      "to": "006250",
+      "from_name": "森上",
+      "to_name": "内部",
+      "why": "stride:907",
+      "rail_km": 39.894,
+      "walk_km": 39.894
+    },
+    {
+      "from": "005616",
+      "to": "006612",
+      "from_name": "瑞穂運動場東",
+      "to_name": "南茨木",
+      "why": "stride:907",
+      "rail_km": 178.624,
+      "walk_km": 163.843
+    },
+    {
+      "from": "005974",
+      "to": "006981",
+      "from_name": "大府",
+      "to_name": "尼崎",
+      "why": "stride:907",
+      "rail_km": 193.934,
+      "walk_km": 184.213
+    },
+    {
+      "from": "006342",
+      "to": "007401",
+      "from_name": "相見",
+      "to_name": "一志",
+      "why": "stride:907",
+      "rail_km": 135.054,
+      "walk_km": 119.262
+    },
+    {
+      "from": "006704",
+      "to": "007771",
+      "from_name": "志染",
+      "to_name": "八浜",
+      "why": "stride:907",
+      "rail_km": 141.314,
+      "walk_km": 141.314
+    },
+    {
+      "from": "007080",
+      "to": "008141",
+      "from_name": "西梅田",
+      "to_name": "尾崎",
+      "why": "stride:907",
+      "rail_km": 41.514,
+      "walk_km": 40.898
+    },
+    {
+      "from": "007502",
+      "to": "008493",
+      "from_name": "北田辺",
+      "to_name": "徳島",
+      "why": "stride:907",
+      "rail_km": 325.527,
+      "walk_km": 299.725
+    },
+    {
+      "from": "007865",
+      "to": "008854",
+      "from_name": "大和新庄",
+      "to_name": "郡中港",
+      "why": "stride:907",
+      "rail_km": null,
+      "walk_km": 404.814
+    },
+    {
+      "from": "008231",
+      "to": "009218",
+      "from_name": "木太東口",
+      "to_name": "岡花",
+      "why": "stride:907",
+      "rail_km": null,
+      "walk_km": 160.947
+    },
+    {
+      "from": "008588",
+      "to": "009574",
+      "from_name": "島田",
+      "to_name": "臼杵",
+      "why": "stride:907",
+      "rail_km": 331.726,
+      "walk_km": 329.277
+    },
+    {
+      "from": "008946",
+      "to": "009932",
+      "from_name": "新改",
+      "to_name": "真幸",
+      "why": "stride:907",
+      "rail_km": 743.731,
+      "walk_km": 743.145
+    },
+    {
+      "from": "000001",
+      "to": "002548",
+      "from_name": "稚内",
+      "to_name": "臼田",
+      "why": "stride:2341",
+      "rail_km": 1463.418,
+      "walk_km": 1463.418
+    },
+    {
+      "from": "000353",
+      "to": "002900",
+      "from_name": "南千歳",
+      "to_name": "柏たなか",
+      "why": "stride:2341",
+      "rail_km": 1044.287,
+      "walk_km": 1044.287
+    },
+    {
+      "from": "000710",
+      "to": "003289",
+      "from_name": "兄畑",
+      "to_name": "西ヶ原四丁目",
+      "why": "stride:2341",
+      "rail_km": 555.662,
+      "walk_km": 549.035
+    },
+    {
+      "from": "001067",
+      "to": "003727",
+      "from_name": "前谷地",
+      "to_name": "物井",
+      "why": "stride:2341",
+      "rail_km": 401.426,
+      "walk_km": 401.426
+    },
+    {
+      "from": "001430",
+      "to": "004149",
+      "from_name": "笈川",
+      "to_name": "粟野",
+      "why": "stride:2341",
+      "rail_km": 509.418,
+      "walk_km": 509.418
+    },
+    {
+      "from": "001793",
+      "to": "004530",
+      "from_name": "柳橋",
+      "to_name": "下吉田",
+      "why": "stride:2341",
+      "rail_km": null,
+      "walk_km": 309.115
+    },
+    {
+      "from": "002157",
+      "to": "004901",
+      "from_name": "金島",
+      "to_name": "上総一ノ宮",
+      "why": "stride:2341",
+      "rail_km": 192.216,
+      "walk_km": 188.966
+    },
+    {
+      "from": "002524",
+      "to": "005268",
+      "from_name": "水居",
+      "to_name": "奥田",
+      "why": "stride:2341",
+      "rail_km": 202.748,
+      "walk_km": 186.901
+    },
+    {
+      "from": "002876",
+      "to": "005643",
+      "from_name": "大宮公園",
+      "to_name": "上豊田",
+      "why": "stride:2341",
+      "rail_km": 354.961,
+      "walk_km": 341.939
+    },
+    {
+      "from": "003261",
+      "to": "006003",
+      "from_name": "氷川台",
+      "to_name": "日本へそ公園",
+      "why": "stride:2341",
+      "rail_km": 589.801,
+      "walk_km": 579.957
+    },
+    {
+      "from": "003695",
+      "to": "006366",
+      "from_name": "東大島",
+      "to_name": "青山",
+      "why": "stride:2341",
+      "rail_km": 363.466,
+      "walk_km": 361.62
+    },
+    {
+      "from": "004122",
+      "to": "006728",
+      "from_name": "城崎温泉",
+      "to_name": "緑地公園",
+      "why": "stride:2341",
+      "rail_km": 182.636,
+      "walk_km": 172.11
+    },
+    {
+      "from": "004506",
+      "to": "007110",
+      "from_name": "京急鶴見",
+      "to_name": "大江橋",
+      "why": "stride:2341",
+      "rail_km": 482.198,
+      "walk_km": 473.111
+    },
+    {
+      "from": "004873",
+      "to": "007528",
+      "from_name": "美濃赤坂",
+      "to_name": "服部川",
+      "why": "stride:2341",
+      "rail_km": 152.104,
+      "walk_km": 148.04
+    },
+    {
+      "from": "005243",
+      "to": "007894",
+      "from_name": "森上",
+      "to_name": "上深川",
+      "why": "stride:2341",
+      "rail_km": 478.351,
+      "walk_km": 469.791
+    },
+    {
+      "from": "005616",
+      "to": "008257",
+      "from_name": "瑞穂運動場東",
+      "to_name": "中飯降",
+      "why": "stride:2341",
+      "rail_km": 195.79,
+      "walk_km": 194.37
+    },
+    {
+      "from": "005974",
+      "to": "008614",
+      "from_name": "大府",
+      "to_name": "阿波川口",
+      "why": "stride:2341",
+      "rail_km": 442.988,
+      "walk_km": 433.537
+    },
+    {
+      "from": "006342",
+      "to": "008976",
+      "from_name": "相見",
+      "to_name": "篠栗",
+      "why": "stride:2341",
+      "rail_km": 757.821,
+      "walk_km": 748.313
+    },
+    {
+      "from": "006704",
+      "to": "009336",
+      "from_name": "志染",
+      "to_name": "大鶴",
+      "why": "stride:2341",
+      "rail_km": 513.041,
+      "walk_km": 510.592
+    },
+    {
+      "from": "007080",
+      "to": "009688",
+      "from_name": "西梅田",
+      "to_name": "光の森",
+      "why": "stride:2341",
+      "rail_km": 652.332,
+      "walk_km": 648.434
+    },
+    {
+      "from": "007502",
+      "to": "010054",
+      "from_name": "北田辺",
+      "to_name": "武之橋",
+      "why": "stride:2341",
+      "rail_km": null,
+      "walk_km": 799.97
+    },
+    {
+      "from": "000001",
+      "to": "004647",
+      "from_name": "稚内",
+      "to_name": "新高島",
+      "why": "stride:4099",
+      "rail_km": 1473.989,
+      "walk_km": 1473.394
+    },
+    {
+      "from": "000353",
+      "to": "005014",
+      "from_name": "南千歳",
+      "to_name": "君津",
+      "why": "stride:4099",
+      "rail_km": 1121.683,
+      "walk_km": 1119.038
+    },
+    {
+      "from": "000710",
+      "to": "005376",
+      "from_name": "兄畑",
+      "to_name": "西枇杷島",
+      "why": "stride:4099",
+      "rail_km": 818.347,
+      "walk_km": 815.42
+    },
+    {
+      "from": "001067",
+      "to": "005757",
+      "from_name": "前谷地",
+      "to_name": "柴田",
+      "why": "stride:4099",
+      "rail_km": 677.391,
+      "walk_km": 677.391
+    },
+    {
+      "from": "001430",
+      "to": "006123",
+      "from_name": "笈川",
+      "to_name": "唐橋前",
+      "why": "stride:4099",
+      "rail_km": 603.117,
+      "walk_km": 590.999
+    },
+    {
+      "from": "001793",
+      "to": "006479",
+      "from_name": "柳橋",
+      "to_name": "フルーツパーク",
+      "why": "stride:4099",
+      "rail_km": null,
+      "walk_km": 381.847
+    },
+    {
+      "from": "002157",
+      "to": "006842",
+      "from_name": "金島",
+      "to_name": "木幡",
+      "why": "stride:4099",
+      "rail_km": 561.278,
+      "walk_km": 554.094
+    },
+    {
+      "from": "002524",
+      "to": "007249",
+      "from_name": "水居",
+      "to_name": "西大橋",
+      "why": "stride:4099",
+      "rail_km": 207.139,
+      "walk_km": 205.868
+    },
+    {
+      "from": "002876",
+      "to": "007642",
+      "from_name": "大宮公園",
+      "to_name": "佐味田川",
+      "why": "stride:4099",
+      "rail_km": null,
+      "walk_km": 500.376
+    },
+    {
+      "from": "003261",
+      "to": "008007",
+      "from_name": "氷川台",
+      "to_name": "五知",
+      "why": "stride:4099",
+      "rail_km": 461.849,
+      "walk_km": 460.933
+    },
+    {
+      "from": "003695",
+      "to": "008365",
+      "from_name": "東大島",
+      "to_name": "和歌山",
+      "why": "stride:4099",
+      "rail_km": 557.396,
+      "walk_km": 552.235
+    },
+    {
+      "from": "004122",
+      "to": "008727",
+      "from_name": "城崎温泉",
+      "to_name": "本町五丁目",
+      "why": "stride:4099",
+      "rail_km": null,
+      "walk_km": 382.963
+    },
+    {
+      "from": "004506",
+      "to": "009092",
+      "from_name": "京急鶴見",
+      "to_name": "入明",
+      "why": "stride:4099",
+      "rail_km": 811.116,
+      "walk_km": 801.665
+    },
+    {
+      "from": "004873",
+      "to": "009444",
+      "from_name": "美濃赤坂",
+      "to_name": "金石原",
+      "why": "stride:4099",
+      "rail_km": 751.324,
+      "walk_km": 749.97
+    },
+    {
+      "from": "005243",
+      "to": "009803",
+      "from_name": "森上",
+      "to_name": "浦上車庫",
+      "why": "stride:4099",
+      "rail_km": null,
+      "walk_km": 835.819
+    },
+    {
+      "from": "005616",
+      "to": "010159",
+      "from_name": "瑞穂運動場東",
+      "to_name": "かしの森公園前",
+      "why": "stride:4099",
+      "rail_km": null,
+      "walk_km": null
+    }
+  ]
+}

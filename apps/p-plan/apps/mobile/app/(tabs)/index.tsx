@@ -10,6 +10,7 @@ import { pickAndProcessPhoto, autoSyncTripPhotos } from '../../src/services/Phot
 import { FastStartModal } from '../../src/components/home/FastStartModal';
 import { ReconstructionWizard } from '../../src/components/reconstruction/ReconstructionWizard';
 import { useSync } from '../../src/hooks/useSync';
+import { useToday } from '../../src/hooks/useToday';
 import { useFirebaseSync } from '../../src/hooks/useFirebaseSync';
 import { initDatabase } from '../../src/lib/database';
 import { Card } from '../../src/components/common/Card';
@@ -36,7 +37,7 @@ export default function HomeScreens() {
   const [isWizardVisible, setIsWizardVisible] = useState(false);
 
   // 2. 데이터 및 상태 분류 로직
-  const today = new Date().toISOString().split('T')[0];
+  const today = useToday();
   
   // 2.1 현재 기록 중인 여행 (Priority 1)
   const recordingTrip = useMemo(() => {

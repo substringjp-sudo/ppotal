@@ -1,4 +1,4 @@
-import { RailData, Station, Section } from '../types/railData';
+import { RailData, Station, Section, GraphPatch, GraphPatchEdge } from '../types/railData';
 import {
     TransferPlatform,
     bearingOf,
@@ -76,11 +76,26 @@ export interface RouteSearchResult {
  * Graph
  * ------------------------------------------------------------------ */
 
-const WALK_LINE = 0; // pseudo line id for a walking transfer
+/**
+ * 도보 환승을 나타내는 가짜 노선 id.
+ *
+ * 0 이면 **안 된다** — `lines.json` 의 0 번은 IRいしかわ鉄道線 이라 진짜 노선과
+ * 값이 겹친다. 겹친 채로 두면 이시카와선을 탄 구간이 "걸어서 갈아탔다"로 세어진다.
+ * -1 은 [UNBOARDED] 가 쓰므로 -2 를 쓴다.
+ */
+const WALK_LINE = -2;
 const UNBOARDED = -1; // state line id meaning "not on a train yet"
 
-/** Walking transfers are only created between same-named stations closer than this. */
-const MAX_WALK_TRANSFER_KM = 1.5;
+/**
+ * 이름이 같은 역끼리 걸어갈 수 있다고 보는 거리.
+ *
+ * 앱(`WalkTransfers.SAME_NAME_MAX_KM`)과 **같은 값이어야 한다.** 1.5km 로 두었더니
+ * 앱은 1.0km 라 같은 역쌍에서 두 클라이언트가 다른 거리를 냈다(고정물 396개 중
+ * 14개). 1km 를 넘는 같은 이름은 갈아타는 곳이 아니라 이름이 겹친 남남에 가깝다 —
+ * 石川·平野·御影·市場·長田 다섯 쌍이 1.0~1.5km 사이에 있었다. 이름이 다른 역을
+ * 잇는 규칙이 300m 인 것과도 앞뒤가 맞는다.
+ */
+export const MAX_WALK_TRANSFER_KM = 1.0;
 /**
  * How close two *differently named* stations must be to count as one place.
  *
@@ -92,7 +107,7 @@ const MAX_WALK_TRANSFER_KM = 1.5;
  * Beyond 300m the question stops being "can you walk it" and becomes "do the rails
  * actually join", which this rule cannot answer.
  */
-const MAX_NEARBY_TRANSFER_KM = 0.3;
+export const MAX_NEARBY_TRANSFER_KM = 0.3;
 
 export interface RouteEdge {
     to: string;
@@ -215,7 +230,7 @@ function buildLineGroups(adj: Map<string, RouteEdge[]>, railData: RailData): Map
 const graphCache = new WeakMap<RailData, RouteGraph>();
 
 /** Longest chain of joints we will collapse into a single station-to-station edge. */
-const MAX_JOINT_CHAIN = 40;
+export const MAX_JOINT_CHAIN = 40;
 
 /**
  * station_graph.json is missing a handful of station-to-station links — most
@@ -274,7 +289,7 @@ function addContractedJointEdges(
                 if (!section) return;
                 const km = (section.length || 0) / 1000;
                 distance += km;
-                if (section.line_id > 0) {
+                if (section.line_id >= 0) {
                     lengthByLine.set(section.line_id, (lengthByLine.get(section.line_id) || 0) + km);
                 }
             });
@@ -300,6 +315,250 @@ function addContractedJointEdges(
 }
 
 /**
+ * 접합부 너머로 끊긴 이음매를 되살린다.
+ *
+ * [addContractedJointEdges] 는 **통과형** 접합부(차수 2)만 접는다. 분기형은 들어온
+ * 선로에서 나갈 선로를 골라야 해서 건드리지 않는데, 그 바람에 醒ヶ井(JR 도카이)에서
+ * 米原(JR 서일본)까지 5.9km 를 두고 **138km 를 돌아갔다.** 그 사이가
+ * `醒ヶ井–J_642–J_493–米原` 이고 접합부 차수가 3~4 다.
+ *
+ * 고를 것이 없는 경우만 넘는다.
+ *
+ *  1. 체인의 **모든 구간이 같은 `line_id`** 여야 한다. 각도로 고르는 것이 아니라
+ *     데이터가 스스로 "같은 노선"이라 말한 것만 따라간다.
+ *  2. 그 노선의 **이름이 양 끝 역의 승강장에** 있어야 한다. 소속을 구간에서 읽으면
+ *     스쳐 지나가기만 하는 선로도 그 역의 노선이 되어, 名鉄名古屋本線이 下地 를
+ *     스치는 것만으로 `下地 ↔ 伊奈` 가 살아난다 — 그 둘은 平井신호장에서 선로가
+ *     붙어 있을 뿐 다니는 열차가 없다.
+ *
+ * 이름으로 보는 이유는 같은 노선이 여러 레코드로 쪼개져 있어서다(東海道線 하나가
+ * 330·381·382·484). OpenStreetMap 선로로 43쌍을 따로 맞췄고, OSM 에 자료가 있던
+ * 23쌍에서 답이 모두 같았다. 앱(jpApp)의 `domain/engine/GraphRepair.kt` 와 같은 규칙이다.
+ */
+export const MAX_JUNCTION_CHAIN_KM = 30;
+export const MAX_JUNCTION_CHAIN_SECTIONS = 40;
+
+function addJunctionEdges(
+    railData: RailData,
+    sections: Map<number, Section>,
+    adj: Map<string, RouteEdge[]>
+) {
+    const incident = new Map<string, { sectionId: number; other: string; lineId: number; km: number }[]>();
+    const link = (node: string, entry: { sectionId: number; other: string; lineId: number; km: number }) => {
+        const list = incident.get(node);
+        if (list) list.push(entry);
+        else incident.set(node, [entry]);
+    };
+    sections.forEach(section => {
+        if (!section.start || !section.end || section.start === section.end) return;
+        const km = (section.length || 0) / 1000;
+        const lineId = section.line_id;
+        link(section.start, { sectionId: section.id, other: section.end, lineId, km });
+        link(section.end, { sectionId: section.id, other: section.start, lineId, km });
+    });
+
+    const isStation = (id: string) => Boolean(railData.stations?.[id]);
+    const existing = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => existing.add(`${from}|${edge.to}`)));
+
+    // 역의 노선 소속은 **승강장**에서 읽는다.
+    const lineNameOf = (id: number) => railData.lines?.[String(id)]?.name || '';
+    const platformLines = new Map<string, Set<string>>();
+    Object.values(railData.stations || {}).forEach(station => {
+        const names = new Set<string>();
+        (station.platform_ids || []).forEach(pid => {
+            const name = lineNameOf(railData.platforms?.[pid]?.line ?? -1);
+            if (name) names.add(name);
+        });
+        if (names.size > 0) platformLines.set(station.id, names);
+    });
+
+    const push = (from: string, to: string, distance: number, lineId: number, sectionIds: number[]) => {
+        const edge: RouteEdge = { to, distance: distance > 0 ? distance : 0.4, lineIds: [lineId], sectionIds, isWalk: false };
+        const list = adj.get(from);
+        if (list) list.push(edge);
+        else adj.set(from, [edge]);
+        existing.add(`${from}|${to}`);
+    };
+
+    // 같은 역쌍에 여러 체인이 닿으면 **가장 짧은 것**만 남긴다. 먼저 닿은 것을 쓰면
+    // 米原↔醒ヶ井 이 6.088km(米原–J_642)로 잡힌다 — 5.906km(米原–J_493–J_642)가 있는데도.
+    // 앱(`GraphRepair`)도 같은 규칙이라 이렇게 해야 양쪽 답이 같다.
+    const best = new Map<string, { from: string; to: string; km: number; lineId: number; sectionIds: number[] }>();
+
+    Array.from(incident.keys()).filter(isStation).sort().forEach(start => {
+        const startLines = platformLines.get(start);
+        if (!startLines) return;
+
+        (incident.get(start) || []).forEach(first => {
+            if (isStation(first.other)) return;       // 역↔역은 station_graph 의 몫
+            const lineName = lineNameOf(first.lineId);
+            if (!lineName || !startLines.has(lineName)) return;
+
+            // 짧은 쪽부터 꺼내 같은 역쌍을 여러 경로로 만나도 가장 짧은 것이 남는다.
+            const queue: { km: number; joint: string; used: number[] }[] =
+                [{ km: first.km, joint: first.other, used: [first.sectionId] }];
+            const settled = new Set<string>();
+            while (queue.length > 0) {
+                queue.sort((a, b) => a.km - b.km);
+                const step = queue.shift()!;
+                if (step.km > MAX_JUNCTION_CHAIN_KM) continue;
+                if (step.used.length > MAX_JUNCTION_CHAIN_SECTIONS) continue;
+                if (settled.has(step.joint)) continue;
+                settled.add(step.joint);
+
+                (incident.get(step.joint) || []).forEach(next => {
+                    if (next.lineId !== first.lineId || next.other === start) return;
+                    if (step.used.includes(next.sectionId)) return;
+                    const km = step.km + next.km;
+                    if (km > MAX_JUNCTION_CHAIN_KM) return;
+
+                    if (isStation(next.other)) {
+                        if (!platformLines.get(next.other)?.has(lineName)) return;
+                        if (existing.has(`${start}|${next.other}`)) return;
+                        const key = start < next.other ? `${start}|${next.other}` : `${next.other}|${start}`;
+                        const previous = best.get(key);
+                        if (previous && previous.km <= km) return;
+                        best.set(key, { from: start, to: next.other, km, lineId: first.lineId, sectionIds: [...step.used, next.sectionId] });
+                    } else if (!settled.has(next.other)) {
+                        queue.push({ km, joint: next.other, used: [...step.used, next.sectionId] });
+                    }
+                });
+            }
+        });
+    });
+
+    best.forEach(entry => {
+        if (!existing.has(`${entry.from}|${entry.to}`)) {
+            push(entry.from, entry.to, entry.km, entry.lineId, entry.sectionIds);
+        }
+        if (!existing.has(`${entry.to}|${entry.from}`)) {
+            push(entry.to, entry.from, entry.km, entry.lineId, entry.sectionIds);
+        }
+    });
+}
+
+/** `station_graph.json` 이 말하는 간선만 담는다. 보수는 하지 않는다. */
+function addStationGraphEdges(
+    railData: RailData,
+    sections: Map<number, Section>,
+    adj: Map<string, RouteEdge[]>
+) {
+    const stationGraph = railData.railroadNetwork?.station_graph as
+        | Record<string, Record<string, { section_ids?: (number | string)[]; available_lines?: (number | string)[] }>>
+        | undefined;
+    if (!stationGraph) return;
+
+    Object.entries(stationGraph).forEach(([from, neighbors]) => {
+        if (!adj.has(from)) adj.set(from, []);
+
+        Object.entries(neighbors || {}).forEach(([to, conn]) => {
+            if (!conn || from === to) return;
+
+            const sectionIds: number[] = [];
+            const lengthByLine = new Map<number, number>();
+            let distance = 0;
+
+            (conn.section_ids || []).forEach(raw => {
+                const sid = Number(raw);
+                const sec = sections.get(sid);
+                if (!sec) return;
+                sectionIds.push(sid);
+                const km = (sec.length || 0) / 1000;
+                distance += km;
+                if (sec.line_id >= 0) {
+                    lengthByLine.set(sec.line_id, (lengthByLine.get(sec.line_id) || 0) + km);
+                }
+            });
+
+            if (sectionIds.length === 0) return;
+            if (distance <= 0) distance = 0.4;
+
+            const lineIds = Array.from(lengthByLine.entries())
+                .sort((a, b) => b[1] - a[1])
+                .map(([lineId]) => lineId);
+
+            if (lineIds.length === 0) return;
+
+            const list = adj.get(from);
+            const edge: RouteEdge = { to, distance, lineIds, sectionIds, isWalk: false };
+            if (list) list.push(edge);
+            else adj.set(from, [edge]);
+        });
+    });
+}
+
+/** 미리 계산해 둔 보수 간선을 얹는다. 이미 있는 방향은 건드리지 않는다. */
+function applyGraphPatch(patch: GraphPatch, adj: Map<string, RouteEdge[]>) {
+    const existing = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => existing.add(`${from}|${edge.to}`)));
+
+    const add = (from: string, to: string, source: GraphPatchEdge) => {
+        if (!from || !to || from === to) return;
+        if (existing.has(`${from}|${to}`)) return;
+        existing.add(`${from}|${to}`);
+        const edge: RouteEdge = {
+            to,
+            distance: source.km > 0 ? source.km : 0.4,
+            lineIds: source.line_ids,
+            sectionIds: source.section_ids,
+            isWalk: false
+        };
+        const list = adj.get(from);
+        if (list) list.push(edge);
+        else adj.set(from, [edge]);
+    };
+
+    patch.edges.forEach(edge => {
+        add(edge.from, edge.to, edge);
+        add(edge.to, edge.from, edge);
+    });
+}
+
+/**
+ * 보수 규칙을 돌려 **새로 생긴 간선만** 뽑는다. `scripts/build_graph_patch.cjs`
+ * 의 입구이고, 검증에서는 실려 나가는 파일이 규칙과 같은지 맞대는 데 쓴다.
+ *
+ * 한 역쌍은 한 줄로만 적는다. 읽는 쪽이 양방향으로 넣는다.
+ */
+export function collectRepairEdges(railData: RailData): GraphPatchEdge[] {
+    const sections = new Map<number, Section>();
+    railData.sections?.sections?.forEach(s => sections.set(s.id, s));
+
+    const adj = new Map<string, RouteEdge[]>();
+    addStationGraphEdges(railData, sections, adj);
+
+    const seen = new Set<string>();
+    adj.forEach((edges, from) => edges.forEach(edge => seen.add(`${from}|${edge.to}`)));
+
+    const collected: GraphPatchEdge[] = [];
+    const harvest = (rule: string) => {
+        adj.forEach((edges, from) => {
+            edges.forEach(edge => {
+                if (edge.isWalk || seen.has(`${from}|${edge.to}`)) return;
+                seen.add(`${from}|${edge.to}`);
+                seen.add(`${edge.to}|${from}`);
+                collected.push({
+                    from,
+                    to: edge.to,
+                    km: Math.round(edge.distance * 1000) / 1000,
+                    line_ids: edge.lineIds,
+                    section_ids: edge.sectionIds,
+                    rule
+                });
+            });
+        });
+    };
+
+    addContractedJointEdges(railData, sections, adj);
+    harvest('joint-chain');
+    addJunctionEdges(railData, sections, adj);
+    harvest('junction');
+
+    return collected.sort((a, b) => (a.from === b.from ? a.to.localeCompare(b.to) : a.from.localeCompare(b.from)));
+}
+
+/**
  * Builds a station-level routing graph.
  *
  * Only `section_ids` are used to decide which lines serve an edge — the
@@ -321,48 +580,18 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
         else adj.set(from, [edge]);
     };
 
-    const stationGraph = railData.railroadNetwork?.station_graph as
-        | Record<string, Record<string, { section_ids?: (number | string)[]; available_lines?: (number | string)[] }>>
-        | undefined;
+    addStationGraphEdges(railData, sections, adj);
 
-    if (stationGraph) {
-        Object.entries(stationGraph).forEach(([from, neighbors]) => {
-            if (!adj.has(from)) adj.set(from, []);
-
-            Object.entries(neighbors || {}).forEach(([to, conn]) => {
-                if (!conn || from === to) return;
-
-                const sectionIds: number[] = [];
-                const lengthByLine = new Map<number, number>();
-                let distance = 0;
-
-                (conn.section_ids || []).forEach(raw => {
-                    const sid = Number(raw);
-                    const sec = sections.get(sid);
-                    if (!sec) return;
-                    sectionIds.push(sid);
-                    const km = (sec.length || 0) / 1000;
-                    distance += km;
-                    if (sec.line_id > 0) {
-                        lengthByLine.set(sec.line_id, (lengthByLine.get(sec.line_id) || 0) + km);
-                    }
-                });
-
-                if (sectionIds.length === 0) return;
-                if (distance <= 0) distance = 0.4;
-
-                const lineIds = Array.from(lengthByLine.entries())
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([lineId]) => lineId);
-
-                if (lineIds.length === 0) return;
-
-                pushEdge(from, { to, distance, lineIds, sectionIds, isWalk: false });
-            });
-        });
+    // 보수 간선은 **빌드 때 미리 계산해 둔 것**을 읽는다. 규칙을 런타임에 다시
+    // 돌리면 앱(`GraphRepair.kt`)의 같은 규칙과 갈라질 수 있다. 파일이 없을 때만
+    // 규칙으로 되돌아간다 — 그 결과가 곧 파일의 내용이므로 동작은 같다.
+    const patch = railData.graphPatch;
+    if (patch && patch.edges && patch.edges.length > 0) {
+        applyGraphPatch(patch, adj);
+    } else {
+        addContractedJointEdges(railData, sections, adj);
+        addJunctionEdges(railData, sections, adj);
     }
-
-    addContractedJointEdges(railData, sections, adj);
 
     const lineGroup = buildLineGroups(adj, railData);
 
@@ -374,6 +603,11 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
         if (list) list.push(st.id);
         else stationsByName.set(st.name, [st.id]);
     });
+
+    // 반경은 `rail/rules.json` 이 원본이다. 앱(`WalkTransfers`)도 같은 파일을 읽는다.
+    // 파일이 없으면 아래 기본값 — 지금 파일에 적힌 것과 같은 값이다.
+    const sameNameMaxKm = railData.rules?.walk_transfer?.same_name_max_km ?? MAX_WALK_TRANSFER_KM;
+    const nearbyMaxKm = railData.rules?.walk_transfer?.nearby_max_km ?? MAX_NEARBY_TRANSFER_KM;
 
     const walked = new Set<string>();
     const linkWalk = (a: Station, b: Station, km: number) => {
@@ -394,7 +628,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                 const b = railData.stations[ids[j]];
                 if (!a || !b) continue;
                 const km = haversineDistance([a.lon, a.lat], [b.lon, b.lat]);
-                if (km > MAX_WALK_TRANSFER_KM) continue;
+                if (km > sameNameMaxKm) continue;
                 linkWalk(a, b, km);
             }
         }
@@ -420,7 +654,7 @@ export function buildRouteGraph(railData: RailData): RouteGraph {
                 for (const other of bucket) {
                     if (other.id === st.id || other.name === st.name) continue;
                     const km = haversineDistance([st.lon, st.lat], [other.lon, other.lat]);
-                    if (km > MAX_NEARBY_TRANSFER_KM) continue;
+                    if (km > nearbyMaxKm) continue;
                     linkWalk(st, other, km);
                 }
             }

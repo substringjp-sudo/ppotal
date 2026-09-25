@@ -1,4 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, where, writeBatch, onSnapshot, setDoc, orderBy, updateDoc, deleteDoc } from 'firebase/firestore';
+import { localDateKey } from './date-utils';
 import { db, auth } from './firebase';
 // import { toast } from 'sonner'; // Removed for platform-agnostic shared logic
 import { Trip, TripDocument, TripSummary, DailyPlan, TripComment, TripRecordingSettings } from '../types/trip';
@@ -56,9 +57,9 @@ export const addTripEvent = async (tripId: string, day: number, event: Partial<T
  * 단일 여행의 메인 정보만 조회 (기본 설정 및 메타데이터)
  */
 export const createDefaultGuestTrip = (id: string = 'guest'): Trip => {
-    const today = new Date().toISOString().split('T')[0];
-    const d2 = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    const d3 = new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0];
+    const today = localDateKey();
+    const d2 = localDateKey(Date.now() + 86400000);
+    const d3 = localDateKey(Date.now() + 86400000 * 2);
     return {
         id,
         title: '나의 첫 여행 계획 (비로그인)',
@@ -634,14 +635,20 @@ export const createFastTrip = async (
     const tripId = generateId();
     
     const dailyTimeline: DailyPlan[] = [];
-    let curr = new Date(startDate);
-    const end = endDate ? new Date(endDate) : new Date(startDate);
     let day = 1;
     
     if (endDate) {
+        // 날짜 칸은 현지 달력으로 센다. new Date('2026-09-20') 은 UTC 자정으로
+        // 읽히는데 아래 getDate/setDate 는 현지 시각이다. 평소에는 두 방식이
+        // 같은 답을 내지만 서머타임 경계에서 갈라진다. 미국 동부 3/7~3/10 은
+        // 3/8 이 두 칸 생기고 3/10 칸이 없었다.
+        const [sy, sm, sd] = startDate.split('-').map(Number);
+        const [ey, em, ed] = endDate.split('-').map(Number);
+        const curr = new Date(sy, (sm || 1) - 1, sd || 1);
+        const end = new Date(ey, (em || 1) - 1, ed || 1);
         while (curr <= end) {
             dailyTimeline.push({
-                date: curr.toISOString().split('T')[0],
+                date: localDateKey(curr),
                 day: day++,
                 events: []
             });
@@ -700,8 +707,8 @@ export const reconstructTripFromHistory = async (
 
     if (allData.length === 0) throw new Error('재구성할 데이터가 없습니다.');
 
-    const startDate = new Date(allData[0].timestamp).toISOString().split('T')[0];
-    const endDate = new Date(allData[allData.length - 1].timestamp).toISOString().split('T')[0];
+    const startDate = localDateKey(allData[0].timestamp);
+    const endDate = localDateKey(allData[allData.length - 1].timestamp);
 
     const settings: TripRecordingSettings = {
         isRecordingEnabled: false,
@@ -719,7 +726,7 @@ export const reconstructTripFromHistory = async (
     // 단순화를 위해 일정 간격(예: 1시간) 혹은 의미 있는 지점(메모, 사진) 위주로 이벤트 생성
     // 여기서는 우선 사진과 메모가 있는 발자취를 우선적으로 이벤트화
     for (const item of allData) {
-        const itemDate = new Date(item.timestamp).toISOString().split('T')[0];
+        const itemDate = localDateKey(item.timestamp);
         const dayPlan = updatedTimeline.find(d => d.date === itemDate);
         
         if (dayPlan) {

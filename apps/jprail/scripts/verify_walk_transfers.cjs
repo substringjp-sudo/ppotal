@@ -71,7 +71,10 @@ for (const key of pairs) {
 }
 console.log(`  도보 짝 ${pairs.size}개 — 이름 같음 ${sameName}, 이름 다름 ${nearby}`);
 
-ok(sameName === 40, `이름이 같은 짝이 40개여야 한다 (실제 ${sameName})`);
+// 1.0km 까지만 잇는다(앱의 `WalkTransfers.SAME_NAME_MAX_KM` 과 같은 값).
+// 1.5km 였을 때는 42개였는데, 1.0~1.5km 사이의 石川·平野·御影·市場·長田 는
+// 갈아타는 곳이 아니라 이름이 겹친 남남에 가깝다.
+ok(sameName === 35, `이름이 같은 짝이 35개여야 한다 (실제 ${sameName})`);
 ok(nearby === 470, `이름이 다른 짝이 470개여야 한다 (실제 ${nearby})`);
 
 // 좌표가 같은데 이름만 달라 끊겨 있던 곳들.
