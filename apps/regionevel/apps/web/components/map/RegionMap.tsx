@@ -422,8 +422,21 @@ export function RegionMap() {
    * The country's shared borders as one line layer, when a bundle can supply
    * them. Present means the fills are drawn without strokes and this carries
    * every border exactly once; absent means each polygon strokes its own.
+   *
+   * `scope` is the view the mesh was fetched for and `rev` counts the fetches.
+   * react-leaflet reads a GeoJSON layer's `data` only when it mounts, so the
+   * layer has to be keyed on `rev` to pick up a new mesh at all, and drawn only
+   * while `scope` still matches the view — otherwise switching between the
+   * prefecture and city views left the previous level's borders on screen over
+   * the new level's fills.
    */
-  const [borderMesh, setBorderMesh] = useState<any | null>(null);
+  const [borderMesh, setBorderMesh] = useState<{
+    scope: string;
+    rev: number;
+    data: any;
+  } | null>(null);
+  const meshRevRef = useRef(0);
+  const meshScope = `${level}:${currentId || "root"}:${viewLevel}`;
   const hoverLabelRef = useRef<HTMLDivElement>(null);
 
 
@@ -481,7 +494,10 @@ export function RegionMap() {
               fetchCountryBorderMesh(iso3, viewLevel).catch(() => null),
             ]);
             features = f;
-            if (active) setBorderMesh(m);
+            if (active) {
+              meshRevRef.current += 1;
+              setBorderMesh(m ? { scope: meshScope, rev: meshRevRef.current, data: m } : null);
+            }
           } else {
             features = await fetchGeometries(currentId);
             if (active) setBorderMesh(null);
@@ -536,7 +552,7 @@ export function RegionMap() {
     return () => {
       active = false;
     };
-  }, [level, currentId, currentRegion, viewLevel, setRegions]);
+  }, [level, currentId, currentRegion, viewLevel, meshScope, setRegions]);
 
   const parentMap = useMemo(() => {
     const map = new Map<string | null, Region[]>();
@@ -666,6 +682,10 @@ export function RegionMap() {
   }, [currentId, allScores, visits, allRegions, regionsByIdMap]);
 
 
+  // The mesh only counts once it is the current view's. Until then the fills
+  // stroke themselves, so a view never renders with no borders at all.
+  const meshDrawn = borderMesh !== null && borderMesh.scope === meshScope;
+
   const getStyle = useCallback(
     (feature?: Feature): PathOptions => {
       const rawId = feature?.properties?.id || feature?.properties?.shapeID;
@@ -676,7 +696,7 @@ export function RegionMap() {
       // neighbours each stroking the border they share drew it twice, at double
       // width, and an unstroked fill also lets the neighbouring fill meet it
       // directly instead of each fading into the background.
-      const stroke = !borderMesh;
+      const stroke = !meshDrawn;
 
       if (isDisabled) {
         return {
@@ -701,7 +721,7 @@ export function RegionMap() {
         opacity: 0.8,
       };
     },
-    [scoreMap, disabledSet, borderMesh],
+    [scoreMap, disabledSet, meshDrawn],
   );
 
   useEffect(() => {
@@ -906,12 +926,12 @@ export function RegionMap() {
             onEachFeature={onEachFeature}
           />
         )}
-        {borderMesh && (
+        {borderMesh && meshDrawn && (
           /* Every shared border, once. `interactive: false` keeps it out of hit
              testing so hovering and clicking still reach the region underneath. */
           <GeoJSON
-            key={`borders-${level}-${currentId || "root"}-${viewLevel}`}
-            data={borderMesh}
+            key={`borders-${borderMesh.scope}-r${borderMesh.rev}`}
+            data={borderMesh.data}
             interactive={false}
             style={{
               color: "#94a3b8",
