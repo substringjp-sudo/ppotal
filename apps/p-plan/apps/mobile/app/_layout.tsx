@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 import { geodataEngine, FirestoreGeodataProvider, db } from '@pplaner/shared';
 import { SQLiteGeodataProvider } from '../src/lib/sqlite-geodata-provider';
 import { initDatabase } from '../src/lib/database';
-import { defineLocationTask, defineLifeLogTask, startAlwaysTracking } from '../src/services/LocationWorker';
+import { defineLocationTask, defineLifeLogTask, startAlwaysTracking, reconcileTripTracking } from '../src/services/LocationWorker';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -34,6 +34,10 @@ export default function RootLayout() {
         if (Platform.OS !== 'web') {
           // 비동기로 실행하여 부팅 속도에 영향을 주지 않음
           startAlwaysTracking().catch(err => console.error('Failed to start life-log tracking', err));
+
+          // 진행 중이던 여행 기록을 다시 붙인다. 앱이 내려갔다 올라온 뒤에도
+          // 화면이 "기록 중지됨"으로 보이지 않게 하는 것이 목적이다.
+          reconcileTripTracking().catch(err => console.error('Failed to reconcile trip tracking', err));
         }
 
         // 3. 플랫폼별 지리 정보 프로바이더 설정
