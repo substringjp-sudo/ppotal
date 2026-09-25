@@ -8,7 +8,7 @@ import L from "leaflet";
 import { VISIT_CATEGORY_ORDER, type Region, type RegionScore, type RegionVisit, type VisitCategory } from "@regionevel/types";
 import { getRegionScore, getMapColor, padId } from "@regionevel/utils";
 import { useVisitStore } from "@/store/visitStore";
-import { fetchChildren, fetchGeometries, fetchCountryGeometries, getAncestors } from "@/lib/regions";
+import { fetchChildren, fetchGeometries, fetchCountryGeometries, fetchCountryBorderMesh, getAncestors } from "@/lib/regions";
 import { findRegionForPoint } from "@/lib/geo";
 import { useViewportFeatures } from "@/lib/viewportFeatures";
 import { useIsPhone } from "@/lib/useIsPhone";
@@ -418,6 +418,12 @@ export function RegionMap() {
   } | null>(null);
 
   const geoJsonRef = useRef<LeafletGeoJSON | null>(null);
+  /**
+   * The country's shared borders as one line layer, when a bundle can supply
+   * them. Present means the fills are drawn without strokes and this carries
+   * every border exactly once; absent means each polygon strokes its own.
+   */
+  const [borderMesh, setBorderMesh] = useState<any | null>(null);
   const hoverLabelRef = useRef<HTMLDivElement>(null);
 
 
@@ -464,15 +470,24 @@ export function RegionMap() {
         
         // 1. Determine which geometries to fetch
         if (level === "world") {
+          setBorderMesh(null);
           features = await fetchGeometries(null);
         } else if (level === "country" && currentId) {
           const iso3 = currentRegion?.iso3;
           if (iso3) {
-            features = await fetchCountryGeometries(iso3, viewLevel);
+            // The mesh is optional, so it must not be able to fail the fills.
+            const [f, m] = await Promise.all([
+              fetchCountryGeometries(iso3, viewLevel),
+              fetchCountryBorderMesh(iso3, viewLevel).catch(() => null),
+            ]);
+            features = f;
+            if (active) setBorderMesh(m);
           } else {
             features = await fetchGeometries(currentId);
+            if (active) setBorderMesh(null);
           }
         } else if (currentId) {
+          setBorderMesh(null);
           features = await fetchGeometries(currentId);
         }
 
@@ -657,10 +672,17 @@ export function RegionMap() {
       const id = padId(rawId);
       const isDisabled = disabledSet.has(id);
 
+      // With a mesh to draw the borders, the fills stop stroking their own. Two
+      // neighbours each stroking the border they share drew it twice, at double
+      // width, and an unstroked fill also lets the neighbouring fill meet it
+      // directly instead of each fading into the background.
+      const stroke = !borderMesh;
+
       if (isDisabled) {
         return {
           fillColor: "#e2e8f0",
           fillOpacity: 0.08,
+          stroke,
           color: "#cbd5e1",
           weight: 0.5,
           opacity: 0.20,
@@ -673,12 +695,13 @@ export function RegionMap() {
       return {
         fillColor,
         fillOpacity: 0.65,
+        stroke,
         color: "#94a3b8",
         weight: 0.8,
         opacity: 0.8,
       };
     },
-    [scoreMap, disabledSet],
+    [scoreMap, disabledSet, borderMesh],
   );
 
   useEffect(() => {
@@ -881,6 +904,23 @@ export function RegionMap() {
             data={visibleData}
             style={getStyle}
             onEachFeature={onEachFeature}
+          />
+        )}
+        {borderMesh && (
+          /* Every shared border, once. `interactive: false` keeps it out of hit
+             testing so hovering and clicking still reach the region underneath. */
+          <GeoJSON
+            key={`borders-${level}-${currentId || "root"}-${viewLevel}`}
+            data={borderMesh}
+            interactive={false}
+            style={{
+              color: "#94a3b8",
+              weight: 0.8,
+              opacity: 0.8,
+              fill: false,
+              lineJoin: "round",
+              lineCap: "round",
+            }}
           />
         )}
         <MapEvents onMapClick={handleMapClick} onBoundsChange={handleBoundsChange} />

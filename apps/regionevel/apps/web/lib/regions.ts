@@ -310,6 +310,66 @@ export async function fetchGeometries(parentId: string | null): Promise<any[]> {
   return request;
 }
 
+/**
+ * The internal border network of a country's bundle, as one MultiLineString.
+ *
+ * Adjacent polygons drawn separately on a canvas leave a hairline between them
+ * even when their shared edge is coordinate-identical: each one's anti-aliased
+ * edge pixels blend with the background rather than with its neighbour, and a
+ * translucent fill lets that show through. Stroking each polygon does not fix
+ * it — it makes the seam worse, because both neighbours draw the same border and
+ * the line comes out double width.
+ *
+ * A topojson bundle stores each shared border once, as an arc, so `mesh` can
+ * hand back the whole network with every border in it exactly once. Drawn as a
+ * single layer over unstroked fills, borders are one line wide and the fills
+ * meet each other directly.
+ *
+ * Returns null when the country has no bundle, which is the signal to fall back
+ * to stroking each polygon.
+ */
+export async function fetchCountryBorderMesh(
+  iso3: string,
+  admLevel: number,
+): Promise<any | null> {
+  const cacheKey = `mesh:${iso3}:${admLevel}`;
+  const cached = geometryCache.get(cacheKey);
+  if (cached) return cached;
+
+  const storageKey = `${GEOMETRY_CACHE_PREFIX}${cacheKey}`;
+
+  const request = (async () => {
+    const local = await getCached<any>(storageKey);
+    if (local) return local;
+
+    try {
+      const store = await getStore();
+      const bundle = await store.getGeometryBundle(iso3, admLevel);
+      if (!bundle?.data) return null;
+
+      const topo = typeof bundle.data === "string" ? JSON.parse(bundle.data) : bundle.data;
+      const key = Object.keys(topo?.objects ?? {})[0];
+      if (!key) return null;
+
+      const { mesh } = await import("topojson-client");
+      // The two-argument form gives every arc; passing a filter would drop the
+      // country's outline, which the map still wants drawn.
+      const lines = mesh(topo, topo.objects[key]);
+      if (!lines?.coordinates?.length) return null;
+
+      await setCached(storageKey, lines);
+      return lines;
+    } catch (e) {
+      console.error(`Failed to build a border mesh for ${iso3}/${admLevel}`, e);
+      geometryCache.delete(cacheKey);
+      return null;
+    }
+  })();
+
+  geometryCache.set(cacheKey, request);
+  return request;
+}
+
 export async function fetchCountryGeometries(iso3: string, admLevel: number): Promise<any[]> {
   const cacheKey = `country:${iso3}:${admLevel}`;
   const cached = geometryCache.get(cacheKey);
