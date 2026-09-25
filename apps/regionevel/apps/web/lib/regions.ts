@@ -76,7 +76,10 @@ export async function fetchChildren(parentId: string | null): Promise<Region[]> 
 // seeding new cities left every returning viewer looking at the pre-seed array
 // and concluding the holes were still there. A bump drops the old entries.
 // v2: the Japanese city seed of 2026-09-24.
-const CACHE_VERSION = "v2";
+// v3: the rebuilt JPN_ADM1 bundle. Entries never expire on their own, so a
+// viewer holding v2 would keep the old prefecture outlines — the coarse ones
+// that dropped the islands — indefinitely.
+const CACHE_VERSION = "v3";
 const ALL_REGIONS_CACHE_KEY = `regionevel_all_regions_${CACHE_VERSION}`;
 const GEOMETRY_CACHE_PREFIX = `regionevel_geom_${CACHE_VERSION}_`;
 

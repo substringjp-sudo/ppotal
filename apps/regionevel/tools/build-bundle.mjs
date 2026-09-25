@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Rebuild a country's ADM2 topojson bundle from the live geometry documents.
+ * Rebuild a country's topojson bundle from the live geometry documents.
  *
  * Why a bundle at all, and why topojson: the city map reads
  * `regionevel_geometries_bundles/<ISO3>_ADM<level>` and merges it with the live
@@ -23,6 +23,12 @@
  *   node tools/build-bundle.mjs --iso3 JPN --level 2 --out reports/bundle-JPN
  *   node tools/build-bundle.mjs --iso3 JPN --level 2 --out reports/bundle-JPN --keep 0.5
  *   node tools/build-bundle.mjs --iso3 JPN --level 2 --out reports/bundle-JPN --quantize 1e5
+ *   node tools/build-bundle.mjs --iso3 JPN --level 1 --out reports/bundle-JPN --keep 1
+ *
+ * Each level is its own bundle and its own topology. Both have to exist and
+ * both have to be current: the map draws one level's fills together with that
+ * same level's borders, so a stale bundle at either level shows up as borders
+ * that do not follow the shapes they belong to.
  */
 
 import fs from "node:fs";
@@ -80,17 +86,31 @@ async function countryRecordId(iso3) {
   return rows[0].document.name.split("/").pop();
 }
 
-/** Every city geometry the app's own country-level read would return. */
-async function readGeometries(countryId, levelName) {
+/**
+ * Every geometry the app's own country-level read returns for this level.
+ *
+ * The filter has to be the app's own, not one that merely looks equivalent.
+ * `getGeometriesByCountry` finds cities by `properties.countryId` plus
+ * `properties.level`, but prefectures by their root-level `parentId` — and the
+ * prefecture documents carry no `properties.countryId` at all, so reading level
+ * 1 the level-2 way returns nothing and the bundle would be built from an empty
+ * set.
+ */
+const levelFilter = (countryId, level, levelName) =>
+  level === 1
+    ? { fieldFilter: { field: { fieldPath: "parentId" }, op: "EQUAL", value: { stringValue: countryId } } }
+    : { compositeFilter: { op: "AND", filters: [
+        { fieldFilter: { field: { fieldPath: "properties.countryId" }, op: "EQUAL", value: { stringValue: countryId } } },
+        { fieldFilter: { field: { fieldPath: "properties.level" }, op: "EQUAL", value: { stringValue: levelName } } },
+      ]}};
+
+async function readGeometries(countryId, level, levelName) {
   const out = [];
   let cursor = null;
   for (;;) {
     const rows = await runQuery({ structuredQuery: {
       from: [{ collectionId: "regionevel_geometries" }],
-      where: { compositeFilter: { op: "AND", filters: [
-        { fieldFilter: { field: { fieldPath: "properties.countryId" }, op: "EQUAL", value: { stringValue: countryId } } },
-        { fieldFilter: { field: { fieldPath: "properties.level" }, op: "EQUAL", value: { stringValue: levelName } } },
-      ]}},
+      where: levelFilter(countryId, level, levelName),
       orderBy: [{ field: { fieldPath: "__name__" }, direction: "ASCENDING" }],
       limit: 200,
       ...(cursor ? { startAt: { values: [{ referenceValue: cursor }], before: false } } : {}),
@@ -134,10 +154,14 @@ async function main() {
     console.error(`--level must be one of ${Object.keys(LEVEL_NAME).join(", ")}`);
     process.exit(1);
   }
+  if (level === 0) {
+    console.error("--level 0 is one shape per country; there are no shared borders for a topology to collapse.");
+    process.exit(1);
+  }
 
   const countryId = await countryRecordId(iso3);
   console.log(`${iso3} is region ${countryId}; reading ${levelName} geometries…`);
-  const features = await readGeometries(countryId, levelName);
+  const features = await readGeometries(countryId, level, levelName);
   if (!features.length) {
     console.error("No geometries matched. Nothing to build.");
     process.exit(1);
