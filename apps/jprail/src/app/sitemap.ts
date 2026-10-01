@@ -29,6 +29,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.5,
         },
         {
+            url: 'https://jprail.pplaner.com/privacy/app/',
+            lastModified: new Date(),
+            changeFrequency: 'yearly',
+            priority: 0.3,
+        },
+        {
             url: 'https://jprail.pplaner.com/directory',
             lastModified: new Date(),
             changeFrequency: 'weekly',
