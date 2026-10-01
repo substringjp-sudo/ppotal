@@ -47,6 +47,21 @@ export default function PrivacyPage() {
 
                 <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '20px' }}>Privacy Policy</h1>
 
+                {/* 이 페이지는 웹사이트의 방침이다. 앱은 아무것도 모으지 않아 방침이 따로 있다(Play 등록 정보의 주소). */}
+                <p style={{
+                    marginBottom: '30px',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    backgroundColor: '#f1f5f9',
+                    fontSize: '14px',
+                    lineHeight: '1.6'
+                }}>
+                    This page covers the website. The Android app <strong>JP Rail</strong> has its own policy:{' '}
+                    <Link href="/privacy/app/" style={{ color: '#3498db', fontWeight: 'bold' }}>/privacy/app</Link>
+                    <br />
+                    Android アプリ「JP Rail」のプライバシーポリシー · Android 앱 「JP Rail」 개인정보처리방침
+                </p>
+
                 <section style={{ marginBottom: '30px', lineHeight: '1.6' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>개인정보 처리방침 (Korean)</h2>
                     <p>JapanRailNote는 사용자의 개인정보를 소중하게 생각합니다.</p>
@@ -59,7 +74,7 @@ export default function PrivacyPage() {
 
                 <section style={{ marginBottom: '30px', lineHeight: '1.6' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>プライバシーポリシー (Japanese)</h2>
-                    <p>JapanRailNoteは、利用者の個人情報を保護하기 위해 최선을 다합니다.</p>
+                    <p>JapanRailNoteは、利用者の個人情報の保護に努めます。</p>
                     <ul style={{ paddingLeft: '20px' }}>
                         <li><strong>Google アナリティクス:</strong> 当サイトでは、サイトの利用状況を把握するためにGoogle アナリティクスを使用しています。</li>
                         <li><strong>Google アドセンス:</strong> 当サイトでは、第三者配信事業者（Googleなど）の広告配信サービス「Googleアドセンス」を利用しています。広告クッキーを使用することにより、Googleやそのパートナーはユーザーが当サイトや他のサイトにアクセスした情報に基づいて適切な広告を表示します。ユーザーは、<a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" style={{ color: '#3498db' }}>Googleの広告設定</a>または<a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" style={{ color: '#3498db' }}>aboutads.info</a>にアクセスし、パーソナライズ広告を無効にすることができます。</li>
