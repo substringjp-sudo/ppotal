@@ -221,6 +221,7 @@ const SEOContent = ({ data }: { data: SEOData | null }) => {
                     fontSize: '14px'
                 }}>
                     <Link href="/" style={{ color: '#3498db', textDecoration: 'none' }}>Home / ホーム / 홈</Link>
+                    <Link href="/app" style={{ color: '#3498db', textDecoration: 'none' }}>Mobile App / モバイルアプリ / 모바일 앱</Link>
                     <Link href="/credits" style={{ color: '#3498db', textDecoration: 'none' }}>Credits / クレジット / 크레딧</Link>
                     <Link href="/privacy" style={{ color: '#3498db', textDecoration: 'none' }}>Privacy Policy / プライバシー / 개인정보처리방침</Link>
                     <span style={{ color: '#555' }}>|</span>

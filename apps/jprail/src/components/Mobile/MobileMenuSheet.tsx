@@ -6,7 +6,7 @@ import {
     HelpIcon, ListIcon, CompassIcon, ShareIcon,
     InfoIcon, LanguageIcon, SyncIcon, LogOutIcon, LogInIcon, CloseIcon
 } from '@ppotal/ui';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Smartphone } from 'lucide-react';
 import { LanguageSelector } from '../LanguageSelector';
 import { useI18n } from '../../lib/i18n-context';
 import { Z } from '../../lib/layers';
@@ -26,9 +26,9 @@ export interface MobileMenuSheetProps {
 }
 
 const T = {
-    ko: { menu: '메뉴', tips: '소개', feedback: '피드백', directory: '노선 목록', about: 'PPLANER 소개', exportMap: '공유 카드 만들기', info: '앱 정보', language: '언어', account: '계정', login: '로그인', logout: '로그아웃', sync: 'Regionevel에서 가져오기', loggedInAs: '로그인 계정' },
-    ja: { menu: 'メニュー', tips: '紹介', feedback: 'フィードバック', directory: '路線一覧', about: 'PPLANER紹介', exportMap: '共有カード作成', info: 'アプリ情報', language: '言語', account: 'アカウント', login: 'ログイン', logout: 'ログアウト', sync: 'Regionevelから取得', loggedInAs: 'ログイン中' },
-    en: { menu: 'Menu', tips: 'About', feedback: 'Feedback', directory: 'Lines', about: 'About PPLANER', exportMap: 'Create Share Card', info: 'About this app', language: 'Language', account: 'Account', login: 'Login', logout: 'Logout', sync: 'Sync with Regionevel', loggedInAs: 'Logged in as' }
+    ko: { menu: '메뉴', app: '모바일 앱 (Android)', tips: '소개', feedback: '피드백', directory: '노선 목록', about: 'PPLANER 소개', exportMap: '공유 카드 만들기', info: '앱 정보', language: '언어', account: '계정', login: '로그인', logout: '로그아웃', sync: 'Regionevel에서 가져오기', loggedInAs: '로그인 계정' },
+    ja: { menu: 'メニュー', app: 'モバイルアプリ', tips: '紹介', feedback: 'フィードバック', directory: '路線一覧', about: 'PPLANER紹介', exportMap: '共有カード作成', info: 'アプリ情報', language: '言語', account: 'アカウント', login: 'ログイン', logout: 'ログアウト', sync: 'Regionevelから取得', loggedInAs: 'ログイン中' },
+    en: { menu: 'Menu', app: 'Mobile App', tips: 'About', feedback: 'Feedback', directory: 'Lines', about: 'About PPLANER', exportMap: 'Create Share Card', info: 'About this app', language: 'Language', account: 'Account', login: 'Login', logout: 'Logout', sync: 'Sync with Regionevel', loggedInAs: 'Logged in as' }
 };
 
 interface RowProps {
@@ -111,6 +111,7 @@ const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({
 
                 <div className="overflow-y-auto overscroll-contain sheet-scroll">
                     <nav className="py-1">
+                        <Row icon={Smartphone} label={t.app} href="/app" />
                         <Row icon={HelpIcon} label={t.tips} onClick={act(onHowTo)} />
                         <Row icon={MessageSquare} label={t.feedback} onClick={act(onFeedback)} />
                         <Row icon={ListIcon} label={t.directory} href="/directory" />

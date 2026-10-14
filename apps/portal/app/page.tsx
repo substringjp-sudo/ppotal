@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useAuth, AuthModal, OnboardingModal } from '@ppotal/ui';
 import { updateOnboardingStatus } from '@ppotal/firebase';
-import { Sparkles, Zap, Map as MapIcon, ShieldCheck } from 'lucide-react';
+import { Sparkles, Zap, Map as MapIcon, ShieldCheck, Settings, Layers } from 'lucide-react';
 import './globals.css';
 
 interface FeatureSlide {
@@ -332,9 +333,12 @@ export default function Home() {
               <div className="loading-spinner"></div>
             ) : user ? (
               <div className="user-profile">
-                <div className="user-info">
+                <Link href="/account" className="user-info hover:opacity-80 transition-opacity" title="통합 계정 관리">
                   <span className="user-name">{profile?.displayName || user.email?.split('@')[0]}</span>
-                </div>
+                </Link>
+                <Link href="/account" className="auth-btn account-btn" style={{ background: 'rgba(255, 255, 255, 0.08)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                  계정 관리
+                </Link>
                 <button onClick={() => logout()} className="auth-btn logout">Logout</button>
               </div>
             ) : (

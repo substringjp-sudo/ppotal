@@ -45,6 +45,24 @@ export default function PrivacyPage() {
                     <span>←</span> Back to Map
                 </Link>
 
+                <div style={{
+                    marginBottom: "24px",
+                    padding: "16px 20px",
+                    borderRadius: "16px",
+                    backgroundColor: "#eef2ff",
+                    border: "1px solid #c7d2fe",
+                    fontSize: "14px",
+                    lineHeight: "1.5"
+                }}>
+                    <strong style={{ color: "#312e81" }}>📱 Android Mobile App Privacy Policy:</strong>
+                    <div style={{ color: "#3730a3", marginTop: "4px" }}>
+                        For the JapanRailNote Mobile App (Google Cloud Sync & Local Timeline), please see the{" "}
+                        <Link href="/privacy/app" style={{ color: "#2563eb", fontWeight: "bold", textDecoration: "underline" }}>
+                            Mobile App Privacy Policy here
+                        </Link>.
+                    </div>
+                </div>
+
                 <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '20px' }}>Privacy Policy</h1>
 
                 <section style={{ marginBottom: '30px', lineHeight: '1.6' }}>

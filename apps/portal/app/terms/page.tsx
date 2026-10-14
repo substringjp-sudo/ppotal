@@ -1,6 +1,7 @@
 import React from 'react';
+import Link from 'next/link';
 import { constructMetadata } from '@ppotal/ui';
-import { FileText, Shield, CheckCircle2 } from 'lucide-react';
+import { FileText, Shield, CheckCircle2, Layers, AlertTriangle, ExternalLink } from 'lucide-react';
 
 export const metadata = constructMetadata({
   title: '서비스 이용약관 - PPLANER Terms of Service',
@@ -64,6 +65,30 @@ export default function TermsPage() {
           <p>
             회사는 천재지변, 현지 대중교통 운행 중단 또는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.
           </p>
+        </section>
+
+        <section className="space-y-3 p-6 rounded-2xl bg-white/5 border border-white/10">
+          <h2 className="text-xl font-bold text-white font-heading flex items-center gap-2">
+            <Layers size={18} className="text-sky-400" />
+            제6조 (통합 계정의 운영 및 계정 삭제·탈퇴)
+          </h2>
+          <p className="text-slate-300">
+            회사는 회원의 편리한 이용을 위해 단일 계정으로 모든 패밀리 서비스(JP Rail, Regionevel, P-Plan, Portal 등)를 이용할 수 있는 통합 계정 체계를 운영합니다.
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-slate-300">
+            <li>회원은 언제든지 통합 계정 관리 페이지를 통해 회원 탈퇴(계정 삭제)를 신청할 수 있습니다.</li>
+            <li>
+              <strong>데이터 일괄 파기 고지:</strong> 회원이 통합 계정을 삭제하는 경우, <strong>연동된 모든 서비스(JP Rail 철도 완승 내역, Regionevel 방문 지도 및 메모, P-Plan 여행 계획)의 데이터가 동시에 영구 파기</strong>되며 복구되지 않습니다.
+            </li>
+          </ul>
+          <div className="pt-2">
+            <Link
+              href="/account/policy"
+              className="inline-flex items-center gap-1.5 text-sky-400 font-bold hover:underline text-xs"
+            >
+              PPOTAL 통합 계정 정책 및 운영 방침 전문 보기 <ExternalLink size={13} />
+            </Link>
+          </div>
         </section>
 
       </div>

@@ -184,6 +184,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isOwner(userId);
       allow update: if isOwner(userId) || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats', 'updatedAt', 'jprailStats', 'regionevelStats']));
+      allow delete: if isOwner(userId);
 
       // Sub-collections (jprail visits, p-plan data, etc.)
       match /{allPaths=**} {

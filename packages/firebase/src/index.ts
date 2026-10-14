@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getAuth, Auth, onAuthStateChanged, User, signOut } from "firebase/auth";
-import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getAuth, Auth, onAuthStateChanged, User, signOut, deleteUser, updateProfile } from "firebase/auth";
+import { initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, writeBatch } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig: Record<string, string> = {
@@ -96,6 +96,58 @@ export const updateOnboardingStatus = async (uid: string, appName: keyof UserPro
     }, { merge: true });
   }
 };
+
+export const updateUserDisplayName = async (user: User, displayName: string): Promise<void> => {
+  await updateProfile(user, { displayName });
+  const userRef = doc(db, "users", user.uid);
+  await setDoc(userRef, { displayName }, { merge: true });
+};
+
+const deleteCollectionInBatches = async (collRef: any): Promise<void> => {
+  try {
+    const snap = await getDocs(collRef);
+    if (snap.empty) return;
+
+    const docs = snap.docs;
+    const chunkSize = 400;
+    for (let i = 0; i < docs.length; i += chunkSize) {
+      const batch = writeBatch(db);
+      const chunk = docs.slice(i, i + chunkSize);
+      chunk.forEach((d) => batch.delete(d.ref));
+      await batch.commit();
+    }
+  } catch (err) {
+    console.warn(`[Auth] Failed to batch delete collection:`, err);
+  }
+};
+
+export const deleteUserProfileAndAuth = async (user: User): Promise<void> => {
+  const uid = user.uid;
+
+  // 1. Regionevel: users/{uid}/visits 서브컬렉션 전체 일괄 삭제
+  const visitsRef = collection(db, "users", uid, "visits");
+  await deleteCollectionInBatches(visitsRef);
+
+  // 2. JP Rail: users/{uid}/trips 서브컬렉션 전체 일괄 삭제
+  const tripsRef = collection(db, "users", uid, "trips");
+  await deleteCollectionInBatches(tripsRef);
+
+  // 3. users/{uid} 통합 프로필 문서 삭제
+  try {
+    await deleteDoc(doc(db, "users", uid));
+  } catch (err) {
+    console.warn("[Auth] Failed to delete user profile document:", err);
+  }
+
+  // 4. Firebase Auth 계정 최종 영구 삭제
+  await deleteUser(user);
+};
+
+export const PORTAL_BASE_URL = typeof window !== "undefined" && window.location.hostname === "localhost"
+  ? "http://localhost:3000"
+  : "https://pplaner.com";
+
+export const PORTAL_ACCOUNT_URL = `${PORTAL_BASE_URL}/account`;
 
 // ----------------------------------------------------
 // JPRAIL - REGIONEVEL City ID Mapping Helpers

@@ -1,6 +1,7 @@
 import React from 'react';
+import Link from 'next/link';
 import { constructMetadata } from '@ppotal/ui';
-import { ShieldCheck, Lock, Eye, ExternalLink, Cookie } from 'lucide-react';
+import { ShieldCheck, Lock, Eye, ExternalLink, Cookie, Layers } from 'lucide-react';
 
 export const metadata = constructMetadata({
   title: '개인정보처리방침 - PPLANER Privacy Policy',
@@ -76,6 +77,27 @@ export default function PrivacyPage() {
           <p>
             이용자는 언제든지 등록되어 있는 자신의 개인정보를 조회하거나 수정할 수 있으며 회원 탈퇴를 요청할 수 있습니다. 개인정보 관리책임자에게 이메일(contact@pplaner.com)로 연락하시면 지체 없이 조치하겠습니다.
           </p>
+        </section>
+
+        <section className="space-y-3 p-6 rounded-2xl bg-white/5 border border-white/10">
+          <h2 className="text-xl font-bold text-white font-heading flex items-center gap-2">
+            <Layers size={18} className="text-sky-400" />
+            제5조 (통합 계정 회원 식별 및 연동 서비스 간 데이터 처리)
+          </h2>
+          <p className="text-slate-300">
+            회사는 PPOTAL 통합 계정(SSO) 운영을 위해 고유 사용자 식별자(UID)를 기반으로 패밀리 서비스(JP Rail, Regionevel, P-Plan) 간 회원 상태를 확인하고 여행 데이터를 연동합니다.
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-slate-300">
+            <li>회원 탈퇴 시 통합 계정에 연결된 모든 패밀리 서비스의 데이터는 지체 없이 일괄 파기됩니다.</li>
+          </ul>
+          <div className="pt-2">
+            <Link
+              href="/account/policy"
+              className="inline-flex items-center gap-1.5 text-sky-400 font-bold hover:underline text-xs"
+            >
+              PPOTAL 통합 계정 정책 및 운영 방침 전문 확인 <ExternalLink size={13} />
+            </Link>
+          </div>
         </section>
 
       </div>

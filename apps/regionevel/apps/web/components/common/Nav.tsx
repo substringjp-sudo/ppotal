@@ -6,6 +6,7 @@ import {
   useAuth, AuthModal, AppHeader, Button,
   MapIcon, TrophyIcon, LogOutIcon, SyncIcon, CheckCircleIcon, InfoIcon, DrawIcon, TimelineIcon, SearchIcon, MenuIcon, ShareIcon
 } from "@ppotal/ui";
+import { PORTAL_ACCOUNT_URL } from "@ppotal/firebase";
 import { RegionSearch } from "@/components/common/RegionSearch";
 import { TimelineImportModal } from "@/components/common/TimelineImportModal";
 import { MobileSearchSheet } from "@/components/mobile/MobileSearchSheet";
@@ -175,6 +176,19 @@ export function Nav() {
                   </p>
                 </div>
                 <div className="py-1 border-b border-slate-100 dark:border-slate-800">
+                  <a
+                    href={PORTAL_ACCOUNT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between group cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sky-500 font-black text-[10px] px-1 py-0.2 rounded bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800">통합</span>
+                      계정 관리
+                    </span>
+                    <span className="text-[10px] text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">↗</span>
+                  </a>
                   <button
                     onClick={() => {
                       handleSyncWithJprail();

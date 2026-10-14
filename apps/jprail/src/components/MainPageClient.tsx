@@ -15,12 +15,12 @@ import { useMapData } from '../hooks/useMapData';
 import { Trip } from '../types/trip';
 import { LineSegment, StationNode } from '../lib/graphUtils';
 import { useAuth, AppHeader, Button, MapWorkspaceShell } from '@ppotal/ui';
-import { Train, Map as MapIcon, Share2, HelpCircle, MessageSquare, List, Compass, Download, Search, Menu, LogOut, RefreshCw, Info } from 'lucide-react';
+import { Train, Map as MapIcon, Smartphone, Share2, HelpCircle, MessageSquare, List, Compass, Download, Search, Menu, LogOut, RefreshCw, Info } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { I18nProvider, useI18n } from '../lib/i18n-context';
 import { collection, query, getDocs, getDoc, setDoc, deleteDoc, doc, writeBatch, onSnapshot } from 'firebase/firestore';
 import { getStationInfoRemote } from '../lib/rail-api';
-import { getRegionevelShapeId, getJprailCityId } from '@ppotal/firebase';
+import { getRegionevelShapeId, getJprailCityId, PORTAL_ACCOUNT_URL } from '@ppotal/firebase';
 import { loadLocalTrips, saveLocalTrips } from '../lib/storage/tripStorage';
 
 
@@ -1032,6 +1032,13 @@ const MainPageClient = () => {
                                     {language === 'ko' ? "피드백" : language === 'ja' ? "フィードバック" : "Feedback"}
                                 </button>
                                 <Link
+                                    href="/app"
+                                    className="text-sm font-bold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5"
+                                >
+                                    <Smartphone className="w-4 h-4 text-blue-500" />
+                                    {language === "ko" ? "모바일 앱" : language === "ja" ? "アプリ" : "App"}
+                                </Link>
+                                <Link
                                     href="/directory"
                                     className="text-sm font-bold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5"
                                 >
@@ -1078,6 +1085,21 @@ const MainPageClient = () => {
                                                     </p>
                                                 </div>
                                                 <div className="py-1 border-b border-slate-100 dark:border-slate-800">
+                                                    <a
+                                                        href={PORTAL_ACCOUNT_URL}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={() => setIsProfileDropdownOpen(false)}
+                                                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between group cursor-pointer"
+                                                    >
+                                                        <span className="flex items-center gap-1.5">
+                                                            <span className="text-sky-500 font-black text-[10px] px-1 py-0.2 rounded bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800">
+                                                                {language === 'ko' ? "통합" : language === 'ja' ? "統合" : "Unified"}
+                                                            </span>
+                                                            <span>{language === 'ko' ? "통합 계정 관리" : language === 'ja' ? "アカウント管理" : "Manage Account"}</span>
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">↗</span>
+                                                    </a>
                                                     <button
                                                         onClick={() => {
                                                             syncWithRegionevel();

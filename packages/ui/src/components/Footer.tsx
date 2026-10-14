@@ -115,6 +115,12 @@ export const Footer = () => {
           </h4>
           <ul className="space-y-2.5 text-xs">
             <li>
+              <a href="/account" className="text-slate-400 hover:text-sky-400 transition-colors">통합 계정 관리 (Account)</a>
+            </li>
+            <li>
+              <a href="/account/policy" className="text-slate-400 hover:text-sky-400 transition-colors">통합 계정 운영 방침 (Account Policy)</a>
+            </li>
+            <li>
               <a href="/about" className="text-slate-400 hover:text-sky-400 transition-colors">서비스 소개 (About Us)</a>
             </li>
             <li>
@@ -135,6 +141,10 @@ export const Footer = () => {
       <div className="max-w-6xl mx-auto border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
         <p>© 2026 PPLANER. All rights reserved.</p>
         <div className="flex items-center gap-4">
+          <a href="/account" className="hover:text-slate-300 transition-colors">통합 계정 관리</a>
+          <span>·</span>
+          <a href="/account/policy" className="hover:text-slate-300 transition-colors">통합 계정 방침</a>
+          <span>·</span>
           <a href="/privacy" className="hover:text-slate-300 transition-colors">개인정보처리방침</a>
           <span>·</span>
           <a href="/terms" className="hover:text-slate-300 transition-colors">이용약관</a>

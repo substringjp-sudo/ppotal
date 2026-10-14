@@ -9,8 +9,8 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
-import { auth } from '@ppotal/firebase';
-import { Mail, Lock, User as UserIcon, ArrowRight, Loader2 } from 'lucide-react';
+import { auth, PORTAL_BASE_URL } from '@ppotal/firebase';
+import { Mail, Lock, User as UserIcon, ArrowRight, Loader2, Layers, Train, Map, Sparkles, AlertCircle, ExternalLink } from 'lucide-react';
 import { CloseIcon } from './icons';
 
 interface AuthModalProps {
@@ -25,6 +25,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [showUnifiedDetails, setShowUnifiedDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -157,6 +158,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
         </button>
 
         <div className="auth-modal-header">
+          <div className="auth-modal-badge">
+            <Layers size={13} />
+            <span>{isKo ? 'PPOTAL 통합 계정' : isJa ? 'PPOTAL 統合アカウント' : 'PPOTAL Unified Account'}</span>
+          </div>
+
           <div className="auth-modal-icon-container">
             <UserIcon size={24} />
           </div>
@@ -164,16 +170,64 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
             {mode === 'login' 
               ? (isKo ? '로그인' : isJa ? 'ログイン' : 'Welcome Back')
               : mode === 'signup' 
-                ? (isKo ? '회원가입' : isJa ? '新規登録' : 'Create Account')
+                ? (isKo ? '통합 계정 생성' : isJa ? '統合アカウント作成' : 'Create Unified Account')
                 : (isKo ? '비밀번호 재설정' : isJa ? 'パスワード再設定' : 'Reset Password')}
           </h2>
           <p>
             {mode === 'login'
-              ? (isKo ? `${appName} 서비스에 로그인합니다.` : isJa ? `${appName} サービスにログインします。` : `Log in to access ${appName} services`)
+              ? (isKo ? `PPOTAL 통합 계정으로 ${appName} 및 모든 패밀리 서비스를 이용합니다.` : isJa ? `PPOTAL統合アカウントで${appName}およびすべてのファミリーサービスを利用します。` : `Log in with your PPOTAL unified account for ${appName} & family services.`)
               : mode === 'signup'
-                ? (isKo ? `${appName}의 모든 기능을 위한 계정을 생성합니다.` : isJa ? `${appName}のすべての機能を利用するためのアカウントを作成します。` : `Create an account for all ${appName} features`)
+                ? (isKo ? '계정 하나로 JP Rail, Regionevel, P-Plan을 모두 이용할 수 있습니다.' : isJa ? '1つのアカウントでJP Rail、Regionevel、P-Planのすべてを利用できます。' : 'One account grants access to JP Rail, Regionevel, and P-Plan.')
                 : (isKo ? '가입한 이메일을 입력하면 재설정 링크를 보내드립니다.' : isJa ? '登録したメールアドレスを入力して再設定リンクを受信します。' : `Enter your email to receive a password reset link`)}
           </p>
+
+          {/* Unified Account Feature Toggle */}
+          <div className="auth-unified-info-box">
+            <button
+              type="button"
+              className="auth-unified-info-toggle"
+              onClick={() => setShowUnifiedDetails(!showUnifiedDetails)}
+            >
+              <span>{isKo ? '✨ 통합 계정으로 이용 가능한 서비스' : isJa ? '✨ 統合アカウントで利用可能なサービス' : '✨ Services included in Unified Account'}</span>
+              <span className="auth-unified-arrow">{showUnifiedDetails ? '▲' : '▼'}</span>
+            </button>
+
+            {showUnifiedDetails && (
+              <div className="auth-unified-details animate-in">
+                <div className="auth-service-item">
+                  <Train size={16} className="text-sky-400" />
+                  <div>
+                    <strong>JP Rail</strong>
+                    <p>{isKo ? '일본 전역 철도 노선 및 역 방문 정복 기록' : isJa ? '日本全国の鉄道路線・駅訪問記録' : 'Japan rail network & station conquest logs'}</p>
+                  </div>
+                </div>
+                <div className="auth-service-item">
+                  <Map size={16} className="text-emerald-400" />
+                  <div>
+                    <strong>Regionevel</strong>
+                    <p>{isKo ? '전국 시군구 행정구역 여행 지도 & 스탬프 기록' : isJa ? '全国市区町村の旅行地図＆訪問スタンプ' : 'Administrative region travel map & stamps'}</p>
+                  </div>
+                </div>
+                <div className="auth-service-item">
+                  <Sparkles size={16} className="text-purple-400" />
+                  <div>
+                    <strong>P-Plan</strong>
+                    <p>{isKo ? '정밀 여행 일정 설계 & 스마트 동행' : isJa ? '精密旅行プラン設計＆スマート同伴' : 'Precision travel itinerary planning'}</p>
+                  </div>
+                </div>
+                <div className="auth-unified-warning">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>
+                    {isKo 
+                      ? '⚠️ 통합 계정 삭제 시 상기 모든 서비스의 기록과 데이터가 함께 영구 삭제됩니다.'
+                      : isJa 
+                        ? '⚠️ 統合アカウントを削除すると、上記すべてのサービスの記録・データが同時に完全削除されます。'
+                        : '⚠️ Deleting your account will permanently erase all data across all connected services.'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-modal-form">
@@ -252,6 +306,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
               lineHeight: '1.4'
             }}>
               {successMessage}
+            </div>
+          )}
+
+          {mode === 'signup' && (
+            <div className="auth-signup-notice">
+              <AlertCircle size={14} className="shrink-0 text-amber-400 mt-0.5" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span>
+                  {isKo 
+                    ? '가입 시 PPOTAL 통합 계정이 발급되며, 계정 탈퇴 시 연동된 JP Rail, Regionevel, P-Plan의 모든 여행 기록이 영구 삭제됩니다.'
+                    : isJa
+                      ? '登録時にPPOTAL統合アカウントが発行され、退会時には連携されたJP Rail、Regionevel、P-Planの全記録が完全削除されます。'
+                      : 'A PPOTAL unified account will be created. Deleting your account will permanently remove all logs across JP Rail, Regionevel, and P-Plan.'}
+                </span>
+                <a
+                  href={`${PORTAL_BASE_URL}/account/policy`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="auth-policy-link"
+                >
+                  {isKo ? '통합 계정 운영 방침 & 약관 보기 ↗' : isJa ? '統合アカウント運営方針・規約を見る ↗' : 'View Unified Account Policy ↗'}
+                </a>
+              </div>
             </div>
           )}
 
@@ -409,7 +486,124 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, appName =
 
         .auth-modal-header {
           text-align: center;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .auth-modal-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0.35rem 0.75rem;
+          background: rgba(99, 102, 241, 0.15);
+          border: 1px solid rgba(99, 102, 241, 0.3);
+          border-radius: 9999px;
+          color: #a5b4fc;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          margin-bottom: 1rem;
+        }
+
+        .auth-unified-info-box {
+          margin-top: 1rem;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 14px;
+          padding: 0.6rem 0.85rem;
+          text-align: left;
+        }
+
+        .auth-unified-info-toggle {
+          width: 100%;
+          background: transparent;
+          border: none;
+          color: #c7d2fe;
+          font-size: 0.78rem;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.2rem 0;
+        }
+
+        .auth-unified-info-toggle:hover {
+          color: #ffffff;
+        }
+
+        .auth-unified-arrow {
+          font-size: 0.65rem;
+          opacity: 0.7;
+        }
+
+        .auth-unified-details {
+          margin-top: 0.75rem;
+          padding-top: 0.75rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+        }
+
+        .auth-service-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          font-size: 0.78rem;
+          line-height: 1.35;
+        }
+
+        .auth-service-item strong {
+          color: #ffffff;
+          display: block;
+          font-size: 0.8rem;
+        }
+
+        .auth-service-item p {
+          margin: 0 !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          font-size: 0.74rem !important;
+        }
+
+        .auth-unified-warning {
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          background: rgba(239, 68, 68, 0.12);
+          border: 1px solid rgba(239, 68, 68, 0.25);
+          border-radius: 8px;
+          padding: 0.5rem 0.65rem;
+          color: #fca5a5;
+          font-size: 0.72rem;
+          line-height: 1.35;
+          margin-top: 0.25rem;
+        }
+
+        .auth-signup-notice {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          background: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          border-radius: 12px;
+          padding: 0.65rem 0.85rem;
+          color: #fde68a;
+          font-size: 0.78rem;
+          line-height: 1.4;
+          margin-top: -0.25rem;
+        }
+
+        .auth-policy-link {
+          color: #fbbf24;
+          font-weight: 700;
+          font-size: 0.73rem;
+          text-decoration: underline;
+          cursor: pointer;
+          transition: color 0.15s ease;
+        }
+
+        .auth-policy-link:hover {
+          color: #fef3c7;
         }
 
         .auth-modal-icon-container {

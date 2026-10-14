@@ -1,3 +1,7 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@source "../../../packages/ui/src";
+
 :root {
   --background: #111821;
   --foreground: #f6f7f8;

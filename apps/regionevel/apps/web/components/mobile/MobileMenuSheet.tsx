@@ -8,6 +8,7 @@ import {
   MapIcon, TrophyIcon, InfoIcon, DrawIcon, ShareIcon, TimelineIcon,
   SyncIcon, LogOutIcon, CloseIcon, LogInIcon
 } from "@ppotal/ui";
+import { PORTAL_ACCOUNT_URL } from "@ppotal/firebase";
 import { Z } from "@/lib/layers";
 import { SAFE_AREA, haptic } from "@/lib/mobile";
 
@@ -142,6 +143,19 @@ export const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({
                 <p className="px-5 pt-2 pb-1 text-[10px] font-bold text-slate-400 truncate">
                   {userEmail}
                 </p>
+                <a
+                  href={PORTAL_ACCOUNT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onClose}
+                  className={`${rowClass} justify-between text-slate-700 dark:text-slate-200`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-sky-500 font-black text-[10px] px-1 py-0.2 rounded bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800">통합</span>
+                    <span>계정 관리</span>
+                  </span>
+                  <span className="text-xs text-slate-400">↗</span>
+                </a>
                 <button onClick={run(onSignOut)} className={`${rowClass} text-red-600 dark:text-red-400`}>
                   <LogOutIcon className="w-5 h-5 shrink-0" />
                   <span>로그아웃</span>
