@@ -25,8 +25,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className="dark">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('dark');" }} />
         {/* Google tag (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-YEK2N4EFT5"></script>
         <script

@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        primary: "#1c74e9",
+      },
       fontFamily: {
         heading: ["Outfit", "sans-serif"],
         body: ["Inter", "sans-serif"],
